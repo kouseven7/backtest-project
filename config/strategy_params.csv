@@ -1,4 +1,0 @@
-strategy,short_ma,long_ma,rsi_period,rsi_buy,rsi_sell,vwap_threshold
-ゴールデンクロス,5,25,-,-,-,-
-逆張りRSI,-,-,14,30,70,-
-VWAP反発,-,-,-,-,-,2
