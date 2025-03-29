@@ -17,3 +17,5 @@
 1. 必要なライブラリをインストールします。
    ```bash
    pip install -r requirements.txt
+
+   test
