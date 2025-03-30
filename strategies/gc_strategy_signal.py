@@ -2,6 +2,7 @@
 import pandas as pd
 import logging
 from strategies.base_strategy import BaseStrategy
+from indicators.trend_analysis import detect_trend
 
 class GCStrategy(BaseStrategy):
     """
@@ -44,13 +45,18 @@ class GCStrategy(BaseStrategy):
     def generate_entry_signal(self, idx: int) -> int:
         """
         指定されたインデックス位置でのエントリーシグナルを生成する。
-        短期移動平均が長期移動平均を上回った場合、1を返す。
+        短期移動平均が長期移動平均を上回り、かつトレンドが上昇トレンドの場合、1を返す。
         """
         short_sma = self.data[f"SMA_{self.short_window}"].iloc[idx]
         long_sma = self.data[f"SMA_{self.long_window}"].iloc[idx]
         if pd.isna(short_sma) or pd.isna(long_sma):
             return 0
-        return 1 if short_sma > long_sma else 0
+
+        # トレンド判定
+        trend = detect_trend(self.data.iloc[:idx + 1], price_column=self.price_column)
+        if short_sma > long_sma and trend == "uptrend":
+            return 1
+        return 0
 
     def generate_exit_signal(self, idx: int) -> int:
         """

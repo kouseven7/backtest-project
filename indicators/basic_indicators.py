@@ -16,51 +16,40 @@ def calculate_sma(data: pd.DataFrame, column: str, window: int) -> pd.Series:
     """
     return data[column].rolling(window=window).mean()
 
-def calculate_rsi(series: pd.Series, period: int = 14) -> pd.Series:
+def calculate_rsi(data: pd.Series, period: int = 14) -> pd.Series:
     """
-    RSI（Relative Strength Index）を計算する関数
+    RSI（相対力指数）を計算する。
 
     Parameters:
-        series (pd.Series): 価格データのSeries（例：終値）
-        period (int): RSIの計算期間（デフォルトは14日）
+        data (pd.Series): 株価データ（通常は終値）
+        period (int): RSIの計算期間（デフォルトは14）
 
     Returns:
-        pd.Series: RSIの算出結果
+        pd.Series: RSI値
     """
-    delta = series.diff()
-    gain = delta.where(delta > 0, 0)
-    loss = -delta.where(delta < 0, 0)
-    avg_gain = gain.rolling(window=period, min_periods=period).mean()
-    avg_loss = loss.rolling(window=period, min_periods=period).mean()
-    rs = avg_gain / avg_loss
+    delta = data.diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+    rs = gain / loss
     rsi = 100 - (100 / (1 + rs))
     return rsi
 
-def calculate_vwap(data: pd.DataFrame, window: int = 20) -> pd.Series:
+def calculate_vwap(data: pd.DataFrame, price_column: str, volume_column: str) -> pd.Series:
     """
-    VWAP（Volume Weighted Average Price）を計算する関数
-
-    VWAPは典型価格（(High + Low + Close) / 3）と出来高を用いて、
-    指定期間内の加重平均として算出されます。
+    VWAPを計算する。
 
     Parameters:
-        data (pd.DataFrame): 銘柄データ。'High', 'Low', 'Close', 'Volume' のカラムが必要
-        window (int): VWAPの計算に用いるローリングウィンドウ（日数）
+        data (pd.DataFrame): 株価データ
+        price_column (str): 株価カラム名
+        volume_column (str): 出来高カラム名
 
     Returns:
-        pd.Series: VWAPの算出結果
+        pd.Series: VWAP値
     """
-    # 対象カラムを数値型に変換（変換できない場合は NaN に）
-    data['High'] = pd.to_numeric(data['High'], errors='coerce')
-    data['Low'] = pd.to_numeric(data['Low'], errors='coerce')
-    data['Close'] = pd.to_numeric(data['Close'], errors='coerce')
-    data['Volume'] = pd.to_numeric(data['Volume'], errors='coerce')
-    
-    typical_price = (data['High'] + data['Low'] + data['Close']) / 3
-    # VWAPの計算
-    vwap = (typical_price * data['Volume']).rolling(window=window).sum() / data['Volume'].rolling(window=window).sum()
-    return vwap
-
+    typical_price = (data['High'] + data['Low'] + data[price_column]) / 3
+    cumulative_vwap = (typical_price * data[volume_column]).cumsum()
+    cumulative_volume = data[volume_column].cumsum()
+    return cumulative_vwap / cumulative_volume
 
 def add_basic_indicators(stock_data: pd.DataFrame, price_column: str) -> pd.DataFrame:
     """
@@ -82,9 +71,23 @@ def add_basic_indicators(stock_data: pd.DataFrame, price_column: str) -> pd.Data
     stock_data['RSI_14'] = calculate_rsi(stock_data[price_column], period=14)
     
     # VWAPの計算（20日間のローリングウィンドウ）
-    stock_data['VWAP'] = calculate_vwap(stock_data, window=20)
+    stock_data['VWAP'] = calculate_vwap(stock_data, price_column=price_column, volume_column='Volume')
     
     return stock_data
+
+class VWAPBounceStrategy:
+    def __init__(self, data: pd.DataFrame):
+        """
+        VWAP反発戦略の初期化。
+
+        Parameters:
+            data (pd.DataFrame): 株価データ
+        """
+        self.data = data
+
+        # VWAPを計算してデータに追加
+        self.data['VWAP'] = calculate_vwap(self.data, price_column='Close', volume_column='Volume')
+        self.data['RSI'] = calculate_rsi(self.data[self.price_column], 14)
 
 # テスト用コード（このファイルを直接実行した場合のみ動作）
 if __name__ == "__main__":

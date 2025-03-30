@@ -1,0 +1,14 @@
+# ログファイル
+*.log
+
+# Excelファイル
+*.xlsx
+
+# CSVファイル
+*.csv
+
+# Pythonのキャッシュフォルダ
+__pycache__/
+
+# Macの不要ファイル
+.DS_Store
