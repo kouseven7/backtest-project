@@ -16,6 +16,12 @@ from openpyxl import Workbook
 from openpyxl.chart import LineChart, Reference
 from openpyxl.utils.dataframe import dataframe_to_rows
 from typing import Dict
+from datetime import datetime
+
+import sys
+
+# プロジェクトのルートディレクトリを `sys.path` に追加
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from config.logger_config import setup_logger
 
@@ -24,12 +30,7 @@ logger = setup_logger(__name__)
 def ensure_workbook_exists(workbook_path: str) -> None:
     """
     指定したパスにExcelファイルが存在しない場合、必要なシートとヘッダーを含む新規Workbookを作成して保存します。
-    シート名は「損益推移」と「取引履歴」に統一されます。
-    
-    Parameters:
-        workbook_path (str): 作成するExcelファイルのパス
     """
-    # 出力先ディレクトリの存在確認と作成
     output_dir = os.path.dirname(workbook_path)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -38,18 +39,57 @@ def ensure_workbook_exists(workbook_path: str) -> None:
     if not os.path.exists(workbook_path):
         logger.info(f"Workbookが存在しません。新規に作成します: {workbook_path}")
         wb = Workbook()
-        # 最初のシートを「損益推移」として設定
         ws_pnl = wb.active
         ws_pnl.title = "損益推移"
-        ws_pnl.append(["日付", "累積損益"])
-        # 新たに「取引履歴」シートを作成
+        ws_pnl.append(["日付", "日次損益", "累積損益"])
+        
         ws_trade = wb.create_sheet(title="取引履歴")
-        ws_trade.append(["日付", "銘柄", "エントリー", "イグジット", "取引結果"])
-        wb.save(workbook_path)
-        logger.info("新規Workbookを作成しました。")
+        ws_trade.append(["日付", "銘柄", "戦略", "エントリー", "イグジット", "取引結果", "取引量", "手数料"])
+        
+        ws_metrics = wb.create_sheet(title="パフォーマンス指標")
+        ws_metrics.append(["指標", "値"])
+        ws_metrics.append(["総取引数", "0"])
+        ws_metrics.append(["勝率", "0%"])
+        ws_metrics.append(["損益合計", "0円"])
+        ws_metrics.append(["平均損益", "0円"])
+        ws_metrics.append(["最大利益", "0円"])
+        ws_metrics.append(["最大損失", "0円"])
+        
+        try:
+            wb.save(workbook_path)
+            logger.info(f"新規Workbookを作成し、保存しました: {workbook_path}")
+        except Exception as e:
+            logger.error(f"Workbookの保存中にエラーが発生しました: {e}")
+            raise
     else:
-        logger.info("Workbookは既に存在します。")
-
+        logger.info(f"Workbookは既に存在します: {workbook_path}")
+        # 既存のWorkbookに必要なシートが含まれているか確認
+        wb = openpyxl.load_workbook(workbook_path)
+        required_sheets = ["損益推移", "取引履歴", "パフォーマンス指標"]
+        
+        for sheet_name in required_sheets:
+            if sheet_name not in wb.sheetnames:
+                logger.info(f"シート '{sheet_name}' が存在しないため追加します")
+                ws = wb.create_sheet(title=sheet_name)
+                
+                if sheet_name == "損益推移":
+                    ws.append(["日付", "日次損益", "累積損益"])
+                elif sheet_name == "取引履歴":
+                    ws.append(["日付", "銘柄", "戦略", "エントリー", "イグジット", "取引結果", "取引量", "手数料"])
+                elif sheet_name == "パフォーマンス指標":
+                    ws.append(["指標", "値"])
+                    ws.append(["総取引数", "0"])
+                    ws.append(["勝率", "0%"])
+                    ws.append(["損益合計", "0円"])
+                    ws.append(["平均損益", "0円"])
+                    ws.append(["最大利益", "0円"])
+                    ws.append(["最大損失", "0円"])
+        
+        try:
+            wb.save(workbook_path)
+        except Exception as e:
+            logger.error(f"Workbookの更新中にエラーが発生しました: {e}")
+            raise
 
 def _remove_timezone_from_df(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -68,37 +108,58 @@ def _remove_timezone_from_df(df: pd.DataFrame) -> pd.DataFrame:
         return x
     return df.applymap(remove_tz)
 
-def save_backtest_results(results: Dict[str, pd.DataFrame], output_file: str) -> None:
+def save_backtest_results(trade_results: Dict[str, pd.DataFrame], output_file: str) -> None:
     """
-    バックテスト結果をExcelファイルに保存する関数.
-    
+    バックテスト結果をExcelファイルの各シートに保存します
     Parameters:
-        results (Dict[str, pd.DataFrame]): キーがシート名、値が出力すべきDataFrameの辞書.
-            例:
-                {
-                    "取引履歴": trade_history_df,
-                    "損益推移": pnl_df,
-                    "最大ドローダウン": drawdown_df,
-                    "全体結果": summary_df
-                }
-        output_file (str): 出力先のExcelファイルの絶対パス.
+        trade_results (Dict[str, pd.DataFrame]): 各種結果データフレームの辞書
+        output_file (str): 結果を保存するExcelファイルのパス
     """
+    # Excelファイルが存在するか確認し、存在しない場合は作成
+    ensure_workbook_exists(output_file)
+    
     try:
-        # 出力先ディレクトリの存在確認と作成
-        output_dir = os.path.dirname(output_file)
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-            logger.info(f"出力ディレクトリを作成しました: {output_dir}")
+        # ExcelWriterを作成し、各シートにデータを書き込む
+        # mode="a" は追加モード、if_sheet_exists="replace" は既存のシートを置き換え
+        with pd.ExcelWriter(output_file, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
+            for sheet_name, df in trade_results.items():
+                if isinstance(df, pd.DataFrame):
+                    # データフレームのインデックスからタイムゾーン情報を削除
+                    processed_df = df.copy()
+                    
+                    # インデックスがDatetimeIndexの場合、タイムゾーン情報を削除
+                    if isinstance(processed_df.index, pd.DatetimeIndex) and processed_df.index.tz is not None:
+                        processed_df.index = processed_df.index.tz_localize(None)
+                        logger.info(f"シート '{sheet_name}' のインデックスからタイムゾーン情報を削除しました")
+                    
+                    # データフレーム内の日時データからもタイムゾーン情報を削除
+                    for col in processed_df.columns:
+                        if isinstance(processed_df[col].dtype, pd.DatetimeTZDtype):
+                            processed_df[col] = processed_df[col].dt.tz_localize(None)
+                            logger.info(f"シート '{sheet_name}' の列 '{col}' からタイムゾーン情報を削除しました")
+                    
+                    # 処理されたデータフレームをExcelに書き込む
+                    processed_df.to_excel(writer, sheet_name=sheet_name)
+                    logger.info(f"シート '{sheet_name}' にデータを書き込みました")
+    except PermissionError:
+        logger.error(f"ファイル {output_file} が開かれているため、書き込みができません。")
         
-        with pd.ExcelWriter(output_file, engine="openpyxl") as writer:
-            for sheet_name, df in results.items():
-                # タイムゾーン付きdatetimeの情報を解除
-                df = _remove_timezone_from_df(df.copy())
-                df.to_excel(writer, sheet_name=sheet_name, index=False)
-                logger.info(f"シート '{sheet_name}' の出力に成功しました。")
-        logger.info(f"バックテスト結果をExcelファイルに保存しました: {output_file}")
+        # CSV形式でバックアップ
+        base_dir = os.path.dirname(output_file)
+        base_name = os.path.basename(output_file).replace(".xlsx", "")
+        backup_dir = os.path.join(base_dir, "backup")
+        os.makedirs(backup_dir, exist_ok=True)
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        for sheet_name, df in trade_results.items():
+            if isinstance(df, pd.DataFrame):
+                backup_file = os.path.join(backup_dir, f"{base_name}_{sheet_name}_{timestamp}.csv")
+                df.to_csv(backup_file)
+                logger.info(f"バックアップとして {backup_file} にデータを保存しました")
+        
+        raise PermissionError(f"ファイル {output_file} が開かれているため、書き込みができません。バックアップとしてCSVファイルを保存しました。")
     except Exception as e:
-        logger.exception("バックテスト結果のExcelファイル保存中にエラーが発生しました。")
+        logger.error(f"データの保存中にエラーが発生しました: {e}")
         raise
 
 def add_pnl_chart(workbook_path: str, sheet_name: str = "損益推移", chart_title: str = "累積損益推移") -> None:
@@ -113,9 +174,17 @@ def add_pnl_chart(workbook_path: str, sheet_name: str = "損益推移", chart_ti
     """
     try:
         wb = openpyxl.load_workbook(workbook_path)
+        if sheet_name not in wb.sheetnames:
+            logger.warning(f"シート '{sheet_name}' が存在しません。グラフは作成されません。")
+            return
+            
         ws = wb[sheet_name]
         max_row = ws.max_row
         
+        if max_row <= 1:  # ヘッダーだけの場合
+            logger.warning(f"シート '{sheet_name}' にデータがありません。グラフは作成されません。")
+            return
+            
         chart = LineChart()
         chart.title = chart_title
         chart.style = 10
@@ -131,7 +200,7 @@ def add_pnl_chart(workbook_path: str, sheet_name: str = "損益推移", chart_ti
         wb.save(workbook_path)
         logger.info(f"チャート '{chart_title}' をシート '{sheet_name}' に追加し、保存しました。")
     except Exception as e:
-        logger.exception("チャートの追加中にエラーが発生しました。")
+        logger.exception(f"チャートの追加中にエラーが発生しました: {e}")
         raise
 
 def create_pivot_from_trade_history(
@@ -149,12 +218,34 @@ def create_pivot_from_trade_history(
         pivot_sheet (str): ピボットテーブルを出力するシート名（デフォルトは「Pivot_取引履歴」）
     """
     try:
+        # まず対象ファイルとシートの存在を確認
+        if not os.path.exists(workbook_path):
+            logger.warning(f"ファイル '{workbook_path}' が存在しません。ピボットテーブルは作成されません。")
+            return
+            
+        wb = openpyxl.load_workbook(workbook_path)
+        if trade_sheet not in wb.sheetnames:
+            logger.warning(f"シート '{trade_sheet}' が存在しません。ピボットテーブルは作成されません。")
+            return
+            
         df = pd.read_excel(workbook_path, sheet_name=trade_sheet)
+        
+        # 取引履歴にデータがあるか確認
+        if len(df) <= 0:
+            logger.warning(f"シート '{trade_sheet}' にデータがありません。ピボットテーブルは作成されません。")
+            return
+            
+        # 必要なカラムが存在することを確認
+        required_columns = ["銘柄", "取引結果"]
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            logger.warning(f"シート '{trade_sheet}' に必要なカラム {missing_columns} がありません。ピボットテーブルは作成されません。")
+            return
+            
         pivot = df.pivot_table(index="銘柄", aggfunc={"取引結果": ["count", "sum"]})
         pivot.columns = ["取引数", "取引結果合計"]
         pivot.reset_index(inplace=True)
         
-        wb = openpyxl.load_workbook(workbook_path)
         if pivot_sheet in wb.sheetnames:
             ws = wb[pivot_sheet]
             for row in ws.iter_rows():
@@ -170,5 +261,43 @@ def create_pivot_from_trade_history(
         wb.save(workbook_path)
         logger.info(f"ピボットテーブルをシート '{pivot_sheet}' に作成し、保存しました。")
     except Exception as e:
-        logger.exception("ピボットテーブルの作成中にエラーが発生しました。")
+        logger.exception(f"ピボットテーブルの作成中にエラーが発生しました: {e}")
+        raise
+
+def run_trade_simulation():
+    """
+    トレードシミュレーションを実行するメイン関数。
+    """
+    try:
+        # 1. 戦略パラメータの取得（例: GC戦略）
+        param_manager = StrategyParameterManager(config_file)
+        gc_params = param_manager.get_params("GC戦略")
+        logger.info("GC戦略のパラメータを取得しました。")
+
+        # 2. 市場データの取得（例: 銘柄設定シートから取得）
+        stock_params = pd.read_excel(config_file, sheet_name="銘柄設定")
+        ticker = stock_params["銘柄"].iloc[0]
+        start_date = stock_params["開始日"].iloc[0]
+        end_date = stock_params["終了日"].iloc[0]
+        logger.info(f"市場データの取得対象: {ticker} {start_date}〜{end_date}")
+        
+        # 市場データの取得
+        stock_data = fetch_yahoo_data(ticker, start_date, end_date)
+        
+        # 3. 戦略クラスのインスタンス化とシグナル生成
+        strategy = GCStrategy(stock_data, gc_params, price_column="Adj Close")
+        # generate_signals() メソッドがなく、代わりに backtest() メソッドを使用
+        result_data = strategy.backtest()
+        logger.info("シグナルの生成が完了しました。")
+        
+        # 4. トレードシミュレーションの実行
+        trade_results = simulate_trades(result_data, ticker)
+        
+        # 5. 結果の保存
+        output_file = r"C:\Users\imega\Documents\my_backtest_project\backtest_results\backtest_results.xlsx"
+        save_backtest_results(trade_results, output_file)
+        logger.info("トレードシミュレーションの結果を保存しました。")
+    
+    except Exception as e:
+        logger.exception("トレードシミュレーションの実行中にエラーが発生しました。")
         raise
