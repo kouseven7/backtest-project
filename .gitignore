@@ -3,12 +3,67 @@
 
 # Excelファイル
 *.xlsx
+*.xlsm
+*.xls
+*.xlsb
 
 # CSVファイル
 *.csv
 
-# Pythonのキャッシュフォルダ
+# Pythonのキャッシュフォルダとファイル
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# VS Code関連
+.vscode/
+*.code-workspace
+.history/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# 環境変数ファイル
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # Macの不要ファイル
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windowsの不要ファイル
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# テンポラリファイル
+*.tmp
+*.bak
+*.swp
+*~
