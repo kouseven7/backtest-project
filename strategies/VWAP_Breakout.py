@@ -1,39 +1,86 @@
+"""
+Module: VWAP_Breakout
+File: VWAP_Breakout.py
+Description: 
+  出来高加重平均価格(VWAP)のブレイクアウトを検出する戦略クラスを実装しています。
+  市場全体の上昇トレンドを確認しながら、株価がVWAPを上抜けし、出来高増加と
+  テクニカル指標の確認による複合的な判断でエントリー・イグジットします。
+
+Author: kouseven7
+Created: 2023-02-15
+Modified: 2025-04-02
+
+Dependencies:
+  - strategies.base_strategy
+  - indicators.basic_indicators
+  - indicators.volume_analysis
+  - indicators.momentum_indicators
+"""
+
 import pandas as pd
 import numpy as np
 import sys
 sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")  # プロジェクトのルートを追加
 
+from strategies.base_strategy import BaseStrategy
 from indicators.basic_indicators import calculate_sma, calculate_vwap
 from indicators.volume_analysis import detect_volume_increase
 from indicators.momentum_indicators import calculate_macd
 from indicators.basic_indicators import calculate_rsi
 
-class VWAPBreakoutStrategy:
-    def __init__(self, data: pd.DataFrame, index_data: pd.DataFrame, price_column: str = "Adj Close", volume_column: str = "Volume"):
+class VWAPBreakoutStrategy(BaseStrategy):
+    def __init__(self, data: pd.DataFrame, index_data: pd.DataFrame, params=None, price_column: str = "Adj Close", volume_column: str = "Volume"):
         """
         VWAPアウトブレイク戦略の初期化。
 
         Parameters:
             data (pd.DataFrame): 株価データ
             index_data (pd.DataFrame): 市場全体のインデックスデータ
+            params (dict, optional): 戦略パラメータ（オーバーライド用）
             price_column (str): 株価カラム名（デフォルトは "Adj Close"）
             volume_column (str): 出来高カラム名（デフォルトは "Volume"）
         """
-        self.data = data
+        # 戦略固有の属性を先に設定
         self.index_data = index_data
         self.price_column = price_column
         self.volume_column = volume_column
-
+        
+        # デフォルトパラメータの設定
+        default_params = {
+            "sma_short": 20,
+            "sma_long": 50,
+            "rsi_period": 14,
+            "volume_threshold": 1.2,
+            "take_profit": 0.10,  # 10%
+            "stop_loss": 0.05,    # 5%
+            "trailing_stop": 0.03  # 3%
+        }
+        
+        # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
+        merged_params = {**default_params, **(params or {})}
+        super().__init__(data, merged_params)
+        
+    def initialize_strategy(self):
+        """
+        戦略の初期化処理
+        """
+        super().initialize_strategy()
+        
         # 必要なインジケーターを計算してデータに追加
-        self.data['SMA_20'] = calculate_sma(self.data, price_column, 20)
-        self.data['SMA_50'] = calculate_sma(self.data, price_column, 50)
-        self.data['VWAP'] = calculate_vwap(self.data, price_column, volume_column)
-        self.data['RSI'] = calculate_rsi(self.data[price_column], 14)
-        self.data['MACD'], self.data['Signal_Line'] = calculate_macd(self.data, price_column)
+        sma_short = self.params["sma_short"]
+        sma_long = self.params["sma_long"]
+        rsi_period = self.params["rsi_period"]
+        
+        self.data['SMA_' + str(sma_short)] = calculate_sma(self.data, self.price_column, sma_short)
+        self.data['SMA_' + str(sma_long)] = calculate_sma(self.data, self.price_column, sma_long)
+        self.data['VWAP'] = calculate_vwap(self.data, self.price_column, self.volume_column)
+        self.data['RSI'] = calculate_rsi(self.data[self.price_column], rsi_period)
+        self.data['MACD'], self.data['Signal_Line'] = calculate_macd(self.data, self.price_column)
 
         # 市場全体のトレンドを確認するためのインデックスの移動平均線
-        self.index_data['SMA_20'] = calculate_sma(self.index_data, price_column, 20)
-        self.index_data['SMA_50'] = calculate_sma(self.index_data, price_column, 50)
+        if self.index_data is not None:
+            self.index_data['SMA_' + str(sma_short)] = calculate_sma(self.index_data, self.price_column, sma_short)
+            self.index_data['SMA_' + str(sma_long)] = calculate_sma(self.index_data, self.price_column, sma_long)
 
     def is_market_uptrend(self, idx: int) -> bool:
         """
@@ -45,28 +92,40 @@ class VWAPBreakoutStrategy:
         Returns:
             bool: 市場全体が上昇トレンドにある場合は True、それ以外は False
         """
-        if idx < 50:  # 50日分のデータが必要
+        if self.index_data is None or idx < self.params["sma_long"]:
             return False
 
+        sma_short_key = 'SMA_' + str(self.params["sma_short"])
+        sma_long_key = 'SMA_' + str(self.params["sma_long"])
+        
         index_price = self.index_data[self.price_column].iloc[idx]
-        index_sma_20 = self.index_data['SMA_20'].iloc[idx]
-        index_sma_50 = self.index_data['SMA_50'].iloc[idx]
+        index_sma_short = self.index_data[sma_short_key].iloc[idx]
+        index_sma_long = self.index_data[sma_long_key].iloc[idx]
 
         # 市場全体が上昇トレンドにある条件
-        return index_price > index_sma_20 > index_sma_50 and \
-               self.index_data['SMA_20'].iloc[idx] > self.index_data['SMA_20'].iloc[idx - 1] and \
-               self.index_data['SMA_50'].iloc[idx] > self.index_data['SMA_50'].iloc[idx - 1]
+        return index_price > index_sma_short > index_sma_long and \
+               self.index_data[sma_short_key].iloc[idx] > self.index_data[sma_short_key].iloc[idx - 1] and \
+               self.index_data[sma_long_key].iloc[idx] > self.index_data[sma_long_key].iloc[idx - 1]
 
     def generate_entry_signal(self, idx: int) -> int:
         """
         エントリーシグナルを生成する。
+        
+        Parameters:
+            idx (int): 現在のインデックス
+            
+        Returns:
+            int: エントリーシグナル（1: エントリー, 0: なし）
         """
-        if idx < 50:  # 50日分のデータが必要
+        sma_short_key = 'SMA_' + str(self.params["sma_short"])
+        sma_long_key = 'SMA_' + str(self.params["sma_long"])
+        
+        if idx < self.params["sma_long"]:  # 必要な履歴データがない場合
             return 0
 
         current_price = self.data[self.price_column].iloc[idx]
-        sma_20 = self.data['SMA_20'].iloc[idx]
-        sma_50 = self.data['SMA_50'].iloc[idx]
+        sma_short = self.data[sma_short_key].iloc[idx]
+        sma_long = self.data[sma_long_key].iloc[idx]
         vwap = self.data['VWAP'].iloc[idx]
         previous_vwap = self.data['VWAP'].iloc[idx - 1]
         current_volume = self.data[self.volume_column].iloc[idx]
@@ -76,12 +135,13 @@ class VWAPBreakoutStrategy:
         if not self.is_market_uptrend(idx):
             return 0
 
-        # 株価が20日移動平均線や50日移動平均線の上に位置している
-        if not (current_price > sma_20 > sma_50):
+        # 株価が短期移動平均線や長期移動平均線の上に位置している
+        if not (current_price > sma_short > sma_long):
             return 0
 
         # 移動平均線が上昇している
-        if not (sma_20 > self.data['SMA_20'].iloc[idx - 1] and sma_50 > self.data['SMA_50'].iloc[idx - 1]):
+        if not (sma_short > self.data[sma_short_key].iloc[idx - 1] and 
+                sma_long > self.data[sma_long_key].iloc[idx - 1]):
             return 0
 
         # VWAPが上昇している
@@ -93,40 +153,61 @@ class VWAPBreakoutStrategy:
             return 0
 
         # 出来高が増加している
-        if not detect_volume_increase(current_volume, previous_volume, threshold=1.2):
+        if not detect_volume_increase(current_volume, previous_volume, threshold=self.params["volume_threshold"]):
             return 0
 
+        # すべての条件を満たした場合、エントリーシグナルを返す
+        self.log_trade(f"VWAP Breakout エントリーシグナル: 日付={self.data.index[idx]}, 価格={current_price}")
         return 1
 
-    def generate_exit_signal(self, entry_price: float, current_price: float, atr: float, idx: int) -> int:
+    def generate_exit_signal(self, idx: int) -> int:
         """
-        エグジットシグナルを生成する。
-        条件:
-        - VWAPを下回った場合
-        - エントリー価格から3～5%の下落でストップロス
-        - 利益が伸びた場合、トレーリングストップを設定
-        - RSIやMACDの反転、または短期移動平均線のブレイクダウン
-
+        イグジットシグナルを生成する。
+        
+        Parameters:
+            idx (int): 現在のインデックス
+            
         Returns:
-            int: エグジットシグナル（-1: エグジット, 0: なし）
+            int: イグジットシグナル（-1: イグジット, 0: なし）
         """
+        if idx < 1:  # 必要な履歴データがない場合
+            return 0
+            
+        current_price = self.data[self.price_column].iloc[idx]
         vwap = self.data['VWAP'].iloc[idx]
-
+        
+        # エントリー価格がない場合（ポジションがない場合）はシグナルなし
+        entry_indices = self.data[self.data['Entry_Signal'] == 1].index
+        if len(entry_indices) == 0 or entry_indices[-1] >= self.data.index[idx]:
+            return 0
+            
+        # 最新のエントリー価格を取得
+        latest_entry_idx = self.data.index.get_loc(entry_indices[-1])
+        entry_price = self.data[self.price_column].iloc[latest_entry_idx]
+        
+        # ATR（代用としてVWAPの2%）
+        atr = vwap * 0.02
+        
         # VWAPを下回った場合
         if current_price < vwap:
+            self.log_trade(f"VWAP Breakout イグジットシグナル: VWAP下抜け 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
 
-        # ストップロス条件（ATRベースまたはパーセンテージベース）
-        if current_price <= entry_price - atr or current_price <= entry_price * 0.95:
+        # ストップロス条件
+        if current_price <= entry_price * (1 - self.params["stop_loss"]):
+            self.log_trade(f"VWAP Breakout イグジットシグナル: ストップロス 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
 
-        # 利益確定条件（目標利益）
-        if current_price >= entry_price * 1.10:
+        # 利益確定条件
+        if current_price >= entry_price * (1 + self.params["take_profit"]):
+            self.log_trade(f"VWAP Breakout イグジットシグナル: 利益確定 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
 
         # トレーリングストップ条件
-        trailing_stop = self.data['High'].iloc[:idx].max() * 0.97  # 直近高値の3%下
+        high_since_entry = self.data['High'].iloc[latest_entry_idx:idx+1].max()
+        trailing_stop = high_since_entry * (1 - self.params["trailing_stop"])
         if current_price <= trailing_stop:
+            self.log_trade(f"VWAP Breakout イグジットシグナル: トレーリングストップ 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
 
         # RSIやMACDの反転
@@ -134,8 +215,10 @@ class VWAPBreakoutStrategy:
         macd = self.data['MACD'].iloc[idx]
         signal_line = self.data['Signal_Line'].iloc[idx]
         if rsi > 70 and rsi < self.data['RSI'].iloc[idx - 1]:  # RSIが70以上から急落
+            self.log_trade(f"VWAP Breakout イグジットシグナル: RSI反転 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
-        if macd < signal_line:  # MACDがシグナルラインを下抜け
+        if macd < signal_line and self.data['MACD'].iloc[idx-1] >= self.data['Signal_Line'].iloc[idx-1]:  # MACDがシグナルラインを下抜け
+            self.log_trade(f"VWAP Breakout イグジットシグナル: MACD反転 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
 
         return 0
@@ -143,29 +226,97 @@ class VWAPBreakoutStrategy:
     def backtest(self):
         """
         VWAPアウトブレイク戦略のバックテストを実行する。
+        
+        Returns:
+            pd.DataFrame: エントリー/イグジットシグナルが追加されたデータフレーム
         """
+        # シグナル列の初期化
         self.data['Entry_Signal'] = 0
         self.data['Exit_Signal'] = 0
 
-        entry_price = None
-
+        # 各日にちについてシグナルを計算
         for idx in range(len(self.data)):
-            if entry_price is None:
-                # エントリーシグナルを確認
-                entry_signal = self.generate_entry_signal(idx)
-                self.data.at[idx, 'Entry_Signal'] = entry_signal
-                if entry_signal == 1:
-                    entry_price = self.data[self.price_column].iloc[idx]
-            else:
-                # エグジットシグナルを確認
-                current_price = self.data[self.price_column].iloc[idx]
-                atr = self.data['VWAP'].iloc[idx] * 0.02  # ATRの代わりにVWAPの2%を使用
-                exit_signal = self.generate_exit_signal(entry_price, current_price, atr, idx)
-                self.data.at[idx, 'Exit_Signal'] = exit_signal
-                if exit_signal == -1:
-                    entry_price = None
+            # エントリーシグナルを確認
+            entry_signal = self.generate_entry_signal(idx)
+            if entry_signal == 1:
+                self.data.at[self.data.index[idx], 'Entry_Signal'] = 1
+            
+            # イグジットシグナルを確認
+            exit_signal = self.generate_exit_signal(idx)
+            if exit_signal == -1:
+                self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
 
         return self.data
+
+def apply_strategies(stock_data: pd.DataFrame, index_data: pd.DataFrame):
+    """
+    複数の戦略を適用し、シグナルを生成します。
+    """
+    strategies = {
+        "VWAP Breakout.py": VWAPBreakoutStrategy(stock_data, index_data),
+        "Momentum Investing.py": MomentumInvestingStrategy(stock_data),
+        "Breakout.py": BreakoutStrategy(stock_data)
+    }
+
+    signals = {}
+    for strategy_name, strategy in strategies.items():
+        signals[strategy_name] = strategy.generate_entry_signal(idx=len(stock_data) - 1)
+
+    # 戦略の優先順位に基づいてシグナルをソート
+    prioritized_strategies = risk_manager.prioritize_strategies(signals)
+
+    # シグナルを適用
+    for strategy_name in prioritized_strategies:
+        if signals[strategy_name] == 1:  # シグナルが発生している場合
+            if risk_manager.check_position_size(strategy_name):
+                risk_manager.update_position(strategy_name, 1)
+                logger.info(f"{strategy_name} のシグナルに基づきポジションを追加しました。")
+            else:
+                logger.info(f"{strategy_name} のポジションサイズが上限に達しているため、エントリーをスキップしました。")
+
+def get_parameters_and_data():
+    """
+    Excel設定ファイルからパラメータ取得と市場データ取得（キャッシュ利用）を行います。
+    Returns:
+        ticker (str), start_date (str), end_date (str), stock_data (pd.DataFrame), index_data (pd.DataFrame)
+    """
+    from config.error_handling import read_excel_parameters, fetch_stock_data
+    from config.cache_manager import get_cache_filepath, save_cache
+
+    # 設定ファイルからパラメータを取得
+    config_file = r"C:\Users\imega\Documents\my_backtest_project\config\backtest_config.xlsx"
+    config_df = read_excel_parameters(config_file, "銘柄設定")
+    ticker = config_df["銘柄"].iloc[0]
+    start_date = config_df["開始日"].iloc[0].strftime('%Y-%m-%d')
+    end_date = config_df["終了日"].iloc[0].strftime('%Y-%m-%d')
+    logger.info(f"パラメータ取得: {ticker}, {start_date}, {end_date}")
+
+    # データ取得
+    cache_filepath = get_cache_filepath(ticker, start_date, end_date)
+    stock_data = fetch_stock_data(ticker, start_date, end_date)
+    save_cache(stock_data, cache_filepath)
+
+    # 市場全体のインデックスデータを取得
+    index_ticker = "^GSPC"  # 例: S&P 500 のティッカー
+    index_data = fetch_stock_data(index_ticker, start_date, end_date)
+
+    # 'Adj Close' がない場合は 'Close' を代用
+    if 'Adj Close' not in stock_data.columns:
+        logger.warning(f"'{ticker}' のデータに 'Adj Close' が存在しないため、'Close' 列を代用します。")
+        stock_data['Adj Close'] = stock_data['Close']
+
+    if 'Adj Close' not in index_data.columns:
+        logger.warning(f"'{index_ticker}' のデータに 'Adj Close' が存在しないため、'Close' 列を代用します。")
+        index_data['Adj Close'] = index_data['Close']
+
+    # カラムが MultiIndex になっている場合はフラット化
+    if isinstance(stock_data.columns, pd.MultiIndex):
+        stock_data.columns = stock_data.columns.get_level_values(0)
+
+    if isinstance(index_data.columns, pd.MultiIndex):
+        index_data.columns = index_data.columns.get_level_values(0)
+
+    return ticker, start_date, end_date, stock_data, index_data
 
 # テストコード
 if __name__ == "__main__":

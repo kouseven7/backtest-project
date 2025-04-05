@@ -1,6 +1,9 @@
 # basic_indicators.py
 import pandas as pd
 import numpy as np
+import logging
+
+logger = logging.getLogger(__name__)
 
 def calculate_sma(data: pd.DataFrame, column: str, window: int) -> pd.Series:
     """
@@ -14,7 +17,28 @@ def calculate_sma(data: pd.DataFrame, column: str, window: int) -> pd.Series:
     Returns:
         pd.Series: 移動平均の算出結果
     """
-    return data[column].rolling(window=window).mean()
+    try:
+        if column not in data.columns:
+            logger.error(f"カラム '{column}' がデータフレームに存在しません。利用可能なカラム: {data.columns.tolist()}")
+            raise KeyError(f"カラム '{column}' がデータフレームに存在しません。")
+        
+        # カラムが数値型かチェック
+        if not pd.api.types.is_numeric_dtype(data[column]):
+            logger.warning(f"カラム '{column}' が数値型ではありません。型変換を試みます。現在の型: {data[column].dtype}")
+            try:
+                # 数値型に変換を試みる
+                data[column] = pd.to_numeric(data[column], errors='coerce')
+                logger.info(f"カラム '{column}' を数値型に変換しました。")
+            except Exception as e:
+                logger.error(f"カラム '{column}' の数値変換に失敗しました: {e}")
+                # 失敗した場合はデフォルト値（NaN）のSeriesを返す
+                return pd.Series(index=data.index, dtype=float)
+        
+        return data[column].rolling(window=window).mean()
+    except Exception as e:
+        logger.error(f"SMA計算中にエラーが発生しました: {e}")
+        # エラーが発生した場合はデフォルト値（NaN）のSeriesを返す
+        return pd.Series(index=data.index, dtype=float)
 
 def calculate_rsi(data: pd.Series, period: int = 14) -> pd.Series:
     """
@@ -27,12 +51,23 @@ def calculate_rsi(data: pd.Series, period: int = 14) -> pd.Series:
     Returns:
         pd.Series: RSI値
     """
-    delta = data.diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-    rs = gain / loss
-    rsi = 100 - (100 / (1 + rs))
-    return rsi
+    try:
+        # データが数値型かチェック
+        if not pd.api.types.is_numeric_dtype(data):
+            data = pd.to_numeric(data, errors='coerce')
+            
+        delta = data.diff()
+        gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+        
+        # ゼロ除算を防ぐ
+        loss = loss.replace(0, np.nan)
+        rs = gain / loss
+        rsi = 100 - (100 / (1 + rs))
+        return rsi
+    except Exception as e:
+        logger.error(f"RSI計算中にエラーが発生しました: {e}")
+        return pd.Series(index=data.index, dtype=float)
 
 def calculate_vwap(data: pd.DataFrame, price_column: str, volume_column: str) -> pd.Series:
     """
@@ -46,10 +81,28 @@ def calculate_vwap(data: pd.DataFrame, price_column: str, volume_column: str) ->
     Returns:
         pd.Series: VWAP値
     """
-    typical_price = (data['High'] + data['Low'] + data[price_column]) / 3
-    cumulative_vwap = (typical_price * data[volume_column]).cumsum()
-    cumulative_volume = data[volume_column].cumsum()
-    return cumulative_vwap / cumulative_volume
+    try:
+        # 必要なカラムが存在するか確認
+        required_columns = ['High', 'Low', price_column, volume_column]
+        for col in required_columns:
+            if col not in data.columns:
+                logger.error(f"カラム '{col}' がデータフレームに存在しません。利用可能なカラム: {data.columns.tolist()}")
+                raise KeyError(f"カラム '{col}' がデータフレームに存在しません。")
+            
+            # 数値型に変換
+            if not pd.api.types.is_numeric_dtype(data[col]):
+                data[col] = pd.to_numeric(data[col], errors='coerce')
+        
+        typical_price = (data['High'] + data['Low'] + data[price_column]) / 3
+        cumulative_vwap = (typical_price * data[volume_column]).cumsum()
+        cumulative_volume = data[volume_column].cumsum()
+        
+        # ゼロ除算を防ぐ
+        cumulative_volume = cumulative_volume.replace(0, np.nan)
+        return cumulative_vwap / cumulative_volume
+    except Exception as e:
+        logger.error(f"VWAP計算中にエラーが発生しました: {e}")
+        return pd.Series(index=data.index, dtype=float)
 
 def add_basic_indicators(stock_data: pd.DataFrame, price_column: str) -> pd.DataFrame:
     """

@@ -66,7 +66,7 @@ if __name__ == "__main__":
     # グローバルの config_file を利用
     try:
         params_df = read_excel_parameters(config_file, "銘柄設定")
-        ticker = params_df["銘柄コード"].iloc[0]
+        ticker = params_df["銘柄"].iloc[0]
         start_date = params_df["開始日"].iloc[0]
         end_date = params_df["終了日"].iloc[0]
         logger.info(f"Excelから取得したパラメータ: {ticker}, {start_date}, {end_date}")
