@@ -75,15 +75,15 @@ class BreakoutStrategy(BaseStrategy):
         
         # 出来高データの確認
         if self.volume_column not in self.data.columns:
-            volume_increase = True  # 出来高データがない場合はスキップ
+            volume_increase = False  # 出来高データがない場合はシグナルを出さない
         else:
             current_volume = self.data[self.volume_column].iloc[idx]
             previous_volume = self.data[self.volume_column].iloc[idx - look_back]
             # 出来高が前日比で指定率以上増加している
             volume_increase = current_volume > previous_volume * self.params["volume_threshold"]
 
-        # 前日高値を上抜けた場合
-        price_breakout = current_price > previous_high
+        # 前日高値を上抜けた場合（上抜け幅を1%に設定してより厳格化）
+        price_breakout = current_price > previous_high * 1.01
 
         if price_breakout and volume_increase:
             # エントリー価格と高値を記録

@@ -17,17 +17,6 @@ class RiskManagement:
         self.active_trades = {}  # 各戦略のポジションサイズを管理
         self.max_total_positions = 3  # 全体で持てるポジションの合計を3までに制限
 
-        # 戦略の優先順位
-        self.strategy_priority = [
-            "VWAP Breakout.py",
-            "Momentum Investing.py",
-            "Opening Gap.py",
-            "VWAP Bounce.py",
-            "contrarian strategy.py",
-            "Breakout.py",
-            "gc_strategy_signal.py"
-        ]
-
     def check_position_size(self, strategy_name: str) -> bool:
         """
         各戦略ごとのポジションサイズが1単元を超えないように制限。
@@ -38,11 +27,8 @@ class RiskManagement:
         Returns:
             bool: ポジションを持てる場合は True、それ以外は False
         """
-        if self.active_trades.get(strategy_name, 0) >= 1:
-            return False
-        if self.get_total_positions() >= self.max_total_positions:
-            return False
-        return True
+        return (self.active_trades.get(strategy_name, 0) < 1 and 
+                self.get_total_positions() < self.max_total_positions)
 
     def update_position(self, strategy_name: str, position_size: int):
         """
@@ -74,9 +60,7 @@ class RiskManagement:
             bool: ドローダウンが許容範囲内の場合は True、それ以外は False
         """
         self.current_drawdown = (self.total_assets - current_assets) / self.total_assets
-        if self.current_drawdown > self.max_drawdown:
-            return False
-        return True
+        return self.current_drawdown <= self.max_drawdown
 
     def check_loss_per_trade(self, entry_price: float, current_price: float) -> bool:
         """
@@ -99,27 +83,13 @@ class RiskManagement:
         Returns:
             bool: 連敗数が許容範囲内の場合は True、それ以外は False
         """
-        if self.daily_losses >= self.max_daily_losses:
-            return False
-        return True
+        return self.daily_losses < self.max_daily_losses
 
     def reset_daily_losses(self):
         """
         1日の連敗数をリセット。
         """
         self.daily_losses = 0
-
-    def prioritize_strategies(self, signals: dict) -> list:
-        """
-        戦略の優先順位に基づいてシグナルをソート。
-
-        Parameters:
-            signals (dict): 戦略名をキー、シグナル値をバリューとする辞書
-
-        Returns:
-            list: 優先順位に基づいてソートされた戦略名のリスト
-        """
-        return sorted(signals.keys(), key=lambda x: self.strategy_priority.index(x))
 
     def stop_trading(self):
         """
