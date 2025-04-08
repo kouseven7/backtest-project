@@ -20,33 +20,28 @@ def calculate_bollinger_bands(data: pd.DataFrame, price_column: str, window: int
     data['BB_Lower'] = data['BB_Middle'] - k * data['BB_Std']
     return data
 
-def calculate_atr(data: pd.DataFrame, price_column: str, atr_period: int = 14) -> pd.DataFrame:
+def calculate_atr(data, price_column="Close", atr_period=14):
     """
-    指定したDataFrameにATR（Average True Range）を計算して追加します。
-
-    Parameters:
-        data (pd.DataFrame): 'High', 'Low'、およびprice_column（例："Close" または "Adj Close"）を含むDataFrame。
-        price_column (str): ATR計算に使用する価格のカラム名。
-        atr_period (int): True Rangeのローリング平均を計算する期間。デフォルトは14。
-
-    Returns:
-        pd.DataFrame: 'ATR'が追加されたDataFrame。
+    ATR（Average True Range）を計算する関数。
     """
-    # True Rangeの各構成要素を計算
-    data['H-L'] = data['High'] - data['Low']
-    data['H-PC'] = (data['High'] - data[price_column].shift(1)).abs()
-    data['L-PC'] = (data['Low'] - data[price_column].shift(1)).abs()
+    # データのコピーを作成
+    data_copy = data.copy()
     
-    # 上記3つの中で最大の値をTrue Rangeとして採用
-    data['True Range'] = data[['H-L', 'H-PC', 'L-PC']].max(axis=1)
+    # True Rangeの計算に必要な値を計算
+    data_copy.loc[:, 'H-L'] = data_copy['High'] - data_copy['Low']
+    data_copy.loc[:, 'H-PC'] = (data_copy['High'] - data_copy[price_column].shift(1)).abs()
+    data_copy.loc[:, 'L-PC'] = (data_copy['Low'] - data_copy[price_column].shift(1)).abs()
     
-    # ATRはTrue Rangeの指定期間の移動平均
-    data['ATR'] = data['True Range'].rolling(window=atr_period).mean()
+    # True Rangeを計算
+    data_copy.loc[:, 'True Range'] = data_copy[['H-L', 'H-PC', 'L-PC']].max(axis=1)
     
-    # 一時的な計算用カラムを削除（不要な場合）
-    data.drop(columns=['H-L', 'H-PC', 'L-PC'], inplace=True)
+    # ATRを計算
+    data_copy.loc[:, 'ATR'] = data_copy['True Range'].rolling(window=atr_period).mean()
     
-    return data
+    # 一時列を削除
+    data_copy = data_copy.drop(columns=['H-L', 'H-PC', 'L-PC'])
+    
+    return data_copy
 
 # テスト用コード：このモジュールを直接実行した場合にダミーデータで計算結果を確認
 if __name__ == '__main__':

@@ -68,12 +68,6 @@ class VWAPBounceStrategy(BaseStrategy):
         条件:
         - レンジ相場であること
         - 株価がVWAPから-1%以内で反発の兆候を示す（陽線形成、出来高増加）
-
-        Parameters:
-            idx (int): 現在のインデックス
-            
-        Returns:
-            int: エントリーシグナル（1: エントリー, 0: なし）
         """
         if idx < 1:  # 前日データが必要
             return 0

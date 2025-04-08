@@ -45,17 +45,17 @@ class MomentumInvestingStrategy(BaseStrategy):
         self.volume_column = volume_column
         self.entry_prices = {}  # エントリー価格を記録する辞書
         
-        # デフォルトパラメータの設定
+        # デフォルトパラメータの設定 - より厳しい条件
         default_params = {
             "sma_short": 20,
             "sma_long": 50,
             "rsi_period": 14,
-            "rsi_lower": 50,
-            "rsi_upper": 70,
-            "volume_threshold": 1.2,
-            "take_profit": 0.10,  # 10%
-            "stop_loss": 0.05,    # 5%
-            "trailing_stop": 0.03  # 3%
+            "rsi_lower": 50,        # 47から50に引き上げ
+            "rsi_upper": 68,        # 70から68に引き下げ
+            "volume_threshold": 1.18, # 1.17から1.18に引き上げ
+            "take_profit": 0.12,     # そのまま
+            "stop_loss": 0.06,       # そのまま
+            "trailing_stop": 0.04    # そのまま
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -81,14 +81,12 @@ class MomentumInvestingStrategy(BaseStrategy):
 
     def generate_entry_signal(self, idx: int) -> int:
         """
-        エントリーシグナルを生成する。
+        エントリーシグナルを生成する。さらに厳しいエントリー条件。
         条件:
         - 株価が20日MAおよび50日MAの上にある
-        - 20日MAが50日MAを上抜けしており、両者が上昇傾向にある
-        - RSIが50以上で過熱状態ではない
-        - MACDラインがシグナルラインを上抜けしている
-        - 出来高が増加している
-        - プルバックからの反発、またはブレイクアウト
+        - RSIが50以上68未満の範囲内
+        - MACDラインがシグナルラインを上抜け
+        - 出来高増加または価格の明確なブレイクアウト
 
         Parameters:
             idx (int): 現在のインデックス
@@ -110,50 +108,74 @@ class MomentumInvestingStrategy(BaseStrategy):
         rsi = self.data['RSI'].iloc[idx]
         macd = self.data['MACD'].iloc[idx]
         signal_line = self.data['Signal_Line'].iloc[idx]
-        current_volume = self.data[self.volume_column].iloc[idx]
-        previous_volume = self.data[self.volume_column].iloc[idx - 1]
 
-        # 株価が20日MAおよび50日MAの上にある
-        if not (current_price > sma_short > sma_long):
-            return 0
-
-        # 20日MAが50日MAを上抜けしており、両者が上昇傾向にある
-        if not (sma_short > sma_long and 
-                self.data[sma_short_key].iloc[idx - 1] < self.data[sma_long_key].iloc[idx - 1]):
-            return 0
-
-        # RSIが50以上で過熱状態ではない
-        if not (rsi_lower <= rsi < rsi_upper):
-            return 0
-
-        # MACDラインがシグナルラインを上抜けしている
-        if not (macd > signal_line and 
-                self.data['MACD'].iloc[idx - 1] <= self.data['Signal_Line'].iloc[idx - 1]):
-            return 0
-
-        # 出来高が増加している
-        if not detect_volume_increase(current_volume, previous_volume, 
-                                     threshold=self.params["volume_threshold"]):
-            return 0
-
-        # プルバックからの反発
-        if current_price < sma_short and current_price > sma_short * 0.98:
+        # 条件カウント方式（さらに厳しく）
+        condition_count = 0
+        required_conditions = 0
+        
+        # 株価が20日MAの上にある (必須条件)
+        if current_price > sma_short:
+            condition_count += 1
+            required_conditions += 1
+        else:
+            return 0  # 必須条件
+        
+        # 株価が50日MAの上にある (必須条件)
+        if current_price > sma_long:
+            condition_count += 1
+            required_conditions += 1
+        else:
+            return 0  # 必須条件
+            
+        # 20日MAが50日MAの上にある
+        if sma_short > sma_long and self.data[sma_short_key].iloc[idx - 1] <= self.data[sma_long_key].iloc[idx - 1]:
+            condition_count += 1
+            
+        # RSIが条件範囲内
+        if rsi_lower <= rsi < rsi_upper:
+            condition_count += 1
+            
+        # MACDの条件 - より厳格な判定
+        if macd > signal_line and self.data['MACD'].iloc[idx - 1] <= self.data['Signal_Line'].iloc[idx - 1]:
+            condition_count += 1
+        
+        # 出来高条件
+        if self.volume_column in self.data.columns:
+            current_volume = self.data[self.volume_column].iloc[idx]
+            previous_volume = self.data[self.volume_column].iloc[idx - 1]
+            avg_volume = self.data[self.volume_column].iloc[max(0, idx-10):idx].mean()
+            
+            # 直近の出来高と過去10日平均の両方を確認（さらに厳格）
+            if detect_volume_increase(current_volume, previous_volume, 
+                                     threshold=self.params["volume_threshold"]) and current_volume > avg_volume * 1.1:
+                condition_count += 1
+                
+        # プルバックからの反発またはブレイクアウト
+        pullback_or_breakout = False
+        
+        # プルバックからの反発（さらに厳格に判定）
+        if current_price < sma_short * 0.985 and current_price > sma_short * 0.975:
+            pullback_or_breakout = True
+            
+        # ブレイクアウト（直近の抵抗線を上抜け - さらに明確なブレイクアウトを要求）
+        recent_high = self.data['High'].iloc[max(0, idx - 15):idx].max()
+        if current_price > recent_high * 1.02:  # 2%以上の明確なブレイクアウト
+            pullback_or_breakout = True
+            
+        if pullback_or_breakout:
+            condition_count += 1
+        
+        # エントリー条件 - 必須条件を含めて5つ以上満たす（さらに厳しく）
+        if condition_count >= 5 and required_conditions == 2:  
             self.entry_prices[idx] = current_price
-            self.log_trade(f"Momentum Investing エントリーシグナル (プルバック): 日付={self.data.index[idx]}, 価格={current_price}")
-            return 1
-
-        # ブレイクアウト（直近の抵抗線を上抜け）
-        recent_high = self.data['High'].iloc[max(0, idx - 10):idx].max()
-        if current_price > recent_high:
-            self.entry_prices[idx] = current_price
-            self.log_trade(f"Momentum Investing エントリーシグナル (ブレイクアウト): 日付={self.data.index[idx]}, 価格={current_price}")
+            self.log_trade(f"Momentum Investing エントリーシグナル: 日付={self.data.index[idx]}, 価格={current_price}, 条件数={condition_count}/7")
             return 1
 
         return 0
 
     def generate_exit_signal(self, idx: int) -> int:
         """
-        イグジットシグナルを生成する。
+        イグジットシグナルを生成する。元の条件に戻す。
         条件:
         - エントリー価格から3～5%の下落でストップロス
         - ATRに基づいたストップロス

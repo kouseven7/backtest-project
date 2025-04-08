@@ -43,7 +43,8 @@ class OpeningGapStrategy(BaseStrategy):
         default_params = {
             "atr_threshold": 2.0,  # 高ボラティリティ判定の閾値
             "stop_loss": 0.02,     # ストップロス（2%）
-            "take_profit": 0.05    # 利益確定（5%）
+            "take_profit": 0.05,   # 利益確定（5%）
+            "gap_threshold": 0.01  # ギャップアップ判定の閾値（1%）
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -54,47 +55,74 @@ class OpeningGapStrategy(BaseStrategy):
         """
         エントリーシグナルを生成する。
         条件:
-        - 高ボラティリティであること
-        - 前日ダウ平均が上昇していること
-        - 前日終値より始値が高いこと
-
-        Parameters:
-            idx (int): 現在のインデックス
-            
-        Returns:
-            int: エントリーシグナル（1: エントリー, 0: なし）
+        - ギャップアップ（寄り付き価格が前日終値より高い）
+        - DOWは前日より弱い（前日終値以下）
         """
-        if idx < 1:  # 前日データが必要
+        if idx <= 0:
             return 0
-
-        # 高ボラティリティの判定
-        volatility = detect_high_volatility(self.data.iloc[:idx + 1], price_column=self.price_column, 
-                                            atr_threshold=self.params["atr_threshold"])
-        if volatility != "high volatility":
-            return 0
-
-        # 前日ダウ平均が上昇していること
-        if idx >= len(self.dow_data):
-            return 0  # ダウデータが十分にない場合
-            
-        dow_close_today = self.dow_data['Close'].iloc[min(idx, len(self.dow_data)-1)]
-        dow_close_yesterday = self.dow_data['Close'].iloc[min(idx-1, len(self.dow_data)-1)]
-        if dow_close_today <= dow_close_yesterday:
-            return 0
-
-        # 前日終値より始値が高いこと
-        if 'Open' not in self.data.columns:
-            return 0  # 始値データがない場合
-
+        
+        # 前日と当日のデータを取得
+        current_date = self.data.index[idx]
+        previous_date = self.data.index[idx - 1]
         open_price = self.data['Open'].iloc[idx]
         previous_close = self.data[self.price_column].iloc[idx - 1]
-        if open_price <= previous_close:
-            return 0
-
-        # エントリー価格を記録
-        self.entry_prices[idx] = open_price  # 始値でエントリー
-        self.log_trade(f"Opening Gap エントリーシグナル: 日付={self.data.index[idx]}, 始値={open_price}, 前日終値={previous_close}")
-        return 1
+        
+        # ギャップアップをチェック
+        gap_up = open_price > previous_close * (1 + self.params["gap_threshold"])
+        
+        # DOWのデータ取り扱いを修正
+        try:
+            # DOWデータのインデックスが適切に日付型であるか確認し、無効な値を処理
+            if not isinstance(self.dow_data.index, pd.DatetimeIndex):
+                # ヘッダー行やインデックス名などの非日付データを除外
+                valid_indices = []
+                for i, idx_val in enumerate(self.dow_data.index):
+                    try:
+                        # 日付として解釈できる値のみを保持
+                        pd.to_datetime(idx_val)
+                        valid_indices.append(i)
+                    except:
+                        continue
+                
+                # 有効なインデックスのデータのみを維持
+                if valid_indices:
+                    self.dow_data = self.dow_data.iloc[valid_indices]
+                    # インデックスを日付型に変換
+                    self.dow_data.index = pd.to_datetime(self.dow_data.index)
+                else:
+                    self.logger.warning("DOWデータに有効な日付インデックスが見つかりませんでした")
+                    return 0
+            
+            # 現在日付以前の最新のDOWデータを取得
+            current_dow_data = self.dow_data[self.dow_data.index <= current_date]
+            if current_dow_data.empty:
+                return 0
+            
+            # 前日以前の最新のDOWデータを取得
+            previous_dow_data = self.dow_data[self.dow_data.index <= previous_date]
+            if previous_dow_data.empty:
+                return 0
+            
+            # 最新のデータ行を取得
+            latest_current_dow = current_dow_data.iloc[-1]
+            latest_previous_dow = previous_dow_data.iloc[-1]
+            
+            # 終値を取得し、スカラー値に変換
+            close_col = 'Close' if 'Close' in latest_current_dow.index else 'Adj Close'
+            dow_close_today = float(latest_current_dow[close_col])
+            dow_close_yesterday = float(latest_previous_dow[close_col])
+            
+            # DOWが弱くなっているかチェック
+            dow_weaker = dow_close_today <= dow_close_yesterday
+            
+            if gap_up and dow_weaker:
+                self.entry_prices[idx] = open_price
+                self.logger.info(f"Opening Gap エントリーシグナル: 日付={current_date}, 始値={open_price}, 前日終値={previous_close}")
+                return 1
+        except Exception as e:
+            self.logger.error(f"Opening Gap エントリーシグナル生成中にエラー: {str(e)}", exc_info=True)
+        
+        return 0
 
     def generate_exit_signal(self, idx: int) -> int:
         """

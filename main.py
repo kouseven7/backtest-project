@@ -14,6 +14,12 @@ from config.risk_management import RiskManagement
 from strategies.VWAP_Breakout import VWAPBreakoutStrategy
 from strategies.Momentum_Investing import MomentumInvestingStrategy
 from strategies.Breakout import BreakoutStrategy
+# 追加の戦略をインポート
+from strategies.VWAP_Bounce import VWAPBounceStrategy
+from strategies.Opening_Gap import OpeningGapStrategy
+from strategies.contrarian_strategy import ContrarianStrategy
+# GCStrategyを追加
+from strategies.gc_strategy_signal import GCStrategy
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\backtest.log")
@@ -193,11 +199,36 @@ def apply_strategies(stock_data: pd.DataFrame, index_data: pd.DataFrame = None):
         logger.warning("インデックスデータがないため、VWAPBreakoutStrategyにはダミーデータを使用します。")
         index_data = stock_data.copy()  # 最低限のデータとして、同じデータを使用
     
-    # テストモード関連のコードを削除し、常に標準の戦略セットを使用
+    # DOWデータの取得（Opening Gap戦略用）
+    try:
+        from config.error_handling import fetch_stock_data
+        from config.cache_manager import get_cache_filepath, save_cache
+        start_date = stock_data.index[0].strftime('%Y-%m-%d')
+        end_date = stock_data.index[-1].strftime('%Y-%m-%d')
+        dow_cache_filepath = get_cache_filepath("^DJI", start_date, end_date)
+        
+        if os.path.exists(dow_cache_filepath):
+            logger.info("DOWデータのキャッシュを使用します")
+            dow_data = pd.read_csv(dow_cache_filepath, index_col=0, parse_dates=True)
+        else:
+            logger.info("DOWデータを取得します")
+            dow_data = fetch_stock_data("^DJI", start_date, end_date)
+            save_cache(dow_data, dow_cache_filepath)
+    except Exception as e:
+        logger.error(f"DOWデータの取得に失敗しました: {str(e)}")
+        dow_data = stock_data.copy()  # 代替として株価データを使用
+    
+    # 全ての戦略を適用
     strategies = {
         "VWAP Breakout.py": VWAPBreakoutStrategy(stock_data, index_data),
         "Momentum Investing.py": MomentumInvestingStrategy(stock_data),
-        "Breakout.py": BreakoutStrategy(stock_data)
+        "Breakout.py": BreakoutStrategy(stock_data),
+        # 追加の戦略
+        "VWAP Bounce.py": VWAPBounceStrategy(stock_data),
+        "Opening Gap.py": OpeningGapStrategy(stock_data, dow_data),
+        "Contrarian Strategy.py": ContrarianStrategy(stock_data),
+        # GCStrategyを追加
+        "GC Strategy.py": GCStrategy(stock_data)
     }
 
     # Entry_Signal と Exit_Signal カラムを追加（初期値は0）

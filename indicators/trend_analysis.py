@@ -2,33 +2,71 @@ import pandas as pd
 from .basic_indicators import calculate_sma
 from .bollinger_atr import calculate_atr
 
-def detect_trend(data: pd.DataFrame, price_column: str) -> str:
+def detect_trend(data: pd.DataFrame, price_column: str, lookback_period: int = 5, 
+                short_period: int = 5, medium_period: int = 25, long_period: int = 75) -> str:
     """
-    SMAを用いてトレンドを判定する関数。
-
-    Args:
-        data (pd.DataFrame): 株価データを含むDataFrame。
-        price_column (str): SMA計算に使用する価格カラム名。
-
-    Returns:
-        str: "uptrend"（上昇トレンド）、"downtrend"（下降トレンド）、または"range-bound"（レンジ相場）。
+    SMAを用いてトレンドを判定する関数。複数のポイントを考慮し、より堅牢なトレンド判定を行います。
     """
+    # データのコピーを作成して元のデータを変更しないようにする
+    data_copy = data.copy()
+    
     # 短期、中期、長期のSMAを計算
-    data['SMA_5'] = calculate_sma(data, price_column, 5)
-    data['SMA_25'] = calculate_sma(data, price_column, 25)
-    data['SMA_75'] = calculate_sma(data, price_column, 75)
-
-    # 最新のSMA値を取得
-    latest_sma_5 = data['SMA_5'].iloc[-1]
-    latest_sma_25 = data['SMA_25'].iloc[-1]
-    latest_sma_75 = data['SMA_75'].iloc[-1]
-    latest_price = data[price_column].iloc[-1]
-
-    # トレンド判定 上昇トレンド、下降トレンド、レンジ相場
-    # 上昇トレンド: 最新価格 > SMA5 > SMA25 > SMA75
-    if latest_price > latest_sma_5 > latest_sma_25 > latest_sma_75:
+    data_copy.loc[:, 'SMA_short'] = calculate_sma(data_copy, price_column, short_period)
+    data_copy.loc[:, 'SMA_medium'] = calculate_sma(data_copy, price_column, medium_period)
+    data_copy.loc[:, 'SMA_long'] = calculate_sma(data_copy, price_column, long_period)
+    
+    # 十分なデータがない場合はレンジ相場と判定
+    if len(data_copy) < max(lookback_period, long_period):
+        return "range-bound"
+    
+    # 直近の値を取得
+    latest_data = data_copy.iloc[-lookback_period:]
+    
+    # SMAの傾き（方向性）を計算
+    short_slope = (latest_data['SMA_short'].iloc[-1] - latest_data['SMA_short'].iloc[0]) / lookback_period
+    medium_slope = (latest_data['SMA_medium'].iloc[-1] - latest_data['SMA_medium'].iloc[0]) / lookback_period
+    long_slope = (latest_data['SMA_long'].iloc[-1] - latest_data['SMA_long'].iloc[0]) / lookback_period
+    
+    # トレンド判定の緩和：スコアリングシステム
+    uptrend_score = 0
+    downtrend_score = 0
+    
+    # 位置関係のスコア
+    if latest_data['SMA_short'].iloc[-1] > latest_data['SMA_medium'].iloc[-1]:
+        uptrend_score += 1
+    else:
+        downtrend_score += 1
+        
+    if latest_data['SMA_medium'].iloc[-1] > latest_data['SMA_long'].iloc[-1]:
+        uptrend_score += 1
+    else:
+        downtrend_score += 1
+        
+    if latest_data[price_column].iloc[-1] > latest_data['SMA_short'].iloc[-1]:
+        uptrend_score += 1
+    else:
+        downtrend_score += 1
+    
+    # 傾きのスコア
+    if short_slope > 0:
+        uptrend_score += 1
+    else:
+        downtrend_score += 1
+        
+    if medium_slope > 0:
+        uptrend_score += 1
+    else:
+        downtrend_score += 1
+        
+    if long_slope > 0:
+        uptrend_score += 1
+    else:
+        downtrend_score += 1
+    
+    # スコアに基づくトレンド判定
+    if uptrend_score >= 5:  # 6点中5点以上で上昇トレンド
         return "uptrend"
-    elif latest_price < latest_sma_5 < latest_sma_25 < latest_sma_75:
+    elif downtrend_score >= 5:  # 6点中5点以上で下降トレンド
         return "downtrend"
     else:
         return "range-bound"
