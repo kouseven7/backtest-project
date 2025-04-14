@@ -1,3 +1,20 @@
+"""
+Module: Cache Manager
+File: cache_manager.py
+Description: 
+  データ取得結果のキャッシュ管理を行うモジュールです。
+  キャッシュファイルの生成、検証、読み込み、保存を実装しています。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - os
+  - pandas
+  - datetime
+"""
+
 # cache_manager.py
 import os
 import pandas as pd

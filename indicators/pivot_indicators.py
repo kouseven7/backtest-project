@@ -1,3 +1,19 @@
+"""
+Module: Pivot Indicators
+File: pivot_indicators.py
+Description: 
+  ピボットポイントやボリンジャーバンド関連の指標を計算するモジュールです。
+  サポート・レジスタンスレベルやバンド幅などを提供します。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - pandas
+  - numpy
+"""
+
 # pivot_indicators.py
 import pandas as pd
 

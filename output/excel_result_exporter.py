@@ -1,11 +1,24 @@
 """
-Module: excel_result_exporter
+Module: Excel Result Exporter
+File: excel_result_exporter.py
 Description:
     バックテスト結果をExcelファイルに出力するための関数群を提供します。
     - Workbookの存在確認および新規作成
     - 複数シートへのDataFrame出力（タイムゾーン付き日時の処理含む）
     - 損益推移グラフの追加
     - 取引履歴からピボットテーブルの作成
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - os
+  - logging
+  - pandas
+  - openpyxl
+  - datetime
+  - config.logger_config
 """
 
 import os

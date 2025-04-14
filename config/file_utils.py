@@ -1,3 +1,18 @@
+"""
+Module: File Utilities
+File: file_utils.py
+Description: 
+  Excelファイルのパス解決を行うためのユーティリティモジュールです。
+  マクロ有効ファイル（.xlsm）と通常のExcelファイル（.xlsx）の両方をサポートします。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - os
+"""
+
 # config/file_utils.py
 #Excelのマクロ有効ファイルも普通のExcelファイルも認識するためのモジュール
 import os

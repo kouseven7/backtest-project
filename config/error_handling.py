@@ -1,3 +1,21 @@
+"""
+Module: Error Handling
+File: error_handling.py
+Description: 
+  エラーハンドリングとデータ取得に関連するユーティリティ関数を提供するモジュールです。
+  Excelファイルの読み込みや株価データの取得を含みます。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - pandas
+  - yfinance
+  - config.logger_config
+  - config.file_utils
+"""
+
 #error_handling.py
 #エラーハンドリングモジュール
 

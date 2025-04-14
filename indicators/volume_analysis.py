@@ -1,3 +1,18 @@
+"""
+Module: Volume Analysis
+File: volume_analysis.py
+Description: 
+  出来高の増加や変化を検出するためのモジュールです。
+  出来高の増加率を判定する関数を提供します。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - None
+"""
+
 def detect_volume_increase(current_volume: float, previous_volume: float, threshold: float = 1.2) -> bool:
     """
     出来高の増加を判定する。

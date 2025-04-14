@@ -1,3 +1,20 @@
+"""
+Module: Data Fetcher
+File: data_fetcher.py
+Description: 
+  Yahoo Finance から株価データを取得し、必要に応じて整形するためのモジュールです。
+  データのフラット化やタイムゾーンの変換も含まれます。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - pandas
+  - yfinance
+  - config.logger_config
+"""
+
 # data_fetcher.py
 import pandas as pd
 import yfinance as yf

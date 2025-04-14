@@ -1,3 +1,24 @@
+"""
+Module: Trade Simulation
+File: trade_simulation.py
+Description: 
+  トレードシミュレーションを実行し、バックテスト結果を生成するモジュールです。
+  戦略のパラメータ管理、データ取得、シグナル生成、結果保存を含みます。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - pandas
+  - config.logger_config
+  - config.file_utils
+  - strategies_modules.strategy_parameter_manager
+  - data_fetcher
+  - strategies.gc_strategy_signal
+  - output.excel_result_exporter
+"""
+
 # ファイル: trade_simulation.py
 import pandas as pd
 import logging

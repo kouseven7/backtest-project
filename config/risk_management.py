@@ -1,3 +1,18 @@
+"""
+Module: Risk Management
+File: risk_management.py
+Description: 
+  トレードにおけるリスク管理を行うためのモジュールです。
+  最大ドローダウン、1回の取引あたりの損失制限、ポジション管理などを実装しています。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - None
+"""
+
 class RiskManagement:
     def __init__(self, total_assets: float, max_drawdown: float = 0.10, max_loss_per_trade: float = 0.03):
         """

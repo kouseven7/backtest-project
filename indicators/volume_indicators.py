@@ -1,3 +1,19 @@
+"""
+Module: Volume Indicators
+File: volume_indicators.py
+Description: 
+  出来高指標（移動平均、OBV、ボリュームオシレーターなど）を計算するモジュールです。
+  株価データに基づいて出来高関連の指標を追加します。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - pandas
+  - numpy
+"""
+
 # volume_indicators.py
 import numpy as np
 import pandas as pd

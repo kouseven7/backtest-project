@@ -1,3 +1,18 @@
+"""
+Module: Momentum Indicators
+File: momentum_indicators.py
+Description: 
+  モメンタム指標（MACDなど）を計算するためのモジュールです。
+  株価データに基づいて短期・長期の移動平均を用いた指標を提供します。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - pandas
+"""
+
 import pandas as pd
 import sys
 sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")  # プロジェクトのルートを追加

@@ -1,3 +1,19 @@
+"""
+Module: Returns Calculation
+File: returns.py
+Description: 
+  株価データからリターンを計算するためのモジュールです。
+  日次リターン、累積リターン、対数リターンなどを計算します。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - pandas
+  - numpy
+"""
+
 #日次リターンと累積リターンを計算して追加モジュール
 # returns.py
 import pandas as pd

@@ -1,3 +1,32 @@
+"""
+Module: Main
+File: main.py
+Description: 
+  バックテストプロジェクトのエントリーポイントとなるスクリプトです。
+  設定ファイルの読み込み、データの前処理、インジケーター計算、戦略適用、
+  そしてバックテスト結果の保存までの一連の処理を実行します。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - config.logger_config
+  - config.risk_management
+  - config.error_handling
+  - config.cache_manager
+  - indicators.basic_indicators
+  - indicators.bollinger_atr
+  - indicators.volume_indicators
+  - preprocessing.returns
+  - preprocessing.volatility
+  - strategies.VWAP_Breakout
+  - strategies.Momentum_Investing
+  - strategies.Breakout
+  - output.excel_result_exporter
+  - trade_simulation
+"""
+
 #main.py
 
 import sys

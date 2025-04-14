@@ -1,3 +1,18 @@
+"""
+Module: Volatility Indicators
+File: volatility_indicators.py
+Description: 
+  ボラティリティ指標（ATRなど）を計算するモジュールです。
+  株価データに基づいてボラティリティを測定します。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - pandas
+"""
+
 import pandas as pd
 
 def calculate_atr(data: pd.DataFrame, price_column: str, period: int = 14) -> pd.Series:

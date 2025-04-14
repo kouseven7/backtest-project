@@ -1,3 +1,18 @@
+"""
+Module: Gap Indicators
+File: gap_indicators.py
+Description: 
+  ギャップ（前日終値と当日始値の差）に関連する指標を計算するモジュールです。
+  ギャップ率や前日の高値・安値との比較を行います。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - pandas
+"""
+
 # gap_indicators.py
 import pandas as pd
 

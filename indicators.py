@@ -1,3 +1,18 @@
+"""
+Module: Indicators
+File: indicators.py
+Description: 
+  テクニカル指標を計算するための関数群をまとめたモジュールです。
+  単純移動平均（SMA）、ボラティリティ、ATRなどを実装しています。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - pandas
+"""
+
 # indicators.py
 
 #テクニカル指標計算の関数群をまとめたモジュールです。

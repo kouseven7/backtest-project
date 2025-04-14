@@ -1,3 +1,19 @@
+"""
+Module: Volatility Calculation
+File: volatility.py
+Description: 
+  株価データからボラティリティを計算するためのモジュールです。
+  標準偏差や移動平均を用いたボラティリティ指標を提供します。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - pandas
+  - numpy
+"""
+
 #ローリング標準偏差と年率換算ボラティリティ（変動率）を計算モジュール
 import numpy as np
 import pandas as pd

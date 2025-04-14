@@ -1,3 +1,20 @@
+"""
+Module: Trend Analysis
+File: trend_analysis.py
+Description: 
+  トレンド分析を行うためのモジュールです。
+  SMAやATRを用いてトレンドやボラティリティを判定します。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - pandas
+  - basic_indicators
+  - bollinger_atr
+"""
+
 import pandas as pd
 from .basic_indicators import calculate_sma
 from .bollinger_atr import calculate_atr

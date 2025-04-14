@@ -1,3 +1,20 @@
+"""
+Module: Basic Indicators
+File: basic_indicators.py
+Description: 
+  基本的なテクニカル指標（SMA、RSI、VWAPなど）を計算するためのモジュールです。
+  株価データに対して指標を追加する関数を提供します。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - pandas
+  - numpy
+  - logging
+"""
+
 # basic_indicators.py
 import pandas as pd
 import numpy as np

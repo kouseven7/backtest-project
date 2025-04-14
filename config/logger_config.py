@@ -1,3 +1,19 @@
+"""
+Module: Logger Configuration
+File: logger_config.py
+Description: 
+  ログ設定を行うためのモジュールです。標準出力やファイル出力のロガーを構築します。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - logging
+  - sys
+  - os
+"""
+
 import logging
 import sys
 import os

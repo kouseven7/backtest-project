@@ -1,3 +1,20 @@
+"""
+Module: Strategy Parameter Manager
+File: strategy_parameter_manager.py
+Description: 
+  Excelファイルから戦略のパラメータを一元管理するためのモジュールです。
+  各戦略シートからパラメータを抽出し、辞書形式で管理します。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - pandas
+  - config.logger_config
+  - config.file_utils
+"""
+
 # ファイル: strategy_modules/strategy_parameter_manager.py
 import pandas as pd
 from config.logger_config import setup_logger

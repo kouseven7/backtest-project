@@ -1,3 +1,19 @@
+"""
+Module: Momentum Calculations
+File: momentum.py
+Description: 
+  モメンタム指標（EMA、MACD、ストキャスティクス、ROCなど）を計算するモジュールです。
+  株価データに基づいて複数のモメンタム指標を追加します。
+
+Author: imega
+Created: 2023-04-01
+Modified: 2025-04-14
+
+Dependencies:
+  - pandas
+  - numpy
+"""
+
 # momentum.py
 import pandas as pd
 
