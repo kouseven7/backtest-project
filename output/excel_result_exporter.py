@@ -67,6 +67,7 @@ def ensure_workbook_exists(workbook_path: str) -> None:
         ws_metrics.append(["平均損益", "0円"])
         ws_metrics.append(["最大利益", "0円"])
         ws_metrics.append(["最大損失", "0円"])
+        ws_metrics.append(["最大ドローダウン(金額)", "0円"])
         
         try:
             wb.save(workbook_path)
@@ -97,6 +98,7 @@ def ensure_workbook_exists(workbook_path: str) -> None:
                     ws.append(["平均損益", "0円"])
                     ws.append(["最大利益", "0円"])
                     ws.append(["最大損失", "0円"])
+                    ws.append(["最大ドローダウン(金額)", "0円"])
         
         try:
             wb.save(workbook_path)
@@ -276,6 +278,109 @@ def create_pivot_from_trade_history(
     except Exception as e:
         logger.exception(f"ピボットテーブルの作成中にエラーが発生しました: {e}")
         raise
+
+def save_performance_metrics_to_excel(performance_metrics: pd.DataFrame, output_file: str):
+    """
+    パフォーマンス指標をExcelファイルに保存します。
+
+    Parameters:
+        performance_metrics (pd.DataFrame): パフォーマンス指標を含むデータフレーム。
+        output_file (str): 結果を保存するExcelファイルのパス。
+    """
+    from openpyxl import load_workbook
+
+    try:
+        # 既存のExcelファイルを開く
+        wb = load_workbook(output_file)
+
+        # パフォーマンス指標シートを作成または上書き
+        if "パフォーマンス指標" in wb.sheetnames:
+            ws = wb["パフォーマンス指標"]
+            # 既存の内容をクリア
+            for row in ws.iter_rows():
+                for cell in row:
+                    cell.value = None
+        else:
+            ws = wb.create_sheet(title="パフォーマンス指標")
+
+        # パフォーマンス指標を書き込む
+        for r_idx, row in enumerate(performance_metrics.itertuples(index=False), start=1):
+            for c_idx, value in enumerate(row, start=1):
+                ws.cell(row=r_idx, column=c_idx, value=value)
+
+        # 保存
+        wb.save(output_file)
+        wb.close()
+        logger.info(f"パフォーマンス指標をExcelに保存しました: {output_file}")
+
+    except Exception as e:
+        logger.error(f"パフォーマンス指標の保存中にエラーが発生しました: {e}")
+        raise
+
+def simulate_and_save(result_data: pd.DataFrame, ticker: str):
+    """
+    バックテストシミュレーションを実行し、結果をExcelに出力します。
+    """
+    import trade_simulation as trade_simulation
+    trade_results = trade_simulation.simulate_trades(result_data, ticker)
+
+    # パフォーマンス指標を追加
+    trade_results = add_performance_metrics(trade_results)
+
+    logger.info("バックテスト（トレードシミュレーション）完了")
+
+    output_dir = r"C:\\Users\\imega\\Documents\\my_backtest_project\\backtest_results"
+    # ディレクトリが存在しない場合は作成
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        logger.info(f"出力ディレクトリを作成しました: {output_dir}")
+
+    # 実行日時をファイル名に含める
+    now = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_file = os.path.join(output_dir, f"backtest_results_{now}.xlsx")
+
+    try:
+        from output.excel_result_exporter import ensure_workbook_exists, add_pnl_chart, create_pivot_from_trade_history, save_backtest_results
+
+        # 新しいExcelファイルを作成
+        ensure_workbook_exists(output_file)
+
+        # 結果を保存
+        save_backtest_results(trade_results, output_file)
+        logger.info(f"バックテスト結果をExcelに出力完了: {output_file}")
+
+        # パフォーマンス指標を保存
+        save_performance_metrics_to_excel(trade_results["パフォーマンス指標"], output_file)
+
+        # チャートとピボットテーブルを追加
+        add_pnl_chart(output_file, sheet_name="損益推移", chart_title="累積損益推移")
+        create_pivot_from_trade_history(output_file, trade_sheet="取引履歴", pivot_sheet="Pivot_取引履歴")
+        logger.info("Excelのチャート、ピボットテーブル追加完了")
+
+    except PermissionError as e:
+        logger.warning(f"Excelファイルにアクセスできません: {e}")
+        # アクセスできない場合はCSVに出力
+        csv_dir = os.path.join(output_dir, "csv_backup")
+        os.makedirs(csv_dir, exist_ok=True)
+
+        for sheet_name, df in trade_results.items():
+            if isinstance(df, pd.DataFrame):
+                csv_file = os.path.join(csv_dir, f"backtest_{sheet_name}_{now}.csv")
+                df.to_csv(csv_file)
+                logger.info(f"代替として結果をCSVに出力しました: {csv_file}")
+
+        # 元のExcelファイルを別名で保存してみる
+        alt_output_file = os.path.join(output_dir, f"backtest_results_alt_{now}.xlsx")
+        try:
+            ensure_workbook_exists(alt_output_file)
+            save_backtest_results(trade_results, alt_output_file)
+            logger.info(f"代替Excelファイルに結果を出力しました: {alt_output_file}")
+            output_file = alt_output_file  # 成功した場合は新しいファイル名を使用
+        except Exception as ex:
+            logger.error(f"代替Excelファイルの作成にも失敗しました: {ex}")
+            # CSVファイルだけで十分とする
+
+    return trade_results
 
 def run_trade_simulation():
     """

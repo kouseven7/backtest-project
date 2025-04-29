@@ -28,6 +28,16 @@ from strategies_modules.strategy_parameter_manager import StrategyParameterManag
 from data_fetcher import fetch_yahoo_data  # 適切なデータ取得モジュール
 from strategies.gc_strategy_signal import GCStrategy
 from output.excel_result_exporter import save_backtest_results
+from metrics.performance_metrics import (
+    calculate_total_trades,
+    calculate_win_rate,
+    calculate_total_profit,
+    calculate_average_profit,
+    calculate_max_profit,
+    calculate_max_loss,
+    calculate_max_drawdown,
+    calculate_risk_return_ratio
+)
 
 logger = setup_logger(__name__)
 
@@ -205,27 +215,17 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
             "累積損益": cumulative_pnl.values
         })
         
-        # 基本的なパフォーマンス指標を追加
-        win_trades = len(trade_history[trade_history["取引結果"] > 0])
-        loss_trades = len(trade_history[trade_history["取引結果"] <= 0])
-        total_trades = len(trade_history)
-        win_rate = win_trades / total_trades * 100 if total_trades > 0 else 0
-        
-        # リスク管理統計も追加
-        max_drawdown = 0
-        drawdown_series = []
-        peak = 0
-        
-        for value in cumulative_pnl.values:
-            if value > peak:
-                peak = value
-            drawdown = (peak - value) / peak * 100 if peak > 0 else 0
-            drawdown_series.append(drawdown)
-            max_drawdown = max(max_drawdown, drawdown)
-        
-        # リスクリターン比率
-        risk_return_ratio = total_profit / max_drawdown if max_drawdown > 0 else float('inf')
-        
+        # パフォーマンス指標を計算
+        total_trades = calculate_total_trades(trade_history)
+        win_rate = calculate_win_rate(trade_history)
+        total_profit = calculate_total_profit(trade_history)
+        average_profit = calculate_average_profit(trade_history)
+        max_profit = calculate_max_profit(trade_history)
+        max_loss = calculate_max_loss(trade_history)
+        max_drawdown = calculate_max_drawdown(cumulative_pnl)
+        risk_return_ratio = calculate_risk_return_ratio(total_profit, max_drawdown)
+
+        # パフォーマンス指標をデータフレームに追加
         performance_metrics = pd.DataFrame({
             "指標": [
                 "総取引数", "勝率", "損益合計", "平均損益", "最大利益", "最大損失",
@@ -235,9 +235,9 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
                 total_trades,
                 f"{win_rate:.2f}%",
                 f"{total_profit:.2f}円",
-                f"{(total_profit/total_trades if total_trades > 0 else 0):.2f}円",
-                f"{trade_history['取引結果'].max() if not trade_history.empty else 0:.2f}円",
-                f"{trade_history['取引結果'].min() if not trade_history.empty else 0:.2f}円",
+                f"{average_profit:.2f}円",
+                f"{max_profit:.2f}円",
+                f"{max_loss:.2f}円",
                 f"{max_drawdown:.2f}%",
                 f"{risk_return_ratio:.2f}"
             ]
