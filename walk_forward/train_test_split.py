@@ -1,7 +1,7 @@
 """
 Module: Train-Test Split for Walk-Forward Testing
 File: train_test_split.py
-Description:
+Description: 
   日次データをトレーニング期間とテスト期間に分割するための関数を提供します。
 
 Author: imega
