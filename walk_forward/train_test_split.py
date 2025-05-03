@@ -28,6 +28,10 @@ def split_data_for_walk_forward(data: pd.DataFrame, train_size: int, test_size: 
     """
     splits = []
     total_size = len(data)
+    if total_size < train_size + test_size:
+        print("Warning: Not enough data for the specified train and test sizes.")
+        return splits
+
     for start in range(0, total_size - train_size - test_size + 1, test_size):
         train_data = data.iloc[start:start + train_size]
         test_data = data.iloc[start + train_size:start + train_size + test_size]
@@ -42,8 +46,8 @@ if __name__ == "__main__":
         'Close': np.random.random(100) * 100
     }, index=dates)
 
-    # トレーニング期間: 60日、テスト期間: 20日
-    splits = split_data_for_walk_forward(test_data, train_size=60, test_size=20)
+    # トレーニング期間: 252日、テスト期間: 63日
+    splits = split_data_for_walk_forward(test_data, train_size=252, test_size=63)
 
     for i, (train, test) in enumerate(splits):
         print(f"Split {i + 1}:")
