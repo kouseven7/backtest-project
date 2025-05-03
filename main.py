@@ -68,6 +68,8 @@ from strategies.Opening_Gap import OpeningGapStrategy
 from strategies.contrarian_strategy import ContrarianStrategy
 # GCStrategyを追加
 from strategies.gc_strategy_signal import GCStrategy
+# ウォークフォワード分割用の関数をインポート
+from walk_forward.train_test_split import split_data_for_walk_forward
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\backtest.log")
