@@ -70,6 +70,7 @@ from strategies.contrarian_strategy import ContrarianStrategy
 from strategies.gc_strategy_signal import GCStrategy
 # ウォークフォワード分割用の関数をインポート
 from walk_forward.train_test_split import split_data_for_walk_forward
+from output.excel_result_exporter import save_splits_to_excel
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\backtest.log")
@@ -622,6 +623,23 @@ def main():
             signal_analysis_df.to_csv(signal_file)
             logger.info(f"シグナル分析データをCSVに出力しました: {signal_file}")
         
+        # 保存先のExcelファイルパス
+        excel_path = r"C:\Users\imega\Documents\my_backtest_project\backtest_results.xlsx"
+
+        # トレーニング期間とテスト期間を設定
+        train_size = 252  # トレーニング期間（例: 252日 = 1年）
+        test_size = 63    # テスト期間（例: 63日 = 3ヶ月）
+
+        # トレーニング期間とテスト期間を分割
+        splits = split_data_for_walk_forward(stock_data, train_size, test_size)
+
+        # Excelファイルが存在しない場合は作成
+        from output.excel_result_exporter import ensure_workbook_exists
+        ensure_workbook_exists(excel_path)
+
+        # トレーニング期間とテスト期間をExcelに保存
+        save_splits_to_excel(splits, excel_path, sheet_name="分割期間")
+
         logger.info(f"バックテスト結果をExcelに出力しました: {backtest_results}")
         
         logger.info("全体のバックテスト処理が正常に完了しました。")

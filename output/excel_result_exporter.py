@@ -28,7 +28,7 @@ import openpyxl
 from openpyxl import Workbook
 from openpyxl.chart import LineChart, Reference
 from openpyxl.utils.dataframe import dataframe_to_rows
-from typing import Dict
+from typing import Dict, List, Tuple
 from datetime import datetime
 
 import sys
@@ -316,6 +316,34 @@ def save_performance_metrics_to_excel(performance_metrics: pd.DataFrame, output_
     except Exception as e:
         logger.error(f"パフォーマンス指標の保存中にエラーが発生しました: {e}")
         raise
+
+def save_splits_to_excel(splits, excel_path, sheet_name="分割期間"):
+    """
+    トレーニング期間とテスト期間の開始日と終了日をExcelに保存する。
+
+    Parameters:
+        splits (List[Tuple[pd.DataFrame, pd.DataFrame]]): トレーニング期間とテスト期間のペアのリスト
+        excel_path (str): 保存先のExcelファイルのパス
+        sheet_name (str): 保存するシート名（デフォルト: "分割期間"）
+    """
+    split_data = []
+    for i, (train, test) in enumerate(splits):
+        split_data.append({
+            "Split": i + 1,
+            "Train Start": train.index[0],
+            "Train End": train.index[-1],
+            "Test Start": test.index[0],
+            "Test End": test.index[-1]
+        })
+
+    split_df = pd.DataFrame(split_data)
+
+    try:
+        with pd.ExcelWriter(excel_path, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
+            split_df.to_excel(writer, index=False, sheet_name=sheet_name)
+    except FileNotFoundError:
+        with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
+            split_df.to_excel(writer, index=False, sheet_name=sheet_name)
 
 def simulate_and_save(result_data: pd.DataFrame, ticker: str):
     """
