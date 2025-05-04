@@ -71,6 +71,8 @@ from strategies.gc_strategy_signal import GCStrategy
 # ウォークフォワード分割用の関数をインポート
 from walk_forward.train_test_split import split_data_for_walk_forward
 from output.excel_result_exporter import save_splits_to_excel
+from data_processor import preprocess_data
+from indicator_calculator import compute_indicators
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\backtest.log")
@@ -206,32 +208,6 @@ def get_parameters_and_data():
         logger.warning("インデックスデータなしで処理を続行します。一部の戦略が正常に動作しない可能性があります。")
 
     return ticker, start_date, end_date, stock_data, index_data
-
-
-def preprocess_data(stock_data: pd.DataFrame) -> pd.DataFrame:
-    """
-    前処理として、日次リターンと累積リターン、ボラティリティを計算します。
-    """
-    import preprocessing.returns as returns
-    stock_data = returns.add_returns(stock_data, price_column="Adj Close")
-    import preprocessing.volatility as volatility
-    stock_data = volatility.add_volatility(stock_data)
-    logger.info("前処理（リターン、ボラティリティ計算）完了")
-    return stock_data
-
-
-def compute_indicators(stock_data: pd.DataFrame) -> pd.DataFrame:
-    """
-    基本インジケーター、ボリンジャーバンド、出来高関連指標を計算して追加します。
-    """
-    from indicators.basic_indicators import add_basic_indicators
-    stock_data = add_basic_indicators(stock_data, price_column="Adj Close")
-    from indicators.bollinger_atr import bollinger_atr
-    stock_data = bollinger_atr(stock_data, price_column="Adj Close")
-    from indicators.volume_indicators import add_volume_indicators
-    stock_data = add_volume_indicators(stock_data, price_column="Adj Close")
-    logger.info("インジケーター計算完了")
-    return stock_data
 
 
 def apply_strategies(stock_data: pd.DataFrame, index_data: pd.DataFrame = None):
@@ -527,7 +503,7 @@ def add_performance_metrics(trade_results: dict) -> dict:
             "指標": [
                 "シャープレシオ", "ソルティノレシオ", "期待値", "最大連敗数", "最大連勝数",
                 "平均連敗数", "平均連勝数", "連敗時の最大ドローダウン", "総取引数", "勝率",
-                "損益合計", "平均損益", "最大利益", "最大損失", "最大ドローダウン(%)", "リスクリターン比率"
+                "損益合計", "平均損益", "最大利益", "最大損失", "最大ドローダウン(%)", "最大ドローダウン(金額)", "リスクリターン比率"
             ],
             "値": ["0", "0", "0円", "0", "0", "0", "0", "0円", "0", "0%", "0円", "0円", "0円", "0円", "0%", "0"]
         })
