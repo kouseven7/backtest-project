@@ -536,7 +536,7 @@ def add_performance_metrics(trade_results: dict) -> dict:
     return trade_results
 
 
-def simulate_and_save(result_data: pd.DataFrame, ticker: str):
+def simulate_and_save(result_data: pd.DataFrame, ticker: str, splits=None):
     """
     バックテストシミュレーションを実行し、結果をExcelに出力します。
     """
@@ -545,29 +545,29 @@ def simulate_and_save(result_data: pd.DataFrame, ticker: str):
 
     # パフォーマンス指標を追加
     trade_results = add_performance_metrics(trade_results)
-
     logger.info("バックテスト（トレードシミュレーション）完了")
     
     output_dir = r"C:\Users\imega\Documents\my_backtest_project\backtest_results"
-    # ディレクトリが存在しない場合は作成
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         logger.info(f"出力ディレクトリを作成しました: {output_dir}")
     
-    # 実行日時をファイル名に含める
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = os.path.join(output_dir, f"backtest_results_{now}.xlsx")
     
     try:
-        from output.excel_result_exporter import ensure_workbook_exists, add_pnl_chart, create_pivot_from_trade_history, save_backtest_results
+        from output.excel_result_exporter import ensure_workbook_exists, add_pnl_chart, create_pivot_from_trade_history, save_backtest_results, save_splits_to_excel
         
-        # 新しいExcelファイルを作成
         ensure_workbook_exists(output_file)
         
-        # 結果を保存
         save_backtest_results(trade_results, output_file)
         logger.info(f"バックテスト結果をExcelに出力完了: {output_file}")
-        
+
+        # ウォークフォワードの分割情報を同ファイルに書き込み
+        if splits:
+            save_splits_to_excel(splits, output_file, sheet_name="分割期間")
+            logger.info("ウォークフォワードの分割期間情報を同ファイルに出力しました。")
+
         # チャートとピボットテーブルを追加
         add_pnl_chart(output_file, sheet_name="損益推移", chart_title="累積損益推移")
         create_pivot_from_trade_history(output_file, trade_sheet="取引履歴", pivot_sheet="Pivot_取引履歴")
@@ -605,49 +605,22 @@ def main():
         stock_data = preprocess_data(stock_data)
         stock_data = compute_indicators(stock_data)
         stock_data = apply_strategies(stock_data, index_data)
-        
-        # バックテスト結果をExcelに出力
-        backtest_results = simulate_and_save(stock_data, ticker)
-        
-        # シグナル分析データも出力
-        signal_columns = [col for col in stock_data.columns if col.startswith('Signal_')]
-        if signal_columns:
-            signal_analysis_df = stock_data[['Entry_Signal', 'Strategy'] + signal_columns]
-            signal_analysis_df = signal_analysis_df[signal_analysis_df.index >= stock_data.index[30]]  # ウォームアップ期間を除外
-            
-            # シグナル分析ファイルの出力
-            output_dir = r"C:\Users\imega\Documents\my_backtest_project\analysis_results"
-            os.makedirs(output_dir, exist_ok=True)
-            now = datetime.now().strftime("%Y%m%d_%H%M%S")
-            signal_file = os.path.join(output_dir, f"signal_analysis_{ticker}_{now}.csv")
-            signal_analysis_df.to_csv(signal_file)
-            logger.info(f"シグナル分析データをCSVに出力しました: {signal_file}")
-        
-        # 保存先のExcelファイルパス
-        excel_path = r"C:\Users\imega\Documents\my_backtest_project\backtest_results.xlsx"
 
-        # トレーニング期間とテスト期間を設定
-        train_size = 252  # トレーニング期間（例: 252日 = 1年）
-        test_size = 63    # テスト期間（例: 63日 = 3ヶ月）
-
-        # トレーニング期間とテスト期間を分割
+        # ウォークフォワード用の分割を先に実施
+        train_size = 252  # 例: 1年
+        test_size = 63    # 例: 3ヶ月
         splits = split_data_for_walk_forward(stock_data, train_size, test_size)
 
-        # Excelファイルが存在しない場合は作成
-        from output.excel_result_exporter import ensure_workbook_exists
-        ensure_workbook_exists(excel_path)
+        # バックテスト結果をExcelに出力（splitsを追加で受け渡し）
+        backtest_results = simulate_and_save(stock_data, ticker, splits=splits)
 
-        # トレーニング期間とテスト期間をExcelに保存
-        save_splits_to_excel(splits, excel_path, sheet_name="分割期間")
-
+        # ここでログ等を出力
         logger.info(f"バックテスト結果をExcelに出力しました: {backtest_results}")
-        
         logger.info("全体のバックテスト処理が正常に完了しました。")
-        
+
     except Exception as e:
         logger.exception("バックテスト実行中にエラーが発生しました。")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()
