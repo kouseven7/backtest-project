@@ -72,7 +72,7 @@ from strategies.gc_strategy_signal import GCStrategy
 from walk_forward.train_test_split import split_data_for_walk_forward
 from output.excel_result_exporter import save_splits_to_excel
 from data_processor import preprocess_data
-from indicator_calculator import compute_indicators
+from indicators.indicator_calculator import compute_indicators
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\backtest.log")
