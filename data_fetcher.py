@@ -19,6 +19,117 @@ Dependencies:
 import pandas as pd
 import yfinance as yf
 from config.logger_config import setup_logger
+import pandas as pd
+import os
+import logging
+from config.error_handling import read_excel_parameters, fetch_stock_data
+from config.cache_manager import get_cache_filepath, save_cache
+
+logger = logging.getLogger(__name__)
+
+def get_parameters_and_data():
+    """
+    Excel設定ファイルからパラメータ取得と市場データ取得（キャッシュ利用）を行います。
+    Returns:
+        ticker (str), start_date (str), end_date (str), stock_data (pd.DataFrame), index_data (pd.DataFrame)
+    """
+    config_base_path = r"C:\Users\imega\Documents\my_backtest_project\config"
+    config_file_xlsx = os.path.join(config_base_path, "backtest_config.xlsx")
+    config_file_xlsm = os.path.join(config_base_path, "backtest_config.xlsm")
+    config_csv = os.path.join(config_base_path, "config.csv")
+
+    try:
+        if os.path.exists(config_file_xlsx):
+            config_df = read_excel_parameters(config_file_xlsx, "銘柄設定")
+            logger.info(f"設定ファイル読み込み: {config_file_xlsx}")
+        elif os.path.exists(config_file_xlsm):
+            config_df = read_excel_parameters(config_file_xlsm, "銘柄設定")
+            logger.info(f"設定ファイル読み込み: {config_file_xlsm}")
+        else:
+            logger.warning(f"Excel設定ファイルが見つからないため、CSVファイルを使用します: {config_csv}")
+            config_df = pd.read_csv(config_csv)
+
+        # 銘柄情報の取得
+        if "銘柄" in config_df.columns:
+            ticker = config_df["銘柄"].iloc[0]
+        elif "ticker" in config_df.columns:
+            ticker = config_df["ticker"].iloc[0]
+        else:
+            ticker = "9101.T"
+            logger.warning(f"銘柄情報が見つからないため、デフォルト値を使用します: {ticker}")
+
+        # 日付情報の取得
+        if "開始日" in config_df.columns and "終了日" in config_df.columns:
+            start_date = config_df["開始日"].iloc[0]
+            end_date = config_df["終了日"].iloc[0]
+            if hasattr(start_date, 'strftime'):
+                start_date = start_date.strftime('%Y-%m-%d')
+            if hasattr(end_date, 'strftime'):
+                end_date = end_date.strftime('%Y-%m-%d')
+        elif "start_date" in config_df.columns and "end_date" in config_df.columns:
+            start_date = config_df["start_date"].iloc[0]
+            end_date = config_df["end_date"].iloc[0]
+        else:
+            start_date = "2023-01-01"
+            end_date = "2023-12-31"
+            logger.warning(f"日付情報が見つからないため、デフォルト値を使用します: {start_date} ~ {end_date}")
+
+        logger.info(f"パラメータ取得: {ticker}, {start_date}, {end_date}")
+    except Exception as e:
+        logger.error(f"設定ファイルの読み込みに失敗しました: {str(e)}")
+        ticker = "9101.T"
+        start_date = "2023-01-01"
+        end_date = "2023-12-31"
+        logger.warning(f"デフォルト値を使用します: {ticker}, {start_date}, {end_date}")
+
+    try:
+        cache_filepath = get_cache_filepath(ticker, start_date, end_date)
+        stock_data = fetch_stock_data(ticker, start_date, end_date)
+        save_cache(stock_data, cache_filepath)
+
+        if 'Adj Close' not in stock_data.columns:
+            logger.warning(f"'{ticker}' のデータに 'Adj Close' が存在しないため、'Close' 列を代用します。")
+            stock_data['Adj Close'] = stock_data['Close']
+
+        if isinstance(stock_data.columns, pd.MultiIndex):
+            stock_data.columns = stock_data.columns.get_level_values(0)
+    except Exception as e:
+        logger.error(f"データ取得に失敗しました: {str(e)}")
+        cache_dir = r"C:\Users\imega\Documents\my_backtest_project\data_cache"
+        cache_files = os.listdir(cache_dir)
+        matching_files = [f for f in cache_files if f.startswith(ticker)]
+        if matching_files:
+            latest_file = sorted(matching_files)[-1]
+            cache_path = os.path.join(cache_dir, latest_file)
+            logger.info(f"キャッシュファイルを使用します: {cache_path}")
+            stock_data = pd.read_csv(cache_path, index_col=0, parse_dates=True)
+        else:
+            raise ValueError(f"銘柄 {ticker} のデータが見つかりませんでした。")
+
+    try:
+        index_ticker = "^N225" if ticker.endswith(".T") else "^GSPC"
+        index_cache_filepath = get_cache_filepath(index_ticker, start_date, end_date)
+
+        if (os.path.exists(index_cache_filepath)):
+            logger.info(f"インデックス {index_ticker} のキャッシュを使用します")
+            index_data = pd.read_csv(index_cache_filepath, index_col=0, parse_dates=True)
+        else:
+            logger.info(f"インデックス {index_ticker} のデータを取得します")
+            index_data = fetch_stock_data(index_ticker, start_date, end_date)
+            save_cache(index_data, index_cache_filepath)
+
+        if 'Adj Close' not in index_data.columns:
+            logger.warning(f"'{index_ticker}' のデータに 'Adj Close' が存在しないため、'Close' 列を 'Adj Close' として利用します。")
+            index_data['Adj Close'] = index_data['Close']
+
+        if isinstance(index_data.columns, pd.MultiIndex):
+            index_data.columns = index_data.columns.get_level_values(0)
+    except Exception as e:
+        logger.error(f"インデックスデータの取得に失敗しました: {str(e)}")
+        index_data = None
+        logger.warning("インデックスデータなしで処理を続行します。")
+
+    return ticker, start_date, end_date, stock_data, index_data
 
 logger = setup_logger(__name__)
 
