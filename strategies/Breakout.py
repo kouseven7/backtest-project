@@ -42,7 +42,9 @@ class BreakoutStrategy(BaseStrategy):
         default_params = {
             "volume_threshold": 1.2,   # 出来高増加率の閾値（20%）
             "take_profit": 0.03,       # 利益確定（3%）
-            "look_back": 1             # 前日からのブレイクアウトを見る日数
+            "look_back": 1,            # 前日からのブレイクアウトを見る日数
+            "trailing_stop": 0.02,     # トレーリングストップ（高値から2%下落）
+            "breakout_buffer": 0.01     # ブレイクアウト判定の閾値（1%）
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -82,8 +84,8 @@ class BreakoutStrategy(BaseStrategy):
             # 出来高が前日比で指定率以上増加している
             volume_increase = current_volume > previous_volume * self.params["volume_threshold"]
 
-        # 前日高値を上抜けた場合（上抜け幅を1%に設定してより厳格化）
-        price_breakout = current_price > previous_high * 1.01
+        # 前日高値を上抜けた場合（上抜け幅をパラメータ化）
+        price_breakout = current_price > previous_high * (1 + self.params["breakout_buffer"])
 
         if price_breakout and volume_increase:
             # エントリー価格と高値を記録
@@ -144,7 +146,8 @@ class BreakoutStrategy(BaseStrategy):
             return -1
 
         # 損切条件（高値からの反落）
-        if current_price < high_price * 0.98:  # 高値から2%下落したら損切り
+        trailing_stop_level = 1 - self.params["trailing_stop"]
+        if current_price < high_price * trailing_stop_level:  # 高値からtrailing_stop%下落したら損切り
             self.log_trade(f"Breakout イグジットシグナル: 高値から反落 日付={self.data.index[idx]}, 価格={current_price}, 高値={high_price}")
             return -1
 
