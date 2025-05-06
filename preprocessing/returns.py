@@ -17,30 +17,42 @@ Dependencies:
 #日次リターンと累積リターンを計算して追加モジュール
 # returns.py
 import pandas as pd
+import numpy as np
+import logging
 
-def add_returns(data: pd.DataFrame, price_column: str) -> pd.DataFrame:
+def add_returns(data, price_column="Adj Close"):
     """
-    与えられたDataFrameに対して、日次リターンと累積リターンを計算して追加します。
-
+    株価データにリターン（収益率）列を追加する
+    
     Parameters:
-        data (pd.DataFrame): 株価データを含むDataFrame。price_column（例："Close" や "Adj Close"）が存在する必要があります。
-        price_column (str): 日次リターン計算に使用するカラム名。
-
+        data (pd.DataFrame): 株価データ
+        price_column (str): 株価列の名前
+        
     Returns:
-        pd.DataFrame: 'Daily Return' と 'Cumulative Return' カラムが追加されたDataFrame。
+        pd.DataFrame: リターン列が追加された株価データ
     """
-    # 数値型に変換（変換できない値は NaN に）
+    # 'Adj Close'がなく'Close'がある場合は'Close'を使用
+    if price_column not in data.columns and 'Close' in data.columns:
+        data[price_column] = data['Close']
+        logging.info(f"'{price_column}'カラムがないため、'Close'カラムで代用します")
+    
     data[price_column] = pd.to_numeric(data[price_column], errors='coerce')
-    # 日次リターンの計算（'Daily Return' として追加）
-    data['Daily Return'] = data[price_column].pct_change(fill_method=None)
-    # 累積リターンの計算
-    data['Cumulative Return'] = (1 + data['Daily Return']).cumprod() - 1
+    
+    # 日次リターンの計算
+    data['Daily Return'] = data[price_column].pct_change()
+    
+    # 対数リターンの計算
+    data['Log Return'] = np.log(data[price_column] / data[price_column].shift(1))
+    
+    # リターンのローリング統計量
+    data['Return_MA5'] = data['Daily Return'].rolling(window=5).mean()
+    data['Return_Std5'] = data['Daily Return'].rolling(window=5).std()
+    
     return data
 
 
 if __name__ == "__main__":
     # テスト用コード：ダミーデータで計算結果を確認
-    import numpy as np
     dates = pd.date_range(start="2022-01-01", periods=10, freq='B')
     test_data = pd.DataFrame({
         'Close': np.random.random(10) * 100
@@ -48,4 +60,4 @@ if __name__ == "__main__":
     
     test_data = add_returns(test_data, price_column='Close')
     print("【日次リターン、累積リターンのテスト結果】")
-    print(test_data[['Close', 'Daily Return', 'Cumulative Return']])
+    print(test_data[['Close', 'Daily Return', 'Log Return', 'Return_MA5', 'Return_Std5']])
