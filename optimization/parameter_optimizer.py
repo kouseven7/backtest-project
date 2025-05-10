@@ -12,6 +12,8 @@ from tqdm import tqdm  # 進捗バー表示用
 from strategies.base_strategy import BaseStrategy
 from metrics.performance_metrics import calculate_sharpe_ratio, calculate_max_drawdown
 from config.logger_config import setup_logger
+from joblib import Parallel, delayed
+from datetime import datetime
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\optimization.log")
@@ -261,3 +263,51 @@ class ParameterOptimizer:
             
         logger.info(f"最適化結果を保存しました: {filepath}")
         return filepath
+
+class ParallelParameterOptimizer(ParameterOptimizer):
+    """
+    パラメータの最適化を並列処理で実行するクラス
+    """
+    
+    def __init__(self, data, strategy_class, param_grid, objective_function, cv_splits=None, output_dir="backtest_results", n_jobs=-1):
+        """
+        初期化関数
+        
+        Parameters:
+            data (pd.DataFrame): 最適化に使用するデータ
+            strategy_class (class): 戦略クラス
+            param_grid (dict): 最適化するパラメータの格子
+            objective_function (function): 最適化の目的関数
+            cv_splits (list): クロスバリデーションの分割
+            output_dir (str): 結果を保存するディレクトリ
+            n_jobs (int): 並列処理で使用するジョブ数（-1で全コア使用）
+        """
+        super().__init__(data, strategy_class, param_grid, objective_function, cv_splits, output_dir)
+        self.n_jobs = n_jobs
+        
+    def parallel_grid_search(self):
+        """
+        グリッドサーチを並列で実行
+        
+        Returns:
+            pd.DataFrame: 最適化結果
+        """
+        self.logger.info(f"並列グリッドサーチを開始します。パラメータ組み合わせ数: {len(self.param_combinations)}")
+        start_time = time.time()
+        
+        # パラメータごとに評価を並列実行
+        results = Parallel(n_jobs=self.n_jobs)(
+            delayed(self._evaluate_params)(params) for params in self.param_combinations
+        )
+        
+        # 結果をデータフレームに変換
+        results_df = pd.DataFrame(results)
+        
+        if not results_df.empty:
+            # スコアでソート（降順）
+            results_df = results_df.sort_values('score', ascending=False).reset_index(drop=True)
+            
+        self.logger.info(f"並列グリッドサーチが完了しました。実行時間: {time.time() - start_time:.2f}秒")
+        
+        self.results = results_df
+        return results_df

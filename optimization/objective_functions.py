@@ -8,7 +8,7 @@ from metrics.performance_metrics import (
     calculate_sharpe_ratio,
     calculate_sortino_ratio,
     calculate_max_drawdown,
-    calculate_win_rate,
+    calculate_win_rate,  # この関数が必要
     calculate_risk_return_ratio,
     calculate_expectancy
 )
@@ -93,6 +93,23 @@ def win_rate_expectancy_objective(trade_results: Dict) -> float:
     # 期待値は通常小さい値なので10倍して重みを付ける
     return win_rate + (expectancy * 10)
 
+def win_rate_objective(trade_results: Dict) -> float:
+    """
+    勝率を最大化する目的関数
+    
+    Parameters:
+        trade_results (Dict): バックテスト結果
+        
+    Returns:
+        float: 勝率（高いほど良い）
+    """
+    trades = trade_results.get("取引履歴", pd.DataFrame())
+    if trades.empty:
+        return 0.0
+        
+    win_rate = calculate_win_rate(trades)
+    return win_rate
+
 class CompositeObjective:
     """
     複数の目的関数を重み付けして組み合わせるクラス
@@ -138,7 +155,8 @@ def create_custom_objective(objectives_config: List[Dict[str, Union[str, float]]
         "sharpe_ratio": sharpe_ratio_objective,
         "sortino_ratio": sortino_ratio_objective,
         "risk_adjusted_return": risk_adjusted_return_objective,
-        "win_rate_expectancy": win_rate_expectancy_objective
+        "win_rate_expectancy": win_rate_expectancy_objective,
+        "win_rate": win_rate_objective  # ← この行を追加
     }
     
     objectives_with_weights = []

@@ -1,91 +1,25 @@
 """
 戦略のパラメータ最適化を実行するスクリプト
 """
-import pandas as pd
 import argparse
-import time
 import logging
 from datetime import datetime
+
+# 戦略クラスのインポート
 from strategies.Breakout import BreakoutStrategy
-from strategies.VWAP_Breakout import VWAPBreakoutStrategy
-from strategies.Momentum_Investing import MomentumInvestingStrategy
-from strategies.gc_strategy_signal import GCStrategy
 from strategies.contrarian_strategy import ContrarianStrategy
-from optimization.configs.gc_strategy_optimization import PARAM_GRID as GC_PARAM_GRID
+from strategies.gc_strategy_signal import GCStrategy
+
+# 最適化モジュールのインポート
+from optimization.optimize_breakout_strategy import optimize_breakout_strategy
+from optimization.optimize_gc_strategy import optimize_gc_strategy
 from data_fetcher import get_parameters_and_data
 from data_processor import preprocess_data
 from indicators.indicator_calculator import compute_indicators
-from walk_forward.train_test_split import split_data_for_walk_forward
-from optimization.parameter_optimizer import ParameterOptimizer
-from optimization.parallel_optimizer import ParallelParameterOptimizer
-from optimization.objective_functions import (
-    sharpe_ratio_objective,
-    risk_adjusted_return_objective,
-    create_custom_objective
-)
 from config.logger_config import setup_logger
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\optimization.log")
-
-def optimize_breakout_strategy(data, use_parallel=False):
-    """
-    ブレイクアウト戦略の最適化を実行
-    
-    Parameters:
-        data (pd.DataFrame): 株価データ
-        use_parallel (bool): 並列処理を使用するかどうか
-        
-    Returns:
-        pd.DataFrame: 最適化結果
-    """
-    # 最適化するパラメータの定義
-    param_grid = {
-        "volume_threshold": [1.1, 1.2, 1.3, 1.4, 1.5],
-        "take_profit": [0.02, 0.03, 0.04, 0.05],
-        "look_back": [1, 2, 3]
-    }
-    
-    # 交差検証用のデータ分割
-    train_size = 252  # 1年
-    test_size = 63    # 3ヶ月
-    splits = split_data_for_walk_forward(data, train_size, test_size)
-    
-    # 目的関数の設定
-    objectives_config = [
-        {"name": "sharpe_ratio", "weight": 1.0},
-        {"name": "risk_adjusted_return", "weight": 0.5}
-    ]
-    custom_objective = create_custom_objective(objectives_config)
-    
-    # 最適化クラスの選択
-    if use_parallel:
-        optimizer = ParallelParameterOptimizer(
-            data=data,
-            strategy_class=BreakoutStrategy,
-            param_grid=param_grid,
-            objective_function=custom_objective,
-            cv_splits=splits,
-            output_dir="backtest_results/optimization",
-            n_jobs=-1  # 全CPUコアを使用
-        )
-        results = optimizer.parallel_grid_search()
-    else:
-        optimizer = ParameterOptimizer(
-            data=data,
-            strategy_class=BreakoutStrategy,
-            param_grid=param_grid,
-            objective_function=custom_objective,
-            cv_splits=splits,
-            output_dir="backtest_results/optimization"
-        )
-        results = optimizer.grid_search()
-    
-    # 結果の保存
-    filename = f"breakout_optimization_{time.strftime('%Y%m%d')}"
-    optimizer.save_results(filename=filename, format="excel")
-    
-    return results
 
 def optimize_contrarian_strategy(data, use_parallel=False):
     """
@@ -137,64 +71,6 @@ def optimize_contrarian_strategy(data, use_parallel=False):
     
     return results
 
-def optimize_gc_strategy(data, use_parallel=False):
-    """
-    GC戦略の最適化を実行する関数
-    """
-    # 最適化するパラメータの定義（configs/gc_strategy_optimization.pyから取得）
-    param_grid = GC_PARAM_GRID
-    
-    # ウォークフォワード分割
-    train_size = 252  # 約1年
-    test_size = 63    # 約3ヶ月
-    splits = split_data_for_walk_forward(data, train_size, test_size)
-    
-    # 必要な指標が計算されていることを確認
-    if not any(col.startswith('SMA_') for col in data.columns):
-        logger.info("移動平均を計算します")
-        for window in [5, 10, 15, 20, 25, 50, 100, 200]:
-            data[f'SMA_{window}'] = data['Adj Close'].rolling(window=window).mean()
-            # EMAも計算
-            data[f'EMA_{window}'] = data['Adj Close'].ewm(span=window, adjust=False).mean()
-
-    # 目的関数の設定
-    objectives_config = [
-        {"name": "sharpe_ratio", "weight": 1.0},
-        {"name": "sortino_ratio", "weight": 0.8},
-        {"name": "win_rate", "weight": 0.6},
-        {"name": "risk_adjusted_return", "weight": 0.7}
-    ]
-    custom_objective = create_custom_objective(objectives_config)
-    
-    if use_parallel:
-        optimizer = ParallelParameterOptimizer(
-            data=data,
-            strategy_class=GCStrategy,
-            param_grid=param_grid,
-            objective_function=custom_objective,
-            cv_splits=splits,
-            output_dir="backtest_results/optimization/gc_strategy",
-            n_jobs=-1  # 使用可能なすべてのコアを使用
-        )
-        results = optimizer.parallel_grid_search()
-    else:
-        optimizer = ParameterOptimizer(
-            data=data,
-            strategy_class=GCStrategy,
-            param_grid=param_grid,
-            objective_function=custom_objective,
-            cv_splits=splits,
-            output_dir="backtest_results/optimization/gc_strategy"
-        )
-        results = optimizer.grid_search()
-    
-    # 結果の保存
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"gc_strategy_results_{timestamp}"
-    optimizer.save_results(filename=filename, format="excel")
-    
-    return results
-
 def main():
     parser = argparse.ArgumentParser(description='戦略パラメータの最適化')
     parser.add_argument('--strategy', type=str, default='breakout',
@@ -216,7 +92,7 @@ def main():
     strategy_map = {
         'breakout': optimize_breakout_strategy,
         'contrarian': optimize_contrarian_strategy,
-        'gc': optimize_gc_strategy,  # GC戦略の最適化関数を追加
+        'gc': optimize_gc_strategy,
         # 他の戦略の最適化関数も追加可能
     }
     
