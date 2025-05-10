@@ -9,6 +9,7 @@ from strategies.Breakout import BreakoutStrategy
 from strategies.VWAP_Breakout import VWAPBreakoutStrategy
 from strategies.Momentum_Investing import MomentumInvestingStrategy
 from strategies.gc_strategy_signal import GCStrategy
+from strategies.contrarian_strategy import ContrarianStrategy
 from data_fetcher import get_parameters_and_data
 from data_processor import preprocess_data
 from indicators.indicator_calculator import compute_indicators
@@ -84,10 +85,60 @@ def optimize_breakout_strategy(data, use_parallel=False):
     
     return results
 
+def optimize_contrarian_strategy(data, use_parallel=False):
+    """
+    コントラリアン戦略の最適化を実行
+    """
+    # 最適化するパラメータの定義（例）
+    param_grid = {
+        "rsi_oversold": [25, 30, 35],
+        "gap_threshold": [0.01, 0.02],
+        "look_back": [3, 5, 7]
+    }
+    
+    # ウォークフォワード分割（例）
+    train_size = 252  
+    test_size = 63
+    splits = split_data_for_walk_forward(data, train_size, test_size)
+
+    objectives_config = [
+        {"name": "sharpe_ratio", "weight": 1.0},
+        {"name": "risk_adjusted_return", "weight": 0.5}
+    ]
+    custom_objective = create_custom_objective(objectives_config)
+
+    if use_parallel:
+        optimizer = ParallelParameterOptimizer(
+            data=data,
+            strategy_class=ContrarianStrategy,
+            param_grid=param_grid,
+            objective_function=custom_objective,
+            cv_splits=splits,
+            output_dir="backtest_results/optimization",
+            n_jobs=-1
+        )
+        results = optimizer.parallel_grid_search()
+    else:
+        optimizer = ParameterOptimizer(
+            data=data,
+            strategy_class=ContrarianStrategy,
+            param_grid=param_grid,
+            objective_function=custom_objective,
+            cv_splits=splits,
+            output_dir="backtest_results/optimization"
+        )
+        results = optimizer.grid_search()
+    
+    # 結果の保存
+    filename = f"contrarian_optimization_{time.strftime('%Y%m%d')}"
+    optimizer.save_results(filename=filename, format="excel")
+    
+    return results
+
 def main():
     parser = argparse.ArgumentParser(description='戦略パラメータの最適化')
     parser.add_argument('--strategy', type=str, default='breakout',
-                        choices=['breakout', 'vwap_breakout', 'momentum', 'gc'],
+                        choices=['breakout', 'vwap_breakout', 'momentum', 'gc', 'contrarian'],
                         help='最適化する戦略')
     parser.add_argument('--parallel', action='store_true',
                         help='並列処理を使用する')
@@ -104,6 +155,7 @@ def main():
     # 選択した戦略の最適化を実行
     strategy_map = {
         'breakout': optimize_breakout_strategy,
+        'contrarian': optimize_contrarian_strategy,
         # 他の戦略の最適化関数も追加可能
     }
     
