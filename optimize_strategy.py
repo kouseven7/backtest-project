@@ -13,6 +13,7 @@ from strategies.gc_strategy_signal import GCStrategy
 # 最適化モジュールのインポート
 from optimization.optimize_breakout_strategy import optimize_breakout_strategy
 from optimization.optimize_gc_strategy import optimize_gc_strategy
+from optimization.optimize_contrarian_strategy import optimize_contrarian_strategy  # 追加
 from data_fetcher import get_parameters_and_data
 from data_processor import preprocess_data
 from indicators.indicator_calculator import compute_indicators
@@ -20,56 +21,6 @@ from config.logger_config import setup_logger
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\optimization.log")
-
-def optimize_contrarian_strategy(data, use_parallel=False):
-    """
-    コントラリアン戦略の最適化を実行
-    """
-    # 最適化するパラメータの定義（例）
-    param_grid = {
-        "rsi_oversold": [25, 30, 35],
-        "gap_threshold": [0.01, 0.02],
-        "look_back": [3, 5, 7]
-    }
-    
-    # ウォークフォワード分割（例）
-    train_size = 252  
-    test_size = 63
-    splits = split_data_for_walk_forward(data, train_size, test_size)
-
-    objectives_config = [
-        {"name": "sharpe_ratio", "weight": 1.0},
-        {"name": "risk_adjusted_return", "weight": 0.5}
-    ]
-    custom_objective = create_custom_objective(objectives_config)
-
-    if use_parallel:
-        optimizer = ParallelParameterOptimizer(
-            data=data,
-            strategy_class=ContrarianStrategy,
-            param_grid=param_grid,
-            objective_function=custom_objective,
-            cv_splits=splits,
-            output_dir="backtest_results/optimization",
-            n_jobs=-1
-        )
-        results = optimizer.parallel_grid_search()
-    else:
-        optimizer = ParameterOptimizer(
-            data=data,
-            strategy_class=ContrarianStrategy,
-            param_grid=param_grid,
-            objective_function=custom_objective,
-            cv_splits=splits,
-            output_dir="backtest_results/optimization"
-        )
-        results = optimizer.grid_search()
-    
-    # 結果の保存
-    filename = f"contrarian_optimization_{time.strftime('%Y%m%d')}"
-    optimizer.save_results(filename=filename, format="excel")
-    
-    return results
 
 def main():
     parser = argparse.ArgumentParser(description='戦略パラメータの最適化')
