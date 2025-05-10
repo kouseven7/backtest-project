@@ -114,8 +114,27 @@ def apply_strategies(stock_data: pd.DataFrame, index_data: pd.DataFrame = None):
     signal_logger = setup_logger('signal_analysis', log_file=signal_log_path, level=logging.INFO)
     signal_logger.info(f"日付,{'、'.join(strategies.keys())},選択された戦略")
     
-    for i in range(warmup_period, len(stock_data)):
-        current_date = stock_data.index[i]
+    for i in range(len(stock_data)):
+        current_date = pd.to_datetime(stock_data.index[i])
+        
+        # このデータポイントまでのエントリーシグナルを確認
+        entries_to_current = stock_data.iloc[:i+1]
+        entry_indices = entries_to_current[entries_to_current['Entry_Signal'] > 0].index
+        
+        if len(entry_indices) > 0:
+            # 最新のエントリー日を取得
+            latest_entry = entry_indices[-1]
+            entry_idx = stock_data.index.get_loc(latest_entry)
+            entry_date = pd.to_datetime(latest_entry)
+            
+            # 保有日数計算
+            holding_days = (current_date - entry_date).days
+            
+            # 以降の処理...
+        else:
+            # エントリーがない場合
+            holding_days = 0
+            # 以降の処理...
         
         # 前日のリスク管理状態をコピー
         if i > warmup_period:
@@ -198,7 +217,19 @@ def apply_strategies(stock_data: pd.DataFrame, index_data: pd.DataFrame = None):
         # Exit シグナルの生成と処理
         for strategy_name, position_info in list(current_positions.items()):
             entry_date, entry_price = position_info
-            holding_days = (current_date - entry_date).days
+            
+            # エントリーインデックスを取得する部分を確認
+            entry_indices = stock_data.index[stock_data['Entry_Signal'] > 0].tolist()
+            if entry_indices:
+                entry_idx = stock_data.index.get_loc(entry_indices[-1])  # 最新のエントリーインデックス
+                entry_date = pd.to_datetime(stock_data.index[entry_idx])
+                
+                # 保有日数計算
+                current_date = pd.to_datetime(stock_data.index[i])
+                holding_days = (current_date - entry_date).days
+            else:
+                # エントリーがない場合の処理
+                holding_days = 0
             
             # 1. 保有期間による決済（3日間保持後）
             if holding_days >= 3:
