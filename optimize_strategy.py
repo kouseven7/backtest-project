@@ -9,11 +9,13 @@ from datetime import datetime
 from strategies.Breakout import BreakoutStrategy
 from strategies.contrarian_strategy import ContrarianStrategy
 from strategies.gc_strategy_signal import GCStrategy
+from strategies.Momentum_Investing import MomentumInvestingStrategy  # 追加インポート
 
 # 最適化モジュールのインポート
 from optimization.optimize_breakout_strategy import optimize_breakout_strategy
 from optimization.optimize_gc_strategy import optimize_gc_strategy
 from optimization.optimize_contrarian_strategy import optimize_contrarian_strategy  # 追加
+from optimization.optimize_momentum_strategy import optimize_momentum_strategy  # 追加インポート
 from data_fetcher import get_parameters_and_data
 from data_processor import preprocess_data
 from indicators.indicator_calculator import compute_indicators
@@ -44,6 +46,7 @@ def main():
         'breakout': optimize_breakout_strategy,
         'contrarian': optimize_contrarian_strategy,
         'gc': optimize_gc_strategy,
+        'momentum': optimize_momentum_strategy,  # この行を追加
         # 他の戦略の最適化関数も追加可能
     }
     

@@ -31,31 +31,34 @@ from indicators.volatility_indicators import calculate_atr
 
 class MomentumInvestingStrategy(BaseStrategy):
     def __init__(self, data: pd.DataFrame, params=None, price_column: str = "Adj Close", volume_column: str = "Volume"):
-        """
-        モメンタム戦略の初期化。
-
-        Parameters:
-            data (pd.DataFrame): 株価データ
-            params (dict, optional): 戦略パラメータ（オーバーライド用）
-            price_column (str): 株価カラム名（デフォルトは "Adj Close"）
-            volume_column (str): 出来高カラム名（デフォルトは "Volume"）
-        """
-        # 戦略固有の属性を先に設定
+        """モメンタム戦略の初期化（拡張版）"""
+        # 戦略固有の属性
         self.price_column = price_column
         self.volume_column = volume_column
         self.entry_prices = {}  # エントリー価格を記録する辞書
         
-        # デフォルトパラメータの設定 - より厳しい条件
+        # デフォルトパラメータの拡張
         default_params = {
+            # 既存パラメータ
             "sma_short": 20,
             "sma_long": 50,
             "rsi_period": 14,
-            "rsi_lower": 50,        # 47から50に引き上げ
-            "rsi_upper": 68,        # 70から68に引き下げ
-            "volume_threshold": 1.18, # 1.17から1.18に引き上げ
-            "take_profit": 0.12,     # そのまま
-            "stop_loss": 0.06,       # そのまま
-            "trailing_stop": 0.04    # そのまま
+            "rsi_lower": 50,
+            "rsi_upper": 68,
+            "volume_threshold": 1.18,
+            "take_profit": 0.12,
+            "stop_loss": 0.06,
+            "trailing_stop": 0.04,
+            
+            # 新規パラメータ
+            "ma_type": "SMA",               # 移動平均タイプ (SMA/EMA)
+            "max_hold_days": 15,            # 最大保有期間
+            "atr_multiple": 2.0,            # ATRストップロス倍率
+            "partial_exit_pct": 0.5,        # 一部利確率 (0〜1)
+            "partial_exit_threshold": 0.08, # 一部利確の発動閾値
+            "momentum_exit_threshold": -0.03, # モメンタム失速閾値
+            "volume_exit_threshold": 0.7,   # 出来高減少イグジット閾値
+            "trend_filter": True            # トレンドフィルターの使用
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -68,14 +71,25 @@ class MomentumInvestingStrategy(BaseStrategy):
         """
         super().initialize_strategy()
         
-        # 必要なインジケーターを計算してデータに追加
+        # MA種類の選択機能
+        ma_type = self.params.get("ma_type", "SMA")
         sma_short = self.params["sma_short"]
         sma_long = self.params["sma_long"]
-        rsi_period = self.params["rsi_period"]
         
-        self.data['SMA_' + str(sma_short)] = calculate_sma(self.data, self.price_column, sma_short)
-        self.data['SMA_' + str(sma_long)] = calculate_sma(self.data, self.price_column, sma_long)
-        self.data['RSI'] = calculate_rsi(self.data[self.price_column], rsi_period)
+        # 移動平均の計算
+        if ma_type == "SMA":
+            self.data[f'MA_{sma_short}'] = calculate_sma(self.data, self.price_column, sma_short)
+            self.data[f'MA_{sma_long}'] = calculate_sma(self.data, self.price_column, sma_long)
+        elif ma_type == "EMA":
+            self.data[f'MA_{sma_short}'] = self.data[self.price_column].ewm(span=sma_short, adjust=False).mean()
+            self.data[f'MA_{sma_long}'] = self.data[self.price_column].ewm(span=sma_long, adjust=False).mean()
+        else:
+            # デフォルトの場合
+            self.data[f'MA_{sma_short}'] = calculate_sma(self.data, self.price_column, sma_short)
+            self.data[f'MA_{sma_long}'] = calculate_sma(self.data, self.price_column, sma_long)
+        
+        # その他の指標計算（既存のまま）
+        self.data['RSI'] = calculate_rsi(self.data[self.price_column], self.params["rsi_period"])
         self.data['MACD'], self.data['Signal_Line'] = calculate_macd(self.data, self.price_column)
         self.data['ATR'] = calculate_atr(self.data, self.price_column)
 
@@ -94,8 +108,8 @@ class MomentumInvestingStrategy(BaseStrategy):
         Returns:
             int: エントリーシグナル（1: エントリー, 0: なし）
         """
-        sma_short_key = 'SMA_' + str(self.params["sma_short"])
-        sma_long_key = 'SMA_' + str(self.params["sma_long"])
+        sma_short_key = 'MA_' + str(self.params["sma_short"])
+        sma_long_key = 'MA_' + str(self.params["sma_long"])
         rsi_lower = self.params["rsi_lower"]
         rsi_upper = self.params["rsi_upper"]
         
@@ -175,20 +189,13 @@ class MomentumInvestingStrategy(BaseStrategy):
 
     def generate_exit_signal(self, idx: int) -> int:
         """
-        イグジットシグナルを生成する。元の条件に戻す。
+        イグジットシグナルを生成する拡張版。
         条件:
-        - エントリー価格から3～5%の下落でストップロス
-        - ATRに基づいたストップロス
-        - 利益が伸びた場合、トレーリングストップを設定
-        - 株価が短期MA（20日MA）を下回った場合
-        - RSIが70以上から急落、またはMACDがシグナルラインを下抜けした場合
-        - 高値更新が止まり、ダイバージェンスが発生した場合
-
-        Parameters:
-            idx (int): 現在のインデックス
-            
-        Returns:
-            int: イグジットシグナル（-1: イグジット, 0: なし）
+        - 最大保有期間によるイグジット
+        - ATRベースのストップロス（ATR倍率を導入）
+        - モメンタム失速によるイグジット
+        - 出来高減少によるイグジット
+        - 既存の条件（ストップロス、利益確定、トレーリングストップ、移動平均線ブレイク、モメンタム指標の反転、チャートパターン崩壊）
         """
         if idx < 1:  # 必要な履歴データがない場合
             return 0
@@ -206,13 +213,42 @@ class MomentumInvestingStrategy(BaseStrategy):
             
         entry_price = self.entry_prices[latest_entry_idx]
         current_price = self.data[self.price_column].iloc[idx]
-        atr = self.data['ATR'].iloc[idx]
-        sma_short_key = 'SMA_' + str(self.params["sma_short"])
+        atr = self.data['ATR'].iloc[latest_entry_idx]  # エントリー時点のATR
+        sma_short_key = 'MA_' + str(self.params["sma_short"])
             
-        # ストップロス条件（ATRベースまたはパーセンテージベース）
-        if current_price <= entry_price - atr or current_price <= entry_price * (1 - self.params["stop_loss"]):
-            self.log_trade(f"Momentum Investing イグジットシグナル: ストップロス 日付={self.data.index[idx]}, 価格={current_price}")
+        # 最大保有期間によるイグジット
+        max_hold_days = self.params.get("max_hold_days")
+        if max_hold_days is not None:
+            days_held = idx - latest_entry_idx
+            if days_held >= max_hold_days:
+                self.log_trade(f"保有期間超過イグジット: {days_held}日/{max_hold_days}日 日付={self.data.index[idx]}")
+                return -1
+
+        # ATRベースのストップロス（ATR倍率を導入）
+        atr_multiple = self.params.get("atr_multiple", 2.0)
+        atr_stop_loss = entry_price - (atr * atr_multiple)
+        if current_price <= atr_stop_loss or current_price <= entry_price * (1 - self.params["stop_loss"]):
+            self.log_trade(f"ストップロスイグジット: 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
+
+        # モメンタム失速によるイグジット
+        momentum_exit_threshold = self.params.get("momentum_exit_threshold", -0.03)
+        if idx > 1:
+            rsi = self.data['RSI'].iloc[idx]
+            rsi_prev = self.data['RSI'].iloc[idx-1]
+            momentum_change = rsi - rsi_prev
+            if momentum_change <= momentum_exit_threshold and rsi < 60:
+                self.log_trade(f"モメンタム失速イグジット: 変化量={momentum_change} 日付={self.data.index[idx]}")
+                return -1
+
+        # 出来高減少によるイグジット
+        if self.volume_column in self.data.columns:
+            volume_exit_threshold = self.params.get("volume_exit_threshold", 0.7)
+            current_volume = self.data[self.volume_column].iloc[idx]
+            avg_volume = self.data[self.volume_column].iloc[max(0, idx-5):idx].mean()
+            if current_volume < avg_volume * volume_exit_threshold:
+                self.log_trade(f"出来高減少イグジット: 日付={self.data.index[idx]}, 比率={current_volume/avg_volume:.2f}")
+                return -1
 
         # 利益確定条件（目標利益）
         if current_price >= entry_price * (1 + self.params["take_profit"]):
@@ -252,25 +288,58 @@ class MomentumInvestingStrategy(BaseStrategy):
         return 0
 
     def backtest(self):
-        """
-        モメンタム戦略のバックテストを実行する。
-        """
+        """モメンタム戦略のバックテストを実行（部分利確機能付き）"""
         # シグナル列の初期化
         self.data['Entry_Signal'] = 0
         self.data['Exit_Signal'] = 0
+        self.data['Position'] = 0  # ポジションサイズを追跡
+        
+        # 一部利確のための追加列
+        self.data['Partial_Exit'] = 0
+        self.data['Profit_Pct'] = 0  # 利益率を記録
 
-        # 各日にちについてシグナルを計算
         for idx in range(len(self.data)):
-            # Entry_Signalがまだ立っていない場合のみエントリーシグナルをチェック
-            if not self.data['Entry_Signal'].iloc[max(0, idx-1):idx+1].any():
-                entry_signal = self.generate_entry_signal(idx)
-                if entry_signal == 1:
-                    self.data.at[self.data.index[idx], 'Entry_Signal'] = 1
+            # 既存のコード（エントリー/イグジットのロジック）
             
-            # イグジットシグナルを確認
-            exit_signal = self.generate_exit_signal(idx)
-            if exit_signal == -1:
-                self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
+            # ポジションの更新
+            if idx > 0:
+                self.data.at[self.data.index[idx], 'Position'] = self.data['Position'].iloc[idx-1]
+                
+                # エントリーシグナルでポジションを1に設定
+                if self.data['Entry_Signal'].iloc[idx] == 1:
+                    self.data.at[self.data.index[idx], 'Position'] = 1
+                    # エントリー価格を記録
+                    entry_price = self.data[self.price_column].iloc[idx]
+                    self.entry_prices[idx] = entry_price
+                
+                # イグジットシグナルでポジションを0に設定
+                if self.data['Exit_Signal'].iloc[idx] == -1:
+                    self.data.at[self.data.index[idx], 'Position'] = 0
+            
+            # 一部利確の処理（ポジションがある場合のみ）
+            if idx > 0 and self.data['Position'].iloc[idx-1] > 0:
+                # 一部利確のパラメータ
+                partial_exit_pct = self.params.get("partial_exit_pct", 0.0)
+                partial_exit_threshold = self.params.get("partial_exit_threshold", 0.08)
+                
+                # 一部利確が有効で、まだ実行されていない場合
+                if partial_exit_pct > 0 and self.data['Partial_Exit'].iloc[idx-1] == 0:
+                    # エントリー価格を取得
+                    entry_idx = self.data.index.get_loc(self.data[self.data['Entry_Signal'] == 1].index[-1])
+                    entry_price = self.entry_prices.get(entry_idx)
+                    
+                    if entry_price:
+                        current_price = self.data[self.price_column].iloc[idx]
+                        profit_pct = (current_price - entry_price) / entry_price
+                        
+                        # 利益率を記録
+                        self.data.at[self.data.index[idx], 'Profit_Pct'] = profit_pct
+                        
+                        # 閾値を超えたら一部利確を実行
+                        if profit_pct >= partial_exit_threshold:
+                            self.data.at[self.data.index[idx], 'Partial_Exit'] = partial_exit_pct
+                            self.data.at[self.data.index[idx], 'Position'] -= partial_exit_pct
+                            self.log_trade(f"一部利確 {partial_exit_pct*100}%: 日付={self.data.index[idx]}, 価格={current_price}, 利益={profit_pct:.2%}")
 
         return self.data
 
