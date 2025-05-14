@@ -53,7 +53,34 @@ class VWAPBreakoutStrategy(BaseStrategy):
             "volume_threshold": 1.2,
             "take_profit": 0.10,  # 10%
             "stop_loss": 0.05,    # 5%
-            "trailing_stop": 0.03  # 3%
+            "trailing_stop": 0.03,  # 3%
+            "confirmation_bars": 1,             # ブレイク確認バー数 (0=即時エントリー)
+            "breakout_min_percent": 0.005,      # 最小ブレイク率 (例: 0.5%以上の上抜け)
+            "atr_filter_enabled": False,        # ボラティリティフィルターの有効化
+            "atr_period": 14,                   # ATR計算期間
+            "atr_min_threshold": 0.01,          # 最小ATR閾値 (相対値)
+            "atr_max_threshold": 0.03,          # 最大ATR閾値 (相対値)
+            "volume_increase_mode": "simple",   # 出来高増加判定方式 (simple/average/exponential)
+            "volume_lookback_period": 5,        # 出来高比較期間
+            "bullish_candle_required": True,    # 陽線要求 (True=陽線形成時のみエントリー)
+            "trailing_start_threshold": 0.03,   # トレーリング開始閾値 (3%の利益でトレーリング開始)
+            "max_holding_period": 10,           # 最大保有期間 (日数)
+            "partial_exit_enabled": False,      # 部分利確の有効化
+            "partial_exit_threshold": 0.05,     # 部分利確の発動閾値
+            "partial_exit_portion": 0.5,        # 一部利確の割合
+            "reversal_exit_enabled": False,     # 反転イグジットの有効化
+            "reversal_bars_threshold": 2,       # 反転確認バー数
+            "vwap_recross_exit": True,          # VWAP再クロス時のイグジット
+            "market_filter_method": "sma",      # 市場フィルター方式 (sma/ema/macd/combined)
+            "market_condition_threshold": 0.01, # 市場上昇トレンド判定閾値
+            "rsi_filter_enabled": False,        # RSIフィルターの有効化
+            "rsi_lower_bound": 40,              # RSI下限値 (この値以下ではエントリーしない)
+            "rsi_upper_bound": 70,              # RSI上限値 (この値以上でイグジット検討)
+            "multiple_index_confirmation": False,# 複数指数による確認
+            "risk_per_trade": 0.02,             # トレードごとのリスク (総資産の2%)
+            "max_open_positions": 5,            # 最大保有ポジション数
+            "drawdown_stop_threshold": 0.1,     # ドローダウン停止閾値 (10%)
+            "consecutive_loss_limit": 3,        # 連続損失制限
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -149,8 +176,22 @@ class VWAPBreakoutStrategy(BaseStrategy):
             return 0
 
         # VWAPを上抜けしている
-        if not (current_price > vwap and self.data[self.price_column].iloc[idx - 1] <= vwap):
+        vwap_breakout = current_price > vwap and self.data[self.price_column].iloc[idx - 1] <= vwap
+        if not vwap_breakout:
             return 0
+
+        # ブレイク率チェック
+        if self.params.get("breakout_min_percent", 0) > 0:
+            min_breakout = vwap * (1 + self.params["breakout_min_percent"])
+            if current_price <= min_breakout:
+                return 0  # 最小ブレイク率に達していない
+
+        # ブレイク持続確認
+        if self.params.get("confirmation_bars", 0) > 0:
+            confirmation_needed = True
+            for i in range(1, min(self.params["confirmation_bars"] + 1, idx + 1)):
+                if self.data[self.price_column].iloc[idx - i] <= vwap:
+                    return 0  # 確認期間内にVWAPより下になった
 
         # 出来高が増加している
         if not detect_volume_increase(current_volume, previous_volume, threshold=self.params["volume_threshold"]):
@@ -203,12 +244,33 @@ class VWAPBreakoutStrategy(BaseStrategy):
             self.log_trade(f"VWAP Breakout イグジットシグナル: 利益確定 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
 
-        # トレーリングストップ条件
-        high_since_entry = self.data['High'].iloc[latest_entry_idx:idx+1].max()
-        trailing_stop = high_since_entry * (1 - self.params["trailing_stop"])
-        if current_price <= trailing_stop:
-            self.log_trade(f"VWAP Breakout イグジットシグナル: トレーリングストップ 日付={self.data.index[idx]}, 価格={current_price}")
-            return -1
+        # 高度なトレーリングストップ
+        profit_pct = (current_price - entry_price) / entry_price
+        
+        # トレーリング開始閾値を超えた場合のみトレーリングストップを適用
+        if profit_pct >= self.params.get("trailing_start_threshold", 0):
+            high_since_entry = self.data['High'].iloc[latest_entry_idx:idx+1].max()
+            trailing_stop = high_since_entry * (1 - self.params["trailing_stop"])
+            
+            if current_price <= trailing_stop:
+                self.log_trade(f"VWAP Breakout イグジットシグナル: トレーリングストップ 日付={self.data.index[idx]}, 価格={current_price}")
+                return -1
+
+        # 部分利確ロジック
+        if self.params.get("partial_exit_enabled", False):
+            profit_pct = (current_price - entry_price) / entry_price
+            
+            # 部分利確の条件を満たす場合
+            if profit_pct >= self.params["partial_exit_threshold"] and 'Partial_Exit' not in self.data.columns:
+                # 部分利確用のカラムを追加
+                self.data['Partial_Exit'] = 0
+                self.data.at[self.data.index[idx], 'Partial_Exit'] = 1
+                
+                # ログ
+                self.log_trade(f"VWAP Breakout 部分利確シグナル: {self.params['partial_exit_portion']*100}% 利確 日付={self.data.index[idx]}, 価格={current_price}")
+                
+                # 全ポジションイグジットしない (部分利確なのでリターン値は0)
+                return 0
 
         # RSIやMACDの反転
         rsi = self.data['RSI'].iloc[idx]
