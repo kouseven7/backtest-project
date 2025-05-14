@@ -40,13 +40,41 @@ class VWAPBounceStrategy(BaseStrategy):
         self.price_column = price_column
         self.volume_column = volume_column
         self.entry_prices = {}  # エントリー価格を記録する辞書
+        self.high_prices = {}  # エントリー後の最高値を記録する辞書
         
         # デフォルトパラメータの設定
         default_params = {
-            "vwap_lower_threshold": 0.99,  # VWAPから下方の許容値（-1%）
-            "vwap_upper_threshold": 1.02,  # VWAPから上方の許容値（+2%）
-            "stop_loss": 0.02,             # ストップロス（2%）
-            "take_profit": 0.05            # 利益確定（5%）
+            # 既存パラメータ
+            "vwap_lower_threshold": 0.99,
+            "vwap_upper_threshold": 1.02,
+            "stop_loss": 0.02,
+            "take_profit": 0.05,
+            
+            # 新規パラメータ - エントリー関連
+            "volume_increase_threshold": 1.2,   # 出来高が前日比X倍以上
+            "bullish_candle_min_pct": 0.005,    # 陽線の最小サイズ（％）
+            "trend_filter_enabled": True,       # トレンドフィルターの有効化
+            "allowed_trends": ["range-bound"],  # 許可するトレンド（range-bound, uptrend, downtrend）
+            "cool_down_period": 5,              # 再エントリー禁止期間（日数）
+            "entry_limit_per_month": 3,         # 月間エントリー上限回数
+            "require_rsi_condition": False,     # RSI条件を要求するか
+            "rsi_lower_bound": 30,              # RSI下限値
+            "rsi_upper_bound": 70,              # RSI上限値
+
+            # イグジット関連の新規パラメータ
+            "trailing_stop_pct": 0.015,         # トレーリングストップ割合
+            "max_hold_days": 10,                # 最大保有期間
+            "atr_stop_multiple": 1.5,           # ATRベースストップロス乗数
+            "partial_exit_enabled": False,      # 一部利確機能
+            "partial_exit_threshold": 0.03,     # 一部利確の閾値
+            "partial_exit_portion": 0.5,        # 一部利確の割合
+            "intraday_exit_check": False,       # 日中終値チェック（True=当日に反転したらイグジット）
+            "consecutive_down_days": 2,         # 連続下落日数でイグジット
+
+            # ボラティリティフィルター関連の新規パラメータ
+            "volatility_filter_enabled": False,  # ボラティリティフィルターの使用
+            "min_atr_percentile": 20,            # 最小ATRパーセンタイル
+            "max_atr_percentile": 80,            # 最大ATRパーセンタイル
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -61,6 +89,15 @@ class VWAPBounceStrategy(BaseStrategy):
         
         # VWAPを計算してデータに追加
         self.data['VWAP'] = calculate_vwap(self.data, price_column=self.price_column, volume_column=self.volume_column)
+        
+        # ATRの計算
+        from indicators.volatility_indicators import calculate_atr
+        self.data['ATR'] = calculate_atr(self.data, self.price_column)
+        
+        # ATRパーセンタイルの計算（20日間ローリング）
+        self.data['ATR_Percentile'] = self.data['ATR'].rolling(20).apply(
+            lambda x: pd.Series(x).rank(pct=True).iloc[-1] * 100
+        )
 
     def generate_entry_signal(self, idx: int) -> int:
         """
@@ -86,8 +123,27 @@ class VWAPBounceStrategy(BaseStrategy):
         # VWAPから-1%以内で反発の兆候（陽線形成、出来高増加）
         vwap_lower = vwap * self.params["vwap_lower_threshold"]
         price_near_vwap = (vwap_lower <= current_price <= vwap)
-        bullish_candle = current_price > previous_close
-        volume_increase = current_volume > previous_volume
+        price_change_pct = (current_price - previous_close) / previous_close
+        bullish_candle = price_change_pct > self.params["bullish_candle_min_pct"]
+        volume_ratio = current_volume / previous_volume
+        volume_increase = volume_ratio > self.params["volume_increase_threshold"]
+
+        # 再エントリー制限のチェック
+        if self.params.get("cool_down_period", 0) > 0:
+            # 直近のエントリーを探す
+            recent_entries = self.data['Entry_Signal'].iloc[max(0, idx - self.params["cool_down_period"]):idx]
+            if recent_entries.sum() > 0:
+                return 0  # クールダウン期間中は新規エントリーしない
+
+        # ボラティリティフィルター
+        if self.params.get("volatility_filter_enabled", False) and idx >= 20:
+            atr_percentile = self.data['ATR_Percentile'].iloc[idx]
+            min_percentile = self.params.get("min_atr_percentile", 20)
+            max_percentile = self.params.get("max_atr_percentile", 80)
+            
+            # 許容範囲外のボラティリティなら取引しない
+            if atr_percentile < min_percentile or atr_percentile > max_percentile:
+                return 0
 
         if price_near_vwap and bullish_candle and volume_increase:
             self.entry_prices[idx] = current_price
@@ -148,6 +204,25 @@ class VWAPBounceStrategy(BaseStrategy):
         if current_price >= entry_price * (1 + self.params["take_profit"]):
             self.log_trade(f"VWAP Bounce イグジットシグナル: 利益確定 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
+
+        # トレーリングストップ
+        if "trailing_stop_pct" in self.params and idx > 0:
+            # 現在の価格と前日価格
+            current_price = self.data[self.price_column].iloc[idx]
+            
+            # エントリー後の最高値を追跡
+            if idx not in self.high_prices:
+                self.high_prices[idx] = current_price
+            else:
+                self.high_prices[idx] = max(self.high_prices[idx], current_price)
+            
+            # トレーリングストップの計算
+            trailing_stop = self.high_prices[idx] * (1 - self.params["trailing_stop_pct"])
+            
+            # トレーリングストップ条件チェック
+            if current_price <= trailing_stop:
+                self.log_trade(f"VWAP Bounce イグジット: トレーリングストップ発動 日付={self.data.index[idx]}")
+                return -1
 
         return 0
 
