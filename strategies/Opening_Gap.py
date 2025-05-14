@@ -38,13 +38,32 @@ class OpeningGapStrategy(BaseStrategy):
         self.dow_data = dow_data
         self.price_column = price_column
         self.entry_prices = {}  # エントリー価格を記録する辞書
+        self.high_prices = {}  # トレーリングストップ用の最高値を記録する辞書
         
         # デフォルトパラメータの設定
         default_params = {
+            # 既存パラメータ
             "atr_threshold": 2.0,  # 高ボラティリティ判定の閾値
             "stop_loss": 0.02,     # ストップロス（2%）
             "take_profit": 0.05,   # 利益確定（5%）
-            "gap_threshold": 0.01  # ギャップアップ判定の閾値（1%）
+            "gap_threshold": 0.01, # ギャップアップ判定の閾値（1%）
+            
+            # 新規パラメータ
+            "entry_delay": 0,                 # エントリー遅延（0=当日エントリー）
+            "gap_direction": "both",          # ギャップ方向（"up", "down", "both"）
+            "dow_filter_enabled": False,      # ダウトレンドフィルター有効/無効
+            "dow_trend_days": 5,              # ダウトレンド判定期間
+            "min_vol_ratio": 1.0,             # 最小出来高倍率（前日比）
+            "volatility_filter": False,       # 高ボラ環境でのみ取引
+
+            # イグジット関連の新規パラメータ
+            "max_hold_days": 5,              # 最大保有期間
+            "consecutive_down_days": 1,      # 連続下落日数でイグジット
+            "trailing_stop_pct": 0.02,       # トレーリングストップ割合
+            "atr_stop_multiple": 1.5,        # ATRベースストップロス乗数
+            "partial_exit_enabled": False,   # 一部利確機能
+            "partial_exit_threshold": 0.03,  # 一部利確の閾値
+            "partial_exit_portion": 0.5      # 一部利確の割合
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -76,6 +95,43 @@ class OpeningGapStrategy(BaseStrategy):
         gap_up = open_price > previous_close * (1 + self.params["gap_threshold"])
         gap_down = open_price < previous_close * (1 - self.params["gap_threshold"])
 
+        # ダウトレンドフィルター
+        if self.params.get("dow_filter_enabled", False) and self.dow_data is not None:
+            # ダウのトレンド判定
+            trend_days = self.params.get("dow_trend_days", 5)
+            
+            # ダウデータの確認
+            current_date = self.data.index[idx]
+            dow_before_date = self.dow_data.index[self.dow_data.index < current_date]
+            
+            if len(dow_before_date) >= trend_days:
+                # 直近のダウデータを取得
+                recent_dow = self.dow_data.loc[dow_before_date[-trend_days:]].copy()
+                
+                # トレンド判定（単純な場合：終値の方向性）
+                dow_trend = "neutral"
+                first_close = recent_dow['Close'].iloc[0]
+                last_close = recent_dow['Close'].iloc[-1]
+                
+                if last_close > first_close * 1.01:  # 1%以上上昇
+                    dow_trend = "up"
+                elif last_close < first_close * 0.99:  # 1%以上下落
+                    dow_trend = "down"
+                
+                self.logger.info(f"ダウトレンド: {dow_trend}, 日付={current_date}")
+                
+                # ギャップアップの場合、ダウトレンドがアップの時のみエントリー
+                if gap_up and self.params.get("gap_direction") != "down":
+                    if dow_trend != "up" and self.params.get("gap_direction") == "up":
+                        self.logger.info(f"ダウトレンドフィルターでスキップ: ギャップアップだがダウトレンドが{dow_trend}")
+                        return 0
+                        
+                # ギャップダウンの場合、ダウトレンドがダウンの時のみエントリー
+                if gap_down and self.params.get("gap_direction") != "up":
+                    if dow_trend != "down" and self.params.get("gap_direction") == "down":
+                        self.logger.info(f"ダウトレンドフィルターでスキップ: ギャップダウンだがダウトレンドが{dow_trend}")
+                        return 0
+
         if gap_up:
             self.entry_prices[idx] = open_price
             self.logger.info(f"Opening Gap エントリーシグナル: ギャップアップ 日付={self.data.index[idx]}, 始値={open_price}, 前日終値={previous_close}")
@@ -89,16 +145,11 @@ class OpeningGapStrategy(BaseStrategy):
 
     def generate_exit_signal(self, idx: int) -> int:
         """
-        イグジットシグナルを生成する。
+        拡張されたイグジットシグナル生成。
         条件:
         - 上昇が止まった場合に利益確定する
         - ストップロスやテイクプロフィットを設定
-
-        Parameters:
-            idx (int): 現在のインデックス
-            
-        Returns:
-            int: イグジットシグナル（-1: イグジット, 0: なし）
+        - 最大保有期間、連続下落日数、ATRベースストップロス、トレーリングストップを追加
         """
         if idx < 1:  # 前日データが必要
             return 0
@@ -121,6 +172,48 @@ class OpeningGapStrategy(BaseStrategy):
         current_price = self.data[self.price_column].iloc[idx]
         previous_price = self.data[self.price_column].iloc[idx - 1]
 
+        # 最大保有期間チェック
+        if "max_hold_days" in self.params:
+            entry_idx_loc = self.data.index.get_loc(entry_indices[-1])
+            days_held = idx - entry_idx_loc
+            if days_held >= self.params["max_hold_days"]:
+                self.log_trade(f"Opening Gap イグジットシグナル: 最大保有期間超過 日付={self.data.index[idx]}, 価格={current_price}")
+                return -1
+
+        # 連続下落日数チェック
+        if "consecutive_down_days" in self.params and idx >= self.params["consecutive_down_days"]:
+            consecutive_days = self.params["consecutive_down_days"]
+            is_consecutive_down = True
+            for i in range(consecutive_days):
+                if self.data[self.price_column].iloc[idx-i] >= self.data[self.price_column].iloc[idx-i-1]:
+                    is_consecutive_down = False
+                    break
+            if is_consecutive_down:
+                self.log_trade(f"Opening Gap イグジットシグナル: 連続下落日数超過 日付={self.data.index[idx]}, 価格={current_price}")
+                return -1
+
+        # ATRベースのストップロス
+        if "atr_stop_multiple" in self.params:
+            atr_value = self.data['ATR'].iloc[latest_entry_idx]
+            atr_stop = entry_price - (atr_value * self.params["atr_stop_multiple"])
+            if current_price <= atr_stop:
+                self.log_trade(f"Opening Gap イグジットシグナル: ATRベースストップロス 日付={self.data.index[idx]}, 価格={current_price}")
+                return -1
+
+        # トレーリングストップ
+        if "trailing_stop_pct" in self.params:
+            # エントリー後の最高値を更新
+            if idx not in self.high_prices:
+                self.high_prices[idx] = current_price
+            else:
+                self.high_prices[idx] = max(self.high_prices[idx], current_price)
+            
+            # 最高値からの下落率でイグジット
+            trailing_stop = self.high_prices[idx] * (1 - self.params["trailing_stop_pct"])
+            if current_price <= trailing_stop:
+                self.log_trade(f"Opening Gap イグジットシグナル: トレーリングストップ 日付={self.data.index[idx]}, 価格={current_price}")
+                return -1
+
         # 上昇が止まった場合
         if current_price < previous_price:
             self.log_trade(f"Opening Gap イグジットシグナル: 上昇停止 日付={self.data.index[idx]}, 価格={current_price}")
@@ -139,17 +232,13 @@ class OpeningGapStrategy(BaseStrategy):
         return 0
 
     def backtest(self):
-        """
-        Opening Gap Strategy のバックテストを実行する。
-        
-        Returns:
-            pd.DataFrame: エントリー/イグジットシグナルが追加されたデータフレーム
-        """
-        # シグナル列の初期化
+        """バックテストに一部利確機能を追加"""
         self.data['Entry_Signal'] = 0
         self.data['Exit_Signal'] = 0
-
-        # 各日にちについてシグナルを計算
+        self.data['Position_Size'] = 0.0  # ポジションサイズ追跡用
+        self.data['Partial_Exit'] = 0     # 一部利確用
+        
+        # バックテストループ
         for idx in range(len(self.data)):
             # Entry_Signalがまだ立っていない場合のみエントリーシグナルをチェック
             if not self.data['Entry_Signal'].iloc[max(0, idx-1):idx+1].any():
@@ -161,6 +250,22 @@ class OpeningGapStrategy(BaseStrategy):
             exit_signal = self.generate_exit_signal(idx)
             if exit_signal == -1:
                 self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
+
+            # 一部利確処理
+            if self.params.get("partial_exit_enabled", False) and idx > 0:
+                if self.data['Position_Size'].iloc[idx-1] > 0 and self.data['Partial_Exit'].iloc[idx-1] == 0:
+                    entry_indices = self.data[self.data['Entry_Signal'] == 1].index
+                    if len(entry_indices) > 0:
+                        latest_entry_idx = self.data.index.get_loc(entry_indices[-1])
+                        entry_price = self.entry_prices.get(latest_entry_idx)
+                        current_price = self.data[self.price_column].iloc[idx]
+                        
+                        # 利益率が閾値を超えたら一部利確
+                        if entry_price and (current_price / entry_price - 1) >= self.params["partial_exit_threshold"]:
+                            portion = self.params["partial_exit_portion"]
+                            self.data.at[self.data.index[idx], 'Partial_Exit'] = portion
+                            self.data.at[self.data.index[idx], 'Position_Size'] -= portion
+                            self.log_trade(f"一部利確 {portion*100}%: 日付={self.data.index[idx]}")
 
         return self.data
 
