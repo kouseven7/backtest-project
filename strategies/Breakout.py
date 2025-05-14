@@ -121,24 +121,27 @@ class BreakoutStrategy(BaseStrategy):
         if len(entry_indices) == 0 or entry_indices[-1] >= self.data.index[idx]:
             return 0
             
-        # 最新のエントリー価格と高値を取得
-        latest_entry_idx = self.data.index.get_loc(entry_indices[-1])
-        if latest_entry_idx not in self.entry_prices:
-            self.entry_prices[latest_entry_idx] = self.data[self.price_column].iloc[latest_entry_idx]
+        # 最新のエントリーインデックス（日付）を取得
+        latest_entry_date = entry_indices[-1]
+        # インデックス位置（整数）を取得
+        latest_entry_pos = self.data.index.get_loc(latest_entry_date)
+
+        if latest_entry_date not in self.entry_prices:
+            self.entry_prices[latest_entry_date] = self.data[self.price_column].iloc[latest_entry_pos]
             
-        if latest_entry_idx not in self.high_prices and 'High' in self.data.columns:
-            self.high_prices[latest_entry_idx] = self.data['High'].iloc[latest_entry_idx]
-        elif latest_entry_idx not in self.high_prices:
-            self.high_prices[latest_entry_idx] = self.data[self.price_column].iloc[latest_entry_idx]
+        if latest_entry_date not in self.high_prices and 'High' in self.data.columns:
+            self.high_prices[latest_entry_date] = self.data['High'].iloc[latest_entry_pos]
+        elif latest_entry_date not in self.high_prices:
+            self.high_prices[latest_entry_date] = self.data[self.price_column].iloc[latest_entry_pos]
             
-        entry_price = self.entry_prices[latest_entry_idx]
-        high_price = self.high_prices[latest_entry_idx]
+        entry_price = self.entry_prices[latest_entry_date]
+        high_price = self.high_prices[latest_entry_date]
         current_price = self.data[self.price_column].iloc[idx]
         
         # 現在の高値を更新（トレーリングストップのために）
         if 'High' in self.data.columns and self.data['High'].iloc[idx] > high_price:
             high_price = self.data['High'].iloc[idx]
-            self.high_prices[latest_entry_idx] = high_price
+            self.high_prices[latest_entry_date] = high_price
 
         # 利確条件
         if current_price >= entry_price * (1 + self.params["take_profit"]):

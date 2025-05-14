@@ -12,6 +12,7 @@ from strategies.gc_strategy_signal import GCStrategy
 from strategies.Momentum_Investing import MomentumInvestingStrategy  # 追加インポート
 from strategies.Opening_Gap import OpeningGapStrategy  # 追加インポート
 from strategies.VWAP_Bounce import VWAPBounceStrategy  # 追加インポート
+from strategies.VWAP_Breakout import VWAPBreakoutStrategy  # VWAPブレイクアウト戦略を追加
 
 # 最適化モジュールのインポート
 from optimization.optimize_breakout_strategy import optimize_breakout_strategy
@@ -20,6 +21,7 @@ from optimization.optimize_contrarian_strategy import optimize_contrarian_strate
 from optimization.optimize_momentum_strategy import optimize_momentum_strategy  # 追加インポート
 from optimization.optimize_opening_gap_strategy import optimize_opening_gap_strategy  # 追加インポート
 from optimization.optimize_vwap_bounce_strategy import optimize_vwap_bounce_strategy  # 追加インポート
+from optimization.optimize_vwap_breakout_strategy import optimize_vwap_breakout_strategy  # ブレイクアウト戦略最適化を追加
 
 from data_fetcher import get_parameters_and_data
 from data_processor import preprocess_data
@@ -53,13 +55,19 @@ def main():
         'gc': optimize_gc_strategy,
         'momentum': optimize_momentum_strategy,
         'opening_gap': optimize_opening_gap_strategy,
-        'vwap_bounce': optimize_vwap_bounce_strategy,  # この行を追加
+        'vwap_bounce': optimize_vwap_bounce_strategy,
+        'vwap_breakout': optimize_vwap_breakout_strategy,  # VWAPブレイクアウト戦略の最適化関数を追加
     }
     
     if args.strategy in strategy_map:
         logger.info(f"{args.strategy}戦略の最適化を開始...")
         optimize_func = strategy_map[args.strategy]
-        results = optimize_func(stock_data, use_parallel=args.parallel)
+        
+        # VWAPブレイクアウト戦略は市場インデックスデータが必要
+        if args.strategy == 'vwap_breakout':
+            results = optimize_func(stock_data, index_data, use_parallel=args.parallel)
+        else:
+            results = optimize_func(stock_data, use_parallel=args.parallel)
         
         # 最適なパラメータを表示
         if not results.empty:
