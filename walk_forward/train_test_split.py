@@ -14,7 +14,7 @@ Dependencies:
 import pandas as pd
 from typing import List, Tuple
 
-def split_data_for_walk_forward(data: pd.DataFrame, train_size: int, test_size: int) -> List[Tuple[pd.DataFrame, pd.DataFrame]]:
+def split_data_for_walk_forward(data: pd.DataFrame, train_size: int, test_size: int):
     """
     ウォークフォワードテスト用に日次データをトレーニング期間とテスト期間に分割する。
 
@@ -33,9 +33,9 @@ def split_data_for_walk_forward(data: pd.DataFrame, train_size: int, test_size: 
         return splits
 
     for start in range(0, total_size - train_size - test_size + 1, test_size):
-        train_data = data.iloc[start:start + train_size]
-        test_data = data.iloc[start + train_size:start + train_size + test_size]
-        splits.append((train_data, test_data))
+        train_idx = data.index[start:start + train_size]
+        test_idx = data.index[start + train_size:start + train_size + test_size]
+        splits.append((train_idx, test_idx))
     return splits
 
 if __name__ == "__main__":
