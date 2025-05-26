@@ -33,8 +33,8 @@ def split_data_for_walk_forward(data: pd.DataFrame, train_size: int, test_size: 
         return splits
 
     for start in range(0, total_size - train_size - test_size + 1, test_size):
-        train_idx = data.index[start:start + train_size]
-        test_idx = data.index[start + train_size:start + train_size + test_size]
+        train_idx = list(range(start, start + train_size))
+        test_idx = list(range(start + train_size, start + train_size + test_size))
         splits.append((train_idx, test_idx))
     return splits
 
