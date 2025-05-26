@@ -8,7 +8,8 @@ PARAM_GRID = {
     "breakout_buffer": [0.005, 0.01, 0.015, 0.02],  # ブレイクアウト判定閾値
     "take_profit": [0.02, 0.03, 0.04, 0.05, 0.07],
     "trailing_stop": [0.01, 0.02, 0.03, 0.04],      # トレーリングストップ
-    "look_back": [1, 2, 3]
+    "look_back": [1, 2, 3],
+    "max_hold_days": [5, 10, 15]                    # 最大保有期間（必要なら追加）
 }
 
 # パラメータの説明
@@ -17,13 +18,16 @@ PARAM_DESCRIPTIONS = {
     "breakout_buffer": "ブレイクアウト判定閾値 - 前日高値からこの割合上昇したらブレイクアウトと判断",
     "take_profit": "利益確定率 - エントリー価格からこの割合上昇したら利確",
     "trailing_stop": "トレーリングストップ - 高値からこの割合下落したら損切り",
-    "look_back": "ブレイクアウト判定に使用する過去の日数"
+    "look_back": "ブレイクアウト判定に使用する過去の日数",
+    "max_hold_days": "最大保有期間（日数）"
 }
 
 # 最適化の目的関数設定
-OBJECTIVE_CONFIG = [
+OBJECTIVES_CONFIG = [
     {"name": "sharpe_ratio", "weight": 1.0},
-    {"name": "risk_adjusted_return", "weight": 0.5}
+    {"name": "risk_adjusted_return", "weight": 0.5},
+    {"name": "sortino_ratio", "weight": 0.6},
+    {"name": "win_rate", "weight": 0.4}
 ]
 
 # 交差検証設定

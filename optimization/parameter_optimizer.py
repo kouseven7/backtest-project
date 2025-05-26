@@ -179,7 +179,16 @@ class ParameterOptimizer:
             scores = []
             for i, (train_idx, test_idx) in enumerate(self.cv_splits):
                 logger.debug(f"交差検証 {i+1}/{len(self.cv_splits)} を実行中")
-                test_data = self.data.iloc[test_idx]
+                # test_idxがnp.ndarrayやpd.Indexならリスト化
+                if isinstance(test_idx, (np.ndarray, pd.Index)):
+                    test_idx = test_idx.tolist()
+                elif isinstance(test_idx, tuple):
+                    test_idx = list(np.array(test_idx).flatten())
+                # int型インデックスならiloc、そうでなければloc
+                if all(isinstance(x, (int, np.integer)) for x in test_idx):
+                    test_data = self.data.iloc[test_idx]
+                else:
+                    test_data = self.data.loc[test_idx]
                 try:
                     score = self._run_backtest_with_params(test_data, params)
                     scores.append(score)

@@ -22,6 +22,7 @@ from optimization.optimize_momentum_strategy import optimize_momentum_strategy  
 from optimization.optimize_opening_gap_strategy import optimize_opening_gap_strategy  # 追加インポート
 from optimization.optimize_vwap_bounce_strategy import optimize_vwap_bounce_strategy  # 追加インポート
 from optimization.optimize_vwap_breakout_strategy import optimize_vwap_breakout_strategy  # ブレイクアウト戦略最適化を追加
+from optimization.configs.breakout_optimization import PARAM_GRID
 
 from data_fetcher import get_parameters_and_data
 from data_processor import preprocess_data

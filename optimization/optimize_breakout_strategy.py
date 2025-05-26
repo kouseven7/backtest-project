@@ -13,7 +13,7 @@ sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")
 
 from strategies.Breakout import BreakoutStrategy
 from optimization.parameter_optimizer import ParameterOptimizer, ParallelParameterOptimizer
-from optimization.configs.breakout_strategy_optimization import PARAM_GRID, OBJECTIVES_CONFIG
+from optimization.configs.breakout_optimization import PARAM_GRID, OBJECTIVES_CONFIG
 from optimization.objective_functions import create_custom_objective
 from walk_forward.train_test_split import split_data_for_walk_forward
 from data_processor import preprocess_data
