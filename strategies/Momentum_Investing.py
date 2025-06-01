@@ -65,33 +65,35 @@ class MomentumInvestingStrategy(BaseStrategy):
         merged_params = {**default_params, **(params or {})}
         super().__init__(data, merged_params)
         
+        # データは必ずコピーして保持
+        self.data = data.copy()
+
     def initialize_strategy(self):
         """
         戦略の初期化処理
         """
         super().initialize_strategy()
-        
-        # MA種類の選択機能
         ma_type = self.params.get("ma_type", "SMA")
         sma_short = self.params["sma_short"]
         sma_long = self.params["sma_long"]
-        
-        # 移動平均の計算
-        if ma_type == "SMA":
-            self.data[f'MA_{sma_short}'] = calculate_sma(self.data, self.price_column, sma_short)
-            self.data[f'MA_{sma_long}'] = calculate_sma(self.data, self.price_column, sma_long)
-        elif ma_type == "EMA":
-            self.data[f'MA_{sma_short}'] = self.data[self.price_column].ewm(span=sma_short, adjust=False).mean()
-            self.data[f'MA_{sma_long}'] = self.data[self.price_column].ewm(span=sma_long, adjust=False).mean()
-        else:
-            # デフォルトの場合
-            self.data[f'MA_{sma_short}'] = calculate_sma(self.data, self.price_column, sma_short)
-            self.data[f'MA_{sma_long}'] = calculate_sma(self.data, self.price_column, sma_long)
-        
-        # その他の指標計算（既存のまま）
-        self.data['RSI'] = calculate_rsi(self.data[self.price_column], self.params["rsi_period"])
-        self.data['MACD'], self.data['Signal_Line'] = calculate_macd(self.data, self.price_column)
-        self.data['ATR'] = calculate_atr(self.data, self.price_column)
+
+        # 既に指標列がある場合は再計算しない
+        if f'MA_{sma_short}' not in self.data.columns:
+            if ma_type == "SMA":
+                self.data[f'MA_{sma_short}'] = calculate_sma(self.data, self.price_column, sma_short)
+            elif ma_type == "EMA":
+                self.data[f'MA_{sma_short}'] = self.data[self.price_column].ewm(span=sma_short, adjust=False).mean()
+        if f'MA_{sma_long}' not in self.data.columns:
+            if ma_type == "SMA":
+                self.data[f'MA_{sma_long}'] = calculate_sma(self.data, self.price_column, sma_long)
+            elif ma_type == "EMA":
+                self.data[f'MA_{sma_long}'] = self.data[self.price_column].ewm(span=sma_long, adjust=False).mean()
+        if 'RSI' not in self.data.columns:
+            self.data['RSI'] = calculate_rsi(self.data[self.price_column], self.params["rsi_period"])
+        if 'MACD' not in self.data.columns or 'Signal_Line' not in self.data.columns:
+            self.data['MACD'], self.data['Signal_Line'] = calculate_macd(self.data, self.price_column)
+        if 'ATR' not in self.data.columns:
+            self.data['ATR'] = calculate_atr(self.data, self.price_column)
 
     def generate_entry_signal(self, idx: int) -> int:
         """
@@ -112,8 +114,8 @@ class MomentumInvestingStrategy(BaseStrategy):
         sma_long_key = 'MA_' + str(self.params["sma_long"])
         rsi_lower = self.params["rsi_lower"]
         rsi_upper = self.params["rsi_upper"]
-        
-        if idx < self.params["sma_long"]:  # 必要な履歴データがない場合
+
+        if idx < self.params["sma_long"]:
             return 0
 
         current_price = self.data[self.price_column].iloc[idx]
@@ -123,64 +125,51 @@ class MomentumInvestingStrategy(BaseStrategy):
         macd = self.data['MACD'].iloc[idx]
         signal_line = self.data['Signal_Line'].iloc[idx]
 
-        # 条件カウント方式（さらに厳しく）
+        # 条件カウント方式（やや厳しめ）
         condition_count = 0
-        required_conditions = 0
-        
-        # 株価が20日MAの上にある (必須条件)
+
+        # 必須条件：株価が短期MAの上
         if current_price > sma_short:
             condition_count += 1
-            required_conditions += 1
         else:
             return 0  # 必須条件
-        
-        # 株価が50日MAの上にある (必須条件)
+
+        # 株価が長期MAの上
         if current_price > sma_long:
             condition_count += 1
-            required_conditions += 1
-        else:
-            return 0  # 必須条件
-            
-        # 20日MAが50日MAの上にある
-        if sma_short > sma_long and self.data[sma_short_key].iloc[idx - 1] <= self.data[sma_long_key].iloc[idx - 1]:
+
+        # 20日MAが50日MAの上
+        if sma_short > sma_long:
             condition_count += 1
-            
-        # RSIが条件範囲内
-        if rsi_lower <= rsi < rsi_upper:
+
+        # RSIが条件範囲内（範囲を広げる）
+        if rsi_lower <= rsi <= rsi_upper:
             condition_count += 1
-            
-        # MACDの条件 - より厳格な判定
-        if macd > signal_line and self.data['MACD'].iloc[idx - 1] <= self.data['Signal_Line'].iloc[idx - 1]:
+
+        # MACDがシグナルラインを上抜け or MACD > 0
+        if (macd > signal_line and self.data['MACD'].iloc[idx - 1] <= self.data['Signal_Line'].iloc[idx - 1]) or (macd > 0):
             condition_count += 1
-        
-        # 出来高条件
+
+        # 出来高条件（緩和：前日比または平均の1.05倍）
         if self.volume_column in self.data.columns:
             current_volume = self.data[self.volume_column].iloc[idx]
             previous_volume = self.data[self.volume_column].iloc[idx - 1]
             avg_volume = self.data[self.volume_column].iloc[max(0, idx-10):idx].mean()
-            
-            # 直近の出来高と過去10日平均の両方を確認（さらに厳格）
-            if detect_volume_increase(current_volume, previous_volume, 
-                                     threshold=self.params["volume_threshold"]) and current_volume > avg_volume * 1.1:
+            if detect_volume_increase(current_volume, previous_volume, threshold=self.params["volume_threshold"]) or current_volume > avg_volume * 1.05:
                 condition_count += 1
-                
-        # プルバックからの反発またはブレイクアウト
+
+        # プルバックまたはブレイクアウト（緩和）
         pullback_or_breakout = False
-        
-        # プルバックからの反発（さらに厳格に判定）
-        if current_price < sma_short * 0.985 and current_price > sma_short * 0.975:
+        if current_price < sma_short * 0.99 and current_price > sma_short * 0.97:
             pullback_or_breakout = True
-            
-        # ブレイクアウト（直近の抵抗線を上抜け - さらに明確なブレイクアウトを要求）
         recent_high = self.data['High'].iloc[max(0, idx - 15):idx].max()
-        if current_price > recent_high * 1.02:  # 2%以上の明確なブレイクアウト
+        if current_price > recent_high * 1.01:  # 1%以上のブレイクアウト
             pullback_or_breakout = True
-            
         if pullback_or_breakout:
             condition_count += 1
-        
-        # エントリー条件 - 必須条件を含めて5つ以上満たす（さらに厳しく）
-        if condition_count >= 5 and required_conditions == 2:  
+
+        # エントリー条件 - 必須条件＋2つ以上（合計3つ以上）でエントリー
+        if condition_count >= 3:
             self.entry_prices[idx] = current_price
             self.log_trade(f"Momentum Investing エントリーシグナル: 日付={self.data.index[idx]}, 価格={current_price}, 条件数={condition_count}/7")
             return 1
@@ -290,13 +279,11 @@ class MomentumInvestingStrategy(BaseStrategy):
     def backtest(self):
         """モメンタム戦略のバックテストを実行（部分利確機能付き）"""
         # シグナル列の初期化
-        self.data['Entry_Signal'] = 0
-        self.data['Exit_Signal'] = 0
-        self.data['Position'] = 0  # ポジションサイズを追跡
-        
-        # 一部利確のための追加列
-        self.data['Partial_Exit'] = 0
-        self.data['Profit_Pct'] = 0  # 利益率を記録
+        self.data.loc[:, 'Entry_Signal'] = 0
+        self.data.loc[:, 'Exit_Signal'] = 0
+        self.data.loc[:, 'Position'] = 0
+        self.data.loc[:, 'Partial_Exit'] = 0
+        self.data.loc[:, 'Profit_Pct'] = 0
 
         for idx in range(len(self.data)):
             # 既存のコード（エントリー/イグジットのロジック）

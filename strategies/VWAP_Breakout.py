@@ -124,15 +124,39 @@ class VWAPBreakoutStrategy(BaseStrategy):
 
         sma_short_key = 'SMA_' + str(self.params["sma_short"])
         sma_long_key = 'SMA_' + str(self.params["sma_long"])
-        
-        index_price = self.index_data[self.price_column].iloc[idx]
-        index_sma_short = self.index_data[sma_short_key].iloc[idx]
-        index_sma_long = self.index_data[sma_long_key].iloc[idx]
 
-        # 市場全体が上昇トレンドにある条件
-        return index_price > index_sma_short > index_sma_long and \
-               self.index_data[sma_short_key].iloc[idx] > self.index_data[sma_short_key].iloc[idx - 1] and \
-               self.index_data[sma_long_key].iloc[idx] > self.index_data[sma_long_key].iloc[idx - 1]
+        date = self.data.index[idx]
+        if date not in self.index_data.index:
+            return False
+
+        try:
+            index_price = float(np.asarray(self.index_data.loc[date, self.price_column]))
+            index_sma_short = float(np.asarray(self.index_data.loc[date, sma_short_key]))
+            index_sma_long = float(np.asarray(self.index_data.loc[date, sma_long_key]))
+        except Exception:
+            return False
+        if np.isnan(index_price) or np.isnan(index_sma_short) or np.isnan(index_sma_long):
+            return False
+
+        prev_idx = idx - 1
+        if prev_idx < 0:
+            return False
+        prev_date = self.data.index[prev_idx]
+        if prev_date not in self.index_data.index:
+            return False
+        try:
+            prev_index_sma_short = float(np.asarray(self.index_data.loc[prev_date, sma_short_key]))
+            prev_index_sma_long = float(np.asarray(self.index_data.loc[prev_date, sma_long_key]))
+        except Exception:
+            return False
+        if np.isnan(prev_index_sma_short) or np.isnan(prev_index_sma_long):
+            return False
+
+        return (
+            index_price > index_sma_short > index_sma_long and
+            index_sma_short > prev_index_sma_short and
+            index_sma_long > prev_index_sma_long
+        )
 
     def generate_entry_signal(self, idx: int) -> int:
         """
