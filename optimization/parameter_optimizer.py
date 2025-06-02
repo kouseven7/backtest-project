@@ -65,6 +65,12 @@ class ParameterOptimizer:
         for values in param_grid.values():
             self.total_combinations *= len(values)
         logger.info(f"パラメータの組み合わせ総数: {self.total_combinations}")
+        
+        self.param_keys = list(param_grid.keys())
+        self.param_values = list(param_grid.values())
+        self.param_combinations = [dict(zip(self.param_keys, comb)) for comb in itertools.product(*self.param_values)]
+        
+        self.logger = logger  # 追加
     
     def _default_objective(self, trade_results: Dict) -> float:
         """
@@ -189,6 +195,15 @@ class ParameterOptimizer:
                     test_data = self.data.iloc[test_idx]
                 else:
                     test_data = self.data.loc[test_idx]
+                # --- ここで test_data の行数をチェック ---
+                # 戦略ごとにウィンドウ長のキーを柔軟に取得
+                window_keys = ["sma_long", "long_window", "window", "ema_long"]  # 必要に応じて追加
+                window_lengths = [params[k] for k in window_keys if k in params]
+                min_window = max(window_lengths) if window_lengths else 50  # デフォルト50
+
+                if len(test_data) < max(min_window, 50, 26):  # 50, 26はMACD等のウィンドウ
+                    logger.warning(f"テストデータが短すぎます: {len(test_data)}行。パラメータ: {params}")
+                    return -np.inf
                 try:
                     score = self._run_backtest_with_params(test_data, params)
                     scores.append(score)
@@ -245,11 +260,22 @@ class ParameterOptimizer:
         Returns:
             str: 保存したファイルのパス
         """
-        if not self.results:
-            logger.warning("保存する結果がありません")
-            return ""
-            
-        results_df = pd.DataFrame(self.results).sort_values("score", ascending=False)
+        # 修正前
+        # if not self.results:
+        #     logger.warning("保存する結果がありません")
+        #     return ""
+
+        # 修正後
+        if isinstance(self.results, pd.DataFrame):
+            if self.results.empty:
+                logger.warning("保存する結果がありません")
+                return ""
+            results_df = self.results.sort_values("score", ascending=False)
+        else:
+            if not self.results:
+                logger.warning("保存する結果がありません")
+                return ""
+            results_df = pd.DataFrame(self.results).sort_values("score", ascending=False)
         
         # ファイル名が指定されていない場合は自動生成
         if filename is None:
@@ -303,20 +329,25 @@ class ParallelParameterOptimizer(ParameterOptimizer):
         """
         self.logger.info(f"並列グリッドサーチを開始します。パラメータ組み合わせ数: {len(self.param_combinations)}")
         start_time = time.time()
-        
-        # パラメータごとに評価を並列実行
+
+        # パラメータごとに評価を並列実行し、パラメータとスコアの辞書を返す
         results = Parallel(n_jobs=self.n_jobs)(
-            delayed(self._evaluate_params)(params) for params in self.param_combinations
+            delayed(self._evaluate_params_with_params)(params) for params in self.param_combinations
         )
-        
-        # 結果をデータフレームに変換
+
         results_df = pd.DataFrame(results)
-        
+
         if not results_df.empty:
-            # スコアでソート（降順）
             results_df = results_df.sort_values('score', ascending=False).reset_index(drop=True)
-            
+
         self.logger.info(f"並列グリッドサーチが完了しました。実行時間: {time.time() - start_time:.2f}秒")
-        
+
         self.results = results_df
         return results_df
+
+    def _evaluate_params_with_params(self, params):
+        try:
+            score = self._evaluate_params(params)
+            return {**params, "score": score}
+        except Exception as e:
+            return {**params, "score": -np.inf, "error": str(e)}

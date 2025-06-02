@@ -50,20 +50,22 @@ def optimize_momentum_strategy(data, use_parallel=False):
         logger.info("RSI指標を計算します")
         from indicators.basic_indicators import calculate_rsi
         data['RSI_14'] = calculate_rsi(data['Adj Close'], period=14)
-    
+
     if 'MACD' not in data.columns:
         logger.info("MACD指標を計算します")
         from indicators.momentum_indicators import calculate_macd
         data['MACD'], data['Signal_Line'] = calculate_macd(data, 'Adj Close')
-    
+
     if 'ATR' not in data.columns:
         logger.info("ATR指標を計算します")
         from indicators.volatility_indicators import calculate_atr
         data['ATR'] = calculate_atr(data, 'Adj Close')
-    
-    # ウォークフォワード分割
-    train_size = 252  # 約1年
-    test_size = 63    # 約3ヶ月
+
+    # --- ここで分割サイズを定義 ---
+    train_size = 504  # 2年
+    test_size = 252   # 1年
+
+    # --- ここで分割 ---
     splits = split_data_for_walk_forward(data, train_size, test_size)
     logger.info(f"ウォークフォワード分割: {len(splits)}分割")
     
@@ -140,9 +142,16 @@ def main():
     try:
         # データの取得
         logger.info("株価データを取得中...")
-        ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data(
-            ticker=args.ticker, start_date=args.start, end_date=args.end
-        )
+        ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data()
+        # コマンドライン引数で指定があれば上書き
+        if args.ticker is not None:
+            ticker = args.ticker
+        if args.start is not None:
+            start_date = args.start
+        if args.end is not None:
+            end_date = args.end
+        # データを日付でフィルタ
+        stock_data = stock_data[(stock_data.index >= pd.to_datetime(start_date)) & (stock_data.index <= pd.to_datetime(end_date))]
         
         # データの前処理
         stock_data = preprocess_data(stock_data)

@@ -286,48 +286,40 @@ class MomentumInvestingStrategy(BaseStrategy):
         self.data.loc[:, 'Profit_Pct'] = 0
 
         for idx in range(len(self.data)):
-            # 既存のコード（エントリー/イグジットのロジック）
-            
+            # --- 追加: シグナル生成 ---
+            entry_signal = self.generate_entry_signal(idx)
+            exit_signal = self.generate_exit_signal(idx)
+            self.data.at[self.data.index[idx], 'Entry_Signal'] = entry_signal
+            self.data.at[self.data.index[idx], 'Exit_Signal'] = exit_signal
+            # --- ここまで追加 ---
+
             # ポジションの更新
             if idx > 0:
                 self.data.at[self.data.index[idx], 'Position'] = self.data['Position'].iloc[idx-1]
-                
                 # エントリーシグナルでポジションを1に設定
                 if self.data['Entry_Signal'].iloc[idx] == 1:
                     self.data.at[self.data.index[idx], 'Position'] = 1
                     # エントリー価格を記録
                     entry_price = self.data[self.price_column].iloc[idx]
                     self.entry_prices[idx] = entry_price
-                
                 # イグジットシグナルでポジションを0に設定
                 if self.data['Exit_Signal'].iloc[idx] == -1:
                     self.data.at[self.data.index[idx], 'Position'] = 0
-            
             # 一部利確の処理（ポジションがある場合のみ）
             if idx > 0 and self.data['Position'].iloc[idx-1] > 0:
-                # 一部利確のパラメータ
                 partial_exit_pct = self.params.get("partial_exit_pct", 0.0)
                 partial_exit_threshold = self.params.get("partial_exit_threshold", 0.08)
-                
-                # 一部利確が有効で、まだ実行されていない場合
                 if partial_exit_pct > 0 and self.data['Partial_Exit'].iloc[idx-1] == 0:
-                    # エントリー価格を取得
                     entry_idx = self.data.index.get_loc(self.data[self.data['Entry_Signal'] == 1].index[-1])
                     entry_price = self.entry_prices.get(entry_idx)
-                    
                     if entry_price:
                         current_price = self.data[self.price_column].iloc[idx]
                         profit_pct = (current_price - entry_price) / entry_price
-                        
-                        # 利益率を記録
                         self.data.at[self.data.index[idx], 'Profit_Pct'] = profit_pct
-                        
-                        # 閾値を超えたら一部利確を実行
                         if profit_pct >= partial_exit_threshold:
                             self.data.at[self.data.index[idx], 'Partial_Exit'] = partial_exit_pct
                             self.data.at[self.data.index[idx], 'Position'] -= partial_exit_pct
                             self.log_trade(f"一部利確 {partial_exit_pct*100}%: 日付={self.data.index[idx]}, 価格={current_price}, 利益={profit_pct:.2%}")
-
         return self.data
 
 # テストコード

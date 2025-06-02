@@ -110,6 +110,21 @@ def win_rate_objective(trade_results: Dict) -> float:
     win_rate = calculate_win_rate(trades)
     return win_rate
 
+def expectancy_objective(trade_results: Dict) -> float:
+    """
+    期待値（1トレードあたりの平均損益）を最大化する目的関数
+
+    Parameters:
+        trade_results (Dict): バックテスト結果
+
+    Returns:
+        float: 期待値（高いほど良い）
+    """
+    trades = trade_results.get("取引履歴", pd.DataFrame())
+    if trades.empty:
+        return -np.inf
+    return calculate_expectancy(trades)
+
 class CompositeObjective:
     """
     複数の目的関数を重み付けして組み合わせるクラス
@@ -156,7 +171,8 @@ def create_custom_objective(objectives_config: List[Dict[str, Union[str, float]]
         "sortino_ratio": sortino_ratio_objective,
         "risk_adjusted_return": risk_adjusted_return_objective,
         "win_rate_expectancy": win_rate_expectancy_objective,
-        "win_rate": win_rate_objective  # ← この行を追加
+        "win_rate": win_rate_objective,
+        "expectancy": expectancy_objective,  # ← 追加
     }
     
     objectives_with_weights = []

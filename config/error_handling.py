@@ -22,6 +22,7 @@ Dependencies:
 import logging
 import pandas as pd
 import yfinance as yf
+import time
 from config.logger_config import setup_logger
 from config.file_utils import resolve_excel_file
 
@@ -47,21 +48,27 @@ def read_excel_parameters(excel_file: str, sheet_name: str) -> pd.DataFrame:
         logger.exception(f"Excelシート '{sheet_name}' の読み込み中にエラーが発生しました。")
         raise
 
-def fetch_stock_data(ticker: str, start_date: str, end_date: str) -> pd.DataFrame:
+def fetch_stock_data(ticker: str, start_date: str, end_date: str, max_retries=3, wait_sec=10) -> pd.DataFrame:
     """
-    yfinanceを用いて株価データを取得する。
+    yfinanceを用いて株価データを取得する（リトライ付き）。
     データが空の場合やその他のエラー発生時にはログ出力を行い、例外を再スローする。
     """
-    try:
-        logger.info(f"{ticker} のデータ取得を開始します: {start_date} から {end_date}")
-        data = yf.download(ticker, start=start_date, end=end_date)
-        if data.empty:
-            raise ValueError(f"{ticker} の取得データが空です。")
-        logger.info(f"{ticker} のデータ取得に成功しました。")
-        return data
-    except Exception as e:
-        logger.exception(f"{ticker} のデータ取得中にエラーが発生しました。")
-        raise
+    for attempt in range(max_retries):
+        try:
+            logger.info(f"{ticker} のデータ取得を開始します: {start_date} から {end_date}")
+            data = yf.download(ticker, start=start_date, end=end_date)
+            if data.empty:
+                raise ValueError(f"{ticker} の取得データが空です。")
+            logger.info(f"{ticker} のデータ取得に成功しました。")
+            return data
+        except Exception as e:
+            logger.warning(f"{ticker} のデータ取得失敗（{attempt+1}/{max_retries}回目）: {e}")
+            if attempt < max_retries - 1:
+                logger.info(f"{wait_sec}秒待機してリトライします...")
+                time.sleep(wait_sec)
+            else:
+                logger.error(f"{ticker} のデータ取得に失敗しました（リトライ上限到達）")
+                raise
 
 def calculate_moving_average(data: pd.DataFrame, column: str, window: int) -> pd.Series:
     """
