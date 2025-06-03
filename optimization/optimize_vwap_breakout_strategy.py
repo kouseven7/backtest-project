@@ -49,6 +49,12 @@ def optimize_vwap_breakout_strategy(data, index_data=None, use_parallel=False):
     
     # インデックスデータも同様に確認
     if index_data is not None and not isinstance(index_data.index, pd.DatetimeIndex):
+        # インデックスが "Ticker" など日付でない場合の対処
+        if index_data.index[0] == 'Ticker' or 'Date' in index_data.columns:
+            logger.info("インデックスデータにヘッダー行が含まれています。インデックスをリセットして再設定します。")
+            index_data = index_data.reset_index(drop=True)
+            if 'Date' in index_data.columns:
+                index_data = index_data.set_index('Date')
         try:
             index_data.index = pd.to_datetime(index_data.index)
         except Exception as e:
@@ -127,7 +133,7 @@ def optimize_vwap_breakout_strategy(data, index_data=None, use_parallel=False):
                 cv_splits=splits,
                 output_dir=output_dir,
                 n_jobs=-1,  # 使用可能なすべてのコアを使用
-                strategy_kwargs={'index_data': index_data}  # 重要: インデックスデータを渡す
+                index_data=index_data  # ここでindex_dataを渡す
             )
             results = optimizer.parallel_grid_search()
         except ImportError:
@@ -193,16 +199,18 @@ def main():
     try:
         # データの取得
         logger.info("株価データを取得中...")
-        ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data(
-            ticker=args.ticker, start_date=args.start, end_date=args.end
-        )
-        
-        # index_dataを使用しない場合はNoneに設定
+        ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data()  # 引数なしで呼び出し
+        # コマンドライン引数で上書き
+        if args.ticker is not None:
+            ticker = args.ticker
+        if args.start is not None:
+            start_date = args.start
+        if args.end is not None:
+            end_date = args.end
+        # 必要ならstock_data/index_dataを再取得するロジックを追加してもよい
         if args.no_index:
             logger.info("市場インデックスデータを使用しないオプションが指定されました")
             index_data = None
-        
-        # データの前処理
         stock_data = preprocess_data(stock_data)
         stock_data = compute_indicators(stock_data)
         

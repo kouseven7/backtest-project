@@ -20,6 +20,8 @@ Dependencies:
 import pandas as pd
 import numpy as np
 import sys
+import logging
+
 sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")  # プロジェクトのルートを追加
 
 from strategies.base_strategy import BaseStrategy
@@ -27,6 +29,15 @@ from indicators.basic_indicators import calculate_sma, calculate_vwap
 from indicators.volume_analysis import detect_volume_increase
 from indicators.momentum_indicators import calculate_macd
 from indicators.basic_indicators import calculate_rsi
+
+# Loggerの設定
+logger = logging.getLogger(__name__)
+if not logger.hasHandlers():
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('[%(levelname)s] %(asctime)s %(name)s: %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
 
 class VWAPBreakoutStrategy(BaseStrategy):
     def __init__(self, data: pd.DataFrame, index_data: pd.DataFrame, params=None, price_column: str = "Adj Close", volume_column: str = "Volume"):
@@ -47,8 +58,8 @@ class VWAPBreakoutStrategy(BaseStrategy):
         
         # デフォルトパラメータの設定
         default_params = {
-            "sma_short": 20,
-            "sma_long": 50,
+            "sma_short": 5,  # デバッグ用に短く
+            "sma_long": 10,  # デバッグ用に短く
             "rsi_period": 14,
             "volume_threshold": 1.2,
             "take_profit": 0.10,  # 10%
@@ -109,121 +120,87 @@ class VWAPBreakoutStrategy(BaseStrategy):
             self.index_data['SMA_' + str(sma_short)] = calculate_sma(self.index_data, self.price_column, sma_short)
             self.index_data['SMA_' + str(sma_long)] = calculate_sma(self.index_data, self.price_column, sma_long)
 
+        logger.info(f"[init] data.columns: {self.data.columns.tolist()}")
+        logger.info(f"[init] data.index[:5]: {self.data.index[:5].tolist()}")
+        logger.info(f"[init] data.shape: {self.data.shape}")
+
     def is_market_uptrend(self, idx: int) -> bool:
         """
         市場全体が上昇トレンドにあるかを確認する。
-
-        Parameters:
-            idx (int): 現在のインデックス
-
-        Returns:
-            bool: 市場全体が上昇トレンドにある場合は True、それ以外は False
+        （デバッグ用：常にTrueを返す）
         """
-        if self.index_data is None or idx < self.params["sma_long"]:
-            return False
-
-        sma_short_key = 'SMA_' + str(self.params["sma_short"])
-        sma_long_key = 'SMA_' + str(self.params["sma_long"])
-
-        date = self.data.index[idx]
-        if date not in self.index_data.index:
-            return False
-
-        try:
-            index_price = float(np.asarray(self.index_data.loc[date, self.price_column]))
-            index_sma_short = float(np.asarray(self.index_data.loc[date, sma_short_key]))
-            index_sma_long = float(np.asarray(self.index_data.loc[date, sma_long_key]))
-        except Exception:
-            return False
-        if np.isnan(index_price) or np.isnan(index_sma_short) or np.isnan(index_sma_long):
-            return False
-
-        prev_idx = idx - 1
-        if prev_idx < 0:
-            return False
-        prev_date = self.data.index[prev_idx]
-        if prev_date not in self.index_data.index:
-            return False
-        try:
-            prev_index_sma_short = float(np.asarray(self.index_data.loc[prev_date, sma_short_key]))
-            prev_index_sma_long = float(np.asarray(self.index_data.loc[prev_date, sma_long_key]))
-        except Exception:
-            return False
-        if np.isnan(prev_index_sma_short) or np.isnan(prev_index_sma_long):
-            return False
-
-        return (
-            index_price > index_sma_short > index_sma_long and
-            index_sma_short > prev_index_sma_short and
-            index_sma_long > prev_index_sma_long
-        )
+        return True
 
     def generate_entry_signal(self, idx: int) -> int:
         """
         エントリーシグナルを生成する。
-        
-        Parameters:
-            idx (int): 現在のインデックス
-            
-        Returns:
-            int: エントリーシグナル（1: エントリー, 0: なし）
+        条件を満たさない場合は理由をDEBUGログに出す（デバッグ用）
         """
-        sma_short_key = 'SMA_' + str(self.params["sma_short"])
-        sma_long_key = 'SMA_' + str(self.params["sma_long"])
-        
-        if idx < self.params["sma_long"]:  # 必要な履歴データがない場合
+        try:
+            sma_short_key = 'SMA_' + str(self.params["sma_short"])
+            sma_long_key = 'SMA_' + str(self.params["sma_long"])
+            if idx < self.params["sma_long"]:
+                logger.debug(f"[entry] idx={idx}: データ不足 (sma_long={self.params['sma_long']})")
+                return 0
+            current_price = self.data[self.price_column].iloc[idx]
+            sma_short = self.data[sma_short_key].iloc[idx]
+            sma_long = self.data[sma_long_key].iloc[idx]
+            vwap = self.data['VWAP'].iloc[idx]
+            previous_vwap = self.data['VWAP'].iloc[idx - 1]
+            current_volume = self.data[self.volume_column].iloc[idx]
+            previous_volume = self.data[self.volume_column].iloc[idx - 1]
+            # 市場全体が上昇トレンドにあるか確認
+            if not self.is_market_uptrend(idx):
+                logger.debug(f"[entry] idx={idx}: 市場トレンドNG")
+                return 0
+            # 株価が短期移動平均線や長期移動平均線の上に位置している
+            #if not (current_price > sma_short > sma_long):
+            #    logger.debug(f"[entry] idx={idx}: MA順序NG current={current_price}, sma_short={sma_short}, sma_long={sma_long}")
+            #    return 0
+            # --- 緩和: current_price > sma_long のみで判定 ---
+            if not (current_price > sma_long):
+                logger.debug(f"[entry] idx={idx}: MA順序NG(緩和) current={current_price}, sma_long={sma_long}")
+                return 0
+            # 移動平均線が上昇している
+            if not (sma_short > self.data[sma_short_key].iloc[idx - 1] and sma_long > self.data[sma_long_key].iloc[idx - 1]):
+                logger.debug(f"[entry] idx={idx}: MA上昇NG")
+                return 0
+            # VWAPが上昇している
+            if not (vwap > previous_vwap):
+                logger.debug(f"[entry] idx={idx}: VWAP上昇NG vwap={vwap}, prev={previous_vwap}")
+                return 0
+            # VWAPを上抜けしている
+            #vwap_breakout = current_price > vwap and self.data[self.price_column].iloc[idx - 1] <= vwap
+            #if not vwap_breakout:
+            #    logger.debug(f"[entry] idx={idx}: VWAPブレイクNG current={current_price}, vwap={vwap}, prev={self.data[self.price_column].iloc[idx-1]}")
+            #    return 0
+            # --- 緩和: current_price > vwap のみで判定 ---
+            if not (current_price > vwap):
+                logger.debug(f"[entry] idx={idx}: VWAPブレイクNG(緩和) current={current_price}, vwap={vwap}")
+                return 0
+            # ブレイク率チェック
+            #if self.params.get("breakout_min_percent", 0) > 0:
+            #    min_breakout = vwap * (1 + self.params["breakout_min_percent"])
+            #    if current_price <= min_breakout:
+            #        logger.debug(f"[entry] idx={idx}: ブレイク率NG current={current_price}, min={min_breakout}")
+            #        return 0
+            # --- 緩和: ブレイク率チェックをスキップ ---
+            # 何もしない
+            # ブレイク持続確認
+            if self.params.get("confirmation_bars", 0) > 0:
+                for i in range(1, min(self.params["confirmation_bars"] + 1, idx + 1)):
+                    if self.data[self.price_column].iloc[idx - i] <= vwap:
+                        logger.debug(f"[entry] idx={idx}: 確認バーNG idx-i={idx-i}")
+                        return 0
+            # 出来高が増加している
+            if not detect_volume_increase(current_volume, previous_volume, threshold=self.params["volume_threshold"]):
+                logger.debug(f"[entry] idx={idx}: 出来高増加NG current={current_volume}, prev={previous_volume}")
+                return 0
+            logger.info(f"VWAP Breakout エントリーシグナル: 日付={self.data.index[idx]}, 価格={current_price}")
+            return 1
+        except Exception as e:
+            logger.error(f"[entry] idx={idx}: 例外発生: {e}", exc_info=True)
             return 0
-
-        current_price = self.data[self.price_column].iloc[idx]
-        sma_short = self.data[sma_short_key].iloc[idx]
-        sma_long = self.data[sma_long_key].iloc[idx]
-        vwap = self.data['VWAP'].iloc[idx]
-        previous_vwap = self.data['VWAP'].iloc[idx - 1]
-        current_volume = self.data[self.volume_column].iloc[idx]
-        previous_volume = self.data[self.volume_column].iloc[idx - 1]
-
-        # 市場全体が上昇トレンドにあるか確認
-        if not self.is_market_uptrend(idx):
-            return 0
-
-        # 株価が短期移動平均線や長期移動平均線の上に位置している
-        if not (current_price > sma_short > sma_long):
-            return 0
-
-        # 移動平均線が上昇している
-        if not (sma_short > self.data[sma_short_key].iloc[idx - 1] and 
-                sma_long > self.data[sma_long_key].iloc[idx - 1]):
-            return 0
-
-        # VWAPが上昇している
-        if not (vwap > previous_vwap):
-            return 0
-
-        # VWAPを上抜けしている
-        vwap_breakout = current_price > vwap and self.data[self.price_column].iloc[idx - 1] <= vwap
-        if not vwap_breakout:
-            return 0
-
-        # ブレイク率チェック
-        if self.params.get("breakout_min_percent", 0) > 0:
-            min_breakout = vwap * (1 + self.params["breakout_min_percent"])
-            if current_price <= min_breakout:
-                return 0  # 最小ブレイク率に達していない
-
-        # ブレイク持続確認
-        if self.params.get("confirmation_bars", 0) > 0:
-            confirmation_needed = True
-            for i in range(1, min(self.params["confirmation_bars"] + 1, idx + 1)):
-                if self.data[self.price_column].iloc[idx - i] <= vwap:
-                    return 0  # 確認期間内にVWAPより下になった
-
-        # 出来高が増加している
-        if not detect_volume_increase(current_volume, previous_volume, threshold=self.params["volume_threshold"]):
-            return 0
-
-        # すべての条件を満たした場合、エントリーシグナルを返す
-        self.log_trade(f"VWAP Breakout エントリーシグナル: 日付={self.data.index[idx]}, 価格={current_price}")
-        return 1
 
     def generate_exit_signal(self, idx: int) -> int:
         """

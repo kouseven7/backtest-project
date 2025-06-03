@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import time
 import os
-from typing import Dict, List, Callable, Any, Optional
+from typing import Dict, List, Callable, Any
 from joblib import Parallel, delayed
 from tqdm import tqdm
 import itertools
@@ -21,11 +21,12 @@ class ParallelParameterOptimizer(ParameterOptimizer):
                  data: pd.DataFrame, 
                  strategy_class: type,
                  param_grid: Dict[str, List[Any]],
-                 objective_function: Callable = None,
+                 objective_function = None,
                  cv_splits=None,
                  output_dir: str = "backtest_results",
                  n_jobs: int = -1,
-                 verbose: int = 10):
+                 verbose: int = 10,
+                 index_data = None):
         """
         並列パラメータ最適化クラスの初期化。
         
@@ -38,10 +39,12 @@ class ParallelParameterOptimizer(ParameterOptimizer):
             output_dir (str): 結果保存先ディレクトリ
             n_jobs (int): 並列ジョブ数 (-1は全コア使用)
             verbose (int): 詳細表示レベル (0=なし、10=進捗バー表示)
+            index_data (pd.DataFrame, optional): 市場インデックスデータ
         """
         super().__init__(data, strategy_class, param_grid, objective_function, cv_splits, output_dir)
         self.n_jobs = n_jobs
         self.verbose = verbose
+        self.index_data = index_data  # 追加: VWAPBreakoutStrategy用
         logger.info(f"並列処理を初期化: ジョブ数={n_jobs}")
         
     def parallel_grid_search(self) -> pd.DataFrame:
@@ -133,3 +136,22 @@ class ParallelParameterOptimizer(ParameterOptimizer):
         except Exception as e:
             # エラーが発生した場合は最低スコアとエラーメッセージを返す
             return -np.inf, str(e)
+    
+    def _run_backtest_with_params(self, data, params):
+        """
+        指定されたパラメータでバックテストを実行（VWAPBreakoutStrategy用にindex_dataを渡す）
+        """
+        try:
+            # index_dataが必要な戦略の場合は渡す
+            if self.index_data is not None:
+                strategy = self.strategy_class(data, self.index_data, params=params)
+            else:
+                strategy = self.strategy_class(data, params=params)
+            result_data = strategy.backtest()
+            from trade_simulation import simulate_trades
+            trade_results = simulate_trades(result_data, "最適化中")
+            score = self.objective_function(trade_results)
+            return score
+        except Exception as e:
+            logger.error(f"バックテスト実行中にエラー: {str(e)}")
+            raise
