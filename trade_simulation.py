@@ -153,24 +153,27 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
     for entry_idx, entry_date, exit_idx, exit_date in entry_exit_pairs:
         strategy_name = data["Strategy"].iloc[entry_idx] if "Strategy" in data.columns and data["Strategy"].iloc[entry_idx] != "" else "デフォルト戦略"
         position_size = data["Position_Size"].iloc[entry_idx] if "Position_Size" in data.columns else 1
-        
+        # 部分利確があれば反映
+        partial_exit = data["Partial_Exit"].iloc[exit_idx] if "Partial_Exit" in data.columns else 0
+
         # エントリー価格を取得
         entry_price = data["Close"].iloc[entry_idx] if "Close" in data.columns else data["Adj Close"].iloc[entry_idx]
-        
         # イグジット価格を取得
         exit_price = data["Close"].iloc[exit_idx] if "Close" in data.columns else data["Adj Close"].iloc[exit_idx]
-        
-        # 損益計算
-        profit = exit_price - entry_price
-        
+
+        # 損益計算（部分利確・ポジションサイズ考慮）
+        # 部分利確が0なら全量、0.3なら70%分の損益
+        effective_position = position_size * (1 - partial_exit)
+        profit = (exit_price - entry_price) * effective_position
+
         # 取引量と手数料
-        trade_amount = 100000 * position_size  # 10万円 × ポジションサイズ
+        trade_amount = 100000 * effective_position  # 10万円 × 実効ポジションサイズ
         fee = trade_amount * 0.001  # 0.1%手数料
         profit_after_fee = (profit / entry_price) * trade_amount - fee
-        
+
         # リスク管理の状態をJSON文字列に変換して保存
         risk_state_str = str({})  # 簡略化のため空の辞書を使用
-        
+
         # 取引履歴に追加
         trade_history.loc[len(trade_history)] = [
             entry_date, 
@@ -183,10 +186,9 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
             fee,
             risk_state_str
         ]
-        
         cum_profit += profit_after_fee
         logger.debug(f"取引: エントリー {entry_date} @ {entry_price}, イグジット {exit_date} @ {exit_price}, 損益: {profit_after_fee:.2f}円")
-        
+    
     logger.info(f"合計取引数: {len(trade_history)}件, 合計損益: {cum_profit:.2f}円")
     
     # 損益推移の計算

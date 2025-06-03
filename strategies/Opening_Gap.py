@@ -20,11 +20,12 @@ sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")  # プロジェ
 
 import pandas as pd
 import numpy as np
+from typing import Dict, Any, Optional
 from strategies.base_strategy import BaseStrategy
-from indicators.trend_analysis import detect_high_volatility
+# from indicators.trend_analysis import detect_high_volatility  # 未使用のためコメントアウト
 
 class OpeningGapStrategy(BaseStrategy):
-    def __init__(self, data: pd.DataFrame, dow_data: pd.DataFrame, params=None, price_column: str = "Adj Close"):
+    def __init__(self, data: pd.DataFrame, dow_data: pd.DataFrame, params: Optional[Dict[str, Any]] = None, price_column: str = "Adj Close"):
         """
         Opening Gap Strategy の初期化。
 
@@ -41,7 +42,7 @@ class OpeningGapStrategy(BaseStrategy):
         self.high_prices = {}  # トレーリングストップ用の最高値を記録する辞書
         
         # デフォルトパラメータの設定
-        default_params = {
+        default_params: Dict[str, Any] = {
             # 既存パラメータ
             "atr_threshold": 2.0,  # 高ボラティリティ判定の閾値
             "stop_loss": 0.02,     # ストップロス（2%）
@@ -67,7 +68,7 @@ class OpeningGapStrategy(BaseStrategy):
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
-        merged_params = {**default_params, **(params or {})}
+        merged_params: Dict[str, Any] = {**default_params, **(params or {})}
         super().__init__(data, merged_params)
 
     def generate_entry_signal(self, idx: int) -> int:
@@ -241,15 +242,17 @@ class OpeningGapStrategy(BaseStrategy):
         # バックテストループ
         for idx in range(len(self.data)):
             # Entry_Signalがまだ立っていない場合のみエントリーシグナルをチェック
-            if not self.data['Entry_Signal'].iloc[max(0, idx-1):idx+1].any():
+            entry_signal_window = self.data['Entry_Signal'].iloc[max(0, idx-1):idx+1]
+            if not bool(entry_signal_window.values.any()):
                 entry_signal = self.generate_entry_signal(idx)
                 if entry_signal == 1:
                     self.data.at[self.data.index[idx], 'Entry_Signal'] = 1
-            
+                    self.data.at[self.data.index[idx], 'Position_Size'] = 1.0  # エントリー時にポジションサイズを1に設定
             # イグジットシグナルを確認
             exit_signal = self.generate_exit_signal(idx)
             if exit_signal == -1:
                 self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
+                self.data.at[self.data.index[idx], 'Position_Size'] = 0.0  # イグジット時にポジションサイズを0に設定
 
             # 一部利確処理
             if self.params.get("partial_exit_enabled", False) and idx > 0:

@@ -7,6 +7,7 @@ import time
 import argparse
 import pandas as pd
 from datetime import datetime
+from typing import Dict, Any
 
 # プロジェクトのルートディレクトリをパスに追加
 sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")
@@ -20,9 +21,45 @@ from data_processor import preprocess_data
 from indicators.indicator_calculator import compute_indicators
 from data_fetcher import get_parameters_and_data
 from config.logger_config import setup_logger
+from optimization.parallel_optimizer import ParallelParameterOptimizer
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\optimization.log")
+
+class OpeningGapParameterOptimizer(ParameterOptimizer):
+    def __init__(self, data, dow_data, strategy_class, param_grid, objective_function, cv_splits=None, output_dir="backtest_results"):
+        super().__init__(data, strategy_class, param_grid, objective_function, cv_splits, output_dir)
+        self.dow_data = dow_data
+
+    def _run_backtest_with_params(self, data: pd.DataFrame, params: Dict[str, Any]) -> float:
+        try:
+            # OpeningGapStrategyはdow_dataが必要
+            strategy = self.strategy_class(data, self.dow_data, params=params)
+            result_data = strategy.backtest()
+            from trade_simulation import simulate_trades
+            trade_results = simulate_trades(result_data, "最適化中")
+            score = self.objective_function(trade_results)
+            return score
+        except Exception as e:
+            logger.error(f"バックテスト実行中にエラー: {str(e)}")
+            raise
+
+class OpeningGapParallelParameterOptimizer(ParallelParameterOptimizer):
+    def __init__(self, data, dow_data, strategy_class, param_grid, objective_function, cv_splits=None, output_dir="backtest_results", n_jobs=-1, verbose=10):
+        super().__init__(data, strategy_class, param_grid, objective_function, cv_splits, output_dir, n_jobs, verbose)
+        self.dow_data = dow_data
+
+    def _run_backtest_with_params(self, data: pd.DataFrame, params: Dict[str, Any]) -> float:
+        try:
+            strategy = self.strategy_class(data, self.dow_data, params=params)
+            result_data = strategy.backtest()
+            from trade_simulation import simulate_trades
+            trade_results = simulate_trades(result_data, "最適化中")
+            score = self.objective_function(trade_results)
+            return score
+        except Exception as e:
+            logger.error(f"バックテスト実行中にエラー: {str(e)}")
+            raise
 
 def optimize_opening_gap_strategy(data, dow_data=None, use_parallel=False):
     """
@@ -76,39 +113,40 @@ def optimize_opening_gap_strategy(data, dow_data=None, use_parallel=False):
         logger.info("並列処理を使用して最適化を実行します")
         try:
             from optimization.parameter_optimizer import ParallelParameterOptimizer
-            optimizer = ParallelParameterOptimizer(
+            # OpeningGapParallelParameterOptimizerを使う
+            optimizer = OpeningGapParallelParameterOptimizer(
                 data=data,
+                dow_data=dow_data,
                 strategy_class=OpeningGapStrategy,
                 param_grid=PARAM_GRID,
                 objective_function=custom_objective,
                 cv_splits=splits,
                 output_dir=output_dir,
-                n_jobs=-1,  # 使用可能なすべてのコアを使用
-                strategy_kwargs={'dow_data': dow_data}  # 追加のキーワード引数
+                n_jobs=-1
             )
             results = optimizer.parallel_grid_search()
         except ImportError:
             logger.warning("ParallelParameterOptimizerが実装されていないため、通常処理を使用します")
-            optimizer = ParameterOptimizer(
+            optimizer = OpeningGapParameterOptimizer(
                 data=data,
+                dow_data=dow_data,
                 strategy_class=OpeningGapStrategy,
                 param_grid=PARAM_GRID,
                 objective_function=custom_objective,
                 cv_splits=splits,
-                output_dir=output_dir,
-                strategy_kwargs={'dow_data': dow_data}
+                output_dir=output_dir
             )
             results = optimizer.grid_search()
     else:
         logger.info("シングルスレッドで最適化を実行します")
-        optimizer = ParameterOptimizer(
+        optimizer = OpeningGapParameterOptimizer(
             data=data,
+            dow_data=dow_data,
             strategy_class=OpeningGapStrategy,
             param_grid=PARAM_GRID,
             objective_function=custom_objective,
             cv_splits=splits,
-            output_dir=output_dir,
-            strategy_kwargs={'dow_data': dow_data}
+            output_dir=output_dir
         )
         results = optimizer.grid_search()
     
