@@ -18,6 +18,7 @@ Dependencies:
   - indicators.volatility_indicators
 """
 
+from typing import Optional, Dict, Any, Union
 import pandas as pd
 import numpy as np
 import sys
@@ -30,12 +31,19 @@ from indicators.volume_analysis import detect_volume_increase
 from indicators.volatility_indicators import calculate_atr
 
 class MomentumInvestingStrategy(BaseStrategy):
-    def __init__(self, data: pd.DataFrame, params=None, price_column: str = "Adj Close", volume_column: str = "Volume"):
-        """モメンタム戦略の初期化（拡張版）"""
-        # 戦略固有の属性
+    def __init__(self, data: pd.DataFrame, params: Optional[Dict[str, Any]] = None, 
+                 price_column: str = "Adj Close", 
+                 volume_column: str = "Volume", 
+                 optimization_mode: Optional[str] = None):
+        """モメンタム戦略の初期化（拡張版）"""        # 戦略固有の属性
         self.price_column = price_column
         self.volume_column = volume_column
-        self.entry_prices = {}  # エントリー価格を記録する辞書
+        self.entry_prices: Dict[int, float] = {}  # エントリー価格を記録する辞書
+        self.optimization_mode = optimization_mode  # 最適化モード
+        
+        # 最適化モード用の属性
+        self._parameter_manager = None
+        self._approved_params = None
         
         # デフォルトパラメータの拡張
         default_params = {
@@ -286,12 +294,11 @@ class MomentumInvestingStrategy(BaseStrategy):
         self.data.loc[:, 'Profit_Pct'] = 0
 
         for idx in range(len(self.data)):
-            # --- 追加: シグナル生成 ---
+            # シグナル生成
             entry_signal = self.generate_entry_signal(idx)
             exit_signal = self.generate_exit_signal(idx)
             self.data.at[self.data.index[idx], 'Entry_Signal'] = entry_signal
             self.data.at[self.data.index[idx], 'Exit_Signal'] = exit_signal
-            # --- ここまで追加 ---
 
             # ポジションの更新
             if idx > 0:
@@ -305,6 +312,7 @@ class MomentumInvestingStrategy(BaseStrategy):
                 # イグジットシグナルでポジションを0に設定
                 if self.data['Exit_Signal'].iloc[idx] == -1:
                     self.data.at[self.data.index[idx], 'Position'] = 0
+                    
             # 一部利確の処理（ポジションがある場合のみ）
             if idx > 0 and self.data['Position'].iloc[idx-1] > 0:
                 partial_exit_pct = self.params.get("partial_exit_pct", 0.0)
@@ -320,7 +328,133 @@ class MomentumInvestingStrategy(BaseStrategy):
                             self.data.at[self.data.index[idx], 'Partial_Exit'] = partial_exit_pct
                             self.data.at[self.data.index[idx], 'Position'] -= partial_exit_pct
                             self.log_trade(f"一部利確 {partial_exit_pct*100}%: 日付={self.data.index[idx]}, 価格={current_price}, 利益={profit_pct:.2%}")
+        
         return self.data
+
+    def load_optimized_parameters(self) -> bool:
+        """
+        最適化されたパラメータを読み込む
+        
+        Returns:
+            bool: パラメータが正常に読み込まれた場合True
+        """
+        if not self.optimization_mode:
+            return False
+            
+        try:
+            from config.optimized_parameters import OptimizedParameterManager
+            
+            if self._parameter_manager is None:
+                self._parameter_manager = OptimizedParameterManager()
+            
+            strategy_name = "MomentumInvestingStrategy"
+            
+            if self.optimization_mode == "interactive":
+                # 対話式選択
+                selected_params = self._parameter_manager.select_parameters_interactive(strategy_name)
+                if selected_params:
+                    self.params.update(selected_params['parameters'])
+                    self._approved_params = selected_params
+                    return True
+                    
+            elif self.optimization_mode == "best_sharpe":
+                # 最高シャープレシオの自動選択
+                best_params = self._parameter_manager.get_best_parameters(
+                    strategy_name, 
+                    metric='sharpe_ratio', 
+                    status_filter='approved'
+                )
+                if best_params:
+                    self.params.update(best_params['parameters'])
+                    self._approved_params = best_params
+                    return True
+                    
+            elif self.optimization_mode == "best_return":
+                # 最高リターンの自動選択
+                best_params = self._parameter_manager.get_best_parameters(
+                    strategy_name, 
+                    metric='total_return', 
+                    status_filter='approved'
+                )
+                if best_params:
+                    self.params.update(best_params['parameters'])
+                    self._approved_params = best_params
+                    return True
+                    
+            elif self.optimization_mode == "latest_approved":
+                # 最新の承認済みパラメータ
+                latest_params = self._parameter_manager.get_latest_parameters(
+                    strategy_name, 
+                    status_filter='approved'
+                )
+                if latest_params:
+                    self.params.update(latest_params['parameters'])
+                    self._approved_params = latest_params
+                    return True
+                    
+        except Exception as e:
+            print(f"最適化パラメータの読み込みエラー: {e}")
+            
+        return False
+    
+    def run_optimized_strategy(self) -> pd.DataFrame:
+        """
+        最適化されたパラメータを使用して戦略を実行
+        
+        Returns:
+            pd.DataFrame: 戦略実行結果
+        """
+        # 最適化パラメータの読み込み
+        if self.optimization_mode and not self.load_optimized_parameters():
+            print(f"⚠️ 最適化パラメータの読み込みに失敗しました。デフォルトパラメータを使用します。")
+        
+        # 使用するパラメータの表示
+        if self._approved_params:
+            print(f"✅ 最適化パラメータを使用:")
+            print(f"   パラメータID: {self._approved_params.get('parameter_id', 'N/A')}")
+            print(f"   作成日時: {self._approved_params.get('created_at', 'N/A')}")
+            print(f"   シャープレシオ: {self._approved_params.get('sharpe_ratio', 'N/A')}")
+            print(f"   パラメータ: {self._approved_params.get('parameters', {})}")
+        else:
+            print(f"📊 デフォルトパラメータを使用: {self.params}")
+          # 戦略実行
+        return self.backtest()
+    
+    def get_optimization_info(self) -> Dict[str, Any]:
+        """
+        最適化情報を取得
+        
+        Returns:
+            dict: 最適化情報
+        """
+        info = {
+            'optimization_mode': self.optimization_mode,
+            'using_optimized_params': self._approved_params is not None,
+            'default_params': {
+                "sma_short": 20,
+                "sma_long": 50,
+                "rsi_period": 14,
+                "rsi_lower": 50,
+                "rsi_upper": 68,
+                "volume_threshold": 1.18,
+                "take_profit": 0.12,
+                "stop_loss": 0.06,
+                "trailing_stop": 0.04,
+                "ma_type": "SMA",
+                "max_hold_days": 15,
+                "atr_multiple": 2.0,
+                "partial_exit_pct": 0.5,
+                "partial_exit_threshold": 0.08,
+                "momentum_exit_threshold": -0.03,
+                "volume_exit_threshold": 0.7,
+                "trend_filter": True
+            },
+            'current_params': self.params,
+            'approved_params_info': self._approved_params
+        }
+        
+        return info
+
 
 # テストコード
 if __name__ == "__main__":
