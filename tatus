@@ -1,0 +1,175 @@
+[1mdiff --git a/optimization/parameter_optimizer.py b/optimization/parameter_optimizer.py[m
+[1mindex 1976b85..0726318 100644[m
+[1m--- a/optimization/parameter_optimizer.py[m
+[1m+++ b/optimization/parameter_optimizer.py[m
+[36m@@ -25,7 +25,8 @@[m [mclass ParameterOptimizer:[m
+                  param_grid: Dict[str, List[Any]],[m
+                  objective_function: Callable = None,[m
+                  cv_splits=None,[m
+[31m-                 output_dir: str = "backtest_results"):[m
+[32m+[m[32m                 output_dir: str = "backtest_results",[m
+[32m+[m[32m                 strategy_kwargs: Optional[dict] = None):[m
+         """[m
+         パラメータ最適化クラスの初期化。[m
+         [m
+[36m@@ -36,12 +37,14 @@[m [mclass ParameterOptimizer:[m
+             objective_function (Callable, optional): 最適化の目的関数[m
+             cv_splits (list, optional): 交差検証用のデータ分割情報[m
+             output_dir (str): 結果保存先ディレクトリ[m
+[32m+[m[32m            strategy_kwargs (dict, optional): 戦略クラスに渡す追加キーワード引数[m
+         """[m
+         self.data = data[m
+         self.strategy_class = strategy_class[m
+         self.param_grid = param_grid[m
+         self.cv_splits = cv_splits[m
+         self.output_dir = output_dir[m
+[32m+[m[32m        self.strategy_kwargs = strategy_kwargs or {}[m
+         [m
+         # 出力ディレクトリの確認と作成[m
+         if not os.path.exists(output_dir):[m
+[36m@@ -195,8 +198,8 @@[m [mclass ParameterOptimizer:[m
+                     test_data = self.data.iloc[test_idx][m
+                 else:[m
+                     test_data = self.data.loc[test_idx][m
+[31m-                # --- ここで test_data の行数をチェック ---[m
+[31m-                # 戦略ごとにウィンドウ長のキーを柔軟に取得[m
+[32m+[m[41m                    [m
+[32m+[m[32m                # ウィンドウ長のチェック[m
+                 window_keys = ["sma_long", "long_window", "window", "ema_long"]  # 必要に応じて追加[m
+                 window_lengths = [params[k] for k in window_keys if k in params][m
+                 min_window = max(window_lengths) if window_lengths else 50  # デフォルト50[m
+[36m@@ -217,7 +220,7 @@[m [mclass ParameterOptimizer:[m
+             if not valid_scores:[m
+                 return -np.inf[m
+             return np.mean(valid_scores)[m
+[31m-    [m
+[32m+[m
+     def _run_backtest_with_params(self, data: pd.DataFrame, params: Dict[str, Any]) -> float:[m
+         """[m
+         指定されたパラメータでバックテストを実行[m
+[36m@@ -230,8 +233,8 @@[m [mclass ParameterOptimizer:[m
+             float: 評価スコア[m
+         """[m
+         try:[m
+[31m-            # 戦略インスタンスを作成[m
+[31m-            strategy = self.strategy_class(data, params=params)[m
+[32m+[m[32m            # 戦略インスタンスを作成（追加引数対応）[m
+[32m+[m[32m            strategy = self.strategy_class(data, **self.strategy_kwargs, params=params)[m
+             [m
+             # バックテスト実行[m
+             result_data = strategy.backtest()[m
+[36m@@ -248,7 +251,7 @@[m [mclass ParameterOptimizer:[m
+         except Exception as e:[m
+             logger.error(f"バックテスト実行中にエラー: {str(e)}")[m
+             raise[m
+[31m-    [m
+[32m+[m
+     def save_results(self, filename: Optional[str] = None, format: str = "excel") -> str:[m
+         """[m
+         最適化結果を保存する[m
+[36m@@ -260,12 +263,7 @@[m [mclass ParameterOptimizer:[m
+         Returns:[m
+             str: 保存したファイルのパス[m
+         """[m
+[31m-        # 修正前[m
+[31m-        # if not self.results:[m
+[31m-        #     logger.warning("保存する結果がありません")[m
+[31m-        #     return ""[m
+[31m-[m
+[31m-        # 修正後[m
+[32m+[m[32m        # 結果が存在するか確認[m
+         if isinstance(self.results, pd.DataFrame):[m
+             if self.results.empty:[m
+                 logger.warning("保存する結果がありません")[m
+[36m@@ -283,28 +281,51 @@[m [mclass ParameterOptimizer:[m
+             filename = f"{self.strategy_name}_optimization_{timestamp}"[m
+         [m
+         # 保存先のパスを構築[m
+[32m+[m[32m        filepath = ""[m
+         if format.lower() == "excel":[m
+[31m-            filepath = os.path.join(self.output_dir, f"{filename}.xlsx")[m
+[31m-            results_df.to_excel(filepath, index=False)[m
+[32m+[m[32m            try:[m
+[32m+[m[32m                # 新しいエクセルエクスポーターを使用[m
+[32m+[m[32m                from output.excel_result_exporter import save_optimization_results[m
+[32m+[m[32m                filepath = save_optimization_results([m
+[32m+[m[32m                    results=results_df,[m
+[32m+[m[32m                    output_path=self.output_dir,[m
+[32m+[m[32m                    filename=filename[m
+[32m+[m[32m                )[m
+[32m+[m[32m                logger.info(f"excel_result_exporterを使用して結果を保存しました: {filepath}")[m
+[32m+[m[32m            except ImportError as e:[m
+[32m+[m[32m                logger.warning(f"excel_result_exporterのインポートに失敗しました: {e}")[m
+[32m+[m[32m                # 従来の方法で保存[m
+[32m+[m[32m                filepath = os.path.join(self.output_dir, f"{filename}.xlsx")[m
+[32m+[m[32m                results_df.to_excel(filepath, index=False)[m
+[32m+[m[32m                logger.info(f"従来の方法で結果をExcelに保存しました: {filepath}")[m
+[32m+[m[32m            except Exception as e:[m
+[32m+[m[32m                logger.error(f"Excelでの保存中にエラーが発生しました: {e}")[m
+[32m+[m[32m                # エラー時はCSVで保存を試みる[m
+[32m+[m[32m                filepath = os.path.join(self.output_dir, f"{filename}.csv")[m
+[32m+[m[32m                results_df.to_csv(filepath, index=False)[m
+[32m+[m[32m                logger.info(f"エラー復旧としてCSVに保存しました: {filepath}")[m
+         elif format.lower() == "csv":[m
+             filepath = os.path.join(self.output_dir, f"{filename}.csv")[m
+             results_df.to_csv(filepath, index=False)[m
+[32m+[m[32m            logger.info(f"結果をCSVに保存しました: {filepath}")[m
+         elif format.lower() == "pickle":[m
+             filepath = os.path.join(self.output_dir, f"{filename}.pkl")[m
+             results_df.to_pickle(filepath)[m
+[32m+[m[32m            logger.info(f"結果をPickleに保存しました: {filepath}")[m
+         else:[m
+             logger.error(f"未対応の保存形式: {format}")[m
+             return ""[m
+[31m-            [m
+[32m+[m[41m        [m
+         logger.info(f"最適化結果を保存しました: {filepath}")[m
+         return filepath[m
+ [m
+[32m+[m
+ class ParallelParameterOptimizer(ParameterOptimizer):[m
+     """[m
+     パラメータの最適化を並列処理で実行するクラス[m
+     """[m
+     [m
+[31m-    def __init__(self, data, strategy_class, param_grid, objective_function, cv_splits=None, output_dir="backtest_results", n_jobs=-1):[m
+[32m+[m[32m    def __init__(self, data, strategy_class, param_grid, objective_function, cv_splits=None, output_dir="backtest_results", n_jobs=-1, index_data=None):[m
+         """[m
+         初期化関数[m
+         [m
+[36m@@ -319,7 +340,8 @@[m [mclass ParallelParameterOptimizer(ParameterOptimizer):[m
+         """[m
+         super().__init__(data, strategy_class, param_grid, objective_function, cv_splits, output_dir)[m
+         self.n_jobs = n_jobs[m
+[31m-        [m
+[32m+[m[32m        self.index_data = index_data  # 追加: VWAPBreakoutStrategy用[m
+[32m+[m[41m    [m
+     def parallel_grid_search(self):[m
+         """[m
+         グリッドサーチを並列で実行[m
+[36m@@ -350,4 +372,23 @@[m [mclass ParallelParameterOptimizer(ParameterOptimizer):[m
+             score = self._evaluate_params(params)[m
+             return {**params, "score": score}[m
+         except Exception as e:[m
+[31m-            return {**params, "score": -np.inf, "error": str(e)}[m
+\ No newline at end of file[m
+[32m+[m[32m            return {**params, "score": -np.inf, "error": str(e)}[m
+[32m+[m
+[32m+[m[32m    def _run_backtest_with_params(self, data: pd.DataFrame, params: Dict[str, Any]) -> float:[m
+[32m+[m[32m        """[m
+[32m+[m[32m        指定されたパラメータでバックテストを実行（VWAPBreakoutStrategy用にindex_dataを渡す）[m
+[32m+[m[32m        """[m
+[32m+[m[32m        try:[m
+[32m+[m[32m            # index_dataが必要な戦略の場合は渡す[m
+[32m+[m[32m            if self.index_data is not None:[m
+[32m+[m[32m                strategy = self.strategy_class(data, self.index_data, params=params)[m
+[32m+[m[32m            else:[m
+[32m+[m[32m                strategy = self.strategy_class(data, params=params)[m
+[32m+[m[32m            result_data = strategy.backtest()[m
+[32m+[m[32m            from trade_simulation import simulate_trades[m
+[32m+[m[32m            trade_results = simulate_trades(result_data, "最適化中")[m
+[32m+[m[32m            score = self.objective_function(trade_results)[m
+[32m+[m[32m            return score[m
+[32m+[m[32m        except Exception as e:[m
+[32m+[m[32m            logger.error(f"バックテスト実行中にエラー: {str(e)}")[m
+[32m+[m[32m            raise[m
