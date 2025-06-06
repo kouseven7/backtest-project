@@ -105,10 +105,9 @@ class ParameterReviewer:
         
         # 検証結果表示
         self._display_validation_info(config.get('validation_info', {}))
-        
-        # パラメータ妥当性の再検証
+          # パラメータ妥当性の再検証
         if params:
-            validation_result = self.validator.validate_momentum_parameters(params)
+            validation_result = self.validator.validate_auto(params)
             self._display_revalidation_result(validation_result)
         
         # レビュー判定
@@ -273,11 +272,18 @@ class ParameterReviewer:
         print(f"作成日時: {config.get('created_at', 'N/A')}")
         
         # パラメータ詳細
-        params = config.get('parameters', {})
-        if params:
-            validation_result = self.validator.validate_momentum_parameters(params)
-            detailed_report = self.validator.generate_validation_report(validation_result)
-            print(detailed_report)
+        params = config.get('parameters', {})        if params:
+            validation_result = self.validator.validate_auto(params)
+            # generate_validation_reportは存在しないため、直接結果を表示
+            print(f"検証結果: {validation_result.get('validation_summary', 'N/A')}")
+            if validation_result.get('errors'):
+                print("エラー:")
+                for error in validation_result['errors']:
+                    print(f"  - {error}")
+            if validation_result.get('warnings'):
+                print("警告:")
+                for warning in validation_result['warnings']:
+                    print(f"  - {warning}")
     
     def _show_review_summary(self):
         """レビュー結果のサマリーを表示"""

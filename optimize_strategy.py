@@ -199,8 +199,9 @@ def validate_and_review_results(strategy_name: str, results, args) -> None:
         }        # オーバーフィッティング検出（DataFrameで渡す）
         overfitting_result = overfitting_detector.detect_overfitting(results)
         logger.info(f"オーバーフィッティング検出: {overfitting_result['overfitting_risk']}")
-          # パラメータ妥当性検証（モメンタム戦略専用メソッドを使用）
-        validation_result = param_validator.validate_momentum_parameters(best_result)
+        
+        # パラメータ妥当性検証（自動戦略判別を使用）
+        validation_result = param_validator.validate_auto(best_result, strategy_hint=args.strategy)
         logger.info(f"パラメータ妥当性: {'合格' if validation_result['valid'] else '不合格'}")
           # 自動承認の判定
         if args.auto_approve:

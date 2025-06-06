@@ -19,6 +19,7 @@ sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")  # プロジェ
 
 import pandas as pd
 import numpy as np
+from typing import Dict, Any
 from strategies.base_strategy import BaseStrategy
 
 class BreakoutStrategy(BaseStrategy):
@@ -181,6 +182,87 @@ class BreakoutStrategy(BaseStrategy):
                 self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
 
         return self.data
+
+    def run_optimized_strategy(self) -> pd.DataFrame:
+        """
+        最適化されたパラメータを使用して戦略を実行
+        
+        Returns:
+            pd.DataFrame: 戦略実行結果
+        """
+        # 最適化パラメータの読み込み
+        if hasattr(self, 'optimization_mode') and self.optimization_mode and not self.load_optimized_parameters():
+            print(f"⚠️ 最適化パラメータの読み込みに失敗しました。デフォルトパラメータを使用します。")
+        
+        # 使用するパラメータの表示
+        if hasattr(self, '_approved_params') and self._approved_params:
+            print(f"✅ 最適化パラメータを使用:")
+            print(f"   パラメータID: {self._approved_params.get('parameter_id', 'N/A')}")
+            print(f"   作成日時: {self._approved_params.get('created_at', 'N/A')}")
+            print(f"   シャープレシオ: {self._approved_params.get('sharpe_ratio', 'N/A')}")
+            print(f"   パラメータ: {self._approved_params.get('parameters', {})}")
+        else:
+            print(f"📊 デフォルトパラメータを使用: {self.params}")
+        
+        # 戦略実行
+        return self.backtest()
+    
+    def get_optimization_info(self) -> Dict[str, Any]:
+        """
+        最適化情報を取得
+        
+        Returns:
+            dict: 最適化情報
+        """
+        info = {
+            'optimization_mode': getattr(self, 'optimization_mode', False),
+            'using_optimized_params': getattr(self, '_approved_params', None) is not None,
+            'default_params': {
+                "volume_threshold": 1.2,
+                "take_profit": 0.03,
+                "look_back": 1,
+                "trailing_stop": 0.02,
+                "breakout_buffer": 0.01
+            },
+            'current_params': self.params
+        }
+        
+        if hasattr(self, '_approved_params') and self._approved_params:
+            info['optimized_params'] = self._approved_params
+        
+        return info
+    
+    def load_optimized_parameters(self) -> bool:
+        """
+        最適化されたパラメータを読み込み
+        
+        Returns:
+            bool: 読み込み成功
+        """
+        try:
+            from config.optimized_parameters import OptimizedParameterManager
+            
+            manager = OptimizedParameterManager()
+            
+            # データの時間範囲から銘柄を推定
+            ticker = getattr(self, 'ticker', 'DEFAULT')
+            
+            # 承認済みの最適化パラメータを取得
+            params = manager.get_latest_approved_parameters('breakout', ticker)
+            
+            if params:
+                # パラメータを更新
+                self.params.update(params['parameters'])
+                self._approved_params = params
+                print(f"✅ 最適化パラメータを読み込みました (ID: {params.get('parameter_id', 'N/A')})")
+                return True
+            else:
+                print(f"⚠️ 承認済みの最適化パラメータが見つかりません")
+                return False
+                
+        except Exception as e:
+            print(f"❌ 最適化パラメータの読み込みでエラー: {e}")
+            return False
 
 # テストコード
 if __name__ == "__main__":
