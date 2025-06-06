@@ -1,407 +1,372 @@
 """
-対話式パラメータレビューシステム
-
-このモジュールは最適化されたパラメータセットのレビューと承認を管理します。
-オーバーフィッティング検出結果と妥当性検証結果を表示し、
-人間のレビュアーが情報に基づいた承認判断を行えるよう支援します。
+最適化パラメータのレビューツール（修正版）
 """
 
 import json
 import os
 import sys
+import argparse
 from datetime import datetime
-from typing import Dict, List, Tuple, Optional, Any
-from dataclasses import dataclass
+from typing import Dict, List, Any
 
-# プロジェクトルートを追加
+# プロジェクトルートをPythonパスに追加
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(project_root)
+sys.path.insert(0, project_root)
 
 from config.optimized_parameters import OptimizedParameterManager
-from optimization.overfitting_detector import OverfittingDetector
 from validation.parameter_validator import ParameterValidator
 
 
-@dataclass
-class ReviewDecision:
-    """レビュー決定を格納するデータクラス"""
-    approved: bool
-    reviewer_id: str
-    review_date: str
-    notes: str
-    confidence_level: int  # 1-5の信頼度
-    risk_acceptance: str   # 'low', 'medium', 'high'
-
-
 class ParameterReviewer:
-    """
-    最適化されたパラメータの対話式レビューシステム
-    
-    機能:
-    - 最適化結果の詳細表示
-    - オーバーフィッティング検出結果の可視化
-    - パラメータ妥当性検証結果の表示
-    - 対話式承認プロセス
-    - レビュー履歴の管理
-    """
-    
-    def __init__(self, reviewer_id: str = "default_reviewer"):
+    def __init__(self):
         self.parameter_manager = OptimizedParameterManager()
-        self.overfitting_detector = OverfittingDetector()
-        self.parameter_validator = ParameterValidator()
-        self.reviewer_id = reviewer_id
-        
-    def start_review_session(self, strategy_name: str) -> None:
+        self.validator = ParameterValidator()
+        self.review_log = []
+          # 戦略名マッピング（短縮名から正式名への変換）
+        self.strategy_mapping = {
+            'momentum': 'MomentumInvestingStrategy',
+            'breakout': 'BreakoutStrategy',
+            'contrarian': 'ContrarianStrategy',
+            'vwap': 'VWAPStrategy'
+        }
+    
+    def _normalize_strategy_name(self, strategy_name: str) -> str:
+        """戦略名を正規化（短縮名を正式名に変換）"""
+        return self.strategy_mapping.get(strategy_name.lower(), strategy_name)
+    
+    def start_review_session(self, strategy_name: str = "momentum"):
         """レビューセッションを開始"""
-        print(f"\n{'='*60}")
-        print(f"パラメータレビューシステム - {strategy_name}")
-        print(f"レビュアー: {self.reviewer_id}")
-        print(f"日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"{'='*60}\n")
+        # 戦略名を正規化
+        normalized_strategy_name = self._normalize_strategy_name(strategy_name)
         
-        # 利用可能なパラメータセットを表示
-        available_sets = self.parameter_manager.list_parameter_sets(strategy_name)
+        print(f"\n🔍 {strategy_name}戦略のパラメータレビューを開始します...")
+        if strategy_name != normalized_strategy_name:
+            print(f"   ({strategy_name} → {normalized_strategy_name})")
         
-        if not available_sets:
-            print(f"❌ {strategy_name}の最適化結果が見つかりません。")
+        # pending_reviewのファイルを取得
+        available_configs = self.parameter_manager.list_available_configs(
+            strategy_name=normalized_strategy_name,
+            status="pending_review"
+        )
+        
+        if not available_configs:
+            print(f"❌ レビュー待ちの{strategy_name}戦略設定はありません。")
+            self._show_available_files(normalized_strategy_name)
             return
         
-        print(f"📊 {strategy_name}の利用可能なパラメータセット:")
-        for i, param_set in enumerate(available_sets):
-            status = param_set.get('status', 'pending')
-            sharpe = param_set.get('sharpe_ratio', 'N/A')
-            total_return = param_set.get('total_return', 'N/A')
-            print(f"  {i+1}. ID: {param_set['parameter_id']} | "
-                  f"Sharpe: {sharpe:.4f} | Return: {total_return:.2%} | "
-                  f"Status: {status}")
+        print(f"📋 レビュー対象: {len(available_configs)}件")
         
-        # レビューするパラメータセットを選択
-        while True:
-            try:
-                choice = input(f"\nレビューするパラメータセットを選択 (1-{len(available_sets)}, 'q'で終了): ")
-                if choice.lower() == 'q':
-                    return
-                
-                index = int(choice) - 1
-                if 0 <= index < len(available_sets):
-                    selected_set = available_sets[index]
-                    self._review_parameter_set(strategy_name, selected_set)
-                    
-                    # 続行するかどうか確認
-                    if input("\n他のパラメータセットをレビューしますか？ (y/n): ").lower() != 'y':
-                        break
-                else:
-                    print("❌ 無効な選択です。")
-            except ValueError:
-                print("❌ 数値を入力してください。")
+        # 各ファイルをレビュー
+        for i, config in enumerate(available_configs, 1):
+            print(f"\n{'='*60}")
+            print(f"📁 ファイル {i}/{len(available_configs)}: {config['filename']}")
+            
+            review_result = self._review_single_config(config)
+            self.review_log.append(review_result)
+            
+            if review_result['action'] == 'quit':
+                break
+        
+        # レビュー結果のサマリー
+        self._show_review_summary()
     
-    def _review_parameter_set(self, strategy_name: str, param_set: Dict) -> None:
-        """個別パラメータセットのレビュー"""
-        param_id = param_set['parameter_id']
+    def _show_available_files(self, strategy_name: str):
+        """利用可能なファイルを表示"""
+        all_configs = self.parameter_manager.list_available_configs(strategy_name=strategy_name)
         
-        print(f"\n{'='*60}")
-        print(f"パラメータセット詳細レビュー - ID: {param_id}")
-        print(f"{'='*60}")
-        
-        # 1. 基本情報表示
-        self._display_basic_info(param_set)
-        
-        # 2. パフォーマンス指標表示
-        self._display_performance_metrics(param_set)
-        
-        # 3. オーバーフィッティング検出結果
-        overfitting_result = self._analyze_overfitting(param_set)
-        
-        # 4. パラメータ妥当性検証結果
-        validation_result = self._validate_parameters(strategy_name, param_set)
-        
-        # 5. 総合リスク評価
-        overall_risk = self._calculate_overall_risk(overfitting_result, validation_result)
-        
-        # 6. 対話式承認プロセス
-        decision = self._interactive_approval(param_set, overfitting_result, 
-                                            validation_result, overall_risk)
-        
-        # 7. 決定を保存
-        self._save_review_decision(strategy_name, param_id, decision)
+        if all_configs:
+            print(f"\n📂 {strategy_name}戦略の利用可能なファイル:")
+            status_emoji = {
+                "approved": "✅",
+                "pending_review": "⏳", 
+                "rejected": "❌"
+            }
+            
+            for config in all_configs[:10]:  # 最大10件表示
+                emoji = status_emoji.get(config.get('status'), "❓")
+                print(f"  {emoji} {config['filename']} ({config.get('status', 'unknown')})")
+            
+            if len(all_configs) > 10:
+                print(f"  ... 他 {len(all_configs) - 10}件")
+        else:
+            print(f"❌ {strategy_name}戦略のファイルが見つかりません。")
     
-    def _display_basic_info(self, param_set: Dict) -> None:
-        """基本情報の表示"""
-        print("\n📋 基本情報:")
-        print(f"  作成日時: {param_set.get('created_at', 'N/A')}")
-        print(f"  最適化期間: {param_set.get('optimization_period', 'N/A')}")
-        print(f"  データ期間: {param_set.get('data_start_date', 'N/A')} - {param_set.get('data_end_date', 'N/A')}")
-        print(f"  現在のステータス: {param_set.get('status', 'pending')}")
+    def _review_single_config(self, config: Dict) -> Dict:
+        """単一設定ファイルのレビュー"""
+        print(f"📊 銘柄: {config.get('ticker', 'N/A')}")
+        print(f"📅 最適化日: {config.get('optimization_date', 'N/A')}")
+        
+        # パフォーマンス指標表示
+        self._display_performance_metrics(config.get('performance_metrics', {}))
+        
+        # パラメータ表示
+        params = config.get('parameters', {})
+        self._display_parameters(params)
+        
+        # 検証結果表示
+        self._display_validation_info(config.get('validation_info', {}))
+        
+        # パラメータ妥当性の再検証
+        if params:
+            validation_result = self.validator.validate_momentum_parameters(params)
+            self._display_revalidation_result(validation_result)
+        
+        # レビュー判定
+        return self._get_review_decision(config)
     
-    def _display_performance_metrics(self, param_set: Dict) -> None:
-        """パフォーマンス指標の表示"""
-        print("\n📈 パフォーマンス指標:")
-        metrics = param_set.get('performance_metrics', {})
+    def _display_performance_metrics(self, metrics: Dict):
+        """パフォーマンス指標を表示"""
+        print(f"\n📊 パフォーマンス指標:")
         
-        key_metrics = [
-            ('sharpe_ratio', 'シャープレシオ', '.4f'),
-            ('total_return', 'トータルリターン', '.2%'),
-            ('max_drawdown', '最大ドローダウン', '.2%'),
-            ('win_rate', '勝率', '.2%'),
-            ('profit_factor', 'プロフィットファクター', '.4f'),
-            ('volatility', 'ボラティリティ', '.4f')
-        ]
-        
-        for key, label, fmt in key_metrics:
-            value = metrics.get(key, param_set.get(key, 'N/A'))
-            if isinstance(value, (int, float)):
-                print(f"  {label}: {value:{fmt}}")
-            else:
-                print(f"  {label}: {value}")
-    
-    def _analyze_overfitting(self, param_set: Dict) -> Dict:
-        """オーバーフィッティング分析"""
-        print("\n🔍 オーバーフィッティング検出:")
-        
-        # パフォーマンス指標からデータを抽出
-        performance_data = {
-            'sharpe_ratio': param_set.get('sharpe_ratio', 0),
-            'total_return': param_set.get('total_return', 0),
-            'max_drawdown': param_set.get('max_drawdown', 0),
-            'win_rate': param_set.get('win_rate', 0.5),
-            'volatility': param_set.get('volatility', 0.1)
+        metric_display = {
+            'sharpe_ratio': ('シャープレシオ', ''),
+            'sortino_ratio': ('ソルティノレシオ', ''),
+            'total_return': ('総リターン', '%'),
+            'max_drawdown': ('最大ドローダウン', '%'),
+            'win_rate': ('勝率', '%'),
+            'total_trades': ('総取引数', '回'),
+            'profit_factor': ('プロフィットファクター', '')
         }
         
-        parameters = param_set.get('parameters', {})
-        
-        # オーバーフィッティング検出実行
-        result = self.overfitting_detector.detect_overfitting(performance_data, parameters)
-        
-        # 結果表示
-        print(f"  🎯 総合リスクレベル: {result['overall_risk_level']}")
-        print(f"  📊 リスクスコア: {result['risk_score']:.2f}")
-        
-        print("\n  詳細検出結果:")
-        for detection in result['detections']:
-            risk_icon = "🔴" if detection['risk_level'] == 'high' else "🟡" if detection['risk_level'] == 'medium' else "🟢"
-            print(f"    {risk_icon} {detection['type']}: {detection['risk_level']}")
-            print(f"       理由: {detection['reason']}")
-        
-        if result['recommendations']:
-            print("\n  💡 推奨事項:")
-            for rec in result['recommendations']:
-                print(f"    • {rec}")
-        
-        return result
+        for key, (label, unit) in metric_display.items():
+            value = metrics.get(key, 'N/A')
+            if value != 'N/A' and unit == '%':
+                if isinstance(value, (int, float)):
+                    value = f"{value:.1%}" if abs(value) < 1 else f"{value:.1f}%"
+            elif value != 'N/A' and isinstance(value, float):
+                value = f"{value:.3f}"
+            print(f"  {label}: {value}")
     
-    def _validate_parameters(self, strategy_name: str, param_set: Dict) -> Dict:
-        """パラメータ妥当性検証"""
-        print("\n✅ パラメータ妥当性検証:")
+    def _display_parameters(self, params: Dict):
+        """パラメータを表示"""
+        print(f"\n⚙️ 最適化パラメータ:")
         
-        parameters = param_set.get('parameters', {})
-        result = self.parameter_validator.validate_parameters(strategy_name, parameters)
+        if not params:
+            print("  パラメータが見つかりません")
+            return
         
-        # 結果表示
-        print(f"  📋 検証結果: {'✅ 合格' if result['is_valid'] else '❌ 不合格'}")
-        print(f"  📊 信頼度スコア: {result['confidence_score']:.2f}")
+        # パラメータをカテゴリ別に整理
+        categories = {
+            'テクニカル指標': ['sma_short', 'sma_long', 'rsi_period', 'rsi_lower', 'rsi_upper'],
+            'リスク管理': ['take_profit', 'stop_loss', 'trailing_stop'],
+            'その他': []
+        }
         
-        if result['errors']:
-            print("\n  ❌ エラー:")
-            for error in result['errors']:
-                print(f"    • {error}")
+        # カテゴリに属さないパラメータを「その他」に追加
+        categorized_params = set()
+        for cat_params in categories.values():
+            categorized_params.update(cat_params)
         
-        if result['warnings']:
-            print("\n  ⚠️ 警告:")
-            for warning in result['warnings']:
-                print(f"    • {warning}")
+        for param_name in params:
+            if param_name not in categorized_params:
+                categories['その他'].append(param_name)
         
-        if result['recommendations']:
-            print("\n  💡 推奨事項:")
-            for rec in result['recommendations']:
-                print(f"    • {rec}")
-        
-        return result
+        # カテゴリ別に表示
+        for category, param_names in categories.items():
+            category_params = {k: v for k, v in params.items() if k in param_names}
+            if category_params:
+                print(f"  📋 {category}:")
+                for k, v in category_params.items():
+                    print(f"    {k}: {v}")
     
-    def _calculate_overall_risk(self, overfitting_result: Dict, validation_result: Dict) -> str:
-        """総合リスクレベルの計算"""
-        risk_levels = ['low', 'medium', 'high']
+    def _display_validation_info(self, validation_info: Dict):
+        """検証情報を表示"""
+        if not validation_info:
+            return
+        
+        print(f"\n🔍 検証結果:")
         
         # オーバーフィッティングリスク
-        overfitting_risk = overfitting_result.get('overall_risk_level', 'medium')
+        overfitting_risk = validation_info.get('overfitting_risk', 'N/A')
+        risk_emoji = {"low": "🟢", "medium": "🟡", "high": "🔴"}.get(overfitting_risk, "❓")
+        print(f"  オーバーフィッティングリスク: {risk_emoji} {overfitting_risk}")
         
-        # 妥当性検証リスク
-        validation_risk = 'low' if validation_result.get('is_valid', False) else 'high'
-        if validation_result.get('warnings', []):
-            validation_risk = 'medium' if validation_risk == 'low' else validation_risk
-        
-        # より高いリスクレベルを採用
-        overall_risk_index = max(
-            risk_levels.index(overfitting_risk),
-            risk_levels.index(validation_risk)
-        )
-        
-        return risk_levels[overall_risk_index]
+        # パラメータ検証
+        param_validation = validation_info.get('parameter_validation')
+        if param_validation is not None:
+            validation_emoji = "✅" if param_validation else "❌"
+            status_text = "通過" if param_validation else "不合格"
+            print(f"  パラメータ検証: {validation_emoji} {status_text}")
     
-    def _interactive_approval(self, param_set: Dict, overfitting_result: Dict, 
-                             validation_result: Dict, overall_risk: str) -> ReviewDecision:
-        """対話式承認プロセス"""
+    def _display_revalidation_result(self, validation_result: Dict):
+        """再検証結果を表示"""
+        print(f"\n🔍 パラメータ再検証:")
+        print(f"  結果: {'✅ 合格' if validation_result['valid'] else '❌ 不合格'}")
+        
+        if validation_result.get('errors'):
+            print(f"  ❌ エラー ({len(validation_result['errors'])}件):")
+            for error in validation_result['errors'][:3]:  # 最大3件表示
+                print(f"    • {error}")
+            if len(validation_result['errors']) > 3:
+                print(f"    ... 他 {len(validation_result['errors']) - 3}件")
+        
+        if validation_result.get('warnings'):
+            print(f"  ⚠️ 警告 ({len(validation_result['warnings'])}件):")
+            for warning in validation_result['warnings'][:3]:  # 最大3件表示
+                print(f"    • {warning}")
+            if len(validation_result['warnings']) > 3:
+                print(f"    ... 他 {len(validation_result['warnings']) - 3}件")
+    
+    def _get_review_decision(self, config: Dict) -> Dict:
+        """レビュー判定を取得"""
+        while True:
+            print(f"\n👤 レビュー判定:")
+            print("  a = 承認 (approved)")
+            print("  r = 却下 (rejected)")
+            print("  s = スキップ")
+            print("  d = 詳細表示")
+            print("  q = レビュー終了")
+            
+            choice = input("選択 (a/r/s/d/q): ").lower().strip()
+            
+            if choice == 'a':
+                return self._approve_config(config)
+            elif choice == 'r':
+                return self._reject_config(config)
+            elif choice == 's':
+                print("⏭️ スキップしました。")
+                return {'action': 'skip', 'config': config['filename']}
+            elif choice == 'd':
+                self._show_detailed_info(config)
+                continue
+            elif choice == 'q':
+                print("🚪 レビューを終了します。")
+                return {'action': 'quit', 'config': config['filename']}
+            else:
+                print("❌ 無効な選択です。a, r, s, d, q のいずれかを入力してください。")
+    
+    def _approve_config(self, config: Dict) -> Dict:
+        """設定を承認"""
+        config['status'] = 'approved'
+        config['approved_by'] = 'default_reviewer'
+        config['approved_at'] = datetime.now().isoformat()
+        
+        # ファイルを更新
+        filepath = os.path.join(self.parameter_manager.config_dir, config['filename'])
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=2, ensure_ascii=False)
+        
+        print("✅ 承認しました。")
+        return {'action': 'approve', 'config': config['filename']}
+    
+    def _reject_config(self, config: Dict) -> Dict:
+        """設定を却下"""
+        reason = input("却下理由を入力してください: ").strip()
+        
+        config['status'] = 'rejected'
+        config['rejected_by'] = 'default_reviewer'
+        config['rejected_at'] = datetime.now().isoformat()
+        config['rejection_reason'] = reason
+        
+        # ファイルを更新
+        filepath = os.path.join(self.parameter_manager.config_dir, config['filename'])
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=2, ensure_ascii=False)
+        
+        print("❌ 却下しました。")
+        return {'action': 'reject', 'config': config['filename'], 'reason': reason}
+    
+    def _show_detailed_info(self, config: Dict):
+        """詳細情報を表示"""
+        print(f"\n📋 詳細情報:")
+        print(f"ファイルパス: {config.get('filename', 'N/A')}")
+        print(f"作成日時: {config.get('created_at', 'N/A')}")
+        
+        # パラメータ詳細
+        params = config.get('parameters', {})
+        if params:
+            validation_result = self.validator.validate_momentum_parameters(params)
+            detailed_report = self.validator.generate_validation_report(validation_result)
+            print(detailed_report)
+    
+    def _show_review_summary(self):
+        """レビュー結果のサマリーを表示"""
+        if not self.review_log:
+            return
+        
         print(f"\n{'='*60}")
-        print("📝 レビュー決定")
+        print(f"📊 レビューセッション完了")
         print(f"{'='*60}")
         
-        print(f"\n🎯 総合リスク評価: {overall_risk.upper()}")
+        # 統計
+        actions = [log['action'] for log in self.review_log]
+        approve_count = actions.count('approve')
+        reject_count = actions.count('reject')
+        skip_count = actions.count('skip')
         
-        # リスクレベルに応じた推奨アクション
-        risk_recommendations = {
-            'low': "✅ 承認推奨 - リスクは低く、本番環境での使用に適しています",
-            'medium': "⚠️ 慎重検討 - 追加検証や制限付き運用を検討してください", 
-            'high': "❌ 承認非推奨 - 高リスクのため、さらなる最適化が必要です"
-        }
+        print(f"✅ 承認: {approve_count}件")
+        print(f"❌ 却下: {reject_count}件") 
+        print(f"⏭️ スキップ: {skip_count}件")
         
-        print(f"💡 推奨アクション: {risk_recommendations[overall_risk]}")
-        
-        # 承認決定
-        while True:
-            decision = input("\n決定を選択してください (approve/reject/defer): ").lower()
-            if decision in ['approve', 'reject', 'defer']:
-                break
-            print("❌ 'approve', 'reject', 'defer'のいずれかを入力してください。")
-        
-        approved = decision == 'approve'
-        
-        # 追加情報収集
-        notes = input("レビューノート（任意）: ") or "なし"
-        
-        while True:
-            try:
-                confidence = int(input("信頼度レベル (1-5, 5が最高): "))
-                if 1 <= confidence <= 5:
-                    break
-                print("❌ 1-5の範囲で入力してください。")
-            except ValueError:
-                print("❌ 数値を入力してください。")
-        
-        while True:
-            risk_acceptance = input("リスク受容レベル (low/medium/high): ").lower()
-            if risk_acceptance in ['low', 'medium', 'high']:
-                break
-            print("❌ 'low', 'medium', 'high'のいずれかを入力してください。")
-        
-        return ReviewDecision(
-            approved=approved,
-            reviewer_id=self.reviewer_id,
-            review_date=datetime.now().isoformat(),
-            notes=notes,
-            confidence_level=confidence,
-            risk_acceptance=risk_acceptance
-        )
+        # 却下理由（あれば）
+        reject_logs = [log for log in self.review_log if log['action'] == 'reject']
+        if reject_logs:
+            print(f"\n❌ 却下理由:")
+            for log in reject_logs:
+                print(f"  • {log['config']}: {log.get('reason', '理由なし')}")
     
-    def _save_review_decision(self, strategy_name: str, param_id: str, decision: ReviewDecision) -> None:
-        """レビュー決定を保存"""
-        # パラメータセットのステータス更新
-        new_status = 'approved' if decision.approved else 'rejected'
-        self.parameter_manager.update_parameter_status(strategy_name, param_id, new_status)
-        
-        # レビュー履歴の保存
-        review_data = {
-            'parameter_id': param_id,
-            'strategy_name': strategy_name,
-            'decision': 'approved' if decision.approved else 'rejected',
-            'reviewer_id': decision.reviewer_id,
-            'review_date': decision.review_date,
-            'notes': decision.notes,
-            'confidence_level': decision.confidence_level,
-            'risk_acceptance': decision.risk_acceptance
-        }
-        
-        self._save_review_history(review_data)
-        
-        # 結果表示
-        status_icon = "✅" if decision.approved else "❌"
-        print(f"\n{status_icon} レビュー決定が保存されました:")
-        print(f"  決定: {new_status}")
-        print(f"  パラメータID: {param_id}")
-        print(f"  信頼度: {decision.confidence_level}/5")
-    
-    def _save_review_history(self, review_data: Dict) -> None:
-        """レビュー履歴をファイルに保存"""
-        history_dir = os.path.join(project_root, 'config', 'review_history')
-        os.makedirs(history_dir, exist_ok=True)
-        
-        history_file = os.path.join(history_dir, f"{review_data['strategy_name']}_reviews.json")
-        
-        # 既存履歴の読み込み
-        reviews = []
-        if os.path.exists(history_file):
-            try:
-                with open(history_file, 'r', encoding='utf-8') as f:
-                    reviews = json.load(f)
-            except (json.JSONDecodeError, FileNotFoundError):
-                reviews = []
-        
-        # 新しいレビューを追加
-        reviews.append(review_data)
-        
-        # 保存
-        with open(history_file, 'w', encoding='utf-8') as f:
-            json.dump(reviews, f, indent=2, ensure_ascii=False)
-    
-    def show_review_history(self, strategy_name: str) -> None:
-        """レビュー履歴の表示"""
-        history_file = os.path.join(project_root, 'config', 'review_history', f"{strategy_name}_reviews.json")
-        
-        if not os.path.exists(history_file):
-            print(f"❌ {strategy_name}のレビュー履歴が見つかりません。")
-            return
-        
-        try:
-            with open(history_file, 'r', encoding='utf-8') as f:
-                reviews = json.load(f)
-        except (json.JSONDecodeError, FileNotFoundError):
-            print("❌ レビュー履歴の読み込みに失敗しました。")
-            return
-        
-        print(f"\n📚 {strategy_name}のレビュー履歴:")
-        print(f"{'='*60}")
-        
-        for review in sorted(reviews, key=lambda x: x['review_date'], reverse=True):
-            status_icon = "✅" if review['decision'] == 'approved' else "❌"
-            print(f"\n{status_icon} パラメータID: {review['parameter_id']}")
-            print(f"   決定: {review['decision']}")
-            print(f"   レビュアー: {review['reviewer_id']}")
-            print(f"   日時: {review['review_date']}")
-            print(f"   信頼度: {review['confidence_level']}/5")
-            print(f"   リスク受容: {review['risk_acceptance']}")
-            if review['notes'] != "なし":
-                print(f"   ノート: {review['notes']}")
+    def show_review_history(self):
+        """レビュー履歴を表示"""
+        print(f"\n📜 レビュー履歴表示機能（未実装）")
+        print("この機能は今後のバージョンで実装予定です。")
 
 
 def main():
-    """メイン関数 - コマンドライン実行用"""
-    if len(sys.argv) < 2:
-        print("使用方法: python parameter_reviewer.py <strategy_name> [reviewer_id]")
-        print("例: python parameter_reviewer.py MomentumInvestingStrategy john_doe")
+    """メイン関数"""
+    parser = argparse.ArgumentParser(description='パラメータレビューシステム')
+    parser.add_argument('--strategy', '-s', default='momentum', 
+                       help='レビューする戦略名 (デフォルト: momentum)')
+    parser.add_argument('--auto-mode', action='store_true',
+                       help='自動モードでレビューセッションを直接開始')
+    
+    args = parser.parse_args()
+    
+    reviewer = ParameterReviewer()
+    
+    # 自動モードの場合は直接レビューセッション開始
+    if args.auto_mode:
+        print(f"\n{'='*60}")
+        print(f"パラメータレビューシステム - {args.strategy}")
+        print(f"レビュアー: default_reviewer")
+        print(f"日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"{'='*60}")
+        
+        reviewer.start_review_session(args.strategy)
         return
     
-    strategy_name = sys.argv[1]
-    reviewer_id = sys.argv[2] if len(sys.argv) > 2 else "default_reviewer"
-    
-    reviewer = ParameterReviewer(reviewer_id)
-    
+    # 対話モード
     while True:
         print(f"\n{'='*60}")
-        print("パラメータレビューシステム")
+        print(f"📋 パラメータレビューシステム")
         print(f"{'='*60}")
         print("1. レビューセッション開始")
         print("2. レビュー履歴表示")
         print("3. 終了")
         
-        choice = input("\n選択してください (1-3): ")
+        choice = input("\n選択してください (1-3): ").strip()
         
         if choice == '1':
+            strategy_name = input(f"戦略名を入力してください (デフォルト: {args.strategy}): ").strip()
+            if not strategy_name:
+                strategy_name = args.strategy
+            
+            print(f"\n{'='*60}")
+            print(f"パラメータレビューシステム - {strategy_name}")
+            print(f"レビュアー: default_reviewer")
+            print(f"日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"{'='*60}")
+            
             reviewer.start_review_session(strategy_name)
+            
         elif choice == '2':
-            reviewer.show_review_history(strategy_name)
+            reviewer.show_review_history()
+            
         elif choice == '3':
-            print("レビューシステムを終了します。")
+            print("👋 レビューシステムを終了します。")
             break
+            
         else:
-            print("❌ 無効な選択です。")
+            print("❌ 無効な選択です。1-3の数字を入力してください。")
 
 
 if __name__ == "__main__":

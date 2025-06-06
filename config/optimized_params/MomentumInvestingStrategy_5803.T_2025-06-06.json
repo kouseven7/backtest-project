@@ -38,12 +38,12 @@
     "cross_validation": "walk_forward",
     "total_combinations_tested": 17
   },
-  "status": "pending_review",
+  "status": "approved",
   "created_at": "2025-06-06T22:28:49.840364",
   "notes": "",
   "approval_info": {
-    "approved_by": null,
-    "approved_at": null,
+    "approved_by": "test_reviewer",
+    "approved_at": "2025-06-06T23:44:44.988211",
     "rejection_reason": null
   },
   "validation_info": {}
