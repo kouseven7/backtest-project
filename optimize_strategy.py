@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 from datetime import datetime
+from typing import Dict, Any
 
 # 戦略クラスのインポート
 from strategies.Breakout import BreakoutStrategy
@@ -47,6 +48,9 @@ def main():
     parser.add_argument('--strategy', type=str, default='breakout',
                         choices=['breakout', 'vwap_breakout', 'momentum', 'gc', 'contrarian', 'opening_gap', 'vwap_bounce'],
                         help='最適化する戦略')
+    parser.add_argument('--ticker', type=str, default=None, help='最適化対象の銘柄コード（例: 9101.T）')
+    parser.add_argument('--start-date', type=str, default=None, help='開始日 (YYYY-MM-DD)')
+    parser.add_argument('--end-date', type=str, default=None, help='終了日 (YYYY-MM-DD)')
     parser.add_argument('--parallel', action='store_true',
                         help='並列処理を使用する')
     parser.add_argument('--save-results', action='store_true',
@@ -58,10 +62,12 @@ def main():
     parser.add_argument('--reviewer-id', type=str, default='auto_optimizer',
                         help='レビュアーID（自動承認時に使用）')
     args = parser.parse_args()
-    
+
     # データ取得
     logger.info("株価データを取得中...")
-    ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data()
+    ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data(
+        ticker=args.ticker, start_date=args.start_date, end_date=args.end_date
+    )
     
     # データ前処理
     stock_data = preprocess_data(stock_data)
@@ -213,8 +219,11 @@ def validate_and_review_results(strategy_name: str, results, args) -> None:
                 
                 # 自動承認の記録（param_idは自動生成）
                 import uuid
-                param_id = str(uuid.uuid4())[:8]  # 8文字のランダムID                save_auto_approval_record(strategy_name, param_id, args.reviewer_id,
-                                        overfitting_result, validation_result)
+                param_id = str(uuid.uuid4())[:8]  # 8文字のランダムID
+                save_auto_approval_record(
+                    strategy_name, param_id, args.reviewer_id,
+                    overfitting_result, validation_result
+                )
             else:
                 logger.info(f"⚠️ リスクレベル: {overall_risk} - 手動レビューが必要です")
                 logger.info("parameter_reviewer.pyを使用して手動レビューを実行してください")
@@ -225,7 +234,7 @@ def validate_and_review_results(strategy_name: str, results, args) -> None:
         logger.error(f"スタックトレース: {traceback.format_exc()}")
 
 
-def calculate_overall_risk(overfitting_result: dict, validation_result: dict) -> str:
+def calculate_overall_risk(overfitting_result: Dict[str, Any], validation_result: Dict[str, Any]) -> str:
     """総合リスクレベルの計算"""
     risk_levels = ['low', 'medium', 'high']
       # オーバーフィッティングリスク
@@ -245,7 +254,7 @@ def calculate_overall_risk(overfitting_result: dict, validation_result: dict) ->
 
 
 def save_auto_approval_record(strategy_name: str, param_id: str, reviewer_id: str,
-                             overfitting_result: dict, validation_result: dict) -> None:
+                             overfitting_result: Dict[str, Any], validation_result: Dict[str, Any]) -> None:
     """自動承認記録を保存"""
     try:
         review_data = {

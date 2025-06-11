@@ -1,76 +1,72 @@
-#!/usr/bin/env python3
 """
-Phase 1 新機能テスト: 戦略自動判別機能のテスト
+Phase2: バリデータ分割後の動作確認テスト
 """
-
-import sys
-sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")
-
 from validation.parameter_validator import ParameterValidator
 
-def test_strategy_auto_detection():
-    """戦略自動判別機能のテスト"""
-    print("🧪 Phase 1 新機能テスト開始")
-    print("=" * 60)
-    
+def test_breakout_validator():
     validator = ParameterValidator()
-    
-    # テスト1: MomentumStrategy固有パラメータ
-    print("\n📋 テスト1: MomentumStrategy固有パラメータの自動検出")
-    momentum_params = {
-        "sma_short": 20,
-        "sma_long": 50,
-        "rsi_period": 14,
-        "take_profit": 0.1,
-        "stop_loss": 0.05
-    }
-    
-    detected_strategy = validator.auto_detect_strategy(momentum_params)
-    print(f"検出された戦略: {detected_strategy}")
-    
-    validation_result = validator.validate_auto(momentum_params)
-    print(f"検証結果: {validation_result['validation_summary']}")
-    
-    # テスト2: BreakoutStrategy固有パラメータ
-    print("\n📋 テスト2: BreakoutStrategy固有パラメータの自動検出")
-    breakout_params = {
-        "volume_threshold": 1.5,
+    # 正常系
+    params = {
+        "volume_threshold": 1.8,
         "take_profit": 0.05,
         "look_back": 3,
         "trailing_stop": 0.02,
         "breakout_buffer": 0.01
     }
-    
-    detected_strategy = validator.auto_detect_strategy(breakout_params)
-    print(f"検出された戦略: {detected_strategy}")
-    
-    validation_result = validator.validate_auto(breakout_params)
-    print(f"検証結果: {validation_result['validation_summary']}")
-    
-    # テスト3: 戦略名による明示的な指定
-    print("\n📋 テスト3: 戦略名による明示的な指定")
-    test_cases = [
-        ("momentum", momentum_params),
-        ("MomentumInvestingStrategy", momentum_params),
-        ("breakout", breakout_params),
-        ("BreakoutStrategy", breakout_params),
-        ("unknown_strategy", momentum_params)
-    ]
-    
-    for strategy_name, params in test_cases:
-        result = validator.validate(strategy_name, params)
-        print(f"戦略: {strategy_name} → {result['validation_summary']}")
-    
-    # テスト4: 後方互換性テスト
-    print("\n📋 テスト4: 後方互換性テスト（既存メソッド）")
-    legacy_momentum_result = validator.validate_momentum_parameters(momentum_params)
-    legacy_breakout_result = validator.validate_breakout_parameters(breakout_params)
-    
-    print(f"従来のmomentum検証: {legacy_momentum_result['validation_summary']}")
-    print(f"従来のbreakout検証: {legacy_breakout_result['validation_summary']}")
-    
-    print("\n✅ Phase 1 テスト完了")
-    print("🚀 新機能が正常に動作しています！")
+    result = validator.validate("breakout", params)
+    assert result["valid"], f"正常パラメータで失敗: {result}"
+    # 異常系
+    params_err = {
+        "volume_threshold": 0.5,  # 小さすぎ
+        "take_profit": 0.001,  # 小さすぎ
+        "look_back": 0,        # 小さすぎ
+        "trailing_stop": 0.2,  # 大きすぎ
+        "breakout_buffer": 0.1 # 大きすぎ
+    }
+    result = validator.validate("breakout", params_err)
+    assert not result["valid"], "異常パラメータでvalidになっている"
+    assert len(result["errors"]) > 0, "エラーが検出されない"
+    print("✅ Breakoutバリデータ分割テスト合格")
+
+def test_momentum_validator():
+    validator = ParameterValidator()
+    params = {
+        "sma_short": 10,
+        "sma_long": 50,
+        "rsi_period": 14,
+        "rsi_lower": 30,
+        "rsi_upper": 70,
+        "take_profit": 0.1,
+        "stop_loss": 0.05,
+        "trailing_stop": 0.02,
+        "volume_threshold": 1.5,
+        "max_hold_days": 10,
+        "atr_multiple": 2.0,
+        "partial_exit_pct": 0.5,
+        "partial_exit_threshold": 0.1,
+        "momentum_exit_threshold": -0.05,
+        "volume_exit_threshold": 0.5
+    }
+    result = validator.validate("momentum", params)
+    assert result["valid"], f"正常パラメータで失敗: {result}"
+    params_err = {
+        "sma_short": 100,
+        "sma_long": 10,
+        "rsi_period": 5,
+        "rsi_lower": 80,
+        "rsi_upper": 60,
+        "take_profit": 0.001,
+        "stop_loss": 0.5
+    }
+    result = validator.validate("momentum", params_err)
+    assert not result["valid"], "異常パラメータでvalidになっている"
+    assert len(result["errors"]) > 0, "エラーが検出されない"
+    print("✅ Momentumバリデータ分割テスト合格")
+
+def main():
+    test_breakout_validator()
+    test_momentum_validator()
+    print("✅ Phase2 バリデータ分割テスト完了")
 
 if __name__ == "__main__":
-    test_strategy_auto_detection()
+    main()

@@ -24,12 +24,15 @@ import os
 import logging
 from config.error_handling import read_excel_parameters, fetch_stock_data
 from config.cache_manager import get_cache_filepath, save_cache
+import datetime
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-def get_parameters_and_data():
+def get_parameters_and_data(ticker: Optional[str] = None, start_date: Optional[str] = None, end_date: Optional[str] = None):
     """
     Excel設定ファイルからパラメータ取得と市場データ取得（キャッシュ利用）を行います。
+    引数が指定されていればそれを優先し、なければ設定ファイルから取得します。
     Returns:
         ticker (str), start_date (str), end_date (str), stock_data (pd.DataFrame), index_data (pd.DataFrame)
     """
@@ -38,49 +41,65 @@ def get_parameters_and_data():
     config_file_xlsm = os.path.join(config_base_path, "backtest_config.xlsm")
     config_csv = os.path.join(config_base_path, "config.csv")
 
-    try:
-        if os.path.exists(config_file_xlsx):
-            config_df = read_excel_parameters(config_file_xlsx, "銘柄設定")
-            logger.info(f"設定ファイル読み込み: {config_file_xlsx}")
-        elif os.path.exists(config_file_xlsm):
-            config_df = read_excel_parameters(config_file_xlsm, "銘柄設定")
-            logger.info(f"設定ファイル読み込み: {config_file_xlsm}")
-        else:
-            logger.warning(f"Excel設定ファイルが見つからないため、CSVファイルを使用します: {config_csv}")
-            config_df = pd.read_csv(config_csv)
+    # 設定ファイル・デフォルト値による補完
+    if ticker is not None and start_date is not None and end_date is not None:
+        logger.info(f"引数指定: {ticker}, {start_date}, {end_date}")
+    else:
+        try:
+            if os.path.exists(config_file_xlsx):
+                config_df = read_excel_parameters(config_file_xlsx, "銘柄設定")
+                logger.info(f"設定ファイル読み込み: {config_file_xlsx}")
+            elif os.path.exists(config_file_xlsm):
+                config_df = read_excel_parameters(config_file_xlsm, "銘柄設定")
+                logger.info(f"設定ファイル読み込み: {config_file_xlsm}")
+            else:
+                logger.warning(f"Excel設定ファイルが見つからないため、CSVファイルを使用します: {config_csv}")
+                config_df = pd.read_csv(config_csv)
 
-        # 銘柄情報の取得
-        if "銘柄" in config_df.columns:
-            ticker = config_df["銘柄"].iloc[0]
-        elif "ticker" in config_df.columns:
-            ticker = config_df["ticker"].iloc[0]
-        else:
-            ticker = "9101.T"
-            logger.warning(f"銘柄情報が見つからないため、デフォルト値を使用します: {ticker}")
+            # 銘柄情報の取得
+            if ticker is None:
+                if "銘柄" in config_df.columns:
+                    ticker = str(config_df["銘柄"].iloc[0])
+                elif "ticker" in config_df.columns:
+                    ticker = str(config_df["ticker"].iloc[0])
+                else:
+                    ticker = "9101.T"
+                    logger.warning(f"銘柄情報が見つからないため、デフォルト値を使用します: {ticker}")
+            # 日付情報の取得
+            if start_date is None or end_date is None:
+                if "開始日" in config_df.columns and "終了日" in config_df.columns:
+                    s = config_df["開始日"].iloc[0]
+                    e = config_df["終了日"].iloc[0]
+                    if isinstance(s, (pd.Timestamp, datetime.datetime)):
+                        start_date = s.strftime('%Y-%m-%d')
+                    else:
+                        start_date = str(s)
+                    if isinstance(e, (pd.Timestamp, datetime.datetime)):
+                        end_date = e.strftime('%Y-%m-%d')
+                    else:
+                        end_date = str(e)
+                elif "start_date" in config_df.columns and "end_date" in config_df.columns:
+                    start_date = str(config_df["start_date"].iloc[0])
+                    end_date = str(config_df["end_date"].iloc[0])
+                else:
+                    start_date = "2023-01-01"
+                    end_date = "2023-12-31"
+                    logger.warning(f"日付情報が見つからないため、デフォルト値を使用します: {start_date} ~ {end_date}")
+            logger.info(f"パラメータ取得: {ticker}, {start_date}, {end_date}")
+        except Exception as e:
+            logger.error(f"設定ファイルの読み込みに失敗しました: {str(e)}")
+            if ticker is None:
+                ticker = "9101.T"
+            if start_date is None:
+                start_date = "2023-01-01"
+            if end_date is None:
+                end_date = "2023-12-31"
+            logger.warning(f"デフォルト値を使用します: {ticker}, {start_date}, {end_date}")
 
-        # 日付情報の取得
-        if "開始日" in config_df.columns and "終了日" in config_df.columns:
-            start_date = config_df["開始日"].iloc[0]
-            end_date = config_df["終了日"].iloc[0]
-            if hasattr(start_date, 'strftime'):
-                start_date = start_date.strftime('%Y-%m-%d')
-            if hasattr(end_date, 'strftime'):
-                end_date = end_date.strftime('%Y-%m-%d')
-        elif "start_date" in config_df.columns and "end_date" in config_df.columns:
-            start_date = config_df["start_date"].iloc[0]
-            end_date = config_df["end_date"].iloc[0]
-        else:
-            start_date = "2023-01-01"
-            end_date = "2023-12-31"
-            logger.warning(f"日付情報が見つからないため、デフォルト値を使用します: {start_date} ~ {end_date}")
-
-        logger.info(f"パラメータ取得: {ticker}, {start_date}, {end_date}")
-    except Exception as e:
-        logger.error(f"設定ファイルの読み込みに失敗しました: {str(e)}")
-        ticker = "9101.T"
-        start_date = "2023-01-01"
-        end_date = "2023-12-31"
-        logger.warning(f"デフォルト値を使用します: {ticker}, {start_date}, {end_date}")
+    # ここで必ずstr型にキャスト
+    ticker = str(ticker)
+    start_date = str(start_date)
+    end_date = str(end_date)
 
     try:
         cache_filepath = get_cache_filepath(ticker, start_date, end_date)
@@ -107,7 +126,7 @@ def get_parameters_and_data():
             raise ValueError(f"銘柄 {ticker} のデータが見つかりませんでした。")
 
     try:
-        index_ticker = "^N225" if ticker.endswith(".T") else "^GSPC"
+        index_ticker = "^N225" if ticker and ticker.endswith(".T") else "^GSPC"
         index_cache_filepath = get_cache_filepath(index_ticker, start_date, end_date)
 
         if (os.path.exists(index_cache_filepath)):

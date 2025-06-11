@@ -272,7 +272,8 @@ class ParameterReviewer:
         print(f"作成日時: {config.get('created_at', 'N/A')}")
         
         # パラメータ詳細
-        params = config.get('parameters', {})        if params:
+        params = config.get('parameters', {})
+        if params:
             validation_result = self.validator.validate_auto(params)
             # generate_validation_reportは存在しないため、直接結果を表示
             print(f"検証結果: {validation_result.get('validation_summary', 'N/A')}")
