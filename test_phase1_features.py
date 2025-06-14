@@ -63,9 +63,32 @@ def test_momentum_validator():
     assert len(result["errors"]) > 0, "エラーが検出されない"
     print("✅ Momentumバリデータ分割テスト合格")
 
+def test_contrarian_validator():
+    from validation.parameter_validator import ParameterValidator
+    validator = ParameterValidator()
+    # 正常系
+    params = {
+        "entry_threshold": 0.2,
+        "exit_threshold": 0.3,
+        "lookback_period": 20
+    }
+    result = validator.validate("contrarian", params)
+    assert result["valid"], f"正常パラメータで失敗: {result}"
+    # 異常系
+    params_err = {
+        "entry_threshold": 1.5,  # 範囲外
+        "exit_threshold": -0.1,  # 範囲外
+        "lookback_period": 0     # 範囲外
+    }
+    result = validator.validate("contrarian", params_err)
+    assert not result["valid"], "異常パラメータでvalidになっている"
+    assert len(result["errors"]) > 0, "エラーが検出されない"
+    print("✅ Contrarianバリデータ分割テスト合格")
+
 def main():
     test_breakout_validator()
     test_momentum_validator()
+    test_contrarian_validator()
     print("✅ Phase2 バリデータ分割テスト完了")
 
 if __name__ == "__main__":

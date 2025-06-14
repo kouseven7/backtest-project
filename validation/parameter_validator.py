@@ -4,6 +4,7 @@
 from typing import Dict, Any, Optional
 from validation.validators.momentum_validator import MomentumParameterValidator
 from validation.validators.breakout_validator import BreakoutParameterValidator
+from validation.validators.contrarian_validator import ContrarianParameterValidator
 
 class ParameterValidator:
     def __init__(self):
@@ -12,11 +13,14 @@ class ParameterValidator:
             'momentum': 'momentum',
             'MomentumInvestingStrategy': 'momentum',
             'breakout': 'breakout',
-            'BreakoutStrategy': 'breakout'
+            'BreakoutStrategy': 'breakout',
+            'contrarian': 'contrarian',
+            'ContrarianStrategy': 'contrarian'
         }
         self.validator_map: Dict[str, Any] = {
             'momentum': MomentumParameterValidator,
-            'breakout': BreakoutParameterValidator
+            'breakout': BreakoutParameterValidator,
+            'contrarian': ContrarianParameterValidator
         }
 
     def validate_momentum_parameters(self, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -24,6 +28,9 @@ class ParameterValidator:
 
     def validate_breakout_parameters(self, params: Dict[str, Any]) -> Dict[str, Any]:
         return BreakoutParameterValidator.validate(params)
+
+    def validate_contrarian_parameters(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        return ContrarianParameterValidator.validate(params)
 
     def validate(self, strategy_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -68,6 +75,8 @@ class ParameterValidator:
             return 'momentum'
         elif 'breakout' in strategy_name.lower():
             return 'breakout'
+        elif 'contrarian' in strategy_name.lower():
+            return 'contrarian'
         
         # デフォルトは空文字（未対応として扱う）
         return ''
@@ -84,6 +93,7 @@ class ParameterValidator:
         """
         momentum_specific = {'sma_short', 'sma_long', 'rsi_period', 'rsi_lower', 'rsi_upper'}
         breakout_specific = {'look_back', 'breakout_buffer'}
+        contrarian_specific = {'entry_threshold', 'exit_threshold'}
         
         param_keys = set(params.keys())
         
@@ -94,6 +104,10 @@ class ParameterValidator:
         # MomentumStrategy固有パラメータがある場合
         if param_keys & momentum_specific:
             return 'momentum'
+        
+        # ContrarianStrategy固有パラメータがある場合
+        if param_keys & contrarian_specific:
+            return 'contrarian'
         
         # 共通パラメータのみの場合はデフォルトでmomentum
         return 'momentum'
@@ -126,3 +140,7 @@ class ParameterValidator:
     def validate_breakout_parameters_deprecated(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """@deprecated BreakoutStrategy パラメータの妥当性検証（後方互換性のため）"""
         return self.validate_breakout_parameters(params)
+    
+    def validate_contrarian_parameters_deprecated(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        """@deprecated ContrarianStrategy パラメータの妥当性検証（後方互換性のため）"""
+        return self.validate_contrarian_parameters(params)

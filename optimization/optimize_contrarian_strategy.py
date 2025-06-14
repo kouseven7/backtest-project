@@ -8,10 +8,9 @@ import argparse
 import pandas as pd
 from datetime import datetime
 
-# プロジェクトのルートディレクトリをパスに追加
 sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")
 
-from strategies.contrarian_strategy import ContrarianStrategy
+from strategies import contrarian_strategy
 from optimization.parameter_optimizer import ParameterOptimizer, ParallelParameterOptimizer
 from optimization.configs.contrarian_strategy_optimization import PARAM_GRID, OBJECTIVES_CONFIG
 from optimization.objective_functions import create_custom_objective
@@ -70,7 +69,7 @@ def optimize_contrarian_strategy(data, use_parallel=False):
         logger.info("並列処理を使用して最適化を実行します")
         optimizer = ParallelParameterOptimizer(
             data=data,
-            strategy_class=ContrarianStrategy,
+            strategy_class=contrarian_strategy.ContrarianStrategy,
             param_grid=PARAM_GRID,
             objective_function=custom_objective,
             cv_splits=splits,
@@ -82,7 +81,7 @@ def optimize_contrarian_strategy(data, use_parallel=False):
         logger.info("シングルスレッドで最適化を実行します")
         optimizer = ParameterOptimizer(
             data=data,
-            strategy_class=ContrarianStrategy,
+            strategy_class=contrarian_strategy.ContrarianStrategy,
             param_grid=PARAM_GRID,
             objective_function=custom_objective,
             cv_splits=splits,

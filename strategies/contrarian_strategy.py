@@ -15,6 +15,8 @@ Dependencies:
   - strategies.base_strategy
   - indicators.basic_indicators
   - indicators.trend_analysis
+  - config.optimized_parameters
+  - validation.validators.contrarian_validator
 """
 
 import pandas as pd
@@ -22,6 +24,8 @@ import numpy as np
 from strategies.base_strategy import BaseStrategy
 from indicators.basic_indicators import calculate_rsi
 from indicators.trend_analysis import detect_trend
+from config.optimized_parameters import OptimizedParameterManager
+from validation.validators.contrarian_validator import ContrarianParameterValidator
 
 class ContrarianStrategy(BaseStrategy):
     def __init__(self, data: pd.DataFrame, params=None, price_column: str = "Adj Close"):
@@ -158,6 +162,31 @@ class ContrarianStrategy(BaseStrategy):
                 self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
 
         return self.data
+
+    def load_optimized_parameters(self, ticker: str = None):
+        """
+        承認済みの最適化パラメータを自動適用
+        """
+        manager = OptimizedParameterManager()
+        params = manager.load_approved_params("ContrarianStrategy", ticker)
+        if params:
+            self.params.update(params)
+        return self.params
+
+    def run_optimized_strategy(self, ticker: str = None):
+        """
+        最適化パラメータを自動適用してバックテスト実行
+        """
+        self.load_optimized_parameters(ticker)
+        return self.backtest()
+
+    def get_optimization_info(self, ticker: str = None):
+        """
+        最適化パラメータのメタ情報を取得
+        """
+        manager = OptimizedParameterManager()
+        configs = manager.list_available_configs(strategy_name="ContrarianStrategy", ticker=ticker)
+        return configs
 
 # テストコード
 if __name__ == "__main__":
