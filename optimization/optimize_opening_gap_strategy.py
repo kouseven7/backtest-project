@@ -22,6 +22,7 @@ from indicators.indicator_calculator import compute_indicators
 from data_fetcher import get_parameters_and_data
 from config.logger_config import setup_logger
 from optimization.parallel_optimizer import ParallelParameterOptimizer
+from metrics.performance_metrics_util import PerformanceMetricsCalculator
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\optimization.log")
@@ -113,7 +114,6 @@ def optimize_opening_gap_strategy(data, dow_data=None, use_parallel=False):
         logger.info("並列処理を使用して最適化を実行します")
         try:
             from optimization.parameter_optimizer import ParallelParameterOptimizer
-            # OpeningGapParallelParameterOptimizerを使う
             optimizer = OpeningGapParallelParameterOptimizer(
                 data=data,
                 dow_data=dow_data,
@@ -149,6 +149,19 @@ def optimize_opening_gap_strategy(data, dow_data=None, use_parallel=False):
             output_dir=output_dir
         )
         results = optimizer.grid_search()
+    
+    # パフォーマンス指標の計算・保存
+    if not results.empty:
+        best_params = results.iloc[0].to_dict()
+        from strategies.Opening_Gap import OpeningGapStrategy
+        strategy = OpeningGapStrategy(data, dow_data, params=best_params)
+        result_data = strategy.backtest()
+        from trade_simulation import simulate_trades
+        trade_results = simulate_trades(result_data, "最適化後評価")
+        metrics = PerformanceMetricsCalculator.calculate_all(trade_results)
+        metrics_path = os.path.join(output_dir, f"performance_metrics_{timestamp}.xlsx")
+        pd.DataFrame([metrics]).to_excel(metrics_path, index=False)
+        logger.info(f"パフォーマンス指標を保存しました: {metrics_path}")
     
     # 結果の保存
     filename = f"opening_gap_strategy_results_{timestamp}"

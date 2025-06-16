@@ -20,6 +20,8 @@ from data_processor import preprocess_data
 from indicators.indicator_calculator import compute_indicators
 from data_fetcher import get_parameters_and_data
 from config.logger_config import setup_logger
+from metrics.performance_metrics_util import PerformanceMetricsCalculator
+from config.optimized_parameters import OptimizedParameterManager
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\optimization.log")
@@ -123,8 +125,28 @@ def optimize_momentum_strategy(data, use_parallel=False):
     if not results.empty:
         best_params = results.iloc[0].to_dict()
         best_score = best_params.pop("score", None)
+        # パフォーマンス指標を共通クラスで計算
+        trade_results = None
+        cumulative_pnl = None
+        if '取引結果' in results.columns:
+            trade_results = results[['取引結果']]
+        if '累積損益' in results.columns:
+            cumulative_pnl = results['累積損益']
+        metrics = PerformanceMetricsCalculator.calculate_all(trade_results or results, cumulative_pnl)
+        metrics['score'] = best_score
         logger.info(f"最適化完了: 最良スコア = {best_score}")
         logger.info(f"最適パラメータ: {best_params}")
+        # JSONでパラメータ保存
+        param_manager = OptimizedParameterManager()
+        param_manager.save_optimized_params(
+            strategy_name="MomentumInvestingStrategy",
+            ticker="DEFAULT",
+            params=best_params,
+            metrics=metrics,
+            optimization_date=timestamp,
+            status="pending_review"
+        )
+        logger.info("最適化パラメータをJSONで保存しました")
     else:
         logger.warning("最適化に失敗しました。結果が空です。")
     

@@ -20,6 +20,7 @@ from data_processor import preprocess_data
 from indicators.indicator_calculator import compute_indicators
 from data_fetcher import get_parameters_and_data
 from config.logger_config import setup_logger
+from metrics.performance_metrics_util import PerformanceMetricsCalculator
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\optimization.log")
@@ -107,6 +108,19 @@ def optimize_vwap_bounce_strategy(data, use_parallel=False):
             output_dir=output_dir
         )
         results = optimizer.grid_search()
+    
+    # パフォーマンス指標の計算・保存
+    if not results.empty:
+        best_params = results.iloc[0].to_dict()
+        from strategies.VWAP_Bounce import VWAPBounceStrategy
+        strategy = VWAPBounceStrategy(data, params=best_params)
+        result_data = strategy.backtest()
+        from trade_simulation import simulate_trades
+        trade_results = simulate_trades(result_data, "最適化後評価")
+        metrics = PerformanceMetricsCalculator.calculate_all(trade_results)
+        metrics_path = os.path.join(output_dir, f"performance_metrics_{timestamp}.xlsx")
+        pd.DataFrame([metrics]).to_excel(metrics_path, index=False)
+        logger.info(f"パフォーマンス指標を保存しました: {metrics_path}")
     
     # 結果の保存
     filename = f"vwap_bounce_strategy_results_{timestamp}"
