@@ -115,9 +115,19 @@ class GCStrategy(BaseStrategy):
         # ゴールデンクロス（短期MAが長期MAを下から上に抜けた）
         golden_cross = short_sma > long_sma and prev_short_sma <= prev_long_sma
 
-        # トレンド判定
-        trend = detect_trend(self.data.iloc[:idx + 1], price_column=self.price_column)
-        
+        # トレンド判定パラメータをparamsから取得
+        trend_params = {
+            "lookback_period": self.params.get("trend_lookback_period", 5),
+            "short_period": self.params.get("trend_short_period", 5),
+            "medium_period": self.params.get("trend_medium_period", 25),
+            "long_period": self.params.get("trend_long_period", 75),
+            "up_score": self.params.get("trend_up_score", 5),
+        }
+        trend = detect_trend(
+            self.data.iloc[:idx + 1],
+            price_column=self.price_column,
+            **trend_params
+        )
         if golden_cross and trend == "uptrend":
             current_price = self.data[self.price_column].iloc[idx]
             self.entry_prices[idx] = current_price
@@ -207,6 +217,68 @@ class GCStrategy(BaseStrategy):
                 self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
 
         return self.data
+
+    def load_optimized_parameters(self) -> bool:
+        """
+        最適化されたパラメータを読み込み
+        Returns:
+            bool: 読み込み成功
+        """
+        try:
+            from config.optimized_parameters import OptimizedParameterManager
+            manager = OptimizedParameterManager()
+            ticker = getattr(self, 'ticker', 'DEFAULT')
+            # GC戦略用の承認済みパラメータ取得
+            params = manager.get_best_config_by_metric('GCStrategy', metric='sharpe_ratio', ticker=ticker, status='approved')
+            if params and 'parameters' in params:
+                self.params.update(params['parameters'])
+                self._approved_params = params
+                print(f"✅ 最適化パラメータを読み込みました (ID: {params.get('parameter_id', 'N/A')})")
+                return True
+            else:
+                print(f"⚠️ 承認済みの最適化パラメータが見つかりません")
+                return False
+        except Exception as e:
+            print(f"❌ 最適化パラメータの読み込みでエラー: {e}")
+            return False
+
+    def run_optimized_strategy(self):
+        """
+        最適化パラメータで戦略を実行
+        Returns:
+            pd.DataFrame: バックテスト結果
+        """
+        loaded = self.load_optimized_parameters()
+        if loaded and hasattr(self, '_approved_params'):
+            print(f"\n📊 使用パラメータ: {self._approved_params.get('parameters', {})}")
+            print(f"   作成日時: {self._approved_params.get('created_at', 'N/A')}")
+            print(f"   シャープレシオ: {self._approved_params.get('performance_metrics', {}).get('sharpe_ratio', 'N/A')}")
+        else:
+            print(f"📊 デフォルトパラメータを使用: {self.params}")
+        return self.backtest()
+
+    def get_optimization_info(self):
+        """
+        最適化情報を取得
+        Returns:
+            dict: 最適化情報
+        """
+        info = {
+            'using_optimized_params': hasattr(self, '_approved_params') and self._approved_params is not None,
+            'default_params': {
+                "short_window": 5,
+                "long_window": 25,
+                "take_profit": 0.05,
+                "stop_loss": 0.03,
+                "trailing_stop_pct": 0.03,
+                "max_hold_days": 20,
+                "exit_on_death_cross": True
+            },
+            'current_params': self.params
+        }
+        if hasattr(self, '_approved_params') and self._approved_params:
+            info['optimized_params'] = self._approved_params
+        return info
 
 # テストコード
 if __name__ == "__main__":

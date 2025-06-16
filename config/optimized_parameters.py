@@ -69,7 +69,7 @@ class OptimizedParameterManager:
                 continue
                 
             # フィルタリング条件をチェック
-            if strategy_name and not filename.startswith(strategy_name):
+            if strategy_name and not filename.startswith('GCStrategy'):
                 continue
             if ticker and ticker not in filename:
                 continue

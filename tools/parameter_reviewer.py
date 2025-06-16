@@ -27,7 +27,9 @@ class ParameterReviewer:
             'momentum': 'MomentumInvestingStrategy',
             'breakout': 'BreakoutStrategy',
             'contrarian': 'ContrarianStrategy',
-            'vwap': 'VWAPStrategy'
+            'vwap': 'VWAPStrategy',
+            'gc': 'GCStrategy',  # 統一
+            'gcstrategy': 'GCStrategy',
         }
     
     def _normalize_strategy_name(self, strategy_name: str) -> str:

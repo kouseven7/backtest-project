@@ -22,6 +22,7 @@ from data_processor import preprocess_data
 from indicators.indicator_calculator import compute_indicators
 from data_fetcher import get_parameters_and_data
 from config.logger_config import setup_logger
+from config.optimized_parameters import OptimizedParameterManager
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\optimization.log")
@@ -57,7 +58,7 @@ def optimize_gc_strategy(data, use_parallel=False):
     
     # ウォークフォワード分割
     train_size = 252  # 約1年
-    test_size = 63    # 約3ヶ月
+    test_size = 252   # 約半年（または252で1年でもOK）
     splits = split_data_for_walk_forward(data, train_size, test_size)
     logger.info(f"ウォークフォワード分割: {len(splits)}分割")
     
@@ -98,12 +99,36 @@ def optimize_gc_strategy(data, use_parallel=False):
     filename = f"gc_strategy_results_{timestamp}"
     optimizer.save_results(filename=filename, format="excel")
     logger.info(f"最適化結果を保存しました: {filename}")
-    
+
+    # ★ここから追加★
     if not results.empty:
         best_params = results.iloc[0].to_dict()
         best_score = best_params.pop("score", None)
+        # パフォーマンス指標をまとめてmetricsに
+        metrics = {
+            "score": best_score,
+            "sharpe_ratio": best_params.get("sharpe_ratio"),
+            "sortino_ratio": best_params.get("sortino_ratio"),
+            "win_rate": best_params.get("win_rate"),
+            "total_return": best_params.get("total_return"),
+            "max_drawdown": best_params.get("max_drawdown"),
+            "profit_factor": best_params.get("profit_factor"),
+            "total_trades": best_params.get("total_trades"),
+        }
         logger.info(f"最適化完了: 最良スコア = {best_score}")
         logger.info(f"最適パラメータ: {best_params}")
+
+        # JSONでパラメータ保存
+        param_manager = OptimizedParameterManager()
+        param_manager.save_optimized_params(
+            strategy_name="GCStrategy",  # 統一
+            ticker="DEFAULT",            # 統一
+            params=best_params,
+            metrics=metrics,
+            optimization_date=timestamp,
+            status="pending_review"
+        )
+        logger.info("最適化パラメータをJSONで保存しました")
     else:
         logger.warning("最適化に失敗しました。結果が空です。")
     

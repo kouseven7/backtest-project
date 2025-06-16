@@ -15,12 +15,17 @@ class ParameterValidator:
             'breakout': 'breakout',
             'BreakoutStrategy': 'breakout',
             'contrarian': 'contrarian',
-            'ContrarianStrategy': 'contrarian'
+            'ContrarianStrategy': 'contrarian',
+            'gc': 'gc',
+            'GCStrategy': 'gc',
+            'gc_strategy': 'gc',
         }
+        from validation.validators.gc_validator import GCParameterValidator
         self.validator_map: Dict[str, Any] = {
             'momentum': MomentumParameterValidator,
             'breakout': BreakoutParameterValidator,
-            'contrarian': ContrarianParameterValidator
+            'contrarian': ContrarianParameterValidator,
+            'gc': GCParameterValidator
         }
 
     def validate_momentum_parameters(self, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -31,6 +36,10 @@ class ParameterValidator:
 
     def validate_contrarian_parameters(self, params: Dict[str, Any]) -> Dict[str, Any]:
         return ContrarianParameterValidator.validate(params)
+
+    def validate_gc_parameters(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        from validation.validators.gc_validator import GCParameterValidator
+        return GCParameterValidator().validate(params)
 
     def validate(self, strategy_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -77,6 +86,8 @@ class ParameterValidator:
             return 'breakout'
         elif 'contrarian' in strategy_name.lower():
             return 'contrarian'
+        elif 'gc' in strategy_name.lower():
+            return 'gc'
         
         # デフォルトは空文字（未対応として扱う）
         return ''
@@ -94,6 +105,7 @@ class ParameterValidator:
         momentum_specific = {'sma_short', 'sma_long', 'rsi_period', 'rsi_lower', 'rsi_upper'}
         breakout_specific = {'look_back', 'breakout_buffer'}
         contrarian_specific = {'entry_threshold', 'exit_threshold'}
+        gc_specific = {'gc_param1', 'gc_param2'}  # GCStrategy固有パラメータの例
         
         param_keys = set(params.keys())
         
@@ -108,6 +120,10 @@ class ParameterValidator:
         # ContrarianStrategy固有パラメータがある場合
         if param_keys & contrarian_specific:
             return 'contrarian'
+        
+        # GCStrategy固有パラメータがある場合
+        if param_keys & gc_specific:
+            return 'gc'
         
         # 共通パラメータのみの場合はデフォルトでmomentum
         return 'momentum'

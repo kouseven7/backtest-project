@@ -20,7 +20,8 @@ from .basic_indicators import calculate_sma
 from .bollinger_atr import calculate_atr
 
 def detect_trend(data: pd.DataFrame, price_column: str, lookback_period: int = 5, 
-                short_period: int = 5, medium_period: int = 25, long_period: int = 75) -> str:
+                short_period: int = 5, medium_period: int = 25, long_period: int = 75, 
+                up_score: int = 5) -> str:
     """
     SMAを用いてトレンドを判定する関数。複数のポイントを考慮し、より堅牢なトレンド判定を行います。
     """
@@ -81,9 +82,9 @@ def detect_trend(data: pd.DataFrame, price_column: str, lookback_period: int = 5
         downtrend_score += 1
     
     # スコアに基づくトレンド判定
-    if uptrend_score >= 5:  # 6点中5点以上で上昇トレンド
+    if uptrend_score >= up_score:  # ここをパラメータ化
         return "uptrend"
-    elif downtrend_score >= 5:  # 6点中5点以上で下降トレンド
+    elif downtrend_score >= up_score:
         return "downtrend"
     else:
         return "range-bound"
