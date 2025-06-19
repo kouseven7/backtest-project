@@ -153,15 +153,27 @@ def optimize_opening_gap_strategy(data, dow_data=None, use_parallel=False):
     # パフォーマンス指標の計算・保存
     if not results.empty:
         best_params = results.iloc[0].to_dict()
-        from strategies.Opening_Gap import OpeningGapStrategy
         strategy = OpeningGapStrategy(data, dow_data, params=best_params)
         result_data = strategy.backtest()
         from trade_simulation import simulate_trades
         trade_results = simulate_trades(result_data, "最適化後評価")
-        metrics = PerformanceMetricsCalculator.calculate_all(trade_results)
+        metrics = PerformanceMetricsCalculator.calculate_all(trade_results["取引履歴"])
         metrics_path = os.path.join(output_dir, f"performance_metrics_{timestamp}.xlsx")
         pd.DataFrame([metrics]).to_excel(metrics_path, index=False)
         logger.info(f"パフォーマンス指標を保存しました: {metrics_path}")
+
+        # ★ここで最適化パラメータを半自動システム用に保存
+        from config.optimized_parameters import OptimizedParameterManager
+        manager = OptimizedParameterManager()
+        # strategy_nameは必ず"opening_gap"で保存
+        manager.save_optimized_params(
+            strategy_name="opening_gap",
+            ticker="7203.T",  # 必要に応じてargs.ticker等に変更
+            params=best_params,
+            metrics=metrics,
+            optimization_date=datetime.now().strftime("%Y-%m-%d"),
+            status="pending_review"
+        )
     
     # 結果の保存
     filename = f"opening_gap_strategy_results_{timestamp}"

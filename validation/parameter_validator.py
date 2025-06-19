@@ -5,6 +5,7 @@ from typing import Dict, Any, Optional
 from validation.validators.momentum_validator import MomentumParameterValidator
 from validation.validators.breakout_validator import BreakoutParameterValidator
 from validation.validators.contrarian_validator import ContrarianParameterValidator
+from validation.validators.opening_gap_validator import OpeningGapParameterValidator
 
 class ParameterValidator:
     def __init__(self):
@@ -19,13 +20,16 @@ class ParameterValidator:
             'gc': 'gc',
             'GCStrategy': 'gc',
             'gc_strategy': 'gc',
+            'opening_gap': 'opening_gap',
+            'OpeningGapStrategy': 'opening_gap',
         }
         from validation.validators.gc_validator import GCParameterValidator
         self.validator_map: Dict[str, Any] = {
             'momentum': MomentumParameterValidator,
             'breakout': BreakoutParameterValidator,
             'contrarian': ContrarianParameterValidator,
-            'gc': GCParameterValidator
+            'gc': GCParameterValidator,
+            'opening_gap': OpeningGapParameterValidator
         }
 
     def validate_momentum_parameters(self, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -88,6 +92,8 @@ class ParameterValidator:
             return 'contrarian'
         elif 'gc' in strategy_name.lower():
             return 'gc'
+        elif 'opening_gap' in strategy_name.lower():
+            return 'opening_gap'
         
         # デフォルトは空文字（未対応として扱う）
         return ''
@@ -106,6 +112,7 @@ class ParameterValidator:
         breakout_specific = {'look_back', 'breakout_buffer'}
         contrarian_specific = {'entry_threshold', 'exit_threshold'}
         gc_specific = {'gc_param1', 'gc_param2'}  # GCStrategy固有パラメータの例
+        opening_gap_specific = {'gap_size', 'slippage'}  # OpeningGapStrategy固有パラメータの例
         
         param_keys = set(params.keys())
         
@@ -124,6 +131,10 @@ class ParameterValidator:
         # GCStrategy固有パラメータがある場合
         if param_keys & gc_specific:
             return 'gc'
+        
+        # OpeningGapStrategy固有パラメータがある場合
+        if param_keys & opening_gap_specific:
+            return 'opening_gap'
         
         # 共通パラメータのみの場合はデフォルトでmomentum
         return 'momentum'

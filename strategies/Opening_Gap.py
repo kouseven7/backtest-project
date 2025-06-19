@@ -22,7 +22,7 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Any, Optional
 from strategies.base_strategy import BaseStrategy
-# from indicators.trend_analysis import detect_high_volatility  # 未使用のためコメントアウト
+from config.optimized_parameters import OptimizedParameterManager
 
 class OpeningGapStrategy(BaseStrategy):
     def __init__(self, data: pd.DataFrame, dow_data: pd.DataFrame, params: Optional[Dict[str, Any]] = None, price_column: str = "Adj Close"):
@@ -271,6 +271,25 @@ class OpeningGapStrategy(BaseStrategy):
                             self.log_trade(f"一部利確 {portion*100}%: 日付={self.data.index[idx]}")
 
         return self.data
+
+    def load_optimized_parameters(self, ticker: Optional[str] = None, strategy_name: str = "OpeningGapStrategy") -> bool:
+        manager = OptimizedParameterManager()
+        params = manager.load_approved_params(strategy_name, ticker)
+        if params:
+            self.params.update(params)
+            return True
+        return False
+
+    def run_optimized_strategy(self, ticker: Optional[str] = None, data: Optional[pd.DataFrame] = None) -> pd.DataFrame:
+        if not self.load_optimized_parameters(ticker):
+            print("最適化パラメータが見つからないためデフォルトで実行します")
+        return self.backtest()
+
+    def get_optimization_info(self) -> Dict[str, Any]:
+        return {
+            "current_params": self.params,
+            "optimization_mode": getattr(self, "optimization_mode", False)
+        }
 
 # テストコード
 if __name__ == "__main__":

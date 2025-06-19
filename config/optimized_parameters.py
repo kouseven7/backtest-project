@@ -4,6 +4,7 @@
 import json
 import os
 import pandas as pd
+import numpy as np
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
@@ -51,8 +52,17 @@ class OptimizedParameterManager:
         filename = f"{strategy_name}_{ticker}_{optimization_date}.json"
         filepath = os.path.join(self.config_dir, filename)
         
+        def default_converter(o):
+            if isinstance(o, np.integer):
+                return int(o)
+            if isinstance(o, np.floating):
+                return float(o)
+            if isinstance(o, np.ndarray):
+                return o.tolist()
+            return str(o)
+        
         with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(config, f, indent=2, ensure_ascii=False)
+            json.dump(config, f, indent=2, ensure_ascii=False, default=default_converter)
         
         return filepath
     
@@ -67,27 +77,22 @@ class OptimizedParameterManager:
         for filename in os.listdir(self.config_dir):
             if not filename.endswith('.json'):
                 continue
-                
             # フィルタリング条件をチェック
-            if strategy_name and not filename.startswith('GCStrategy'):
+            if strategy_name and not filename.lower().startswith(strategy_name.lower()):
                 continue
             if ticker and ticker not in filename:
                 continue
-                
             filepath = os.path.join(self.config_dir, filename)
             try:
                 with open(filepath, 'r', encoding='utf-8') as f:
                     config = json.load(f)
-                
                 # ステータスフィルタリング
                 if status and config.get("status") != status:
                     continue
-                
                 # ファイル情報を追加
                 config['filename'] = filename
                 config['filepath'] = filepath
                 configs.append(config)
-                
             except (json.JSONDecodeError, KeyError) as e:
                 print(f"警告: {filename} の読み込みに失敗しました: {e}")
                 continue
