@@ -150,7 +150,7 @@ class ParallelParameterOptimizer(ParameterOptimizer):
             result_data = strategy.backtest()
             from trade_simulation import simulate_trades
             trade_results = simulate_trades(result_data, "最適化中")
-            score = self.objective_function(trade_results)
+            score = self.objective_function(trade_results["取引履歴"])
             return score
         except Exception as e:
             logger.error(f"バックテスト実行中にエラー: {str(e)}")

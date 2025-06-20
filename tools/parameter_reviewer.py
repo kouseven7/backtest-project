@@ -28,6 +28,7 @@ class ParameterReviewer:
             'breakout': 'BreakoutStrategy',
             'contrarian': 'ContrarianStrategy',
             'vwap': 'VWAPStrategy',
+            'vwap_bounce': 'VWAPBounceStrategy',  # 追加
             'gc': 'GCStrategy',  # 統一
             'gcstrategy': 'GCStrategy',
         }

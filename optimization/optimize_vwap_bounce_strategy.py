@@ -112,12 +112,11 @@ def optimize_vwap_bounce_strategy(data, use_parallel=False):
     # パフォーマンス指標の計算・保存
     if not results.empty:
         best_params = results.iloc[0].to_dict()
-        from strategies.VWAP_Bounce import VWAPBounceStrategy
         strategy = VWAPBounceStrategy(data, params=best_params)
         result_data = strategy.backtest()
         from trade_simulation import simulate_trades
         trade_results = simulate_trades(result_data, "最適化後評価")
-        metrics = PerformanceMetricsCalculator.calculate_all(trade_results)
+        metrics = PerformanceMetricsCalculator.calculate_all(trade_results["取引履歴"])
         metrics_path = os.path.join(output_dir, f"performance_metrics_{timestamp}.xlsx")
         pd.DataFrame([metrics]).to_excel(metrics_path, index=False)
         logger.info(f"パフォーマンス指標を保存しました: {metrics_path}")

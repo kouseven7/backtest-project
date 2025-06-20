@@ -24,6 +24,8 @@ import numpy as np
 from strategies.base_strategy import BaseStrategy
 from indicators.trend_analysis import detect_trend
 from indicators.basic_indicators import calculate_vwap
+from config.optimized_parameters import OptimizedParameterManager
+from typing import Dict, Any, Optional
 
 class VWAPBounceStrategy(BaseStrategy):
     def __init__(self, data: pd.DataFrame, params=None, price_column: str = "Adj Close", volume_column: str = "Volume"):
@@ -251,6 +253,25 @@ class VWAPBounceStrategy(BaseStrategy):
                 self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
 
         return self.data
+
+    def load_optimized_parameters(self, ticker: Optional[str] = None, strategy_name: str = "vwap_bounce") -> bool:
+        manager = OptimizedParameterManager()
+        params = manager.load_approved_params(strategy_name, ticker)
+        if params:
+            self.params.update(params)
+            return True
+        return False
+
+    def run_optimized_strategy(self, ticker: Optional[str] = None, data: Optional[pd.DataFrame] = None) -> pd.DataFrame:
+        if not self.load_optimized_parameters(ticker):
+            print("最適化パラメータが見つからないためデフォルトで実行します")
+        return self.backtest()
+
+    def get_optimization_info(self) -> Dict[str, Any]:
+        return {
+            "current_params": self.params,
+            "optimization_mode": getattr(self, "optimization_mode", False)
+        }
 
 # テストコード
 if __name__ == "__main__":

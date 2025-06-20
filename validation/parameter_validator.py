@@ -6,6 +6,7 @@ from validation.validators.momentum_validator import MomentumParameterValidator
 from validation.validators.breakout_validator import BreakoutParameterValidator
 from validation.validators.contrarian_validator import ContrarianParameterValidator
 from validation.validators.opening_gap_validator import OpeningGapParameterValidator
+from validation.validators.vwap_bounce_validator import VWAPBounceParameterValidator
 
 class ParameterValidator:
     def __init__(self):
@@ -22,6 +23,8 @@ class ParameterValidator:
             'gc_strategy': 'gc',
             'opening_gap': 'opening_gap',
             'OpeningGapStrategy': 'opening_gap',
+            'vwap_bounce': 'vwap_bounce',
+            'VWAPBounceStrategy': 'vwap_bounce',
         }
         from validation.validators.gc_validator import GCParameterValidator
         self.validator_map: Dict[str, Any] = {
@@ -29,7 +32,8 @@ class ParameterValidator:
             'breakout': BreakoutParameterValidator,
             'contrarian': ContrarianParameterValidator,
             'gc': GCParameterValidator,
-            'opening_gap': OpeningGapParameterValidator
+            'opening_gap': OpeningGapParameterValidator,
+            'vwap_bounce': VWAPBounceParameterValidator
         }
 
     def validate_momentum_parameters(self, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -94,6 +98,8 @@ class ParameterValidator:
             return 'gc'
         elif 'opening_gap' in strategy_name.lower():
             return 'opening_gap'
+        elif 'vwap_bounce' in strategy_name.lower():
+            return 'vwap_bounce'
         
         # デフォルトは空文字（未対応として扱う）
         return ''
@@ -113,6 +119,7 @@ class ParameterValidator:
         contrarian_specific = {'entry_threshold', 'exit_threshold'}
         gc_specific = {'gc_param1', 'gc_param2'}  # GCStrategy固有パラメータの例
         opening_gap_specific = {'gap_size', 'slippage'}  # OpeningGapStrategy固有パラメータの例
+        vwap_bounce_specific = {'vwap_period', 'bounce_threshold'}  # VWAPBounceStrategy固有パラメータの例
         
         param_keys = set(params.keys())
         
@@ -135,6 +142,10 @@ class ParameterValidator:
         # OpeningGapStrategy固有パラメータがある場合
         if param_keys & opening_gap_specific:
             return 'opening_gap'
+        
+        # VWAPBounceStrategy固有パラメータがある場合
+        if param_keys & vwap_bounce_specific:
+            return 'vwap_bounce'
         
         # 共通パラメータのみの場合はデフォルトでmomentum
         return 'momentum'

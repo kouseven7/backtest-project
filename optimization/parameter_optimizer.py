@@ -244,7 +244,7 @@ class ParameterOptimizer:
             trade_results = simulate_trades(result_data, "最適化中")
             
             # 目的関数でスコア計算
-            score = self.objective_function(trade_results)
+            score = self.objective_function(trade_results["取引履歴"])
             
             return score
             

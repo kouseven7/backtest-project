@@ -66,6 +66,10 @@ class OptimizedParameterManager:
         
         return filepath
     
+    def _normalize_strategy_name_for_file(self, name):
+        # 例: vwap_bounce, VWAPBounceStrategy, vwapbouncestrategy → vwapbouncestrategy
+        return name.replace("_", "").replace("-", "").lower().replace("strategy", "")
+
     def list_available_configs(self, strategy_name: str = None, ticker: str = None, 
                               status: str = None) -> List[Dict]:
         """利用可能な設定ファイルを一覧表示"""
@@ -77,22 +81,30 @@ class OptimizedParameterManager:
         for filename in os.listdir(self.config_dir):
             if not filename.endswith('.json'):
                 continue
+            
             # フィルタリング条件をチェック
-            if strategy_name and not filename.lower().startswith(strategy_name.lower()):
-                continue
+            if strategy_name:
+                norm_strategy = self._normalize_strategy_name_for_file(strategy_name)
+                norm_filename = self._normalize_strategy_name_for_file(filename.split("_")[0])
+                if norm_strategy != norm_filename:
+                    continue
             if ticker and ticker not in filename:
                 continue
+            
             filepath = os.path.join(self.config_dir, filename)
             try:
                 with open(filepath, 'r', encoding='utf-8') as f:
                     config = json.load(f)
+                
                 # ステータスフィルタリング
                 if status and config.get("status") != status:
                     continue
+                
                 # ファイル情報を追加
                 config['filename'] = filename
                 config['filepath'] = filepath
                 configs.append(config)
+                
             except (json.JSONDecodeError, KeyError) as e:
                 print(f"警告: {filename} の読み込みに失敗しました: {e}")
                 continue

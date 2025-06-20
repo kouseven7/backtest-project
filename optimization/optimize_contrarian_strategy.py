@@ -100,7 +100,7 @@ def optimize_contrarian_strategy(data, use_parallel=False):
         result_data = strategy.backtest()
         from trade_simulation import simulate_trades
         trade_results = simulate_trades(result_data, "最適化後評価")
-        metrics = PerformanceMetricsCalculator.calculate_all(trade_results)
+        metrics = PerformanceMetricsCalculator.calculate_all(trade_results["取引履歴"])
         # metricsを保存（Excel/CSV等に追加保存する場合はここで処理）
         metrics_path = os.path.join(output_dir, f"performance_metrics_{timestamp}.xlsx")
         pd.DataFrame([metrics]).to_excel(metrics_path, index=False)
