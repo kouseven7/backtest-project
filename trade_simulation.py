@@ -109,21 +109,14 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
     # リスク管理システムの初期化（シミュレーション用）
     risk_manager = RiskManagement(total_assets=1000000)  # 総資産100万円
     
-    # データにリスク管理状態のメタデータがある場合、それを使用
-    risk_mgr_state = data.attrs.get('risk_management', {})
-    
-    # 複数ポジションを追跡するための辞書
-    # {取引ID: [エントリー日, エントリー価格, 戦略名, ポジションサイズ, エントリーインデックス]}
-    active_positions = {}
-    next_trade_id = 1
-    
     # エントリー日とイグジット日のペアを記録
     entry_exit_pairs = []
     
-    # まず、全てのエントリーとイグジットのペアを見つける
+    # シミュレーションループ
     in_position = False
     entry_idx = -1
     entry_date = None
+    strategy_name = ""
     
     for idx in range(len(data)):
         date = data.index[idx]
@@ -135,31 +128,31 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
             in_position = True
             entry_idx = idx
             entry_date = date
+            strategy_name = data["Strategy"].iloc[idx] if "Strategy" in data.columns else "デフォルト戦略"
         
         # イグジットシグナルがあり、ポジションを持っている場合
         if exit_signal == -1 and in_position:
-            entry_exit_pairs.append((entry_idx, entry_date, idx, date))
+            entry_exit_pairs.append((entry_idx, entry_date, idx, date, strategy_name))
             in_position = False
     
     # 最後にポジションが残っている場合、最終日にクローズ
     if in_position and entry_idx >= 0:
         final_idx = len(data) - 1
         final_date = data.index[final_idx]
-        entry_exit_pairs.append((entry_idx, entry_date, final_idx, final_date))
+        entry_exit_pairs.append((entry_idx, entry_date, final_idx, final_date, strategy_name))
     
     logger.info(f"取引ペア数: {len(entry_exit_pairs)}")
     
     # 各エントリー・イグジットのペアについて取引を処理
-    for entry_idx, entry_date, exit_idx, exit_date in entry_exit_pairs:
-        strategy_name = data["Strategy"].iloc[entry_idx] if "Strategy" in data.columns and data["Strategy"].iloc[entry_idx] != "" else "デフォルト戦略"
+    for entry_idx, entry_date, exit_idx, exit_date, strategy_name in entry_exit_pairs:
         position_size = data["Position_Size"].iloc[entry_idx] if "Position_Size" in data.columns else 1
         # 部分利確があれば反映
         partial_exit = data["Partial_Exit"].iloc[exit_idx] if "Partial_Exit" in data.columns else 0
 
-        # エントリー価格を取得
-        entry_price = data["Close"].iloc[entry_idx] if "Close" in data.columns else data["Adj Close"].iloc[entry_idx]
-        # イグジット価格を取得
-        exit_price = data["Close"].iloc[exit_idx] if "Close" in data.columns else data["Adj Close"].iloc[exit_idx]
+        # 価格の取得
+        price_column = "Adj Close"  # デフォルト価格カラム
+        entry_price = data[price_column].iloc[entry_idx]
+        exit_price = data[price_column].iloc[exit_idx]
 
         # 損益計算（部分利確・ポジションサイズ考慮）
         # 部分利確が0なら全量、0.3なら70%分の損益
@@ -176,7 +169,7 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
 
         # 取引履歴に追加
         trade_history.loc[len(trade_history)] = [
-            entry_date, 
+            exit_date, 
             ticker, 
             strategy_name,
             entry_price, 
@@ -187,6 +180,7 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
             risk_state_str
         ]
         cum_profit += profit_after_fee
+        
         logger.debug(f"取引: エントリー {entry_date} @ {entry_price}, イグジット {exit_date} @ {exit_price}, 損益: {profit_after_fee:.2f}円")
     
     logger.info(f"合計取引数: {len(trade_history)}件, 合計損益: {cum_profit:.2f}円")

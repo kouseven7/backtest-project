@@ -1,0 +1,49 @@
+{
+  "strategy": "VWAPBreakoutStrategy",
+  "ticker": "7972.T",
+  "optimization_date": "2025-06-24",
+  "parameters": {
+    "sma_short": 30,
+    "sma_long": 30,
+    "stop_loss": 0.07,
+    "take_profit": 0.1,
+    "volume_threshold": 1.5,
+    "rsi_period": 14,
+    "market_filter_method": "macd",
+    "trailing_stop": 0.05,
+    "confirmation_bars": 1,
+    "breakout_min_percent": 0.005,
+    "volume_increase_mode": "simple",
+    "atr_filter_enabled": true,
+    "rsi_filter_enabled": true,
+    "trailing_start_threshold": 0.03,
+    "max_holding_period": 10,
+    "partial_exit_enabled": false
+  },
+  "performance_metrics": {
+    "sharpe_ratio": -Infinity,
+    "total_return": 0.1,
+    "max_drawdown": -0.05,
+    "win_rate": 0.6,
+    "profit_factor": 1.5,
+    "volatility": 0.15
+  },
+  "optimization_details": {
+    "data_period": {
+      "start_date": "2020-01-01",
+      "end_date": "2024-12-31"
+    },
+    "optimization_method": "grid_search",
+    "cross_validation": "walk_forward",
+    "total_combinations_tested": 16
+  },
+  "status": "pending_review",
+  "created_at": "2025-06-24T16:45:30.924754",
+  "notes": "",
+  "approval_info": {
+    "approved_by": null,
+    "approved_at": null,
+    "rejection_reason": null
+  },
+  "validation_info": {}
+}

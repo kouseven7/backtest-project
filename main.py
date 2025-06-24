@@ -89,6 +89,8 @@ def main():
         ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data()
         stock_data = preprocess_data(stock_data)
         stock_data = compute_indicators(stock_data)
+        
+        # 戦略を適用（単一のDataFrameが返される）
         stock_data = apply_strategies(stock_data, index_data)
 
         # ウォークフォワード用の分割を先に実施
@@ -102,9 +104,8 @@ def main():
         # ここでログ等を出力
         logger.info(f"バックテスト結果をExcelに出力しました: {backtest_results}")
         logger.info("全体のバックテスト処理が正常に完了しました。")
-
     except Exception as e:
-        logger.exception("バックテスト実行中にエラーが発生しました。")
+        logger.exception(f"バックテスト処理中にエラーが発生しました: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":

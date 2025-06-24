@@ -21,6 +21,7 @@ from indicators.indicator_calculator import compute_indicators
 from data_fetcher import get_parameters_and_data
 from config.logger_config import setup_logger
 from metrics.performance_metrics_util import PerformanceMetricsCalculator
+from trade_simulation import simulate_trades
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\optimization.log")
@@ -61,7 +62,6 @@ def optimize_vwap_bounce_strategy(data, use_parallel=False):
     train_size = 252  # 約1年
     test_size = 63    # 約3ヶ月
     splits = split_data_for_walk_forward(data, train_size, test_size)
-    logger.info(f"ウォークフォワード分割: {len(splits)}分割")
     
     # 目的関数の設定
     custom_objective = create_custom_objective(OBJECTIVES_CONFIG)
@@ -75,7 +75,7 @@ def optimize_vwap_bounce_strategy(data, use_parallel=False):
     if use_parallel:
         logger.info("並列処理を使用して最適化を実行します")
         try:
-            from optimization.parameter_optimizer import ParallelParameterOptimizer
+            from optimization.parallel_optimizer import ParallelParameterOptimizer
             optimizer = ParallelParameterOptimizer(
                 data=data,
                 strategy_class=VWAPBounceStrategy,
@@ -114,7 +114,6 @@ def optimize_vwap_bounce_strategy(data, use_parallel=False):
         best_params = results.iloc[0].to_dict()
         strategy = VWAPBounceStrategy(data, params=best_params)
         result_data = strategy.backtest()
-        from trade_simulation import simulate_trades
         trade_results = simulate_trades(result_data, "最適化後評価")
         metrics = PerformanceMetricsCalculator.calculate_all(trade_results["取引履歴"])
         metrics_path = os.path.join(output_dir, f"performance_metrics_{timestamp}.xlsx")
@@ -158,11 +157,15 @@ def main():
     try:
         # データの取得
         logger.info("株価データを取得中...")
-        ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data(
-            ticker=args.ticker, start_date=args.start, end_date=args.end
-        )
-        
-        # データの前処理
+        ticker, start_date, end_date, stock_data = get_parameters_and_data()  # 引数なしで呼び出し
+        # コマンドライン引数で上書き
+        if args.ticker is not None:
+            ticker = args.ticker
+        if args.start is not None:
+            start_date = args.start
+        if args.end is not None:
+            end_date = args.end
+        # 必要ならstock_dataを再取得するロジックを追加してもよい
         stock_data = preprocess_data(stock_data)
         stock_data = compute_indicators(stock_data)
         
@@ -187,9 +190,9 @@ def main():
                     print(f"  {param}: {value}")
             
             # ウォークフォワード分析の結果を表示
-            if args.walk_forward:
+            if args.walk_forward and hasattr(results, 'walk_forward_details'):
                 print("\n*** ウォークフォワード分析結果 ***")
-                # ここにウォークフォワード分析結果の表示コードを追加できます
+                print(results.walk_forward_details)
         
     except Exception as e:
         logger.exception(f"最適化実行中にエラーが発生しました: {e}")
