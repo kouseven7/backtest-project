@@ -55,34 +55,35 @@ class VWAPBreakoutStrategy(BaseStrategy):
         self.index_data = index_data
         self.price_column = price_column
         self.volume_column = volume_column
-        
-        # デフォルトパラメータの設定
+          # デフォルトパラメータの設定
         default_params = {
-            # --- リスクリワード重視 ---
-            "stop_loss": 0.03,    # 3% ストップロス（浅め～標準）
-            "take_profit": 0.15,  # 15% 利益確定（広め）
+            # --- リスクリワード重視（より現実的な設定） ---
+            "stop_loss": 0.02,    # 2% ストップロス（より早めの損切り）
+            "take_profit": 0.08,  # 8% 利益確定（より現実的な設定）
 
-            # --- エントリー頻度調整 ---
-            "sma_short": 10,      # 短期移動平均
-            "sma_long": 30,       # 長期移動平均
-            "volume_threshold": 1.2, # 出来高増加（やや緩め）
+            # --- エントリー頻度調整（より多く） ---
+            "sma_short": 5,       # より短期の移動平均（5日）
+            "sma_long": 20,       # より短期の長期線（20日）
+            "volume_threshold": 1.1, # 出来高増加条件を緩和（10%増）
 
-            # --- シンプル化 ---
-            "confirmation_bars": 1,             # ブレイク確認バー数 (0=即時エントリー, 1=1本確認)
-            "breakout_min_percent": 0.003,      # 最小ブレイク率 (0=無効化, 0.3%有効)
-            "trailing_stop": 0.05,              # トレーリングストップ（やや広め）
-            "trailing_start_threshold": 0.03,   # トレーリング開始閾値 (3%の利益でトレーリング開始)
-            "max_holding_period": 10,           # 最大保有期間 (日数)
+            # --- シンプル化と高速対応 ---
+            "confirmation_bars": 0,             # 確認バー無し（即時エントリー）
+            "breakout_min_percent": 0.0,        # ブレイク率チェック無効化
+            "trailing_stop": 0.03,              # より敏感なトレーリングストップ（3%）
+            "trailing_start_threshold": 0.02,   # より早く利益を守る（2%の利益でトレーリング開始）
+            "max_holding_period": 7,            # 短めの保有期間（7日）
 
-            # --- フィルター・特殊機能は無効化 ---
-            "market_filter_method": "none",    # 市場フィルター方式 (none=無効, sma=シンプル, macd=MACD)
-            "rsi_filter_enabled": False,        # RSIフィルターの有効化
+            # --- フィルター・特殊機能（選択的に有効化） ---
+            "market_filter_method": "sma",      # シンプルなSMAフィルターを使用
+            "rsi_filter_enabled": True,         # RSIフィルターを有効化（過買い回避）
             "atr_filter_enabled": False,        # ATRフィルターの有効化
-            "partial_exit_enabled": False,      # 部分利確の有効化（無効）
+            "partial_exit_enabled": True,       # 部分利確の有効化（利益確保）
+            "partial_exit_threshold": 0.05,     # 5%で部分利確
+            "partial_exit_portion": 0.3,        # 30%のポジションを利確
 
             # --- その他（将来拡張用・固定値） ---
             "rsi_period": 14,                   # RSI計算期間
-            "volume_increase_mode": "simple", # 出来高増加判定方式 (simple/average/exponential)
+            "volume_increase_mode": "simple",   # 出来高増加判定方式
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -133,6 +134,8 @@ class VWAPBreakoutStrategy(BaseStrategy):
             if idx < self.params["sma_long"]:
                 logger.debug(f"[entry] idx={idx}: データ不足 (sma_long={self.params['sma_long']})")
                 return 0
+                
+            # 基本指標の取得
             current_price = self.data[self.price_column].iloc[idx]
             sma_short = self.data[sma_short_key].iloc[idx]
             sma_long = self.data[sma_long_key].iloc[idx]
@@ -140,55 +143,57 @@ class VWAPBreakoutStrategy(BaseStrategy):
             previous_vwap = self.data['VWAP'].iloc[idx - 1]
             current_volume = self.data[self.volume_column].iloc[idx]
             previous_volume = self.data[self.volume_column].iloc[idx - 1]
-            # 市場全体が上昇トレンドにあるか確認
-            if not self.is_market_uptrend(idx):
-                logger.debug(f"[entry] idx={idx}: 市場トレンドNG")
-                return 0
-            # 株価が短期移動平均線や長期移動平均線の上に位置している
-            #if not (current_price > sma_short > sma_long):
-            #    logger.debug(f"[entry] idx={idx}: MA順序NG current={current_price}, sma_short={sma_short}, sma_long={sma_long}")
-            #    return 0
-            # --- 緩和: current_price > sma_long のみで判定 ---
+            
+            # RSI値の取得
+            rsi = self.data['RSI'].iloc[idx] if 'RSI' in self.data.columns else 50
+            
+            # --- 市場フィルター（より効果的なフィルター） ---
+            market_filter_ok = True
+            if self.params.get("market_filter_method") == "sma":
+                # インデックスデータがある場合のみ確認
+                if self.index_data is not None:
+                    index_price = self.index_data[self.price_column].iloc[idx]
+                    index_sma = self.index_data[sma_short_key].iloc[idx]
+                    market_filter_ok = index_price > index_sma
+                    if not market_filter_ok:
+                        logger.debug(f"[entry] idx={idx}: 市場フィルターNG index_price={index_price}, index_sma={index_sma}")
+                        return 0
+            
+            # --- RSIフィルター（過買い/過売り状態を避ける） ---
+            if self.params.get("rsi_filter_enabled", False):
+                if rsi > 70:  # 過買い状態ではエントリーしない
+                    logger.debug(f"[entry] idx={idx}: RSI過買いNG rsi={rsi}")
+                    return 0
+            
+            # --- 価格/移動平均線条件（緩和版） ---
+            # 価格が長期移動平均線の上にあるかのみ確認
             if not (current_price > sma_long):
-                logger.debug(f"[entry] idx={idx}: MA順序NG(緩和) current={current_price}, sma_long={sma_long}")
+                logger.debug(f"[entry] idx={idx}: 長期MA上NG current={current_price}, sma_long={sma_long}")
                 return 0
-            # 移動平均線が上昇している
-            if not (sma_short > self.data[sma_short_key].iloc[idx - 1] and sma_long > self.data[sma_long_key].iloc[idx - 1]):
-                logger.debug(f"[entry] idx={idx}: MA上昇NG")
-                return 0
-            # VWAPが上昇している
-            if not (vwap > previous_vwap):
-                logger.debug(f"[entry] idx={idx}: VWAP上昇NG vwap={vwap}, prev={previous_vwap}")
-                return 0
-            # VWAPを上抜けしている
-            #vwap_breakout = current_price > vwap and self.data[self.price_column].iloc[idx - 1] <= vwap
-            #if not vwap_breakout:
-            #    logger.debug(f"[entry] idx={idx}: VWAPブレイクNG current={current_price}, vwap={vwap}, prev={self.data[self.price_column].iloc[idx-1]}")
-            #    return 0
-            # --- 緩和: current_price > vwap のみで判定 ---
+            
+            # --- VWAPブレイク条件（緩和版） ---
+            # 単純に価格がVWAPを上回っているかのみ確認
             if not (current_price > vwap):
-                logger.debug(f"[entry] idx={idx}: VWAPブレイクNG(緩和) current={current_price}, vwap={vwap}")
+                logger.debug(f"[entry] idx={idx}: VWAPブレイクNG current={current_price}, vwap={vwap}")
                 return 0
-            # ブレイク率チェック
-            #if self.params.get("breakout_min_percent", 0) > 0:
-            #    min_breakout = vwap * (1 + self.params["breakout_min_percent"])
-            #    if current_price <= min_breakout:
-            #        logger.debug(f"[entry] idx={idx}: ブレイク率NG current={current_price}, min={min_breakout}")
-            #        return 0
-            # --- 緩和: ブレイク率チェックをスキップ ---
-            # 何もしない
-            # ブレイク持続確認
+            
+            # --- 確認バー条件（オプション） ---
             if self.params.get("confirmation_bars", 0) > 0:
                 for i in range(1, min(self.params["confirmation_bars"] + 1, idx + 1)):
                     if self.data[self.price_column].iloc[idx - i] <= vwap:
                         logger.debug(f"[entry] idx={idx}: 確認バーNG idx-i={idx-i}")
                         return 0
-            # 出来高が増加している
+
+            # --- 出来高条件（緩和版） ---
+            # 出来高増加の閾値を下げる（パラメータで調整可能）
             if not detect_volume_increase(current_volume, previous_volume, threshold=self.params["volume_threshold"]):
                 logger.debug(f"[entry] idx={idx}: 出来高増加NG current={current_volume}, prev={previous_volume}")
                 return 0
+                
+            # すべての条件を満たしたらエントリーシグナルを出す
             logger.info(f"VWAP Breakout エントリーシグナル: 日付={self.data.index[idx]}, 価格={current_price}")
             return 1
+            
         except Exception as e:
             logger.error(f"[entry] idx={idx}: 例外発生: {e}", exc_info=True)
             return 0
@@ -206,49 +211,77 @@ class VWAPBreakoutStrategy(BaseStrategy):
         """
         if idx < 1 or entry_idx is None:
             return 0
+            
+        # 基本指標の取得
         current_price = self.data[self.price_column].iloc[idx]
         vwap = self.data['VWAP'].iloc[idx]
         entry_price = self.data[self.price_column].iloc[entry_idx]
-        # ATR（代用としてVWAPの2%）
-        atr = vwap * 0.02
-        # VWAPを下回った場合
-        if current_price < vwap:
-            self.log_trade(f"VWAP Breakout イグジットシグナル: VWAP下抜け 日付={self.data.index[idx]}, 価格={current_price}")
-            return -1
-        # ストップロス条件
-        if current_price <= entry_price * (1 - self.params["stop_loss"]):
+        
+        # 価格変動率の計算
+        profit_pct = (current_price - entry_price) / entry_price
+        
+        # --- ストップロス条件 (トレンド強度に応じて動的調整) ---
+        stop_loss = self.params["stop_loss"]
+        if current_price <= entry_price * (1 - stop_loss):
             self.log_trade(f"VWAP Breakout イグジットシグナル: ストップロス 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
-        # 利益確定条件
-        if current_price >= entry_price * (1 + self.params["take_profit"]):
+            
+        # --- 利益確定条件 ---
+        take_profit = self.params["take_profit"]
+        if current_price >= entry_price * (1 + take_profit):
             self.log_trade(f"VWAP Breakout イグジットシグナル: 利益確定 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
-        # 高度なトレーリングストップ
-        profit_pct = (current_price - entry_price) / entry_price
-        if profit_pct >= self.params.get("trailing_start_threshold", 0):
+            
+        # --- トレーリングストップ（より早く発動） ---
+        trailing_start = self.params.get("trailing_start_threshold", 0.02)  # デフォルト2%
+        if profit_pct >= trailing_start:
+            # 最高値からの下落率でトレーリングストップを判断
             high_since_entry = self.data['High'].iloc[entry_idx:idx+1].max()
             trailing_stop = high_since_entry * (1 - self.params["trailing_stop"])
             if current_price <= trailing_stop:
-                self.log_trade(f"VWAP Breakout イグジットシグナル: トレーリングストップ 日付={self.data.index[idx]}, 価格={current_price}")
+                self.log_trade(f"VWAP Breakout イグジットシグナル: トレーリングストップ 日付={self.data.index[idx]}, 価格={current_price}, 最高値={high_since_entry}")
                 return -1
-        # 部分利確ロジック
-        if self.params.get("partial_exit_enabled", False):
-            profit_pct = (current_price - entry_price) / entry_price
-            if profit_pct >= self.params["partial_exit_threshold"] and 'Partial_Exit' not in self.data.columns:
-                self.data['Partial_Exit'] = 0
-                self.data.at[self.data.index[idx], 'Partial_Exit'] = 1
-                self.log_trade(f"VWAP Breakout 部分利確シグナル: {self.params['partial_exit_portion']*100}% 利確 日付={self.data.index[idx]}, 価格={current_price}")
-                return 0
-        # RSIやMACDの反転
-        rsi = self.data['RSI'].iloc[idx]
-        macd = self.data['MACD'].iloc[idx]
-        signal_line = self.data['Signal_Line'].iloc[idx]
+                
+        # --- VWAP下抜けによるイグジット（上昇トレンド崩れの早期察知） ---
+        # 単純なVWAP下抜けに加えて、前日比の下落率も考慮
+        prev_price = self.data[self.price_column].iloc[idx-1]
+        price_change = (current_price - prev_price) / prev_price
+        
+        # 価格がVWAPを下回り、なおかつ下落中の場合
+        if current_price < vwap and price_change < 0:
+            self.log_trade(f"VWAP Breakout イグジットシグナル: VWAP下抜け+下落中 日付={self.data.index[idx]}, 価格={current_price}")
+            return -1
+            
+        # --- RSI/MACDによるイグジット ---
+        rsi = self.data['RSI'].iloc[idx] if 'RSI' in self.data.columns else 50
+        
+        # RSIが高水準から下落した場合
         if rsi > 70 and rsi < self.data['RSI'].iloc[idx - 1]:
             self.log_trade(f"VWAP Breakout イグジットシグナル: RSI反転 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
-        if macd < signal_line and self.data['MACD'].iloc[idx-1] >= self.data['Signal_Line'].iloc[idx-1]:
-            self.log_trade(f"VWAP Breakout イグジットシグナル: MACD反転 日付={self.data.index[idx]}, 価格={current_price}")
-            return -1
+            
+        # MACDクロスによるイグジット
+        if 'MACD' in self.data.columns and 'Signal_Line' in self.data.columns:
+            macd = self.data['MACD'].iloc[idx]
+            signal_line = self.data['Signal_Line'].iloc[idx]
+            prev_macd = self.data['MACD'].iloc[idx-1]
+            prev_signal = self.data['Signal_Line'].iloc[idx-1]
+            
+            if macd < signal_line and prev_macd >= prev_signal:
+                self.log_trade(f"VWAP Breakout イグジットシグナル: MACD反転 日付={self.data.index[idx]}, 価格={current_price}")
+                return -1
+        
+        # --- 部分利確ロジック ---
+        if self.params.get("partial_exit_enabled", False) and profit_pct >= self.params.get("partial_exit_threshold", 0.05):
+            if 'Partial_Exit' not in self.data.columns:
+                self.data['Partial_Exit'] = 0
+            
+            # 部分利確の実行（既に部分利確していない場合のみ）
+            if self.data.at[self.data.index[idx], 'Partial_Exit'] == 0:
+                self.data.at[self.data.index[idx], 'Partial_Exit'] = self.params.get("partial_exit_portion", 0.5)
+                self.log_trade(f"VWAP Breakout 部分利確シグナル: {self.params.get('partial_exit_portion', 0.5)*100}% 利確 日付={self.data.index[idx]}, 価格={current_price}")
+                
+        # イグジットシグナルなし
         return 0
 
     def backtest(self):
