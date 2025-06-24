@@ -58,40 +58,31 @@ class VWAPBreakoutStrategy(BaseStrategy):
         
         # デフォルトパラメータの設定
         default_params = {
-            "sma_short": 5,  # デバッグ用に短く
-            "sma_long": 10,  # デバッグ用に短く
-            "rsi_period": 14,
-            "volume_threshold": 1.2,
-            "take_profit": 0.10,  # 10%
-            "stop_loss": 0.05,    # 5%
-            "trailing_stop": 0.03,  # 3%
-            "confirmation_bars": 1,             # ブレイク確認バー数 (0=即時エントリー)
-            "breakout_min_percent": 0.005,      # 最小ブレイク率 (例: 0.5%以上の上抜け)
-            "atr_filter_enabled": False,        # ボラティリティフィルターの有効化
-            "atr_period": 14,                   # ATR計算期間
-            "atr_min_threshold": 0.01,          # 最小ATR閾値 (相対値)
-            "atr_max_threshold": 0.03,          # 最大ATR閾値 (相対値)
-            "volume_increase_mode": "simple",   # 出来高増加判定方式 (simple/average/exponential)
-            "volume_lookback_period": 5,        # 出来高比較期間
-            "bullish_candle_required": True,    # 陽線要求 (True=陽線形成時のみエントリー)
+            # --- リスクリワード重視 ---
+            "stop_loss": 0.03,    # 3% ストップロス（浅め～標準）
+            "take_profit": 0.15,  # 15% 利益確定（広め）
+
+            # --- エントリー頻度調整 ---
+            "sma_short": 10,      # 短期移動平均
+            "sma_long": 30,       # 長期移動平均
+            "volume_threshold": 1.2, # 出来高増加（やや緩め）
+
+            # --- シンプル化 ---
+            "confirmation_bars": 1,             # ブレイク確認バー数 (0=即時エントリー, 1=1本確認)
+            "breakout_min_percent": 0.003,      # 最小ブレイク率 (0=無効化, 0.3%有効)
+            "trailing_stop": 0.05,              # トレーリングストップ（やや広め）
             "trailing_start_threshold": 0.03,   # トレーリング開始閾値 (3%の利益でトレーリング開始)
             "max_holding_period": 10,           # 最大保有期間 (日数)
-            "partial_exit_enabled": False,      # 部分利確の有効化
-            "partial_exit_threshold": 0.05,     # 部分利確の発動閾値
-            "partial_exit_portion": 0.5,        # 一部利確の割合
-            "reversal_exit_enabled": False,     # 反転イグジットの有効化
-            "reversal_bars_threshold": 2,       # 反転確認バー数
-            "vwap_recross_exit": True,          # VWAP再クロス時のイグジット
-            "market_filter_method": "sma",      # 市場フィルター方式 (sma/ema/macd/combined)
-            "market_condition_threshold": 0.01, # 市場上昇トレンド判定閾値
+
+            # --- フィルター・特殊機能は無効化 ---
+            "market_filter_method": "none",    # 市場フィルター方式 (none=無効, sma=シンプル, macd=MACD)
             "rsi_filter_enabled": False,        # RSIフィルターの有効化
-            "rsi_lower_bound": 40,              # RSI下限値 (この値以下ではエントリーしない)
-            "rsi_upper_bound": 70,              # RSI上限値 (この値以上でイグジット検討)
-            "multiple_index_confirmation": False,# 複数指数による確認
-            "risk_per_trade": 0.02,             # トレードごとのリスク (総資産の2%)
-            "max_open_positions": 5,            # 最大保有ポジション数
-            "drawdown_stop_threshold": 0.1,     # ドローダウン停止閾値 (10%)
-            "consecutive_loss_limit": 3,        # 連続損失制限
+            "atr_filter_enabled": False,        # ATRフィルターの有効化
+            "partial_exit_enabled": False,      # 部分利確の有効化（無効）
+
+            # --- その他（将来拡張用・固定値） ---
+            "rsi_period": 14,                   # RSI計算期間
+            "volume_increase_mode": "simple", # 出来高増加判定方式 (simple/average/exponential)
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -202,88 +193,62 @@ class VWAPBreakoutStrategy(BaseStrategy):
             logger.error(f"[entry] idx={idx}: 例外発生: {e}", exc_info=True)
             return 0
 
-    def generate_exit_signal(self, idx: int) -> int:
+    def generate_exit_signal(self, idx: int, entry_idx: int = None) -> int:
         """
         イグジットシグナルを生成する。
         
         Parameters:
             idx (int): 現在のインデックス
+            entry_idx (int): エントリー時のインデックス
             
         Returns:
             int: イグジットシグナル（-1: イグジット, 0: なし）
         """
-        if idx < 1:  # 必要な履歴データがない場合
+        if idx < 1 or entry_idx is None:
             return 0
-            
         current_price = self.data[self.price_column].iloc[idx]
         vwap = self.data['VWAP'].iloc[idx]
-        
-        # エントリー価格がない場合（ポジションがない場合）はシグナルなし
-        entry_indices = self.data[self.data['Entry_Signal'] == 1].index
-        if len(entry_indices) == 0 or entry_indices[-1] >= self.data.index[idx]:
-            return 0
-            
-        # 最新のエントリー価格を取得
-        latest_entry_idx = self.data.index.get_loc(entry_indices[-1])
-        entry_price = self.data[self.price_column].iloc[latest_entry_idx]
-        
+        entry_price = self.data[self.price_column].iloc[entry_idx]
         # ATR（代用としてVWAPの2%）
         atr = vwap * 0.02
-        
         # VWAPを下回った場合
         if current_price < vwap:
             self.log_trade(f"VWAP Breakout イグジットシグナル: VWAP下抜け 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
-
         # ストップロス条件
         if current_price <= entry_price * (1 - self.params["stop_loss"]):
             self.log_trade(f"VWAP Breakout イグジットシグナル: ストップロス 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
-
         # 利益確定条件
         if current_price >= entry_price * (1 + self.params["take_profit"]):
             self.log_trade(f"VWAP Breakout イグジットシグナル: 利益確定 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
-
         # 高度なトレーリングストップ
         profit_pct = (current_price - entry_price) / entry_price
-        
-        # トレーリング開始閾値を超えた場合のみトレーリングストップを適用
         if profit_pct >= self.params.get("trailing_start_threshold", 0):
-            high_since_entry = self.data['High'].iloc[latest_entry_idx:idx+1].max()
+            high_since_entry = self.data['High'].iloc[entry_idx:idx+1].max()
             trailing_stop = high_since_entry * (1 - self.params["trailing_stop"])
-            
             if current_price <= trailing_stop:
                 self.log_trade(f"VWAP Breakout イグジットシグナル: トレーリングストップ 日付={self.data.index[idx]}, 価格={current_price}")
                 return -1
-
         # 部分利確ロジック
         if self.params.get("partial_exit_enabled", False):
             profit_pct = (current_price - entry_price) / entry_price
-            
-            # 部分利確の条件を満たす場合
             if profit_pct >= self.params["partial_exit_threshold"] and 'Partial_Exit' not in self.data.columns:
-                # 部分利確用のカラムを追加
                 self.data['Partial_Exit'] = 0
                 self.data.at[self.data.index[idx], 'Partial_Exit'] = 1
-                
-                # ログ
                 self.log_trade(f"VWAP Breakout 部分利確シグナル: {self.params['partial_exit_portion']*100}% 利確 日付={self.data.index[idx]}, 価格={current_price}")
-                
-                # 全ポジションイグジットしない (部分利確なのでリターン値は0)
                 return 0
-
         # RSIやMACDの反転
         rsi = self.data['RSI'].iloc[idx]
         macd = self.data['MACD'].iloc[idx]
         signal_line = self.data['Signal_Line'].iloc[idx]
-        if rsi > 70 and rsi < self.data['RSI'].iloc[idx - 1]:  # RSIが70以上から急落
+        if rsi > 70 and rsi < self.data['RSI'].iloc[idx - 1]:
             self.log_trade(f"VWAP Breakout イグジットシグナル: RSI反転 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
-        if macd < signal_line and self.data['MACD'].iloc[idx-1] >= self.data['Signal_Line'].iloc[idx-1]:  # MACDがシグナルラインを下抜け
+        if macd < signal_line and self.data['MACD'].iloc[idx-1] >= self.data['Signal_Line'].iloc[idx-1]:
             self.log_trade(f"VWAP Breakout イグジットシグナル: MACD反転 日付={self.data.index[idx]}, 価格={current_price}")
             return -1
-
         return 0
 
     def backtest(self):
@@ -296,19 +261,59 @@ class VWAPBreakoutStrategy(BaseStrategy):
         # シグナル列の初期化
         self.data['Entry_Signal'] = 0
         self.data['Exit_Signal'] = 0
+        self.data['Position'] = 0  # ポジション状態を追加
+        self.data['Entry_Price'] = np.nan  # エントリー価格を記録
+        self.data['Entry_Idx'] = np.nan  # エントリーインデックスを記録
 
-        # 各日にちについてシグナルを計算
+        # バックテストループ
         for idx in range(len(self.data)):
-            # エントリーシグナルを確認
-            entry_signal = self.generate_entry_signal(idx)
-            if entry_signal == 1:
-                self.data.at[self.data.index[idx], 'Entry_Signal'] = 1
+            current_price = self.data[self.price_column].iloc[idx]            # 前日までのポジション状態を確認
+            if idx > 0:
+                self.data.loc[self.data.index[idx], 'Position'] = self.data['Position'].iloc[idx-1]
+                # ポジションを引き継ぐ場合はEntry_IdxとEntry_Priceも引き継ぐ
+                if self.data['Position'].iloc[idx] == 1:
+                    # 常に前日のEntry_IdxとEntry_Priceを引き継ぎ（上書き）して一貫性を保つ
+                    if not pd.isna(self.data['Entry_Idx'].iloc[idx-1]):
+                        self.data.loc[self.data.index[idx], 'Entry_Idx'] = self.data['Entry_Idx'].iloc[idx-1]
+                        self.data.loc[self.data.index[idx], 'Entry_Price'] = self.data['Entry_Price'].iloc[idx-1]
             
-            # イグジットシグナルを確認
-            exit_signal = self.generate_exit_signal(idx)
-            if exit_signal == -1:
-                self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
-
+            # ポジションがない場合、エントリーシグナルをチェック
+            if self.data['Position'].iloc[idx] == 0:
+                entry_signal = self.generate_entry_signal(idx)
+                if entry_signal == 1:
+                    # エントリーシグナルあり
+                    self.data.loc[self.data.index[idx], 'Entry_Signal'] = 1
+                    self.data.loc[self.data.index[idx], 'Position'] = 1
+                    self.data.loc[self.data.index[idx], 'Entry_Price'] = current_price
+                    self.data.loc[self.data.index[idx], 'Entry_Idx'] = idx
+              # ポジションがある場合、イグジットシグナルをチェック
+            elif self.data['Position'].iloc[idx] == 1:
+                # エントリーインデックスを取得（NaNチェック強化）
+                entry_idx_val = self.data['Entry_Idx'].iloc[idx]
+                if pd.isna(entry_idx_val):                    # Entry_Idxが設定されていない場合はエラーログを出力して次のインデックスへ
+                    self.logger.warning(f"Position=1だがEntry_Idxが設定されていません(idx={idx})")
+                    continue
+                
+                try:
+                    entry_idx = int(float(entry_idx_val))  # 念のため一旦floatに変換してからint化
+                except (ValueError, TypeError) as e:
+                    self.logger.error(f"エントリーインデックス変換エラー: {e}, entry_idx_val={entry_idx_val}, idx={idx}")
+                    continue
+                
+                # エントリー後の最大保有期間チェック
+                days_held = idx - entry_idx
+                if days_held >= self.params.get("max_holding_period", 10):
+                    # 最大保有期間に達したらイグジット
+                    self.data.loc[self.data.index[idx], 'Exit_Signal'] = -1
+                    self.data.loc[self.data.index[idx], 'Position'] = 0
+                    self.log_trade(f"VWAP Breakout イグジットシグナル: 最大保有期間到達 ({days_held}日) 日付={self.data.index[idx]}, 価格={current_price}")
+                else:
+                    # 通常のイグジットシグナルをチェック
+                    exit_signal = self.generate_exit_signal(idx, entry_idx)
+                    if exit_signal == -1:
+                        self.data.loc[self.data.index[idx], 'Exit_Signal'] = -1
+                        self.data.loc[self.data.index[idx], 'Position'] = 0
+        
         return self.data
 
 def apply_strategies(stock_data: pd.DataFrame, index_data: pd.DataFrame):
@@ -402,3 +407,19 @@ if __name__ == "__main__":
     strategy = VWAPBreakoutStrategy(df, index_data)
     result = strategy.backtest()
     print(result)
+
+    # 取引シグナルの確認
+    print("\n--- Entry_Signal ---")
+    print(result['Entry_Signal'].value_counts())
+    print(result['Entry_Signal'].describe())
+    print("\n--- Exit_Signal ---")
+    print(result['Exit_Signal'].value_counts())
+    print(result['Exit_Signal'].describe())
+    # 取引結果や日次損益があれば出力
+    for col in ['取引結果', '日次損益', '損益', 'Profit', 'PnL']:
+        if col in result.columns:
+            print(f"\n--- {col} ---")
+            print(result[col].value_counts(dropna=False))
+            print(result[col].describe())
+        else:
+            print(f"カラム '{col}' は存在しません。")

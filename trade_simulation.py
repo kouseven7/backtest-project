@@ -111,12 +111,15 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
     
     # エントリー日とイグジット日のペアを記録
     entry_exit_pairs = []
-    
-    # シミュレーションループ
+      # シミュレーションループ
     in_position = False
     entry_idx = -1
     entry_date = None
     strategy_name = ""
+    
+    # データフレームにStrategyカラムがない場合は、戦略名を引数から取得
+    has_strategy_column = "Strategy" in data.columns
+    default_strategy = ticker
     
     for idx in range(len(data)):
         date = data.index[idx]
@@ -128,7 +131,8 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
             in_position = True
             entry_idx = idx
             entry_date = date
-            strategy_name = data["Strategy"].iloc[idx] if "Strategy" in data.columns else "デフォルト戦略"
+            # Strategyカラムがあれば値を使用、なければデフォルト値
+            strategy_name = data["Strategy"].iloc[idx] if has_strategy_column else default_strategy
         
         # イグジットシグナルがあり、ポジションを持っている場合
         if exit_signal == -1 and in_position:
@@ -142,27 +146,59 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
         entry_exit_pairs.append((entry_idx, entry_date, final_idx, final_date, strategy_name))
     
     logger.info(f"取引ペア数: {len(entry_exit_pairs)}")
-    
-    # 各エントリー・イグジットのペアについて取引を処理
-    for entry_idx, entry_date, exit_idx, exit_date, strategy_name in entry_exit_pairs:
-        position_size = data["Position_Size"].iloc[entry_idx] if "Position_Size" in data.columns else 1
-        # 部分利確があれば反映
-        partial_exit = data["Partial_Exit"].iloc[exit_idx] if "Partial_Exit" in data.columns else 0
+      # 各エントリー・イグジットのペアについて取引を処理
+    for entry_idx, entry_date, exit_idx, exit_date, strategy_name in entry_exit_pairs:        # NaNチェックを追加して、無効なインデックスを避ける
+        if pd.isna(entry_idx) or pd.isna(exit_idx):
+            logger.warning(f"無効なエントリー/イグジットペア: entry_idx={entry_idx}, exit_idx={exit_idx}")
+            continue
+            
+        try:
+            # インデックスを整数に変換
+            entry_idx = int(entry_idx)
+            exit_idx = int(exit_idx)
+            
+            # ポジションサイズと部分利確の取得
+            position_size = data["Position_Size"].iloc[entry_idx] if "Position_Size" in data.columns else 1
+            # 部分利確があれば反映
+            partial_exit = data["Partial_Exit"].iloc[exit_idx] if "Partial_Exit" in data.columns else 0
 
-        # 価格の取得
-        price_column = "Adj Close"  # デフォルト価格カラム
-        entry_price = data[price_column].iloc[entry_idx]
-        exit_price = data[price_column].iloc[exit_idx]
+            # 価格の取得
+            price_column = "Adj Close"  # デフォルト価格カラム
+            entry_price = data[price_column].iloc[entry_idx]
+            exit_price = data[price_column].iloc[exit_idx]
+        except (TypeError, ValueError) as e:
+            logger.error(f"エントリー/イグジットインデックス変換エラー: {e}, entry_idx={entry_idx}, exit_idx={exit_idx}")
+            continue
+              # NaNチェックを追加
+        if pd.isna(entry_price) or pd.isna(exit_price):
+            logger.warning(f"無効な価格: entry_price={entry_price}, exit_price={exit_price}")
+            continue
+            
+        try:
+            # NaNチェックを追加
+            if pd.isna(position_size):
+                position_size = 1  # デフォルト値
+            if pd.isna(partial_exit):
+                partial_exit = 0  # デフォルト値
+                
+            # 損益計算（部分利確・ポジションサイズ考慮）
+            # 部分利確が0なら全量、0.3なら70%分の損益
+            effective_position = float(position_size) * (1.0 - float(partial_exit))
+            profit = float(exit_price - entry_price) * effective_position
 
-        # 損益計算（部分利確・ポジションサイズ考慮）
-        # 部分利確が0なら全量、0.3なら70%分の損益
-        effective_position = position_size * (1 - partial_exit)
-        profit = (exit_price - entry_price) * effective_position
+            # エントリー価格が0または無効な場合のチェック
+            if entry_price <= 0 or pd.isna(entry_price):
+                logger.warning(f"無効なエントリー価格: entry_price={entry_price}, idx={entry_idx}")
+                # 安全なデフォルト値を設定
+                entry_price = exit_price if exit_price > 0 else 1.0
 
-        # 取引量と手数料
-        trade_amount = 100000 * effective_position  # 10万円 × 実効ポジションサイズ
-        fee = trade_amount * 0.001  # 0.1%手数料
-        profit_after_fee = (profit / entry_price) * trade_amount - fee
+            # 取引量と手数料
+            trade_amount = 100000 * effective_position  # 10万円 × 実効ポジションサイズ
+            fee = trade_amount * 0.001  # 0.1%手数料
+            profit_after_fee = (profit / float(entry_price)) * trade_amount - fee
+        except (TypeError, ValueError, ZeroDivisionError) as e:
+            logger.error(f"損益計算エラー: {e}, entry_price={entry_price}, exit_price={exit_price}, position_size={position_size}, partial_exit={partial_exit}")
+            continue
 
         # リスク管理の状態をJSON文字列に変換して保存
         risk_state_str = str({})  # 簡略化のため空の辞書を使用

@@ -3,22 +3,22 @@
   "ticker": "7972.T",
   "optimization_date": "2025-06-24",
   "parameters": {
-    "sma_short": 30,
+    "stop_loss": 0.05,
+    "take_profit": 0.15,
+    "sma_short": 10,
     "sma_long": 30,
-    "stop_loss": 0.07,
-    "take_profit": 0.1,
-    "volume_threshold": 1.5,
-    "rsi_period": 14,
-    "market_filter_method": "macd",
-    "trailing_stop": 0.05,
+    "volume_threshold": 1.2,
     "confirmation_bars": 1,
-    "breakout_min_percent": 0.005,
-    "volume_increase_mode": "simple",
-    "atr_filter_enabled": true,
-    "rsi_filter_enabled": true,
+    "breakout_min_percent": 0.003,
+    "trailing_stop": 0.05,
     "trailing_start_threshold": 0.03,
     "max_holding_period": 10,
-    "partial_exit_enabled": false
+    "market_filter_method": "none",
+    "rsi_filter_enabled": false,
+    "atr_filter_enabled": false,
+    "partial_exit_enabled": false,
+    "rsi_period": 14,
+    "volume_increase_mode": "simple"
   },
   "performance_metrics": {
     "sharpe_ratio": -Infinity,
@@ -38,7 +38,7 @@
     "total_combinations_tested": 16
   },
   "status": "pending_review",
-  "created_at": "2025-06-24T16:45:30.924754",
+  "created_at": "2025-06-24T19:39:39.169435",
   "notes": "",
   "approval_info": {
     "approved_by": null,

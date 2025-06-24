@@ -27,8 +27,24 @@ def calculate_sharpe_ratio(returns: pd.Series, risk_free_rate: float = 0.0, trad
     Returns:
         float: シャープレシオ。
     """
+    if returns.empty or returns.isna().all():
+        return 0.0
+    
+    # 取引のあった日（リターンが0でない日）のみを対象に計算
+    returns = returns[returns != 0]
+    if len(returns) == 0:
+        return 0.0
+    
     excess_returns = returns - (risk_free_rate / trading_days)
-    return np.sqrt(trading_days) * excess_returns.mean() / excess_returns.std()
+    mean_return = excess_returns.mean()
+    std = excess_returns.std()
+    
+    # 平均がマイナスで標準偏差が0やNaNの場合は最低値を返す
+    if np.isnan(mean_return) or np.isnan(std) or std == 0:
+        return 0.0
+    
+    # 年率換算したシャープレシオを返す
+    return np.sqrt(trading_days) * mean_return / std
 
 def calculate_sortino_ratio(returns: pd.Series, risk_free_rate: float = 0.0, trading_days: int = 252) -> float:
     """
@@ -42,9 +58,31 @@ def calculate_sortino_ratio(returns: pd.Series, risk_free_rate: float = 0.0, tra
     Returns:
         float: ソルティノレシオ。
     """
+    if returns.empty or returns.isna().all():
+        return 0.0
+    
+    # 取引のあった日（リターンが0でない日）のみを対象に計算
+    returns = returns[returns != 0]
+    if len(returns) == 0:
+        return 0.0
+    
     excess_returns = returns - (risk_free_rate / trading_days)
-    downside_risk = np.sqrt((excess_returns[excess_returns < 0] ** 2).mean())
-    return np.sqrt(trading_days) * excess_returns.mean() / downside_risk
+    mean_return = excess_returns.mean()
+    
+    # 下方リスク（負のリターンの標準偏差）を計算
+    neg_returns = excess_returns[excess_returns < 0]
+    if len(neg_returns) == 0:
+        # 負のリターンがない場合は最大値を返す
+        return 5.0  # 十分に大きな値
+    
+    downside_risk = np.sqrt((neg_returns ** 2).mean())
+    
+    # 平均がマイナスや、分母が0やNaNの場合は0を返す
+    if np.isnan(mean_return) or np.isnan(downside_risk) or downside_risk == 0:
+        return 0.0
+    
+    # 年率換算したソルティノレシオを返す
+    return np.sqrt(trading_days) * mean_return / downside_risk
 
 def calculate_expectancy(trade_results: pd.DataFrame) -> float:
     """
@@ -152,11 +190,11 @@ def calculate_max_drawdown_amount(cumulative_pnl: pd.Series) -> float:
     return drawdown.max()
 
 def calculate_total_trades(trade_results: pd.DataFrame) -> int:
-    """総取引数を計算する。"""
+    """総取引数を計算する."""
     return len(trade_results)
 
 def calculate_win_rate(trade_results: pd.DataFrame) -> float:
-    """勝率を計算する。"""
+    """勝率を計算する."""
     total_trades = len(trade_results)
     if total_trades == 0:
         return 0.0
@@ -164,32 +202,32 @@ def calculate_win_rate(trade_results: pd.DataFrame) -> float:
     return (win_trades / total_trades) * 100
 
 def calculate_total_profit(trade_results: pd.DataFrame) -> float:
-    """損益合計を計算する。"""
+    """損益合計を計算する."""
     return trade_results['取引結果'].sum()
 
 def calculate_average_profit(trade_results: pd.DataFrame) -> float:
-    """平均損益を計算する。"""
+    """平均損益を計算する."""
     total_trades = len(trade_results)
     if total_trades == 0:
         return 0.0
     return trade_results['取引結果'].mean()
 
 def calculate_max_profit(trade_results: pd.DataFrame) -> float:
-    """最大利益を計算する。"""
+    """最大利益を計算する."""
     return trade_results['取引結果'].max()
 
 def calculate_max_loss(trade_results: pd.DataFrame) -> float:
-    """最大損失を計算する。"""
+    """最大損失を計算する."""
     return trade_results['取引結果'].min()
 
 def calculate_max_drawdown(cumulative_pnl: pd.Series) -> float:
-    """最大ドローダウン（％）を計算する。"""
+    """最大ドローダウン（％）を計算する."""
     peak = cumulative_pnl.cummax()
     drawdown = (peak - cumulative_pnl) / peak * 100
     return drawdown.max()
 
 def calculate_risk_return_ratio(total_profit: float, max_drawdown: float) -> float:
-    """リスクリターン比率を計算する。"""
+    """リスクリターン比率を計算する."""
     if max_drawdown == 0:
         return float('inf')
     return total_profit / max_drawdown
