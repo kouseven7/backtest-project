@@ -1,5 +1,6 @@
 """
-VWAPブレイクアウト戦略の最適化問題を診断するスクリプト
+VWAPブレイクアウト戦略のデバッグ用シンプルスクリプト
+一部の機能を確認することで最適化プロセスのデバッグが行えます
 """
 import sys
 import os
@@ -7,47 +8,88 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 import logging
+import traceback
 
 # プロジェクトのルートディレクトリをパスに追加
 sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")
 
-from strategies.VWAP_Breakout import VWAPBreakoutStrategy
-from data_fetcher import get_parameters_and_data
-from data_processor import preprocess_data
-from indicators.indicator_calculator import compute_indicators
-from trade_simulation import simulate_trades
-from optimization.objective_functions import sharpe_ratio_objective, sortino_ratio_objective, expectancy_objective
-from optimization.debug_objective import diagnose_objective_function, fix_trade_results
-
-# ロガーの設定
+# より詳細なロガーの設定
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='[%(asctime)s] %(levelname)s - %(name)s - %(message)s',
     handlers=[
-        logging.FileHandler("optimization_diagnosis.log"),
+        logging.FileHandler("vwap_debug.log"),
         logging.StreamHandler()
     ]
 )
 
-logger = logging.getLogger("optimization_diagnosis")
+logger = logging.getLogger("vwap_debug")
 
-def diagnose_vwap_breakout_optimization():
+def run_debug():
     """
-    VWAPブレイクアウト戦略の最適化問題を診断する
+    VWAPブレイクアウト戦略の動作を確認する
     """
-    # データ取得
-    logger.info("銘柄データを取得中...")
-    ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data()
-    
-    # データ前処理
-    logger.info("データ前処理中...")
-    stock_data = preprocess_data(stock_data)
-    stock_data = compute_indicators(stock_data)
-    
-    # VWAP計算
-    if 'VWAP' not in stock_data.columns:
-        logger.info("VWAP計算中...")
-        from indicators.basic_indicators import calculate_vwap
+    try:
+        # ステップ1: データ取得
+        logger.info("■ ステップ1: データ取得")
+        from data_fetcher import get_parameters_and_data
+        ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data()
+        if stock_data is None:
+            logger.error("データ取得に失敗しました")
+            return
+            
+        logger.info(f"取得したデータ: {ticker}, {start_date}～{end_date}")
+        logger.info(f"データ形状: {stock_data.shape}")
+        logger.info(f"最初の5日分のデータ: \n{stock_data.head()}")
+        
+        # ステップ2: パラメータ確認
+        logger.info("\n■ ステップ2: パラメータ確認")
+        from optimization.configs.vwap_breakout_optimization import PARAM_GRID
+        
+        # 組み合わせ数を計算
+        combinations = 1
+        for param, values in PARAM_GRID.items():
+            combinations *= len(values)
+            logger.info(f"パラメータ '{param}': 値の数={len(values)}, 値={values}")
+        
+        logger.info(f"パラメータ組み合わせ総数: {combinations:,}")
+        
+        # ステップ3: バックテスト動作確認
+        logger.info("\n■ ステップ3: バックテスト動作確認")
+        from strategies.VWAP_Breakout import VWAPBreakoutStrategy
+        
+        # デフォルトパラメータで戦略インスタンスを作成
+        strategy = VWAPBreakoutStrategy(stock_data, index_data)
+        strategy.initialize_strategy()
+        result = strategy.backtest()
+        
+        # 結果確認
+        trade_count = (result['Entry_Signal'] == 1).sum()
+        exit_count = (result['Exit_Signal'] == -1).sum()
+        logger.info(f"バックテスト結果: エントリー数={trade_count}, イグジット数={exit_count}")
+        
+        # 最適化スモールバッチテスト
+        logger.info("\n■ ステップ4: 最適化ミニテスト")
+        
+        try:
+            from optimization.optimize_vwap_breakout_strategy import optimize_vwap_breakout_strategy
+            # データの一部だけを使用してテスト
+            test_data = stock_data.iloc[-200:].copy()
+            test_index = index_data.iloc[-200:].copy() if index_data is not None else None
+            mini_result = optimize_vwap_breakout_strategy(test_data, test_index, use_parallel=False)
+            logger.info(f"ミニ最適化テスト成功: {len(mini_result)}件の結果")
+        except Exception as e:
+            logger.error(f"最適化テスト中にエラーが発生: {e}")
+            logger.error(traceback.format_exc())
+        
+        logger.info("デバッグ完了")
+        
+    except Exception as e:
+        logger.error(f"エラーが発生しました: {e}")
+        logger.error(traceback.format_exc())
+        
+if __name__ == "__main__":
+    run_debug()
         stock_data['VWAP'] = calculate_vwap(stock_data, price_column='Adj Close', volume_column='Volume')
     
     # テスト用のパラメータ（ログでプラス収益が出ていたもの）

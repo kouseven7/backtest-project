@@ -1,0 +1,53 @@
+{
+  "strategy": "VWAPBreakoutStrategy",
+  "ticker": "7974.T",
+  "optimization_date": "2025-06-25",
+  "parameters": {
+    "stop_loss": 0.03,
+    "take_profit": 0.08,
+    "sma_short": 8,
+    "sma_long": 20,
+    "volume_threshold": 1.2,
+    "breakout_min_percent": 0.003,
+    "trailing_stop": 0.05,
+    "confirmation_bars": 1,
+    "trailing_start_threshold": 0.04,
+    "max_holding_period": 15,
+    "market_filter_method": "macd",
+    "rsi_filter_enabled": false,
+    "atr_filter_enabled": true,
+    "partial_exit_enabled": true,
+    "rsi_period": 14,
+    "rsi_lower": 30,
+    "rsi_upper": 70,
+    "volume_increase_mode": "average",
+    "partial_exit_threshold": 0.07,
+    "partial_exit_portion": 0.5
+  },
+  "performance_metrics": {
+    "sharpe_ratio": -Infinity,
+    "total_return": 0.1,
+    "max_drawdown": -0.05,
+    "win_rate": 0.6,
+    "profit_factor": 1.5,
+    "volatility": 0.15
+  },
+  "optimization_details": {
+    "data_period": {
+      "start_date": "2020-01-01",
+      "end_date": "2024-12-31"
+    },
+    "optimization_method": "grid_search",
+    "cross_validation": "walk_forward",
+    "total_combinations_tested": 20
+  },
+  "status": "pending_review",
+  "created_at": "2025-06-25T21:32:52.216980",
+  "notes": "",
+  "approval_info": {
+    "approved_by": null,
+    "approved_at": null,
+    "rejection_reason": null
+  },
+  "validation_info": {}
+}

@@ -1,0 +1,9 @@
+pandas
+openpyxl
+yfinance
+numpy
+matplotlib
+scipy
+scikit-learn
+jupyter
+tqdm

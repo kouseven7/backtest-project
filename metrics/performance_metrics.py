@@ -25,38 +25,26 @@ def calculate_sharpe_ratio(returns: pd.Series, risk_free_rate: float = 0.0, trad
         trading_days (int): 年間の取引日数（デフォルトは252）。
 
     Returns:
-        float: シャープレシオ。エラーがある場合は0.0を返す。
+        float: シャープレシオ。
     """
-    # NaNや空のチェック
-    if returns is None or not isinstance(returns, pd.Series):
-        return 0.0
-    
-    # NaNをフィルタリング
-    returns = returns.fillna(0).replace([np.inf, -np.inf], 0)
-    
-    if returns.empty:
+    if returns.empty or returns.isna().all():
         return 0.0
     
     # 取引のあった日（リターンが0でない日）のみを対象に計算
-    non_zero_returns = returns[returns != 0]
-    if len(non_zero_returns) < 5:  # 最低5日間のデータが必要
+    returns = returns[returns != 0]
+    if len(returns) == 0:
         return 0.0
     
-    try:
-        excess_returns = non_zero_returns - (risk_free_rate / trading_days)
-        mean_return = excess_returns.mean()
-        std = excess_returns.std()
-        
-        # 平均がマイナスで標準偏差が0やNaNの場合は最低値を返す
-        if np.isnan(mean_return) or np.isnan(std) or std == 0:
-            return 0.0
-        
-        # 年率換算したシャープレシオを返す
-        return np.sqrt(trading_days) * mean_return / std
-    except Exception as e:
-        logger = logging.getLogger(__name__)
-        logger.error(f"シャープレシオ計算中にエラー発生: {e}")
+    excess_returns = returns - (risk_free_rate / trading_days)
+    mean_return = excess_returns.mean()
+    std = excess_returns.std()
+    
+    # 平均がマイナスで標準偏差が0やNaNの場合は最低値を返す
+    if np.isnan(mean_return) or np.isnan(std) or std == 0:
         return 0.0
+    
+    # 年率換算したシャープレシオを返す
+    return np.sqrt(trading_days) * mean_return / std
 
 def calculate_sortino_ratio(returns: pd.Series, risk_free_rate: float = 0.0, trading_days: int = 252) -> float:
     """
@@ -68,47 +56,33 @@ def calculate_sortino_ratio(returns: pd.Series, risk_free_rate: float = 0.0, tra
         trading_days (int): 年間の取引日数（デフォルトは252）。
 
     Returns:
-        float: ソルティノレシオ。エラーがある場合は0.0を返す。
+        float: ソルティノレシオ。
     """
-    import logging
-    
-    # NaNや空のチェック
-    if returns is None or not isinstance(returns, pd.Series):
-        return 0.0
-        
-    # NaNと無限値をフィルタリング
-    returns = returns.fillna(0).replace([np.inf, -np.inf], 0)
-    
-    if returns.empty:
+    if returns.empty or returns.isna().all():
         return 0.0
     
-    try:
-        # 取引のあった日（リターンが0でない日）のみを対象に計算
-        non_zero_returns = returns[returns != 0]
-        if len(non_zero_returns) < 5:  # 最低5日間のデータが必要
-            return 0.0
-        
-        excess_returns = non_zero_returns - (risk_free_rate / trading_days)
-        mean_return = excess_returns.mean()
-        
-        # 下方リスク（負のリターンの標準偏差）を計算
-        neg_returns = excess_returns[excess_returns < 0]
-        if len(neg_returns) == 0:
-            # 負のリターンがない場合は最大値を返す
-            return 5.0  # 十分に大きな値
-        
-        downside_risk = np.sqrt((neg_returns ** 2).mean())
-        
-        # 平均がマイナスや、分母が0やNaNの場合は0を返す
-        if np.isnan(mean_return) or np.isnan(downside_risk) or downside_risk == 0:
-            return 0.0
-        
-        # 年率換算したソルティノレシオを返す
-        return np.sqrt(trading_days) * mean_return / downside_risk
-    except Exception as e:
-        logger = logging.getLogger(__name__)
-        logger.error(f"ソルティノレシオ計算中にエラー発生: {e}")
+    # 取引のあった日（リターンが0でない日）のみを対象に計算
+    returns = returns[returns != 0]
+    if len(returns) == 0:
         return 0.0
+    
+    excess_returns = returns - (risk_free_rate / trading_days)
+    mean_return = excess_returns.mean()
+    
+    # 下方リスク（負のリターンの標準偏差）を計算
+    neg_returns = excess_returns[excess_returns < 0]
+    if len(neg_returns) == 0:
+        # 負のリターンがない場合は最大値を返す
+        return 5.0  # 十分に大きな値
+    
+    downside_risk = np.sqrt((neg_returns ** 2).mean())
+    
+    # 平均がマイナスや、分母が0やNaNの場合は0を返す
+    if np.isnan(mean_return) or np.isnan(downside_risk) or downside_risk == 0:
+        return 0.0
+    
+    # 年率換算したソルティノレシオを返す
+    return np.sqrt(trading_days) * mean_return / downside_risk
 
 def calculate_expectancy(trade_results: pd.DataFrame) -> float:
     """
@@ -224,6 +198,16 @@ def calculate_win_rate(trade_results: pd.DataFrame) -> float:
     total_trades = len(trade_results)
     if total_trades == 0:
         return 0.0
+    
+    # 取引結果カラムのチェック
+    if '取引結果' not in trade_results.columns:
+        return 0.0
+        
+    # NaNチェックと置換
+    if trade_results['取引結果'].isna().any():
+        trade_results = trade_results.copy()
+        trade_results['取引結果'] = trade_results['取引結果'].fillna(0)
+        
     win_trades = len(trade_results[trade_results['取引結果'] > 0])
     return (win_trades / total_trades) * 100
 

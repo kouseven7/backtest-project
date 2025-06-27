@@ -22,7 +22,6 @@ from indicators.indicator_calculator import compute_indicators
 from data_fetcher import get_parameters_and_data
 from config.logger_config import setup_logger
 from metrics.performance_metrics_util import PerformanceMetricsCalculator
-from trade_simulation import simulate_trades
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\optimization.log")
@@ -166,11 +165,25 @@ def optimize_vwap_breakout_strategy(data, index_data=None, use_parallel=False):
     # パフォーマンス指標の計算・保存
     if not results.empty:
         best_params = results.iloc[0].to_dict()
-        # ここで再インポートしていた問題を修正 (VWAPBreakoutStrategyはすでにインポート済み)
-        strategy = VWAPBreakoutStrategy(data, index_data=index_data, params=best_params)
+        # PARAM_GRIDのキーのみを抽出してパラメータを渡す
+        param_keys = set(PARAM_GRID.keys())
+        def filter_params(params):
+            return {k: v for k, v in params.items() if k in param_keys}
+
+        filtered_params = filter_params(best_params)
+        strategy = VWAPBreakoutStrategy(data, index_data=index_data, params=filtered_params)
         result_data = strategy.backtest()
-        # トレードシミュレーションを実行
+        from trade_simulation import simulate_trades
         trade_results = simulate_trades(result_data, "最適化後評価")
+        # 取引履歴と損益推移の値をprintで確認
+        print("\n=== 取引履歴['取引結果']の先頭10件 ===")
+        print(trade_results["取引履歴"]["取引結果"].head(10))
+        print("\n=== 取引履歴['取引結果']の記述統計 ===")
+        print(trade_results["取引履歴"]["取引結果"].describe())
+        print("\n=== 損益推移['日次損益']の先頭20件 ===")
+        print(trade_results["損益推移"]["日次損益"].head(20))
+        print("\n=== 損益推移['日次損益']の記述統計 ===")
+        print(trade_results["損益推移"]["日次損益"].describe())
         metrics = PerformanceMetricsCalculator.calculate_all(trade_results["取引履歴"])
         metrics_path = os.path.join(output_dir, f"performance_metrics_{timestamp}.xlsx")
         pd.DataFrame([metrics]).to_excel(metrics_path, index=False)
