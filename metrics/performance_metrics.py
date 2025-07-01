@@ -93,12 +93,8 @@ def calculate_expectancy(trade_results: pd.DataFrame) -> float:
                                       必須カラム: ['取引結果']
 
     Returns:
-        float: 期待値。'取引結果'カラムが存在しない場合は0.0を返す。
+        float: 期待値。
     """
-    # '取引結果'カラムが存在するか確認
-    if '取引結果' not in trade_results.columns:
-        return 0.0
-        
     total_trades = len(trade_results)
     if total_trades == 0:
         return 0.0
@@ -114,12 +110,8 @@ def calculate_max_consecutive_losses(trade_results: pd.DataFrame) -> int:
                                       必須カラム: ['取引結果']
 
     Returns:
-        int: 最大連敗数。'取引結果'カラムが存在しない場合は0を返す。
+        int: 最大連敗数。
     """
-    # '取引結果'カラムが存在するか確認
-    if '取引結果' not in trade_results.columns:
-        return 0
-        
     losses = (trade_results['取引結果'] < 0).astype(int)
     return (losses * (losses.groupby((losses != losses.shift()).cumsum()).cumcount() + 1)).max()
 
@@ -132,12 +124,8 @@ def calculate_max_consecutive_wins(trade_results: pd.DataFrame) -> int:
                                       必須カラム: ['取引結果']
 
     Returns:
-        int: 最大連勝数。'取引結果'カラムが存在しない場合は0を返す。
+        int: 最大連勝数。
     """
-    # '取引結果'カラムが存在するか確認
-    if '取引結果' not in trade_results.columns:
-        return 0
-        
     wins = (trade_results['取引結果'] > 0).astype(int)
     return (wins * (wins.groupby((wins != wins.shift()).cumsum()).cumcount() + 1)).max()
 
@@ -150,15 +138,11 @@ def calculate_avg_consecutive_losses(trade_results: pd.DataFrame) -> float:
                                       必須カラム: ['取引結果']
 
     Returns:
-        float: 平均連敗数。'取引結果'カラムが存在しない場合は0.0を返す。
+        float: 平均連敗数。
     """
-    # '取引結果'カラムが存在するか確認
-    if '取引結果' not in trade_results.columns:
-        return 0.0
-        
     losses = (trade_results['取引結果'] < 0).astype(int)
     streaks = losses * (losses.groupby((losses != losses.shift()).cumsum()).cumcount() + 1)
-    return streaks[streaks > 0].mean() if len(streaks[streaks > 0]) > 0 else 0.0
+    return streaks[streaks > 0].mean()
 
 def calculate_avg_consecutive_wins(trade_results: pd.DataFrame) -> float:
     """
@@ -169,15 +153,11 @@ def calculate_avg_consecutive_wins(trade_results: pd.DataFrame) -> float:
                                       必須カラム: ['取引結果']
 
     Returns:
-        float: 平均連勝数。'取引結果'カラムが存在しない場合は0.0を返す。
+        float: 平均連勝数。
     """
-    # '取引結果'カラムが存在するか確認
-    if '取引結果' not in trade_results.columns:
-        return 0.0
-        
     wins = (trade_results['取引結果'] > 0).astype(int)
     streaks = wins * (wins.groupby((wins != wins.shift()).cumsum()).cumcount() + 1)
-    return streaks[streaks > 0].mean() if len(streaks[streaks > 0]) > 0 else 0.0
+    return streaks[streaks > 0].mean()
 
 def calculate_max_drawdown_during_losses(trade_results: pd.DataFrame) -> float:
     """
@@ -214,20 +194,7 @@ def calculate_total_trades(trade_results: pd.DataFrame) -> int:
     return len(trade_results)
 
 def calculate_win_rate(trade_results: pd.DataFrame) -> float:
-    """
-    勝率を計算する.
-    
-    Parameters:
-        trade_results (pd.DataFrame): 取引結果を含むデータフレーム。
-                                      必須カラム: ['取引結果']
-                                      
-    Returns:
-        float: 勝率（百分率）。'取引結果'カラムが存在しない場合は0.0を返す。
-    """
-    # '取引結果'カラムが存在するか確認
-    if '取引結果' not in trade_results.columns:
-        return 0.0
-        
+    """勝率を計算する."""
     total_trades = len(trade_results)
     if total_trades == 0:
         return 0.0
@@ -235,111 +202,29 @@ def calculate_win_rate(trade_results: pd.DataFrame) -> float:
     return (win_trades / total_trades) * 100
 
 def calculate_total_profit(trade_results: pd.DataFrame) -> float:
-    """
-    損益合計を計算する.
-    
-    Parameters:
-        trade_results (pd.DataFrame): 取引結果を含むデータフレーム。
-                                     必須カラム: ['取引結果']
-                                      
-    Returns:
-        float: 損益合計。'取引結果'カラムが存在しない場合は0.0を返す。
-    """
-    # '取引結果'カラムが存在するか確認
-    if '取引結果' not in trade_results.columns:
-        return 0.0
-        
+    """損益合計を計算する."""
     return trade_results['取引結果'].sum()
 
 def calculate_average_profit(trade_results: pd.DataFrame) -> float:
-    """
-    平均損益を計算する.
-    
-    Parameters:
-        trade_results (pd.DataFrame): 取引結果を含むデータフレーム。
-                                     必須カラム: ['取引結果']
-                                      
-    Returns:
-        float: 平均損益。'取引結果'カラムが存在しない場合は0.0を返す。
-    """
-    # '取引結果'カラムが存在するか確認
-    if '取引結果' not in trade_results.columns:
-        return 0.0
-        
+    """平均損益を計算する."""
     total_trades = len(trade_results)
     if total_trades == 0:
         return 0.0
     return trade_results['取引結果'].mean()
 
 def calculate_max_profit(trade_results: pd.DataFrame) -> float:
-    """
-    最大利益を計算する.
-    
-    Parameters:
-        trade_results (pd.DataFrame): 取引結果を含むデータフレーム。
-                                     必須カラム: ['取引結果']
-                                      
-    Returns:
-        float: 最大利益。'取引結果'カラムが存在しない場合は0.0を返す。
-    """
-    # '取引結果'カラムが存在するか確認
-    if '取引結果' not in trade_results.columns:
-        return 0.0
-        
-    # 取引結果がない場合は0.0を返す
-    if len(trade_results) == 0:
-        return 0.0
-        
+    """最大利益を計算する."""
     return trade_results['取引結果'].max()
 
 def calculate_max_loss(trade_results: pd.DataFrame) -> float:
-    """
-    最大損失を計算する.
-    
-    Parameters:
-        trade_results (pd.DataFrame): 取引結果を含むデータフレーム。
-                                     必須カラム: ['取引結果']
-                                      
-    Returns:
-        float: 最大損失（マイナスの値）。'取引結果'カラムが存在しない場合は0.0を返す。
-    """
-    # '取引結果'カラムが存在するか確認
-    if '取引結果' not in trade_results.columns:
-        return 0.0
-        
-    # 取引結果がない場合は0.0を返す
-    if len(trade_results) == 0:
-        return 0.0
-        
+    """最大損失を計算する."""
     return trade_results['取引結果'].min()
 
 def calculate_max_drawdown(cumulative_pnl: pd.Series) -> float:
-    """
-    最大ドローダウン（％）を計算する.
-    
-    Parameters:
-        cumulative_pnl (pd.Series): 累積損益のシリーズ
-                                      
-    Returns:
-        float: 最大ドローダウン（％）。累積損益が空またはすべて0の場合は0.0を返す。
-    """
-    # 累積損益が空の場合は0.0を返す
-    if cumulative_pnl is None or cumulative_pnl.empty:
-        return 0.0
-    
-    # 累積損益がすべて0の場合は0.0を返す
-    if (cumulative_pnl == 0).all():
-        return 0.0
-        
+    """最大ドローダウン（％）を計算する."""
     peak = cumulative_pnl.cummax()
-    
-    # peakが0の場合は分母が0になるのを防ぐ
-    valid_indices = peak != 0
-    if not valid_indices.any():
-        return 0.0
-        
-    drawdown = (peak[valid_indices] - cumulative_pnl[valid_indices]) / peak[valid_indices] * 100
-    return drawdown.max() if not drawdown.empty else 0.0
+    drawdown = (peak - cumulative_pnl) / peak * 100
+    return drawdown.max()
 
 def calculate_risk_return_ratio(total_profit: float, max_drawdown: float) -> float:
     """リスクリターン比率を計算する."""

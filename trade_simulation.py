@@ -147,15 +147,23 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
     
     logger.info(f"取引ペア数: {len(entry_exit_pairs)}")
       # 各エントリー・イグジットのペアについて取引を処理
-    for entry_idx, entry_date, exit_idx, exit_date, strategy_name in entry_exit_pairs:        # NaNチェックを追加して、無効なインデックスを避ける
+    for entry_idx, entry_date, exit_idx, exit_date, strategy_name in entry_exit_pairs:
+        # NaNチェックを追加して、無効なインデックスを避ける
         if pd.isna(entry_idx) or pd.isna(exit_idx):
             logger.warning(f"無効なエントリー/イグジットペア: entry_idx={entry_idx}, exit_idx={exit_idx}")
             continue
             
         try:
-            # インデックスを整数に変換
-            entry_idx = int(entry_idx)
-            exit_idx = int(exit_idx)
+            # インデックスを整数に変換（NaN値のチェックを強化）
+            if pd.isna(entry_idx) or entry_idx == -1:
+                logger.warning(f"無効なentry_idx: {entry_idx}をスキップします")
+                continue
+            if pd.isna(exit_idx) or exit_idx == -1:
+                logger.warning(f"無効なexit_idx: {exit_idx}をスキップします")
+                continue
+                
+            entry_idx = int(float(entry_idx))  # float経由で変換
+            exit_idx = int(float(exit_idx))
             
             # ポジションサイズと部分利確の取得
             position_size = data["Position_Size"].iloc[entry_idx] if "Position_Size" in data.columns else 1
@@ -166,7 +174,7 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
             price_column = "Adj Close"  # デフォルト価格カラム
             entry_price = data[price_column].iloc[entry_idx]
             exit_price = data[price_column].iloc[exit_idx]
-        except (TypeError, ValueError) as e:
+        except (TypeError, ValueError, OverflowError) as e:
             logger.error(f"エントリー/イグジットインデックス変換エラー: {e}, entry_idx={entry_idx}, exit_idx={exit_idx}")
             continue
               # NaNチェックを追加

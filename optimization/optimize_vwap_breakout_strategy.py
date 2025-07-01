@@ -14,7 +14,7 @@ sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")
 
 from strategies.VWAP_Breakout import VWAPBreakoutStrategy
 from optimization.parameter_optimizer import ParameterOptimizer
-from optimization.configs.vwap_breakout_optimization_reduced import PARAM_GRID, OBJECTIVES_CONFIG
+from optimization.configs.vwap_breakout_optimization import PARAM_GRID, OBJECTIVES_CONFIG
 from optimization.objective_functions import create_custom_objective
 from walk_forward.train_test_split import split_data_for_walk_forward
 from data_processor import preprocess_data
@@ -102,27 +102,23 @@ def optimize_vwap_breakout_strategy(data, index_data=None, use_parallel=False):
             'SMA_50': np.ones(len(dates)) * 90
         }, index=dates)
     
-    # ウォークフォワード分割（より長いトレーニング期間と複数の検証期間）
-    train_size = 504  # 約2年（より堅牢なトレーニング）
+    # ウォークフォワード分割
+    train_size = 252  # 約1年
     test_size = 63    # 約3ヶ月
-    
-    # データが十分あるか確認
-    if len(data) < train_size + test_size:
-        logger.warning(f"データ不足: 利用可能データ {len(data)}日、必要データ {train_size + test_size}日")
-        # データが少なくても最低限のトレーニングができるよう調整
-        if len(data) > 252 + 21:  # 少なくとも1年+1ヶ月
-            train_size = len(data) - 21
-            test_size = 21
-            logger.info(f"データ期間を調整: トレーニング {train_size}日、テスト {test_size}日")
-        else:
-            # 極端に少ない場合は80:20で分割
-            train_size = int(len(data) * 0.8)
-            test_size = len(data) - train_size
-            logger.info(f"最小構成で分割: トレーニング {train_size}日、テスト {test_size}日")
-    
-    # 複数の期間でテスト（より堅牢な評価）
     splits = split_data_for_walk_forward(data, train_size, test_size)
     logger.info(f"ウォークフォワード分割: {len(splits)}分割")
+    
+    # パラメータグリッドの組み合わせ数を計算
+    param_combinations = 1
+    param_counts = {}
+    for param_name, param_values in PARAM_GRID.items():
+        param_count = len(param_values)
+        param_combinations *= param_count
+        param_counts[param_name] = param_count
+        logger.info(f"パラメータ '{param_name}': {param_count}通りの値")
+    
+    logger.info(f"パラメータ組み合わせ数: {param_combinations}通り")
+    logger.info(f"詳細: {param_counts}")
     
     # 目的関数の設定
     # "profit_factor"が未定義なので削除または修正
@@ -176,7 +172,9 @@ def optimize_vwap_breakout_strategy(data, index_data=None, use_parallel=False):
             output_dir=output_dir,
             strategy_kwargs={'index_data': index_data}
         )
-        results = optimizer.grid_search()        # パフォーマンス指標の計算・保存
+        results = optimizer.grid_search()
+    
+    # パフォーマンス指標の計算・保存
     if not results.empty:
         best_params = results.iloc[0].to_dict()
         # PARAM_GRIDのキーのみを抽出してパラメータを渡す
@@ -189,51 +187,15 @@ def optimize_vwap_breakout_strategy(data, index_data=None, use_parallel=False):
         result_data = strategy.backtest()
         from trade_simulation import simulate_trades
         trade_results = simulate_trades(result_data, "最適化後評価")
-        
-        # 取引数の確認と警告（取引数が少なすぎると統計的に意味がない）
-        trade_count = len(trade_results["取引履歴"])
-        if trade_count < 20:
-            logger.warning(f"取引数が少なすぎます ({trade_count}件)。パラメータを調整して取引機会を増やしてください。")
-        else:
-            logger.info(f"取引総数: {trade_count}件")
-            
-        # 勝率の確認
-        if '取引結果' in trade_results["取引履歴"].columns:
-            win_trades = len(trade_results["取引履歴"][trade_results["取引履歴"]['取引結果'] > 0])
-            win_rate = win_trades / trade_count if trade_count > 0 else 0
-            logger.info(f"勝率: {win_rate:.2%} ({win_trades}/{trade_count})")
-            
-            # 平均リターンの確認
-            avg_return = trade_results["取引履歴"]['取引結果'].mean()
-            logger.info(f"平均リターン: {avg_return:.4f}")
-            
-            # 利益・損失の比率
-            profit_sum = trade_results["取引履歴"][trade_results["取引履歴"]['取引結果'] > 0]['取引結果'].sum()
-            loss_sum = abs(trade_results["取引履歴"][trade_results["取引履歴"]['取引結果'] < 0]['取引結果'].sum())
-            profit_factor = profit_sum / loss_sum if loss_sum > 0 else float('inf')
-            logger.info(f"利益・損失比率: {profit_factor:.2f}")
-            
-            # リスク調整後リターンの確認
-            if '累積損益' in trade_results["損益推移"].columns:
-                from metrics.performance_metrics import calculate_sharpe_ratio, calculate_sortino_ratio, calculate_max_drawdown
-                returns = trade_results["損益推移"]['累積損益'].pct_change().fillna(0)
-                sharpe = calculate_sharpe_ratio(returns)
-                sortino = calculate_sortino_ratio(returns)
-                max_dd = calculate_max_drawdown(trade_results["損益推移"]['累積損益'])
-                logger.info(f"シャープレシオ: {sharpe:.4f}")
-                logger.info(f"ソルティノレシオ: {sortino:.4f}")
-                logger.info(f"最大ドローダウン: {max_dd:.4%}")
-        
-        # 従来の結果表示も残す（デバッグ用）
+        # 取引履歴と損益推移の値をprintで確認
         print("\n=== 取引履歴['取引結果']の先頭10件 ===")
-        print(trade_results["取引履歴"]["取引結果"].head(10) if '取引結果' in trade_results["取引履歴"].columns else "No results")
+        print(trade_results["取引履歴"]["取引結果"].head(10))
         print("\n=== 取引履歴['取引結果']の記述統計 ===")
-        print(trade_results["取引履歴"]["取引結果"].describe() if '取引結果' in trade_results["取引履歴"].columns else "No results")
+        print(trade_results["取引履歴"]["取引結果"].describe())
         print("\n=== 損益推移['日次損益']の先頭20件 ===")
-        print(trade_results["損益推移"]["日次損益"].head(20) if '日次損益' in trade_results["損益推移"].columns else "No results")
+        print(trade_results["損益推移"]["日次損益"].head(20))
         print("\n=== 損益推移['日次損益']の記述統計 ===")
-        print(trade_results["損益推移"]["日次損益"].describe() if '日次損益' in trade_results["損益推移"].columns else "No results")
-        
+        print(trade_results["損益推移"]["日次損益"].describe())
         metrics = PerformanceMetricsCalculator.calculate_all(trade_results["取引履歴"])
         metrics_path = os.path.join(output_dir, f"performance_metrics_{timestamp}.xlsx")
         pd.DataFrame([metrics]).to_excel(metrics_path, index=False)

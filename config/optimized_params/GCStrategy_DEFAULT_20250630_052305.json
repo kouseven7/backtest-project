@@ -1,0 +1,54 @@
+{
+  "strategy": "GCStrategy",
+  "ticker": "DEFAULT",
+  "optimization_date": "20250630_052305",
+  "parameters": {
+    "short_window": 10,
+    "long_window": 50,
+    "take_profit": 0.05,
+    "stop_loss": 0.05,
+    "trailing_stop_pct": 0.03,
+    "max_hold_days": 15,
+    "exit_on_death_cross": true,
+    "confirmation_days": 1,
+    "ma_type": "EMA",
+    "trend_lookback_period": 10,
+    "trend_short_period": 3,
+    "trend_medium_period": 15,
+    "trend_long_period": 50,
+    "trend_up_score": 4
+  },
+  "performance_metrics": {
+    "score": 189.29647800865982,
+    "sharpe_ratio": null,
+    "sortino_ratio": null,
+    "win_rate": null,
+    "total_return": null,
+    "max_drawdown": null,
+    "profit_factor": null,
+    "total_trades": null
+  },
+  "optimization_details": {
+    "data_period": {
+      "start_date": "2020-01-01",
+      "end_date": "2024-12-31"
+    },
+    "optimization_method": "grid_search",
+    "cross_validation": "walk_forward",
+    "total_combinations_tested": 14
+  },
+  "status": "rejected",
+  "created_at": "2025-06-30T07:22:09.039222",
+  "notes": "",
+  "approval_info": {
+    "approved_by": null,
+    "approved_at": null,
+    "rejection_reason": null
+  },
+  "validation_info": {},
+  "filename": "GCStrategy_DEFAULT_20250630_052305.json",
+  "filepath": "C:\\Users\\imega\\Documents\\my_backtest_project\\config\\optimized_params\\GCStrategy_DEFAULT_20250630_052305.json",
+  "rejected_by": "default_reviewer",
+  "rejected_at": "2025-06-30T18:55:24.678237",
+  "rejection_reason": "再検証で不合格のため"
+}

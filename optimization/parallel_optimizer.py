@@ -150,7 +150,12 @@ class ParallelParameterOptimizer(ParameterOptimizer):
             result_data = strategy.backtest()
             from trade_simulation import simulate_trades
             trade_results = simulate_trades(result_data, "最適化中")
-            score = self.objective_function(trade_results["取引履歴"])
+            # trade_resultsが辞書形式であることを確認
+            if isinstance(trade_results, dict) and "取引履歴" in trade_results:
+                score = self.objective_function(trade_results)
+            else:
+                logger.warning("trade_resultsの形式が不正です")
+                return -np.inf
             return score
         except Exception as e:
             logger.error(f"バックテスト実行中にエラー: {str(e)}")

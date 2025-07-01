@@ -242,6 +242,15 @@ class ParameterOptimizer:
             from trade_simulation import simulate_trades
             trade_results = simulate_trades(result_data, "最適化中")
             
+            # trade_resultsの形式を確認
+            if not isinstance(trade_results, dict):
+                logger.warning("trade_resultsが辞書形式ではありません")
+                return -np.inf
+                
+            if "取引履歴" not in trade_results:
+                logger.warning("取引履歴が見つかりません")
+                return -np.inf
+            
             # デバッグ: trade_resultsの内容を確認
             try:
                 from optimization.debug_objective import diagnose_objective_function, fix_trade_results

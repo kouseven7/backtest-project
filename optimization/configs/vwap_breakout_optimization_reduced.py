@@ -26,6 +26,8 @@ PARAM_GRID = {
     "rsi_filter_enabled": [True, False],  # RSIフィルター
     "atr_filter_enabled": [True],  # ATRフィルター（有効のみ）
     "partial_exit_enabled": [True, False],  # 部分利確
+    "partial_exit_threshold": [0.05, 0.07],  # 部分利確閾値
+    "partial_exit_portion": [0.5],  # 部分利確の割合
     
     # --- グループ5: 補助パラメータ（固定値） ---
     "rsi_period": [14],  # RSI計算期間（標準値に固定）

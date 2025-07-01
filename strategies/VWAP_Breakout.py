@@ -21,6 +21,7 @@ import pandas as pd
 import numpy as np
 import sys
 import logging
+import math
 
 sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")  # プロジェクトのルートを追加
 
@@ -79,6 +80,8 @@ class VWAPBreakoutStrategy(BaseStrategy):
             "rsi_filter_enabled": False,        # RSIフィルターの有効化
             "atr_filter_enabled": False,        # ATRフィルターの有効化
             "partial_exit_enabled": False,      # 部分利確の有効化（無効）
+            "partial_exit_threshold": 0.07,     # 部分利確の閾値（7%でデフォルト）
+            "partial_exit_portion": 0.5,        # 部分利確の割合（50%でデフォルト）
 
             # --- その他（将来拡張用・固定値） ---
             "rsi_period": 14,                   # RSI計算期間
@@ -354,12 +357,19 @@ class VWAPBreakoutStrategy(BaseStrategy):
                 return -1
         # 部分利確ロジック
         if self.params.get("partial_exit_enabled", False):
-            profit_pct = (current_price - entry_price) / entry_price
-            if profit_pct >= self.params["partial_exit_threshold"] and 'Partial_Exit' not in self.data.columns:
-                self.data['Partial_Exit'] = 0
-                self.data.at[self.data.index[idx], 'Partial_Exit'] = 1
-                self.log_trade(f"VWAP Breakout 部分利確シグナル: {self.params['partial_exit_portion']*100}% 利確 日付={self.data.index[idx]}, 価格={current_price}")
-                return 0
+            # 必要なパラメータが存在するか確認
+            if "partial_exit_threshold" in self.params and "partial_exit_portion" in self.params:
+                profit_pct = (current_price - entry_price) / entry_price
+                partial_exit_threshold = self.params.get("partial_exit_threshold", 0.07)  # デフォルト値: 7%
+                if profit_pct >= partial_exit_threshold and 'Partial_Exit' not in self.data.columns:
+                    self.data['Partial_Exit'] = 0
+                    self.data.at[self.data.index[idx], 'Partial_Exit'] = 1
+                    partial_exit_portion = self.params.get("partial_exit_portion", 0.5)  # デフォルト値: 50%
+                    self.log_trade(f"VWAP Breakout 部分利確シグナル: {partial_exit_portion*100}% 利確 日付={self.data.index[idx]}, 価格={current_price}")
+                    return 0
+            else:
+                # 必要なパラメータがない場合はログを出力して処理をスキップ
+                logger.warning(f"部分利確が有効ですが、必要なパラメータ(partial_exit_threshold/partial_exit_portion)が設定されていません")
         # RSIやMACDの反転
         rsi = self.data['RSI'].iloc[idx]
         macd = self.data['MACD'].iloc[idx]
@@ -386,7 +396,7 @@ class VWAPBreakoutStrategy(BaseStrategy):
         self.data['Entry_Price'] = np.nan  # エントリー価格を記録
         
         # エントリーインデックスを整数型として初期化（NaNではなく-1を使用）
-        self.data['Entry_Idx'] = -1  # エントリーインデックスを記録（-1は無効値を示す）
+        self.data['Entry_Idx'] = pd.Series(-1, index=self.data.index, dtype='int64')  # 明示的に整数型を指定
 
         # バックテストループ
         for idx in range(len(self.data)):
@@ -411,12 +421,16 @@ class VWAPBreakoutStrategy(BaseStrategy):
                 # エントリーインデックスを取得
                 entry_idx_val = self.data['Entry_Idx'].iloc[idx]
                 
-                # エントリーインデックスが無効値(-1)の場合は現在のインデックスを使用
-                if entry_idx_val == -1:
+                # エントリーインデックスが無効値(-1)またはNaNの場合は現在のインデックスを使用
+                if pd.isna(entry_idx_val) or entry_idx_val == -1:
                     logger.warning(f"有効なEntry_Idxがありません: idx={idx}, 日付={self.data.index[idx]}. 現在のインデックスを使用します。")
                     entry_idx = idx  # フォールバックとして現在のインデックスを使用
                 else:
-                    entry_idx = int(entry_idx_val)
+                    try:
+                        entry_idx = int(entry_idx_val)
+                    except (ValueError, TypeError):
+                        logger.warning(f"Entry_Idxの変換に失敗しました: {entry_idx_val}. 現在のインデックスを使用します。")
+                        entry_idx = idx  # 変換失敗時も現在のインデックスを使用
                 
                 # エントリー後の最大保有期間チェック
                 days_held = idx - entry_idx
