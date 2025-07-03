@@ -96,10 +96,10 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
     """
     from config.risk_management import RiskManagement
     
-    # デバッグ：シグナルの数を出力
-    entry_count = data["Entry_Signal"].sum() if "Entry_Signal" in data.columns else 0
-    exit_count = (data["Exit_Signal"] == -1).sum() if "Exit_Signal" in data.columns else 0
-    logger.info(f"シグナル確認: エントリー: {entry_count}回, イグジット: {exit_count}回")
+    # デバッグ：シグナルの数を出力（生データのカウント）
+    entry_signal_count = data["Entry_Signal"].sum() if "Entry_Signal" in data.columns else 0
+    exit_signal_count = (data["Exit_Signal"] == -1).sum() if "Exit_Signal" in data.columns else 0
+    logger.info(f"シグナル確認: エントリー: {entry_signal_count}回, イグジット: {exit_signal_count}回")
     
     # 取引履歴 DataFrame に「銘柄」カラムを追加
     trade_history = pd.DataFrame(columns=["日付", "銘柄", "戦略", "エントリー", "イグジット", "取引結果", "取引量", "手数料", "リスク状態"])
@@ -146,6 +146,8 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
         entry_exit_pairs.append((entry_idx, entry_date, final_idx, final_date, strategy_name))
     
     logger.info(f"取引ペア数: {len(entry_exit_pairs)}")
+    
+    logger.info(f"実際の取引処理: エントリー/イグジットペア = {len(entry_exit_pairs)}組")
       # 各エントリー・イグジットのペアについて取引を処理
     for entry_idx, entry_date, exit_idx, exit_date, strategy_name in entry_exit_pairs:
         # NaNチェックを追加して、無効なインデックスを避ける

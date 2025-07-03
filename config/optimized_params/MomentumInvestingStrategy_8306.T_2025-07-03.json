@@ -1,16 +1,16 @@
 {
   "strategy": "MomentumInvestingStrategy",
-  "ticker": "5803.T",
-  "optimization_date": "2025-06-11",
+  "ticker": "8306.T",
+  "optimization_date": "2025-07-03",
   "parameters": {
-    "ma_type": "SMA",
-    "sma_short": 10,
-    "sma_long": 50,
+    "ma_type": "EMA",
+    "sma_short": 15,
+    "sma_long": 200,
     "rsi_period": 14,
-    "rsi_lower": 40,
-    "rsi_upper": 65,
+    "rsi_lower": 50,
+    "rsi_upper": 68,
     "volume_threshold": 1.18,
-    "take_profit": 0.12,
+    "take_profit": 0.15,
     "stop_loss": 0.04,
     "trailing_stop": 0.04,
     "max_hold_days": 15,
@@ -22,7 +22,7 @@
     "trend_filter": true
   },
   "performance_metrics": {
-    "sharpe_ratio": -Infinity,
+    "sharpe_ratio": 88.19389422108239,
     "total_return": 0.1,
     "max_drawdown": -0.05,
     "win_rate": 0.6,
@@ -38,8 +38,8 @@
     "cross_validation": "walk_forward",
     "total_combinations_tested": 17
   },
-  "status": "rejected",
-  "created_at": "2025-06-11T12:33:24.368406",
+  "status": "approved",
+  "created_at": "2025-07-03T11:34:31.355036",
   "notes": "",
   "approval_info": {
     "approved_by": null,
@@ -47,9 +47,8 @@
     "rejection_reason": null
   },
   "validation_info": {},
-  "filename": "MomentumInvestingStrategy_5803.T_2025-06-11.json",
-  "filepath": "C:\\Users\\imega\\Documents\\my_backtest_project\\config\\optimized_params\\MomentumInvestingStrategy_5803.T_2025-06-11.json",
-  "rejected_by": "default_reviewer",
-  "rejected_at": "2025-06-11T12:34:50.338295",
-  "rejection_reason": "シャープレシオが-inf（負の無限大）のため、最適化結果が異常です。パラメータ設定またはデータに問題があると考えられます。"
+  "filename": "MomentumInvestingStrategy_8306.T_2025-07-03.json",
+  "filepath": "C:\\Users\\imega\\Documents\\my_backtest_project\\config\\optimized_params\\MomentumInvestingStrategy_8306.T_2025-07-03.json",
+  "approved_by": "default_reviewer",
+  "approved_at": "2025-07-03T11:40:19.360673"
 }

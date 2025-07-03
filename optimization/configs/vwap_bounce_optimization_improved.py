@@ -1,9 +1,10 @@
-# optimization/configs/vwap_bounce_optimization.py
+# optimization/configs/vwap_bounce_optimization_improved.py
 """
-VWAP反発戦略の最適化設定ファイル
+VWAP反発戦略の改善された最適化設定ファイル
+レンジ相場に特化し、トレンドフィルターを強化
 """
 
-# 最適化パラメータグリッド（レンジ相場特化、648通り）
+# 改善された最適化パラメータグリッド（レンジ相場特化、648通り）
 PARAM_GRID = {
     # 核心パラメータ - VWAP閾値（レンジ相場に最適化）
     "vwap_lower_threshold": [0.995, 0.998, 0.999],       # VWAP-0.1%～0.5%（レンジ相場用）

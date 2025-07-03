@@ -19,11 +19,12 @@ import pandas as pd
 from .basic_indicators import calculate_sma
 from .bollinger_atr import calculate_atr
 
-def detect_trend(data: pd.DataFrame, price_column: str, lookback_period: int = 5, 
-                short_period: int = 5, medium_period: int = 25, long_period: int = 75, 
-                up_score: int = 5) -> str:
+def detect_trend(data: pd.DataFrame, price_column: str, lookback_period: int = 10, 
+                short_period: int = 10, medium_period: int = 20, long_period: int = 50, 
+                up_score: int = 4, volatility_threshold: float = 0.02) -> str:
     """
-    SMAを用いてトレンドを判定する関数。複数のポイントを考慮し、より堅牢なトレンド判定を行います。
+    改善されたトレンド判定関数。レンジ相場の検出精度を向上させます。
+    VWAP Bounce戦略のために特化した判定ロジックを含みます。
     """
     # データのコピーを作成して元のデータを変更しないようにする
     data_copy = data.copy()
@@ -39,13 +40,30 @@ def detect_trend(data: pd.DataFrame, price_column: str, lookback_period: int = 5
     
     # 直近の値を取得
     latest_data = data_copy.iloc[-lookback_period:]
+    current_price = latest_data[price_column].iloc[-1]
     
     # SMAの傾き（方向性）を計算
     short_slope = (latest_data['SMA_short'].iloc[-1] - latest_data['SMA_short'].iloc[0]) / lookback_period
     medium_slope = (latest_data['SMA_medium'].iloc[-1] - latest_data['SMA_medium'].iloc[0]) / lookback_period
     long_slope = (latest_data['SMA_long'].iloc[-1] - latest_data['SMA_long'].iloc[0]) / lookback_period
     
-    # トレンド判定の緩和：スコアリングシステム
+    # 価格のボラティリティを計算（レンジ相場判定用）
+    price_volatility = latest_data[price_column].std() / latest_data[price_column].mean()
+    
+    # レンジ相場の判定を強化
+    sma_convergence = abs(latest_data['SMA_short'].iloc[-1] - latest_data['SMA_long'].iloc[-1]) / latest_data['SMA_long'].iloc[-1]
+    
+    # レンジ相場の条件：
+    # 1. SMAが収束している（短期と長期の差が小さい）
+    # 2. 傾きが小さい
+    # 3. ボラティリティが低い
+    if (sma_convergence < 0.05 and 
+        abs(short_slope) < volatility_threshold and 
+        abs(medium_slope) < volatility_threshold and
+        price_volatility < volatility_threshold):
+        return "range-bound"
+    
+    # トレンド判定のスコアリングシステム（閾値を緩和）
     uptrend_score = 0
     downtrend_score = 0
     
@@ -60,31 +78,32 @@ def detect_trend(data: pd.DataFrame, price_column: str, lookback_period: int = 5
     else:
         downtrend_score += 1
         
-    if latest_data[price_column].iloc[-1] > latest_data['SMA_short'].iloc[-1]:
+    if current_price > latest_data['SMA_short'].iloc[-1]:
         uptrend_score += 1
     else:
         downtrend_score += 1
     
-    # 傾きのスコア
-    if short_slope > 0:
+    # 傾きのスコア（閾値を設定）
+    slope_threshold = volatility_threshold / 2
+    if short_slope > slope_threshold:
         uptrend_score += 1
-    else:
+    elif short_slope < -slope_threshold:
         downtrend_score += 1
         
-    if medium_slope > 0:
+    if medium_slope > slope_threshold:
         uptrend_score += 1
-    else:
+    elif medium_slope < -slope_threshold:
         downtrend_score += 1
         
-    if long_slope > 0:
+    if long_slope > slope_threshold:
         uptrend_score += 1
-    else:
+    elif long_slope < -slope_threshold:
         downtrend_score += 1
     
-    # スコアに基づくトレンド判定
-    if uptrend_score >= up_score:  # ここをパラメータ化
+    # スコアに基づくトレンド判定（より厳格に）
+    if uptrend_score >= up_score and uptrend_score > downtrend_score:
         return "uptrend"
-    elif downtrend_score >= up_score:
+    elif downtrend_score >= up_score and downtrend_score > uptrend_score:
         return "downtrend"
     else:
         return "range-bound"
