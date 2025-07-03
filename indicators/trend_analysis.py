@@ -166,15 +166,31 @@ class EnhancedTrendAnalyzer:
         Returns:
             Tuple[str, float]: (トレンド, 信頼度スコア 0-1)
         """
-        if method == "sma":
-            return self._detect_trend_sma_with_confidence(**kwargs)
-        elif method == "macd":
-            return self._detect_trend_macd_with_confidence(**kwargs)
-        elif method == "combined":
-            return self._detect_trend_combined_with_confidence(**kwargs)
-        elif method == "advanced":
-            return self._detect_trend_advanced_with_confidence(**kwargs)
-        else:
+        try:
+            if method == "sma":
+                # SMA用パラメータだけ抽出
+                sma_params = {
+                    k: v for k, v in kwargs.items() 
+                    if k in ["short_period", "medium_period", "long_period"]
+                }
+                return self._detect_trend_sma_with_confidence(**sma_params)
+                
+            elif method == "macd":
+                # MACD用パラメータだけ抽出
+                macd_params = {
+                    k: v for k, v in kwargs.items()
+                    if k in ["short_window", "long_window", "signal_window"]
+                }
+                return self._detect_trend_macd_with_confidence(**macd_params)
+                
+            elif method == "combined" or method == "advanced":
+                return self._detect_trend_advanced_with_confidence(**kwargs)
+                
+            else:
+                return "unknown", 0.0
+                
+        except Exception as e:
+            print(f"トレンド判定エラー: {e}, メソッド: {method}")
             return "unknown", 0.0
     
     def _detect_trend_sma_with_confidence(self, 
@@ -239,9 +255,23 @@ class EnhancedTrendAnalyzer:
         """
         高度なトレンド判定（複数指標の組み合わせ）
         """
-        # 複数の手法で判定
-        sma_trend, sma_conf = self._detect_trend_sma_with_confidence(**kwargs)
-        macd_trend, macd_conf = self._detect_trend_macd_with_confidence(**kwargs)
+        # SMA用パラメータ
+        sma_params = {
+            "short_period": kwargs.get("short_period", 10),
+            "medium_period": kwargs.get("medium_period", 20),
+            "long_period": kwargs.get("long_period", 50)
+        }
+        
+        # MACD用パラメータ
+        macd_params = {
+            "short_window": kwargs.get("short_window", 12),
+            "long_window": kwargs.get("long_window", 26),
+            "signal_window": kwargs.get("signal_window", 9)
+        }
+        
+        # 各手法で判定
+        sma_trend, sma_conf = self._detect_trend_sma_with_confidence(**sma_params)
+        macd_trend, macd_conf = self._detect_trend_macd_with_confidence(**macd_params)
         
         # 価格モメンタムの追加
         momentum_trend, momentum_conf = self._detect_momentum_trend()
@@ -288,8 +318,23 @@ class EnhancedTrendAnalyzer:
     
     def _detect_trend_combined_with_confidence(self, **kwargs) -> Tuple[str, float]:
         """複合的なトレンド判定"""
-        sma_trend, sma_conf = self._detect_trend_sma_with_confidence(**kwargs)
-        macd_trend, macd_conf = self._detect_trend_macd_with_confidence(**kwargs)
+        # SMA用パラメータ
+        sma_params = {
+            "short_period": kwargs.get("short_period", 10),
+            "medium_period": kwargs.get("medium_period", 20),
+            "long_period": kwargs.get("long_period", 50)
+        }
+        
+        # MACD用パラメータ
+        macd_params = {
+            "short_window": kwargs.get("short_window", 12),
+            "long_window": kwargs.get("long_window", 26),
+            "signal_window": kwargs.get("signal_window", 9)
+        }
+        
+        # 個別に判定して結果を結合
+        sma_trend, sma_conf = self._detect_trend_sma_with_confidence(**sma_params)
+        macd_trend, macd_conf = self._detect_trend_macd_with_confidence(**macd_params)
         
         # 両方が一致した場合のみ明確なトレンド
         if sma_trend == macd_trend:

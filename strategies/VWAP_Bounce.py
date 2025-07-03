@@ -22,7 +22,7 @@ sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")  # プロジェ
 import pandas as pd
 import numpy as np
 from strategies.base_strategy import BaseStrategy
-from indicators.trend_analysis import detect_trend
+from indicators.unified_trend_detector import UnifiedTrendDetector, detect_unified_trend
 from indicators.basic_indicators import calculate_vwap
 from config.optimized_parameters import OptimizedParameterManager
 from typing import Dict, Any, Optional
@@ -114,8 +114,9 @@ class VWAPBounceStrategy(BaseStrategy):
         if idx < 1:  # 前日データが必要
             return 0
 
-        # レンジ相場の判定
-        trend = detect_trend(self.data.iloc[:idx + 1], price_column=self.price_column)
+        # レンジ相場の判定（統一トレンド判定を使用）
+        trend = detect_unified_trend(self.data.iloc[:idx + 1], price_column=self.price_column, 
+                                    strategy="VWAP_Bounce")
         if trend != "range-bound":
             return 0  # レンジ相場でない場合はエントリーしない
 

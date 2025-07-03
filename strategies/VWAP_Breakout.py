@@ -26,6 +26,7 @@ import math
 sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")  # プロジェクトのルートを追加
 
 from strategies.base_strategy import BaseStrategy
+from indicators.unified_trend_detector import UnifiedTrendDetector, detect_unified_trend
 from indicators.basic_indicators import calculate_sma, calculate_vwap
 from indicators.volume_analysis import detect_volume_increase
 from indicators.momentum_indicators import calculate_macd
