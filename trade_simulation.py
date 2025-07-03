@@ -119,7 +119,13 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
     
     # データフレームにStrategyカラムがない場合は、戦略名を引数から取得
     has_strategy_column = "Strategy" in data.columns
-    default_strategy = ticker
+    default_strategy = "UnknownStrategy"  # ティッカーではなく適切なデフォルト名
+    
+    # Strategyカラムが空の場合の処理
+    if has_strategy_column:
+        # 空文字列やNaN値をデフォルト戦略名で置換
+        data["Strategy"] = data["Strategy"].fillna(default_strategy)
+        data["Strategy"] = data["Strategy"].replace('', default_strategy)
     
     for idx in range(len(data)):
         date = data.index[idx]
@@ -132,7 +138,9 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
             entry_idx = idx
             entry_date = date
             # Strategyカラムがあれば値を使用、なければデフォルト値
-            strategy_name = data["Strategy"].iloc[idx] if has_strategy_column else default_strategy
+            current_strategy = data["Strategy"].iloc[idx] if has_strategy_column else default_strategy
+            # 空文字列の場合もデフォルト値を使用
+            strategy_name = current_strategy if current_strategy and current_strategy.strip() else default_strategy
         
         # イグジットシグナルがあり、ポジションを持っている場合
         if exit_signal == -1 and in_position:
