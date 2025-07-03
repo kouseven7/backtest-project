@@ -26,6 +26,7 @@ from indicators.basic_indicators import calculate_rsi
 from indicators.trend_analysis import detect_trend
 from config.optimized_parameters import OptimizedParameterManager
 from validation.validators.contrarian_validator import ContrarianParameterValidator
+from indicators.unified_trend_detector import UnifiedTrendDetector, detect_unified_trend, detect_unified_trend_with_confidence
 
 class ContrarianStrategy(BaseStrategy):
     def __init__(self, data: pd.DataFrame, params=None, price_column: str = "Adj Close"):
@@ -46,7 +47,11 @@ class ContrarianStrategy(BaseStrategy):
             "pin_bar_ratio": 2.0,    # ピンバー判定比率
             "max_hold_days": 5,      # 最大保有日数
             "rsi_exit_level": 50,    # RSI中立域でのイグジット
-            "trailing_stop_pct": 0.02  # トレーリングストップ率
+            "trailing_stop_pct": 0.02,  # トレーリングストップ率
+            
+            # トレンドフィルター設定
+            "trend_filter_enabled": True,  # 統一トレンド判定の有効化
+            "allowed_trends": ["range-bound"]  # 許可するトレンド（レンジ相場のみ）
         }
         merged_params = {**default_params, **(params or {})}
         super().__init__(data, merged_params)
@@ -58,6 +63,30 @@ class ContrarianStrategy(BaseStrategy):
         super().initialize_strategy()
         # RSIを計算してデータに追加
         self.data['RSI'] = calculate_rsi(self.data[self.price_column], period=self.params["rsi_period"])
+        
+        # 統一トレンド判定の初期結果を表示（データがある場合）
+        if len(self.data) > 20:  # データが十分ある場合のみ
+            try:
+                # 現在のトレンドを判定
+                trend = detect_unified_trend(
+                    self.data,
+                    price_column=self.price_column,
+                    strategy="contrarian_strategy",
+                    method="combined"
+                )
+                print(f"初期トレンド判定: {trend} (contrarian_strategy)")
+                
+                # 信頼度付き判定
+                trend_detector = UnifiedTrendDetector(
+                    self.data,
+                    price_column=self.price_column,
+                    strategy_name="contrarian_strategy",
+                    method="combined"
+                )
+                _, confidence = trend_detector.detect_trend_with_confidence()
+                print(f"トレンド判定信頼度: {confidence:.2f}")
+            except Exception as e:
+                print(f"トレンド判定初期化エラー: {e}")
 
     def generate_entry_signal(self, idx: int) -> int:
         """
@@ -81,15 +110,30 @@ class ContrarianStrategy(BaseStrategy):
         else:
             pin_bar = False
 
-        # レンジ相場の判定
-        trend = detect_trend(self.data.iloc[:idx + 1], price_column=self.price_column)
-        range_market = (trend == "range-bound")
+        # トレンド判定（統一トレンド判定インターフェースを使用）
+        if self.params["trend_filter_enabled"]:
+            # 統一トレンド判定インターフェースを使用
+            trend = detect_unified_trend(
+                self.data.iloc[:idx + 1], 
+                price_column=self.price_column,
+                strategy="contrarian_strategy",
+                method="combined"  # 複合メソッドを使用
+            )
+            # 許可されたトレンド内にあるか確認
+            if trend not in self.params["allowed_trends"]:
+                return 0
+        else:
+            # 従来のトレンド判定を使用
+            trend = detect_trend(self.data.iloc[:idx + 1], price_column=self.price_column)
+            range_market = (trend == "range-bound")
+            if not range_market:
+                return 0
 
         # エントリー条件
-        if rsi <= self.params["rsi_oversold"] and gap_down and range_market:
+        if rsi <= self.params["rsi_oversold"] and gap_down:
             self.entry_prices[idx] = current_price
             return 1
-        if pin_bar and range_market:
+        if pin_bar:
             self.entry_prices[idx] = current_price
             return 1
 

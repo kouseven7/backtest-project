@@ -23,6 +23,7 @@ import numpy as np
 from typing import Dict, Any, Optional
 from strategies.base_strategy import BaseStrategy
 from config.optimized_parameters import OptimizedParameterManager
+from indicators.unified_trend_detector import UnifiedTrendDetector, detect_unified_trend, detect_unified_trend_with_confidence
 
 class OpeningGapStrategy(BaseStrategy):
     def __init__(self, data: pd.DataFrame, dow_data: pd.DataFrame, params: Optional[Dict[str, Any]] = None, price_column: str = "Adj Close"):
@@ -56,6 +57,10 @@ class OpeningGapStrategy(BaseStrategy):
             "dow_trend_days": 5,              # ダウトレンド判定期間
             "min_vol_ratio": 1.0,             # 最小出来高倍率（前日比）
             "volatility_filter": False,       # 高ボラ環境でのみ取引
+            
+            # トレンドフィルター設定
+            "trend_filter_enabled": True,     # 統一トレンド判定の有効化
+            "allowed_trends": ["uptrend"],    # 許可するトレンド（上昇トレンドのみ）
 
             # イグジット関連の新規パラメータ
             "max_hold_days": 5,              # 最大保有期間
@@ -70,18 +75,51 @@ class OpeningGapStrategy(BaseStrategy):
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
         merged_params: Dict[str, Any] = {**default_params, **(params or {})}
         super().__init__(data, merged_params)
+        
+    def initialize_strategy(self):
+        """
+        戦略の初期化処理
+        """
+        super().initialize_strategy()
+        
+        # 統一トレンド検出器の初期化
+        # 最新時点でのトレンド判定をコンソールに出力
+        if len(self.data) > 0:
+            try:
+                trend, confidence = detect_unified_trend_with_confidence(
+                    self.data, self.price_column, strategy="Opening_Gap"
+                )
+                self.logger.info(f"現在のトレンド: {trend}, 信頼度: {confidence:.1%}")
+            except Exception as e:
+                self.logger.warning(f"トレンド判定エラー: {e}")
 
     def generate_entry_signal(self, idx: int) -> int:
         """
         エントリーシグナルを生成する。
         条件:
-        - ギャップアップ（寄り付き価格が前日終値より高い）
-        - ギャップダウン（寄り付き価格が前日終値より低い）
-        """
-        if idx <= 0:
-            return 0
+        - 前日終値から当日始値にかけて1%以上のギャップアップ
+        - トレンド判定が上昇トレンド（オプション）
+        - ダウ平均も上昇トレンド（オプション）
 
-        # 前日と当日のデータを取得
+        Parameters:
+            idx (int): 現在のインデックス
+            
+        Returns:
+            int: エントリーシグナル（1: エントリー, 0: なし）
+        """
+        if idx < 1:  # 前日データが必要
+            return 0
+            
+        # トレンド確認（統一トレンド判定を使用）
+        use_trend_filter = self.params.get("trend_filter_enabled", False)
+        if use_trend_filter:
+            trend = detect_unified_trend(self.data.iloc[:idx + 1], self.price_column, strategy="Opening_Gap")
+            allowed_trends = self.params.get("allowed_trends", ["uptrend"])
+            # 許可されたトレンドでのみエントリー
+            if trend not in allowed_trends:
+                return 0  # トレンド不適合
+                
+        # ギャップアップ/ダウン判定
         open_price = self.data['Open'].iloc[idx]
         previous_close = self.data[self.price_column].iloc[idx - 1]
 

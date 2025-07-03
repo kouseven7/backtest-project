@@ -23,6 +23,7 @@ import numpy as np
 import logging
 from strategies.base_strategy import BaseStrategy
 from indicators.trend_analysis import detect_trend
+from indicators.unified_trend_detector import UnifiedTrendDetector, detect_unified_trend, detect_unified_trend_with_confidence
 
 class GCStrategy(BaseStrategy):
     """
@@ -55,7 +56,11 @@ class GCStrategy(BaseStrategy):
             "stop_loss": 0.03,       # ストップロス（3%）
             "trailing_stop_pct": 0.03,  # トレーリングストップ（3%）
             "max_hold_days": 20,     # 最大保有期間（20日）
-            "exit_on_death_cross": True  # デッドクロスでイグジットするかどうか
+            "exit_on_death_cross": True,  # デッドクロスでイグジットするかどうか
+            
+            # トレンドフィルター設定
+            "trend_filter_enabled": True,  # 統一トレンド判定の有効化
+            "allowed_trends": ["uptrend"]  # 許可するトレンド（上昇トレンド）
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -71,6 +76,23 @@ class GCStrategy(BaseStrategy):
         # 戦略パラメータの読み込み
         self.short_window = int(self.params.get("short_window", 5))
         self.long_window = int(self.params.get("long_window", 25))
+        
+        # 移動平均線の計算（存在しない場合のみ）
+        if f"SMA_{self.short_window}" not in self.data.columns:
+            self.data[f"SMA_{self.short_window}"] = self.data[self.price_column].rolling(window=self.short_window).mean()
+        if f"SMA_{self.long_window}" not in self.data.columns:
+            self.data[f"SMA_{self.long_window}"] = self.data[self.price_column].rolling(window=self.long_window).mean()
+        
+        # 統一トレンド検出器の初期化
+        # 最新時点でのトレンド判定をコンソールに出力
+        if len(self.data) > 0:
+            try:
+                trend, confidence = detect_unified_trend_with_confidence(
+                    self.data, self.price_column, strategy="Golden_Cross"
+                )
+                self.logger.info(f"現在のトレンド: {trend}, 信頼度: {confidence:.1%}")
+            except Exception as e:
+                self.logger.warning(f"トレンド判定エラー: {e}")
         
         self.logger.info(
             f"GCStrategy initialized with short_window={self.short_window}, long_window={self.long_window}, "
@@ -101,6 +123,20 @@ class GCStrategy(BaseStrategy):
         """
         if idx < self.long_window:  # 長期移動平均の計算に必要な日数分のデータがない場合
             return 0
+            
+        # トレンド確認（統一トレンド判定を使用）
+        use_trend_filter = self.params.get("trend_filter_enabled", False)
+        if use_trend_filter:
+            trend = detect_unified_trend(
+                self.data.iloc[:idx + 1], 
+                self.price_column, 
+                strategy="Golden_Cross",
+                method="combined"  # 複合メソッドを使用
+            )
+            allowed_trends = self.params.get("allowed_trends", ["uptrend"])
+            # 許可されたトレンドでのみエントリー
+            if trend not in allowed_trends:
+                return 0  # トレンド不適合
         
         short_sma = self.data[f"SMA_{self.short_window}"].iloc[idx]
         long_sma = self.data[f"SMA_{self.long_window}"].iloc[idx]
@@ -115,23 +151,8 @@ class GCStrategy(BaseStrategy):
         # ゴールデンクロス（短期MAが長期MAを下から上に抜けた）
         golden_cross = short_sma > long_sma and prev_short_sma <= prev_long_sma
 
-        # トレンド判定パラメータをparamsから取得
-        trend_params = {
-            "lookback_period": self.params.get("trend_lookback_period", 5),
-            "short_period": self.params.get("trend_short_period", 5),
-            "medium_period": self.params.get("trend_medium_period", 25),
-            "long_period": self.params.get("trend_long_period", 75),
-            "up_score": self.params.get("trend_up_score", 5),
-        }
-        trend = detect_trend(
-            self.data.iloc[:idx + 1],
-            price_column=self.price_column,
-            **trend_params
-        )
-        if golden_cross and trend == "uptrend":
-            current_price = self.data[self.price_column].iloc[idx]
-            self.entry_prices[idx] = current_price
-            self.log_trade(f"GC Strategy エントリーシグナル: 日付={self.data.index[idx]}, 価格={current_price}, 短期MA={short_sma}, 長期MA={long_sma}")
+        # ゴールデンクロスが検出された場合のみエントリー
+        if golden_cross:
             return 1
             
         return 0
