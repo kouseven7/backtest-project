@@ -29,7 +29,7 @@ from indicators.basic_indicators import calculate_sma, calculate_rsi
 from indicators.momentum_indicators import calculate_macd
 from indicators.volume_analysis import detect_volume_increase
 from indicators.volatility_indicators import calculate_atr
-from indicators.unified_trend_detector import UnifiedTrendDetector, detect_unified_trend
+from indicators.unified_trend_detector import UnifiedTrendDetector, detect_unified_trend, detect_unified_trend_with_confidence
 
 class MomentumInvestingStrategy(BaseStrategy):
     def __init__(self, data: pd.DataFrame, params: Optional[Dict[str, Any]] = None, 

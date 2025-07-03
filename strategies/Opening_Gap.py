@@ -233,11 +233,27 @@ class OpeningGapStrategy(BaseStrategy):
 
         # ATRベースのストップロス
         if "atr_stop_multiple" in self.params:
-            atr_value = self.data['ATR'].iloc[latest_entry_idx]
-            atr_stop = entry_price - (atr_value * self.params["atr_stop_multiple"])
-            if current_price <= atr_stop:
-                self.log_trade(f"Opening Gap イグジットシグナル: ATRベースストップロス 日付={self.data.index[idx]}, 価格={current_price}")
-                return -1
+            try:
+                # ATRが利用可能かチェック
+                if 'ATR' in self.data.columns and not pd.isna(self.data['ATR'].iloc[latest_entry_idx]):
+                    atr_value = self.data['ATR'].iloc[latest_entry_idx]
+                    atr_stop = entry_price - (atr_value * self.params["atr_stop_multiple"])
+                    if current_price <= atr_stop:
+                        self.log_trade(f"Opening Gap イグジットシグナル: ATRベースストップロス 日付={self.data.index[idx]}, 価格={current_price}")
+                        return -1
+                else:
+                    # ATR列がない場合は固定ストップロスを使用
+                    stop_loss_pct = self.params.get("stop_loss", 0.02)
+                    if current_price <= entry_price * (1 - stop_loss_pct):
+                        self.log_trade(f"Opening Gap イグジットシグナル: 固定ストップロス 日付={self.data.index[idx]}, 価格={current_price}")
+                        return -1
+            except Exception as e:
+                self.logger.warning(f"ATRストップロス計算エラー: {e}、固定ストップロスを使用")
+                # エラーが発生した場合も固定ストップロスを使用
+                stop_loss_pct = self.params.get("stop_loss", 0.02)
+                if current_price <= entry_price * (1 - stop_loss_pct):
+                    self.log_trade(f"Opening Gap イグジットシグナル: 固定ストップロス 日付={self.data.index[idx]}, 価格={current_price}")
+                    return -1
 
         # トレーリングストップ
         if "trailing_stop_pct" in self.params:

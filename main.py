@@ -30,6 +30,7 @@ sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")
 from config.logger_config import setup_logger
 from config.risk_management import RiskManagement
 from config.optimized_parameters import OptimizedParameterManager
+from indicators.unified_trend_detector import detect_unified_trend, detect_unified_trend_with_confidence
 from strategies.VWAP_Breakout import VWAPBreakoutStrategy
 from strategies.Momentum_Investing import MomentumInvestingStrategy
 from strategies.Breakout import BreakoutStrategy
@@ -157,6 +158,27 @@ def get_default_parameters(strategy_name: str) -> Dict[str, Any]:
     return defaults.get(strategy_name, {})
 
 
+def check_for_series_signal(signal) -> int:
+    """シグナルがSeriesの場合の処理を行うヘルパー関数"""
+    if isinstance(signal, pd.Series):
+        # Seriesの場合、最初の値を取り出す
+        if signal.empty:
+            return 0  # 空のSeriesの場合は0を返す
+        first_val = signal.iloc[0]
+        return 1 if first_val == 1 else (-1 if first_val == -1 else 0)
+    # NaNの場合は0を返す
+    try:
+        if pd.isna(signal):
+            return 0
+    except:
+        pass
+    # 通常の場合はint型に変換
+    try:
+        return int(signal)
+    except:
+        return 0
+
+
 def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data: pd.DataFrame, 
                                          optimized_params: Dict[str, Dict[str, Any]]) -> pd.DataFrame:
     """
@@ -200,13 +222,28 @@ def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data:
             params = optimized_params.get(strategy_name, {})
             logger.info(f"戦略適用開始: {strategy_name} with params: {params}")
             
-            # 戦略インスタンスを作成
-            # 全ての戦略は data, params, price_column を受け取る形式に統一
-            strategy = strategy_class(
-                data=stock_data.copy(),  # コピーを使用して相互影響を避ける
-                params=params,
-                price_column="Adj Close"
-            )
+            # 戦略ごとに必要なパラメータを渡す
+            if strategy_name == 'VWAPBreakoutStrategy':
+                strategy = strategy_class(
+                    data=stock_data.copy(),  # コピーを使用して相互影響を避ける
+                    params=params,
+                    price_column="Adj Close",
+                    index_data=index_data
+                )
+            elif strategy_name == 'OpeningGapStrategy':
+                strategy = strategy_class(
+                    data=stock_data.copy(),
+                    params=params,
+                    price_column="Adj Close",
+                    dow_data=index_data  # OpeningGapStrategyはdow_dataが必要
+                )
+            else:
+                # その他の戦略は共通パラメータで初期化
+                strategy = strategy_class(
+                    data=stock_data.copy(),
+                    params=params,
+                    price_column="Adj Close"
+                )
             
             # 戦略を実行してバックテスト結果を取得
             result = strategy.backtest()
@@ -219,14 +256,27 @@ def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data:
             exit_count = 0
             
             if entry_signal_col in result.columns:
-                entry_count = (result[entry_signal_col] == 1).sum()
+                # Series型を安全に扱うための変換
+                entry_count = result[entry_signal_col].astype(int).sum() if not pd.api.types.is_integer_dtype(result[entry_signal_col]) else (result[entry_signal_col] == 1).sum()
             if exit_signal_col in result.columns:
-                exit_count = (result[exit_signal_col] == -1).sum()
+                exit_count = result[exit_signal_col].astype(int).eq(-1).sum() if not pd.api.types.is_integer_dtype(result[exit_signal_col]) else (result[exit_signal_col] == -1).sum()
             
             # 優先度順にシグナルを統合（既存シグナルがない場合のみ追加）
             for idx in result.index:
                 # エントリーシグナルの統合
-                if (result.loc[idx, entry_signal_col] == 1 and 
+                try:
+                    entry_signal = result.loc[idx, entry_signal_col]
+                    exit_signal = result.loc[idx, exit_signal_col]
+                    
+                    # Series型やNaN値を処理
+                    entry_signal = check_for_series_signal(entry_signal)
+                    exit_signal = check_for_series_signal(exit_signal)
+                except Exception as e:
+                    logger.warning(f"シグナル変換エラー - {strategy_name}: {e}")
+                    entry_signal = 0
+                    exit_signal = 0
+                
+                if (entry_signal == 1 and 
                     stock_data.loc[idx, 'Entry_Signal'] == 0 and
                     idx not in active_positions):
                     
@@ -235,7 +285,7 @@ def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data:
                     active_positions[idx] = strategy_name
                 
                 # エグジットシグナルの統合（同じ戦略からのもののみ）
-                if (result.loc[idx, exit_signal_col] == -1 and
+                if (exit_signal == -1 and
                     idx in active_positions and
                     active_positions[idx] == strategy_name):
                     
@@ -244,11 +294,16 @@ def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data:
                     # ポジションを削除
                     del active_positions[idx]
             
+            # 正確なカウントのために数値を変換
+            # より安全な方法でカウント
+            integrated_entries = sum(1 for _ in stock_data[stock_data['Strategy'] == strategy_name].index)
+            integrated_exits = sum(1 for _ in stock_data[(stock_data['Exit_Signal'] == -1) & (stock_data['Strategy'] == strategy_name)].index)
+            
             strategy_stats[strategy_name] = {
                 'entries': int(entry_count),
                 'exits': int(exit_count),
-                'integrated_entries': int((stock_data['Strategy'] == strategy_name).sum()),
-                'integrated_exits': int((stock_data['Exit_Signal'] == -1) & (stock_data['Strategy'] == strategy_name)).sum()
+                'integrated_entries': integrated_entries,
+                'integrated_exits': integrated_exits
             }
             
             logger.info(f"戦略完了: {strategy_name} - エントリー: {entry_count}, エグジット: {exit_count}")
@@ -293,15 +348,25 @@ def main():
         optimized_params = load_optimized_parameters(ticker)
         logger.info(f"読み込み完了: {len(optimized_params)} 戦略のパラメータ")
         
-        # 最適化パラメータを使用して戦略を適用
-        if index_data is None:
-            # ダミーのindex_dataを作成
-            index_data = stock_data[['Close']].copy()
-            index_data.columns = ['Close']
+        # index_dataがNoneの場合は、同じ期間の日経平均などのインデックスを取得するか、
+        # ダミーのindex_dataを作成する
+        if index_data is None or index_data.empty:
+            logger.warning("市場インデックスデータが取得できませんでした。ダミーデータを作成します。")
+            # ダミーのindex_dataを作成（stock_dataと同じインデックスを使用）
+            index_data = pd.DataFrame(index=stock_data.index)
+            
+            # 必要な列を追加
+            for col in ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']:
+                if col in stock_data.columns:
+                    index_data[col] = stock_data[col] * 0.9  # 適当な値を設定
+            
+            # データの完全性を確保
+            index_data = index_data.fillna(method='ffill').fillna(method='bfill')
         
+        # 最適化パラメータを使用して戦略を適用
         stock_data = apply_strategies_with_optimized_params(stock_data, index_data, optimized_params)
         
-        # バックテスト結果をExcelに出力（splitsパラメータは除去）
+        # バックテスト結果をExcelに出力
         backtest_results = simulate_and_save(stock_data, ticker)
         
         logger.info(f"バックテスト結果をExcelに出力: {backtest_results}")

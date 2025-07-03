@@ -5,6 +5,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+def calculate_atr(data: pd.DataFrame, period: int = 14) -> pd.Series:
+    """ATR（Average True Range）を計算する関数"""
+    high = data['High']
+    low = data['Low']
+    close = data['Close'].shift(1)  # 前日の終値
+    
+    # True Range計算
+    tr1 = high - low
+    tr2 = abs(high - close)
+    tr3 = abs(low - close)
+    
+    tr = pd.DataFrame({'TR1': tr1, 'TR2': tr2, 'TR3': tr3}).max(axis=1)
+    atr = tr.rolling(period).mean()
+    
+    return atr
+
 def preprocess_data(data: pd.DataFrame) -> pd.DataFrame:
     """データの前処理を行う関数"""
     
@@ -35,6 +51,13 @@ def preprocess_data(data: pd.DataFrame) -> pd.DataFrame:
 
     # 欠損値を補完または削除
     data = data.fillna(method='ffill').fillna(method='bfill')
+
+    # ATRを計算
+    if all(col in data.columns for col in ['High', 'Low', 'Close']):
+        data['ATR'] = calculate_atr(data)
+        logger.info("ATR計算完了")
+    else:
+        logger.warning("High, Low, Closeカラムが揃っていないためATRを計算できません")
 
     # リターンとボラティリティの計算
     data = returns.add_returns(data, price_column="Adj Close")

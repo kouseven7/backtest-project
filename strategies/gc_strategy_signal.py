@@ -170,7 +170,21 @@ class GCStrategy(BaseStrategy):
         entry_idx = self.data.index.get_loc(entry_indices[-1])
         entry_price = self.entry_prices.get(entry_idx)
         current_price = self.data[self.price_column].iloc[idx]
-    
+        
+        # entry_priceがNoneの場合、代替値を設定する
+        if entry_price is None:
+            # インデックスの範囲内かチェック
+            if 0 <= entry_idx < len(self.data):
+                # エントリー時の価格を代替値として使用
+                entry_price = self.data[self.price_column].iloc[entry_idx]
+                self.entry_prices[entry_idx] = entry_price
+                self.logger.warning(f"エントリー価格がNoneでした。代替値を使用: {entry_price}")
+            else:
+                # 安全なフォールバック：現在の価格を使用
+                self.logger.warning(f"有効なエントリー価格を特定できません。現在価格を使用: {current_price}")
+                entry_price = current_price
+                
+        # 以下は変更なし - 既存のイグジットロジック
         # 1. デッドクロスでイグジット（オプション）
         if self.params.get("exit_on_death_cross", True):
             short_ma = self.data[f'SMA_{self.params["short_window"]}'].iloc[idx]
@@ -195,12 +209,12 @@ class GCStrategy(BaseStrategy):
             return -1
     
         # 3. 利益確定
-        if entry_price and current_price >= entry_price * (1 + self.params.get("take_profit", 0.05)):
+        if current_price >= entry_price * (1 + self.params.get("take_profit", 0.05)):
             self.logger.info(f"利益確定によるイグジット: 日付={self.data.index[idx]}")
             return -1
     
         # 4. 損切り
-        if entry_price and current_price <= entry_price * (1 - self.params.get("stop_loss", 0.03)):
+        if current_price <= entry_price * (1 - self.params.get("stop_loss", 0.03)):
             self.logger.info(f"損切りによるイグジット: 日付={self.data.index[idx]}")
             return -1
     
