@@ -314,13 +314,16 @@ class UnifiedTrendDetector:
     def _detect_golden_cross_trend(self, data: pd.DataFrame, 
                                  short_ma_col: str, long_ma_col: str) -> Tuple[str, float]:
         """ゴールデンクロス戦略向けの特化トレンド判定"""
+        # データのコピーを作成して確実にコピーで作業する
+        data_copy = data.copy()
+        
         # MAがない場合は計算
-        if short_ma_col not in data.columns:
+        if short_ma_col not in data_copy.columns:
             short_ma = int(short_ma_col.split('_')[1])
-            data[short_ma_col] = calculate_sma(data, self.price_column, short_ma)
-        if long_ma_col not in data.columns:
+            data_copy[short_ma_col] = calculate_sma(data_copy, self.price_column, short_ma)
+        if long_ma_col not in data_copy.columns:
             long_ma = int(long_ma_col.split('_')[1])
-            data[long_ma_col] = calculate_sma(data, self.price_column, long_ma)
+            data_copy[long_ma_col] = calculate_sma(data_copy, self.price_column, long_ma)
         
         # 基本的なトレンド判定（明示的にパラメータを渡してエラーを避ける）
         base_trend = "unknown"
@@ -343,13 +346,13 @@ class UnifiedTrendDetector:
             return "unknown", 0.0
         
         # クロスオーバー確認
-        if len(data) < 2:
+        if len(data_copy) < 2:
             return base_trend, base_conf
             
-        short_ma_current = float(data[short_ma_col].iloc[-1])
-        long_ma_current = float(data[long_ma_col].iloc[-1])
-        short_ma_prev = float(data[short_ma_col].iloc[-2])
-        long_ma_prev = float(data[long_ma_col].iloc[-2])
+        short_ma_current = float(data_copy[short_ma_col].iloc[-1])
+        long_ma_current = float(data_copy[long_ma_col].iloc[-1])
+        short_ma_prev = float(data_copy[short_ma_col].iloc[-2])
+        long_ma_prev = float(data_copy[long_ma_col].iloc[-2])
         
         # ゴールデンクロス/デッドクロスの検出
         golden_cross = (short_ma_prev <= long_ma_prev) and (short_ma_current > long_ma_current)

@@ -21,7 +21,6 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Any
 from strategies.base_strategy import BaseStrategy
-from indicators.unified_trend_detector import UnifiedTrendDetector, detect_unified_trend, detect_unified_trend_with_confidence
 
 class BreakoutStrategy(BaseStrategy):
     def __init__(self, data: pd.DataFrame, params=None, price_column: str = "Adj Close", volume_column: str = "Volume"):
@@ -46,41 +45,19 @@ class BreakoutStrategy(BaseStrategy):
             "take_profit": 0.03,       # 利益確定（3%）
             "look_back": 1,            # 前日からのブレイクアウトを見る日数
             "trailing_stop": 0.02,     # トレーリングストップ（高値から2%下落）
-            "breakout_buffer": 0.01,    # ブレイクアウト判定の閾値（1%）
-            
-            # トレンドフィルター設定
-            "trend_filter_enabled": True,  # 統一トレンド判定の有効化
-            "allowed_trends": ["uptrend"]  # 許可するトレンド（上昇トレンド）
+            "breakout_buffer": 0.01     # ブレイクアウト判定の閾値（1%）
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
         merged_params = {**default_params, **(params or {})}
         super().__init__(data, merged_params)
         
-    def initialize_strategy(self):
-        """
-        戦略の初期化処理
-        """
-        super().initialize_strategy()
-        
-        # 統一トレンド検出器の初期化
-        # 最新時点でのトレンド判定をコンソールに出力
-        if len(self.data) > 0:
-            try:
-                trend, confidence = detect_unified_trend_with_confidence(
-                    self.data, self.price_column, strategy="Breakout"
-                )
-                self.logger.info(f"現在のトレンド: {trend}, 信頼度: {confidence:.1%}")
-            except Exception as e:
-                self.logger.warning(f"トレンド判定エラー: {e}")
-                
     def generate_entry_signal(self, idx: int) -> int:
         """
         エントリーシグナルを生成する。
         条件:
         - 前日高値を上抜けた場合
         - 出来高が前日比で20%増加している
-        - トレンド判定が上昇トレンド（オプション）
 
         Parameters:
             idx (int): 現在のインデックス
@@ -88,20 +65,14 @@ class BreakoutStrategy(BaseStrategy):
         Returns:
             int: エントリーシグナル（1: エントリー, 0: なし）
         """
-        # 十分なデータがない場合はエントリーなし
-        look_back = self.params.get("look_back", 1)
-        if idx <= look_back:
+        look_back = self.params["look_back"]
+        
+        if idx < look_back:  # 過去データが必要
             return 0
             
-        # トレンド確認（統一トレンド判定を使用）
-        use_trend_filter = self.params.get("trend_filter_enabled", False)
-        if use_trend_filter:
-            trend = detect_unified_trend(self.data.iloc[:idx + 1], self.price_column, strategy="Breakout")
-            allowed_trends = self.params.get("allowed_trends", ["uptrend"])
-            # 許可されたトレンドでのみエントリー
-            if trend not in allowed_trends:
-                return 0  # トレンド不適合
-        
+        if 'High' not in self.data.columns:
+            return 0  # 高値データがない場合
+
         current_price = self.data[self.price_column].iloc[idx]
         previous_high = self.data['High'].iloc[idx - look_back]
         

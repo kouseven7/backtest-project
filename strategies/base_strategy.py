@@ -137,25 +137,53 @@ class BaseStrategy:
             pd.DataFrame: エントリー/イグジットシグナルが追加されたデータフレーム
         """
         # シグナル列の初期化
-        self.data['Entry_Signal'] = 0
-        self.data['Exit_Signal'] = 0
+        result = self.data.copy()  # データのコピーを作成して元のデータに影響を与えない
+        result['Entry_Signal'] = 0
+        result['Exit_Signal'] = 0
+        
+        # 戦略名を追加
+        result['Strategy'] = self.__class__.__name__
+        
+        # インデックスが日時型になっていることを確認
+        if not isinstance(result.index, pd.DatetimeIndex):
+            try:
+                result.index = pd.DatetimeIndex(result.index)
+                self.logger.info("インデックスをDatetimeIndexに変換しました")
+            except Exception as e:
+                self.logger.warning(f"インデックス変換エラー: {e}")
 
         in_position = False
+        entry_idx = -1
         
         # 各日にちについてシグナルを計算
-        for idx in range(len(self.data)):
+        for idx in range(len(result)):
             # ポジションを持っていない場合のみエントリーシグナルをチェック
             if not in_position:
                 entry_signal = self.generate_entry_signal(idx)
                 if entry_signal == 1:
-                    self.data.at[self.data.index[idx], 'Entry_Signal'] = 1
+                    result.at[result.index[idx], 'Entry_Signal'] = 1
                     in_position = True
+                    entry_idx = idx
             
             # ポジションを持っている場合のみイグジットシグナルをチェック
-            else:
+            elif in_position:
                 exit_signal = self.generate_exit_signal(idx)
                 if exit_signal == -1:
-                    self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
+                    result.at[result.index[idx], 'Exit_Signal'] = -1
                     in_position = False
+                    entry_idx = -1
+        
+        # バックテスト終了時に未決済のポジションがある場合は、最終日に強制決済
+        if in_position and entry_idx >= 0:
+            last_idx = len(result) - 1
+            result.at[result.index[last_idx], 'Exit_Signal'] = -1
+            self.logger.info(f"バックテスト終了時のオープンポジションを強制決済: エントリー日={result.index[entry_idx]}, 決済日={result.index[last_idx]}")
 
-        return self.data
+        # エントリーとエグジットの回数を検証
+        entry_count = (result['Entry_Signal'] == 1).sum()
+        exit_count = (result['Exit_Signal'] == -1).sum()
+        
+        if entry_count != exit_count:
+            self.logger.warning(f"エントリー ({entry_count}) とエグジット ({exit_count}) の回数が一致しません！")
+            
+        return result

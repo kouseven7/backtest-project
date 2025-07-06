@@ -29,7 +29,7 @@ from indicators.basic_indicators import calculate_sma, calculate_rsi
 from indicators.momentum_indicators import calculate_macd
 from indicators.volume_analysis import detect_volume_increase
 from indicators.volatility_indicators import calculate_atr
-from indicators.unified_trend_detector import UnifiedTrendDetector, detect_unified_trend, detect_unified_trend_with_confidence
+from indicators.unified_trend_detector import detect_unified_trend, detect_unified_trend_with_confidence
 
 class MomentumInvestingStrategy(BaseStrategy):
     def __init__(self, data: pd.DataFrame, params: Optional[Dict[str, Any]] = None, 
@@ -58,10 +58,6 @@ class MomentumInvestingStrategy(BaseStrategy):
             "take_profit": 0.12,
             "stop_loss": 0.06,
             "trailing_stop": 0.04,
-            
-            # トレンドフィルター設定
-            "trend_filter_enabled": True,  # 統一トレンド判定の有効化
-            "allowed_trends": ["uptrend"],  # 許可するトレンド
             
             # 新規パラメータ
             "ma_type": "SMA",               # 移動平均タイプ (SMA/EMA)
@@ -107,17 +103,6 @@ class MomentumInvestingStrategy(BaseStrategy):
             self.data['MACD'], self.data['Signal_Line'] = calculate_macd(self.data, self.price_column)
         if 'ATR' not in self.data.columns:
             self.data['ATR'] = calculate_atr(self.data, self.price_column)
-        
-        # 統一トレンド検出器の初期化
-        self.data['Trend_Direction'] = np.nan
-        self.data['Trend_Strength'] = np.nan
-        self.data['Trend_Confidence'] = np.nan
-        
-        # 最新時点でのトレンド判定をコンソールに出力
-        if len(self.data) > 0:
-            trend, confidence = detect_unified_trend_with_confidence(self.data, 
-                                                                  self.price_column,
-                                                                  strategy="Momentum")
 
     def generate_entry_signal(self, idx: int) -> int:
         """
@@ -127,7 +112,6 @@ class MomentumInvestingStrategy(BaseStrategy):
         - RSIが50以上68未満の範囲内
         - MACDラインがシグナルラインを上抜け
         - 出来高増加または価格の明確なブレイクアウト
-        - 統一トレンド判定によるトレンド確認（オプション）
 
         Parameters:
             idx (int): 現在のインデックス
@@ -142,15 +126,7 @@ class MomentumInvestingStrategy(BaseStrategy):
 
         if idx < self.params["sma_long"]:
             return 0
-            
-        # トレンド確認（統一トレンド判定を使用）
-        use_trend_filter = self.params.get("trend_filter_enabled", False)
-        if use_trend_filter:
-            trend = detect_unified_trend(self.data.iloc[:idx + 1], self.price_column, strategy="Momentum")
-            # モメンタム戦略は上昇トレンドでのみ有効
-            if trend != "uptrend":
-                return 0  # トレンド不適合
-                
+
         current_price = self.data[self.price_column].iloc[idx]
         sma_short = self.data[sma_short_key].iloc[idx]
         sma_long = self.data[sma_long_key].iloc[idx]
@@ -317,42 +293,74 @@ class MomentumInvestingStrategy(BaseStrategy):
         self.data.loc[:, 'Position'] = 0
         self.data.loc[:, 'Partial_Exit'] = 0
         self.data.loc[:, 'Profit_Pct'] = 0
+        self.data.loc[:, 'Strategy'] = 'MomentumInvestingStrategy'  # 戦略名を明示的に追加
+        
+        # ポジション状態の追跡
+        in_position = False
+        entry_idx = -1
 
         for idx in range(len(self.data)):
-            # シグナル生成
-            entry_signal = self.generate_entry_signal(idx)
-            exit_signal = self.generate_exit_signal(idx)
-            self.data.at[self.data.index[idx], 'Entry_Signal'] = entry_signal
-            self.data.at[self.data.index[idx], 'Exit_Signal'] = exit_signal
-
-            # ポジションの更新
-            if idx > 0:
-                self.data.at[self.data.index[idx], 'Position'] = self.data['Position'].iloc[idx-1]
-                # エントリーシグナルでポジションを1に設定
-                if self.data['Entry_Signal'].iloc[idx] == 1:
+            # ポジションを持っていない場合のみエントリーシグナルを検討
+            if not in_position:
+                entry_signal = self.generate_entry_signal(idx)
+                if entry_signal == 1:
+                    self.data.at[self.data.index[idx], 'Entry_Signal'] = 1
                     self.data.at[self.data.index[idx], 'Position'] = 1
+                    in_position = True
+                    entry_idx = idx
                     # エントリー価格を記録
                     entry_price = self.data[self.price_column].iloc[idx]
                     self.entry_prices[idx] = entry_price
-                # イグジットシグナルでポジションを0に設定
-                if self.data['Exit_Signal'].iloc[idx] == -1:
+                    self.log_trade(f"モメンタム エントリー: 日付={self.data.index[idx]}, 価格={entry_price}")
+            
+            # ポジションを持っている場合のみイグジットシグナルを検討
+            elif in_position:
+                # ポジションを前日から引き継ぐ
+                if idx > 0:
+                    self.data.at[self.data.index[idx], 'Position'] = self.data['Position'].iloc[idx-1]
+                
+                exit_signal = self.generate_exit_signal(idx)
+                if exit_signal == -1:
+                    self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
                     self.data.at[self.data.index[idx], 'Position'] = 0
-                    
-            # 一部利確の処理（ポジションがある場合のみ）
-            if idx > 0 and self.data['Position'].iloc[idx-1] > 0:
-                partial_exit_pct = self.params.get("partial_exit_pct", 0.0)
-                partial_exit_threshold = self.params.get("partial_exit_threshold", 0.08)
-                if partial_exit_pct > 0 and self.data['Partial_Exit'].iloc[idx-1] == 0:
-                    entry_idx = self.data.index.get_loc(self.data[self.data['Entry_Signal'] == 1].index[-1])
-                    entry_price = self.entry_prices.get(entry_idx)
-                    if entry_price:
-                        current_price = self.data[self.price_column].iloc[idx]
-                        profit_pct = (current_price - entry_price) / entry_price
-                        self.data.at[self.data.index[idx], 'Profit_Pct'] = profit_pct
-                        if profit_pct >= partial_exit_threshold:
-                            self.data.at[self.data.index[idx], 'Partial_Exit'] = partial_exit_pct
-                            self.data.at[self.data.index[idx], 'Position'] -= partial_exit_pct
-                            self.log_trade(f"一部利確 {partial_exit_pct*100}%: 日付={self.data.index[idx]}, 価格={current_price}, 利益={profit_pct:.2%}")
+                    in_position = False
+                    exit_price = self.data[self.price_column].iloc[idx]
+                    self.log_trade(f"モメンタム イグジット: 日付={self.data.index[idx]}, 価格={exit_price}, エントリー日={self.data.index[entry_idx]}")
+                    entry_idx = -1
+                else:
+                    # 一部利確の処理（ポジションがある場合のみ）
+                    partial_exit_pct = self.params.get("partial_exit_pct", 0.0)
+                    partial_exit_threshold = self.params.get("partial_exit_threshold", 0.08)
+                    if partial_exit_pct > 0 and self.data['Partial_Exit'].iloc[idx-1 if idx > 0 else idx] == 0:
+                        entry_price = self.entry_prices.get(entry_idx)
+                        if entry_price:
+                            current_price = self.data[self.price_column].iloc[idx]
+                            profit_pct = (current_price - entry_price) / entry_price
+                            self.data.at[self.data.index[idx], 'Profit_Pct'] = profit_pct
+                            if profit_pct >= partial_exit_threshold:
+                                self.data.at[self.data.index[idx], 'Partial_Exit'] = partial_exit_pct
+                                self.data.at[self.data.index[idx], 'Position'] -= partial_exit_pct
+                                self.log_trade(f"一部利確 {partial_exit_pct*100}%: 日付={self.data.index[idx]}, 価格={current_price}, 利益={profit_pct:.2%}")
+        
+        # バックテスト終了時に未決済のポジションがある場合は、最終日に強制決済
+        if in_position and entry_idx >= 0:
+            last_idx = len(self.data) - 1
+            self.data.at[self.data.index[last_idx], 'Exit_Signal'] = -1
+            self.data.at[self.data.index[last_idx], 'Position'] = 0
+            entry_price = self.entry_prices.get(entry_idx, 0)
+            exit_price = self.data[self.price_column].iloc[last_idx]
+            profit_pct = 0
+            if entry_price > 0:
+                profit_pct = (exit_price - entry_price) / entry_price * 100
+            
+            self.log_trade(f"バックテスト終了時のオープンポジションを強制決済: エントリー日={self.data.index[entry_idx]}, 決済日={self.data.index[last_idx]}, 損益={profit_pct:.2f}%")
+        
+        # エントリーとエグジットの回数を検証
+        entry_count = (self.data['Entry_Signal'] == 1).sum()
+        exit_count = (self.data['Exit_Signal'] == -1).sum()
+        
+        if entry_count != exit_count:
+            self.log_trade(f"警告: エントリー ({entry_count}) とエグジット ({exit_count}) の回数が一致しません！")
         
         return self.data
 

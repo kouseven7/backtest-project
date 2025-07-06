@@ -27,33 +27,62 @@ class RiskManagement:
         self.max_drawdown = max_drawdown
         self.max_loss_per_trade = max_loss_per_trade
         self.current_drawdown = 0.0
+        # 短期取引戦略に適した値に調整
+        self.per_ticker_limit = 5  # 同一銘柄に対する制限を拡大
         self.daily_losses = 0
         self.max_daily_losses = 3  # 同日での最大連敗数
         self.active_trades = {}  # 各戦略のポジションサイズを管理
-        self.max_total_positions = 3  # 全体で持てるポジションの合計を3までに制限
+        self.ticker_positions = {}  # 銘柄ごとのポジション数を管理
+        self.max_total_positions = 100  # 全体で持てるポジションの合計を100までに設定（短期取引向け）
 
-    def check_position_size(self, strategy_name: str) -> bool:
+    def check_position_size(self, strategy_name: str, ticker: str = None) -> bool:
         """
-        各戦略ごとのポジションサイズが1単元を超えないように制限。
+        各戦略ごとのポジションサイズが制限を超えないように制限。
+        全戦略の合計ポジション数も制限する。
+        銘柄指定がある場合は、同一銘柄への集中も制限する。
 
         Parameters:
             strategy_name (str): 戦略名
+            ticker (str, optional): 銘柄コード
 
         Returns:
             bool: ポジションを持てる場合は True、それ以外は False
         """
-        return (self.active_trades.get(strategy_name, 0) < 1 and 
-                self.get_total_positions() < self.max_total_positions)
-
-    def update_position(self, strategy_name: str, position_size: int):
+        # 各戦略の許容ポジション数を増加（3→10）し、短期取引を活発化
+        per_strategy_limit = 10
+        
+        # 基本チェック：全体の制限と戦略ごとの制限
+        if (self.active_trades.get(strategy_name, 0) >= per_strategy_limit or 
+                self.get_total_positions() >= self.max_total_positions):
+            return False
+            
+        # 銘柄指定がある場合、同一銘柄への集中も制限
+        if ticker is not None and hasattr(self, 'ticker_positions'):
+            current_ticker_positions = self.ticker_positions.get(ticker, 0)
+            # 同一銘柄への集中を制限（デフォルト2）
+            if current_ticker_positions >= self.per_ticker_limit:
+                return False
+                
+        return True
+                
+    def update_position(self, strategy_name: str, position_size: int, ticker: str = None):
         """
         ポジションサイズを更新。
+        銘柄指定がある場合は、銘柄ごとのポジション数も更新。
 
         Parameters:
             strategy_name (str): 戦略名
             position_size (int): 追加するポジションサイズ
+            ticker (str, optional): 銘柄コード
         """
+        # 戦略ごとのポジション数更新
         self.active_trades[strategy_name] = self.active_trades.get(strategy_name, 0) + position_size
+        
+        # 銘柄ごとのポジション数も更新
+        if ticker is not None:
+            if not hasattr(self, 'ticker_positions'):
+                self.ticker_positions = {}
+            self.ticker_positions[ticker] = self.ticker_positions.get(ticker, 0) + position_size
 
     def get_total_positions(self) -> int:
         """

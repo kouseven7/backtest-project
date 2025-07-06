@@ -109,13 +109,8 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
     # リスク管理システムの初期化（シミュレーション用）
     risk_manager = RiskManagement(total_assets=1000000)  # 総資産100万円
     
-    # エントリー日とイグジット日のペアを記録
+    # エントリー日とイグジット日のペアを記録するためのより高度なアプローチ
     entry_exit_pairs = []
-      # シミュレーションループ
-    in_position = False
-    entry_idx = -1
-    entry_date = None
-    strategy_name = ""
     
     # データフレームにStrategyカラムがない場合は、戦略名を引数から取得
     has_strategy_column = "Strategy" in data.columns
@@ -127,31 +122,69 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
         data["Strategy"] = data["Strategy"].fillna(default_strategy)
         data["Strategy"] = data["Strategy"].replace('', default_strategy)
     
+    # エントリーとエグジットのシグナルを確実に列に持っていることを確認
+    if "Entry_Signal" not in data.columns:
+        data["Entry_Signal"] = 0
+    if "Exit_Signal" not in data.columns:
+        data["Exit_Signal"] = 0
+    
+    # 積極的にエントリーとエグジットを対応付ける（より堅牢なFIFOベース）
+    entries_by_strategy = {}  # 戦略ごとにエントリーを追跡 {戦略名: [(idx, date), ...]}
+    
+    # まずエントリーとエグジットのインデックスを戦略別に集める
     for idx in range(len(data)):
         date = data.index[idx]
-        entry_signal = data["Entry_Signal"].iloc[idx] if "Entry_Signal" in data.columns else 0
-        exit_signal = data["Exit_Signal"].iloc[idx] if "Exit_Signal" in data.columns else 0
+        entry_signal = data["Entry_Signal"].iloc[idx]
+        exit_signal = data["Exit_Signal"].iloc[idx]
         
-        # エントリーシグナルがあり、ポジションを持っていない場合
-        if entry_signal == 1 and not in_position:
-            in_position = True
-            entry_idx = idx
-            entry_date = date
-            # Strategyカラムがあれば値を使用、なければデフォルト値
+        # エントリーシグナルを記録
+        if entry_signal == 1:
+            # 戦略名を取得
             current_strategy = data["Strategy"].iloc[idx] if has_strategy_column else default_strategy
             # 空文字列の場合もデフォルト値を使用
             strategy_name = current_strategy if current_strategy and current_strategy.strip() else default_strategy
+            
+            # この戦略用のエントリーリストを初期化（必要な場合）
+            if strategy_name not in entries_by_strategy:
+                entries_by_strategy[strategy_name] = []
+                
+            # エントリー情報を追加
+            entries_by_strategy[strategy_name].append((idx, date))
+            logger.debug(f"エントリー記録: 日付={date}, 戦略={strategy_name}, インデックス={idx}")
         
-        # イグジットシグナルがあり、ポジションを持っている場合
-        if exit_signal == -1 and in_position:
-            entry_exit_pairs.append((entry_idx, entry_date, idx, date, strategy_name))
-            in_position = False
+        # エグジットシグナルがある場合、対応する戦略の最も古いエントリーとペアリング
+        if exit_signal == -1:
+            # 戦略名を取得（同じ戦略のエントリーとペアにするため）
+            current_strategy = data["Strategy"].iloc[idx] if has_strategy_column else default_strategy
+            strategy_name = current_strategy if current_strategy and current_strategy.strip() else default_strategy
+            
+            # この戦略のエントリーがある場合
+            if strategy_name in entries_by_strategy and entries_by_strategy[strategy_name]:
+                # 最も古いエントリーを取得（FIFO方式）
+                entry_idx, entry_date = entries_by_strategy[strategy_name].pop(0)
+                # ペアを作成
+                entry_exit_pairs.append((entry_idx, entry_date, idx, date, strategy_name))
+                logger.debug(f"エグジット対応: エントリー日={entry_date}, イグジット日={date}, 戦略={strategy_name}")
+            else:
+                # 対応するエントリーがない場合（異常なケース）
+                logger.warning(f"対応するエントリーのないエグジットを検出: 日付={date}, 戦略={strategy_name}")
     
-    # 最後にポジションが残っている場合、最終日にクローズ
-    if in_position and entry_idx >= 0:
-        final_idx = len(data) - 1
-        final_date = data.index[final_idx]
-        entry_exit_pairs.append((entry_idx, entry_date, final_idx, final_date, strategy_name))
+    # すべての未決済ポジションを最終日で決済
+    total_open_positions = 0
+    final_idx = len(data) - 1
+    final_date = data.index[final_idx]
+    
+    for strategy_name, entries in entries_by_strategy.items():
+        if entries:
+            total_open_positions += len(entries)
+            logger.warning(f"戦略 {strategy_name} で未決済のポジションが {len(entries)} 件あります。最終日で強制決済します。")
+            
+            for entry_idx, entry_date in entries:
+                entry_exit_pairs.append((entry_idx, entry_date, final_idx, final_date, strategy_name))
+                logger.info(f"強制決済: 戦略={strategy_name}, エントリー日={entry_date}, 決済日={final_date}")
+    
+    if total_open_positions > 0:
+        logger.warning(f"合計 {total_open_positions} 件の未決済ポジションを最終日で強制決済しました。")
     
     logger.info(f"取引ペア数: {len(entry_exit_pairs)}")
     

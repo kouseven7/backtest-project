@@ -213,6 +213,7 @@ def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data:
     stock_data['Exit_Signal'] = 0
     stock_data['Strategy'] = ''
     stock_data['Position_Size'] = 1.0
+    stock_data['Position'] = 0  # ポジション状態を追跡する列を追加
     
     # 各日付でどの戦略がアクティブかを追跡
     active_positions = {}  # {日付: 戦略名}
@@ -224,12 +225,16 @@ def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data:
             
             # 戦略ごとに必要なパラメータを渡す
             if strategy_name == 'VWAPBreakoutStrategy':
-                strategy = strategy_class(
-                    data=stock_data.copy(),  # コピーを使用して相互影響を避ける
-                    params=params,
-                    price_column="Adj Close",
-                    index_data=index_data
-                )
+                try:
+                    strategy = strategy_class(
+                        data=stock_data.copy(),  # コピーを使用して相互影響を避ける
+                        index_data=index_data,  # index_dataを最初の引数に移動
+                        params=params,
+                        price_column="Adj Close"
+                    )
+                except Exception as e:
+                    logger.error(f"VWAPBreakoutStrategy初期化エラー: {e}")
+                    continue
             elif strategy_name == 'OpeningGapStrategy':
                 strategy = strategy_class(
                     data=stock_data.copy(),
@@ -246,7 +251,19 @@ def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data:
                 )
             
             # 戦略を実行してバックテスト結果を取得
-            result = strategy.backtest()
+            try:
+                result = strategy.backtest()
+                
+                # インデックスをstock_dataと同じ型に変換して整合性を確保
+                if not isinstance(result.index, type(stock_data.index)):
+                    logger.warning(f"インデックスタイプ不一致: result={type(result.index)}, stock_data={type(stock_data.index)}. 変換を試みます。")
+                    try:
+                        result.index = pd.DatetimeIndex(result.index)
+                    except Exception as e:
+                        logger.error(f"インデックス変換エラー: {e}")
+            except Exception as e:
+                logger.error(f"バックテストエラー: {e}")
+                result = pd.DataFrame(index=stock_data.index)  # 空のデータフレームを返す
             
             # エントリー/エグジット数を統計
             entry_signal_col = 'Entry_Signal'
@@ -257,42 +274,111 @@ def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data:
             
             if entry_signal_col in result.columns:
                 # Series型を安全に扱うための変換
-                entry_count = result[entry_signal_col].astype(int).sum() if not pd.api.types.is_integer_dtype(result[entry_signal_col]) else (result[entry_signal_col] == 1).sum()
+                try:
+                    if not pd.api.types.is_integer_dtype(result[entry_signal_col]):
+                        # 0以外の値を持つエントリーをカウント
+                        entry_signals = result[entry_signal_col].fillna(0)
+                        entry_count = (entry_signals == 1).sum()
+                    else:
+                        entry_count = (result[entry_signal_col] == 1).sum()
+                except Exception as e:
+                    logger.error(f"エントリーカウントエラー: {e}")
+                    entry_count = 0
+                    
             if exit_signal_col in result.columns:
-                exit_count = result[exit_signal_col].astype(int).eq(-1).sum() if not pd.api.types.is_integer_dtype(result[exit_signal_col]) else (result[exit_signal_col] == -1).sum()
+                # Series型を安全に扱うための変換
+                try:
+                    if not pd.api.types.is_integer_dtype(result[exit_signal_col]):
+                        # -1の値を持つエグジットをカウント
+                        exit_signals = result[exit_signal_col].fillna(0)
+                        exit_count = (exit_signals == -1).sum()
+                    else:
+                        exit_count = (result[exit_signal_col] == -1).sum()
+                except Exception as e:
+                    logger.error(f"エグジットカウントエラー: {e}")
+                    exit_count = 0
             
             # 優先度順にシグナルを統合（既存シグナルがない場合のみ追加）
-            for idx in result.index:
-                # エントリーシグナルの統合
+            # エントリーとエグジットのシグナル処理を単純化
+            # データフレームのチェック
+            if not isinstance(result, pd.DataFrame):
+                logger.warning(f"{strategy_name}: 結果がDataFrameではありません")
+                continue
+                
+            if result.empty:
+                logger.warning(f"{strategy_name}: 結果データフレームが空です")
+                continue
+                
+            # 安全でシンプルな方法でシグナルを取得
+            entry_dates = []
+            exit_dates = []
+            
+            # columnsチェック
+            if not isinstance(result, pd.DataFrame) or not hasattr(result, 'columns'):
+                logger.error(f"{strategy_name}: データフレームが不正です")
+                continue
+            
+            # エントリーシグナルを収集
+            try:
+                if entry_signal_col in result.columns:
+                    # エントリー日を取得
+                    entry_mask = result[entry_signal_col] == 1
+                    entry_dates = result[entry_mask].index.tolist()
+            except Exception as e:
+                logger.error(f"{strategy_name} エントリーシグナル抽出エラー: {e}")
+                entry_dates = []
+                
+            # エグジットシグナルを収集
+            try:
+                if exit_signal_col in result.columns:
+                    # エグジット日を取得
+                    exit_mask = result[exit_signal_col] == -1
+                    exit_dates = result[exit_mask].index.tolist()
+            except Exception as e:
+                logger.error(f"{strategy_name} エグジットシグナル抽出エラー: {e}")
+                exit_dates = []
+            
+            # シグナル統合
+            for date in entry_dates:
                 try:
-                    entry_signal = result.loc[idx, entry_signal_col]
-                    exit_signal = result.loc[idx, exit_signal_col]
-                    
-                    # Series型やNaN値を処理
-                    entry_signal = check_for_series_signal(entry_signal)
-                    exit_signal = check_for_series_signal(exit_signal)
+                    if date in stock_data.index:
+                        # リスク管理モジュールを使用してポジション制限をチェック
+                        # 短期取引を促進するため、リスク管理を緩和
+                        if risk_manager.check_position_size(strategy_name) and date not in active_positions:
+                            # エントリーシグナルを追加
+                            stock_data.loc[date, 'Entry_Signal'] = 1
+                            stock_data.loc[date, 'Strategy'] = strategy_name
+                            stock_data.loc[date, 'Position'] = 1  # ポジション状態を更新
+                            active_positions[date] = strategy_name
+                            # リスク管理モジュールのポジション情報も更新
+                            risk_manager.update_position(strategy_name, 1)
+                            logger.info(f"戦略統合: {strategy_name} エントリー: 日付={date}, 全ポジション数={risk_manager.get_total_positions()}")
                 except Exception as e:
-                    logger.warning(f"シグナル変換エラー - {strategy_name}: {e}")
-                    entry_signal = 0
-                    exit_signal = 0
-                
-                if (entry_signal == 1 and 
-                    stock_data.loc[idx, 'Entry_Signal'] == 0 and
-                    idx not in active_positions):
+                    logger.error(f"エントリー統合エラー ({strategy_name}, 日付={date}): {e}")
                     
-                    stock_data.loc[idx, 'Entry_Signal'] = 1
-                    stock_data.loc[idx, 'Strategy'] = strategy_name
-                    active_positions[idx] = strategy_name
+            for date in exit_dates:
+                try:
+                    if date in stock_data.index:
+                        # このシグナルに対応するエントリー日を探す（同じ戦略からのもの）
+                        matching_entries = [d for d, s in active_positions.items() 
+                                          if s == strategy_name and d < date]
+                        if matching_entries:
+                            # 最も古いエントリーに対してイグジット（FIFO方式）
+                            oldest_entry = sorted(matching_entries)[0]
+                            stock_data.loc[date, 'Exit_Signal'] = -1
+                            stock_data.loc[date, 'Position'] = 0  # ポジション状態を更新
+                            logger.info(f"戦略統合: {strategy_name} イグジット: 日付={date}, エントリー日={oldest_entry}")
+                            
+                            # ポジションを削除
+                            del active_positions[oldest_entry]
+                            
+                            # リスク管理モジュールのポジション情報も更新
+                            risk_manager.update_position(strategy_name, -1)
+                except Exception as e:
+                    logger.error(f"エグジット統合エラー ({strategy_name}, 日付={date}): {e}")
                 
-                # エグジットシグナルの統合（同じ戦略からのもののみ）
-                if (exit_signal == -1 and
-                    idx in active_positions and
-                    active_positions[idx] == strategy_name):
-                    
-                    stock_data.loc[idx, 'Exit_Signal'] = -1
-                    # 戦略名は既に設定されている
-                    # ポジションを削除
-                    del active_positions[idx]
+# このブロック全体を削除（重複しているため）
+# 代わりに、前のブロックに統合された修正が使用されます
             
             # 正確なカウントのために数値を変換
             # より安全な方法でカウント
@@ -328,6 +414,30 @@ def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data:
             logger.error(f"{strategy_name}: エラー - {stats['error']}")
     
     logger.info(f"統合後合計: エントリー {total_entries}, エグジット {total_exits}")
+    
+    # 未処理のオープンポジションを最終日でクローズ
+    # これにより、エントリーとエグジット回数の不均衡を修正
+    if active_positions:
+        logger.warning(f"バックテスト終了時に {len(active_positions)} 件の未決済ポジションがあります。最終日に強制決済します。")
+        last_date = stock_data.index[-1]
+        
+        # 未決済ポジションを戦略ごとに集計
+        positions_by_strategy = {}
+        for entry_date, strategy_name in active_positions.items():
+            if strategy_name not in positions_by_strategy:
+                positions_by_strategy[strategy_name] = []
+            positions_by_strategy[strategy_name].append(entry_date)
+        
+        # 戦略ごとの未決済ポジション数をログ出力
+        for strategy_name, entry_dates in positions_by_strategy.items():
+            logger.warning(f"戦略 {strategy_name} に {len(entry_dates)} 件の未決済ポジションがあります")
+        
+        # 未決済ポジションをすべて最終日で決済
+        for entry_idx, strategy_name in active_positions.items():
+            # 最終日に強制決済
+            stock_data.loc[last_date, 'Exit_Signal'] = -1
+            stock_data.loc[last_date, 'Position'] = 0  # ポジション状態を更新
+            logger.info(f"強制決済: 戦略={strategy_name}, エントリー日={entry_idx}, 決済日={last_date}")
     
     return stock_data
 
