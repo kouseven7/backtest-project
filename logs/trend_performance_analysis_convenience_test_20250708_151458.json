@@ -1,0 +1,260 @@
+{
+  "strategy_name": "convenience_test",
+  "calculation_timestamp": "2025-07-08T15:14:58.289425",
+  "risk_free_rate": 0.0,
+  "trading_days": 252,
+  "trend_metrics": {
+    "uptrend": {
+      "trend_type": "uptrend",
+      "period_count": 3,
+      "total_trading_days": 150,
+      "basic_metrics": {
+        "total_trades": 8,
+        "total_profit": 550.0,
+        "average_profit": 68.75,
+        "win_rate": 62.5,
+        "max_profit": 200.0,
+        "max_loss": -50.0,
+        "expectancy": 68.75
+      },
+      "risk_metrics": {
+        "sharpe_ratio": 11.858791244948678,
+        "sortino_ratio": 30.664917594094916,
+        "max_drawdown_percent": 30.0,
+        "max_drawdown_amount": 50.0,
+        "volatility": 1460.9414772673133,
+        "downside_volatility": 242.48711305964284,
+        "risk_return_ratio": 0.0
+      },
+      "profitability_metrics": {
+        "profit_factor": 6.5,
+        "average_win": 130.0,
+        "average_loss": -33.333333333333336,
+        "win_loss_ratio": 3.9,
+        "largest_win": 200.0,
+        "largest_loss": -50.0
+      },
+      "consistency_metrics": {
+        "max_consecutive_wins": 2.0,
+        "max_consecutive_losses": 1.0,
+        "winning_streak_avg": 1.2,
+        "losing_streak_avg": 1.0,
+        "consistency_score": 42.96875
+      }
+    },
+    "downtrend": {
+      "trend_type": "downtrend",
+      "period_count": 2,
+      "total_trading_days": 80,
+      "basic_metrics": {
+        "total_trades": 6,
+        "total_profit": -190.0,
+        "average_profit": -31.666666666666668,
+        "win_rate": 50.0,
+        "max_profit": 100.0,
+        "max_loss": -200.0,
+        "expectancy": -31.666666666666668
+      },
+      "risk_metrics": {
+        "sharpe_ratio": -4.426534806175337,
+        "sortino_ratio": -3.6662636786928093,
+        "max_drawdown_percent": -0.0,
+        "max_drawdown_amount": 200.0,
+        "volatility": 1802.7645436939347,
+        "downside_volatility": 1020.588065773846,
+        "risk_return_ratio": 0.0
+      },
+      "profitability_metrics": {
+        "profit_factor": 0.5,
+        "average_win": 63.333333333333336,
+        "average_loss": -126.66666666666667,
+        "win_loss_ratio": 0.5,
+        "largest_win": 100.0,
+        "largest_loss": -200.0
+      },
+      "consistency_metrics": {
+        "max_consecutive_wins": 1.0,
+        "max_consecutive_losses": 1.0,
+        "winning_streak_avg": 1.0,
+        "losing_streak_avg": 1.0,
+        "consistency_score": 0.0
+      }
+    },
+    "sideways": {
+      "trend_type": "sideways",
+      "period_count": 4,
+      "total_trading_days": 120,
+      "basic_metrics": {
+        "total_trades": 8,
+        "total_profit": 55.0,
+        "average_profit": 6.875,
+        "win_rate": 50.0,
+        "max_profit": 30.0,
+        "max_loss": -12.0,
+        "expectancy": 6.875
+      },
+      "risk_metrics": {
+        "sharpe_ratio": 6.293740580692884,
+        "sortino_ratio": 11.961367995523101,
+        "max_drawdown_percent": 50.0,
+        "max_drawdown_amount": 12.0,
+        "volatility": 275.27350035918823,
+        "downside_volatility": 47.40253157796533,
+        "risk_return_ratio": 0.0
+      },
+      "profitability_metrics": {
+        "profit_factor": 2.5714285714285716,
+        "average_win": 22.5,
+        "average_loss": -8.75,
+        "win_loss_ratio": 2.5714285714285716,
+        "largest_win": 30.0,
+        "largest_loss": -12.0
+      },
+      "consistency_metrics": {
+        "max_consecutive_wins": 1.0,
+        "max_consecutive_losses": 1.0,
+        "winning_streak_avg": 1.0,
+        "losing_streak_avg": 1.0,
+        "consistency_score": 3.4375
+      }
+    }
+  },
+  "comparative_analysis": {
+    "best_trend_by_metric": {
+      "total_profit": {
+        "trend": "uptrend",
+        "value": 550.0
+      },
+      "win_rate": {
+        "trend": "uptrend",
+        "value": 62.5
+      },
+      "sharpe_ratio": {
+        "trend": "uptrend",
+        "value": 11.858791244948678
+      },
+      "sortino_ratio": {
+        "trend": "uptrend",
+        "value": 30.664917594094916
+      },
+      "max_drawdown_percent": {
+        "trend": "downtrend",
+        "value": -0.0
+      },
+      "profit_factor": {
+        "trend": "uptrend",
+        "value": 6.5
+      },
+      "consistency_score": {
+        "trend": "uptrend",
+        "value": 42.96875
+      }
+    },
+    "worst_trend_by_metric": {
+      "total_profit": {
+        "trend": "downtrend",
+        "value": -190.0
+      },
+      "win_rate": {
+        "trend": "downtrend",
+        "value": 50.0
+      },
+      "sharpe_ratio": {
+        "trend": "downtrend",
+        "value": -4.426534806175337
+      },
+      "sortino_ratio": {
+        "trend": "downtrend",
+        "value": -3.6662636786928093
+      },
+      "max_drawdown_percent": {
+        "trend": "sideways",
+        "value": 50.0
+      },
+      "profit_factor": {
+        "trend": "downtrend",
+        "value": 0.5
+      },
+      "consistency_score": {
+        "trend": "downtrend",
+        "value": 0.0
+      }
+    },
+    "trend_ranking": {
+      "scores": {
+        "uptrend": 88.75,
+        "downtrend": 17.625,
+        "sideways": 64.98660714285714
+      },
+      "ranking_order": [
+        "uptrend",
+        "sideways",
+        "downtrend"
+      ],
+      "best_trend": "uptrend",
+      "worst_trend": "downtrend"
+    },
+    "performance_spread": {
+      "total_profit": {
+        "range": 740.0,
+        "coefficient_of_variation": 2.225037329186258
+      },
+      "win_rate": {
+        "range": 12.5,
+        "coefficient_of_variation": 0.10878565864408424
+      },
+      "sharpe_ratio": {
+        "range": 16.285326051124017,
+        "coefficient_of_variation": 1.4771784883960033
+      },
+      "sortino_ratio": {
+        "range": 34.331181272787724,
+        "coefficient_of_variation": 1.0806758509929357
+      },
+      "max_drawdown_percent": {
+        "range": 50.0,
+        "coefficient_of_variation": 0.7705517503711219
+      },
+      "profit_factor": {
+        "range": 6.0,
+        "coefficient_of_variation": 0.7799132303754568
+      },
+      "consistency_score": {
+        "range": 42.96875,
+        "coefficient_of_variation": 1.260348113123967
+      }
+    }
+  },
+  "overall_summary": {
+    "total_periods": 9,
+    "total_trading_days": 350,
+    "trend_distribution": {
+      "uptrend": {
+        "periods": 3,
+        "days": 150,
+        "percentage": 42.857142857142854
+      },
+      "downtrend": {
+        "periods": 2,
+        "days": 80,
+        "percentage": 22.857142857142858
+      },
+      "sideways": {
+        "periods": 4,
+        "days": 120,
+        "percentage": 34.285714285714285
+      }
+    },
+    "aggregated_metrics": {
+      "combined_total_profit": 415.0,
+      "combined_total_trades": 22,
+      "combined_average_profit": 138.33333333333334,
+      "profit_variance_across_trends": 94738.88888888888
+    },
+    "key_insights": [
+      "最も収益性が高いトレンド環境: uptrend (利益: 550.00)",
+      "最もリスク調整後リターンが優秀: uptrend (Sharpe: 11.859)",
+      "最も勝率が高いトレンド環境: uptrend (勝率: 62.5%)"
+    ]
+  }
+}

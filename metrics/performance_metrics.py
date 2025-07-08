@@ -232,6 +232,104 @@ def calculate_risk_return_ratio(total_profit: float, max_drawdown: float) -> flo
         return float('inf')
     return total_profit / max_drawdown
 
+def calculate_maximum_drawdown(returns: pd.Series) -> float:
+    """
+    最大ドローダウンを計算する。
+    
+    Parameters:
+        returns (pd.Series): 日次リターンまたは累積リターンのシリーズ
+        
+    Returns:
+        float: 最大ドローダウン（負の値）
+    """
+    if returns.empty or returns.isna().all():
+        return 0.0
+    
+    # 累積リターンがすでに計算されている場合はそのまま使用、そうでなければ計算
+    if len(returns) > 1 and all(returns.diff()[1:] == returns[1:] - returns[:-1]):
+        # 既に累積値の場合
+        cumulative = returns
+    else:
+        # 日次リターンの場合は累積に変換
+        cumulative = (1 + returns).cumprod() - 1
+    
+    # ピーク値の累積最大値を計算
+    peak = cumulative.cummax()
+    
+    # ドローダウンを計算
+    drawdown = (cumulative - peak) / (1 + peak)
+    
+    return drawdown.min()  # 最大ドローダウン（負の値）
+
+def calculate_win_rate(returns: pd.Series) -> float:
+    """
+    勝率を計算する。
+    
+    Parameters:
+        returns (pd.Series): 取引リターンのシリーズ
+        
+    Returns:
+        float: 勝率（0-1の範囲）
+    """
+    if returns.empty:
+        return 0.0
+    
+    winning_trades = (returns > 0).sum()
+    total_trades = len(returns[returns != 0])  # 0以外の取引のみ
+    
+    if total_trades == 0:
+        return 0.0
+    
+    return winning_trades / total_trades
+
+def calculate_profit_factor(returns: pd.Series) -> float:
+    """
+    プロフィットファクターを計算する。
+    
+    Parameters:
+        returns (pd.Series): 取引リターンのシリーズ
+        
+    Returns:
+        float: プロフィットファクター
+    """
+    if returns.empty:
+        return 0.0
+    
+    gross_profit = returns[returns > 0].sum()
+    gross_loss = abs(returns[returns < 0].sum())
+    
+    if gross_loss == 0:
+        return float('inf') if gross_profit > 0 else 0.0
+    
+    return gross_profit / gross_loss
+
+def calculate_calmar_ratio(returns: pd.Series, trading_days: int = 252) -> float:
+    """
+    カルマーレシオを計算する。
+    
+    Parameters:
+        returns (pd.Series): 日次リターンのシリーズ
+        trading_days (int): 年間の取引日数
+        
+    Returns:
+        float: カルマーレシオ
+    """
+    if returns.empty or returns.isna().all():
+        return 0.0
+    
+    # 年間リターンを計算
+    total_return = (1 + returns).prod() - 1
+    years = len(returns) / trading_days
+    annualized_return = (1 + total_return) ** (1 / years) - 1 if years > 0 else 0.0
+    
+    # 最大ドローダウンを計算
+    max_dd = abs(calculate_maximum_drawdown(returns))
+    
+    if max_dd == 0:
+        return float('inf') if annualized_return > 0 else 0.0
+    
+    return annualized_return / max_dd
+
 if __name__ == "__main__":
     # テスト用のダミーデータ
     trade_data = pd.DataFrame({

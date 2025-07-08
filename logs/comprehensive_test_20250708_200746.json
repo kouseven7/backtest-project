@@ -1,0 +1,371 @@
+{
+  "matrix_data": {
+    "SimpleTestStrategy": {
+      "uptrend": {
+        "total_return": 0.0,
+        "avg_return_per_trade": 0.0,
+        "win_rate": 0.0,
+        "total_trades": 0,
+        "total_days": 0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "calmar_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "profit_factor": 0.0,
+        "trend_adaptation_score": 0.35,
+        "risk_adjusted_return": 0.0,
+        "periods_tested": 0,
+        "information_ratio": 0.0,
+        "risk_efficiency_score": 0.0
+      },
+      "downtrend": {
+        "total_return": 0.0,
+        "avg_return_per_trade": 0.0,
+        "win_rate": 0.0,
+        "total_trades": 0,
+        "total_days": 0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "calmar_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "profit_factor": 0.0,
+        "trend_adaptation_score": 0.3,
+        "risk_adjusted_return": 0.0,
+        "periods_tested": 0,
+        "information_ratio": 0.0,
+        "risk_efficiency_score": 0.0
+      },
+      "range-bound": {
+        "total_return": 0.0,
+        "avg_return_per_trade": 0.0,
+        "win_rate": 0.0,
+        "total_trades": 0,
+        "total_days": 0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "calmar_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "profit_factor": 0.0,
+        "trend_adaptation_score": 0.0,
+        "risk_adjusted_return": 0.0,
+        "periods_tested": 0,
+        "error": "対象期間なし"
+      }
+    },
+    "MomentumTestStrategy": {
+      "uptrend": {
+        "total_return": 0.0,
+        "avg_return_per_trade": 0.0,
+        "win_rate": 0.0,
+        "total_trades": 0,
+        "total_days": 0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "calmar_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "profit_factor": 0.0,
+        "trend_adaptation_score": 0.35,
+        "risk_adjusted_return": 0.0,
+        "periods_tested": 0,
+        "information_ratio": 0.0,
+        "risk_efficiency_score": 0.0
+      },
+      "downtrend": {
+        "total_return": 0.0,
+        "avg_return_per_trade": 0.0,
+        "win_rate": 0.0,
+        "total_trades": 0,
+        "total_days": 0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "calmar_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "profit_factor": 0.0,
+        "trend_adaptation_score": 0.3,
+        "risk_adjusted_return": 0.0,
+        "periods_tested": 0,
+        "information_ratio": 0.0,
+        "risk_efficiency_score": 0.0
+      },
+      "range-bound": {
+        "total_return": 0.0,
+        "avg_return_per_trade": 0.0,
+        "win_rate": 0.0,
+        "total_trades": 0,
+        "total_days": 0,
+        "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
+        "calmar_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "profit_factor": 0.0,
+        "trend_adaptation_score": 0.0,
+        "risk_adjusted_return": 0.0,
+        "periods_tested": 0,
+        "error": "対象期間なし"
+      }
+    }
+  },
+  "detailed_results": {
+    "SimpleTestStrategy": {
+      "uptrend": {
+        "strategy_name": "SimpleTestStrategy",
+        "trend_type": "uptrend",
+        "test_timestamp": "2025-07-08T20:07:46.141955",
+        "parameters": {
+          "strategy_params": {
+            "name": "Simple_Random"
+          },
+          "min_period_length": 5,
+          "min_confidence": 0.5
+        },
+        "summary": {
+          "periods_found": 1,
+          "periods_tested": 0,
+          "total_days": 0,
+          "total_entries": 0,
+          "total_exits": 0,
+          "total_trades": 0,
+          "average_return_pct": 0.0,
+          "win_rate": 0.0,
+          "success_rate": 0.0
+        },
+        "period_results": [
+          {
+            "period_index": 0,
+            "start_date": "2023-02-14T00:00:00",
+            "end_date": "2023-09-13T00:00:00",
+            "error": "'Adj Close'"
+          }
+        ]
+      },
+      "downtrend": {
+        "strategy_name": "SimpleTestStrategy",
+        "trend_type": "downtrend",
+        "test_timestamp": "2025-07-08T20:07:46.147797",
+        "parameters": {
+          "strategy_params": {
+            "name": "Simple_Random"
+          },
+          "min_period_length": 5,
+          "min_confidence": 0.5
+        },
+        "summary": {
+          "periods_found": 2,
+          "periods_tested": 0,
+          "total_days": 0,
+          "total_entries": 0,
+          "total_exits": 0,
+          "total_trades": 0,
+          "average_return_pct": 0.0,
+          "win_rate": 0.0,
+          "success_rate": 0.0
+        },
+        "period_results": [
+          {
+            "period_index": 0,
+            "start_date": "2023-01-02T00:00:00",
+            "end_date": "2023-02-13T00:00:00",
+            "error": "'Adj Close'"
+          },
+          {
+            "period_index": 1,
+            "start_date": "2023-09-14T00:00:00",
+            "end_date": "2023-12-29T00:00:00",
+            "error": "'Adj Close'"
+          }
+        ]
+      },
+      "range-bound": {
+        "strategy_name": "SimpleTestStrategy",
+        "trend_type": "range-bound",
+        "error": "対象期間なし",
+        "periods_tested": 0,
+        "total_days": 0
+      }
+    },
+    "MomentumTestStrategy": {
+      "uptrend": {
+        "strategy_name": "MomentumTestStrategy",
+        "trend_type": "uptrend",
+        "test_timestamp": "2025-07-08T20:07:46.171464",
+        "parameters": {
+          "strategy_params": {
+            "ma_window": 20,
+            "entry_threshold": 0.015
+          },
+          "min_period_length": 5,
+          "min_confidence": 0.5
+        },
+        "summary": {
+          "periods_found": 1,
+          "periods_tested": 0,
+          "total_days": 0,
+          "total_entries": 0,
+          "total_exits": 0,
+          "total_trades": 0,
+          "average_return_pct": 0.0,
+          "win_rate": 0.0,
+          "success_rate": 0.0
+        },
+        "period_results": [
+          {
+            "period_index": 0,
+            "start_date": "2023-02-14T00:00:00",
+            "end_date": "2023-09-13T00:00:00",
+            "error": "'Adj Close'"
+          }
+        ]
+      },
+      "downtrend": {
+        "strategy_name": "MomentumTestStrategy",
+        "trend_type": "downtrend",
+        "test_timestamp": "2025-07-08T20:07:46.178658",
+        "parameters": {
+          "strategy_params": {
+            "ma_window": 20,
+            "entry_threshold": 0.015
+          },
+          "min_period_length": 5,
+          "min_confidence": 0.5
+        },
+        "summary": {
+          "periods_found": 2,
+          "periods_tested": 1,
+          "total_days": 31,
+          "total_entries": 0,
+          "total_exits": 0,
+          "total_trades": 0,
+          "average_return_pct": 0.0,
+          "win_rate": 0.0,
+          "success_rate": 0.5
+        },
+        "period_results": [
+          {
+            "period_index": 0,
+            "start_date": "2023-01-02T00:00:00",
+            "end_date": "2023-02-13T00:00:00",
+            "days_count": 31,
+            "entry_signals": 0,
+            "exit_signals": 0,
+            "trades": [],
+            "strategy_params": {
+              "ma_window": 20,
+              "entry_threshold": 0.015
+            }
+          },
+          {
+            "period_index": 1,
+            "start_date": "2023-09-14T00:00:00",
+            "end_date": "2023-12-29T00:00:00",
+            "error": "'Adj Close'"
+          }
+        ]
+      },
+      "range-bound": {
+        "strategy_name": "MomentumTestStrategy",
+        "trend_type": "range-bound",
+        "error": "対象期間なし",
+        "periods_tested": 0,
+        "total_days": 0
+      }
+    }
+  },
+  "strategy_rankings": {
+    "uptrend": [
+      {
+        "strategy": "SimpleTestStrategy",
+        "composite_score": 0.0875,
+        "total_return": 0.0,
+        "win_rate": 0.0,
+        "sharpe_ratio": 0.0,
+        "adaptation_score": 0.35,
+        "total_trades": 0,
+        "rank": 1
+      },
+      {
+        "strategy": "MomentumTestStrategy",
+        "composite_score": 0.0875,
+        "total_return": 0.0,
+        "win_rate": 0.0,
+        "sharpe_ratio": 0.0,
+        "adaptation_score": 0.35,
+        "total_trades": 0,
+        "rank": 2
+      }
+    ],
+    "downtrend": [
+      {
+        "strategy": "SimpleTestStrategy",
+        "composite_score": 0.075,
+        "total_return": 0.0,
+        "win_rate": 0.0,
+        "sharpe_ratio": 0.0,
+        "adaptation_score": 0.3,
+        "total_trades": 0,
+        "rank": 1
+      },
+      {
+        "strategy": "MomentumTestStrategy",
+        "composite_score": 0.075,
+        "total_return": 0.0,
+        "win_rate": 0.0,
+        "sharpe_ratio": 0.0,
+        "adaptation_score": 0.3,
+        "total_trades": 0,
+        "rank": 2
+      }
+    ],
+    "range-bound": [],
+    "overall": [
+      {
+        "strategy": "SimpleTestStrategy",
+        "overall_score": 0.32499999999999996,
+        "avg_return": 0.0,
+        "avg_winrate": 0.0,
+        "avg_sharpe": 0.0,
+        "adaptation_stability": 0.975,
+        "best_trend": "uptrend",
+        "rank": 1
+      },
+      {
+        "strategy": "MomentumTestStrategy",
+        "overall_score": 0.32499999999999996,
+        "avg_return": 0.0,
+        "avg_winrate": 0.0,
+        "avg_sharpe": 0.0,
+        "adaptation_stability": 0.975,
+        "best_trend": "uptrend",
+        "rank": 2
+      }
+    ]
+  },
+  "adaptation_metrics": {
+    "SimpleTestStrategy": {
+      "uptrend_adaptation": 0.35,
+      "downtrend_adaptation": 0.3,
+      "range-bound_adaptation": 0.0,
+      "overall_adaptation": 0.32499999999999996,
+      "adaptation_stability": 0.975,
+      "best_trend": "uptrend"
+    },
+    "MomentumTestStrategy": {
+      "uptrend_adaptation": 0.35,
+      "downtrend_adaptation": 0.3,
+      "range-bound_adaptation": 0.0,
+      "overall_adaptation": 0.32499999999999996,
+      "adaptation_stability": 0.975,
+      "best_trend": "uptrend"
+    }
+  },
+  "generation_timestamp": "2025-07-08T20:07:46.181252",
+  "parameters": {
+    "min_period_length": 5,
+    "min_confidence": 0.5,
+    "strategies_count": 3,
+    "trend_types": [
+      "uptrend",
+      "downtrend",
+      "range-bound"
+    ]
+  }
+}
