@@ -1,0 +1,7 @@
+{
+  "labeling_method": "advanced",
+  "strategy_name": "default",
+  "window_size": 10,
+  "confidence_threshold": 0.6,
+  "labeling_timestamp": "2025-07-08T13:59:50.306887"
+}
