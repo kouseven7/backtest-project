@@ -1,6 +1,6 @@
 {
   "created_at": "2025-07-08T23:02:08.574619",
-  "last_updated": "2025-07-09T00:40:38.738386",
+  "last_updated": "2025-07-09T22:18:35.312497",
   "version": "1.0.0",
   "strategies": {
     "vwap_bounce_enhanced": {
@@ -50,6 +50,24 @@
       "version": "v20250709_004038",
       "hash_value": "b8d639a69ddbfcd1d17a4971991e844d",
       "author": "compatibility_test"
+    },
+    "vwap_bounce_strategy": {
+      "last_updated": "2025-07-09T22:18:35.139858",
+      "version": "v20250709_221835",
+      "hash_value": "829282d0c4fef261b3d48dc486747b84",
+      "author": "system"
+    },
+    "golden_cross_strategy": {
+      "last_updated": "2025-07-09T22:18:35.215739",
+      "version": "v20250709_221835",
+      "hash_value": "829282d0c4fef261b3d48dc486747b84",
+      "author": "system"
+    },
+    "mean_reversion_strategy": {
+      "last_updated": "2025-07-09T22:18:35.294001",
+      "version": "v20250709_221835",
+      "hash_value": "829282d0c4fef261b3d48dc486747b84",
+      "author": "system"
     }
   },
   "data_sources": {

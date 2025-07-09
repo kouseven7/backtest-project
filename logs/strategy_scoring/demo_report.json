@@ -1,0 +1,40 @@
+{
+  "vwap_bounce_strategy": {
+    "AAPL": {
+      "strategy_name": "vwap_bounce_strategy",
+      "ticker": "AAPL",
+      "total_score": 0.78,
+      "component_scores": {
+        "performance": 0.82,
+        "stability": 0.75,
+        "risk_adjusted": 0.7,
+        "reliability": 0.85
+      },
+      "trend_fitness": 0.8,
+      "confidence": 0.85,
+      "metadata": {
+        "demo": true
+      },
+      "calculated_at": "2025-07-09T22:06:26.855578"
+    }
+  },
+  "golden_cross_strategy": {
+    "AAPL": {
+      "strategy_name": "golden_cross_strategy",
+      "ticker": "AAPL",
+      "total_score": 0.68,
+      "component_scores": {
+        "performance": 0.65,
+        "stability": 0.6,
+        "risk_adjusted": 0.72,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.85,
+      "confidence": 0.8,
+      "metadata": {
+        "demo": true
+      },
+      "calculated_at": "2025-07-09T22:06:26.855582"
+    }
+  }
+}

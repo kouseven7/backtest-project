@@ -624,10 +624,109 @@ class StrategyCharacteristicsDataLoader:
             
         except Exception as e:
             logger.error(f"Error during cache cleanup: {e}")
+    
+    def load_strategy_data(self, strategy_name: str, tickers: Optional[List[str]] = None, 
+                          include_metadata: bool = True) -> Optional[Dict[str, Any]]:
+        """
+        スコアリングモデル用の戦略データ読み込み
+        
+        Args:
+            strategy_name: 戦略名
+            tickers: ティッカーリスト（指定時はそのティッカーのデータのみ）
+            include_metadata: メタデータを含めるか
+            
+        Returns:
+            Dict: 戦略データ、存在しない場合はNone
+        """
+        try:
+            # 永続化レイヤーからデータを取得
+            strategy_data = self.persistence_manager.load_strategy_data(strategy_name)
+            
+            if not strategy_data:
+                logger.warning(f"No strategy data found for: {strategy_name}")
+                return None
+            
+            # ティッカーフィルタリング
+            if tickers:
+                filtered_data = {}
+                for ticker in tickers:
+                    if ticker in strategy_data:
+                        filtered_data[ticker] = strategy_data[ticker]
+                strategy_data = filtered_data
+            
+            # メタデータの追加
+            if include_metadata:
+                for ticker, ticker_data in strategy_data.items():
+                    if isinstance(ticker_data, dict):
+                        ticker_data["_metadata"] = {
+                            "strategy_name": strategy_name,
+                            "ticker": ticker,
+                            "loaded_at": datetime.now().isoformat(),
+                            "loader_version": "1.0"
+                        }
+            
+            return strategy_data
+            
+        except Exception as e:
+            logger.error(f"Error loading strategy data for {strategy_name}: {e}")
+            return None
+    
+    def get_available_strategies(self) -> List[str]:
+        """
+        利用可能な戦略リストを取得
+        
+        Returns:
+            List[str]: 戦略名のリスト
+        """
+        try:
+            # インデックスから戦略リストを取得
+            if self.strategy_index:
+                return list(self.strategy_index.keys())
+            
+            # インデックスが空の場合、永続化レイヤーから直接取得
+            available_strategies = []
+            try:
+                # 永続化ディレクトリを走査
+                persistence_dir = self.persistence_manager.base_path
+                if os.path.exists(persistence_dir):
+                    for strategy_file in os.listdir(persistence_dir):
+                        if strategy_file.endswith('.json'):
+                            strategy_name = strategy_file.replace('.json', '')
+                            available_strategies.append(strategy_name)
+            except Exception as e:
+                logger.warning(f"Error scanning persistence directory: {e}")
+            
+            return available_strategies
+            
+        except Exception as e:
+            logger.error(f"Error getting available strategies: {e}")
+            return []
+    
+    def get_strategy_tickers(self, strategy_name: str) -> List[str]:
+        """
+        指定戦略の利用可能ティッカーリストを取得
+        
+        Args:
+            strategy_name: 戦略名
+            
+        Returns:
+            List[str]: ティッカーリスト
+        """
+        try:
+            strategy_data = self.load_strategy_data(strategy_name, include_metadata=False)
+            if strategy_data:
+                return list(strategy_data.keys())
+            return []
+            
+        except Exception as e:
+            logger.error(f"Error getting tickers for strategy {strategy_name}: {e}")
+            return []
+
+    # ...existing code...
 
 
 # ユーティリティ関数
-def create_data_loader(base_path: str = None, cache_size: int = 100) -> StrategyCharacteristicsDataLoader:
+def create_data_loader(base_path: Optional[str] = None, cache_size: int = 100) -> StrategyCharacteristicsDataLoader:
     """データローダーのファクトリ関数"""
     return StrategyCharacteristicsDataLoader(base_path, cache_size)
 

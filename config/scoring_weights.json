@@ -1,0 +1,7 @@
+{
+  "performance": 0.35,
+  "stability": 0.25,
+  "risk_adjusted": 0.20,
+  "trend_adaptation": 0.15,
+  "reliability": 0.05
+}
