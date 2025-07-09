@@ -1,0 +1,18 @@
+{
+  "strategy_name": "vwap_bounce_enhanced",
+  "last_updated": "2025-07-08T23:02:08.638922",
+  "author": "integrator",
+  "version": "v20250708_230208",
+  "hash_value": "ef217b3f5f54aaa372b89deaa58f0b94",
+  "data": {
+    "integration_metadata": {
+      "strategy_name": "vwap_bounce_enhanced",
+      "ticker": "AAPL",
+      "integration_timestamp": "2025-07-08T23:02:08.629565",
+      "data_sources": {
+        "characteristics_available": false,
+        "parameters_available": true
+      }
+    }
+  }
+}

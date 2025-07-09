@@ -1,0 +1,34 @@
+{
+  "changes": [
+    {
+      "timestamp": "2025-07-08T23:02:08.657218",
+      "change_type": "create",
+      "field_name": "full_data",
+      "old_value": null,
+      "new_value": {
+        "strategy_name": "mean_reversion_rsi",
+        "last_updated": "2025-07-08T23:02:08.656734",
+        "author": "strategy_team",
+        "version": "v20250708_230208",
+        "hash_value": "e467a2141efdb97dff64d47f827fb702",
+        "data": {
+          "strategy_info": {
+            "name": "mean_reversion_rsi",
+            "type": "mean_reversion"
+          },
+          "parameters": {
+            "rsi_period": 14,
+            "oversold": 30,
+            "overbought": 70
+          },
+          "performance_metrics": {
+            "sharpe_ratio": 1.1,
+            "total_return": 0.12
+          }
+        }
+      },
+      "reason": "Initial implementation of mean_reversion_rsi",
+      "author": "strategy_team"
+    }
+  ]
+}

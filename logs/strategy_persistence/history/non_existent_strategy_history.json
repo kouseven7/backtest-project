@@ -1,0 +1,30 @@
+{
+  "changes": [
+    {
+      "timestamp": "2025-07-08T23:02:08.724186",
+      "change_type": "create",
+      "field_name": "full_data",
+      "old_value": null,
+      "new_value": {
+        "strategy_name": "non_existent_strategy",
+        "last_updated": "2025-07-08T23:02:08.723696",
+        "author": "integrator",
+        "version": "v20250708_230208",
+        "hash_value": "8edccdd53e69680b11e0900d656900fa",
+        "data": {
+          "integration_metadata": {
+            "strategy_name": "non_existent_strategy",
+            "ticker": null,
+            "integration_timestamp": "2025-07-08T23:02:08.723643",
+            "data_sources": {
+              "characteristics_available": false,
+              "parameters_available": true
+            }
+          }
+        }
+      },
+      "reason": "Integrated data from characteristics and parameters",
+      "author": "integrator"
+    }
+  ]
+}

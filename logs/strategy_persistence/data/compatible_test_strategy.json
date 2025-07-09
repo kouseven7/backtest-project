@@ -1,0 +1,68 @@
+{
+  "strategy_name": "compatible_test_strategy",
+  "last_updated": "2025-07-09T00:40:38.736899",
+  "author": "compatibility_test",
+  "version": "v20250709_004038",
+  "hash_value": "b8d639a69ddbfcd1d17a4971991e844d",
+  "data": {
+    "strategy_name": "compatible_test_strategy",
+    "load_timestamp": "2025-07-09T00:40:38.735564",
+    "load_options": {
+      "include_history": true,
+      "include_parameters": true
+    },
+    "characteristics": {
+      "trend_suitability": {
+        "uptrend": {
+          "score": 0.85,
+          "confidence": 0.9
+        },
+        "downtrend": {
+          "score": 0.65,
+          "confidence": 0.8
+        },
+        "sideways": {
+          "score": 0.75,
+          "confidence": 0.85
+        }
+      },
+      "volatility_suitability": {
+        "high": {
+          "score": 0.9,
+          "confidence": 0.95
+        },
+        "medium": {
+          "score": 0.8,
+          "confidence": 0.9
+        },
+        "low": {
+          "score": 0.6,
+          "confidence": 0.8
+        }
+      }
+    },
+    "parameters": {
+      "current_params": {
+        "lookback_period": 25,
+        "entry_threshold": 0.025,
+        "exit_threshold": 0.015,
+        "stop_loss": 0.05,
+        "take_profit": 0.1
+      },
+      "optimization_results": [
+        {
+          "timestamp": "2025-07-09T00:40:38.735573",
+          "params": {
+            "lookback_period": 25,
+            "entry_threshold": 0.025
+          },
+          "metrics": {
+            "sharpe_ratio": 1.8,
+            "total_return": 0.22,
+            "max_drawdown": 0.08
+          }
+        }
+      ]
+    }
+  }
+}

@@ -66,6 +66,7 @@ class OptimizedParameterManager:
         
         return filepath
     
+
     def _normalize_strategy_name_for_file(self, name):
         # 例: vwap_bounce, VWAPBounceStrategy, vwapbouncestrategy → vwapbouncestrategy
         return name.replace("_", "").replace("-", "").lower().replace("strategy", "")

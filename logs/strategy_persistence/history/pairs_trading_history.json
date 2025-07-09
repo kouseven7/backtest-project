@@ -1,0 +1,34 @@
+{
+  "changes": [
+    {
+      "timestamp": "2025-07-08T23:02:08.677208",
+      "change_type": "create",
+      "field_name": "full_data",
+      "old_value": null,
+      "new_value": {
+        "strategy_name": "pairs_trading",
+        "last_updated": "2025-07-08T23:02:08.676637",
+        "author": "strategy_team",
+        "version": "v20250708_230208",
+        "hash_value": "ff66710fbb0d197f3142b58ebb1a1de5",
+        "data": {
+          "strategy_info": {
+            "name": "pairs_trading",
+            "type": "statistical_arbitrage"
+          },
+          "parameters": {
+            "lookback_window": 60,
+            "entry_zscore": 2.0,
+            "exit_zscore": 0.5
+          },
+          "performance_metrics": {
+            "sharpe_ratio": 1.45,
+            "total_return": 0.08
+          }
+        }
+      },
+      "reason": "Initial implementation of pairs_trading",
+      "author": "strategy_team"
+    }
+  ]
+}
