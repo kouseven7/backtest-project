@@ -1,0 +1,106 @@
+{
+  "strategy_name": "GCStrategy",
+  "description": "ゴールデンクロス戦略（移動平均線の上抜け）",
+  "created_at": "2025-07-10T21:22:00",
+  "last_updated": "2025-07-10T21:22:00",
+  "version": "1.0",
+  "trend_adaptability": {
+    "uptrend": {
+      "performance_score": 9.2,
+      "confidence_level": "high",
+      "risk_profile": "medium",
+      "optimal_conditions": [
+        "strong_uptrend",
+        "ma_crossover_confirmation",
+        "volume_increase"
+      ],
+      "expected_return": 0.12,
+      "volatility": 0.13,
+      "max_drawdown": 0.09
+    },
+    "downtrend": {
+      "performance_score": 2.8,
+      "confidence_level": "low",
+      "risk_profile": "high",
+      "optimal_conditions": [
+        "market_reversal_signals",
+        "oversold_conditions"
+      ],
+      "expected_return": -0.05,
+      "volatility": 0.28,
+      "max_drawdown": 0.35
+    },
+    "sideways": {
+      "performance_score": 5.5,
+      "confidence_level": "medium",
+      "risk_profile": "medium",
+      "optimal_conditions": [
+        "trending_within_range",
+        "clear_ma_signals"
+      ],
+      "expected_return": 0.04,
+      "volatility": 0.11,
+      "max_drawdown": 0.07
+    }
+  },
+  "volatility_adaptability": {
+    "low_volatility": {
+      "performance_score": 7.2,
+      "confidence_level": "high",
+      "recommended": true,
+      "notes": "安定したトレンドフォロー"
+    },
+    "medium_volatility": {
+      "performance_score": 8.5,
+      "confidence_level": "high",
+      "recommended": true,
+      "notes": "最適な環境"
+    },
+    "high_volatility": {
+      "performance_score": 4.8,
+      "confidence_level": "medium",
+      "recommended": false,
+      "notes": "偽シグナルリスク増加"
+    }
+  },
+  "parameter_optimization_history": [
+    {
+      "date": "2025-07-10",
+      "ticker": "8306.T",
+      "parameters": {
+        "trend_up_score": 5,
+        "short_ma_period": 25,
+        "long_ma_period": 75,
+        "volume_confirmation": true
+      },
+      "performance": {
+        "sharpe_ratio": 1.62,
+        "total_return": 0.15,
+        "max_drawdown": 0.09
+      },
+      "market_conditions": "medium_volatility_uptrend"
+    }
+  ],
+  "risk_profile": {
+    "overall_risk_level": "medium",
+    "max_position_size": 0.20,
+    "recommended_stop_loss": 0.08,
+    "correlation_with_market": 0.85,
+    "tail_risk": "low"
+  },
+  "dependencies": {
+    "required_indicators": ["moving_averages", "volume", "trend_indicators"],
+    "data_requirements": ["daily_ohlcv", "extended_history"],
+    "minimum_backtest_period": "2_years",
+    "recommended_instruments": ["stocks", "indices", "etfs"]
+  },
+  "performance_metrics": {
+    "historical_sharpe": 1.58,
+    "historical_sortino": 1.89,
+    "historical_calmar": 1.75,
+    "win_rate": 0.65,
+    "profit_factor": 2.12,
+    "avg_trade_duration": 28,
+    "max_consecutive_losses": 3
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "original_weights": {
+    "performance": 0.35,
+    "stability": 0.25,
+    "risk_adjusted": 0.2,
+    "trend_adaptation": 0.15,
+    "reliability": 0.05
+  },
+  "optimized_weights": {
+    "performance": 0.3052324257479707,
+    "stability": 0.3398549584959191,
+    "risk_adjusted": 0.19328327046364568,
+    "trend_adaptation": 0.10276587271204819,
+    "reliability": 0.05886347258041619
+  },
+  "improvement_score": 0.03948737243053391,
+  "optimization_method": "balanced_approach",
+  "validation_metrics": {
+    "avg_weight_change": 0.03948737243053414,
+    "max_weight_change": 0.08985495849591912,
+    "weight_variance_original": 0.009999999999999998,
+    "weight_variance_optimized": 0.012010476436374103,
+    "weight_sum_original": 1.0,
+    "weight_sum_optimized": 0.9999999999999998
+  },
+  "timestamp": "2025-07-10T21:16:59.426571",
+  "success": true,
+  "error_message": null
+}

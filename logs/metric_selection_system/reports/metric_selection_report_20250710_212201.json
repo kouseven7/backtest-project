@@ -1,0 +1,101 @@
+{
+  "summary": {
+    "recommended_metrics": [
+      {
+        "feature": "expectancy",
+        "importance_score": 0.9960251607138525,
+        "confidence": "medium",
+        "rank": 1,
+        "method_count": 1
+      },
+      {
+        "feature": "win_rate",
+        "importance_score": 0.9889737723060275,
+        "confidence": "medium",
+        "rank": 2,
+        "method_count": 1
+      },
+      {
+        "feature": "consistency_ratio",
+        "importance_score": 0.9662548481267945,
+        "confidence": "medium",
+        "rank": 3,
+        "method_count": 1
+      },
+      {
+        "feature": "max_drawdown",
+        "importance_score": 0.9622437825570241,
+        "confidence": "medium",
+        "rank": 4,
+        "method_count": 1
+      },
+      {
+        "feature": "profit_factor",
+        "importance_score": 0.4842130118056716,
+        "confidence": "medium",
+        "rank": 5,
+        "method_count": 1
+      },
+      {
+        "feature": "avg_holding_period",
+        "importance_score": 0.42953423013019804,
+        "confidence": "medium",
+        "rank": 6,
+        "method_count": 1
+      }
+    ],
+    "analysis_summary": {
+      "total_metrics_analyzed": 17,
+      "data_samples": 9,
+      "strategies_analyzed": 3,
+      "analysis_methods": [
+        "correlation",
+        "regression",
+        "feature_selection"
+      ],
+      "recommended_count": 6
+    },
+    "performance_impact": {
+      "weight_improvement_score": 0.031906328761514,
+      "avg_weight_change": 0.03190632876151409,
+      "max_weight_change": 0.06670693485667495,
+      "high_confidence_ratio": 0.0,
+      "avg_importance_score": 0.3295695656862069,
+      "data_completeness": 0.18,
+      "strategy_diversity": 0.6
+    },
+    "confidence_level": "low",
+    "timestamp": "2025-07-10T21:22:01.454935",
+    "success": true,
+    "error_messages": []
+  },
+  "weight_optimization": {
+    "original_weights": {
+      "performance": 0.35,
+      "stability": 0.25,
+      "risk_adjusted": 0.2,
+      "trend_adaptation": 0.15,
+      "reliability": 0.05
+    },
+    "optimized_weights": {
+      "performance": 0.3192495185963782,
+      "stability": 0.31670693485667495,
+      "risk_adjusted": 0.19109420928712492,
+      "trend_adaptation": 0.10989045021271172,
+      "reliability": 0.06305888704711034
+    },
+    "improvement_score": 0.031906328761514,
+    "optimization_method": "importance_based",
+    "validation_metrics": {
+      "avg_weight_change": 0.03190632876151409,
+      "max_weight_change": 0.06670693485667495,
+      "weight_variance_original": 0.009999999999999998,
+      "weight_variance_optimized": 0.010958573763394704,
+      "weight_sum_original": 1.0,
+      "weight_sum_optimized": 1.0
+    },
+    "timestamp": "2025-07-10T21:22:01.453416",
+    "success": true,
+    "error_message": null
+  }
+}
