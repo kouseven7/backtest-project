@@ -1,0 +1,15 @@
+{
+  "report_info": {
+    "generated_at": "2025-07-13T08:17:25.980625",
+    "strategies_analyzed": 3,
+    "integration_mode": "metric_selection"
+  },
+  "overall_performance": {
+    "total_strategies": 3,
+    "successful_strategies": 3,
+    "average_success_rate": 1.0,
+    "total_metrics_processed": 18
+  },
+  "quality_analysis": {
+    "average_confidence": 0.8583333333333334,
+    "total_outliers": 

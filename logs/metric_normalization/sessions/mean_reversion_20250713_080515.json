@@ -1,0 +1,18 @@
+{
+  "session_id": "mean_reversion_20250713_080515",
+  "timestamp": "2025-07-13T08:05:15.130035",
+  "strategy_name": "mean_reversion",
+  "metrics_processed": [
+    "sharpe_ratio",
+    "profit_factor",
+    "win_rate"
+  ],
+  "results": {
+    "sharpe_ratio": {
+      "method": "z_score",
+      "success": true,
+      "confidence_score": 0.9,
+      "data_shape": [
+        50
+      ],
+      "outliers_detected": 

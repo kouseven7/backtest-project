@@ -1,0 +1,73 @@
+{
+  "session_id": "mean_reversion_20250713_080559",
+  "timestamp": "2025-07-13T08:05:59.110829",
+  "strategy_name": "mean_reversion",
+  "metrics_processed": [
+    "sharpe_ratio",
+    "profit_factor",
+    "win_rate"
+  ],
+  "results": {
+    "sharpe_ratio": {
+      "method": "z_score",
+      "success": true,
+      "confidence_score": 0.9,
+      "data_shape": "(50,)",
+      "outliers_detected": 0,
+      "missing_values_handled": 0,
+      "statistics": {
+        "original_mean": 0.8279794142587918,
+        "original_std": 0.301410577296503,
+        "original_min": 0.20151152853270526,
+        "original_max": 1.504399078535097,
+        "normalized_mean": 1.8984813721090176e-16,
+        "normalized_std": 0.9999999999999998,
+        "normalized_min": -2.078453554434551,
+        "normalized_max": 2.244180248561413
+      },
+      "error": null
+    },
+    "profit_factor": {
+      "method": "custom",
+      "success": true,
+      "confidence_score": 0.75,
+      "data_shape": "(50,)",
+      "outliers_detected": 0,
+      "missing_values_handled": 0,
+      "statistics": {
+        "original_mean": 1.327490843923564,
+        "original_std": 1.2708839920842023,
+        "original_min": 0.013076167938210573,
+        "original_max": 5.1785502744697105,
+        "normalized_mean": 0.4621253761138726,
+        "normalized_std": 0.14462963437288767,
+        "normalized_min": 0.02912012240522982,
+        "normalized_max": 0.6785520492066449
+      },
+      "error": null
+    },
+    "win_rate": {
+      "method": "min_max",
+      "success": true,
+      "confidence_score": 0.85,
+      "data_shape": "(50,)",
+      "outliers_detected": 0,
+      "missing_values_handled": 0,
+      "statistics": {
+        "original_mean": 0.4319171751177603,
+        "original_std": 0.2382756378436345,
+        "original_min": 0.034376895190556915,
+        "original_max": 0.9094756956428781,
+        "normalized_mean": 0.4542804535004763,
+        "normalized_std": 0.2722842697538547,
+        "normalized_min": 0.0,
+        "normalized_max": 1.0
+      },
+      "error": null
+    }
+  },
+  "integration_mode": "metric_selection",
+  "success_rate": 1.0,
+  "total_processing_time": 0.002892,
+  "notes": ""
+}

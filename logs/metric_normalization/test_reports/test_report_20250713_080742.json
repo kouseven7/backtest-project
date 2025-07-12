@@ -1,0 +1,14 @@
+{
+  "test_timestamp": "2025-07-13T08:07:42.176429",
+  "total_tests": 5,
+  "passed_tests": 4,
+  "failed_tests": 1,
+  "success_rate": 0.8,
+  "detailed_results": {
+    "Config System": true,
+    "Engine System": true,
+    "Manager System": false,
+    "Integration Features": true,
+    "Performance Evaluation": true
+  }
+}

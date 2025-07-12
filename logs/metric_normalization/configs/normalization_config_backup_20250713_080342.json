@@ -1,0 +1,92 @@
+{
+  "system_config": {
+    "version": "1.0.0",
+    "auto_backup": true,
+    "backup_retention_days": 30,
+    "validation_enabled": true,
+    "debug_mode": false,
+    "integration_mode": "metric_selection",
+    "last_updated": "2025-07-13T08:03:42.626506"
+  },
+  "global_settings": {
+    "max_drawdown": {
+      "method": "min_max",
+      "target_range": [
+        0.0,
+        1.0
+      ],
+      "outlier_handling": "clip",
+      "missing_value_strategy": "median",
+      "confidence_threshold": 0.85,
+      "custom_function": null,
+      "preserve_zeros": true,
+      "apply_log_transform": true
+    },
+    "profit_factor": {
+      "method": "custom",
+      "target_range": [
+        0.0,
+        1.0
+      ],
+      "outlier_handling": "clip",
+      "missing_value_strategy": "median",
+      "confidence_threshold": 0.85,
+      "custom_function": "profit_factor_transform",
+      "preserve_zeros": true,
+      "apply_log_transform": false
+    },
+    "sharpe_ratio": {
+      "method": "z_score",
+      "target_range": [
+        -3.0,
+        3.0
+      ],
+      "outlier_handling": "clip",
+      "missing_value_strategy": "median",
+      "confidence_threshold": 0.85,
+      "custom_function": null,
+      "preserve_zeros": true,
+      "apply_log_transform": false
+    },
+    "sortino_ratio": {
+      "method": "z_score",
+      "target_range": [
+        -3.0,
+        3.0
+      ],
+      "outlier_handling": "clip",
+      "missing_value_strategy": "median",
+      "confidence_threshold": 0.85,
+      "custom_function": null,
+      "preserve_zeros": true,
+      "apply_log_transform": false
+    },
+    "total_return": {
+      "method": "robust",
+      "target_range": [
+        0.0,
+        1.0
+      ],
+      "outlier_handling": "transform",
+      "missing_value_strategy": "median",
+      "confidence_threshold": 0.85,
+      "custom_function": null,
+      "preserve_zeros": true,
+      "apply_log_transform": false
+    },
+    "win_rate": {
+      "method": "min_max",
+      "target_range": [
+        0.0,
+        1.0
+      ],
+      "outlier_handling": "clip",
+      "missing_value_strategy": "median",
+      "confidence_threshold": 0.85,
+      "custom_function": null,
+      "preserve_zeros": false,
+      "apply_log_transform": false
+    }
+  },
+  "strategy_overrides": {}
+}
