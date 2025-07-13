@@ -163,16 +163,17 @@ class EnhancedScoreHistoryManager(ScoreHistoryManager):
     
     def get_decay_factor(self, strategy_name: str) -> TimeDecayFactor:
         """戦略別時間減衰ファクター取得"""
-        if strategy_name not in self.time_decay_systems:        # 戦略別設定確認
-        if (self.enhanced_config.strategy_specific_decay and 
-            strategy_name in self.enhanced_config.strategy_specific_decay):
-            params = self.enhanced_config.strategy_specific_decay[strategy_name]
-        else:
-            # デフォルト設定使用
-            params = DecayParameters(
-                half_life_days=self.enhanced_config.default_half_life_days,
-                model=self.enhanced_config.default_decay_model
-            )
+        if strategy_name not in self.time_decay_systems:
+            # 戦略別設定確認
+            if (self.enhanced_config.strategy_specific_decay and 
+                strategy_name in self.enhanced_config.strategy_specific_decay):
+                params = self.enhanced_config.strategy_specific_decay[strategy_name]
+            else:
+                # デフォルト設定使用
+                params = DecayParameters(
+                    half_life_days=self.enhanced_config.default_half_life_days,
+                    model=self.enhanced_config.default_decay_model
+                )
         
         self.time_decay_systems[strategy_name] = TimeDecayFactor(params)
         logger.debug(f"Created decay factor for strategy: {strategy_name}")
