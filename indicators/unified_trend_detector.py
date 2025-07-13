@@ -48,10 +48,9 @@ class UnifiedTrendDetector:
     
     特徴:
     1. 複数の戦略から同じインターフェースで利用可能
-    2. 高度なトレンド判定アルゴリズム
-    3. 信頼度スコア付きの判定結果
-    4. トレンド判定精度の検証機能
-    5. VWAP・ゴールデンクロス等の戦略に最適化された判定方法
+    2. 戦略特性に応じたパラメータ自動最適化
+    3. 信頼度付きトレンド判定
+    4. 複数手法による検証機能
     """
     
     def __init__(self, data: pd.DataFrame, price_column: str = "Adj Close",
@@ -449,6 +448,163 @@ class UnifiedTrendDetector:
         """キャッシュをクリア"""
         self._trend_cache = {}
         self._last_update_time = None
+    
+    def get_confidence_score(self, lookback: int = 0) -> float:
+        """
+        信頼度スコア取得（0-1範囲）
+        
+        Args:
+            lookback: 遡り期間（0の場合は最新）
+            
+        Returns:
+            float: 信頼度スコア（0-1）
+        """
+        try:
+            trend, confidence = self.detect_trend_with_confidence(lookback)
+            # 信頼度を0-1範囲にクリップ
+            return min(max(confidence, 0.0), 1.0)
+        except Exception as e:
+            self.logger.error(f"Error getting confidence score: {e}")
+            return 0.5  # エラー時のデフォルト値
+    
+    def get_confidence_score_detailed(self, lookback: int = 0) -> Dict[str, Any]:
+        """
+        詳細な信頼度情報を取得
+        
+        Args:
+            lookback: 遡り期間
+            
+        Returns:
+            Dict[str, Any]: 詳細信頼度情報
+        """
+        try:
+            trend, confidence = self.detect_trend_with_confidence(lookback)
+            
+            # 信頼度レベル判定
+            if confidence >= 0.8:
+                level = "high"
+            elif confidence >= 0.6:
+                level = "medium"
+            elif confidence >= 0.4:
+                level = "low"
+            else:
+                level = "unreliable"
+            
+            return {
+                "trend": trend,
+                "confidence_score": min(max(confidence, 0.0), 1.0),
+                "confidence_percentage": min(max(confidence * 100, 0.0), 100.0),
+                "confidence_level": level,
+                "is_reliable": confidence >= 0.7,
+                "method": self.method,
+                "strategy_name": self.strategy_name,
+                "timestamp": pd.Timestamp.now().isoformat(),
+                "lookback_period": lookback
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error getting detailed confidence: {e}")
+            return {
+                "trend": "unknown",
+                "confidence_score": 0.5,
+                "confidence_percentage": 50.0,
+                "confidence_level": "unreliable",
+                "is_reliable": False,
+                "method": self.method,
+                "strategy_name": self.strategy_name,
+                "error": str(e),
+                "timestamp": pd.Timestamp.now().isoformat()
+            }
+    
+    def compare_trend_reliabilities(self, 
+                                   methods: Optional[List[str]] = None,
+                                   lookback: int = 0) -> Dict[str, float]:
+        """
+        複数手法の信頼度比較インターフェース
+        
+        Args:
+            methods: 比較する手法リスト（Noneの場合は全手法）
+            lookback: 遡り期間
+            
+        Returns:
+            Dict[str, float]: 手法別信頼度スコア
+        """
+        if methods is None:
+            methods = ["sma", "macd", "combined"]
+        
+        results = {}
+        original_method = self.method
+        
+        try:
+            for method in methods:
+                try:
+                    # 一時的に手法を変更
+                    self.method = method
+                    confidence = self.get_confidence_score(lookback)
+                    results[method] = confidence
+                    
+                except Exception as e:
+                    self.logger.warning(f"Error with method {method}: {e}")
+                    results[method] = 0.0
+            
+            return results
+            
+        finally:
+            # 元の手法に戻す
+            self.method = original_method
+    
+    def get_strategy_trend_reliability(self, 
+                                     strategy_name: Optional[str] = None,
+                                     method: Optional[str] = None,
+                                     lookback: int = 0) -> float:
+        """
+        戦略特化の信頼度取得インターフェース
+        
+        Args:
+            strategy_name: 戦略名（Noneの場合は現在の戦略）
+            method: 手法名（Noneの場合は現在の手法）
+            lookback: 遡り期間
+            
+        Returns:
+            float: 戦略特化信頼度スコア
+        """
+        original_strategy = self.strategy_name
+        original_method = self.method
+        
+        try:
+            # 一時的に設定変更
+            if strategy_name is not None:
+                self.strategy_name = strategy_name
+            if method is not None:
+                self.method = method
+            
+            return self.get_confidence_score(lookback)
+            
+        finally:
+            # 元の設定に戻す
+            self.strategy_name = original_strategy
+            self.method = original_method
+    
+    def is_trend_reliable_for_strategy(self, 
+                                     strategy_name: Optional[str] = None,
+                                     threshold: float = 0.7) -> bool:
+        """
+        戦略に対するトレンド判定の信頼性チェック
+        
+        Args:
+            strategy_name: 戦略名
+            threshold: 信頼度閾値
+            
+        Returns:
+            bool: 信頼できるかどうか
+        """
+        try:
+            confidence = self.get_strategy_trend_reliability(strategy_name)
+            return confidence >= threshold
+            
+        except Exception as e:
+            self.logger.error(f"Error checking trend reliability: {e}")
+            return False
 
 # 関数ベースの互換インターフェース
 def detect_unified_trend(data: pd.DataFrame, price_column: str = "Adj Close", 
