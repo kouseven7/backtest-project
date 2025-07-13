@@ -1,0 +1,522 @@
+[
+  {
+    "entry_id": "entry_20250713_124618_865819",
+    "strategy_score": {
+      "strategy_name": "strategy_0",
+      "ticker": "TICK0",
+      "total_score": 0.5,
+      "component_scores": {
+        "performance": 0.6,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 0
+      },
+      "calculated_at": "2025-07-13T12:46:18.865808"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_866467",
+    "strategy_score": {
+      "strategy_name": "strategy_1",
+      "ticker": "TICK1",
+      "total_score": 0.55,
+      "component_scores": {
+        "performance": 0.65,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 1
+      },
+      "calculated_at": "2025-07-13T12:45:18.866458"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_874003",
+    "strategy_score": {
+      "strategy_name": "strategy_2",
+      "ticker": "TICK2",
+      "total_score": 0.6,
+      "component_scores": {
+        "performance": 0.7,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 2
+      },
+      "calculated_at": "2025-07-13T12:44:18.873991"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_881571",
+    "strategy_score": {
+      "strategy_name": "strategy_3",
+      "ticker": "TICK0",
+      "total_score": 0.65,
+      "component_scores": {
+        "performance": 0.75,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 3
+      },
+      "calculated_at": "2025-07-13T12:43:18.881559"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_889790",
+    "strategy_score": {
+      "strategy_name": "strategy_0",
+      "ticker": "TICK1",
+      "total_score": 0.7,
+      "component_scores": {
+        "performance": 0.8,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 4
+      },
+      "calculated_at": "2025-07-13T12:42:18.889774"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_899580",
+    "strategy_score": {
+      "strategy_name": "strategy_1",
+      "ticker": "TICK2",
+      "total_score": 0.75,
+      "component_scores": {
+        "performance": 0.6,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 5
+      },
+      "calculated_at": "2025-07-13T12:41:18.899569"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_907549",
+    "strategy_score": {
+      "strategy_name": "strategy_2",
+      "ticker": "TICK0",
+      "total_score": 0.8,
+      "component_scores": {
+        "performance": 0.65,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 6
+      },
+      "calculated_at": "2025-07-13T12:40:18.907537"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_915013",
+    "strategy_score": {
+      "strategy_name": "strategy_3",
+      "ticker": "TICK1",
+      "total_score": 0.8500000000000001,
+      "component_scores": {
+        "performance": 0.7,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 7
+      },
+      "calculated_at": "2025-07-13T12:39:18.915002"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_924003",
+    "strategy_score": {
+      "strategy_name": "strategy_0",
+      "ticker": "TICK2",
+      "total_score": 0.9,
+      "component_scores": {
+        "performance": 0.75,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 8
+      },
+      "calculated_at": "2025-07-13T12:38:18.923984"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_933339",
+    "strategy_score": {
+      "strategy_name": "strategy_1",
+      "ticker": "TICK0",
+      "total_score": 0.95,
+      "component_scores": {
+        "performance": 0.8,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 9
+      },
+      "calculated_at": "2025-07-13T12:37:18.933327"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_943175",
+    "strategy_score": {
+      "strategy_name": "strategy_2",
+      "ticker": "TICK1",
+      "total_score": 0.5,
+      "component_scores": {
+        "performance": 0.6,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 10
+      },
+      "calculated_at": "2025-07-13T12:36:18.943161"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_951981",
+    "strategy_score": {
+      "strategy_name": "strategy_3",
+      "ticker": "TICK2",
+      "total_score": 0.55,
+      "component_scores": {
+        "performance": 0.65,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 11
+      },
+      "calculated_at": "2025-07-13T12:35:18.951968"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_960260",
+    "strategy_score": {
+      "strategy_name": "strategy_0",
+      "ticker": "TICK0",
+      "total_score": 0.6,
+      "component_scores": {
+        "performance": 0.7,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 12
+      },
+      "calculated_at": "2025-07-13T12:34:18.960249"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_968156",
+    "strategy_score": {
+      "strategy_name": "strategy_1",
+      "ticker": "TICK1",
+      "total_score": 0.65,
+      "component_scores": {
+        "performance": 0.75,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 13
+      },
+      "calculated_at": "2025-07-13T12:33:18.968144"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_975986",
+    "strategy_score": {
+      "strategy_name": "strategy_2",
+      "ticker": "TICK2",
+      "total_score": 0.7,
+      "component_scores": {
+        "performance": 0.8,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 14
+      },
+      "calculated_at": "2025-07-13T12:32:18.975975"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_985000",
+    "strategy_score": {
+      "strategy_name": "strategy_3",
+      "ticker": "TICK0",
+      "total_score": 0.75,
+      "component_scores": {
+        "performance": 0.6,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 15
+      },
+      "calculated_at": "2025-07-13T12:31:18.984989"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124618_993737",
+    "strategy_score": {
+      "strategy_name": "strategy_0",
+      "ticker": "TICK1",
+      "total_score": 0.8,
+      "component_scores": {
+        "performance": 0.65,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 16
+      },
+      "calculated_at": "2025-07-13T12:30:18.993726"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124619_002537",
+    "strategy_score": {
+      "strategy_name": "strategy_1",
+      "ticker": "TICK2",
+      "total_score": 0.8500000000000001,
+      "component_scores": {
+        "performance": 0.7,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 17
+      },
+      "calculated_at": "2025-07-13T12:29:19.002526"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124619_010840",
+    "strategy_score": {
+      "strategy_name": "strategy_2",
+      "ticker": "TICK0",
+      "total_score": 0.9,
+      "component_scores": {
+        "performance": 0.75,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 18
+      },
+      "calculated_at": "2025-07-13T12:28:19.010828"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  },
+  {
+    "entry_id": "entry_20250713_124619_019757",
+    "strategy_score": {
+      "strategy_name": "strategy_3",
+      "ticker": "TICK1",
+      "total_score": 0.95,
+      "component_scores": {
+        "performance": 0.8,
+        "stability": 0.65,
+        "risk_adjusted": 0.7,
+        "reliability": 0.75
+      },
+      "trend_fitness": 0.6,
+      "confidence": 0.8,
+      "metadata": {
+        "batch_id": 19
+      },
+      "calculated_at": "2025-07-13T12:27:19.019746"
+    },
+    "trigger_event": "performance_test",
+    "event_metadata": {},
+    "version": "1.0",
+    "parent_entry_id": null,
+    "accessed_count": 0,
+    "last_accessed": null
+  }
+]

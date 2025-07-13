@@ -1,0 +1,14 @@
+# data_fetcher.py
+import pandas as pd
+from datetime import datetime, timedelta
+
+def fetch_data_with_decay(ticker: str, start_date: str, end_date: str, decay_factor: float) -> pd.DataFrame:
+    """Fetch stock data and apply a time decay factor to prioritize recent data."""
+    # Fetch data (this is a placeholder for actual data fetching logic)
+    data = fetch_stock_data(ticker, start_date, end_date)
+    
+    # Apply time decay
+    current_date = datetime.now()
+    data['decayed_value'] = data.apply(lambda row: row['Close'] * (1 - decay_factor * (current_date - row['Date']).days), axis=1)
+    
+    return data
