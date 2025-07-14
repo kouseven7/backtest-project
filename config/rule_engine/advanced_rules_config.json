@@ -1,0 +1,85 @@
+{
+  "rules": [
+    {
+      "type": "TrendBased",
+      "name": "PrimaryTrendBased",
+      "priority": 5,
+      "enabled": true,
+      "config": {}
+    },
+    {
+      "type": "Hybrid",
+      "name": "MainHybrid",
+      "priority": 10,
+      "enabled": true,
+      "config": {}
+    },
+    {
+      "type": "Configurable",
+      "name": "HighConfidenceUptrend",
+      "priority": 8,
+      "enabled": true,
+      "config": {
+        "required_fields": [
+          "strategy_scores",
+          "trend_analysis"
+        ],
+        "conditions": [
+          {
+            "type": "trend_type",
+            "value": "uptrend"
+          },
+          {
+            "type": "trend_confidence",
+            "threshold": 0.8,
+            "operator": ">="
+          }
+        ],
+        "actions": {
+          "type": "select_by_trend",
+          "trend_mappings": {
+            "uptrend": [
+              "momentum",
+              "breakout",
+              "trend_following"
+            ]
+          },
+          "base_confidence": 0.9
+        }
+      }
+    },
+    {
+      "type": "Configurable",
+      "name": "ConservativeSelection",
+      "priority": 25,
+      "enabled": true,
+      "config": {
+        "required_fields": [
+          "strategy_scores",
+          "risk_metrics"
+        ],
+        "conditions": [
+          {
+            "type": "data_quality",
+            "threshold": 0.6,
+            "operator": ">="
+          }
+        ],
+        "actions": {
+          "type": "select_top",
+          "count": 1,
+          "threshold": 0.8,
+          "base_confidence": 0.7
+        }
+      }
+    }
+  ],
+  "global_settings": {
+    "default_priority": 50,
+    "max_execution_time_ms": 3000,
+    "enable_parallel_execution": false,
+    "cache_enabled": true
+  },
+  "last_updated": "2025-07-14T20:19:27.199449",
+  "version": "1.1"
+}
