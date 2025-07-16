@@ -1,0 +1,61 @@
+{
+  "priority_method": "hybrid",
+  "default_position_size": 0.1,
+  "min_signal_confidence": 0.3,
+  "min_strategy_score": 0.2,
+  "max_concurrent_signals": 10,
+  
+  "risk_limits": {
+    "max_portfolio_risk": 0.02,
+    "max_single_exposure": 0.3,
+    "max_total_exposure": 1.0,
+    "max_concurrent_positions": 5,
+    "max_correlation_exposure": 0.6
+  },
+  
+  "conflict_resolution": {
+    "timeout_seconds": 30,
+    "fallback_method": "score_based",
+    "enable_consensus": true,
+    "consensus_threshold": 0.6
+  },
+  
+  "priority_weights": {
+    "strategy_score": 0.4,
+    "signal_confidence": 0.3,
+    "rule_priority": 0.2,
+    "timing_factor": 0.1
+  },
+  
+  "rule_priorities": {
+    "exit_signals": 1,
+    "risk_management": 2,
+    "high_confidence": 3,
+    "trending_strategy": 4,
+    "momentum_strategy": 5,
+    "mean_reversion": 6,
+    "default": 10
+  },
+  
+  "performance_tracking": {
+    "enable_history": true,
+    "max_history_entries": 1000,
+    "enable_stats": true,
+    "stats_update_interval": 3600
+  },
+  
+  "signal_filtering": {
+    "enable_confidence_filter": true,
+    "enable_score_filter": true,
+    "enable_timing_filter": true,
+    "max_signal_age_hours": 24
+  },
+  
+  "resource_management": {
+    "enable_capital_check": true,
+    "enable_position_limit": true,
+    "enable_exposure_limit": true,
+    "enable_risk_check": true,
+    "safety_buffer": 0.05
+  }
+}
