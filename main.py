@@ -30,6 +30,19 @@ sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")
 from config.logger_config import setup_logger
 from config.risk_management import RiskManagement
 from config.optimized_parameters import OptimizedParameterManager
+
+# ロガーの設定
+logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\backtest.log")
+
+# 新統合システムのインポート
+try:
+    from config.multi_strategy_manager import MultiStrategyManager, ExecutionMode
+    from config.strategy_execution_adapter import StrategyExecutionAdapter
+    integrated_system_available = True
+    logger.info("統合マルチ戦略システムが利用可能です")
+except ImportError as e:
+    integrated_system_available = False
+    logger.warning(f"統合システムが利用できません: {e}。従来システムを使用します。")
 from indicators.unified_trend_detector import detect_unified_trend, detect_unified_trend_with_confidence
 from strategies.VWAP_Breakout import VWAPBreakoutStrategy
 from strategies.Momentum_Investing import MomentumInvestingStrategy
@@ -42,9 +55,6 @@ from data_processor import preprocess_data
 from indicators.indicator_calculator import compute_indicators
 from data_fetcher import get_parameters_and_data
 from output.simulation_handler import simulate_and_save
-
-# ロガーの設定
-logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\backtest.log")
 
 # リスク管理の初期化
 risk_manager = RiskManagement(total_assets=1000000)  # 総資産100万円
@@ -458,26 +468,68 @@ def main():
         optimized_params = load_optimized_parameters(ticker)
         logger.info(f"読み込み完了: {len(optimized_params)} 戦略のパラメータ")
         
-        # index_dataがNoneの場合は、同じ期間の日経平均などのインデックスを取得するか、
-        # ダミーのindex_dataを作成する
-        if index_data is None or index_data.empty:
-            logger.warning("市場インデックスデータが取得できませんでした。ダミーデータを作成します。")
-            # ダミーのindex_dataを作成（stock_dataと同じインデックスを使用）
-            index_data = pd.DataFrame(index=stock_data.index)
-            
-            # 必要な列を追加
-            for col in ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']:
-                if col in stock_data.columns:
-                    index_data[col] = stock_data[col] * 0.9  # 適当な値を設定
-            
-            # データの完全性を確保
-            index_data = index_data.fillna(method='ffill').fillna(method='bfill')
+        # 統合システム利用可能性をローカル変数として設定
+        use_integrated_system = integrated_system_available
         
-        # 最適化パラメータを使用して戦略を適用
-        stock_data = apply_strategies_with_optimized_params(stock_data, index_data, optimized_params)
+        # 統合システム利用可能性をチェック
+        if use_integrated_system:
+            try:
+                logger.info("統合マルチ戦略システムを使用してバックテストを実行します")
+                
+                # MultiStrategyManager を初期化
+                manager = MultiStrategyManager()
+                
+                # 戦略実行アダプターを設定（必要に応じて使用）
+                # adapter = StrategyExecutionAdapter()
+                
+                # システム初期化
+                if manager.initialize_system():
+                    logger.info("統合システムの初期化に成功しました")
+                    
+                    # マルチ戦略実行
+                    available_strategies = list(optimized_params.keys())
+                    results = manager.execute_multi_strategy_flow(stock_data, available_strategies)
+                    
+                    if results:
+                        logger.info("統合システムでのバックテスト実行が完了しました")
+                        # MultiStrategyResultから結果データを取得
+                        result_data = results.combined_signals if hasattr(results, 'combined_signals') else stock_data
+                        backtest_results = simulate_and_save(result_data, ticker)
+                    else:
+                        logger.warning("統合システムの実行結果が空でした。従来システムにフォールバックします。")
+                        raise Exception("統合システムの実行に失敗")
+                else:
+                    logger.warning("統合システムの初期化に失敗しました。従来システムにフォールバックします。")
+                    raise Exception("統合システムの初期化失敗")
+                    
+            except Exception as e:
+                logger.error(f"統合システム実行中にエラー: {e}")
+                logger.info("従来のマルチ戦略システムにフォールバックします")
+                use_integrated_system = False
         
-        # バックテスト結果をExcelに出力
-        backtest_results = simulate_and_save(stock_data, ticker)
+        if not use_integrated_system:
+            logger.info("従来のマルチ戦略システムを使用してバックテストを実行します")
+            
+            # index_dataがNoneの場合は、同じ期間の日経平均などのインデックスを取得するか、
+            # ダミーのindex_dataを作成する
+            if index_data is None or index_data.empty:
+                logger.warning("市場インデックスデータが取得できませんでした。ダミーデータを作成します。")
+                # ダミーのindex_dataを作成（stock_dataと同じインデックスを使用）
+                index_data = pd.DataFrame(index=stock_data.index)
+                
+                # 必要な列を追加
+                for col in ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']:
+                    if col in stock_data.columns:
+                        index_data[col] = stock_data[col] * 0.9  # 適当な値を設定
+                
+                # データの完全性を確保
+                index_data = index_data.fillna(method='ffill').fillna(method='bfill')
+            
+            # 最適化パラメータを使用して戦略を適用
+            stock_data = apply_strategies_with_optimized_params(stock_data, index_data, optimized_params)
+            
+            # バックテスト結果をExcelに出力
+            backtest_results = simulate_and_save(stock_data, ticker)
         
         logger.info(f"バックテスト結果をExcelに出力: {backtest_results}")
         logger.info("マルチ戦略バックテストシステムが正常に完了しました")
