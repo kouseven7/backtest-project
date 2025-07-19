@@ -1,0 +1,89 @@
+{
+  "base_position_size": 0.02,
+  "max_position_size": 0.10,
+  "min_position_size": 0.005,
+  "sizing_method": "hybrid_adaptive",
+  "risk_adjustment_type": "composite",
+  "score_weight": 0.4,
+  "risk_weight": 0.3,
+  "market_weight": 0.2,
+  "trend_confidence_weight": 0.1,
+  "max_portfolio_risk": 0.20,
+  "risk_free_rate": 0.02,
+  "volatility_lookback": 252,
+  "enable_dynamic_adjustment": true,
+  "adjustment_frequency": "daily",
+  "regime_sensitivity": 0.7,
+  "enable_correlation_adjustment": true,
+  "max_sector_concentration": 0.40,
+  "enable_liquidity_adjustment": true,
+  "portfolio_constraints": {
+    "max_individual_weight": 0.4,
+    "min_individual_weight": 0.05,
+    "max_strategies": 5,
+    "min_strategies": 2,
+    "max_correlation_threshold": 0.8,
+    "min_score_threshold": 0.3,
+    "max_turnover": 0.2,
+    "risk_budget": 0.15,
+    "leverage_limit": 1.0,
+    "concentration_limit": 0.6,
+    "enable_hierarchical_minimum_weights": true,
+    "default_category_min_weight": 0.03,
+    "portfolio_min_weight_sum": 0.8,
+    "weight_adjustment_method": "proportional",
+    "enable_conditional_exclusion": true,
+    "exclusion_score_threshold": 0.2
+  },
+  "method_specific_configs": {
+    "hybrid_adaptive": {
+      "volatility_adjustment_factor": 1.5,
+      "trend_sensitivity": 0.8,
+      "confidence_threshold": 0.4
+    },
+    "score_based": {
+      "score_multiplier_cap": 2.0,
+      "score_floor": 0.3
+    },
+    "risk_parity": {
+      "target_volatility": 0.15,
+      "risk_budget_allocation": "equal"
+    },
+    "kelly_criterion": {
+      "max_kelly_fraction": 0.25,
+      "win_rate_estimation_period": 60
+    }
+  },
+  "market_regime_adjustments": {
+    "trending_up": {
+      "position_multiplier": 1.2,
+      "max_concentration": 0.45
+    },
+    "trending_down": {
+      "position_multiplier": 0.7,
+      "max_concentration": 0.35
+    },
+    "range_bound": {
+      "position_multiplier": 1.0,
+      "max_concentration": 0.40
+    },
+    "high_volatility": {
+      "position_multiplier": 0.8,
+      "max_concentration": 0.30
+    },
+    "low_volatility": {
+      "position_multiplier": 1.1,
+      "max_concentration": 0.50
+    },
+    "crisis": {
+      "position_multiplier": 0.4,
+      "max_concentration": 0.20
+    }
+  },
+  "logging": {
+    "enable_detailed_logging": true,
+    "log_level": "INFO",
+    "log_calculations": true,
+    "log_adjustments": true
+  }
+}
