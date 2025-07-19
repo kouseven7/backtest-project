@@ -1,0 +1,18 @@
+{
+  "generated_at": "2025-07-20T06:40:27.783495",
+  "config": {
+    "var_95_limit": 0.03,
+    "var_99_limit": 0.05,
+    "max_drawdown_limit": 0.1,
+    "volatility_limit": 0.2,
+    "max_correlation": 0.7,
+    "max_single_position": 0.35
+  },
+  "summary": {
+    "timestamp": "2025-07-20T06:40:27.783503",
+    "total_strategies": 0,
+    "risk_metrics": {
+      "correlation_risk": {
+        "current_value": 0.10225569473807507,
+        "limit_value": 0.7,
+        "is_breached": 
