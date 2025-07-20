@@ -1,0 +1,26 @@
+
+# Multi-Strategy Coordination System Requirements
+# Generated automatically by install_coordination_requirements.py
+
+# Core Requirements
+networkx>=3.0
+psutil>=5.9.0
+flask>=2.3.0
+flask-cors>=4.0.0
+pandas>=2.0.0
+numpy>=1.24.0
+python-dateutil>=2.8.0
+pyyaml>=6.0
+aiofiles>=23.0.0
+aiohttp>=3.8.0
+structlog>=23.0.0
+colorama>=0.4.0
+
+# Optional Requirements (Advanced Features)
+# scipy>=1.10.0
+# scikit-learn>=1.3.0
+# plotly>=5.0.0
+# dash>=2.14.0
+# numba>=0.57.0
+# sqlalchemy>=2.0.0
+# redis>=4.5.0
