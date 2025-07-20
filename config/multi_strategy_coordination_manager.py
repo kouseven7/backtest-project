@@ -227,8 +227,8 @@ class FallbackManager:
     def should_trigger_fallback(
         self, 
         current_status: CoordinationStatus,
-        execution_results: Dict[str, ExecutionResult],
-        alerts: List[Alert]
+        execution_results: Dict[str, 'ExecutionResult'],
+        alerts: List['Alert']
     ) -> Optional[FallbackLevel]:
         """フォールバック発動判定"""
         
@@ -664,7 +664,7 @@ class MultiStrategyCoordinationManager:
         
         return tasks
     
-    def _process_execution_results(self, context: ExecutionContext, results: Dict[str, ExecutionResult]):
+    def _process_execution_results(self, context: ExecutionContext, results: Dict[str, 'ExecutionResult']):
         """実行結果処理"""
         completed_strategies = []
         failed_strategies = []
@@ -691,7 +691,7 @@ class MultiStrategyCoordinationManager:
             ]
             self.current_status.last_update = datetime.now()
     
-    def _check_and_handle_fallbacks(self, context: ExecutionContext, results: Dict[str, ExecutionResult]):
+    def _check_and_handle_fallbacks(self, context: ExecutionContext, results: Dict[str, 'ExecutionResult']):
         """フォールバック制御確認・処理"""
         # アラート取得
         alerts = []
@@ -727,7 +727,7 @@ class MultiStrategyCoordinationManager:
             
             self.performance_stats['fallback_activations'] += 1
     
-    def _finalize_coordination(self, context: ExecutionContext, results: Dict[str, ExecutionResult]):
+    def _finalize_coordination(self, context: ExecutionContext, results: Dict[str, 'ExecutionResult']):
         """調整終了処理"""
         end_time = datetime.now()
         execution_duration = (end_time - context.start_time).total_seconds()
