@@ -1,0 +1,46 @@
+{
+  "timestamp": "2025-07-20T17:29:53.352280",
+  "ticker": "USDJPY",
+  "strategy_allocations": {
+    "VWAPBounce": 0.2085990281400376,
+    "Momentum": 0.07410312007023226,
+    "Breakout": 0.4283168989065228,
+    "MeanReversion": 0.2738044736483733,
+    "TrendFollowing": 0.01517647923483404
+  },
+  "strategy_scores": {
+    "VWAPBounce": 0.6223373753812389,
+    "Momentum": 0.8505506009929746,
+    "Breakout": 0.7538754998367628,
+    "MeanReversion": 0.8472579207219935,
+    "TrendFollowing": 0.8710011684327637
+  },
+  "total_performance": {
+    "portfolio_return": 7.609467814165626,
+    "portfolio_risk": 5.0,
+    "sharpe_ratio": 1.5218935628331252,
+    "diversification_ratio": 0.5,
+    "daily_volatility": 0.46774216925090034,
+    "max_daily_return": 1.051538316311862,
+    "min_daily_return": -0.9796095532929039
+  },
+  "risk_metrics": {
+    "var_95": 12.251541629604075,
+    "max_drawdown": 5.940141396171674,
+    "risk_score": 44.73097592620785,
+    "concentration_risk": 30.765940814584003,
+    "portfolio_volatility": 7.425176745214592
+  },
+  "market_context": {
+    "trend": "sideways",
+    "trend_confidence": 0.6,
+    "trend_strength": 0.5,
+    "market_volatility": 0.15,
+    "data_quality": "good",
+    "price_change_1d": -0.7870950175606461,
+    "price_change_20d": -0.5999682310580456
+  },
+  "alerts": [
+    "リスクレベル: 高"
+  ]
+}

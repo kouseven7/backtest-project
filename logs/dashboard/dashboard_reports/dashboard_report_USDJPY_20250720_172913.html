@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>戦略パフォーマンスダッシュボード - USDJPY</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                   color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .metric { display: flex; justify-content: space-between; margin: 10px 0; }
+        .metric-name { font-weight: bold; }
+        .metric-value { color: #333; }
+        .positive { color: #27ae60; }
+        .negative { color: #e74c3c; }
+        .alert { background: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin: 5px 0; }
+        .chart { text-align: center; margin: 20px 0; }
+        .timestamp { font-size: 0.9em; color: #666; }
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>戦略パフォーマンスダッシュボード - USDJPY</h1>
+        <div class="timestamp">2025-07-20 17:29:12 現在</div>
+    </div>
+    
+    <div class="container">
+        <div class="panel">
+            <h3>主要パフォーマンス指標</h3>
+            <div class="metric">
+                <span class="metric-name">ポートフォリオリターン:</span>
+                <span class="metric-value positive">
+                    7.64%
+                </span>
+            </div>
+            <div class="metric">
+                <span class="metric-name">シャープレシオ:</span>
+                <span class="metric-value">1.528</span>
+            </div>
+            <div class="metric">
+                <span class="metric-name">リスクスコア:</span>
+                <span class="metric-value">41.9/100</span>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h3>戦略配分</h3>
+            
+                <div class="metric">
+                    <span class="metric-name">VWAPBounce:</span>
+                    <span class="metric-value">9.1%</span>
+                </div>
+            
+                <div class="metric">
+                    <span class="metric-name">Momentum:</span>
+                    <span class="metric-value">15.6%</span>
+                </div>
+            
+                <div class="metric">
+                    <span class="metric-name">Breakout:</span>
+                    <span class="metric-value">24.6%</span>
+                </div>
+            
+                <div class="metric">
+                    <span class="metric-name">MeanReversion:</span>
+                    <span class="metric-value">50.0%</span>
+                </div>
+            
+                <div class="metric">
+                    <span class="metric-name">TrendFollowing:</span>
+                    <span class="metric-value">0.7%</span>
+                </div>
+            
+        </div>
+    </div>
+    
+    <div class="chart"><img src="performance_dashboard_USDJPY_20250720_172912.png" alt="Performance Chart" style="max-width: 100%; height: auto;"></div>
+    
+    <div class="panel"><h3>アラート</h3><div class="alert">リスクレベル: 高</div></div>
+    
+    <div class="panel">
+        <h3>市場コンテキスト</h3>
+        <div class="metric">
+            <span class="metric-name">トレンド:</span>
+            <span class="metric-value">sideways</span>
+        </div>
+        <div class="metric">
+            <span class="metric-name">信頼度:</span>
+            <span class="metric-value">0.60</span>
+        </div>
+    </div>
+</body>
+</html>
+            
