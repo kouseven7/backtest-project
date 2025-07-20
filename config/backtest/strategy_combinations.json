@@ -1,0 +1,160 @@
+{
+  "combination_sets": [
+    {
+      "combination_id": "trend_momentum_mix",
+      "name": "トレンド・モメンタム複合戦略",
+      "description": "トレンドフォローイングとモメンタム戦略の組み合わせ",
+      "strategies": [
+        {
+          "strategy_name": "VWAP_Breakout",
+          "weight": 0.6,
+          "conditions": {
+            "market_trend": ["uptrend", "downtrend"],
+            "volatility_range": [0.1, 0.4],
+            "min_confidence": 0.7
+          },
+          "risk_limits": {
+            "max_position_size": 0.4,
+            "stop_loss": 0.05
+          }
+        },
+        {
+          "strategy_name": "Momentum_Investing",
+          "weight": 0.4,
+          "conditions": {
+            "market_trend": ["sideways", "weak_trend"],
+            "volatility_range": [0.2, 0.6],
+            "min_confidence": 0.6
+          },
+          "risk_limits": {
+            "max_position_size": 0.3,
+            "stop_loss": 0.04
+          }
+        }
+      ],
+      "rebalancing_rules": {
+        "frequency": "trend_change_based",
+        "trigger_conditions": {
+          "trend_confidence_threshold": 0.7,
+          "volatility_change_threshold": 0.15,
+          "performance_deviation_threshold": 0.1
+        },
+        "min_rebalance_interval_hours": 24
+      }
+    },
+    {
+      "combination_id": "adaptive_multi_strategy",
+      "name": "適応的マルチ戦略",
+      "description": "市場環境に応じて戦略を切り替える適応型",
+      "strategies": [
+        {
+          "strategy_name": "contrarian_strategy",
+          "weight": 0.3,
+          "conditions": {
+            "market_trend": ["sideways"],
+            "rsi_range": [70, 100],
+            "volatility_range": [0.1, 0.3]
+          },
+          "risk_limits": {
+            "max_position_size": 0.25,
+            "stop_loss": 0.03
+          }
+        },
+        {
+          "strategy_name": "Breakout",
+          "weight": 0.4,
+          "conditions": {
+            "volatility_range": [0.3, 0.8],
+            "volume_surge": true,
+            "trend_strength": 0.6
+          },
+          "risk_limits": {
+            "max_position_size": 0.35,
+            "stop_loss": 0.06
+          }
+        },
+        {
+          "strategy_name": "Opening_Gap",
+          "weight": 0.3,
+          "conditions": {
+            "market_trend": ["extreme_uptrend", "extreme_downtrend"],
+            "gap_size_threshold": 0.02
+          },
+          "risk_limits": {
+            "max_position_size": 0.3,
+            "stop_loss": 0.05
+          }
+        }
+      ],
+      "rebalancing_rules": {
+        "frequency": "market_regime_based",
+        "trigger_conditions": {
+          "regime_change_threshold": 0.8,
+          "correlation_threshold": 0.7
+        }
+      }
+    },
+    {
+      "combination_id": "conservative_balanced",
+      "name": "保守的バランス戦略",
+      "description": "リスクを抑えた安定志向の複合戦略",
+      "strategies": [
+        {
+          "strategy_name": "VWAP_Bounce",
+          "weight": 0.5,
+          "conditions": {
+            "market_trend": ["sideways", "weak_uptrend"],
+            "volatility_range": [0.05, 0.25]
+          },
+          "risk_limits": {
+            "max_position_size": 0.2,
+            "stop_loss": 0.02
+          }
+        },
+        {
+          "strategy_name": "gc_strategy_signal",
+          "weight": 0.5,
+          "conditions": {
+            "market_trend": ["uptrend"],
+            "momentum_strength": 0.5
+          },
+          "risk_limits": {
+            "max_position_size": 0.25,
+            "stop_loss": 0.03
+          }
+        }
+      ],
+      "rebalancing_rules": {
+        "frequency": "weekly",
+        "trigger_conditions": {
+          "performance_review_threshold": 0.05
+        }
+      }
+    }
+  ],
+  "global_settings": {
+    "max_concurrent_strategies": 3,
+    "position_size_limits": {
+      "max_single_strategy_weight": 0.7,
+      "min_strategy_weight": 0.1,
+      "max_total_exposure": 1.0
+    },
+    "risk_management": {
+      "max_portfolio_drawdown": 0.15,
+      "correlation_limit": 0.8,
+      "diversification_requirement": true,
+      "var_limit": 0.05,
+      "sector_concentration_limit": 0.4
+    },
+    "performance_thresholds": {
+      "min_sharpe_ratio": 1.0,
+      "max_volatility": 0.25,
+      "min_win_rate": 0.4
+    },
+    "execution_settings": {
+      "allow_overlapping_positions": false,
+      "position_sizing_method": "risk_parity",
+      "rebalance_tolerance": 0.05
+    }
+  }
+}

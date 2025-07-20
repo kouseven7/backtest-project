@@ -1,0 +1,66 @@
+
+        <!DOCTYPE html>
+        <html lang="ja">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>バックテスト結果レポート - analysis_20250720_110404</title>
+            <style>
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f5f5f5; }
+                .container { max-width: 1200px; margin: 0 auto; background-color: white; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+                h1 { color: #333; border-bottom: 2px solid #007acc; padding-bottom: 10px; }
+                h2 { color: #007acc; margin-top: 30px; }
+                .metric { background-color: #f8f9fa; padding: 10px; margin: 5px 0; border-left: 4px solid #007acc; }
+                .warning { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; margin: 10px 0; }
+                .recommendation { background-color: #d1ecf1; border-left: 4px solid #17a2b8; padding: 10px; margin: 10px 0; }
+                .chart { text-align: center; margin: 20px 0; }
+                .chart img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+                table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f8f9fa; font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>バックテスト結果レポート</h1>
+                
+                <div class="metric">
+                    <strong>分析ID:</strong> analysis_20250720_110404
+                </div>
+                <div class="metric">
+                    <strong>分析日時:</strong> 2025-07-20 11:04:04
+                </div>
+                <div class="metric">
+                    <strong>データ品質スコア:</strong> 1.00
+                </div>
+                
+                <h2>主要パフォーマンス指標</h2>
+        <div class="metric"><strong>total_return:</strong> 0.4509</div>
+<div class="metric"><strong>sharpe_ratio:</strong> 0.9373</div>
+<div class="metric"><strong>max_drawdown:</strong> -0.2551</div>
+<div class="metric"><strong>win_rate:</strong> 0.5370</div>
+<div class="metric"><strong>test_period_days:</strong> 364.00</div>
+<h2>パフォーマンスチャート</h2>
+
+                <div class="chart">
+                    <h3>Cumulative Returns</h3>
+                    <img src="charts\cumulative_returns_analysis_20250720_110404.png" alt="cumulative_returns">
+                </div>
+                
+                <div class="chart">
+                    <h3>Drawdown</h3>
+                    <img src="charts\drawdown_analysis_20250720_110404.png" alt="drawdown">
+                </div>
+                
+                <div class="chart">
+                    <h3>Return Distribution</h3>
+                    <img src="charts\return_distribution_analysis_20250720_110404.png" alt="return_distribution">
+                </div>
+                <h2>推奨事項</h2>
+<div class="recommendation"><strong>1.</strong> シャープレシオが1.0を下回っています。リスク調整リターンの改善を検討してください。</div>
+<div class="recommendation"><strong>2.</strong> 最大ドローダウンが20%を超えています。リスク管理の強化を検討してください。</div>
+
+            </div>
+        </body>
+        </html>
+        

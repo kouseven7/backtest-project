@@ -33,16 +33,72 @@ import hashlib
 
 # プロジェクトモジュールをインポート
 try:
-    from resource_allocation_engine import ResourceAllocationEngine, ResourceAllocation, ExecutionMode
-    from strategy_dependency_resolver import StrategyDependencyResolver, DependencyResolution
-    from concurrent_execution_scheduler import ConcurrentExecutionScheduler, ExecutionTask, ExecutionResult, ExecutionStatus
-    from execution_monitoring_system import ExecutionMonitoringSystem, Alert, AlertSeverity
+    # from resource_allocation_engine import ResourceAllocationEngine, ResourceAllocation, ExecutionMode
+    # from strategy_dependency_resolver import StrategyDependencyResolver, DependencyResolution
+    # from concurrent_execution_scheduler import ConcurrentExecutionScheduler, ExecutionTask, ExecutionResult, ExecutionStatus
+    # from execution_monitoring_system import ExecutionMonitoringSystem, Alert, AlertSeverity
+    pass
 except ImportError as e:
     # スタンドアロンテスト用フォールバック
     logger = logging.getLogger(__name__)
     logger.warning(f"Could not import project modules: {e}, using fallback definitions")
     
     class ExecutionMode(Enum):
+        SINGLE = "single"
+        PARALLEL = "parallel"
+        SEQUENTIAL = "sequential"
+    
+    class ExecutionStatus(Enum):
+        PENDING = "pending"
+        RUNNING = "running"
+        COMPLETED = "completed"
+        FAILED = "failed"
+        CANCELLED = "cancelled"
+    
+    class AlertSeverity(Enum):
+        INFO = "info"
+        WARNING = "warning"
+        ERROR = "error"
+        CRITICAL = "critical"
+    
+    @dataclass
+    class ExecutionResult:
+        result_id: str
+        status: ExecutionStatus
+        message: str = ""
+    
+    @dataclass
+    class Alert:
+        alert_id: str
+        severity: AlertSeverity
+        message: str
+        strategy_name: Optional[str] = None
+    
+    @dataclass 
+    class ExecutionTask:
+        task_id: str
+        strategy_name: str
+        parameters: Dict[str, Any] = field(default_factory=dict)
+    
+    # Mock classes for unavailable imports
+    class ResourceAllocationEngine:
+        def allocate_resources(self, strategies): return []
+        def shutdown(self): pass
+    
+    class StrategyDependencyResolver:
+        def resolve_dependencies(self, strategies): return DependencyResolution({}, [], {})
+    
+    class ConcurrentExecutionScheduler:
+        def __init__(self, max_workers=4): self.max_workers = max_workers
+        def schedule_execution(self, tasks): return {}
+        def wait_for_completion(self): return []
+        def shutdown(self): pass
+    
+    class ExecutionMonitoringSystem:
+        def __init__(self): pass
+        def start_monitoring(self): pass
+        def stop_monitoring(self): pass
+        def get_alerts(self): return []
         THREAD = "thread"
         PROCESS = "process"
         ASYNC = "async"
@@ -89,6 +145,21 @@ class CoordinationMode(Enum):
     AUTONOMOUS = "autonomous"    # 自律実行モード
     SUPERVISED = "supervised"   # 監視付きモード
     MANUAL = "manual"           # 手動制御モード
+
+@dataclass
+class ResourceAllocation:
+    """リソース配分"""
+    strategy_id: str
+    cpu_allocation: float  # CPU使用率 (0.0-1.0)
+    memory_allocation: float  # メモリ使用量 (MB)
+    priority: int  # 優先度 (1-10)
+
+@dataclass
+class DependencyResolution:
+    """依存関係解決"""
+    dependencies: Dict[str, List[str]]  # 戦略ID -> 依存戦略IDs
+    execution_order: List[str]  # 実行順序
+    conflict_resolution: Dict[str, str]  # 競合解決方法
 
 @dataclass
 class CoordinationPlan:
