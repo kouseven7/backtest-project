@@ -1,0 +1,32 @@
+[
+  {
+    "strategy_name": "TestStrategy",
+    "ticker": "TEST",
+    "timestamp": "2025-07-22T08:22:41.251579",
+    "predicted_score": 0.8,
+    "actual_performance": 0.75,
+    "market_context": {
+      "test": true
+    },
+    "prediction_accuracy": 0.95,
+    "correction_factor": null,
+    "metadata": {
+      "recorded_by": "PerformanceTracker"
+    }
+  },
+  {
+    "strategy_name": "TestStrategy",
+    "ticker": "TEST",
+    "timestamp": "2025-07-22T08:24:00.884699",
+    "predicted_score": 0.8,
+    "actual_performance": 0.75,
+    "market_context": {
+      "test": true
+    },
+    "prediction_accuracy": 0.95,
+    "correction_factor": null,
+    "metadata": {
+      "recorded_by": "PerformanceTracker"
+    }
+  }
+]
