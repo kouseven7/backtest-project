@@ -159,15 +159,28 @@ class SwitchingIntegrationSystem:
     def _initialize_switching_systems(self):
         """切替分析システムの初期化"""
         try:
-            self.switching_analyzer = StrategySwitchingAnalyzer(self.config)
-            self.timing_evaluator = SwitchingTimingEvaluator(self.config)
-            self.pattern_detector = SwitchingPatternDetector(self.config)
-            self.performance_calculator = SwitchingPerformanceCalculator(self.config)
-            self.analysis_dashboard = SwitchingAnalysisDashboard(self.config)
+            # 設定を辞書形式で渡す
+            config_dict = self.config if isinstance(self.config, dict) else {}
+            
+            self.switching_analyzer = StrategySwitchingAnalyzer(config_dict)
+            self.timing_evaluator = SwitchingTimingEvaluator(config_dict)
+            self.pattern_detector = SwitchingPatternDetector(config_dict)
+            self.performance_calculator = SwitchingPerformanceCalculator(config_dict)
+            self.analysis_dashboard = SwitchingAnalysisDashboard(config_dict)
             logger.info("Switching analysis systems initialized")
         except Exception as e:
             logger.error(f"Switching systems initialization failed: {e}")
-            raise
+            # 設定なしで初期化を試行
+            try:
+                self.switching_analyzer = StrategySwitchingAnalyzer()
+                self.timing_evaluator = SwitchingTimingEvaluator()
+                self.pattern_detector = SwitchingPatternDetector()
+                self.performance_calculator = SwitchingPerformanceCalculator()
+                self.analysis_dashboard = SwitchingAnalysisDashboard()
+                logger.info("Switching analysis systems initialized with default config")
+            except Exception as e2:
+                logger.error(f"Failed to initialize with default config: {e2}")
+                raise
 
     def analyze_switching_opportunity(
         self,

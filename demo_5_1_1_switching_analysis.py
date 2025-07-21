@@ -197,16 +197,16 @@ def demonstrate_basic_analysis():
             sample_event = switching_events[2]  # 中間のイベントを使用
             timing_result = timing_evaluator.evaluate_switching_timing(
                 data=demo_data,
-                switching_timestamp=sample_event['timestamp'],
-                from_strategy=sample_event['from_strategy'],
-                to_strategy=sample_event['to_strategy']
+                timestamp=sample_event['timestamp'],
+                current_strategy=sample_event['from_strategy'],
+                candidate_strategies=[sample_event['to_strategy']]
             )
             
             print(f"評価対象切替: {sample_event['from_strategy']} → {sample_event['to_strategy']}")
-            print(f"タイミングスコア: {timing_result.overall_timing_score:.2f}")
-            print(f"市場条件適合度: {timing_result.market_condition_score:.2f}")
-            print(f"リスク評価: {timing_result.risk_assessment_score:.2f}")
-            print(f"最適性: {'最適' if timing_result.is_optimal_timing else '要改善'}")
+            print(f"タイミングスコア: {timing_result.timing_score:.2f}")
+            print(f"信頼度: {timing_result.confidence_level:.2f}")
+            print(f"最適化オフセット: {timing_result.optimal_timing_offset} 日")
+            print(f"評価要因: {len(timing_result.evaluation_factors)} 項目")
         
         # 3. パターン検出
         print("\n--- 3. パターン検出 ---")
