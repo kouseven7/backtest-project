@@ -1,0 +1,154 @@
+{
+  "system_status": {
+    "initialized": true,
+    "last_optimization": null,
+    "total_optimizations": 0,
+    "system_health": "error"
+  },
+  "optimization_statistics": {},
+  "learning_statistics": {},
+  "parameter_summary": {
+    "learning_rate": {
+      "current_value": 1.0,
+      "default_value": 1.0,
+      "min_value": 0.1,
+      "max_value": 3.0,
+      "update_count": 0,
+      "last_update": "2025-07-22T10:13:08.337377",
+      "deviation_from_default": 0.0
+    },
+    "volatility_scaling": {
+      "current_value": 1.0,
+      "default_value": 1.0,
+      "min_value": 0.5,
+      "max_value": 2.5,
+      "update_count": 0,
+      "last_update": "2025-07-22T10:13:08.337384",
+      "deviation_from_default": 0.0
+    },
+    "risk_aversion": {
+      "current_value": 1.0,
+      "default_value": 1.0,
+      "min_value": 0.5,
+      "max_value": 3.0,
+      "update_count": 0,
+      "last_update": "2025-07-22T10:13:08.337388",
+      "deviation_from_default": 0.0
+    },
+    "rebalancing_threshold": {
+      "current_value": 0.05,
+      "default_value": 0.05,
+      "min_value": 0.01,
+      "max_value": 0.1,
+      "update_count": 0,
+      "last_update": "2025-07-22T10:13:08.337390",
+      "deviation_from_default": 0.0
+    },
+    "momentum_factor": {
+      "current_value": 0.9,
+      "default_value": 0.9,
+      "min_value": 0.5,
+      "max_value": 0.99,
+      "update_count": 0,
+      "last_update": "2025-07-22T10:13:08.337392",
+      "deviation_from_default": 0.0
+    },
+    "decay_factor": {
+      "current_value": 0.95,
+      "default_value": 0.95,
+      "min_value": 0.8,
+      "max_value": 0.99,
+      "update_count": 0,
+      "last_update": "2025-07-22T10:13:08.337393",
+      "deviation_from_default": 0.0
+    },
+    "overall_statistics": {
+      "total_parameter_updates": 0,
+      "average_deviation_from_default": 0.0,
+      "market_state": {
+        "volatility_regime": "normal",
+        "trend_strength": 0.0,
+        "stress_level": 0.0,
+        "liquidity_condition": "normal"
+      },
+      "last_adaptation": "2025-07-22T10:13:08.337393"
+    }
+  },
+  "integration_summary": {},
+  "constraint_summary": {
+    "strategy_constraints": {
+      "trend_following": {
+        "min_value": 0.1,
+        "max_value": 0.4,
+        "constraint_type": "hard",
+        "description": "Trend following strategy weight"
+      },
+      "mean_reversion": {
+        "min_value": 0.1,
+        "max_value": 0.4,
+        "constraint_type": "hard",
+        "description": "Mean reversion strategy weight"
+      },
+      "momentum": {
+        "min_value": 0.05,
+        "max_value": 0.3,
+        "constraint_type": "hard",
+        "description": "Momentum strategy weight"
+      },
+      "volatility_breakout": {
+        "min_value": 0.05,
+        "max_value": 0.3,
+        "constraint_type": "hard",
+        "description": "Volatility breakout strategy weight"
+      }
+    },
+    "portfolio_constraints": {
+      "max_single_asset": {
+        "min_value": 0.0,
+        "max_value": 0.3,
+        "constraint_type": "hard",
+        "description": "Maximum weight for single asset"
+      },
+      "min_diversification": {
+        "min_value": 0.01,
+        "max_value": 1.0,
+        "constraint_type": "hard",
+        "description": "Minimum weight for diversification"
+      },
+      "sector_concentration": {
+        "min_value": 0.0,
+        "max_value": 0.5,
+        "constraint_type": "soft",
+        "description": "Maximum sector concentration"
+      }
+    },
+    "meta_constraints": {
+      "learning_rate": {
+        "min_value": 0.1,
+        "max_value": 3.0,
+        "constraint_type": "hard",
+        "description": "Learning rate multiplier"
+      },
+      "volatility_scaling": {
+        "min_value": 0.5,
+        "max_value": 2.5,
+        "constraint_type": "hard",
+        "description": "Volatility scaling factor"
+      },
+      "risk_aversion": {
+        "min_value": 0.5,
+        "max_value": 3.0,
+        "constraint_type": "hard",
+        "description": "Risk aversion parameter"
+      },
+      "rebalancing_threshold": {
+        "min_value": 0.01,
+        "max_value": 0.1,
+        "constraint_type": "soft",
+        "description": "Rebalancing threshold"
+      }
+    },
+    "total_violations": 10,
+    "recent_violations": 10
+  }
+}
