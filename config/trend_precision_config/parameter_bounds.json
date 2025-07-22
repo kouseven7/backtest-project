@@ -1,0 +1,51 @@
+{
+  "parameter_bounds": {
+    "sma": {
+      "short_period": [5, 20],
+      "medium_period": [10, 50],
+      "long_period": [20, 100]
+    },
+    "macd": {
+      "short_window": [8, 20],
+      "long_window": [20, 40],
+      "signal_window": [5, 15]
+    },
+    "combined": {
+      "short_period": [5, 20],
+      "medium_period": [10, 50],
+      "long_period": [20, 100],
+      "short_window": [8, 20],
+      "long_window": [20, 40],
+      "signal_window": [5, 15]
+    },
+    "advanced": {
+      "short_period": [5, 20],
+      "medium_period": [10, 50],
+      "long_period": [20, 100],
+      "short_window": [8, 20],
+      "long_window": [20, 40],
+      "signal_window": [5, 15]
+    }
+  },
+  "strategy_specific_bounds": {
+    "VWAP_Strategy": {
+      "price_vwap_ratio_threshold": [0.005, 0.05],
+      "confidence_boost": [1.1, 2.0],
+      "confidence_penalty": [0.5, 0.9]
+    },
+    "Golden_Cross": {
+      "short_ma": [10, 30],
+      "long_ma": [50, 100],
+      "cross_confidence_boost": [1.2, 2.0]
+    },
+    "MovingAverageCross": {
+      "short_window": [5, 25],
+      "long_window": [20, 60]
+    }
+  },
+  "optimization_constraints": {
+    "max_parameter_change_ratio": 0.3,
+    "min_data_points_required": 30,
+    "confidence_threshold_for_adjustment": 0.6
+  }
+}
