@@ -1,0 +1,47 @@
+================================================================================
+TREND-STRATEGY PERFORMANCE MATRIX ANALYSIS REPORT
+================================================================================
+Generated: 2025-07-08 20:07:48
+
+1. ANALYSIS OVERVIEW
+----------------------------------------
+Strategies Analyzed: 3
+Trend Types: uptrend, downtrend, range-bound
+Minimum Period Length: 5 days
+Minimum Confidence: 0.5
+
+2. OVERALL STRATEGY RANKING
+----------------------------------------
+ 1. SimpleTestStrategy             Score: 0.325
+    Best Trend: uptrend         Avg Return:  0.00%
+ 2. MomentumTestStrategy           Score: 0.325
+    Best Trend: uptrend         Avg Return:  0.00%
+
+3. BEST STRATEGY BY TREND TYPE
+----------------------------------------
+UPTREND:
+  Strategy: SimpleTestStrategy
+  Return:  0.00%
+  Win Rate:   0.0%
+  Sharpe Ratio:   0.00
+  Adaptation Score:  0.350
+
+DOWNTREND:
+  Strategy: SimpleTestStrategy
+  Return:  0.00%
+  Win Rate:   0.0%
+  Sharpe Ratio:   0.00
+  Adaptation Score:  0.300
+
+4. KEY INSIGHTS
+----------------------------------------
+• Most Adaptable Strategy: SimpleTestStrategy
+  Overall adaptation score: 0.325
+• Average uptrend return: 0.00%
+• Average downtrend return: 0.00%
+• Strategy performance variability: 0.000
+  → Low variability suggests similar strategy effectiveness
+
+================================================================================
+END OF REPORT
+================================================================================

@@ -1,0 +1,56 @@
+{
+  "strategy_rules": [
+    {
+      "strategy_name": "trend_following_ma",
+      "min_weight": 0.12,
+      "level": "strategy_specific",
+      "category": null,
+      "is_conditional": false,
+      "conditions": {},
+      "exclusion_threshold": null,
+      "created_at": "2025-07-22T12:29:28.362499"
+    },
+    {
+      "strategy_name": "momentum_rsi",
+      "min_weight": 0.12,
+      "level": "strategy_specific",
+      "category": null,
+      "is_conditional": false,
+      "conditions": {},
+      "exclusion_threshold": null,
+      "created_at": "2025-07-22T12:29:28.361618"
+    }
+  ],
+  "category_rules": [
+    {
+      "strategy_name": "category_trend_following",
+      "min_weight": 0.08,
+      "level": "category",
+      "category": "trend_following",
+      "is_conditional": false,
+      "conditions": {},
+      "exclusion_threshold": null,
+      "created_at": "2025-07-22T12:29:28.361622"
+    },
+    {
+      "strategy_name": "category_momentum",
+      "min_weight": 0.08,
+      "level": "category",
+      "category": "momentum",
+      "is_conditional": false,
+      "conditions": {},
+      "exclusion_threshold": null,
+      "created_at": "2025-07-22T12:29:28.363141"
+    }
+  ],
+  "default_rule": {
+    "strategy_name": "default",
+    "min_weight": 0.04,
+    "level": "portfolio_default",
+    "category": null,
+    "is_conditional": false,
+    "conditions": {},
+    "exclusion_threshold": null,
+    "created_at": "2025-07-22T12:29:28.361631"
+  }
+}

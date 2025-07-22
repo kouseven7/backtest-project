@@ -1,0 +1,73 @@
+{
+  "session_id": "trend_following_20250713_080559",
+  "timestamp": "2025-07-13T08:05:59.105800",
+  "strategy_name": "trend_following",
+  "metrics_processed": [
+    "sharpe_ratio",
+    "profit_factor",
+    "win_rate"
+  ],
+  "results": {
+    "sharpe_ratio": {
+      "method": "robust",
+      "success": true,
+      "confidence_score": 0.9,
+      "data_shape": "(50,)",
+      "outliers_detected": 0,
+      "missing_values_handled": 0,
+      "statistics": {
+        "original_mean": 0.8872630473719298,
+        "original_std": 0.4621424689362122,
+        "original_min": 0.020164938060112214,
+        "original_max": 1.926139092254469,
+        "normalized_mean": 0.4549369714188673,
+        "normalized_std": 0.2424704804727832,
+        "normalized_min": 0.0,
+        "normalized_max": 1.0
+      },
+      "error": null
+    },
+    "profit_factor": {
+      "method": "custom",
+      "success": true,
+      "confidence_score": 0.75,
+      "data_shape": "(50,)",
+      "outliers_detected": 0,
+      "missing_values_handled": 0,
+      "statistics": {
+        "original_mean": 1.3725823151608498,
+        "original_std": 1.2773641787362153,
+        "original_min": 0.008306130563903212,
+        "original_max": 6.501219509380979,
+        "normalized_mean": 0.46742087026766704,
+        "normalized_std": 0.14717444754526426,
+        "normalized_min": 0.0,
+        "normalized_max": 0.7032487074883143
+      },
+      "error": null
+    },
+    "win_rate": {
+      "method": "min_max",
+      "success": true,
+      "confidence_score": 0.85,
+      "data_shape": "(50,)",
+      "outliers_detected": 0,
+      "missing_values_handled": 0,
+      "statistics": {
+        "original_mean": 0.47929349814531863,
+        "original_std": 0.21820339309034792,
+        "original_min": 0.11593449875168234,
+        "original_max": 0.9068147633523634,
+        "normalized_mean": 0.45943616961677236,
+        "normalized_std": 0.2758994033066684,
+        "normalized_min": 0.0,
+        "normalized_max": 1.0
+      },
+      "error": null
+    }
+  },
+  "integration_mode": "metric_selection",
+  "success_rate": 1.0,
+  "total_processing_time": 0.003246,
+  "notes": ""
+}

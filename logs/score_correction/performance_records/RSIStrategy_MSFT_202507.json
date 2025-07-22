@@ -1,0 +1,34 @@
+[
+  {
+    "strategy_name": "RSIStrategy",
+    "ticker": "MSFT",
+    "timestamp": "2025-07-22T08:22:41.170950",
+    "predicted_score": 0.6,
+    "actual_performance": 0.5112057312760601,
+    "market_context": {
+      "volatility": 0.2,
+      "trend": "upward"
+    },
+    "prediction_accuracy": 0.9112057312760601,
+    "correction_factor": null,
+    "metadata": {
+      "recorded_by": "PerformanceTracker"
+    }
+  },
+  {
+    "strategy_name": "RSIStrategy",
+    "ticker": "MSFT",
+    "timestamp": "2025-07-22T08:24:00.835171",
+    "predicted_score": 0.6,
+    "actual_performance": 0.696385339852712,
+    "market_context": {
+      "volatility": 0.2,
+      "trend": "upward"
+    },
+    "prediction_accuracy": 0.903614660147288,
+    "correction_factor": null,
+    "metadata": {
+      "recorded_by": "PerformanceTracker"
+    }
+  }
+]

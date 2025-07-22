@@ -1,0 +1,34 @@
+[
+  {
+    "strategy_name": "BollingerBands",
+    "ticker": "MSFT",
+    "timestamp": "2025-07-22T08:22:41.175783",
+    "predicted_score": 0.7,
+    "actual_performance": 0.6897910545833142,
+    "market_context": {
+      "volatility": 0.2,
+      "trend": "upward"
+    },
+    "prediction_accuracy": 0.9897910545833143,
+    "correction_factor": null,
+    "metadata": {
+      "recorded_by": "PerformanceTracker"
+    }
+  },
+  {
+    "strategy_name": "BollingerBands",
+    "ticker": "MSFT",
+    "timestamp": "2025-07-22T08:24:00.837749",
+    "predicted_score": 0.7,
+    "actual_performance": 0.5976703794838375,
+    "market_context": {
+      "volatility": 0.2,
+      "trend": "upward"
+    },
+    "prediction_accuracy": 0.8976703794838375,
+    "correction_factor": null,
+    "metadata": {
+      "recorded_by": "PerformanceTracker"
+    }
+  }
+]

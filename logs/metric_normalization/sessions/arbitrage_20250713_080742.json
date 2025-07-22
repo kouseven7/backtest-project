@@ -1,0 +1,133 @@
+{
+  "session_id": "arbitrage_20250713_080742",
+  "timestamp": "2025-07-13T08:07:42.051041",
+  "strategy_name": "arbitrage",
+  "metrics_processed": [
+    "sharpe_ratio",
+    "sortino_ratio",
+    "profit_factor",
+    "win_rate",
+    "max_drawdown",
+    "total_return"
+  ],
+  "results": {
+    "sharpe_ratio": {
+      "method": "z_score",
+      "success": true,
+      "confidence_score": 0.9,
+      "data_shape": "(100,)",
+      "outliers_detected": 0,
+      "missing_values_handled": 0,
+      "statistics": {
+        "original_mean": 2.0031653890324965,
+        "original_std": 0.27411461861130176,
+        "original_min": 1.3169026377400848,
+        "original_max": 2.5423628476397573,
+        "normalized_mean": -2.0444756998472257e-15,
+        "normalized_std": 0.9999999999999998,
+        "normalized_min": -2.5035613013603686,
+        "normalized_max": 1.9670510873841793
+      },
+      "error": null
+    },
+    "sortino_ratio": {
+      "method": "z_score",
+      "success": true,
+      "confidence_score": 0.9,
+      "data_shape": "(100,)",
+      "outliers_detected": 0,
+      "missing_values_handled": 0,
+      "statistics": {
+        "original_mean": 2.5218676643692,
+        "original_std": 0.4465259483207399,
+        "original_min": 1.538898426040125,
+        "original_max": 3.5923468932894274,
+        "normalized_mean": 8.104628079763643e-16,
+        "normalized_std": 1.0,
+        "normalized_min": -2.2013709215013133,
+        "normalized_max": 2.397350552517726
+      },
+      "error": null
+    },
+    "profit_factor": {
+      "method": "custom",
+      "success": true,
+      "confidence_score": 0.75,
+      "data_shape": "(100,)",
+      "outliers_detected": 0,
+      "missing_values_handled": 0,
+      "statistics": {
+        "original_mean": 2.935058203581255,
+        "original_std": 3.061355802253834,
+        "original_min": 0.07088723124360169,
+        "original_max": 15.27312379182738,
+        "normalized_mean": 0.5583386358357406,
+        "normalized_std": 0.12633946587537048,
+        "normalized_min": 0.2126420034366172,
+        "normalized_max": 0.7959819679544675
+      },
+      "error": null
+    },
+    "win_rate": {
+      "method": "min_max",
+      "success": true,
+      "confidence_score": 0.85,
+      "data_shape": "(100,)",
+      "outliers_detected": 2,
+      "missing_values_handled": 0,
+      "statistics": {
+        "original_mean": 0.7468200747019259,
+        "original_std": 0.19653142980199723,
+        "original_min": 0.09555892369541412,
+        "original_max": 0.9994084928679582,
+        "normalized_mean": 0.6826519953565946,
+        "normalized_std": 0.24300126621043772,
+        "normalized_min": 0.0,
+        "normalized_max": 1.0
+      },
+      "error": null
+    },
+    "max_drawdown": {
+      "method": "min_max",
+      "success": true,
+      "confidence_score": 0.85,
+      "data_shape": "(100,)",
+      "outliers_detected": 3,
+      "missing_values_handled": 0,
+      "statistics": {
+        "original_mean": -0.050760642267749574,
+        "original_std": 0.04882226646268233,
+        "original_min": -0.24994780379511755,
+        "original_max": -0.00045397819254521427,
+        "normalized_mean": 0.5,
+        "normalized_std": 0.0,
+        "normalized_min": 0.5,
+        "normalized_max": 0.5
+      },
+      "error": null
+    },
+    "total_return": {
+      "method": "robust",
+      "success": true,
+      "confidence_score": 0.9,
+      "data_shape": "(100,)",
+      "outliers_detected": 0,
+      "missing_values_handled": 0,
+      "statistics": {
+        "original_mean": 0.08390779558536784,
+        "original_std": 0.09931545339576611,
+        "original_min": -0.17583683832571023,
+        "original_max": 0.27347059984333905,
+        "normalized_mean": 0.5781000086923792,
+        "normalized_std": 0.22104119575781264,
+        "normalized_min": 0.0,
+        "normalized_max": 1.0
+      },
+      "error": null
+    }
+  },
+  "integration_mode": "metric_selection",
+  "success_rate": 1.0,
+  "total_processing_time": 0.005439,
+  "notes": ""
+}

@@ -1,0 +1,88 @@
+{
+  "result": {
+    "update_type": "weekly_analysis",
+    "start_time": "2025-07-22T08:22:41.302565",
+    "end_time": "2025-07-22T08:22:41.303491",
+    "duration_seconds": 0.000926,
+    "total_strategies": 7,
+    "successful_updates": 7,
+    "failed_updates": 0,
+    "success_rate": 1.0,
+    "errors": [],
+    "performance_metrics": {
+      "avg_correction_accuracy": 0.0,
+      "total_corrections_applied": 0,
+      "avg_improvement_ratio": 0.0
+    }
+  },
+  "weekly_statistics": {
+    "BollingerBands_AAPL": {
+      "strategy": "BollingerBands",
+      "ticker": "AAPL",
+      "record_count": 1,
+      "avg_accuracy": 0.9529780614529724,
+      "avg_performance": 0.6529780614529723,
+      "performance_std": 0.0
+    },
+    "BollingerBands_MSFT": {
+      "strategy": "BollingerBands",
+      "ticker": "MSFT",
+      "record_count": 1,
+      "avg_accuracy": 0.9897910545833143,
+      "avg_performance": 0.6897910545833142,
+      "performance_std": 0.0
+    },
+    "MovingAverageCross_AAPL": {
+      "strategy": "MovingAverageCross",
+      "ticker": "AAPL",
+      "record_count": 1,
+      "avg_accuracy": 0.9744793460610588,
+      "avg_performance": 0.5255206539389412,
+      "performance_std": 0.0
+    },
+    "MovingAverageCross_MSFT": {
+      "strategy": "MovingAverageCross",
+      "ticker": "MSFT",
+      "record_count": 1,
+      "avg_accuracy": 0.9703514363283187,
+      "avg_performance": 0.5296485636716813,
+      "performance_std": 0.0
+    },
+    "RSIStrategy_AAPL": {
+      "strategy": "RSIStrategy",
+      "ticker": "AAPL",
+      "record_count": 1,
+      "avg_accuracy": 0.911138435066544,
+      "avg_performance": 0.688861564933456,
+      "performance_std": 0.0
+    },
+    "RSIStrategy_MSFT": {
+      "strategy": "RSIStrategy",
+      "ticker": "MSFT",
+      "record_count": 1,
+      "avg_accuracy": 0.9112057312760601,
+      "avg_performance": 0.5112057312760601,
+      "performance_std": 0.0
+    },
+    "TestStrategy_TEST": {
+      "strategy": "TestStrategy",
+      "ticker": "TEST",
+      "record_count": 1,
+      "avg_accuracy": 0.95,
+      "avg_performance": 0.75,
+      "performance_std": 0.0
+    }
+  },
+  "parameter_suggestions": [
+    "Consider lowering min_confidence_threshold to increase correction rate",
+    "Consider increasing lookback_periods for better confidence"
+  ],
+  "batch_processor_stats": {
+    "total_batches_run": 1,
+    "successful_batches": 0,
+    "failed_batches": 1,
+    "avg_processing_time": 0.009822,
+    "last_run_time": "2025-07-22T08:22:41.301601"
+  },
+  "generated_at": "2025-07-22T08:22:41.303519"
+}

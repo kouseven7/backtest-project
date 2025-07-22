@@ -1,0 +1,89 @@
+{
+  "strategy": "VWAPBounceStrategy",
+  "test_timestamp": "2025-07-08T14:46:25.883069",
+  "data_period": "2024-08-06 to 2024-12-30",
+  "strategy_params": {
+    "vwap_lower_threshold": 0.99,
+    "vwap_upper_threshold": 1.01,
+    "volume_increase_threshold": 1.1,
+    "bullish_candle_min_pct": 0.001,
+    "trend_filter_enabled": false,
+    "stop_loss": 0.02,
+    "take_profit": 0.04
+  },
+  "trend_comparison": {
+    "uptrend": {
+      "trend_type": "uptrend",
+      "periods_tested": 2,
+      "total_periods": 2,
+      "total_entry_signals": 0,
+      "total_exit_signals": 0,
+      "average_period_return": 0.0,
+      "success_rate": 1.0,
+      "period_details": [
+        {
+          "start_date": "2024-10-01T00:00:00",
+          "end_date": "2024-10-24T00:00:00",
+          "period_length": 17,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        },
+        {
+          "start_date": "2024-10-31T00:00:00",
+          "end_date": "2024-11-22T00:00:00",
+          "period_length": 16,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        }
+      ]
+    },
+    "downtrend": {
+      "trend_type": "downtrend",
+      "periods_tested": 1,
+      "total_periods": 1,
+      "total_entry_signals": 0,
+      "total_exit_signals": 0,
+      "average_period_return": 0.0,
+      "success_rate": 1.0,
+      "period_details": [
+        {
+          "start_date": "2024-09-05T00:00:00",
+          "end_date": "2024-09-19T00:00:00",
+          "period_length": 10,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        }
+      ]
+    },
+    "range-bound": {
+      "trend_type": "range-bound",
+      "periods_tested": 2,
+      "total_periods": 2,
+      "total_entry_signals": 0,
+      "total_exit_signals": 0,
+      "average_period_return": 0.0,
+      "success_rate": 1.0,
+      "period_details": [
+        {
+          "start_date": "2024-09-20T00:00:00",
+          "end_date": "2024-09-30T00:00:00",
+          "period_length": 6,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        },
+        {
+          "start_date": "2024-12-23T00:00:00",
+          "end_date": "2024-12-30T00:00:00",
+          "period_length": 6,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        }
+      ]
+    }
+  }
+}

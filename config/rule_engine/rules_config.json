@@ -1,0 +1,71 @@
+﻿{
+    "last_updated":  "2025-07-14T20:23:21",
+    "global_settings":  {
+                            "default_priority":  50,
+                            "enable_parallel_execution":  false,
+                            "max_execution_time_ms":  5000,
+                            "cache_enabled":  true
+                        },
+    "version":  "1.0",
+    "rules":  [
+                  {
+                      "priority":  10,
+                      "name":  "DefaultTrendBased",
+                      "config":  {
+
+                                 },
+                      "type":  "TrendBased",
+                      "enabled":  true
+                  },
+                  {
+                      "priority":  20,
+                      "name":  "DefaultScoreBased",
+                      "config":  {
+
+                                 },
+                      "type":  "ScoreBased",
+                      "enabled":  true
+                  },
+                  {
+                      "priority":  15,
+                      "name":  "CustomUptrendRule",
+                      "config":  {
+                                     "conditions":  [
+                                                        {
+                                                            "value":  "uptrend",
+                                                            "type":  "trend_type"
+                                                        },
+                                                        {
+                                                            "operator":  "\u003e=",
+                                                            "threshold":  0.7,
+                                                            "type":  "trend_confidence"
+                                                        }
+                                                    ],
+                                     "actions":  {
+                                                     "base_confidence":  0.8,
+                                                     "trend_mappings":  {
+                                                                            "uptrend":  [
+                                                                                            "momentum",
+                                                                                            "breakout"
+                                                                                        ],
+                                                                            "sideways":  [
+                                                                                             "mean_reversion",
+                                                                                             "pairs"
+                                                                                         ],
+                                                                            "downtrend":  [
+                                                                                              "short_selling",
+                                                                                              "defensive"
+                                                                                          ]
+                                                                        },
+                                                     "type":  "select_by_trend"
+                                                 },
+                                     "required_fields":  [
+                                                             "strategy_scores",
+                                                             "trend_analysis"
+                                                         ]
+                                 },
+                      "type":  "Configurable",
+                      "enabled":  true
+                  }
+              ]
+}

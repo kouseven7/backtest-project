@@ -1,0 +1,164 @@
+{
+  "test_summary": {
+    "total_scenarios": 8,
+    "successful_scenarios": 0,
+    "failed_scenarios": 8,
+    "success_rate": 0.0,
+    "total_execution_time": 0.04994678497314453
+  },
+  "performance_analysis": {
+    "error": "No successful results to analyze"
+  },
+  "detailed_results": [
+    {
+      "scenario_id": "gradual_trend_change_0_0_1752974331",
+      "success": "False",
+      "execution_time": 0.008590221405029297,
+      "switching_events": [
+        {
+          "timestamp": "2025-07-16 15:18:51.139631",
+          "from_strategy": "trend_following",
+          "to_strategy": "mean_reversion",
+          "trigger_reason": "market_regime_change",
+          "confidence_score": 0.5204688491488614,
+          "market_conditions": {
+            "volatility": 0.0022528322689813526,
+            "trend_strength": 0.000920468780395467,
+            "momentum": 0.004600657375846584
+          },
+          "switching_delay": 1.2030336234534287
+        }
+      ],
+      "performance_metrics": {
+        "total_return": -0.031743306407518546,
+        "sharpe_ratio": -11.622132770222015,
+        "volatility": 0.25316260261253093,
+        "max_drawdown": -0.04732039939455801,
+        "win_rate": 0.4421052631578947,
+        "num_switches": 1,
+        "switching_frequency": 0.25,
+        "average_confidence": 0.5204688491488614
+      },
+      "errors": []
+    },
+    {
+      "scenario_id": "gradual_trend_change_0_1_1752974331",
+      "success": "False",
+      "execution_time": 0.006552696228027344,
+      "switching_events": [],
+      "performance_metrics": {
+        "total_return": -0.023446776726174012,
+        "sharpe_ratio": -8.183028991610303,
+        "volatility": 0.21072301068547006,
+        "max_drawdown": -0.04231484872937619,
+        "win_rate": 0.453781512605042,
+        "num_switches": 0,
+        "switching_frequency": 0.0,
+        "average_confidence": 0
+      },
+      "errors": []
+    },
+    {
+      "scenario_id": "volatile_market_1_0_1752974331",
+      "success": "False",
+      "execution_time": 0.005797386169433594,
+      "switching_events": [],
+      "performance_metrics": {
+        "total_return": -0.02032333161199673,
+        "sharpe_ratio": -8.223228918490364,
+        "volatility": 0.18179658280411165,
+        "max_drawdown": -0.03661430756107997,
+        "win_rate": 0.453781512605042,
+        "num_switches": 0,
+        "switching_frequency": 0.0,
+        "average_confidence": 0
+      },
+      "errors": []
+    },
+    {
+      "scenario_id": "volatile_market_1_1_1752974331",
+      "success": "False",
+      "execution_time": 0.00539708137512207,
+      "switching_events": [],
+      "performance_metrics": {
+        "total_return": -0.016608049556588567,
+        "sharpe_ratio": -11.657058611130022,
+        "volatility": 0.1759275516130213,
+        "max_drawdown": -0.03402970447612519,
+        "win_rate": 0.43661971830985913,
+        "num_switches": 0,
+        "switching_frequency": 0.0,
+        "average_confidence": 0
+      },
+      "errors": []
+    },
+    {
+      "scenario_id": "strong_trend_reversal_2_0_1752974331",
+      "success": "False",
+      "execution_time": 0.004395246505737305,
+      "switching_events": [],
+      "performance_metrics": {
+        "total_return": -0.037440125830816795,
+        "sharpe_ratio": -22.12033326734661,
+        "volatility": 0.3191374133469262,
+        "max_drawdown": -0.05513126408590152,
+        "win_rate": 0.3829787234042553,
+        "num_switches": 0,
+        "switching_frequency": 0.0,
+        "average_confidence": 0
+      },
+      "errors": []
+    },
+    {
+      "scenario_id": "strong_trend_reversal_2_1_1752974331",
+      "success": "False",
+      "execution_time": 0.004857778549194336,
+      "switching_events": [],
+      "performance_metrics": {
+        "total_return": -0.020802184312624372,
+        "sharpe_ratio": -11.581732466582313,
+        "volatility": 0.16616870927496788,
+        "max_drawdown": -0.031211060915960376,
+        "win_rate": 0.4421052631578947,
+        "num_switches": 0,
+        "switching_frequency": 0.0,
+        "average_confidence": 0
+      },
+      "errors": []
+    },
+    {
+      "scenario_id": "sideways_breakout_3_0_1752974331",
+      "success": "False",
+      "execution_time": 0.005522012710571289,
+      "switching_events": [],
+      "performance_metrics": {
+        "total_return": -0.015139554087967078,
+        "sharpe_ratio": -11.59889514034366,
+        "volatility": 0.12064724344390854,
+        "max_drawdown": -0.022679436106551765,
+        "win_rate": 0.4421052631578947,
+        "num_switches": 0,
+        "switching_frequency": 0.0,
+        "average_confidence": 0
+      },
+      "errors": []
+    },
+    {
+      "scenario_id": "sideways_breakout_3_1_1752974331",
+      "success": "False",
+      "execution_time": 0.005984306335449219,
+      "switching_events": [],
+      "performance_metrics": {
+        "total_return": -0.026506450631698653,
+        "sharpe_ratio": -8.234047982104014,
+        "volatility": 0.23676407967319307,
+        "max_drawdown": -0.04753902125501974,
+        "win_rate": 0.453781512605042,
+        "num_switches": 0,
+        "switching_frequency": 0.0,
+        "average_confidence": 0
+      },
+      "errors": []
+    }
+  ]
+}

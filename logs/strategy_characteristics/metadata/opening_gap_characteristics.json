@@ -1,0 +1,110 @@
+{
+  "strategy_name": "OpeningGapStrategy",
+  "description": "寄り付きギャップ戦略（前日終値と当日始値の差を利用）",
+  "created_at": "2025-07-10T21:26:00",
+  "last_updated": "2025-07-10T21:26:00",
+  "version": "1.0",
+  "trend_adaptability": {
+    "uptrend": {
+      "performance_score": 7.8,
+      "confidence_level": "high",
+      "risk_profile": "medium",
+      "optimal_conditions": [
+        "positive_gap",
+        "uptrend_confirmation",
+        "overseas_market_support",
+        "high_volume"
+      ],
+      "expected_return": 0.09,
+      "volatility": 0.14,
+      "max_drawdown": 0.10
+    },
+    "downtrend": {
+      "performance_score": 6.2,
+      "confidence_level": "medium",
+      "risk_profile": "medium_high",
+      "optimal_conditions": [
+        "gap_down_reversal",
+        "oversold_conditions",
+        "support_level_bounce"
+      ],
+      "expected_return": 0.05,
+      "volatility": 0.18,
+      "max_drawdown": 0.15
+    },
+    "sideways": {
+      "performance_score": 5.8,
+      "confidence_level": "medium",
+      "risk_profile": "medium",
+      "optimal_conditions": [
+        "gap_fill_opportunity",
+        "range_bound_trading",
+        "mean_reversion"
+      ],
+      "expected_return": 0.04,
+      "volatility": 0.12,
+      "max_drawdown": 0.08
+    }
+  },
+  "volatility_adaptability": {
+    "low_volatility": {
+      "performance_score": 5.2,
+      "confidence_level": "medium",
+      "recommended": false,
+      "notes": "ギャップ機会が限定的"
+    },
+    "medium_volatility": {
+      "performance_score": 7.5,
+      "confidence_level": "high",
+      "recommended": true,
+      "notes": "適度なギャップ機会"
+    },
+    "high_volatility": {
+      "performance_score": 8.2,
+      "confidence_level": "high",
+      "recommended": true,
+      "notes": "多くのギャップ機会、リスク管理重要"
+    }
+  },
+  "parameter_optimization_history": [
+    {
+      "date": "2025-07-10",
+      "ticker": "^N225",
+      "parameters": {
+        "min_gap_percent": 0.5,
+        "max_gap_percent": 3.0,
+        "volume_threshold": 1.2,
+        "stop_loss": 0.06,
+        "take_profit": 0.10
+      },
+      "performance": {
+        "sharpe_ratio": 1.38,
+        "total_return": 0.11,
+        "max_drawdown": 0.09
+      },
+      "market_conditions": "high_volatility_mixed"
+    }
+  ],
+  "risk_profile": {
+    "overall_risk_level": "medium",
+    "max_position_size": 0.18,
+    "recommended_stop_loss": 0.06,
+    "correlation_with_market": 0.65,
+    "tail_risk": "medium"
+  },
+  "dependencies": {
+    "required_indicators": ["gap_analysis", "volume", "overnight_data"],
+    "data_requirements": ["daily_ohlcv", "pre_market_data"],
+    "minimum_backtest_period": "1_year",
+    "recommended_instruments": ["stocks", "etfs"]
+  },
+  "performance_metrics": {
+    "historical_sharpe": 1.35,
+    "historical_sortino": 1.58,
+    "historical_calmar": 1.42,
+    "win_rate": 0.62,
+    "profit_factor": 1.78,
+    "avg_trade_duration": 3,
+    "max_consecutive_losses": 3
+  }
+}

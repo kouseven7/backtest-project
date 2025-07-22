@@ -1,0 +1,132 @@
+{
+  "schema_version": "2.0",
+  "strategy_id": "MomentumInvestingStrategy",
+  "strategy_name": "モメンタム投資戦略",
+  "strategy_class": "MomentumInvestingStrategy",
+  "strategy_module": "strategies.Momentum_Investing",
+  "version": "1.0",
+  "created_at": "2025-07-08T22:15:36.066317",
+  "last_updated": "2025-07-08T22:15:36.066324",
+  "trend_adaptability": {
+    "uptrend": {
+      "suitability_score": 0.9,
+      "confidence_level": "high",
+      "performance_metrics": {
+        "sharpe_ratio": 1.5,
+        "max_drawdown": 0.08,
+        "win_rate": 0.75,
+        "expectancy": 0.04,
+        "avg_return": 0.0,
+        "volatility": 0.0,
+        "calmar_ratio": 0.0,
+        "sortino_ratio": 0.0
+      },
+      "sample_size": 60,
+      "data_period": "2023-01-01_to_2024-12-31",
+      "reliability": "high",
+      "risk_characteristics": {
+        "max_consecutive_losses": 0,
+        "avg_holding_period": 5.0,
+        "profit_factor": 1.0
+      }
+    },
+    "downtrend": {
+      "suitability_score": 0.2,
+      "confidence_level": "low",
+      "performance_metrics": {
+        "sharpe_ratio": -0.5,
+        "max_drawdown": 0.3,
+        "win_rate": 0.25,
+        "expectancy": -0.02,
+        "avg_return": 0.0,
+        "volatility": 0.0,
+        "calmar_ratio": 0.0,
+        "sortino_ratio": 0.0
+      },
+      "sample_size": 25,
+      "data_period": "2023-01-01_to_2024-12-31",
+      "reliability": "low",
+      "risk_characteristics": {
+        "max_consecutive_losses": 0,
+        "avg_holding_period": 5.0,
+        "profit_factor": 1.0
+      }
+    },
+    "range-bound": {
+      "suitability_score": 0.4,
+      "confidence_level": "low",
+      "performance_metrics": {
+        "sharpe_ratio": 0.3,
+        "max_drawdown": 0.15,
+        "win_rate": 0.5,
+        "expectancy": 0.005,
+        "avg_return": 0.0,
+        "volatility": 0.0,
+        "calmar_ratio": 0.0,
+        "sortino_ratio": 0.0
+      },
+      "sample_size": 40,
+      "data_period": "2023-01-01_to_2024-12-31",
+      "reliability": "low",
+      "risk_characteristics": {
+        "max_consecutive_losses": 0,
+        "avg_holding_period": 5.0,
+        "profit_factor": 1.0
+      }
+    }
+  },
+  "volatility_adaptability": {},
+  "risk_profile": {
+    "volatility_tolerance": "medium",
+    "max_position_size": 0.2,
+    "holding_period_avg": 5.0,
+    "drawdown_tolerance": 0.3,
+    "preferred_volatility_range": {
+      "optimal_range": "medium",
+      "atr_percentile_range": [
+        20,
+        80
+      ],
+      "volatility_score_range": [
+        0.1,
+        0.3
+      ]
+    }
+  },
+  "dependencies": {
+    "required_indicators": [
+      "SMA",
+      "RSI",
+      "MACD",
+      "Volume",
+      "ATR"
+    ],
+    "market_data_requirements": [
+      "daily_ohlcv"
+    ],
+    "index_data_required": false,
+    "volatility_calculation_required": true,
+    "additional_columns": [
+      "SMA_short",
+      "SMA_long",
+      "RSI",
+      "MACD"
+    ]
+  },
+  "data_quality": {
+    "sample_size_total": 125,
+    "confidence_score": 0.9,
+    "last_validation": "2025-07-08T22:15:36.066360",
+    "volatility_validation_complete": false,
+    "validation_status": "pending"
+  },
+  "custom_parameters": {},
+  "parameter_history": {
+    "enabled": true,
+    "history_file": "MomentumInvestingStrategy_param_history.json",
+    "retention_days": 365,
+    "auto_update": true,
+    "version_control": true,
+    "optimization_tracking": true
+  }
+}

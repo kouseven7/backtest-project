@@ -1,0 +1,245 @@
+{
+  "analysis_timestamp": "2025-07-10T21:20:16.773744",
+  "target_metric": "sharpe_ratio",
+  "data_summary": {
+    "total_samples": 9,
+    "strategies_count": 3,
+    "trend_types_count": 3,
+    "metrics_analyzed": 17
+  },
+  "analysis_methods": [
+    "correlation",
+    "regression",
+    "feature_selection"
+  ],
+  "results": {
+    "correlation_analysis": {
+      "method": "pearson",
+      "importance_scores": {
+        "sortino_ratio": {
+          "correlation": 0.0,
+          "abs_correlation": 0.0,
+          "correlation_strength": "very_weak"
+        },
+        "calmar_ratio": {
+          "correlation": 0.0,
+          "abs_correlation": 0.0,
+          "correlation_strength": "very_weak"
+        },
+        "max_drawdown": {
+          "correlation": -0.9622437825570241,
+          "abs_correlation": 0.9622437825570241,
+          "correlation_strength": "strong"
+        },
+        "win_rate": {
+          "correlation": 0.9889737723060278,
+          "abs_correlation": 0.9889737723060278,
+          "correlation_strength": "strong"
+        },
+        "profit_factor": {
+          "correlation": 0.4842130118056716,
+          "abs_correlation": 0.4842130118056716,
+          "correlation_strength": "weak"
+        },
+        "total_return": {
+          "correlation": 0.0,
+          "abs_correlation": 0.0,
+          "correlation_strength": "very_weak"
+        },
+        "volatility": {
+          "correlation": -0.07996693925631429,
+          "abs_correlation": 0.07996693925631429,
+          "correlation_strength": "very_weak"
+        },
+        "expectancy": {
+          "correlation": 0.9960251607138526,
+          "abs_correlation": 0.9960251607138526,
+          "correlation_strength": "strong"
+        },
+        "recovery_factor": {
+          "correlation": 0.0,
+          "abs_correlation": 0.0,
+          "correlation_strength": "very_weak"
+        },
+        "consistency_ratio": {
+          "correlation": 0.9662548481267945,
+          "abs_correlation": 0.9662548481267945,
+          "correlation_strength": "strong"
+        },
+        "risk_adjusted_return": {
+          "correlation": 0.0,
+          "abs_correlation": 0.0,
+          "correlation_strength": "very_weak"
+        },
+        "avg_holding_period": {
+          "correlation": 0.4295342301301982,
+          "abs_correlation": 0.4295342301301982,
+          "correlation_strength": "weak"
+        },
+        "max_consecutive_losses": {
+          "correlation": -0.20596742757079914,
+          "abs_correlation": 0.20596742757079914,
+          "correlation_strength": "very_weak"
+        },
+        "downside_deviation": {
+          "correlation": -0.07996693925631429,
+          "abs_correlation": 0.07996693925631429,
+          "correlation_strength": "very_weak"
+        },
+        "var_95": {
+          "correlation": 0.07996693925631435,
+          "abs_correlation": 0.07996693925631435,
+          "correlation_strength": "very_weak"
+        },
+        "tail_ratio": {
+          "correlation": 0.0,
+          "abs_correlation": 0.0,
+          "correlation_strength": "very_weak"
+        }
+      },
+      "feature_count": 16
+    }
+  },
+  "integrated_importance": {
+    "max_drawdown": {
+      "final_importance_score": 0.9622437825570241,
+      "method_count": 1,
+      "confidence_level": "medium",
+      "rank": 4
+    },
+    "calmar_ratio": {
+      "final_importance_score": 0.0,
+      "method_count": 1,
+      "confidence_level": "low",
+      "rank": 11
+    },
+    "sortino_ratio": {
+      "final_importance_score": 0.0,
+      "method_count": 1,
+      "confidence_level": "low",
+      "rank": 12
+    },
+    "total_return": {
+      "final_importance_score": 0.0,
+      "method_count": 1,
+      "confidence_level": "low",
+      "rank": 13
+    },
+    "profit_factor": {
+      "final_importance_score": 0.4842130118056716,
+      "method_count": 1,
+      "confidence_level": "medium",
+      "rank": 5
+    },
+    "recovery_factor": {
+      "final_importance_score": 0.0,
+      "method_count": 1,
+      "confidence_level": "low",
+      "rank": 14
+    },
+    "max_consecutive_losses": {
+      "final_importance_score": 0.20596742757079914,
+      "method_count": 1,
+      "confidence_level": "low",
+      "rank": 7
+    },
+    "volatility": {
+      "final_importance_score": 0.07996693925631429,
+      "method_count": 1,
+      "confidence_level": "low",
+      "rank": 9
+    },
+    "risk_adjusted_return": {
+      "final_importance_score": 0.0,
+      "method_count": 1,
+      "confidence_level": "low",
+      "rank": 15
+    },
+    "downside_deviation": {
+      "final_importance_score": 0.07996693925631429,
+      "method_count": 1,
+      "confidence_level": "low",
+      "rank": 10
+    },
+    "tail_ratio": {
+      "final_importance_score": 0.0,
+      "method_count": 1,
+      "confidence_level": "low",
+      "rank": 16
+    },
+    "expectancy": {
+      "final_importance_score": 0.9960251607138526,
+      "method_count": 1,
+      "confidence_level": "medium",
+      "rank": 1
+    },
+    "win_rate": {
+      "final_importance_score": 0.9889737723060278,
+      "method_count": 1,
+      "confidence_level": "medium",
+      "rank": 2
+    },
+    "var_95": {
+      "final_importance_score": 0.07996693925631435,
+      "method_count": 1,
+      "confidence_level": "low",
+      "rank": 8
+    },
+    "avg_holding_period": {
+      "final_importance_score": 0.4295342301301982,
+      "method_count": 1,
+      "confidence_level": "medium",
+      "rank": 6
+    },
+    "consistency_ratio": {
+      "final_importance_score": 0.9662548481267945,
+      "method_count": 1,
+      "confidence_level": "medium",
+      "rank": 3
+    }
+  },
+  "recommended_metrics": [
+    {
+      "feature": "expectancy",
+      "importance_score": 0.9960251607138526,
+      "confidence": "medium",
+      "rank": 1,
+      "method_count": 1
+    },
+    {
+      "feature": "win_rate",
+      "importance_score": 0.9889737723060278,
+      "confidence": "medium",
+      "rank": 2,
+      "method_count": 1
+    },
+    {
+      "feature": "consistency_ratio",
+      "importance_score": 0.9662548481267945,
+      "confidence": "medium",
+      "rank": 3,
+      "method_count": 1
+    },
+    {
+      "feature": "max_drawdown",
+      "importance_score": 0.9622437825570241,
+      "confidence": "medium",
+      "rank": 4,
+      "method_count": 1
+    },
+    {
+      "feature": "profit_factor",
+      "importance_score": 0.4842130118056716,
+      "confidence": "medium",
+      "rank": 5,
+      "method_count": 1
+    },
+    {
+      "feature": "avg_holding_period",
+      "importance_score": 0.4295342301301982,
+      "confidence": "medium",
+      "rank": 6,
+      "method_count": 1
+    }
+  ]
+}

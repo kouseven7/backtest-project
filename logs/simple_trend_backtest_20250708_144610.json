@@ -1,0 +1,161 @@
+{
+  "strategy": "VWAPBounceStrategy",
+  "test_timestamp": "2025-07-08T14:46:10.701054",
+  "data_period": "2023-10-12 to 2024-12-30",
+  "strategy_params": {
+    "vwap_lower_threshold": 0.99,
+    "vwap_upper_threshold": 1.01,
+    "volume_increase_threshold": 1.1,
+    "bullish_candle_min_pct": 0.001,
+    "trend_filter_enabled": false,
+    "stop_loss": 0.02,
+    "take_profit": 0.04
+  },
+  "trend_comparison": {
+    "uptrend": {
+      "trend_type": "uptrend",
+      "periods_tested": 5,
+      "total_periods": 5,
+      "total_entry_signals": 0,
+      "total_exit_signals": 0,
+      "average_period_return": 0.0,
+      "success_rate": 1.0,
+      "period_details": [
+        {
+          "start_date": "2024-01-18T00:00:00",
+          "end_date": "2024-03-11T00:00:00",
+          "period_length": 36,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        },
+        {
+          "start_date": "2024-04-30T00:00:00",
+          "end_date": "2024-05-14T00:00:00",
+          "period_length": 9,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        },
+        {
+          "start_date": "2024-05-29T00:00:00",
+          "end_date": "2024-06-07T00:00:00",
+          "period_length": 8,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        },
+        {
+          "start_date": "2024-06-28T00:00:00",
+          "end_date": "2024-07-16T00:00:00",
+          "period_length": 12,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        },
+        {
+          "start_date": "2024-10-11T00:00:00",
+          "end_date": "2024-11-25T00:00:00",
+          "period_length": 30,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        }
+      ]
+    },
+    "downtrend": {
+      "trend_type": "downtrend",
+      "periods_tested": 3,
+      "total_periods": 3,
+      "total_entry_signals": 0,
+      "total_exit_signals": 0,
+      "average_period_return": 0.0,
+      "success_rate": 1.0,
+      "period_details": [
+        {
+          "start_date": "2023-12-14T00:00:00",
+          "end_date": "2023-12-26T00:00:00",
+          "period_length": 9,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        },
+        {
+          "start_date": "2024-08-02T00:00:00",
+          "end_date": "2024-08-16T00:00:00",
+          "period_length": 10,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        },
+        {
+          "start_date": "2024-09-10T00:00:00",
+          "end_date": "2024-09-19T00:00:00",
+          "period_length": 7,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        }
+      ]
+    },
+    "range-bound": {
+      "trend_type": "range-bound",
+      "periods_tested": 6,
+      "total_periods": 6,
+      "total_entry_signals": 1,
+      "total_exit_signals": 1,
+      "average_period_return": -0.0010713749813782698,
+      "success_rate": 1.0,
+      "period_details": [
+        {
+          "start_date": "2023-11-10T00:00:00",
+          "end_date": "2023-12-05T00:00:00",
+          "period_length": 17,
+          "entry_signals": 1,
+          "exit_signals": 1,
+          "period_return": -0.006428249888269619
+        },
+        {
+          "start_date": "2024-03-22T00:00:00",
+          "end_date": "2024-04-23T00:00:00",
+          "period_length": 23,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        },
+        {
+          "start_date": "2024-05-17T00:00:00",
+          "end_date": "2024-05-27T00:00:00",
+          "period_length": 7,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        },
+        {
+          "start_date": "2024-08-28T00:00:00",
+          "end_date": "2024-09-06T00:00:00",
+          "period_length": 8,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        },
+        {
+          "start_date": "2024-09-27T00:00:00",
+          "end_date": "2024-10-04T00:00:00",
+          "period_length": 6,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        },
+        {
+          "start_date": "2024-12-23T00:00:00",
+          "end_date": "2024-12-30T00:00:00",
+          "period_length": 6,
+          "entry_signals": 0,
+          "exit_signals": 0,
+          "period_return": 0.0
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "version": "1.0.0",
+  "created_at": "2025-07-10T21:13:55.560133",
+  "last_updated": "2025-07-10T21:13:55.560161",
+  "target_metrics": {
+    "core_metrics": [
+      "sharpe_ratio",
+      "sortino_ratio",
+      "calmar_ratio",
+      "max_drawdown",
+      "win_rate",
+      "profit_factor",
+      "total_return",
+      "volatility",
+      "expectancy"
+    ],
+    "additional_metrics": [
+      "recovery_factor",
+      "consistency_ratio",
+      "risk_adjusted_return",
+      "avg_holding_period",
+      "max_consecutive_losses",
+      "downside_deviation",
+      "var_95",
+      "tail_ratio"
+    ],
+    "target_variable": "sharpe_ratio"
+  },
+  "correlation_analysis": {
+    "enabled": true,
+    "methods": [
+      "pearson",
+      "spearman",
+      "kendall"
+    ],
+    "primary_method": "pearson",
+    "min_correlation_threshold": 0.3,
+    "significance_level": 0.05,
+    "confidence_interval": 0.95
+  },
+  "regression_analysis": {
+    "enabled": true,
+    "methods": [
+      "linear",
+      "ridge",
+      "lasso"
+    ],
+    "primary_method": "ridge",
+    "alpha": 1.0,
+    "cross_validation_folds": 5,
+    "min_r2_threshold": 0.1,
+    "include_interactions": true,
+    "max_interaction_features": 5
+  },
+  "feature_selection": {
+    "enabled": true,
+    "methods": [
+      "f_regression",
+      "mutual_info",
+      "variance_threshold",
+      "rfe",
+      "lasso"
+    ],
+    "k_best": 8,
+    "score_threshold": 0.1,
+    "variance_threshold": 0.01,
+    "stability_threshold": 0.3
+  },
+  "data_requirements": {
+    "min_strategies": 3,
+    "min_data_points": 20,
+    "min_trend_types": 2,
+    "data_quality_threshold": 0.7,
+    "outlier_detection_method": "iqr",
+    "outlier_threshold": 1.5
+  },
+  "integration_weights": {
+    "correlation_weight": 0.4,
+    "regression_weight": 0.4,
+    "feature_selection_weight": 0.2,
+    "stability_weight": 0.3,
+    "significance_weight": 0.3,
+    "consistency_weight": 0.4
+  },
+  "output_settings": {
+    "top_k_metrics": 8,
+    "min_confidence_level": "medium",
+    "include_statistical_tests": true,
+    "generate_detailed_report": true,
+    "save_intermediate_results": true,
+    "export_formats": [
+      "json",
+      "csv",
+      "markdown"
+    ]
+  },
+  "logging": {
+    "log_level": "INFO",
+    "log_to_file": true,
+    "log_file": "metric_selection.log"
+  }
+}

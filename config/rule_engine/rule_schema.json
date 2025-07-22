@@ -1,0 +1,154 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "TrendBased",
+              "ScoreBased",
+              "RiskAdjusted",
+              "Hybrid",
+              "Configurable"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "config": {
+            "type": "object",
+            "properties": {
+              "required_fields": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "strategy_scores",
+                    "trend_analysis",
+                    "risk_metrics"
+                  ]
+                }
+              },
+              "conditions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "trend_confidence",
+                        "trend_type",
+                        "score_threshold",
+                        "data_quality"
+                      ]
+                    },
+                    "threshold": {
+                      "type": "number"
+                    },
+                    "operator": {
+                      "type": "string",
+                      "enum": [
+                        ">=",
+                        ">",
+                        "<=",
+                        "<",
+                        "=="
+                      ]
+                    },
+                    "value": {
+                      "type": "string"
+                    },
+                    "strategy": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ]
+                }
+              },
+              "actions": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "select_top",
+                      "select_by_trend",
+                      "custom_formula"
+                    ]
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "threshold": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "trend_mappings": {
+                    "type": "object"
+                  },
+                  "formula": {
+                    "type": "string"
+                  },
+                  "base_confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                },
+                "required": [
+                  "type"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "type",
+          "name",
+          "priority",
+          "enabled"
+        ]
+      }
+    },
+    "global_settings": {
+      "type": "object",
+      "properties": {
+        "default_priority": {
+          "type": "integer"
+        },
+        "max_execution_time_ms": {
+          "type": "number"
+        },
+        "enable_parallel_execution": {
+          "type": "boolean"
+        },
+        "cache_enabled": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "required": [
+    "rules"
+  ]
+}

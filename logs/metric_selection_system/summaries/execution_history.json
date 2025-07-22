@@ -1,0 +1,18 @@
+[
+  {
+    "timestamp": "2025-07-10T21:24:08.544259",
+    "success": true,
+    "confidence_level": "low",
+    "recommended_count": 6,
+    "error_count": 0,
+    "performance_impact": {
+      "weight_improvement_score": 0.03948737243053391,
+      "avg_weight_change": 0.03948737243053414,
+      "max_weight_change": 0.08985495849591918,
+      "high_confidence_ratio": 0.0,
+      "avg_importance_score": 0.32956956568620693,
+      "data_completeness": 0.18,
+      "strategy_diversity": 0.6
+    }
+  }
+]

@@ -1,0 +1,34 @@
+[
+  {
+    "strategy_name": "RSIStrategy",
+    "ticker": "AAPL",
+    "timestamp": "2025-07-22T08:22:41.167759",
+    "predicted_score": 0.6,
+    "actual_performance": 0.688861564933456,
+    "market_context": {
+      "volatility": 0.2,
+      "trend": "upward"
+    },
+    "prediction_accuracy": 0.911138435066544,
+    "correction_factor": null,
+    "metadata": {
+      "recorded_by": "PerformanceTracker"
+    }
+  },
+  {
+    "strategy_name": "RSIStrategy",
+    "ticker": "AAPL",
+    "timestamp": "2025-07-22T08:24:00.833794",
+    "predicted_score": 0.6,
+    "actual_performance": 0.6870269832755979,
+    "market_context": {
+      "volatility": 0.2,
+      "trend": "upward"
+    },
+    "prediction_accuracy": 0.9129730167244021,
+    "correction_factor": null,
+    "metadata": {
+      "recorded_by": "PerformanceTracker"
+    }
+  }
+]

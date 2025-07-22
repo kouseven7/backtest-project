@@ -1,0 +1,33 @@
+{
+  "changes": [
+    {
+      "timestamp": "2025-07-08T23:02:08.668792",
+      "change_type": "create",
+      "field_name": "full_data",
+      "old_value": null,
+      "new_value": {
+        "strategy_name": "momentum_breakout",
+        "last_updated": "2025-07-08T23:02:08.667847",
+        "author": "strategy_team",
+        "version": "v20250708_230208",
+        "hash_value": "50b620be8224c9143f6bba7c9f87227a",
+        "data": {
+          "strategy_info": {
+            "name": "momentum_breakout",
+            "type": "momentum"
+          },
+          "parameters": {
+            "lookback_period": 20,
+            "breakout_threshold": 0.05
+          },
+          "performance_metrics": {
+            "sharpe_ratio": 0.95,
+            "total_return": 0.18
+          }
+        }
+      },
+      "reason": "Initial implementation of momentum_breakout",
+      "author": "strategy_team"
+    }
+  ]
+}

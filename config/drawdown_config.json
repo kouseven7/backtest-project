@@ -1,0 +1,54 @@
+{
+  "control_mode": "moderate",
+  "monitoring_interval": 60,
+  "thresholds": {
+    "warning_threshold": 0.05,
+    "critical_threshold": 0.10,
+    "emergency_threshold": 0.15,
+    "consecutive_loss_limit": 5,
+    "daily_loss_threshold": 0.03,
+    "strategy_dd_threshold": 0.08,
+    "strategy_suspension_threshold": 0.12,
+    "volatility_adjustment": true,
+    "trend_adjustment": true
+  },
+  "actions": {
+    "warning": "position_reduction_light",
+    "critical": "position_reduction_moderate",
+    "emergency": "emergency_stop"
+  },
+  "integration": {
+    "portfolio_weight_calculator": {
+      "enabled": true,
+      "update_weights": true,
+      "notify_changes": true
+    },
+    "position_size_adjuster": {
+      "enabled": true,
+      "apply_size_limits": true,
+      "dynamic_adjustment": true
+    },
+    "multi_strategy_coordinator": {
+      "enabled": true,
+      "suspend_strategies": true,
+      "emergency_shutdown": true
+    },
+    "risk_manager": {
+      "enabled": true,
+      "update_limits": true,
+      "escalate_alerts": true
+    }
+  },
+  "notifications": {
+    "enabled": true,
+    "email_alerts": false,
+    "webhook_url": null,
+    "log_level": "WARNING"
+  },
+  "advanced": {
+    "volatility_window": 20,
+    "trend_window": 10,
+    "adjustment_smoothing": 0.7,
+    "confidence_threshold": 0.6
+  }
+}

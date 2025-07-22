@@ -1,0 +1,15 @@
+{
+  "strategy_id": "MomentumInvestingStrategy",
+  "creation_date": "2025-07-08T22:15:36.066403",
+  "parameter_history": [],
+  "optimization_history": [],
+  "version_info": {
+    "current_version": "1.0",
+    "version_history": []
+  },
+  "metadata": {
+    "total_optimizations": 0,
+    "best_sharpe_ratio": 0.0,
+    "last_optimization_date": null
+  }
+}

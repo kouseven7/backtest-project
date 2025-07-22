@@ -1,0 +1,34 @@
+[
+  {
+    "strategy_name": "BollingerBands",
+    "ticker": "AAPL",
+    "timestamp": "2025-07-22T08:22:41.172693",
+    "predicted_score": 0.7,
+    "actual_performance": 0.6529780614529723,
+    "market_context": {
+      "volatility": 0.2,
+      "trend": "upward"
+    },
+    "prediction_accuracy": 0.9529780614529724,
+    "correction_factor": null,
+    "metadata": {
+      "recorded_by": "PerformanceTracker"
+    }
+  },
+  {
+    "strategy_name": "BollingerBands",
+    "ticker": "AAPL",
+    "timestamp": "2025-07-22T08:24:00.836321",
+    "predicted_score": 0.7,
+    "actual_performance": 0.8011595422925125,
+    "market_context": {
+      "volatility": 0.2,
+      "trend": "upward"
+    },
+    "prediction_accuracy": 0.8988404577074874,
+    "correction_factor": null,
+    "metadata": {
+      "recorded_by": "PerformanceTracker"
+    }
+  }
+]

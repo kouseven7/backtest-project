@@ -1,0 +1,27 @@
+class StrategyComparator:
+    def __init__(self, performance_data: Dict[str, pd.DataFrame]):
+        self.performance_data = performance_data
+
+    def compare_strategies(self, strategy_a: str, strategy_b: str) -> Dict[str, Any]:
+        metrics_a = self.calculate_performance_metrics(self.performance_data[strategy_a])
+        metrics_b = self.calculate_performance_metrics(self.performance_data[strategy_b])
+        
+        comparison_results = {
+            "strategy_a": metrics_a,
+            "strategy_b": metrics_b,
+            "better_strategy": strategy_a if metrics_a['sharpe_ratio'] > metrics_b['sharpe_ratio'] else strategy_b
+        }
+        return comparison_results
+
+    def calculate_performance_metrics(self, strategy_results: pd.DataFrame) -> Dict[str, float]:
+        # パフォーマンス指標の計算ロジック
+        return {
+            "sharpe_ratio": calculate_sharpe_ratio(strategy_results['returns']),
+            "win_rate": strategy_results['win'].mean(),
+            # 他の指標も追加
+        }
+
+    def generate_report(self, comparison_results: Dict[str, Any]):
+        # 比較結果をフォーマットして出力
+        print(f"Comparison between {comparison_results['strategy_a']} and {comparison_results['strategy_b']}:")
+        print(f"Better Strategy: {comparison_results['better_strategy']}")

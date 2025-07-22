@@ -1,0 +1,88 @@
+{
+  "analysis_settings": {
+    "analysis_mode": "hybrid",
+    "evaluation_method": "comprehensive",
+    "market_regime_analysis": true,
+    "time_granularity": "hourly",
+    "minimum_switching_interval": 60,
+    "performance_lookback_periods": [30, 60, 90, 180]
+  },
+  "evaluation_criteria": {
+    "performance_weight": 0.30,
+    "risk_weight": 0.25,
+    "timing_accuracy_weight": 0.25,
+    "transaction_cost_weight": 0.20,
+    "sharpe_ratio_threshold": 1.0,
+    "max_drawdown_threshold": 0.15,
+    "success_rate_threshold": 0.60
+  },
+  "market_regime_settings": {
+    "enable_regime_analysis": true,
+    "regime_detection_method": "unified_trend",
+    "regime_types": ["uptrend", "downtrend", "sideways"],
+    "regime_transition_buffer": 5,
+    "regime_confidence_threshold": 0.7
+  },
+  "switching_analysis": {
+    "optimal_switching_detection": true,
+    "pattern_recognition": true,
+    "seasonal_analysis": true,
+    "correlation_analysis": true,
+    "switching_cost_estimation": true,
+    "opportunity_cost_calculation": true
+  },
+  "performance_calculation": {
+    "metrics": [
+      "total_return", "annualized_return", "volatility", "sharpe_ratio",
+      "max_drawdown", "calmar_ratio", "win_rate", "average_trade_duration",
+      "switching_frequency", "switching_success_rate", "opportunity_cost"
+    ],
+    "benchmark_strategies": ["buy_and_hold", "momentum", "mean_reversion"],
+    "risk_free_rate": 0.02,
+    "transaction_cost_bps": 5.0
+  },
+  "trigger_settings": {
+    "enable_drawdown_trigger": true,
+    "drawdown_threshold": 0.05,
+    "performance_degradation_trigger": true,
+    "performance_threshold": -0.10,
+    "confidence_drop_trigger": true,
+    "confidence_threshold": 0.5,
+    "market_volatility_trigger": true,
+    "volatility_threshold": 0.25
+  },
+  "visualization_settings": {
+    "enable_real_time_dashboard": false,
+    "chart_types": ["timeline", "heatmap", "performance_comparison", "switching_points"],
+    "output_formats": ["png", "html", "excel"],
+    "chart_resolution": {"width": 1200, "height": 800},
+    "color_scheme": "professional"
+  },
+  "reporting_settings": {
+    "auto_generate_reports": true,
+    "report_frequency": "daily",
+    "report_formats": ["excel", "pdf"],
+    "include_charts": true,
+    "email_notifications": false,
+    "archive_reports": true,
+    "max_archive_days": 90
+  },
+  "integration_settings": {
+    "strategy_selector_integration": true,
+    "portfolio_risk_manager_integration": true,
+    "drawdown_controller_integration": true,
+    "trend_detector_integration": true,
+    "score_history_integration": true,
+    "coordination_manager_integration": false
+  },
+  "data_management": {
+    "cache_analysis_results": true,
+    "cache_duration_hours": 24,
+    "data_validation": true,
+    "outlier_detection": true,
+    "data_quality_threshold": 0.95,
+    "backup_frequency": "daily"
+  },
+  "last_updated": "2025-07-21T00:00:00",
+  "version": "1.0.0"
+}

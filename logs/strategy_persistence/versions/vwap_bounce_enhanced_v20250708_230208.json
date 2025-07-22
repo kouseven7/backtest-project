@@ -1,0 +1,55 @@
+{
+  "version_info": {
+    "version": "v20250708_230208",
+    "timestamp": "2025-07-08T23:02:08.638447",
+    "hash_value": "da60fe86ceafa6653551b1a261998abb",
+    "description": "Backup before update: Integrated data from characteristics and parameters for AAPL",
+    "author": "system"
+  },
+  "data": {
+    "strategy_name": "vwap_bounce_enhanced",
+    "last_updated": "2025-07-08T23:02:08.593203",
+    "author": "demo_user",
+    "version": "v20250708_230208",
+    "hash_value": "814ccb95cb03ba2c856987853fd8cc33",
+    "data": {
+      "strategy_info": {
+        "name": "vwap_bounce_enhanced",
+        "version": "2.2",
+        "description": "Enhanced VWAP bounce strategy with trend filtering",
+        "author": "strategy_team",
+        "created_date": "2025-01-01"
+      },
+      "parameters": {
+        "vwap_period": 25,
+        "bounce_threshold": 0.012,
+        "trend_filter": true,
+        "stop_loss_pct": 0.02,
+        "take_profit_pct": 0.04,
+        "position_size": 0.1
+      },
+      "performance_metrics": {
+        "backtest_period": "2020-01-01_to_2024-12-31",
+        "total_return": 0.186,
+        "annualized_return": 0.045,
+        "sharpe_ratio": 1.34,
+        "max_drawdown": 0.067,
+        "win_rate": 0.58,
+        "profit_factor": 1.24,
+        "trades_count": 342
+      },
+      "risk_profile": {
+        "volatility": 0.12,
+        "beta": 0.85,
+        "var_95": 0.025,
+        "expected_shortfall": 0.035
+      },
+      "market_conditions": {
+        "optimal_volatility": "medium",
+        "trend_dependency": "moderate",
+        "market_cap_preference": "large_cap",
+        "sector_neutral": true
+      }
+    }
+  }
+}

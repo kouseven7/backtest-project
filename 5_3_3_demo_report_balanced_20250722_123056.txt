@@ -1,0 +1,39 @@
+================================================================================
+5-3-3 CORRELATION-BASED ALLOCATION OPTIMIZATION DEMO REPORT
+================================================================================
+Generated: 2025-07-22 12:30:56
+Configuration: BALANCED
+
+SYSTEM CONFIGURATION:
+----------------------------------------
+  Correlation Timeframes: {'short_term': 30, 'medium_term': 90, 'long_term': 252}
+  Optimization Methods: {'mean_variance': 0.4, 'risk_parity': 0.35, 'hierarchical_risk_parity': 0.25}
+  Weight Bounds: [0.050, 0.400]
+  Turnover Limit: 0.200
+  Risk Aversion: 2.0
+
+DEMO RESULTS SUMMARY:
+----------------------------------------
+  ✓ Basic Allocation
+    Execution Time: 0.004s
+    Status: success
+  ✓ Constraint Analysis
+  ✓ Integration Bridge
+  ✓ Performance Comparison
+
+CONFIGURATION PERFORMANCE COMPARISON:
+--------------------------------------------------
+Config          Return     Volatility   Sharpe     MaxWt     
+---------------------------------------------------------
+conservative    0.2933     0.0869       3.3763     0.1569    
+balanced        0.3225     0.0893       3.6102     0.2027    
+aggressive      0.3378     0.0897       3.7667     0.2161    
+diversification 0.2883     0.0867       3.3269     0.1477    
+
+RECOMMENDATIONS:
+------------------------------
+  • Excellent diversification achieved
+  • Good correlation diversification
+  • Consider checking system integration health
+
+================================================================================

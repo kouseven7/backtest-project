@@ -1,0 +1,58 @@
+{
+  "system_config": {
+    "created_date": "2025-07-22",
+    "version": "1.0.0",
+    "description": "5-2-2 トレンド判定精度自動補正システム設定"
+  },
+  "tracker_settings": {
+    "tracking_window_days": 60,
+    "validation_delay_days": 5,
+    "min_records_for_correction": 20,
+    "max_records_to_keep": 10000,
+    "data_persistence_path": "logs/trend_precision/prediction_records"
+  },
+  "correction_engine": {
+    "correction_strength": 0.3,
+    "learning_rate": 0.1,
+    "enable_parameter_adjustment": true,
+    "enable_confidence_calibration": true,
+    "hybrid_combination_weight": 0.7
+  },
+  "parameter_adjustment": {
+    "optimization_window": 30,
+    "min_improvement_threshold": 0.02,
+    "max_correction_factor": 0.5,
+    "parameter_search_iterations": 50,
+    "enable_grid_search": true,
+    "optimization_timeout_seconds": 300
+  },
+  "confidence_calibration": {
+    "method": "platt_scaling",
+    "min_samples_for_calibration": 50,
+    "calibration_window_days": 90,
+    "enable_isotonic_regression": false,
+    "confidence_smoothing_factor": 0.1
+  },
+  "adaptive_learning": {
+    "algorithm": "adam",
+    "learning_rate": 0.01,
+    "momentum": 0.9,
+    "beta1": 0.9,
+    "beta2": 0.999,
+    "epsilon": 1e-8,
+    "enable_continuous_learning": true
+  },
+  "batch_processing": {
+    "update_schedule": "daily",
+    "enable_weekly_optimization": true,
+    "max_concurrent_processes": 4,
+    "batch_size": 100,
+    "timeout_minutes": 60
+  },
+  "logging": {
+    "log_level": "INFO",
+    "enable_performance_logs": true,
+    "log_rotation_days": 30,
+    "detailed_correction_logs": true
+  }
+}

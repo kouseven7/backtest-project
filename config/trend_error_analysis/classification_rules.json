@@ -1,0 +1,37 @@
+{
+  "classification_rules": {
+    "timing_threshold": 3,
+    "confidence_threshold": 0.3,
+    "severity_thresholds": {
+      "low": 0.01,
+      "medium": 0.03,
+      "high": 0.05,
+      "critical": 0.1
+    },
+    "trend_mapping": {
+      "uptrend": 1,
+      "downtrend": -1,
+      "range-bound": 0,
+      "unknown": null
+    },
+    "market_context_weights": {
+      "volatility": 0.4,
+      "volume": 0.3,
+      "momentum": 0.3
+    }
+  },
+  "error_type_priorities": {
+    "DIRECTION_WRONG": 1.0,
+    "CONFIDENCE_MISMATCH": 0.8,
+    "FALSE_NEGATIVE": 0.7,
+    "FALSE_POSITIVE": 0.6,
+    "REGIME_MISMATCH": 0.75,
+    "TIMING_EARLY": 0.4,
+    "TIMING_LATE": 0.5
+  },
+  "validation_parameters": {
+    "minimum_data_points": 10,
+    "lookback_window": 30,
+    "validation_window": 10
+  }
+}

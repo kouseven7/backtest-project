@@ -1,0 +1,78 @@
+{
+  "created_at": "2025-07-08T23:02:08.574619",
+  "last_updated": "2025-07-09T22:18:35.312497",
+  "version": "1.0.0",
+  "strategies": {
+    "vwap_bounce_enhanced": {
+      "last_updated": "2025-07-08T23:02:08.638922",
+      "version": "v20250708_230208",
+      "hash_value": "ef217b3f5f54aaa372b89deaa58f0b94",
+      "author": "integrator"
+    },
+    "mean_reversion_rsi": {
+      "last_updated": "2025-07-08T23:02:08.656734",
+      "version": "v20250708_230208",
+      "hash_value": "e467a2141efdb97dff64d47f827fb702",
+      "author": "strategy_team"
+    },
+    "momentum_breakout": {
+      "last_updated": "2025-07-08T23:02:08.667847",
+      "version": "v20250708_230208",
+      "hash_value": "50b620be8224c9143f6bba7c9f87227a",
+      "author": "strategy_team"
+    },
+    "pairs_trading": {
+      "last_updated": "2025-07-08T23:02:08.676637",
+      "version": "v20250708_230208",
+      "hash_value": "ff66710fbb0d197f3142b58ebb1a1de5",
+      "author": "strategy_team"
+    },
+    "test_invalid": {
+      "last_updated": "2025-07-08T23:02:08.719371",
+      "version": "v20250708_230208",
+      "hash_value": "37a6259cc0c1dae299a7866489dff0bd",
+      "author": "system"
+    },
+    "non_existent_strategy": {
+      "last_updated": "2025-07-08T23:02:08.723696",
+      "version": "v20250708_230208",
+      "hash_value": "8edccdd53e69680b11e0900d656900fa",
+      "author": "integrator"
+    },
+    "test_integration_strategy": {
+      "last_updated": "2025-07-09T00:40:38.703867",
+      "version": "v20250709_004038",
+      "hash_value": "582c0b5ad4b8075fda94096a74563a2d",
+      "author": "integration_test"
+    },
+    "compatible_test_strategy": {
+      "last_updated": "2025-07-09T00:40:38.736899",
+      "version": "v20250709_004038",
+      "hash_value": "b8d639a69ddbfcd1d17a4971991e844d",
+      "author": "compatibility_test"
+    },
+    "vwap_bounce_strategy": {
+      "last_updated": "2025-07-09T22:18:35.139858",
+      "version": "v20250709_221835",
+      "hash_value": "829282d0c4fef261b3d48dc486747b84",
+      "author": "system"
+    },
+    "golden_cross_strategy": {
+      "last_updated": "2025-07-09T22:18:35.215739",
+      "version": "v20250709_221835",
+      "hash_value": "829282d0c4fef261b3d48dc486747b84",
+      "author": "system"
+    },
+    "mean_reversion_strategy": {
+      "last_updated": "2025-07-09T22:18:35.294001",
+      "version": "v20250709_221835",
+      "hash_value": "829282d0c4fef261b3d48dc486747b84",
+      "author": "system"
+    }
+  },
+  "data_sources": {
+    "characteristics": "strategy_characteristics_manager",
+    "parameters": "optimized_parameters"
+  },
+  "schema_version": "1.0"
+}

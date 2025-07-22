@@ -1,0 +1,20 @@
+﻿{
+    "last_updated":  "2025-07-14T20:23:22",
+    "rule_engine":  {
+                        "auto_rule_optimization":  false,
+                        "max_concurrent_rules":  3,
+                        "cache_rule_results":  true,
+                        "performance_tracking":  true,
+                        "rule_timeout_ms":  5000,
+                        "fallback_strategy":  "legacy",
+                        "rule_engine_priority":  true,
+                        "parallel_rule_execution":  false
+                    },
+    "enhanced_settings":  {
+                              "cache_ttl_minutes":  15,
+                              "fallback_strategy":  "legacy",
+                              "default_selection_strategy":  "auto",
+                              "performance_tracking":  true,
+                              "cache_enabled":  true
+                          }
+}
