@@ -35,12 +35,38 @@ try:
         ScoreWeights,
         StrategyScore
     )
-    from indicators.unified_trend_detector import UnifiedTrendDetector
-    from indicators.trend_reliability_utils import get_trend_reliability_for_strategy
-    from config.strategy_characteristics_data_loader import StrategyCharacteristicsDataLoader
+    SCORING_AVAILABLE = True
 except ImportError as e:
     logger = logging.getLogger(__name__)
-    logger.warning(f"Import error: {e}. Some functionality may be limited.")
+    logger.warning(f"Strategy scoring model import error: {e}. Some functionality may be limited.")
+    SCORING_AVAILABLE = False
+    
+    # フォールバック定義
+    class ScoreWeights:
+        def __init__(self, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+    
+    class StrategyScore:
+        def __init__(self, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+    
+    class StrategyScoreCalculator:
+        def __init__(self, data_loader=None):
+            self.data_loader = data_loader
+
+try:
+    from config.strategy_characteristics_data_loader import StrategyCharacteristicsDataLoader
+    DATA_LOADER_AVAILABLE = True
+except ImportError as e:
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Data loader import error: {e}. Using fallback.")
+    DATA_LOADER_AVAILABLE = False
+    
+    class StrategyCharacteristicsDataLoader:
+        def __init__(self):
+            pass
 
 # ロガーの設定
 logger = logging.getLogger(__name__)

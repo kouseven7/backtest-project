@@ -261,26 +261,86 @@ def calculate_maximum_drawdown(returns: pd.Series) -> float:
     
     return drawdown.min()  # 最大ドローダウン（負の値）
 
-def calculate_win_rate(returns: pd.Series) -> float:
+def calculate_win_rate(returns) -> float:
     """
     勝率を計算する。
     
     Parameters:
-        returns (pd.Series): 取引リターンのシリーズ
+        returns: 取引リターンのSeries または DataFrame
         
     Returns:
         float: 勝率（0-1の範囲）
     """
-    if returns.empty:
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    if returns is None:
         return 0.0
     
-    winning_trades = (returns > 0).sum()
-    total_trades = len(returns[returns != 0])  # 0以外の取引のみ
+    try:
+        # DataFrameかSeriesかを判定して適切に処理
+        if isinstance(returns, pd.DataFrame):
+            if len(returns) == 0:
+                return 0.0
+            
+            # 適切な列を特定
+            if 'PnL' in returns.columns:
+                data_series = returns['PnL']
+            elif 'Return' in returns.columns:
+                data_series = returns['Return']  
+            elif 'Trade_PnL' in returns.columns:
+                data_series = returns['Trade_PnL']
+            elif 'trade_pnl' in returns.columns:
+                data_series = returns['trade_pnl']
+            else:
+                # 数値列を検索
+                numeric_cols = returns.select_dtypes(include=[np.number]).columns
+                if len(numeric_cols) > 0:
+                    data_series = returns[numeric_cols[0]]
+                else:
+                    logger.warning("勝率計算用の適切な列が見つかりません")
+                    return 0.0
+        else:
+            # Seriesの場合
+            data_series = returns
+            if data_series.empty:
+                return 0.0
     
-    if total_trades == 0:
+        # データ型チェックと修正
+        if hasattr(data_series, 'dtype'):
+            # datetime型が混入している場合の処理
+            if data_series.dtype == 'datetime64[ns]':
+                try:
+                    data_series = pd.to_numeric(data_series, errors='coerce')
+                    data_series = data_series.fillna(0)
+                except:
+                    return 0.0
+            
+            # 数値型でない場合の処理
+            if not pd.api.types.is_numeric_dtype(data_series):
+                try:
+                    data_series = pd.to_numeric(data_series, errors='coerce')
+                    data_series = data_series.fillna(0)
+                except:
+                    return 0.0
+        
+        # NaNや無限値を除去
+        data_series = data_series.replace([np.inf, -np.inf], np.nan).fillna(0)
+        
+        winning_trades = (data_series > 0).sum()
+        total_trades = len(data_series[data_series != 0])  # 0以外の取引のみ
+        
+        if total_trades == 0:
+            return 0.0
+        
+        return winning_trades / total_trades
+    
+    except Exception as e:
+        # エラーが発生した場合は0.0を返す
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"calculate_win_rate でエラーが発生: {e}")
         return 0.0
-    
-    return winning_trades / total_trades
 
 def calculate_profit_factor(returns: pd.Series) -> float:
     """
