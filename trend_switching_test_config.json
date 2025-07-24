@@ -1,0 +1,93 @@
+{
+  "test_config": {
+    "description": "Enhanced Trend Switching Test Configuration",
+    "version": "1.0.0",
+    "test_scenarios": {
+      "enabled": true,
+      "scenario_count": 4,
+      "data_points_per_scenario": 1000,
+      "switch_frequency": 50
+    },
+    "market_conditions": {
+      "strong_uptrend": {
+        "drift": 0.003,
+        "volatility_multiplier": 1.0,
+        "suitable_strategies": ["trend_following", "momentum"]
+      },
+      "moderate_uptrend": {
+        "drift": 0.001,
+        "volatility_multiplier": 1.0,
+        "suitable_strategies": ["trend_following", "breakout"]
+      },
+      "sideways": {
+        "drift": 0.0,
+        "volatility_multiplier": 1.0,
+        "suitable_strategies": ["mean_reversion", "contrarian"]
+      },
+      "moderate_downtrend": {
+        "drift": -0.001,
+        "volatility_multiplier": 1.0,
+        "suitable_strategies": ["contrarian", "mean_reversion"]
+      },
+      "strong_downtrend": {
+        "drift": -0.003,
+        "volatility_multiplier": 1.0,
+        "suitable_strategies": ["contrarian", "trend_following"]
+      },
+      "high_volatility": {
+        "drift": 0.0,
+        "volatility_multiplier": 2.5,
+        "suitable_strategies": ["contrarian", "mean_reversion"]
+      },
+      "low_volatility": {
+        "drift": 0.0,
+        "volatility_multiplier": 0.4,
+        "suitable_strategies": ["breakout", "momentum"]
+      }
+    },
+    "strategy_parameters": {
+      "trend_following": {
+        "short_ma_period": 10,
+        "long_ma_period": 30,
+        "signal_threshold": 0.01
+      },
+      "mean_reversion": {
+        "rsi_oversold": 30,
+        "rsi_overbought": 70,
+        "lookback_period": 14
+      },
+      "momentum": {
+        "macd_fast": 12,
+        "macd_slow": 26,
+        "macd_signal": 9
+      },
+      "contrarian": {
+        "price_change_threshold": 0.05,
+        "holding_period": 5
+      },
+      "breakout": {
+        "bollinger_period": 20,
+        "bollinger_std": 2.0,
+        "breakout_threshold": 0.02
+      }
+    },
+    "performance_criteria": {
+      "min_sharpe_ratio": 0.5,
+      "max_drawdown": 0.2,
+      "min_win_rate": 0.45,
+      "min_total_return": 0.0
+    },
+    "switching_criteria": {
+      "confidence_threshold": 0.6,
+      "max_switches_per_test": 10,
+      "min_switches_per_test": 1,
+      "switch_evaluation_period": 50
+    },
+    "output_settings": {
+      "save_detailed_logs": true,
+      "generate_charts": false,
+      "export_to_excel": false,
+      "output_directory": "trend_switching_results"
+    }
+  }
+}

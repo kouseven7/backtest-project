@@ -1,0 +1,122 @@
+{
+  "bull_to_bear": {
+    "scenario": {
+      "scenario_id": "bull_to_bear",
+      "name": "強気相場から弱気相場への転換",
+      "description": "長期上昇トレンドから急激な下降トレンドへの転換テスト",
+      "initial_condition": "strong_uptrend",
+      "target_condition": "strong_downtrend",
+      "transition_period": 8,
+      "volatility_factor": 1.5,
+      "data_points": 1200
+    },
+    "execution_time": 0.04802966117858887,
+    "switching_events": [
+      {
+        "timestamp": 50,
+        "from_strategy": "none",
+        "to_strategy": "contrarian",
+        "reason": "Market condition: strong_downtrend",
+        "market_condition": "strong_downtrend",
+        "confidence_score": 0.1
+      },
+      {
+        "timestamp": 100,
+        "from_strategy": "contrarian",
+        "to_strategy": "trend_following",
+        "reason": "Market condition: strong_uptrend",
+        "market_condition": "strong_uptrend",
+        "confidence_score": 0.1
+      },
+      {
+        "timestamp": 150,
+        "from_strategy": "trend_following",
+        "to_strategy": "contrarian",
+        "reason": "Market condition: moderate_downtrend",
+        "market_condition": "moderate_downtrend",
+        "confidence_score": 0.12583333333333332
+      },
+      {
+        "timestamp": 200,
+        "from_strategy": "contrarian",
+        "to_strategy": "mean_reversion",
+        "reason": "Market condition: sideways",
+        "market_condition": "sideways",
+        "confidence_score": 0.1675
+      },
+      {
+        "timestamp": 250,
+        "from_strategy": "mean_reversion",
+        "to_strategy": "trend_following",
+        "reason": "Market condition: strong_uptrend",
+        "market_condition": "strong_uptrend",
+        "confidence_score": 0.20916666666666667
+      },
+      {
+        "timestamp": 350,
+        "from_strategy": "trend_following",
+        "to_strategy": "contrarian",
+        "reason": "Market condition: strong_downtrend",
+        "market_condition": "strong_downtrend",
+        "confidence_score": 0.2925
+      },
+      {
+        "timestamp": 400,
+        "from_strategy": "contrarian",
+        "to_strategy": "trend_following",
+        "reason": "Market condition: moderate_uptrend",
+        "market_condition": "moderate_uptrend",
+        "confidence_score": 0.33416666666666667
+      },
+      {
+        "timestamp": 450,
+        "from_strategy": "trend_following",
+        "to_strategy": "contrarian",
+        "reason": "Market condition: strong_downtrend",
+        "market_condition": "strong_downtrend",
+        "confidence_score": 0.37583333333333335
+      },
+      {
+        "timestamp": 900,
+        "from_strategy": "contrarian",
+        "to_strategy": "trend_following",
+        "reason": "Market condition: strong_uptrend",
+        "market_condition": "strong_uptrend",
+        "confidence_score": 0.7508333333333334
+      },
+      {
+        "timestamp": 950,
+        "from_strategy": "trend_following",
+        "to_strategy": "contrarian",
+        "reason": "Market condition: strong_downtrend",
+        "market_condition": "strong_downtrend",
+        "confidence_score": 0.7925
+      },
+      {
+        "timestamp": 1050,
+        "from_strategy": "contrarian",
+        "to_strategy": "mean_reversion",
+        "reason": "Market condition: sideways",
+        "market_condition": "sideways",
+        "confidence_score": 0.8758333333333334
+      },
+      {
+        "timestamp": 1100,
+        "from_strategy": "mean_reversion",
+        "to_strategy": "trend_following",
+        "reason": "Market condition: strong_uptrend",
+        "market_condition": "strong_uptrend",
+        "confidence_score": 0.9
+      }
+    ],
+    "switching_events_count": 12,
+    "overall_performance": {
+      "avg_total_return": 1.2781223019608974,
+      "avg_sharpe_ratio": 0.11998680792733407,
+      "avg_max_drawdown": 0.7215529930516228,
+      "avg_win_rate": 0.5308988885876931,
+      "switching_frequency": 12,
+      "avg_confidence": 0.41868055555555556
+    },
+    "success_metrics": {
+      "positive_returns": 

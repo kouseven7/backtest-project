@@ -1,0 +1,162 @@
+{
+  "test_scenarios": {
+    "small_scale": {
+      "description": "小規模データでの性能テスト",
+      "num_strategies": 5,
+      "data_periods": 252,
+      "max_execution_time": 10,
+      "max_memory_mb": 128,
+      "test_iterations": 3
+    },
+    "medium_scale": {
+      "description": "中規模データでの性能テスト", 
+      "num_strategies": 10,
+      "data_periods": 756,
+      "max_execution_time": 30,
+      "max_memory_mb": 256,
+      "test_iterations": 2
+    },
+    "large_scale": {
+      "description": "大規模データでの性能テスト",
+      "num_strategies": 20,
+      "data_periods": 1260,
+      "max_execution_time": 120,
+      "max_memory_mb": 512,
+      "test_iterations": 1
+    },
+    "extreme_scale": {
+      "description": "極大規模データでの限界テスト",
+      "num_strategies": 50,
+      "data_periods": 2520,
+      "max_execution_time": 600,
+      "max_memory_mb": 2048,
+      "test_iterations": 1
+    }
+  },
+  "stress_test_scenarios": [
+    {
+      "name": "extreme_correlation",
+      "description": "極端な相関関係での安定性テスト",
+      "enabled": true,
+      "timeout_seconds": 300
+    },
+    {
+      "name": "rapid_correlation_change", 
+      "description": "急激な相関変化での適応性テスト",
+      "enabled": true,
+      "timeout_seconds": 180
+    },
+    {
+      "name": "singular_matrix",
+      "description": "特異行列条件での数値安定性テスト",
+      "enabled": true,
+      "timeout_seconds": 120
+    },
+    {
+      "name": "memory_pressure",
+      "description": "大容量データでのメモリ効率テスト",
+      "enabled": false,
+      "timeout_seconds": 900,
+      "note": "大量メモリ使用のため、必要時のみ有効化"
+    }
+  ],
+  "benchmarks": {
+    "small_scale": {
+      "max_time": 10.0,
+      "max_memory": 128.0,
+      "max_cpu_percent": 70.0,
+      "max_memory_growth": 50.0,
+      "max_gc_collections": 5
+    },
+    "medium_scale": {
+      "max_time": 30.0,
+      "max_memory": 256.0,
+      "max_cpu_percent": 80.0,
+      "max_memory_growth": 100.0,
+      "max_gc_collections": 10
+    },
+    "large_scale": {
+      "max_time": 120.0,
+      "max_memory": 512.0,
+      "max_cpu_percent": 90.0,
+      "max_memory_growth": 200.0,
+      "max_gc_collections": 20
+    },
+    "extreme_scale": {
+      "max_time": 600.0,
+      "max_memory": 2048.0,
+      "max_cpu_percent": 95.0,
+      "max_memory_growth": 1000.0,
+      "max_gc_collections": 100
+    },
+    "stress_test": {
+      "max_time": 300.0,
+      "max_memory": 1024.0,
+      "max_cpu_percent": 95.0,
+      "max_memory_growth": 500.0,
+      "max_gc_collections": 50
+    }
+  },
+  "optimization_test_settings": {
+    "correlation_scenarios": {
+      "test_all_scenarios": true,
+      "scenarios_to_test": [
+        "low_correlation",
+        "medium_correlation", 
+        "high_correlation",
+        "mixed_correlation"
+      ]
+    },
+    "optimization_methods": {
+      "test_all_methods": true,
+      "methods_to_test": [
+        "mean_variance",
+        "risk_parity",
+        "hierarchical_risk_parity"
+      ]
+    },
+    "constraint_testing": {
+      "weight_constraints": true,
+      "turnover_constraints": true,
+      "concentration_constraints": true,
+      "correlation_penalties": true
+    }
+  },
+  "integration_test_settings": {
+    "test_existing_integration": true,
+    "test_main_py_integration": true,
+    "test_multi_strategy_manager": true,
+    "test_portfolio_weight_calculator": true,
+    "generate_integration_report": true
+  },
+  "output_settings": {
+    "generate_detailed_report": true,
+    "export_metrics_json": true,
+    "export_charts": false,
+    "save_test_data": true,
+    "output_directory": "load_test_results",
+    "timestamp_files": true
+  },
+  "system_requirements": {
+    "min_python_version": "3.8",
+    "required_packages": [
+      "numpy",
+      "pandas", 
+      "scipy",
+      "matplotlib"
+    ],
+    "optional_packages": [
+      "psutil",
+      "cvxpy",
+      "scikit-learn"
+    ]
+  },
+  "test_execution": {
+    "parallel_execution": false,
+    "max_concurrent_tests": 1,
+    "retry_failed_tests": true,
+    "max_retries": 2,
+    "cleanup_after_test": true,
+    "verbose_logging": true
+  }
+}

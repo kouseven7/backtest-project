@@ -1,0 +1,243 @@
+{
+  "report_info": {
+    "generated_at": "2025-07-24T21:50:44.581719",
+    "total_tests": 8,
+    "passed_tests": 6,
+    "average_score": 86.49855150282383
+  },
+  "test_results": [
+    {
+      "test_name": "small_scale",
+      "passed": false,
+      "score": 74.26551592350006,
+      "violations": [
+        "メモリ使用量超過: 169.5MB > 128.0MB"
+      ],
+      "metrics": {
+        "execution_time": 0.10160613059997559,
+        "peak_memory_mb": 169.5,
+        "avg_cpu_percent": 0.0,
+        "memory_growth_mb": 0.9609375,
+        "gc_collections": 0,
+        "start_memory_mb": 169.4375,
+        "end_memory_mb": 170.3984375,
+        "thread_count": 1,
+        "process_count": 243
+      },
+      "thresholds": {
+        "max_time": 10.0,
+        "max_memory": 128.0,
+        "max_cpu_percent": 70.0,
+        "max_memory_growth": 50.0,
+        "max_gc_collections": 5
+      }
+    },
+    {
+      "test_name": "medium_scale",
+      "passed": true,
+      "score": 83.22729293505351,
+      "violations": [],
+      "metrics": {
+        "execution_time": 0.10153436660766602,
+        "peak_memory_mb": 170.74609375,
+        "avg_cpu_percent": 0.0,
+        "memory_growth_mb": 0.0546875,
+        "gc_collections": 0,
+        "start_memory_mb": 170.7265625,
+        "end_memory_mb": 170.78125,
+        "thread_count": 1,
+        "process_count": 243
+      },
+      "thresholds": {
+        "max_time": 30.0,
+        "max_memory": 256.0,
+        "max_cpu_percent": 80.0,
+        "max_memory_growth": 100.0,
+        "max_gc_collections": 10
+      }
+    },
+    {
+      "test_name": "large_scale",
+      "passed": true,
+      "score": 91.55992167194684,
+      "violations": [],
+      "metrics": {
+        "execution_time": 0.10132861137390137,
+        "peak_memory_mb": 171.73046875,
+        "avg_cpu_percent": 0.0,
+        "memory_growth_mb": 0.26953125,
+        "gc_collections": 0,
+        "start_memory_mb": 171.66796875,
+        "end_memory_mb": 171.9375,
+        "thread_count": 1,
+        "process_count": 243
+      },
+      "thresholds": {
+        "max_time": 120.0,
+        "max_memory": 512.0,
+        "max_cpu_percent": 90.0,
+        "max_memory_growth": 200.0,
+        "max_gc_collections": 20
+      }
+    },
+    {
+      "test_name": "extreme_scale",
+      "passed": true,
+      "score": 97.80711880326271,
+      "violations": [],
+      "metrics": {
+        "execution_time": 0.10136246681213379,
+        "peak_memory_mb": 179.21484375,
+        "avg_cpu_percent": 0.0,
+        "memory_growth_mb": 0.0390625,
+        "gc_collections": 0,
+        "start_memory_mb": 179.15625,
+        "end_memory_mb": 179.1953125,
+        "thread_count": 1,
+        "process_count": 243
+      },
+      "thresholds": {
+        "max_time": 600.0,
+        "max_memory": 2048.0,
+        "max_cpu_percent": 95.0,
+        "max_memory_growth": 1000.0,
+        "max_gc_collections": 100
+      }
+    },
+    {
+      "test_name": "stress_extreme_correlation",
+      "passed": true,
+      "score": 95.73620780706406,
+      "violations": [],
+      "metrics": {
+        "execution_time": 0.10117220878601074,
+        "peak_memory_mb": 173.68359375,
+        "avg_cpu_percent": 0.0,
+        "memory_growth_mb": 0.30078125,
+        "gc_collections": 0,
+        "start_memory_mb": 173.65234375,
+        "end_memory_mb": 173.953125,
+        "thread_count": 1,
+        "process_count": 243
+      },
+      "thresholds": {
+        "max_time": 300.0,
+        "max_memory": 1024.0,
+        "max_cpu_percent": 95.0,
+        "max_memory_growth": 500.0,
+        "max_gc_collections": 50
+      }
+    },
+    {
+      "test_name": "stress_rapid_correlation_change",
+      "passed": true,
+      "score": 95.73767089446386,
+      "violations": [],
+      "metrics": {
+        "execution_time": 0.13721013069152832,
+        "peak_memory_mb": 173.97265625,
+        "avg_cpu_percent": 0.0,
+        "memory_growth_mb": 0.0703125,
+        "gc_collections": 0,
+        "start_memory_mb": 173.953125,
+        "end_memory_mb": 174.0234375,
+        "thread_count": 1,
+        "process_count": 243
+      },
+      "thresholds": {
+        "max_time": 300.0,
+        "max_memory": 1024.0,
+        "max_cpu_percent": 95.0,
+        "max_memory_growth": 500.0,
+        "max_gc_collections": 50
+      }
+    },
+    {
+      "test_name": "stress_singular_matrix",
+      "passed": false,
+      "score": 70.73571320374808,
+      "violations": [
+        "CPU使用率超過: 100.0% > 95.0%"
+      ],
+      "metrics": {
+        "execution_time": 0.18229055404663086,
+        "peak_memory_mb": 174.04296875,
+        "avg_cpu_percent": 100.0,
+        "memory_growth_mb": 0.0,
+        "gc_collections": 0,
+        "start_memory_mb": 174.0234375,
+        "end_memory_mb": 174.0234375,
+        "thread_count": 1,
+        "process_count": 243
+      },
+      "thresholds": {
+        "max_time": 300.0,
+        "max_memory": 1024.0,
+        "max_cpu_percent": 95.0,
+        "max_memory_growth": 500.0,
+        "max_gc_collections": 50
+      }
+    },
+    {
+      "test_name": "integration_test",
+      "passed": true,
+      "score": 82.91897078355154,
+      "violations": [],
+      "metrics": {
+        "execution_time": 0.10157465934753418,
+        "peak_memory_mb": 174.04296875,
+        "avg_cpu_percent": 0.0,
+        "memory_growth_mb": 0.0,
+        "gc_collections": 0,
+        "start_memory_mb": 174.0234375,
+        "end_memory_mb": 174.0234375,
+        "thread_count": 1,
+        "process_count": 243
+      },
+      "thresholds": {
+        "max_time": 30.0,
+        "max_memory": 256.0,
+        "max_cpu_percent": 80.0,
+        "max_memory_growth": 100.0,
+        "max_gc_collections": 10
+      }
+    }
+  ],
+  "benchmarks": {
+    "small_scale": {
+      "max_time": 10.0,
+      "max_memory": 128.0,
+      "max_cpu_percent": 70.0,
+      "max_memory_growth": 50.0,
+      "max_gc_collections": 5
+    },
+    "medium_scale": {
+      "max_time": 30.0,
+      "max_memory": 256.0,
+      "max_cpu_percent": 80.0,
+      "max_memory_growth": 100.0,
+      "max_gc_collections": 10
+    },
+    "large_scale": {
+      "max_time": 120.0,
+      "max_memory": 512.0,
+      "max_cpu_percent": 90.0,
+      "max_memory_growth": 200.0,
+      "max_gc_collections": 20
+    },
+    "stress_test": {
+      "max_time": 300.0,
+      "max_memory": 1024.0,
+      "max_cpu_percent": 95.0,
+      "max_memory_growth": 500.0,
+      "max_gc_collections": 50
+    },
+    "extreme_scale": {
+      "max_time": 600.0,
+      "max_memory": 2048.0,
+      "max_cpu_percent": 95.0,
+      "max_memory_growth": 1000.0,
+      "max_gc_collections": 100
+    }
+  }
+}

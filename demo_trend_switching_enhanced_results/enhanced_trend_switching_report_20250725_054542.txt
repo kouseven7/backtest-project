@@ -1,0 +1,161 @@
+ENHANCED TREND SWITCHING TEST DETAILED REPORT
+==================================================
+
+Generated: 2025-07-25 05:45:42
+
+SCENARIO: bull_to_bear
+------------------------------
+Name: 強気相場から弱気相場への転換
+Description: 長期上昇トレンドから急激な下降トレンドへの転換テスト
+Initial Condition: strong_uptrend
+Target Condition: strong_downtrend
+Data Points: 1200
+Execution Time: 0.0480s
+Switching Events: 12
+
+Performance Metrics:
+  avg_total_return: 1.278122
+  avg_sharpe_ratio: 0.119987
+  avg_max_drawdown: 0.721553
+  avg_win_rate: 0.530899
+  switching_frequency: 12.000000
+  avg_confidence: 0.418681
+
+Success Criteria:
+  positive_returns: PASS
+  reasonable_sharpe: FAIL
+  controlled_drawdown: FAIL
+  effective_switching: FAIL
+  high_confidence: FAIL
+
+==================================================
+SCENARIO: bear_to_bull
+------------------------------
+Name: 弱気相場から強気相場への転換
+Description: 長期下降トレンドから力強い上昇トレンドへの転換テスト
+Initial Condition: strong_downtrend
+Target Condition: strong_uptrend
+Data Points: 1200
+Execution Time: 0.0478s
+Switching Events: 14
+
+Performance Metrics:
+  avg_total_return: -0.590826
+  avg_sharpe_ratio: -0.118305
+  avg_max_drawdown: 1.018526
+  avg_win_rate: 0.400746
+  switching_frequency: 14.000000
+  avg_confidence: 0.454345
+
+Success Criteria:
+  positive_returns: FAIL
+  reasonable_sharpe: FAIL
+  controlled_drawdown: FAIL
+  effective_switching: FAIL
+  high_confidence: FAIL
+
+==================================================
+SCENARIO: sideways_consolidation
+------------------------------
+Name: レンジ相場での戦略効果
+Description: 横ばいレンジ相場での各戦略の効果測定
+Initial Condition: sideways
+Target Condition: sideways
+Data Points: 800
+Execution Time: 0.0359s
+Switching Events: 11
+
+Performance Metrics:
+  avg_total_return: -0.337496
+  avg_sharpe_ratio: -0.072113
+  avg_max_drawdown: 0.520873
+  avg_win_rate: 0.466154
+  switching_frequency: 11.000000
+  avg_confidence: 0.535114
+
+Success Criteria:
+  positive_returns: FAIL
+  reasonable_sharpe: FAIL
+  controlled_drawdown: FAIL
+  effective_switching: FAIL
+  high_confidence: FAIL
+
+==================================================
+SCENARIO: volatility_storm
+------------------------------
+Name: ボラティリティ・ストーム
+Description: 高ボラティリティ環境での戦略切替効果
+Initial Condition: low_volatility
+Target Condition: high_volatility
+Data Points: 600
+Execution Time: 0.0291s
+Switching Events: 3
+
+Performance Metrics:
+  avg_total_return: 1.493819
+  avg_sharpe_ratio: -0.232310
+  avg_max_drawdown: 0.602031
+  avg_win_rate: 0.475365
+  switching_frequency: 3.000000
+  avg_confidence: 0.340000
+
+Success Criteria:
+  positive_returns: PASS
+  reasonable_sharpe: FAIL
+  controlled_drawdown: FAIL
+  effective_switching: PASS
+  high_confidence: FAIL
+
+==================================================
+SCENARIO: multi_phase_transition
+------------------------------
+Name: 多段階トレンド変化
+Description: 複数段階のトレンド変化における適応性テスト
+Initial Condition: moderate_uptrend
+Target Condition: moderate_downtrend
+Data Points: 1500
+Execution Time: 0.0482s
+Switching Events: 18
+
+Performance Metrics:
+  avg_total_return: -0.618580
+  avg_sharpe_ratio: -0.143101
+  avg_max_drawdown: 0.629139
+  avg_win_rate: 0.396864
+  switching_frequency: 18.000000
+  avg_confidence: 0.480185
+
+Success Criteria:
+  positive_returns: FAIL
+  reasonable_sharpe: FAIL
+  controlled_drawdown: FAIL
+  effective_switching: FAIL
+  high_confidence: FAIL
+
+==================================================
+SCENARIO: flash_crash_recovery
+------------------------------
+Name: フラッシュクラッシュ回復
+Description: 急激な下落からの回復過程での戦略効果
+Initial Condition: moderate_uptrend
+Target Condition: high_volatility
+Data Points: 400
+Execution Time: 0.0243s
+Switching Events: 3
+
+Performance Metrics:
+  avg_total_return: 0.363707
+  avg_sharpe_ratio: -0.557466
+  avg_max_drawdown: 0.509201
+  avg_win_rate: 0.242063
+  switching_frequency: 3.000000
+  avg_confidence: 0.502500
+
+Success Criteria:
+  positive_returns: PASS
+  reasonable_sharpe: FAIL
+  controlled_drawdown: FAIL
+  effective_switching: PASS
+  high_confidence: FAIL
+
+==================================================

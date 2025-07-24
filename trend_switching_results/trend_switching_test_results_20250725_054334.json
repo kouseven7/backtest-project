@@ -1,0 +1,7 @@
+{
+  "strong_trend_reversal": {
+    "scenario": {
+      "scenario_id": "strong_trend_reversal",
+      "name": "強いトレンド反転",
+      "description": "強い上昇トレンドから強い下降トレンドへの転換",
+      "initial_condition": 
