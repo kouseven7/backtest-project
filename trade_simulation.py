@@ -27,7 +27,7 @@ from config.file_utils import resolve_excel_file
 from strategies_modules.strategy_parameter_manager import StrategyParameterManager
 from data_fetcher import fetch_yahoo_data  # 適切なデータ取得モジュール
 from strategies.gc_strategy_signal import GCStrategy
-from output.excel_result_exporter import save_backtest_results
+# from output.excel_result_exporter import save_backtest_results  # 新Excel出力モジュールを使用
 from metrics.performance_metrics import (
     calculate_total_trades,
     calculate_win_rate,
@@ -36,7 +36,10 @@ from metrics.performance_metrics import (
     calculate_max_profit,
     calculate_max_loss,
     calculate_max_drawdown,
-    calculate_risk_return_ratio
+    calculate_risk_return_ratio,
+    calculate_sharpe_ratio,
+    calculate_sortino_ratio,
+    calculate_expectancy
 )
 
 logger = setup_logger(__name__)
@@ -45,9 +48,12 @@ logger = setup_logger(__name__)
 config_file = resolve_excel_file(r"C:\Users\imega\Documents\my_backtest_project\config\backtest_config.xlsx")
 
 
-def run_trade_simulation():
+def run_trade_simulation() -> dict:
     """
     トレードシミュレーションを実行するメイン関数。
+    
+    Returns:
+        dict: トレードシミュレーション結果
     """
     try:
         # 1. 戦略パラメータの取得（例: GC戦略）
@@ -74,10 +80,10 @@ def run_trade_simulation():
         # 4. トレードシミュレーションの実行
         trade_results = simulate_trades(result_data, ticker)
         
-        # 5. 結果の保存
-        output_file = r"C:\Users\imega\Documents\my_backtest_project\backtest_results\backtest_results.xlsx"
-        save_backtest_results(trade_results, output_file)
-        logger.info("トレードシミュレーションの結果を保存しました。")
+        # 5. 結果の準備（Excel出力は新モジュールで実行）
+        logger.info("トレードシミュレーション完了。Excel出力は新モジュールで実行されます。")
+        
+        return trade_results
     
     except Exception as e:
         logger.exception("トレードシミュレーションの実行中にエラーが発生しました。")
@@ -101,8 +107,8 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
     exit_signal_count = (data["Exit_Signal"] == -1).sum() if "Exit_Signal" in data.columns else 0
     logger.info(f"シグナル確認: エントリー: {entry_signal_count}回, イグジット: {exit_signal_count}回")
     
-    # 取引履歴 DataFrame に「銘柄」カラムを追加
-    trade_history = pd.DataFrame(columns=["日付", "銘柄", "戦略", "エントリー", "イグジット", "取引結果", "取引量", "手数料", "リスク状態"])
+    # 取引履歴 DataFrame に「銘柄」カラムを追加（リスク状態列は削除）
+    trade_history = pd.DataFrame(columns=["日付", "銘柄", "戦略", "エントリー", "イグジット", "取引結果", "取引量(株)", "取引金額", "手数料"])
     cumulative_pnl = []
     cum_profit = 0
     
@@ -243,18 +249,21 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
                 # 安全なデフォルト値を設定
                 entry_price = exit_price if exit_price > 0 else 1.0
 
-            # 取引量と手数料
-            trade_amount = 100000 * effective_position  # 10万円 × 実効ポジションサイズ
+            # 取引量（株数単位で計算）
+            # 100万円 ÷ エントリー価格 ÷ 100 で100株単位での購入可能数を計算
+            base_capital = 1000000  # 基準資金100万円
+            shares_per_unit = int((base_capital * effective_position) / (float(entry_price) * 100))
+            total_shares = shares_per_unit * 100  # 実際の株数
+            trade_amount = total_shares * float(entry_price)  # 実際の取引金額
+            
+            # 手数料計算
             fee = trade_amount * 0.001  # 0.1%手数料
-            profit_after_fee = (profit / float(entry_price)) * trade_amount - fee
+            profit_after_fee = profit * shares_per_unit - fee
         except (TypeError, ValueError, ZeroDivisionError) as e:
             logger.error(f"損益計算エラー: {e}, entry_price={entry_price}, exit_price={exit_price}, position_size={position_size}, partial_exit={partial_exit}")
             continue
 
-        # リスク管理の状態をJSON文字列に変換して保存
-        risk_state_str = str({})  # 簡略化のため空の辞書を使用
-
-        # 取引履歴に追加
+        # 取引履歴に追加（リスク状態列を削除）
         trade_history.loc[len(trade_history)] = [
             exit_date, 
             ticker, 
@@ -262,9 +271,9 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
             entry_price, 
             exit_price, 
             profit_after_fee, 
-            trade_amount,
-            fee,
-            risk_state_str
+            total_shares,  # 株数で表示
+            trade_amount,  # 取引金額
+            fee
         ]
         cum_profit += profit_after_fee
         
@@ -307,22 +316,41 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
         max_loss = calculate_max_loss(trade_history)
         max_drawdown = calculate_max_drawdown(cumulative_pnl)
         risk_return_ratio = calculate_risk_return_ratio(total_profit, max_drawdown)
+        
+        # 高度なパフォーマンス指標を追加計算
+        # 日次リターンを計算（累積損益から）
+        daily_returns = daily_pnl / 1000000  # 初期資産で正規化してリターン率を計算
+        daily_returns = daily_returns.dropna()  # NaN値を除去
+        
+        # シャープレシオ、ソルティノレシオ、期待値を計算
+        try:
+            sharpe_ratio = calculate_sharpe_ratio(daily_returns) if len(daily_returns) > 1 else 0.0
+            sortino_ratio = calculate_sortino_ratio(daily_returns) if len(daily_returns) > 1 else 0.0
+            expectancy = calculate_expectancy(trade_history) if len(trade_history) > 0 else 0.0
+        except Exception as e:
+            logger.warning(f"高度なパフォーマンス指標の計算でエラー: {e}")
+            sharpe_ratio = 0.0
+            sortino_ratio = 0.0
+            expectancy = 0.0
 
         # パフォーマンス指標をデータフレームに追加
         performance_metrics = pd.DataFrame({
             "指標": [
                 "総取引数", "勝率", "損益合計", "平均損益", "最大利益", "最大損失",
-                "最大ドローダウン(%)", "リスクリターン比率"
+                "最大ドローダウン(%)", "リスクリターン比率", "シャープレシオ", "ソルティノレシオ", "期待値"
             ],
             "値": [
                 total_trades,
-                f"{win_rate:.2f}%",
+                f"{win_rate:.2f}%" if not pd.isna(win_rate) else "0%",
                 f"{total_profit:.2f}円",
                 f"{average_profit:.2f}円",
                 f"{max_profit:.2f}円",
                 f"{max_loss:.2f}円",
-                f"{max_drawdown:.2f}%",
-                f"{risk_return_ratio:.2f}"
+                f"{max_drawdown:.2f}%" if not pd.isna(max_drawdown) else "0%",
+                f"{risk_return_ratio:.2f}" if not pd.isna(risk_return_ratio) else "0",
+                f"{sharpe_ratio:.3f}",
+                f"{sortino_ratio:.3f}",
+                f"{expectancy:.3f}"
             ]
         })
     else:
@@ -333,11 +361,11 @@ def simulate_trades(data: pd.DataFrame, ticker: str) -> dict:
             "累積損益": [0] * len(data)
         })
         performance_metrics = pd.DataFrame({
-            "指標": ["総取引数", "勝率", "損益合計", "最大ドローダウン(%)", "リスクリターン比率"],
-            "値": ["0", "0%", "0円", "0%", "0"]
+            "指標": ["総取引数", "勝率", "損益合計", "最大ドローダウン(%)", "リスクリターン比率", "シャープレシオ", "ソルティノレシオ", "期待値"],
+            "値": ["0", "0%", "0円", "0%", "0", "0.000", "0.000", "0.000"]
         })
     
-    # リスク管理情報を追加
+    # リスク管理情報を追加（実際の設定値を取得）
     risk_summary = pd.DataFrame({
         "リスク管理設定": [
             "総資産",

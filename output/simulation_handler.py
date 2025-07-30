@@ -17,6 +17,8 @@ from datetime import datetime
 from config.logger_config import setup_logger
 from trade_simulation import simulate_trades
 from output.excel_result_exporter import save_backtest_results, save_splits_to_excel
+# 新しいExcel出力モジュールもインポート
+from output.simple_excel_exporter import save_backtest_results_simple
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\output.log")
@@ -46,8 +48,24 @@ def simulate_and_save(data: pd.DataFrame, ticker: str, splits: Optional[List[Tup
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"backtest_results_{timestamp}"
     
-    # 結果の保存
+    # 結果の保存（従来モジュール）
     filepath = save_backtest_results(trade_results, output_dir, filename)
+    logger.info(f"従来Excel出力: {filepath}")
+    
+    # 新しいExcel出力モジュールでも保存
+    try:
+        new_filepath = save_backtest_results_simple(
+            stock_data=data,
+            ticker=ticker,
+            output_dir=None,  # デフォルトディレクトリを使用
+            filename=f"improved_{filename}.xlsx"
+        )
+        if new_filepath:
+            logger.info(f"新Excel出力: {new_filepath}")
+        else:
+            logger.warning("新Excel出力に失敗しました")
+    except Exception as e:
+        logger.warning(f"新Excel出力エラー: {e}")
     
     # ウォークフォワード分割結果がある場合は保存
     if splits:

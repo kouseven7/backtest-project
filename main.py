@@ -54,7 +54,7 @@ from strategies.gc_strategy_signal import GCStrategy
 from data_processor import preprocess_data
 from indicators.indicator_calculator import compute_indicators
 from data_fetcher import get_parameters_and_data
-from output.simulation_handler import simulate_and_save
+from output.simple_simulation_handler import simulate_and_save
 
 # リスク管理の初期化
 risk_manager = RiskManagement(total_assets=1000000)  # 総資産100万円
@@ -528,10 +528,10 @@ def main():
             # 最適化パラメータを使用して戦略を適用
             stock_data = apply_strategies_with_optimized_params(stock_data, index_data, optimized_params)
             
-            # バックテスト結果をExcelに出力
-            backtest_results = simulate_and_save(stock_data, ticker)
+        # バックテスト結果をExcelに出力（新Excel出力モジュール使用）
+        backtest_results = simulate_and_save(stock_data, ticker)
+        logger.info(f"改良版Excel出力: {backtest_results}")
         
-        logger.info(f"バックテスト結果をExcelに出力: {backtest_results}")
         logger.info("マルチ戦略バックテストシステムが正常に完了しました")
         
     except Exception as e:
