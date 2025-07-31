@@ -7,12 +7,12 @@ Description:
 
 Author: imega
 Created: 2025-07-30
-Modified: 2025-07-30
+Modified: 2025-07-31
 
 Features:
   - 正確な取引履歴の生成
   - 正しい日次累積損益の計算
-  - 適切なパフォーマンス指標の算出
+  - 適切なパフォーマンス指標の算出（リスクリワード比・期待値含む）
   - 100株単位での取引量表示
   - リスク管理設定の表示
 """
@@ -86,9 +86,9 @@ class SimpleExcelExporter:
             daily_pnl = self._calculate_daily_pnl(stock_data, trade_history)
             logger.info(f"損益推移計算完了: {len(daily_pnl)} 日")
             
-            # 3. パフォーマンス指標を計算
+            # 3. パフォーマンス指標を計算（リスクリワード比・期待値含む）
             performance_metrics = self._calculate_performance_metrics(trade_history, daily_pnl)
-            logger.info("パフォーマンス指標計算完了")
+            logger.info("パフォーマンス指標計算完了（リスクリワード比・期待値含む）")
             
             # 4. リスク管理設定を取得
             risk_settings = self._get_risk_management_settings()
@@ -268,6 +268,85 @@ class SimpleExcelExporter:
                 '累積リターン(%)': [0] * len(stock_data)
             })
     
+    def _calculate_risk_reward_ratio(self, trade_history: pd.DataFrame) -> float:
+        """
+        リスクリワード比を計算（手数料除く）
+        リスクリワード比 = 平均利益 ÷ 平均損失
+        
+        Parameters:
+            trade_history (pd.DataFrame): 取引履歴
+            
+        Returns:
+            float: リスクリワード比
+        """
+        try:
+            if trade_history.empty:
+                return 0.0
+            
+            # 手数料を除いた純損益を計算（手数料分を戻す）
+            pure_pnl = trade_history['取引結果'] + trade_history.get('手数料', 0)
+            
+            # 勝ちトレードと負けトレードを分離
+            winning_trades = pure_pnl[pure_pnl > 0]
+            losing_trades = pure_pnl[pure_pnl < 0]
+            
+            if len(winning_trades) == 0 or len(losing_trades) == 0:
+                return 0.0
+            
+            # 平均利益と平均損失を計算
+            avg_profit = winning_trades.mean()
+            avg_loss = abs(losing_trades.mean())  # 絶対値で正の値にする
+            
+            return avg_profit / avg_loss if avg_loss > 0 else 0.0
+            
+        except Exception as e:
+            logger.error(f"リスクリワード比計算エラー: {e}")
+            return 0.0
+    
+    def _calculate_expected_value(self, trade_history: pd.DataFrame, win_rate: float) -> Tuple[float, float]:
+        """
+        期待値を計算（円・％）
+        期待値（円） = （勝率 × 平均利益） - （負け率 × 平均損失）
+        期待値（％） = 期待値（円） ÷ 初期資金 × 100
+        
+        Parameters:
+            trade_history (pd.DataFrame): 取引履歴
+            win_rate (float): 勝率（％）
+            
+        Returns:
+            Tuple[float, float]: (期待値（円）, 期待値（％）)
+        """
+        try:
+            if trade_history.empty or win_rate == 0:
+                return 0.0, 0.0
+            
+            # 手数料を除いた純損益を計算
+            pure_pnl = trade_history['取引結果'] + trade_history.get('手数料', 0)
+            
+            # 勝ちトレードと負けトレードを分離
+            winning_trades = pure_pnl[pure_pnl > 0]
+            losing_trades = pure_pnl[pure_pnl < 0]
+            
+            # 平均利益と平均損失を計算
+            avg_profit = winning_trades.mean() if len(winning_trades) > 0 else 0
+            avg_loss = abs(losing_trades.mean()) if len(losing_trades) > 0 else 0
+            
+            # 勝率と負け率（小数）
+            win_rate_decimal = win_rate / 100
+            lose_rate_decimal = 1 - win_rate_decimal
+            
+            # 期待値（円）を計算
+            expected_value_yen = (win_rate_decimal * avg_profit) - (lose_rate_decimal * avg_loss)
+            
+            # 期待値（％）を計算
+            expected_value_pct = (expected_value_yen / self.initial_capital * 100) if self.initial_capital > 0 else 0
+            
+            return expected_value_yen, expected_value_pct
+            
+        except Exception as e:
+            logger.error(f"期待値計算エラー: {e}")
+            return 0.0, 0.0
+    
     def _calculate_performance_metrics(self, trade_history: pd.DataFrame,
                                      daily_pnl: pd.DataFrame) -> pd.DataFrame:
         """パフォーマンス指標を計算する"""
@@ -315,6 +394,12 @@ class SimpleExcelExporter:
             # 平均保有日数
             avg_holding_days = trade_history['保有日数'].mean() if '保有日数' in trade_history.columns else 0
             
+            # ★新規追加: リスクリワード比を計算
+            risk_reward_ratio = self._calculate_risk_reward_ratio(trade_history)
+            
+            # ★新規追加: 期待値を計算
+            expected_value_yen, expected_value_pct = self._calculate_expected_value(trade_history, win_rate)
+            
             return pd.DataFrame({
                 '指標': [
                     '総取引数',
@@ -328,6 +413,9 @@ class SimpleExcelExporter:
                     '勝ちトレード平均',
                     '負けトレード平均',
                     'プロフィットファクター',
+                    'リスクリワード比',  # ★新規追加
+                    '期待値（円）',      # ★新規追加
+                    '期待値（％）',      # ★新規追加
                     '最大ドローダウン(円)',
                     '最大ドローダウン(%)',
                     'シャープレシオ',
@@ -346,6 +434,9 @@ class SimpleExcelExporter:
                     f"{winning_avg:,.0f}円",
                     f"{losing_avg:,.0f}円",
                     f"{profit_factor:.2f}" if profit_factor != float('inf') else "∞",
+                    f"{risk_reward_ratio:.3f}",  # ★新規追加
+                    f"{expected_value_yen:,.0f}円",  # ★新規追加
+                    f"{expected_value_pct:+.2f}%",   # ★新規追加（+記号付き）
                     f"{max_drawdown_abs:,.0f}円",
                     f"{max_drawdown_pct:.2f}%",
                     f"{sharpe_ratio:.3f}",
@@ -419,13 +510,22 @@ class SimpleExcelExporter:
                     total_profit = strategy_trades['取引結果'].sum()
                     avg_profit = total_profit / total_trades if total_trades > 0 else 0
                     
+                    # 戦略別リスクリワード比
+                    risk_reward = self._calculate_risk_reward_ratio(strategy_trades)
+                    
+                    # 戦略別期待値
+                    expected_yen, expected_pct = self._calculate_expected_value(strategy_trades, win_rate)
+                    
                     strategy_stats.append({
                         '戦略': strategy,
                         '取引数': total_trades,
                         '勝ち数': winning_trades,
                         '勝率': f"{win_rate:.1f}%",
                         '合計損益': f"{total_profit:,.0f}円",
-                        '平均損益': f"{avg_profit:,.0f}円"
+                        '平均損益': f"{avg_profit:,.0f}円",
+                        'リスクリワード比': f"{risk_reward:.3f}",  # ★新規追加
+                        '期待値（円）': f"{expected_yen:,.0f}円",    # ★新規追加
+                        '期待値（％）': f"{expected_pct:+.2f}%"     # ★新規追加
                     })
             
             return pd.DataFrame(strategy_stats)
@@ -472,9 +572,9 @@ class SimpleExcelExporter:
                 
                 # メタデータシートを追加
                 metadata = pd.DataFrame({
-                    '項目': ['銘柄コード', '出力日時', '初期資金', 'ファイル形式'],
+                    '項目': ['銘柄コード', '出力日時', '初期資金', 'ファイル形式', '機能追加'],
                     '値': [ticker, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
-                          f"{self.initial_capital:,}円", '改良版Excel出力']
+                          f"{self.initial_capital:,}円", '改良版Excel出力', 'リスクリワード比・期待値対応']
                 })
                 metadata.to_excel(writer, sheet_name='メタデータ', index=False)
                 
