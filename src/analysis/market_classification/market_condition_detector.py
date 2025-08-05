@@ -30,8 +30,8 @@ class DetectionMethod(Enum):
 @dataclass
 class DetectionResult:
     """市場状況検出結果"""
-    condition: MarketCondition
-    strength: MarketStrength
+    condition: SimpleMarketCondition
+    strength: float
     confidence: float
     method: DetectionMethod
     supporting_indicators: Dict[str, float]
@@ -577,7 +577,7 @@ def detect_market_condition_simple(data: pd.DataFrame,
     
     return {
         'condition': result.condition.value,
-        'strength': result.strength.value,
+        'strength': result.strength,
         'confidence': result.confidence,
         'method': result.method.value,
         'detection_time': result.detection_time.isoformat(),
@@ -614,7 +614,7 @@ if __name__ == "__main__":
     print("\n1. 複合手法による検出")
     result = detector.detect_market_condition(trend_data)
     print(f"条件: {result.condition.value}")
-    print(f"強度: {result.strength.value}")
+    print(f"強度: {result.strength}")
     print(f"信頼度: {result.confidence:.3f}")
     
     print("\n2. 全手法サマリー")

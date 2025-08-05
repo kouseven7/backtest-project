@@ -1,0 +1,500 @@
+{
+  "metadata": {
+    "report_title": "戦略比較レポート",
+    "generation_timestamp": "2025-08-05T22:33:10.639472",
+    "report_config": {
+      "output_formats": [
+        "json"
+      ],
+      "include_charts": false,
+      "include_interactive_dashboard": false,
+      "include_statistical_analysis": true,
+      "include_market_breakdown": true,
+      "chart_style": "professional",
+      "language": "ja",
+      "output_directory": "output/test_reports"
+    }
+  },
+  "sections": [
+    {
+      "title": "エグゼクティブサマリー",
+      "section_type": "text",
+      "content": {
+        "analysis_overview": {
+          "total_results": 1,
+          "strategies_analyzed": 1,
+          "symbols_analyzed": 1,
+          "analysis_date": "2025-08-05T22:33:10.630600"
+        },
+        "key_findings": [
+          "最高パフォーマンス戦略: TestStrategy",
+          "分析対象戦略数: 1"
+        ],
+        "top_strategies": [
+          "TestStrategy"
+        ]
+      }
+    },
+    {
+      "title": "戦略パフォーマンス概要",
+      "section_type": "table",
+      "content": [
+        {
+          "Strategy": "TestStrategy",
+          "Avg_total_return": 0.05,
+          "Avg_sharpe_ratio": 1.2,
+          "Avg_win_rate": 0.6,
+          "Avg_max_drawdown": 0.0,
+          "Avg_volatility": 0.0,
+          "Avg_alpha": 0.0,
+          "Avg_beta": 0.0
+        }
+      ]
+    },
+    {
+      "title": "市場環境別分析",
+      "section_type": "table",
+      "content": {
+        "unknown": [
+          {
+            "Strategy": "TestStrategy",
+            "total_return": 0.05,
+            "sharpe_ratio": 1.2,
+            "win_rate": 0.6,
+            "max_drawdown": 0.0,
+            "volatility": 0.0,
+            "alpha": 0.0,
+            "beta": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "title": "パフォーマンスランキング",
+      "section_type": "table",
+      "content": {
+        "overall_ranking": [
+          {
+            "Rank": 1,
+            "Strategy": "TestStrategy",
+            "Score": 0.435
+          }
+        ],
+        "market_environment_rankings": {},
+        "metric_rankings": {
+          "total_return": "   Rank      Strategy  Score\n0     1  TestStrategy   0.05",
+          "sharpe_ratio": "   Rank      Strategy  Score\n0     1  TestStrategy    1.2",
+          "win_rate": "   Rank      Strategy  Score\n0     1  TestStrategy    0.6",
+          "max_drawdown": "   Rank      Strategy  Score\n0     1  TestStrategy    0.0",
+          "volatility": "   Rank      Strategy  Score\n0     1  TestStrategy    0.0",
+          "alpha": "   Rank      Strategy  Score\n0     1  TestStrategy    0.0",
+          "beta": "   Rank      Strategy  Score\n0     1  TestStrategy    0.0"
+        }
+      }
+    },
+    {
+      "title": "時系列分析",
+      "section_type": "table",
+      "content": {
+        "time_series_performance": [
+          {
+            "Time_Period": "2023-01",
+            "Strategy": "TestStrategy",
+            "Metric": "total_return",
+            "Value": 0.05
+          },
+          {
+            "Time_Period": "2023-01",
+            "Strategy": "TestStrategy",
+            "Metric": "sharpe_ratio",
+            "Value": 1.2
+          },
+          {
+            "Time_Period": "2023-01",
+            "Strategy": "TestStrategy",
+            "Metric": "win_rate",
+            "Value": 0.6
+          },
+          {
+            "Time_Period": "2023-01",
+            "Strategy": "TestStrategy",
+            "Metric": "max_drawdown",
+            "Value": 0.0
+          },
+          {
+            "Time_Period": "2023-01",
+            "Strategy": "TestStrategy",
+            "Metric": "volatility",
+            "Value": 0.0
+          },
+          {
+            "Time_Period": "2023-01",
+            "Strategy": "TestStrategy",
+            "Metric": "alpha",
+            "Value": 0.0
+          },
+          {
+            "Time_Period": "2023-01",
+            "Strategy": "TestStrategy",
+            "Metric": "beta",
+            "Value": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "title": "リスク分析",
+      "section_type": "table",
+      "content": [
+        {
+          "Strategy": "TestStrategy",
+          "Avg_Volatility": 0.0,
+          "Avg_Max_Drawdown": 0.0,
+          "Avg_Sharpe_Ratio": 1.2,
+          "Risk_Level": "Low"
+        }
+      ]
+    },
+    {
+      "title": "推奨事項",
+      "section_type": "table",
+      "content": [
+        {
+          "Category": "パフォーマンス",
+          "Recommendation": "トップ3戦略の採用を推奨: TestStrategy",
+          "Priority": "High"
+        },
+        {
+          "Category": "リスク管理",
+          "Recommendation": "低リスク戦略の活用: TestStrategy",
+          "Priority": "Medium"
+        },
+        {
+          "Category": "分散化",
+          "Recommendation": "複数戦略の組み合わせによるリスク分散を検討",
+          "Priority": "Medium"
+        },
+        {
+          "Category": "継続監視",
+          "Recommendation": "定期的なパフォーマンス評価と戦略見直し",
+          "Priority": "High"
+        }
+      ]
+    }
+  ],
+  "raw_results": {
+    "summary": {
+      "total_results": 1,
+      "strategies_analyzed": 1,
+      "symbols_analyzed": 1,
+      "aggregation_timestamp": "2025-08-05T22:33:10.630600"
+    },
+    "strategy_market_performance": {
+      "TestStrategy": {
+        "unknown": {
+          "total_return": {
+            "mean": 0.05,
+            "median": 0.05,
+            "std": 0.0,
+            "min": 0.05,
+            "max": 0.05,
+            "count": 1,
+            "percentile_25": 0.05,
+            "percentile_75": 0.05
+          },
+          "sharpe_ratio": {
+            "mean": 1.2,
+            "median": 1.2,
+            "std": 0.0,
+            "min": 1.2,
+            "max": 1.2,
+            "count": 1,
+            "percentile_25": 1.2,
+            "percentile_75": 1.2
+          },
+          "win_rate": {
+            "mean": 0.6,
+            "median": 0.6,
+            "std": 0.0,
+            "min": 0.6,
+            "max": 0.6,
+            "count": 1,
+            "percentile_25": 0.6,
+            "percentile_75": 0.6
+          },
+          "max_drawdown": {
+            "mean": 0.0,
+            "median": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "count": 1,
+            "percentile_25": 0.0,
+            "percentile_75": 0.0
+          },
+          "volatility": {
+            "mean": 0.0,
+            "median": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "count": 1,
+            "percentile_25": 0.0,
+            "percentile_75": 0.0
+          },
+          "alpha": {
+            "mean": 0.0,
+            "median": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "count": 1,
+            "percentile_25": 0.0,
+            "percentile_75": 0.0
+          },
+          "beta": {
+            "mean": 0.0,
+            "median": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "count": 1,
+            "percentile_25": 0.0,
+            "percentile_75": 0.0
+          }
+        }
+      }
+    },
+    "time_series_analysis": {
+      "time_series_data": {
+        "2023-01": {
+          "TestStrategy": {
+            "total_return": {
+              "mean": 0.05,
+              "median": 0.05,
+              "std": 0.0,
+              "min": 0.05,
+              "max": 0.05,
+              "count": 1,
+              "percentile_25": 0.05,
+              "percentile_75": 0.05
+            },
+            "sharpe_ratio": {
+              "mean": 1.2,
+              "median": 1.2,
+              "std": 0.0,
+              "min": 1.2,
+              "max": 1.2,
+              "count": 1,
+              "percentile_25": 1.2,
+              "percentile_75": 1.2
+            },
+            "win_rate": {
+              "mean": 0.6,
+              "median": 0.6,
+              "std": 0.0,
+              "min": 0.6,
+              "max": 0.6,
+              "count": 1,
+              "percentile_25": 0.6,
+              "percentile_75": 0.6
+            },
+            "max_drawdown": {
+              "mean": 0.0,
+              "median": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0,
+              "count": 1,
+              "percentile_25": 0.0,
+              "percentile_75": 0.0
+            },
+            "volatility": {
+              "mean": 0.0,
+              "median": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0,
+              "count": 1,
+              "percentile_25": 0.0,
+              "percentile_75": 0.0
+            },
+            "alpha": {
+              "mean": 0.0,
+              "median": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0,
+              "count": 1,
+              "percentile_25": 0.0,
+              "percentile_75": 0.0
+            },
+            "beta": {
+              "mean": 0.0,
+              "median": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0,
+              "count": 1,
+              "percentile_25": 0.0,
+              "percentile_75": 0.0
+            }
+          }
+        }
+      },
+      "trend_analysis": {
+        "TestStrategy": {}
+      },
+      "time_granularity": "monthly"
+    },
+    "correlation_analysis": {
+      "metrics_correlation": {
+        "correlation_matrix": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "metric_names": [
+          "total_return",
+          "sharpe_ratio",
+          "win_rate",
+          "max_drawdown",
+          "volatility",
+          "alpha",
+          "beta"
+        ]
+      }
+    },
+    "statistical_analysis": {
+      "strategy_tests": {
+        "normality_tests": {}
+      },
+      "market_tests": {},
+      "outlier_analysis": {
+        "z_score_outliers": [],
+        "iqr_outliers": [],
+        "outlier_summary": {
+          "total_z_score_outliers": 0,
+          "total_iqr_outliers": 0,
+          "outlier_rate": 0.0
+        }
+      },
+      "distribution_analysis": {}
+    },
+    "clustering_analysis": {},
+    "performance_rankings": {
+      "overall": {
+        "TestStrategy": 0.435
+      },
+      "by_market_environment": {},
+      "by_metric": {
+        "total_return": {
+          "TestStrategy": 0.05
+        },
+        "sharpe_ratio": {
+          "TestStrategy": 1.2
+        },
+        "win_rate": {
+          "TestStrategy": 0.6
+        },
+        "max_drawdown": {
+          "TestStrategy": 0.0
+        },
+        "volatility": {
+          "TestStrategy": 0.0
+        },
+        "alpha": {
+          "TestStrategy": 0.0
+        },
+        "beta": {
+          "TestStrategy": 0.0
+        }
+      }
+    },
+    "data_quality_assessment": {
+      "data_completeness": {
+        "total_results": 1,
+        "valid_results": 1,
+        "completeness_rate": 1.0
+      },
+      "coverage_analysis": {
+        "strategies_count": 1,
+        "symbols_count": 1,
+        "market_states_count": 1,
+        "strategies_covered": [
+          "TestStrategy"
+        ],
+        "symbols_covered": [
+          "AAPL"
+        ],
+        "market_states_covered": [
+          "unknown"
+        ]
+      },
+      "quality_scores": {
+        "overall_quality_score": 0.5,
+        "quality_grade": "Very Poor"
+      }
+    }
+  }
+}
