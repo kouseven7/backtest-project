@@ -1,0 +1,13 @@
+{
+  "enable_volatility_adjustment": true,
+  "enable_trend_adjustment": true,
+  "enable_momentum_adjustment": false,
+  "volatility_sensitivity": 1.0,
+  "trend_sensitivity": 0.8,
+  "momentum_sensitivity": 0.5,
+  "max_adjustment_per_period": 0.2,
+  "min_adjustment_threshold": 0.05,
+  "volatility_threshold_high": 0.3,
+  "volatility_threshold_low": 0.15,
+  "trend_strength_threshold": 0.6
+}

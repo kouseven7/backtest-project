@@ -1,0 +1,32 @@
+{
+  "detection_settings": {
+    "detection_window": 30,
+    "minimum_confidence_threshold": 0.3,
+    "error_rate_alert_threshold": 0.3,
+    "trend_validation_window": 10,
+    "volatility_adjustment": true,
+    "real_time_monitoring": true
+  },
+  "batch_processing": {
+    "enabled": true,
+    "batch_size": 100,
+    "parallel_processing": false,
+    "max_workers": 4
+  },
+  "alert_thresholds": {
+    "high_error_rate": 0.3,
+    "critical_impact": 0.1,
+    "systemic_risk": 0.05
+  },
+  "data_quality": {
+    "minimum_data_points": 10,
+    "max_missing_data_ratio": 0.1,
+    "outlier_detection": true,
+    "outlier_threshold": 3.0
+  },
+  "trend_detection_integration": {
+    "use_unified_trend_detector": true,
+    "fallback_to_simple_detection": true,
+    "validation_methods": ["future_price_movement", "technical_indicators"]
+  }
+}

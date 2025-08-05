@@ -1,0 +1,83 @@
+{
+  "execution_pipeline": {
+    "stages": [
+      {
+        "id": "strategy_selection",
+        "name": "戦略選択ステージ",
+        "enabled": true,
+        "timeout_seconds": 30,
+        "retry_attempts": 2,
+        "critical": true
+      },
+      {
+        "id": "weight_calculation",
+        "name": "重み計算ステージ",
+        "enabled": true,
+        "timeout_seconds": 20,
+        "retry_attempts": 2,
+        "critical": true
+      },
+      {
+        "id": "signal_integration",
+        "name": "シグナル統合ステージ",
+        "enabled": true,
+        "timeout_seconds": 15,
+        "retry_attempts": 1,
+        "critical": true
+      },
+      {
+        "id": "risk_adjustment",
+        "name": "リスク調整ステージ",
+        "enabled": true,
+        "timeout_seconds": 25,
+        "retry_attempts": 1,
+        "critical": false
+      },
+      {
+        "id": "execution",
+        "name": "実行ステージ",
+        "enabled": true,
+        "timeout_seconds": 60,
+        "retry_attempts": 3,
+        "critical": true
+      }
+    ]
+  },
+  "coordination": {
+    "execution_mode": "adaptive",
+    "parallel_strategies": 4,
+    "sequential_threshold": 8,
+    "dynamic_ordering": true,
+    "load_balancing": true
+  },
+  "aggregation": {
+    "method": "weighted",
+    "confidence_weighting": true,
+    "performance_adjustment": true,
+    "outlier_handling": "cap"
+  },
+  "failover": {
+    "strategy": "individual",
+    "fallback_enabled": true,
+    "minimum_strategies": 1,
+    "emergency_mode": false
+  },
+  "monitoring": {
+    "performance_tracking": true,
+    "stage_timing": true,
+    "resource_monitoring": true,
+    "error_logging": true
+  },
+  "thresholds": {
+    "max_execution_time": 180,
+    "memory_limit_mb": 512,
+    "cpu_usage_limit": 80,
+    "min_success_rate": 0.7
+  },
+  "error_handling": {
+    "stage_failure_tolerance": 1,
+    "strategy_failure_tolerance": 2,
+    "auto_recovery": true,
+    "graceful_degradation": true
+  }
+}

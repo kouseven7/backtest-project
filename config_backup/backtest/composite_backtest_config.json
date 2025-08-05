@@ -1,0 +1,164 @@
+{
+  "backtest_engine": {
+    "engine_name": "CompositeStrategyBacktestEngine",
+    "version": "1.0.0",
+    "execution_mode": "hybrid",
+    "max_concurrent_backtests": 3,
+    "default_timeout_minutes": 30
+  },
+  "data_management": {
+    "data_cache_enabled": true,
+    "cache_size_mb": 500,
+    "data_validation_level": "strict",
+    "missing_data_threshold": 0.02,
+    "outlier_detection_enabled": true,
+    "data_preprocessing": {
+      "fill_method": "forward",
+      "smooth_outliers": true,
+      "normalize_prices": false
+    }
+  },
+  "execution_settings": {
+    "parallel_execution_enabled": true,
+    "max_worker_threads": 4,
+    "batch_processing_enabled": true,
+    "batch_size": 50,
+    "memory_management": {
+      "max_memory_usage_mb": 2048,
+      "garbage_collection_interval": 100,
+      "data_cleanup_enabled": true
+    }
+  },
+  "performance_calculation": {
+    "primary_metrics": [
+      "expected_return",
+      "expected_sharpe_ratio", 
+      "expected_max_drawdown",
+      "return_consistency",
+      "risk_adjusted_return"
+    ],
+    "secondary_metrics": [
+      "total_return",
+      "volatility",
+      "win_rate",
+      "profit_factor",
+      "calmar_ratio",
+      "sortino_ratio",
+      "beta",
+      "alpha",
+      "information_ratio"
+    ],
+    "benchmark_metrics": [
+      "benchmark_correlation",
+      "tracking_error",
+      "active_return",
+      "up_capture_ratio",
+      "down_capture_ratio"
+    ],
+    "calculation_methods": {
+      "return_calculation": "geometric",
+      "volatility_calculation": "annualized",
+      "risk_free_rate": 0.02,
+      "confidence_level": 0.95
+    }
+  },
+  "risk_management": {
+    "position_limits": {
+      "max_single_position": 0.2,
+      "max_sector_exposure": 0.4,
+      "max_correlation_exposure": 0.6
+    },
+    "stop_loss_settings": {
+      "global_stop_loss": 0.05,
+      "trailing_stop_enabled": true,
+      "stop_loss_method": "atr_based"
+    },
+    "var_calculation": {
+      "confidence_level": 0.05,
+      "holding_period_days": 1,
+      "simulation_method": "historical"
+    }
+  },
+  "optimization_settings": {
+    "rebalancing": {
+      "frequency": "monthly",
+      "tolerance": 0.05,
+      "transaction_cost": 0.001,
+      "minimum_trade_size": 0.01
+    },
+    "weight_optimization": {
+      "method": "mean_variance",
+      "constraints": {
+        "long_only": true,
+        "sum_to_one": true,
+        "individual_limits": [0.05, 0.4]
+      },
+      "objective_function": "risk_adjusted_return"
+    }
+  },
+  "reporting": {
+    "output_formats": ["excel", "json", "html"],
+    "excel_output": {
+      "include_charts": true,
+      "detailed_trades": true,
+      "performance_attribution": true,
+      "risk_analysis": true
+    },
+    "visualization": {
+      "equity_curve": true,
+      "drawdown_chart": true,
+      "return_distribution": true,
+      "correlation_heatmap": true,
+      "rolling_metrics": true
+    },
+    "export_settings": {
+      "auto_timestamp": true,
+      "compression_enabled": false,
+      "backup_results": true
+    }
+  },
+  "integration_settings": {
+    "trend_switching_integration": {
+      "enabled": true,
+      "trend_detector": "UnifiedTrendDetector",
+      "switching_threshold": 0.7,
+      "switching_delay_hours": 1
+    },
+    "coordination_system_integration": {
+      "enabled": true,
+      "load_balancing": true,
+      "resource_monitoring": true,
+      "fallback_mode": "single_strategy"
+    },
+    "existing_system_compatibility": {
+      "composite_execution_engine": true,
+      "strategy_selector": true,
+      "portfolio_risk_manager": true,
+      "signal_integrator": true
+    }
+  },
+  "logging": {
+    "log_level": "INFO",
+    "log_to_file": true,
+    "log_rotation": true,
+    "max_log_size_mb": 100,
+    "performance_logging": true,
+    "error_tracking": true
+  },
+  "testing": {
+    "unit_tests_enabled": true,
+    "integration_tests_enabled": true,
+    "performance_tests_enabled": true,
+    "stress_testing": {
+      "enabled": true,
+      "max_strategies": 10,
+      "max_data_points": 10000
+    }
+  },
+  "fallback_settings": {
+    "error_handling": "graceful_degradation",
+    "retry_attempts": 3,
+    "timeout_handling": "partial_results",
+    "memory_overflow_handling": "reduce_batch_size"
+  }
+}

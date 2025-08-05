@@ -1,0 +1,40 @@
+{
+  "configurations": {
+    "DefaultTrendBased": {
+      "type": "TrendBased",
+      "priority": 10,
+      "enabled": true,
+      "modified_at": "2025-07-14T20:23:20.128663",
+      "version": "1.0"
+    },
+    "DefaultScoreBased": {
+      "type": "ScoreBased",
+      "priority": 20,
+      "enabled": true,
+      "modified_at": "2025-07-14T20:23:20.128670",
+      "version": "1.0"
+    },
+    "DefaultHybrid": {
+      "type": "Hybrid",
+      "priority": 15,
+      "enabled": true,
+      "modified_at": "2025-07-14T20:23:20.128674",
+      "version": "1.0"
+    },
+    "TestSidewaysRule": {
+      "type": "Configurable",
+      "priority": 30,
+      "enabled": true,
+      "modified_at": "2025-07-14T20:23:20.128676",
+      "version": "1.0"
+    },
+    "TestCustomRule": {
+      "type": "Configurable",
+      "priority": 25,
+      "enabled": true,
+      "modified_at": "2025-07-14T20:23:20.128678",
+      "version": "1.0"
+    }
+  },
+  "last_updated": "2025-07-14T20:23:20.128680"
+}

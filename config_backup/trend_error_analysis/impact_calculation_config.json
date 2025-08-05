@@ -1,0 +1,39 @@
+{
+  "impact_calculation": {
+    "risk_free_rate": 0.02,
+    "default_position_size": 0.02,
+    "volatility_adjustment": 1.5,
+    "confidence_level": 0.95,
+    "lookback_days": 30
+  },
+  "impact_weights": {
+    "direct": 0.4,
+    "opportunity": 0.3,
+    "risk": 0.2,
+    "systemic": 0.1
+  },
+  "severity_multipliers": {
+    "LOW": 0.5,
+    "MEDIUM": 1.0,
+    "HIGH": 1.5,
+    "CRITICAL": 2.0
+  },
+  "error_type_impact_factors": {
+    "DIRECTION_WRONG": 2.0,
+    "CONFIDENCE_MISMATCH": 1.5,
+    "FALSE_POSITIVE": 1.2,
+    "FALSE_NEGATIVE": 1.3,
+    "REGIME_MISMATCH": 1.8,
+    "TIMING_EARLY": 0.8,
+    "TIMING_LATE": 1.0
+  },
+  "portfolio_adjustments": {
+    "size_scaling_factor": 1.0,
+    "max_size_adjustment": 2.0,
+    "strategy_cascade_factor": 0.1
+  },
+  "confidence_intervals": {
+    "confidence_level": 0.95,
+    "bootstrap_iterations": 1000
+  }
+}

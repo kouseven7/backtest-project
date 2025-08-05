@@ -1,0 +1,101 @@
+{
+  "default_selection_criteria": {
+    "method": "hybrid",
+    "min_score_threshold": 0.6,
+    "max_strategies": 3,
+    "min_strategies": 1,
+    "confidence_threshold": 0.7,
+    "trend_adaptation_weight": 0.3,
+    "enable_diversification": true,
+    "blacklist_strategies": [],
+    "whitelist_strategies": []
+  },
+  "strategy_weights": {
+    "performance": 0.35,
+    "stability": 0.25,
+    "risk_adjusted": 0.20,
+    "trend_adaptation": 0.15,
+    "reliability": 0.05
+  },
+  "trend_strategy_mapping": {
+    "uptrend": [
+      "MomentumInvestingStrategy",
+      "VWAPBreakoutStrategy", 
+      "BreakoutStrategy",
+      "GCStrategy"
+    ],
+    "downtrend": [
+      "ContrarianStrategy",
+      "VWAPBounceStrategy"
+    ],
+    "sideways": [
+      "VWAPBounceStrategy",
+      "GCStrategy",
+      "OpeningGapStrategy",
+      "ContrarianStrategy"
+    ],
+    "unknown": [
+      "VWAPBounceStrategy",
+      "MomentumInvestingStrategy"
+    ]
+  },
+  "selection_profiles": {
+    "conservative": {
+      "method": "threshold",
+      "min_score_threshold": 0.75,
+      "max_strategies": 2,
+      "enable_diversification": true,
+      "trend_adaptation_weight": 0.4
+    },
+    "aggressive": {
+      "method": "top_n",
+      "min_score_threshold": 0.5,
+      "max_strategies": 5,
+      "enable_diversification": false,
+      "trend_adaptation_weight": 0.2
+    },
+    "balanced": {
+      "method": "hybrid",
+      "min_score_threshold": 0.6,
+      "max_strategies": 3,
+      "enable_diversification": true,
+      "trend_adaptation_weight": 0.3
+    }
+  },
+  "risk_management": {
+    "max_correlation_threshold": 0.8,
+    "sector_diversification_enabled": false,
+    "volatility_adjustment_enabled": true,
+    "drawdown_protection_enabled": true
+  },
+  "performance_settings": {
+    "cache_ttl_seconds": 300,
+    "enable_parallel_scoring": false,
+    "score_calculation_timeout_seconds": 30,
+    "max_history_entries": 100
+  },
+  "logging": {
+    "enable_detailed_logging": true,
+    "log_selection_decisions": true,
+    "log_performance_metrics": true,
+    "save_selection_reports": true
+  },
+  "integration": {
+    "use_enhanced_scoring": true,
+    "trend_detector_method": "advanced",
+    "characteristics_manager_enabled": true,
+    "parameter_manager_enabled": true
+  },
+  "validation": {
+    "min_data_points": 30,
+    "require_volume_data": false,
+    "validate_strategy_compatibility": true,
+    "check_parameter_integrity": true
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "created_date": "2025-07-13",
+    "description": "Strategy Selector configuration for trend-based strategy selection",
+    "author": "imega"
+  }
+}

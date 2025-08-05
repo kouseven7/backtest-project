@@ -1,0 +1,31 @@
+{
+  "execution_mode": "hybrid",
+  "strategy_selection": {
+    "enable_multi_strategy": true,
+    "fallback_to_legacy": true,
+    "selection_method": "adaptive",
+    "min_strategies": 2,
+    "max_strategies": 5
+  },
+  "integration_features": {
+    "trend_based_selection": true,
+    "portfolio_weighting": true,
+    "signal_integration": true,
+    "risk_management": true
+  },
+  "fallback_settings": {
+    "enable_fallback": true,
+    "fallback_timeout": 30,
+    "error_threshold": 3
+  },
+  "data_sources": {
+    "optimized_parameters": true,
+    "strategy_characteristics": true,
+    "scoring_model": true
+  },
+  "logging": {
+    "level": "INFO",
+    "log_integration_steps": true,
+    "log_fallbacks": true
+  }
+}

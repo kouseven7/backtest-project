@@ -1,0 +1,43 @@
+{
+    "system_config": {
+        "created_date": "2025-07-22",
+        "version": "1.0.0",
+        "description": "5-2-1戦略実績に基づくスコア補正機能設定"
+    },
+    "tracker": {
+        "tracking_window_days": 30,
+        "min_records": 10,
+        "performance_threshold": 0.1,
+        "data_retention_days": 180,
+        "backup_interval_hours": 24
+    },
+    "correction": {
+        "ema_alpha": 0.3,
+        "lookback_periods": 20,
+        "max_correction": 0.3,
+        "min_confidence": 0.6,
+        "min_records": 5,
+        "learning_rate": 0.1,
+        "trend_adjustment_weight": 0.1,
+        "adaptive_learning_enabled": true
+    },
+    "batch_processing": {
+        "update_schedule": "daily",
+        "batch_size": 50,
+        "max_concurrent_updates": 5,
+        "timeout_minutes": 30,
+        "retry_attempts": 3
+    },
+    "integration": {
+        "score_history_integration": true,
+        "strategy_selector_integration": true,
+        "performance_metrics_integration": true,
+        "enhanced_logging": true
+    },
+    "thresholds": {
+        "minimum_data_points": 5,
+        "accuracy_threshold": 0.7,
+        "confidence_threshold": 0.6,
+        "performance_variance_limit": 2.0
+    }
+}

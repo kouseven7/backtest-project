@@ -1,0 +1,181 @@
+{
+  "expected_returns": {
+    "conservative_strategies": {
+      "annual_return": 0.08,
+      "volatility": 0.12,
+      "sharpe_ratio": 0.67,
+      "max_drawdown": 0.06
+    },
+    "moderate_strategies": {
+      "annual_return": 0.15,
+      "volatility": 0.18,
+      "sharpe_ratio": 0.83,
+      "max_drawdown": 0.10
+    },
+    "aggressive_strategies": {
+      "annual_return": 0.25,
+      "volatility": 0.30,
+      "sharpe_ratio": 0.83,
+      "max_drawdown": 0.18
+    },
+    "composite_strategies": {
+      "trend_momentum_mix": {
+        "annual_return": 0.18,
+        "volatility": 0.20,
+        "sharpe_ratio": 0.90,
+        "max_drawdown": 0.12,
+        "win_rate": 0.52,
+        "profit_factor": 1.35
+      },
+      "adaptive_multi_strategy": {
+        "annual_return": 0.22,
+        "volatility": 0.25,
+        "sharpe_ratio": 0.88,
+        "max_drawdown": 0.15,
+        "win_rate": 0.48,
+        "profit_factor": 1.42
+      },
+      "conservative_balanced": {
+        "annual_return": 0.12,
+        "volatility": 0.14,
+        "sharpe_ratio": 0.86,
+        "max_drawdown": 0.08,
+        "win_rate": 0.58,
+        "profit_factor": 1.28
+      }
+    }
+  },
+  "market_regime_adjustments": {
+    "trending_market": {
+      "return_multiplier": 1.2,
+      "volatility_multiplier": 0.9,
+      "win_rate_adjustment": 0.05
+    },
+    "volatile_market": {
+      "return_multiplier": 0.8,
+      "volatility_multiplier": 1.4,
+      "win_rate_adjustment": -0.08
+    },
+    "sideways_market": {
+      "return_multiplier": 0.7,
+      "volatility_multiplier": 0.8,
+      "win_rate_adjustment": 0.03
+    },
+    "crisis_market": {
+      "return_multiplier": 0.3,
+      "volatility_multiplier": 2.0,
+      "win_rate_adjustment": -0.15
+    },
+    "bull_market": {
+      "return_multiplier": 1.4,
+      "volatility_multiplier": 0.7,
+      "win_rate_adjustment": 0.08
+    }
+  },
+  "benchmark_expectations": {
+    "buy_and_hold": {
+      "annual_return": 0.10,
+      "volatility": 0.16,
+      "sharpe_ratio": 0.63,
+      "max_drawdown": 0.20
+    },
+    "equal_weight_portfolio": {
+      "annual_return": 0.11,
+      "volatility": 0.15,
+      "sharpe_ratio": 0.73,
+      "max_drawdown": 0.18
+    },
+    "risk_parity": {
+      "annual_return": 0.09,
+      "volatility": 0.12,
+      "sharpe_ratio": 0.75,
+      "max_drawdown": 0.12
+    }
+  },
+  "success_thresholds": {
+    "minimum_acceptable": {
+      "sharpe_ratio": 0.5,
+      "max_drawdown": 0.25,
+      "win_rate": 0.35,
+      "profit_factor": 1.1
+    },
+    "good_performance": {
+      "sharpe_ratio": 1.0,
+      "max_drawdown": 0.15,
+      "win_rate": 0.45,
+      "profit_factor": 1.3
+    },
+    "excellent_performance": {
+      "sharpe_ratio": 1.5,
+      "max_drawdown": 0.10,
+      "win_rate": 0.55,
+      "profit_factor": 1.5
+    }
+  },
+  "confidence_intervals": {
+    "return_estimation": {
+      "confidence_level": 0.95,
+      "lower_bound_multiplier": 0.8,
+      "upper_bound_multiplier": 1.25
+    },
+    "risk_estimation": {
+      "confidence_level": 0.95,
+      "var_coverage": 0.05,
+      "expected_shortfall_coverage": 0.025
+    }
+  },
+  "time_horizon_adjustments": {
+    "short_term_3months": {
+      "return_scaling": 0.25,
+      "volatility_scaling": 0.5,
+      "reliability_discount": 0.7
+    },
+    "medium_term_1year": {
+      "return_scaling": 1.0,
+      "volatility_scaling": 1.0,
+      "reliability_discount": 1.0
+    },
+    "long_term_3years": {
+      "return_scaling": 3.0,
+      "volatility_scaling": 1.73,
+      "reliability_discount": 1.2
+    }
+  },
+  "strategy_specific_expectations": {
+    "VWAP_Breakout": {
+      "base_sharpe": 0.85,
+      "base_return": 0.16,
+      "trend_sensitivity": 0.3
+    },
+    "Momentum_Investing": {
+      "base_sharpe": 0.78,
+      "base_return": 0.19,
+      "trend_sensitivity": 0.25
+    },
+    "contrarian_strategy": {
+      "base_sharpe": 0.72,
+      "base_return": 0.13,
+      "trend_sensitivity": -0.15
+    },
+    "Breakout": {
+      "base_sharpe": 0.88,
+      "base_return": 0.21,
+      "trend_sensitivity": 0.35
+    },
+    "Opening_Gap": {
+      "base_sharpe": 0.65,
+      "base_return": 0.14,
+      "trend_sensitivity": 0.10
+    },
+    "VWAP_Bounce": {
+      "base_sharpe": 0.70,
+      "base_return": 0.11,
+      "trend_sensitivity": -0.05
+    },
+    "gc_strategy_signal": {
+      "base_sharpe": 0.75,
+      "base_return": 0.15,
+      "trend_sensitivity": 0.20
+    }
+  }
+}
