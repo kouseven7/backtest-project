@@ -1,0 +1,37 @@
+{
+  "strategy_errors": {
+    "max_retries": 3,
+    "retry_delay": 1.0,
+    "fallback_enabled": true,
+    "continue_on_failure": true,
+    "log_level": "ERROR",
+    "notification_threshold": 5
+  },
+  "data_errors": {
+    "max_retries": 2,
+    "retry_delay": 2.0,
+    "fallback_enabled": true,
+    "continue_on_failure": false,
+    "log_level": "CRITICAL",
+    "notification_threshold": 2
+  },
+  "system_errors": {
+    "max_retries": 1,
+    "retry_delay": 5.0,
+    "fallback_enabled": false,
+    "continue_on_failure": false,
+    "log_level": "CRITICAL",
+    "notification_threshold": 1
+  },
+  "notification": {
+    "console_output": true,
+    "file_logging": true,
+    "error_threshold": 5,
+    "report_generation": true
+  },
+  "recovery_strategies": {
+    "strategy_errors": ["simple_retry", "fallback"],
+    "data_errors": ["simple_retry"],
+    "system_errors": ["fallback"]
+  }
+}

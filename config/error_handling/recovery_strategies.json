@@ -1,0 +1,69 @@
+{
+  "strategies": {
+    "simple_retry": {
+      "class": "SimpleRetryStrategy",
+      "config": {
+        "max_retries": 3,
+        "delay": 1.0,
+        "backoff_factor": 1.5,
+        "jitter": true
+      }
+    },
+    "exponential_backoff": {
+      "class": "SimpleRetryStrategy",
+      "config": {
+        "max_retries": 5,
+        "delay": 0.5,
+        "backoff_factor": 2.0,
+        "max_delay": 30.0
+      }
+    },
+    "fallback": {
+      "class": "FallbackStrategy",
+      "config": {
+        "fallback_options": [
+          {
+            "name": "default_signals",
+            "type": "default_value",
+            "value": {
+              "Entry_Signal": 0,
+              "Exit_Signal": 0
+            }
+          },
+          {
+            "name": "previous_result",
+            "type": "default_value",
+            "value": null
+          }
+        ]
+      }
+    },
+    "strategy_fallback": {
+      "class": "FallbackStrategy",
+      "config": {
+        "fallback_options": [
+          {
+            "name": "conservative_signals",
+            "type": "default_value",
+            "value": {
+              "Entry_Signal": 0,
+              "Exit_Signal": 1
+            }
+          }
+        ]
+      }
+    }
+  },
+  "error_type_mapping": {
+    "strategy_errors": ["simple_retry", "strategy_fallback"],
+    "data_errors": ["exponential_backoff", "fallback"],
+    "system_errors": ["fallback"],
+    "optimization_errors": ["simple_retry"],
+    "market_data_errors": ["exponential_backoff", "fallback"]
+  },
+  "global_settings": {
+    "max_total_recovery_time": 300,
+    "enable_parallel_recovery": false,
+    "recovery_timeout": 60
+  }
+}

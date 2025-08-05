@@ -1,0 +1,37 @@
+{
+  "log_directory": "logs",
+  "log_levels": {
+    "console": "INFO",
+    "file": "DEBUG",
+    "error_file": "ERROR",
+    "strategy_file": "INFO"
+  },
+  "formats": {
+    "console": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file": "%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(funcName)s() - %(message)s",
+    "error": "%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(funcName)s() - %(message)s\\nTraceback: %(exc_info)s",
+    "strategy": "%(asctime)s - [%(strategy_name)s] - %(levelname)s - %(message)s"
+  },
+  "file_rotation": {
+    "max_bytes": 10485760,
+    "backup_count": 5,
+    "when": "midnight",
+    "interval": 1
+  },
+  "strategy_logging": {
+    "separate_files": true,
+    "include_performance": true,
+    "performance_log_level": "INFO",
+    "signal_logging": true
+  },
+  "error_logging": {
+    "separate_error_file": true,
+    "include_stack_trace": true,
+    "error_context_lines": 5
+  },
+  "cleanup": {
+    "enabled": true,
+    "days_to_keep": 30,
+    "auto_cleanup_on_start": true
+  }
+}

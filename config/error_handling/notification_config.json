@@ -1,0 +1,53 @@
+{
+  "monitoring": {
+    "monitoring_interval": 30,
+    "max_stored_alerts": 1000,
+    "alert_thresholds": {
+      "error_rate": 0.1,
+      "max_unresolved_alerts": 10,
+      "max_consecutive_errors": 5,
+      "strategy_failure_threshold": 3,
+      "system_response_time": 10.0
+    }
+  },
+  "notifications": {
+    "console": {
+      "enabled": true,
+      "levels": ["ERROR", "CRITICAL"],
+      "include_context": false,
+      "color_coding": true
+    },
+    "file": {
+      "enabled": true,
+      "levels": ["WARNING", "ERROR", "CRITICAL"],
+      "file_path": "logs/notifications.log",
+      "include_context": true,
+      "rotation": {
+        "max_size_mb": 10,
+        "backup_count": 5
+      }
+    },
+    "email": {
+      "enabled": false,
+      "levels": ["CRITICAL"],
+      "smtp_server": "",
+      "smtp_port": 587,
+      "username": "",
+      "password": "",
+      "recipients": []
+    }
+  },
+  "escalation": {
+    "enabled": true,
+    "rules": [
+      {
+        "condition": "consecutive_errors >= 5",
+        "action": "escalate_to_critical"
+      },
+      {
+        "condition": "error_rate > 0.2",
+        "action": "emergency_notification"
+      }
+    ]
+  }
+}
