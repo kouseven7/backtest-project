@@ -1,0 +1,308 @@
+{
+  "execution_timestamp": "2025-08-05T19:42:15.807931",
+  "config_used": {
+    "base_config": {
+      "test_scenarios": {
+        "symbols": [
+          "AAPL",
+          "MSFT",
+          "GOOGL",
+          "AMZN",
+          "TSLA",
+          "NVDA",
+          "META",
+          "NFLX",
+          "SPY",
+          "QQQ",
+          "IWM",
+          "GLD",
+          "TLT",
+          "VIX",
+          "DJI"
+        ],
+        "periods": [
+          {
+            "name": "2020_covid_crash",
+            "start": "2020-01-01",
+            "end": "2020-06-30",
+            "market_condition": "downtrend"
+          },
+          {
+            "name": "2020_recovery",
+            "start": "2020-07-01",
+            "end": "2021-06-30",
+            "market_condition": "uptrend"
+          },
+          {
+            "name": "2021_tech_boom",
+            "start": "2021-07-01",
+            "end": "2022-06-30",
+            "market_condition": "uptrend"
+          },
+          {
+            "name": "2022_bear_market",
+            "start": "2022-07-01",
+            "end": "2023-06-30",
+            "market_condition": "downtrend"
+          },
+          {
+            "name": "2023_sideways",
+            "start": "2023-07-01",
+            "end": "2024-06-30",
+            "market_condition": "sideways"
+          }
+        ]
+      },
+      "strategies": [
+        "VWAPBreakoutStrategy",
+        "VWAPBounceStrategy",
+        "BreakoutStrategy",
+        "GCStrategy",
+        "MomentumInvestingStrategy"
+      ],
+      "walkforward_config": {
+        "training_window_months": 6,
+        "testing_window_months": 3,
+        "step_size_months": 1,
+        "min_training_samples": 100
+      },
+      "output_config": {
+        "save_detailed_results": true,
+        "generate_reports": true,
+        "output_directory": "output/walkforward_results"
+      }
+    },
+    "enhanced_config": {
+      "market_classification": {
+        "enabled": true,
+        "mode": "hybrid",
+        "lookback_periods": 20,
+        "confidence_threshold": 0.6
+      }
+    }
+  },
+  "market_classifications": {
+    "error": "'str' object has no attribute 'get'"
+  },
+  "execution_results": {
+    "error": "'str' object has no attribute 'get'"
+  },
+  "enhanced_analysis": {
+    "by_simple_condition": {
+      "trending_bull": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "win_rate": 0.0,
+        "avg_return": 0.0,
+        "total_return": 0.0,
+        "max_drawdown": 0.0,
+        "sharpe_ratio": 0.0,
+        "strategies_active": [],
+        "best_strategy": null,
+        "worst_strategy": null
+      },
+      "trending_bear": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "win_rate": 0.0,
+        "avg_return": 0.0,
+        "total_return": 0.0,
+        "max_drawdown": 0.0,
+        "sharpe_ratio": 0.0,
+        "strategies_active": [],
+        "best_strategy": null,
+        "worst_strategy": null
+      },
+      "sideways": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "win_rate": 0.0,
+        "avg_return": 0.0,
+        "total_return": 0.0,
+        "max_drawdown": 0.0,
+        "sharpe_ratio": 0.0,
+        "strategies_active": [],
+        "best_strategy": null,
+        "worst_strategy": null
+      },
+      "volatile": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "win_rate": 0.0,
+        "avg_return": 0.0,
+        "total_return": 0.0,
+        "max_drawdown": 0.0,
+        "sharpe_ratio": 0.0,
+        "strategies_active": [],
+        "best_strategy": null,
+        "worst_strategy": null
+      },
+      "recovery": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "win_rate": 0.0,
+        "avg_return": 0.0,
+        "total_return": 0.0,
+        "max_drawdown": 0.0,
+        "sharpe_ratio": 0.0,
+        "strategies_active": [],
+        "best_strategy": null,
+        "worst_strategy": null
+      }
+    },
+    "by_detailed_condition": {
+      "strong_bull": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "win_rate": 0.0,
+        "avg_return": 0.0,
+        "total_return": 0.0,
+        "max_drawdown": 0.0,
+        "sharpe_ratio": 0.0,
+        "strategies_active": [],
+        "best_strategy": null,
+        "worst_strategy": null
+      },
+      "moderate_bull": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "win_rate": 0.0,
+        "avg_return": 0.0,
+        "total_return": 0.0,
+        "max_drawdown": 0.0,
+        "sharpe_ratio": 0.0,
+        "strategies_active": [],
+        "best_strategy": null,
+        "worst_strategy": null
+      },
+      "sideways_bull": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "win_rate": 0.0,
+        "avg_return": 0.0,
+        "total_return": 0.0,
+        "max_drawdown": 0.0,
+        "sharpe_ratio": 0.0,
+        "strategies_active": [],
+        "best_strategy": null,
+        "worst_strategy": null
+      },
+      "neutral_sideways": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "win_rate": 0.0,
+        "avg_return": 0.0,
+        "total_return": 0.0,
+        "max_drawdown": 0.0,
+        "sharpe_ratio": 0.0,
+        "strategies_active": [],
+        "best_strategy": null,
+        "worst_strategy": null
+      },
+      "sideways_bear": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "win_rate": 0.0,
+        "avg_return": 0.0,
+        "total_return": 0.0,
+        "max_drawdown": 0.0,
+        "sharpe_ratio": 0.0,
+        "strategies_active": [],
+        "best_strategy": null,
+        "worst_strategy": null
+      },
+      "moderate_bear": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "win_rate": 0.0,
+        "avg_return": 0.0,
+        "total_return": 0.0,
+        "max_drawdown": 0.0,
+        "sharpe_ratio": 0.0,
+        "strategies_active": [],
+        "best_strategy": null,
+        "worst_strategy": null
+      },
+      "strong_bear": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "win_rate": 0.0,
+        "avg_return": 0.0,
+        "total_return": 0.0,
+        "max_drawdown": 0.0,
+        "sharpe_ratio": 0.0,
+        "strategies_active": [],
+        "best_strategy": null,
+        "worst_strategy": null
+      }
+    },
+    "strategy_market_fit": {},
+    "market_condition_performance": {
+      "condition_rankings": {
+        "best_conditions": [
+          "trending_bull",
+          "trending_bear",
+          "sideways"
+        ],
+        "worst_conditions": [
+          "sideways",
+          "volatile",
+          "recovery"
+        ],
+        "all_performance": {
+          "trending_bull": 0.0,
+          "trending_bear": 0.0,
+          "sideways": 0.0,
+          "volatile": 0.0,
+          "recovery": 0.0
+        }
+      },
+      "volatility_impact": {
+        "high_volatility_performance": 0.0,
+        "low_volatility_performance": 0.0,
+        "volatility_correlation": 0.0
+      },
+      "trend_strength_correlation": {},
+      "confidence_impact": {}
+    },
+    "recommendations": {
+      "strategy_allocation": {},
+      "market_timing": {
+        "favorable_conditions": [
+          "trending_bull",
+          "trending_bear",
+          "sideways"
+        ],
+        "unfavorable_conditions": [
+          "sideways",
+          "volatile",
+          "recovery"
+        ],
+        "overall_market_score": 0.0
+      },
+      "risk_management": {
+        "dynamic_position_sizing": true,
+        "market_condition_filters": true,
+        "volatility_adjustment": true
+      },
+      "parameter_adjustments": {}
+    }
+  },
+  "summary": {
+    "total_scenarios": 1,
+    "classification_mode": "hybrid",
+    "analysis_completed": true
+  }
+}
