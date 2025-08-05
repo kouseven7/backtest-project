@@ -1,0 +1,67 @@
+{
+  "market_data": {
+    "symbols": ["AAPL", "MSFT", "GOOGL", "TSLA", "SPY", "QQQ", "VTI", "NVDA"],
+    "default_symbol": "SPY",
+    "timeframes": ["1h", "4h", "1d"],
+    "default_timeframe": "1h",
+    "date_ranges": {
+      "short": {"days": 7},
+      "medium": {"days": 30}, 
+      "long": {"days": 90}
+    },
+    "cache_settings": {
+      "enabled": true,
+      "max_age_hours": 24,
+      "compress": true
+    }
+  },
+  "batch_testing": {
+    "max_parallel_workers": 4,
+    "chunk_size": 50,
+    "timeout_seconds": 300,
+    "retry_attempts": 3
+  },
+  "performance_analysis": {
+    "metrics": [
+      "total_return",
+      "sharpe_ratio", 
+      "sortino_ratio",
+      "max_drawdown",
+      "volatility",
+      "win_rate",
+      "profit_factor",
+      "calmar_ratio"
+    ],
+    "risk_free_rate": 0.02,
+    "benchmark_symbol": "SPY"
+  },
+  "strategy_switching": {
+    "strategies": [
+      "trend_following",
+      "mean_reversion",
+      "momentum", 
+      "contrarian",
+      "volatility_breakout"
+    ],
+    "confidence_thresholds": {
+      "low": 0.3,
+      "medium": 0.6,
+      "high": 0.8
+    },
+    "switching_cooldown_hours": 4,
+    "max_switches_per_day": 6
+  },
+  "output": {
+    "formats": ["excel", "json", "csv"],
+    "charts": {
+      "enabled": true,
+      "types": ["performance", "switching", "correlation"],
+      "save_path": "output/trend_switching_charts"
+    },
+    "reports": {
+      "detailed": true,
+      "summary": true,
+      "comparison": true
+    }
+  }
+}
