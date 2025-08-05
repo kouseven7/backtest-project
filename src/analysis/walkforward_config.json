@@ -1,0 +1,59 @@
+{
+  "test_scenarios": {
+    "symbols": [
+      "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA",
+      "NVDA", "META", "NFLX", "SPY", "QQQ",
+      "IWM", "GLD", "TLT", "VIX", "DJI"
+    ],
+    "periods": [
+      {
+        "name": "2020_covid_crash",
+        "start": "2020-01-01",
+        "end": "2020-06-30",
+        "market_condition": "downtrend"
+      },
+      {
+        "name": "2020_recovery",
+        "start": "2020-07-01", 
+        "end": "2021-06-30",
+        "market_condition": "uptrend"
+      },
+      {
+        "name": "2021_tech_boom",
+        "start": "2021-07-01",
+        "end": "2022-06-30", 
+        "market_condition": "uptrend"
+      },
+      {
+        "name": "2022_bear_market",
+        "start": "2022-07-01",
+        "end": "2023-06-30",
+        "market_condition": "downtrend"
+      },
+      {
+        "name": "2023_sideways",
+        "start": "2023-07-01",
+        "end": "2024-06-30",
+        "market_condition": "sideways"
+      }
+    ]
+  },
+  "strategies": [
+    "VWAPBreakoutStrategy",
+    "VWAPBounceStrategy", 
+    "BreakoutStrategy",
+    "GCStrategy",
+    "MomentumInvestingStrategy"
+  ],
+  "walkforward_config": {
+    "training_window_months": 6,
+    "testing_window_months": 3,
+    "step_size_months": 1,
+    "min_training_samples": 100
+  },
+  "output_config": {
+    "save_detailed_results": true,
+    "generate_reports": true,
+    "output_directory": "output/walkforward_results"
+  }
+}
