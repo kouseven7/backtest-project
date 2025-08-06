@@ -1,0 +1,58 @@
+{
+  "cache": {
+    "memory_max_items": 500,
+    "memory_max_mb": 512,
+    "disk_cache_dir": "cache/realtime_data",
+    "disk_max_mb": 2048,
+    "memory_ttl_seconds": 300,
+    "disk_ttl_seconds": 3600,
+    "enable_write_through": true,
+    "cleanup_interval_seconds": 600
+  },
+  "realtime_feed": {
+    "volatility_window": 20,
+    "default_update_frequency": "HIGH",
+    "adaptive_frequency": true,
+    "market_hours_aware": true
+  },
+  "data_quality": {
+    "max_price_change_percent": 15.0,
+    "max_volume_change_percent": 300.0,
+    "max_data_age_seconds": 180,
+    "max_missing_fields": 1,
+    "outlier_threshold": 2.5,
+    "history_window": 30,
+    "enable_quality_alerts": true,
+    "quality_log_level": "WARNING"
+  },
+  "error_handling": {
+    "auto_correction": true,
+    "quality_threshold": 0.7,
+    "alert_threshold": 0.5,
+    "max_consecutive_failures": 5,
+    "circuit_breaker_enabled": true,
+    "recovery_timeout_seconds": 300
+  },
+  "performance": {
+    "connection_pool_size": 10,
+    "request_timeout": 10,
+    "max_concurrent_requests": 50,
+    "enable_compression": true,
+    "enable_http2": false
+  },
+  "monitoring": {
+    "enable_metrics": true,
+    "metrics_interval_seconds": 60,
+    "enable_health_checks": true,
+    "health_check_interval_seconds": 300,
+    "alert_on_quality_degradation": true,
+    "performance_threshold_ms": 1000
+  },
+  "features": {
+    "enable_data_validation": true,
+    "enable_caching": true,
+    "enable_fallback": true,
+    "enable_rate_limiting": true,
+    "enable_circuit_breaker": true
+  }
+}

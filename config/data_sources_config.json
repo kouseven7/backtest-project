@@ -1,0 +1,32 @@
+{
+  "data_sources": {
+    "yahoo_finance": {
+      "enabled": true,
+      "priority": 1,
+      "config": {
+        "timeout": 10,
+        "retry_attempts": 3,
+        "rate_limit_requests_per_minute": 60
+      }
+    },
+    "alpha_vantage": {
+      "enabled": false,
+      "priority": 2,
+      "config": {
+        "api_key": "",
+        "timeout": 15,
+        "retry_attempts": 2,
+        "rate_limit_requests_per_minute": 5
+      }
+    }
+  },
+  "fallback_strategy": "priority_order",
+  "connection_timeout": 10,
+  "retry_attempts": 3,
+  "health_check_interval": 300,
+  "logging": {
+    "level": "INFO",
+    "log_api_calls": false,
+    "log_response_times": true
+  }
+}
