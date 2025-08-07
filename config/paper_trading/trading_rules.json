@@ -1,0 +1,31 @@
+{
+  "trading_rules": {
+    "max_orders_per_minute": 10,
+    "max_position_concentration": 25.0,
+    "require_stop_loss": false,
+    "max_leverage": 1.0,
+    "allowed_order_types": ["market", "limit", "stop_loss"],
+    "blacklisted_symbols": [],
+    "min_order_size": 1.0,
+    "max_order_size": 10000.0
+  },
+  "risk_rules": {
+    "max_daily_trades": 50,
+    "max_drawdown_pct": 10.0,
+    "var_limit_pct": 2.0,
+    "correlation_limit": 0.8,
+    "volatility_threshold": 0.5
+  },
+  "execution_rules": {
+    "allow_after_hours": false,
+    "require_confirmation": false,
+    "auto_cancel_time_minutes": 60,
+    "price_improvement_threshold": 0.01
+  },
+  "monitoring": {
+    "alert_on_large_orders": true,
+    "alert_threshold_usd": 10000,
+    "track_execution_quality": true,
+    "generate_daily_reports": true
+  }
+}

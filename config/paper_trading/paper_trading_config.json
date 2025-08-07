@@ -1,0 +1,47 @@
+{
+  "execution": {
+    "mode": "paper_trading",
+    "enable_risk_checks": true,
+    "enable_position_sizing": true,
+    "max_position_size_pct": 20.0,
+    "max_daily_loss_pct": 5.0,
+    "execution_delay_ms": 10
+  },
+  "broker": {
+    "initial_balance": 100000.0,
+    "commission_per_trade": 1.0,
+    "commission_pct": 0.001,
+    "slippage_pct": 0.0001,
+    "enable_slippage": true,
+    "enable_partial_fills": false
+  },
+  "market_hours": {
+    "open": "09:30",
+    "close": "16:00",
+    "timezone": "America/New_York"
+  },
+  "portfolio": {
+    "initial_cash": 100000.0,
+    "track_dividends": true,
+    "track_splits": true,
+    "currency": "USD"
+  },
+  "risk_management": {
+    "position_limits": {
+      "AAPL": 5000,
+      "MSFT": 3000,
+      "GOOGL": 2000
+    },
+    "sector_limits": {
+      "Technology": 30.0,
+      "Healthcare": 20.0,
+      "Finance": 15.0
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "log_file": "paper_trading.log",
+    "max_file_size_mb": 10,
+    "backup_count": 5
+  }
+}
