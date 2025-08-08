@@ -1,0 +1,73 @@
+{
+  "timestamp": "2025-08-08T22:17:02.760103",
+  "portfolio_analysis": {
+    "timestamp": "2025-08-08 22:17:02.755957",
+    "portfolio_metrics": {
+      "total_pnl": 3582.2384992480524,
+      "total_trades": 99,
+      "win_rate": 0.41414141414141414,
+      "sharpe_ratio": 0.5654052495166004,
+      "max_drawdown": -0.14078687410092103,
+      "active_strategies": 3
+    },
+    "strategy_performances": {
+      "VWAP_Breakout": {
+        "basic_metrics": {
+          "total_trades": 31,
+          "winning_trades": 17,
+          "total_pnl": 1912.186291327464,
+          "win_rate": 0.31474089244780706
+        },
+        "risk_metrics": {
+          "volatility": 0.28754026405183053,
+          "max_drawdown": -0.14078687410092103,
+          "sharpe_ratio": 1.9619309531955085
+        },
+        "performance_score": 0.2731001954673592,
+        "timestamp": "2025-08-08 22:17:02.755860"
+      },
+      "Momentum_Investing": {
+        "basic_metrics": {
+          "total_trades": 46,
+          "winning_trades": 17,
+          "total_pnl": -328.34461777383694,
+          "win_rate": 0.49273241599923945
+        },
+        "risk_metrics": {
+          "volatility": 0.25474496476432484,
+          "max_drawdown": -0.08570147195913393,
+          "sharpe_ratio": -0.18434414085364376
+        },
+        "performance_score": 0.2178035126210544,
+        "timestamp": "2025-08-08 22:17:02.755869"
+      },
+      "Opening_Gap": {
+        "basic_metrics": {
+          "total_trades": 22,
+          "winning_trades": 7,
+          "total_pnl": 1998.3968256944254,
+          "win_rate": 0.4152211657542986
+        },
+        "risk_metrics": {
+          "volatility": 0.2025117376939885,
+          "max_drawdown": -0.08479419423068373,
+          "sharpe_ratio": -0.08137106379206349
+        },
+        "performance_score": 0.590502990076163,
+        "timestamp": "2025-08-08 22:17:02.755875"
+      }
+    },
+    "portfolio_health_score": 0.495087411915468
+  },
+  "alerts": [
+    {
+      "type": "strategy_win_rate",
+      "severity": "medium",
+      "strategy": "VWAP_Breakout",
+      "message": "戦略勝率低下 [VWAP_Breakout]: 31.5%",
+      "value": 0.31474089244780706,
+      "threshold": null,
+      "timestamp": "2025-08-08 22:17:02.755985"
+    }
+  ]
+}

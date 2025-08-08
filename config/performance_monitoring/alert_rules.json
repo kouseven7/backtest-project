@@ -1,0 +1,88 @@
+{
+  "portfolio_rules": {
+    "max_drawdown": {
+      "threshold": 0.15,
+      "severity": "high",
+      "action": "reduce_exposure",
+      "enabled": true
+    },
+    "daily_loss_limit": {
+      "threshold": 0.05,
+      "severity": "medium",
+      "action": "pause_trading",
+      "enabled": true
+    },
+    "volatility_spike": {
+      "threshold": 0.3,
+      "severity": "medium",
+      "action": "monitor_closely",
+      "enabled": true
+    },
+    "sharpe_ratio_decline": {
+      "threshold": 0.5,
+      "severity": "low",
+      "action": "review_strategies",
+      "enabled": true
+    }
+  },
+  "strategy_rules": {
+    "win_rate_decline": {
+      "threshold": 0.4,
+      "severity": "medium",
+      "action": "disable_strategy",
+      "enabled": true
+    },
+    "consecutive_losses": {
+      "threshold": 5,
+      "severity": "high",
+      "action": "disable_strategy",
+      "enabled": true
+    },
+    "single_large_loss": {
+      "threshold": 0.02,
+      "severity": "high",
+      "action": "review_risk_management",
+      "enabled": true
+    },
+    "execution_failure_rate": {
+      "threshold": 0.2,
+      "severity": "high",
+      "action": "check_system_status",
+      "enabled": true
+    }
+  },
+  "system_rules": {
+    "execution_timeout": {
+      "threshold": 300,
+      "severity": "medium",
+      "action": "restart_system",
+      "enabled": true
+    },
+    "low_execution_frequency": {
+      "threshold": 0.8,
+      "severity": "low",
+      "action": "check_data_feed",
+      "enabled": true
+    },
+    "high_error_rate": {
+      "threshold": 0.1,
+      "severity": "high",
+      "action": "emergency_stop",
+      "enabled": true
+    }
+  },
+  "notification_settings": {
+    "console_alerts": {
+      "enabled": true,
+      "severity_levels": ["high", "medium"]
+    },
+    "log_alerts": {
+      "enabled": true,
+      "severity_levels": ["high", "medium", "low"]
+    },
+    "file_alerts": {
+      "enabled": true,
+      "output_file": "logs/performance_monitoring/alerts.json"
+    }
+  }
+}

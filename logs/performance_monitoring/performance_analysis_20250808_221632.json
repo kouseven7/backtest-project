@@ -1,0 +1,63 @@
+{
+  "timestamp": "2025-08-08T22:16:32.745216",
+  "portfolio_analysis": {
+    "timestamp": "2025-08-08 22:16:32.742753",
+    "portfolio_metrics": {
+      "total_pnl": 2587.6511783456535,
+      "total_trades": 124,
+      "win_rate": 0.25806451612903225,
+      "sharpe_ratio": 1.2030032968960438,
+      "max_drawdown": -0.19046003251308147,
+      "active_strategies": 3
+    },
+    "strategy_performances": {
+      "VWAP_Breakout": {
+        "basic_metrics": {
+          "total_trades": 37,
+          "winning_trades": 6,
+          "total_pnl": 1634.4615242694922,
+          "win_rate": 0.41106259165105313
+        },
+        "risk_metrics": {
+          "volatility": 0.29066277845606975,
+          "max_drawdown": -0.17483001889612199,
+          "sharpe_ratio": 0.9585979387458845
+        },
+        "performance_score": 0.2206959974774365,
+        "timestamp": "2025-08-08 22:16:32.742671"
+      },
+      "Momentum_Investing": {
+        "basic_metrics": {
+          "total_trades": 50,
+          "winning_trades": 8,
+          "total_pnl": 1106.4779142766483,
+          "win_rate": 0.5098328263821188
+        },
+        "risk_metrics": {
+          "volatility": 0.3486860372939528,
+          "max_drawdown": -0.15635961161020262,
+          "sharpe_ratio": 1.3665648813757552
+        },
+        "performance_score": 0.4505179833955455,
+        "timestamp": "2025-08-08 22:16:32.742678"
+      },
+      "Opening_Gap": {
+        "basic_metrics": {
+          "total_trades": 37,
+          "winning_trades": 18,
+          "total_pnl": -153.28826020048712,
+          "win_rate": 0.4980191376293096
+        },
+        "risk_metrics": {
+          "volatility": 0.14456177322456282,
+          "max_drawdown": -0.19046003251308147,
+          "sharpe_ratio": 1.2838470705664922
+        },
+        "performance_score": 0.729194566952432,
+        "timestamp": "2025-08-08 22:16:32.742684"
+      }
+    },
+    "portfolio_health_score": 0.5608820044639939
+  },
+  "alerts": []
+}

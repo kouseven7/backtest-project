@@ -1,0 +1,73 @@
+{
+  "timestamp": "2025-08-08T22:21:22.430473",
+  "portfolio_analysis": {
+    "timestamp": "2025-08-08 22:21:22.427290",
+    "portfolio_metrics": {
+      "total_pnl": 3426.6810938511503,
+      "total_trades": 85,
+      "win_rate": 0.4,
+      "sharpe_ratio": 1.8229585395221364,
+      "max_drawdown": -0.19779549435185437,
+      "active_strategies": 3
+    },
+    "strategy_performances": {
+      "VWAP_Breakout": {
+        "basic_metrics": {
+          "total_trades": 26,
+          "winning_trades": 17,
+          "total_pnl": -333.91948828426973,
+          "win_rate": 0.4640440279663074
+        },
+        "risk_metrics": {
+          "volatility": 0.17189154227846404,
+          "max_drawdown": -0.06647752581444205,
+          "sharpe_ratio": 1.6538541043071162
+        },
+        "performance_score": 0.707563813164191,
+        "timestamp": "2025-08-08 22:21:22.427219"
+      },
+      "Momentum_Investing": {
+        "basic_metrics": {
+          "total_trades": 38,
+          "winning_trades": 5,
+          "total_pnl": 1991.5763954146832,
+          "win_rate": 0.4783482157582244
+        },
+        "risk_metrics": {
+          "volatility": 0.3845600508720378,
+          "max_drawdown": -0.19779549435185437,
+          "sharpe_ratio": 1.9171163732370342
+        },
+        "performance_score": 0.5460757576311736,
+        "timestamp": "2025-08-08 22:21:22.427225"
+      },
+      "Opening_Gap": {
+        "basic_metrics": {
+          "total_trades": 21,
+          "winning_trades": 12,
+          "total_pnl": 1769.024186720737,
+          "win_rate": 0.3057829908321331
+        },
+        "risk_metrics": {
+          "volatility": 0.3569463197173858,
+          "max_drawdown": -0.07656672776245009,
+          "sharpe_ratio": 1.8979051410222594
+        },
+        "performance_score": 0.8961699480731298,
+        "timestamp": "2025-08-08 22:21:22.427229"
+      }
+    },
+    "portfolio_health_score": 0.725253059598871
+  },
+  "alerts": [
+    {
+      "type": "strategy_win_rate",
+      "severity": "medium",
+      "strategy": "Opening_Gap",
+      "message": "戦略勝率低下 [Opening_Gap]: 30.6%",
+      "value": 0.3057829908321331,
+      "threshold": null,
+      "timestamp": "2025-08-08 22:21:22.427616"
+    }
+  ]
+}

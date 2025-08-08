@@ -1,0 +1,89 @@
+{
+  "monitoring_settings": {
+    "update_interval_seconds": 900,
+    "history_retention_days": 30,
+    "max_memory_usage_mb": 1024,
+    "enable_realtime_updates": false
+  },
+  "strategy_monitoring": {
+    "monitor_all_strategies": true,
+    "specific_strategies": [],
+    "exclude_strategies": [],
+    "min_trades_for_analysis": 5
+  },
+  "metrics_configuration": {
+    "basic_metrics": {
+      "enabled": true,
+      "include": ["total_pnl", "win_rate", "total_trades", "sharpe_ratio"]
+    },
+    "risk_metrics": {
+      "enabled": true,
+      "include": ["max_drawdown", "volatility", "var_95", "current_drawdown"]
+    },
+    "performance_metrics": {
+      "enabled": true,
+      "include": ["performance_score", "risk_adjusted_return", "consistency_score"]
+    },
+    "correlation_analysis": {
+      "enabled": true,
+      "lookback_periods": [30, 90, 180]
+    }
+  },
+  "dashboard_integration": {
+    "enabled": true,
+    "update_dashboard": true,
+    "chart_updates": true,
+    "metrics_streaming": true
+  },
+  "output_settings": {
+    "console_output": {
+      "enabled": true,
+      "verbosity": "standard",
+      "color_coding": true
+    },
+    "log_output": {
+      "enabled": true,
+      "log_level": "INFO",
+      "detailed_metrics": true
+    },
+    "file_output": {
+      "enabled": true,
+      "export_csv": true,
+      "export_json": true,
+      "output_directory": "logs/performance_monitoring"
+    }
+  },
+  "data_sources": {
+    "paper_trade_runner": {
+      "enabled": true,
+      "data_path": "logs/paper_trading",
+      "polling_interval": 60
+    },
+    "strategy_execution_logs": {
+      "enabled": true,
+      "log_path": "logs/strategy_execution.log"
+    },
+    "portfolio_data": {
+      "enabled": true,
+      "data_source": "paper_broker"
+    }
+  },
+  "alert_rules": {
+    "portfolio_rules": {
+      "max_drawdown_threshold": 0.15,
+      "daily_loss_limit": 0.05,
+      "volatility_threshold": 0.3,
+      "min_sharpe_ratio": 0.5
+    },
+    "strategy_rules": {
+      "min_win_rate": 0.4,
+      "max_consecutive_losses": 5,
+      "max_single_loss": 0.02
+    },
+    "system_rules": {
+      "max_execution_time": 300,
+      "min_execution_frequency": 0.8,
+      "max_error_rate": 0.1
+    }
+  }
+}
