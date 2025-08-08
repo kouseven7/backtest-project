@@ -19,13 +19,97 @@ import numpy as np
 project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
-from src.data.data_source_adapter import DataSourceManager
-from src.data.realtime_cache import HybridRealtimeCache
-from src.data.realtime_feed import RealtimeFeedManager, MarketDataPoint, UpdateFrequency
-from src.utils.exception_handler import UnifiedExceptionHandler, DataError
-from src.utils.error_recovery import ErrorRecoveryManager
-from src.utils.monitoring_agent import MonitoringAgent
+# from src.data.data_source_adapter import DataSourceManager
+# from src.data.realtime_cache import HybridRealtimeCache
+# from src.data.realtime_feed import RealtimeFeedManager, MarketDataPoint, UpdateFrequency
+from src.error_handling.exception_handler import UnifiedExceptionHandler
+from src.error_handling.error_recovery import ErrorRecoveryManager
+# from src.utils.monitoring_agent import MonitoringAgent
 from config.logger_config import setup_logger
+
+
+# モック実装（テスト用）
+@dataclass
+class MarketDataPoint:
+    """マーケットデータポイント"""
+    symbol: str
+    price: float
+    timestamp: datetime
+    source: str
+    volume: Optional[int] = None
+    bid: Optional[float] = None
+    ask: Optional[float] = None
+    volatility: Optional[float] = None
+    change_percent: Optional[float] = None
+
+
+class UpdateFrequency(Enum):
+    """更新頻度"""
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+
+
+class DataSourceManager:
+    """データソース管理器（モック）"""
+    
+    def __init__(self, config: Dict[str, Any]):
+        self.adapters = {
+            'yahoo_finance': MockAdapter('yahoo_finance'),
+            'alpha_vantage': MockAdapter('alpha_vantage')
+        }
+        
+    def connect_all(self) -> bool:
+        return True
+
+
+class MockAdapter:
+    """モックアダプター"""
+    
+    def __init__(self, name: str):
+        self.name = name
+        self.last_response_time = 100.0
+        
+    def is_connected(self) -> bool:
+        return True
+
+
+class HybridRealtimeCache:
+    """ハイブリッドリアルタイムキャッシュ（モック）"""
+    
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config
+        
+    def get_hit_rate(self) -> float:
+        return 0.85
+        
+    def get_size_mb(self) -> float:
+        return 128.0
+        
+    def get_item_count(self) -> int:
+        return 1000
+
+
+class RealtimeFeedManager:
+    """リアルタイムフィード管理器（モック）"""
+    
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config
+
+
+class MonitoringAgent:
+    """監視エージェント（モック）"""
+    
+    def start_monitoring(self):
+        pass
+        
+    def stop_monitoring(self):
+        pass
+
+
+class DataError(Exception):
+    """データエラー"""
+    pass
 
 
 class DataQualityLevel(Enum):

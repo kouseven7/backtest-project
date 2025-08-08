@@ -1,0 +1,45 @@
+{
+  "test_summary": {
+    "total_tests": 6,
+    "passed_tests": 6,
+    "failed_tests": 0,
+    "success_rate": "100.0%",
+    "test_date": "2025-08-08T06:07:19.350726"
+  },
+  "test_results": [
+    {
+      "test_name": "component_initialization",
+      "status": "PASSED",
+      "timestamp": "2025-08-08T06:07:19.126937"
+    },
+    {
+      "test_name": "metrics_collection",
+      "status": "PASSED",
+      "timestamp": "2025-08-08T06:07:19.129668"
+    },
+    {
+      "test_name": "alert_management",
+      "status": "PASSED",
+      "timestamp": "2025-08-08T06:07:19.134117"
+    },
+    {
+      "test_name": "dashboard_integration",
+      "status": "PASSED",
+      "timestamp": "2025-08-08T06:07:19.241073"
+    },
+    {
+      "test_name": "error_handling",
+      "status": "PASSED",
+      "timestamp": "2025-08-08T06:07:19.244698"
+    },
+    {
+      "test_name": "performance",
+      "status": "PASSED",
+      "timestamp": "2025-08-08T06:07:19.349586"
+    }
+  ],
+  "system_info": {
+    "python_version": "3.13.1 (tags/v3.13.1:0671451, Dec  3 2024, 19:06:28) [MSC v.1942 64 bit (AMD64)]",
+    "test_duration": "0.2s"
+  }
+}
