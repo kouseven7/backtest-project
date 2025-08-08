@@ -1,0 +1,21 @@
+{
+  "timestamp": "2025-08-08T23:18:49.301610",
+  "strategy": "MeanReversionStrategy",
+  "performance_data": {
+    "basic_metrics": {
+      "total_pnl": 9456.7,
+      "total_trades": 93,
+      "win_rate": 0.645,
+      "avg_profit": 161.23,
+      "avg_loss": -108.9
+    },
+    "risk_metrics": {
+      "max_drawdown": -0.118,
+      "sharpe_ratio": 1.25,
+      "volatility": 0.149,
+      "calmar_ratio": 1.92
+    }
+  },
+  "monitoring_period": "2024-01-01 to 2024-12-31",
+  "data_source": "live_trading"
+}

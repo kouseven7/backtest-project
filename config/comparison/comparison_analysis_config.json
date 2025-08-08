@@ -1,0 +1,154 @@
+{
+  "data_sources": {
+    "backtest_results_path": "backtest_results/improved_results/",
+    "live_trading_path": "logs/paper_trading/",
+    "performance_monitoring_path": "logs/performance_monitoring/",
+    "excel_results_path": "backtest_results/",
+    "cache_directory": "cache/comparison_analysis/"
+  },
+  "analysis_settings": {
+    "comparison_level": "adaptive",
+    "detail_levels": {
+      "basic": {
+        "metrics": ["total_return", "win_rate", "max_drawdown", "sharpe_ratio"],
+        "statistical_tests": ["t_test"],
+        "visualizations": ["summary_chart"]
+      },
+      "detailed": {
+        "metrics": ["total_return", "win_rate", "max_drawdown", "sharpe_ratio", "sortino_ratio", "var_95", "trade_frequency"],
+        "statistical_tests": ["t_test", "ks_test", "correlation", "variance_ratio"],
+        "visualizations": ["time_series", "scatter", "distribution", "correlation_matrix"]
+      },
+      "adaptive": {
+        "auto_select_based_on_data_size": true,
+        "fallback_to_basic": true
+      }
+    },
+    "statistical_configuration": {
+      "confidence_level": 0.95,
+      "significance_threshold": 0.05,
+      "bootstrap_samples": 1000,
+      "rolling_window_days": 30
+    },
+    "filtering_criteria": {
+      "min_trades": 10,
+      "date_range_days": 90,
+      "strategy_filter": [],
+      "exclude_weekends": true,
+      "min_data_quality_score": 0.7
+    }
+  },
+  "comparison_metrics": {
+    "performance_metrics": {
+      "primary": ["total_return", "annualized_return", "volatility", "sharpe_ratio"],
+      "secondary": ["sortino_ratio", "max_drawdown", "var_95", "skewness", "kurtosis"],
+      "trade_metrics": ["win_rate", "avg_win", "avg_loss", "profit_factor", "trade_frequency"]
+    },
+    "risk_metrics": {
+      "basic": ["max_drawdown", "volatility", "var_95"],
+      "advanced": ["conditional_var", "downside_deviation", "ulcer_index", "tail_ratio"]
+    },
+    "timing_metrics": {
+      "execution": ["slippage", "latency", "fill_rate"],
+      "market_impact": ["market_timing", "trend_alignment", "volatility_timing"]
+    }
+  },
+  "visualization_settings": {
+    "chart_types": {
+      "time_series": {
+        "enabled": true,
+        "metrics": ["cumulative_returns", "drawdown", "rolling_sharpe"],
+        "comparison_overlay": true
+      },
+      "scatter_plots": {
+        "enabled": true,
+        "metrics_pairs": [["returns", "volatility"], ["win_rate", "avg_win"]],
+        "regression_line": true
+      },
+      "distribution_plots": {
+        "enabled": true,
+        "metrics": ["daily_returns", "trade_pnl"],
+        "overlay_normal": true,
+        "statistical_tests": true
+      },
+      "correlation_matrix": {
+        "enabled": true,
+        "strategies_correlation": true,
+        "metrics_correlation": true
+      }
+    },
+    "chart_settings": {
+      "figure_size": [12, 8],
+      "dpi": 300,
+      "style": "seaborn-v0_8",
+      "color_palette": "husl",
+      "save_formats": ["png", "pdf"]
+    }
+  },
+  "output_settings": {
+    "output_directory": "logs/comparison_analysis",
+    "file_naming": {
+      "timestamp_format": "%Y%m%d_%H%M%S",
+      "include_strategy_name": true,
+      "include_analysis_type": true
+    },
+    "formats": {
+      "excel": {
+        "enabled": true,
+        "include_charts": true,
+        "multiple_sheets": true,
+        "formatting": true
+      },
+      "html": {
+        "enabled": true,
+        "interactive_charts": true,
+        "responsive_design": true,
+        "include_data_tables": true
+      },
+      "json": {
+        "enabled": true,
+        "pretty_print": true,
+        "include_metadata": true
+      },
+      "pdf": {
+        "enabled": false,
+        "include_charts": true,
+        "page_layout": "A4"
+      }
+    },
+    "report_settings": {
+      "executive_summary": true,
+      "detailed_analysis": true,
+      "recommendations": true,
+      "appendix": true
+    }
+  },
+  "performance_optimization": {
+    "caching": {
+      "enabled": true,
+      "cache_duration_hours": 24,
+      "cache_file_results": true
+    },
+    "parallel_processing": {
+      "enabled": true,
+      "max_workers": 4,
+      "chunk_size": 1000
+    },
+    "memory_management": {
+      "max_memory_usage_mb": 2048,
+      "garbage_collection": true,
+      "data_streaming": false
+    }
+  },
+  "notification_settings": {
+    "completion_notification": {
+      "enabled": false,
+      "methods": ["log", "console"]
+    },
+    "error_notification": {
+      "enabled": true,
+      "methods": ["log", "console"],
+      "include_stacktrace": true
+    }
+  }
+}

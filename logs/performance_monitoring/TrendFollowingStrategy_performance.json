@@ -1,0 +1,21 @@
+{
+  "timestamp": "2025-08-08T23:18:49.302048",
+  "strategy": "TrendFollowingStrategy",
+  "performance_data": {
+    "basic_metrics": {
+      "total_pnl": 11234.5,
+      "total_trades": 72,
+      "win_rate": 0.583,
+      "avg_profit": 225.67,
+      "avg_loss": -185.45
+    },
+    "risk_metrics": {
+      "max_drawdown": -0.112,
+      "sharpe_ratio": 1.22,
+      "volatility": 0.155,
+      "calmar_ratio": 1.88
+    }
+  },
+  "monitoring_period": "2024-01-01 to 2024-12-31",
+  "data_source": "live_trading"
+}

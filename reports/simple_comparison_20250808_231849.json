@@ -1,0 +1,76 @@
+{
+  "analysis_type": "simple_comparison",
+  "timestamp": "2025-08-08T23:18:49.347087",
+  "strategies_compared": [
+    "TrendFollowingStrategy",
+    "VWAPStrategy",
+    "MeanReversionStrategy"
+  ],
+  "comparison_results": {
+    "TrendFollowingStrategy": {
+      "total_pnl": {
+        "backtest": 12678.9,
+        "live": 11234.5,
+        "difference": -1444.3999999999996,
+        "relative_difference_pct": -11.39215547090047
+      },
+      "win_rate": {
+        "backtest": 0.597,
+        "live": 0.583,
+        "difference": -0.014000000000000012,
+        "relative_difference_pct": -2.345058626465664
+      },
+      "total_trades": {
+        "backtest": 67,
+        "live": 72,
+        "difference": 5,
+        "relative_difference_pct": 7.462686567164178
+      }
+    },
+    "VWAPStrategy": {
+      "total_pnl": {
+        "backtest": 15420.5,
+        "live": 14235.8,
+        "difference": -1184.7000000000007,
+        "relative_difference_pct": -7.682630264907109
+      },
+      "win_rate": {
+        "backtest": 0.664,
+        "live": 0.627,
+        "difference": -0.03700000000000003,
+        "relative_difference_pct": -5.5722891566265105
+      },
+      "total_trades": {
+        "backtest": 125,
+        "live": 118,
+        "difference": -7,
+        "relative_difference_pct": -5.6000000000000005
+      }
+    },
+    "MeanReversionStrategy": {
+      "total_pnl": {
+        "backtest": 8934.2,
+        "live": 9456.7,
+        "difference": 522.5,
+        "relative_difference_pct": 5.848313223344003
+      },
+      "win_rate": {
+        "backtest": 0.618,
+        "live": 0.645,
+        "difference": 0.027000000000000024,
+        "relative_difference_pct": 4.368932038834955
+      },
+      "total_trades": {
+        "backtest": 89,
+        "live": 93,
+        "difference": 4,
+        "relative_difference_pct": 4.49438202247191
+      }
+    }
+  },
+  "summary": {
+    "total_strategies": 3,
+    "backtest_total_pnl": 37033.6,
+    "live_total_pnl": 34927.0
+  }
+}

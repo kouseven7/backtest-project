@@ -1,0 +1,21 @@
+{
+  "timestamp": "2025-08-08T23:18:49.301079",
+  "strategy": "VWAPStrategy",
+  "performance_data": {
+    "basic_metrics": {
+      "total_pnl": 14235.8,
+      "total_trades": 118,
+      "win_rate": 0.627,
+      "avg_profit": 120.55,
+      "avg_loss": -95.67
+    },
+    "risk_metrics": {
+      "max_drawdown": -0.105,
+      "sharpe_ratio": 1.28,
+      "volatility": 0.148,
+      "calmar_ratio": 1.95
+    }
+  },
+  "monitoring_period": "2024-01-01 to 2024-12-31",
+  "data_source": "live_trading"
+}

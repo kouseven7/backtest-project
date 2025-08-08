@@ -1,0 +1,15 @@
+{
+  "basic_metrics": {
+    "total_pnl": 15420.5,
+    "total_trades": 125,
+    "win_rate": 0.664,
+    "avg_profit": 123.36,
+    "avg_loss": -89.24
+  },
+  "risk_metrics": {
+    "max_drawdown": -0.087,
+    "sharpe_ratio": 1.42,
+    "volatility": 0.134,
+    "calmar_ratio": 2.15
+  }
+}

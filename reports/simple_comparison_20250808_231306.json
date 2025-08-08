@@ -1,0 +1,11 @@
+{
+  "analysis_type": "simple_comparison",
+  "timestamp": "2025-08-08T23:13:06.361128",
+  "strategies_compared": [],
+  "comparison_results": {},
+  "summary": {
+    "total_strategies": 0,
+    "backtest_total_pnl": 0,
+    "live_total_pnl": 34927.0
+  }
+}
