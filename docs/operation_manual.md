@@ -1,30 +1,76 @@
 # マルチ戦略バックテストシステム運用マニュアル
-## フェーズ4B: 本番環境移行準備
+## フェーズ4A: リアルタイム実行環境統合版
 
 ### 1. システム概要
 
-本システムは、複数の投資戦略を統合してバックテスト・最適化・リスク管理を行うPythonベースの分析基盤です。
+本システムは、複数の投資戦略を統合してバックテスト・リアルタイム実行・最適化・リスク管理を行うPythonベースの統合トレーディングプラットフォームです。
 
 #### 1.1 主要コンポーネント
-- **戦略実行エンジン**: `main.py` - 複数戦略の統合実行
+- **戦略実行エンジン**: `main.py` + `src/execution/` - バックテスト・リアルタイム統合実行
+- **リアルタイムデータシステム**: `src/data/` - 複数データソース統合フィード
+- **ペーパートレード環境**: `src/execution/paper_broker.py` - 仮想取引実行
 - **リスク管理モジュール**: `config/risk_management.py` - ポートフォリオリスク制御
 - **パラメータ管理**: `config/optimized_parameters.py` - 承認済みパラメータ管理
-- **監視システム**: `src/monitoring/` - リアルタイム監視・アラート
-- **エラーハンドリング**: `src/error_handling/` - 包括的例外処理
+- **統合監視システム**: `src/monitoring/` + `src/execution/paper_trade_moni#### 7.2 定期メンテナンス
 
-#### 1.2 システム構成
+1. **週次メンテナンス**
+   ```powershell
+   # ログローテーション
+   $oldLogs = Get-ChildItem logs/*.log | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-7)}
+   $oldLogs | Move-Item -Destination "logs/archive/"
+   
+   # ペーパートレードログローテーション
+   $oldTradeLogs = Get-ChildItem logs/paper_trading/*.json | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-7)}
+   $oldTradeLogs | Move-Item -Destination "logs/paper_trading/archive/"
+   
+   # キャッシュクリア・最適化
+   python -c "from src.data.realtime_cache import RealtimeCache; cache = RealtimeCache(); cache.optimize_cache()"
+   
+   # データ品質履歴クリーンアップ
+   Remove-Item logs/data_quality_*.json | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-14)}
+   ```
+
+2. **月次メンテナンス**
+   ```powershell
+   # 包括的なシステムチェック
+   python comprehensive_matrix_test.py
+   
+   # リアルタイムシステム総合チェック
+   python demo_realtime_data_system.py --full-test
+   
+   # ペーパートレード統合チェック
+   python demo_paper_trade_runner.py --comprehensive
+   
+   # パラメータ最適化レビュー
+   python check_param_combinations.py
+   ```ラート
+- **エラーハンドリング**: `src/error_handling/` - 包括的例外処理・復旧
+
+#### 1.2 システム構成（更新版）
 ```
 my_backtest_project/
-├── main.py                    # メインエントリーポイント
-├── strategies/                # 戦略実装
-├── config/                    # 設定・パラメータ管理
-├── src/                       # コアモジュール
-│   ├── monitoring/            # 監視・ダッシュボード
-│   ├── error_handling/        # エラー処理
-│   └── execution/             # 実行エンジン
-├── output/                    # 結果出力
-├── logs/                      # ログファイル
-└── docs/                      # ドキュメント
+├── main.py                         # メインエントリーポイント
+├── src/                            # コアモジュール（統合版）
+│   ├── data/                       # リアルタイムデータ取得・統合
+│   │   ├── data_source_adapter.py  # データソースアダプター
+│   │   ├── realtime_cache.py       # ハイブリッドキャッシュ
+│   │   ├── realtime_feed.py        # リアルタイムフィード
+│   │   └── data_feed_integration.py # 統合データフィードシステム
+│   ├── execution/                  # 実行エンジン（拡張版）
+│   │   ├── paper_broker.py         # ペーパートレードブローカー
+│   │   ├── paper_trade_monitor.py  # ペーパートレード監視
+│   │   ├── paper_trade_scheduler.py # スケジューラー
+│   │   ├── strategy_execution_manager.py # 戦略実行管理
+│   │   └── portfolio_tracker.py    # ポートフォリオ追跡
+│   ├── monitoring/                 # 監視・ダッシュボード
+│   ├── error_handling/             # エラー処理・復旧
+│   └── analysis/                   # 分析・レポート
+├── strategies/                     # 戦略実装
+├── config/                         # 設定・パラメータ管理
+├── output/                         # 結果出力
+├── logs/                          # ログファイル
+├── examples/                      # デモスクリプト
+└── docs/                          # ドキュメント
 ```
 
 ### 2. 日常運用手順
@@ -36,22 +82,28 @@ my_backtest_project/
    # Python環境確認
    python --version
    
-   # 必要パッケージ確認
-   pip list | grep -E "(pandas|numpy|yfinance|scipy|openpyxl)"
+   # 必要パッケージ確認（リアルタイムデータ拡張）
+   pip list | grep -E "(pandas|numpy|yfinance|scipy|openpyxl|aiohttp|requests)"
    ```
 
 2. **設定ファイル確認**
    ```powershell
-   # 設定ファイルの存在確認
+   # 基本設定ファイルの存在確認
    ls config/backtest_config.xlsm ; ls config/*.json
    
+   # リアルタイムデータ設定確認
+   ls config/data_sources_config.json ; ls config/realtime_config.json
+   
    # ログディレクトリ確認
-   ls logs/
+   ls logs/ ; ls logs/paper_trading/
    ```
 
 3. **データソース接続確認**
    ```powershell
-   # データ接続テスト
+   # 統合データフィード接続テスト
+   python -c "from src.data.data_feed_integration import IntegratedDataFeedSystem; system = IntegratedDataFeedSystem(); print('データシステム初期化完了')"
+   
+   # 従来のデータ接続テスト
    python -c "import yfinance as yf; print(yf.Ticker('AAPL').info.get('symbol', 'Error'))"
    ```
 
@@ -59,7 +111,7 @@ my_backtest_project/
 
 1. **基本バックテスト実行**
    ```powershell
-   # 基本実行
+   # 基本実行（バックテストモード）
    python main.py
    
    # 特定銘柄での実行
@@ -69,18 +121,33 @@ my_backtest_project/
    python main.py --debug
    ```
 
-2. **監視ダッシュボード起動**
+2. **ペーパートレード実行**
    ```powershell
-   # ダッシュボード起動
-   python src/monitoring/dashboard.py
+   # ペーパートレード環境デモ
+   python demo_paper_trade_runner.py
    
-   # ブラウザで http://localhost:5000 にアクセス
+   # ペーパートレード監視システム
+   python examples/demo_paper_trading_system.py
    ```
 
-3. **パフォーマンス監視**
+3. **リアルタイムデータシステム起動**
    ```powershell
-   # パフォーマンス監視開始
-   python demo_performance_monitor.py
+   # リアルタイムデータシステムデモ
+   python demo_realtime_data_system.py
+   
+   # 統合データフィード起動
+   python -c "from src.data.data_feed_integration import IntegratedDataFeedSystem; system = IntegratedDataFeedSystem(); system.start_all_feeds()"
+   ```
+
+4. **監視ダッシュボード起動**
+   ```powershell
+   # 統合監視ダッシュボード起動
+   python src/monitoring/dashboard.py
+   
+   # ペーパートレード専用監視
+   python performance_monitor.py
+   
+   # ブラウザで http://localhost:5000 にアクセス
    ```
 
 #### 2.3 結果確認手順
@@ -89,6 +156,12 @@ my_backtest_project/
    ```powershell
    # メインログ確認
    Get-Content logs/main.log -Tail 50
+   
+   # ペーパートレード専用ログ
+   Get-Content logs/paper_trading/*.log -Tail 20
+   
+   # リアルタイムデータログ
+   Get-Content logs/realtime_data.log -Tail 30
    
    # エラーログ確認
    Get-Content logs/errors.log -Tail 20
@@ -104,12 +177,30 @@ my_backtest_project/
    
    # レポート確認
    ls reports/*.txt
+   
+   # ペーパートレード実行結果
+   ls logs/paper_trading/executions_*.json
    ```
 
 3. **監視メトリクス確認**
    ```powershell
-   # メトリクス収集状況確認
+   # 統合メトリクス収集状況確認
    python -c "from src.monitoring.metrics_collector import MetricsCollector; mc = MetricsCollector(); print(mc.get_current_metrics())"
+   
+   # リアルタイムデータシステム状態確認
+   python -c "from src.data.data_feed_integration import IntegratedDataFeedSystem; system = IntegratedDataFeedSystem(); print(system.get_system_status())"
+   
+   # ペーパートレード監視状態確認
+   python -c "from src.execution.paper_trade_monitor import PaperTradeMonitor; monitor = PaperTradeMonitor({}); print(monitor.get_status())"
+   ```
+
+4. **データ品質確認**
+   ```powershell
+   # データ品質レポート確認
+   ls logs/data_quality_*.json
+   
+   # キャッシュ状態確認
+   python -c "from src.data.realtime_cache import RealtimeCache; cache = RealtimeCache(); print(cache.get_cache_stats())"
    ```
 
 ### 3. 設定管理
@@ -135,7 +226,44 @@ my_backtest_project/
    Copy-Item config/optimized_params/ config/optimized_params_backup_$(Get-Date -Format "yyyyMMdd") -Recurse
    ```
 
-#### 3.2 リスク管理設定
+#### 3.2 リアルタイムデータ設定管理
+
+1. **データソース設定確認**
+   ```powershell
+   # データソース設定表示
+   Get-Content config/data_sources_config.json
+   
+   # リアルタイム設定表示
+   Get-Content config/realtime_config.json
+   ```
+
+2. **データ品質設定**
+   ```powershell
+   # データ品質閾値確認
+   python -c "from src.data.data_feed_integration import IntegratedDataFeedSystem; system = IntegratedDataFeedSystem(); print(system.get_quality_config())"
+   ```
+
+3. **キャッシュ設定最適化**
+   ```powershell
+   # キャッシュ設定確認・調整
+   python -c "from src.data.realtime_cache import RealtimeCache; cache = RealtimeCache(); print(cache.get_configuration())"
+   ```
+
+#### 3.3 ペーパートレード設定
+
+1. **ペーパートレード環境設定**
+   ```powershell
+   # ペーパートレード設定確認
+   python -c "from src.execution.paper_broker import PaperBroker; broker = PaperBroker(); print(broker.get_account_info())"
+   ```
+
+2. **実行スケジュール設定**
+   ```powershell
+   # スケジューラー設定確認
+   python -c "from src.execution.paper_trade_scheduler import PaperTradeScheduler; scheduler = PaperTradeScheduler({}); print(scheduler.get_status())"
+   ```
+
+#### 3.4 リスク管理設定
 
 1. **リスク制限確認**
    ```powershell
@@ -149,18 +277,36 @@ my_backtest_project/
    python config/position_sizing/position_size_adjuster.py
    ```
 
-#### 3.3 監視設定
+3. **リアルタイムリスク監視**
+   ```powershell
+   # リアルタイムリスク状況確認
+   python -c "from src.execution.portfolio_tracker import PortfolioTracker; tracker = PortfolioTracker(); print(tracker.get_risk_metrics())"
+   ```
+
+#### 3.5 統合監視設定
 
 1. **アラート設定確認**
    ```powershell
    # アラート設定表示
    python -c "from src.monitoring.alert_manager import AlertManager; am = AlertManager(); print(am.get_alert_rules())"
+   
+   # ペーパートレードアラート確認
+   python -c "from src.execution.paper_trade_monitor import PaperTradeMonitor; monitor = PaperTradeMonitor({}); print('アラート設定確認完了')"
    ```
 
 2. **メトリクス収集設定**
    ```powershell
    # メトリクス設定確認
    Get-Content config/monitoring_config.json
+   
+   # リアルタイムデータメトリクス
+   ls logs/metrics_*.json
+   ```
+
+3. **データフィード監視設定**
+   ```powershell
+   # データフィード状態監視
+   python -c "from src.data.data_feed_integration import IntegratedDataFeedSystem; system = IntegratedDataFeedSystem(); print(system.get_subscription_status())"
    ```
 
 ### 4. トラブルシューティング
@@ -175,19 +321,41 @@ my_backtest_project/
    - ネットワーク接続確認
    - プロキシ設定確認
    - レート制限待機
+   - Alpha Vantageへのフェイルオーバー確認
    ```
 
-2. **メモリ不足エラー**
+2. **リアルタイムデータシステムエラー**
+   ```
+   問題: リアルタイムフィード停止
+   原因: データソース接続問題、キャッシュ満杯
+   解決:
+   - データソース状態確認: python -c "from src.data.data_feed_integration import IntegratedDataFeedSystem; system = IntegratedDataFeedSystem(); print(system.get_system_status())"
+   - キャッシュクリア: python -c "from src.data.realtime_cache import RealtimeCache; cache = RealtimeCache(); cache.clear_cache()"
+   - フェイルオーバー機能確認
+   ```
+
+3. **ペーパートレード実行エラー**
+   ```
+   問題: ペーパートレード実行失敗
+   原因: ポートフォリオ状態異常、注文処理エラー
+   解決:
+   - ポートフォリオ状態確認: python -c "from src.execution.portfolio_tracker import PortfolioTracker; tracker = PortfolioTracker(); print(tracker.get_positions())"
+   - 注文履歴確認: Get-Content logs/paper_trading/orders_*.json
+   - ブローカー状態リセット
+   ```
+
+4. **メモリ不足エラー**
    ```
    問題: 大量データ処理時のメモリ不足
-   原因: データサイズ過大、メモリリーク
+   原因: データサイズ過大、メモリリーク、キャッシュ肥大化
    解決:
    - データ分割処理
    - ガベージコレクション実行
-   - メモリ使用量監視
+   - キャッシュサイズ制限調整
+   - L2キャッシュクリーンアップ
    ```
 
-3. **パラメータ読み込みエラー**
+5. **パラメータ読み込みエラー**
    ```
    問題: 承認済みパラメータ読み込み失敗
    原因: ファイル破損、権限問題
@@ -206,12 +374,24 @@ my_backtest_project/
    
    # コンポーネント診断
    python config/basic_system_test.py
+   
+   # リアルタイムシステム診断
+   python demo_realtime_data_system.py
+   
+   # ペーパートレード統合診断
+   python demo_paper_trade_runner.py
    ```
 
 2. **ログ分析**
    ```powershell
    # エラーログ検索
    Select-String -Path "logs/*.log" -Pattern "ERROR|CRITICAL" | Select-Object -Last 20
+   
+   # ペーパートレードエラー検索
+   Select-String -Path "logs/paper_trading/*.log" -Pattern "ERROR|FAILED" | Select-Object -Last 10
+   
+   # リアルタイムデータエラー検索
+   Select-String -Path "logs/realtime_data.log" -Pattern "ERROR|WARNING" | Select-Object -Last 15
    
    # 警告ログ検索
    Select-String -Path "logs/*.log" -Pattern "WARNING" | Select-Object -Last 10
@@ -221,6 +401,21 @@ my_backtest_project/
    ```powershell
    # パフォーマンステスト実行
    python benchmark_validator.py
+   
+   # リアルタイムデータパフォーマンス
+   python -c "from src.data.data_feed_integration import IntegratedDataFeedSystem; system = IntegratedDataFeedSystem(); print(system.get_performance_metrics())"
+   
+   # ペーパートレードパフォーマンス
+   python performance_monitor.py --analyze
+   ```
+
+4. **データ品質診断**
+   ```powershell
+   # データ品質レポート生成
+   python -c "from src.data.data_feed_integration import IntegratedDataFeedSystem; system = IntegratedDataFeedSystem(); print(system.generate_quality_report())"
+   
+   # キャッシュ効率分析
+   python -c "from src.data.realtime_cache import RealtimeCache; cache = RealtimeCache(); print(cache.analyze_performance())"
    ```
 
 ### 5. バックアップ・復旧
@@ -234,6 +429,7 @@ my_backtest_project/
    New-Item -ItemType Directory -Path "backup/$backupDate" -Force
    Copy-Item config/ "backup/$backupDate/config/" -Recurse
    Copy-Item logs/ "backup/$backupDate/logs/" -Recurse
+   Copy-Item src/config/ "backup/$backupDate/src_config/" -Recurse
    ```
 
 2. **パラメータファイルバックアップ**
@@ -242,19 +438,44 @@ my_backtest_project/
    Copy-Item config/optimized_params/ "backup/params_$(Get-Date -Format "yyyyMMddHHmm")/" -Recurse
    ```
 
+3. **リアルタイムデータキャッシュバックアップ**
+   ```powershell
+   # キャッシュデータバックアップ
+   Copy-Item logs/cache/ "backup/cache_$(Get-Date -Format "yyyyMMddHHmm")/" -Recurse
+   
+   # データ品質履歴バックアップ
+   Copy-Item logs/data_quality_*.json "backup/data_quality/" -Force
+   ```
+
+4. **ペーパートレード履歴バックアップ**
+   ```powershell
+   # ペーパートレード実行履歴
+   Copy-Item logs/paper_trading/ "backup/paper_trading_$(Get-Date -Format "yyyyMMddHHmm")/" -Recurse
+   ```
+
 #### 5.2 復旧手順
 
 1. **設定復旧**
    ```powershell
    # 設定ファイル復旧
-   $restoreDate = "20250101"  # 復旧対象日付
+   $restoreDate = "20250801"  # 復旧対象日付
    Copy-Item "backup/$restoreDate/config/" config/ -Recurse -Force
+   Copy-Item "backup/$restoreDate/src_config/" src/config/ -Recurse -Force
    ```
 
 2. **パラメータ復旧**
    ```powershell
    # パラメータファイル復旧
-   Copy-Item "backup/params_202501011200/" config/optimized_params/ -Recurse -Force
+   Copy-Item "backup/params_202508011200/" config/optimized_params/ -Recurse -Force
+   ```
+
+3. **システム状態復旧**
+   ```powershell
+   # リアルタイムデータシステム再初期化
+   python -c "from src.data.data_feed_integration import IntegratedDataFeedSystem; system = IntegratedDataFeedSystem(); system.reset_system()"
+   
+   # ペーパートレード環境リセット
+   python -c "from src.execution.paper_broker import PaperBroker; broker = PaperBroker(); broker.reset_account()"
    ```
 
 ### 6. 監視・アラート
@@ -266,25 +487,38 @@ my_backtest_project/
    - メモリ使用率
    - ディスク使用量
    - ネットワーク接続状態
+   - リアルタイムデータフィード状態
 
 2. **アプリケーション監視**
    - 戦略実行状態
-   - データ取得状況
+   - データ取得状況（複数ソース）
    - エラー発生率
    - 処理時間
+   - キャッシュ効率
+   - データ品質スコア
 
 3. **ビジネス監視**
-   - ポジション状況
+   - ポジション状況（ペーパートレード）
    - リスク指標
    - パフォーマンス指標
-   - 約定状況
+   - 仮想約定状況
+   - 戦略切替頻度
+   - バックテスト vs リアルタイム乖離
+
+4. **データ品質監視**
+   - データ完全性スコア
+   - データ精度評価
+   - データ適時性チェック
+   - 異常値検出状況
 
 #### 6.2 アラート対応
 
 1. **緊急アラート（Critical）**
    - システム停止
    - データ取得完全停止
+   - ペーパートレード実行エラー
    - 重大なエラー
+   - データ品質スコア閾値以下
 
    **対応手順:**
    ```powershell
@@ -293,6 +527,10 @@ my_backtest_project/
    
    # エラーログ確認
    Get-Content logs/errors.log -Tail 50
+   Get-Content logs/paper_trading/errors.log -Tail 20
+   
+   # リアルタイムデータシステム状態確認
+   python -c "from src.data.data_feed_integration import IntegratedDataFeedSystem; system = IntegratedDataFeedSystem(); print(system.get_system_status())"
    
    # 必要に応じてシステム再起動
    ```
@@ -301,13 +539,34 @@ my_backtest_project/
    - データ取得遅延
    - パフォーマンス低下
    - リスク制限接近
+   - キャッシュ効率低下
+   - データ品質軽微低下
+   - ペーパートレード実行遅延
 
    **対応手順:**
    ```powershell
    # 詳細状況確認
    python demo_performance_monitor.py --analyze
    
+   # リアルタイムデータ状況確認
+   python demo_realtime_data_system.py --status-check
+   
+   # データ品質レポート確認
+   python -c "from src.data.data_feed_integration import IntegratedDataFeedSystem; system = IntegratedDataFeedSystem(); print(system.generate_quality_report())"
+   
    # 必要に応じて設定調整
+   ```
+
+3. **情報アラート（Info）**
+   - 戦略切替発生
+   - 新規データソース接続
+   - キャッシュ更新完了
+   - パフォーマンス改善検出
+
+   **対応手順:**
+   ```powershell
+   # 情報確認のみ
+   python performance_monitor.py --summary
    ```
 
 ### 7. パフォーマンス最適化
@@ -383,26 +642,37 @@ my_backtest_project/
 #### 9.1 日次チェックリスト
 
 - [ ] システム起動状態確認
-- [ ] データ取得状況確認
+- [ ] データ取得状況確認（Yahoo Finance + Alpha Vantage）
+- [ ] リアルタイムデータフィード状態確認
+- [ ] ペーパートレード実行状況確認
 - [ ] エラーログ確認
 - [ ] アラート状況確認
 - [ ] パフォーマンス指標確認
+- [ ] データ品質スコア確認
+- [ ] キャッシュ効率確認
 - [ ] ディスク使用量確認
 
 #### 9.2 週次チェックリスト
 
 - [ ] バックアップ実行状況確認
 - [ ] ログローテーション実行
+- [ ] ペーパートレード履歴アーカイブ
 - [ ] パラメータ最適化結果レビュー
 - [ ] システムパフォーマンス分析
+- [ ] データ品質トレンド分析
+- [ ] キャッシュ最適化実行
 - [ ] セキュリティ状況確認
 
 #### 9.3 月次チェックリスト
 
 - [ ] 包括的システムテスト実行
+- [ ] リアルタイムシステム総合評価
+- [ ] ペーパートレード vs バックテスト比較分析
 - [ ] パラメータ最適化全体レビュー
 - [ ] リスク管理設定見直し
 - [ ] 監視設定最適化
+- [ ] データソース性能評価
+- [ ] 戦略パフォーマンス総合評価
 - [ ] ドキュメント更新
 
 ### 10. 連絡先・エスカレーション
@@ -427,5 +697,24 @@ my_backtest_project/
 - 緊急時は安全第一で対応してください
 - 不明な点は必ずエスカレーションしてください
 
-**最終更新**: 2025年1月
-**バージョン**: 1.0
+## 📝 アップデート履歴
+
+### Version 2.0 (2025年8月13日)
+- **フェーズ3B: リアルタイムデータ接続システム**の追加
+- **ペーパートレード環境**の運用手順追加
+- **統合監視システム**の操作方法追加
+- **データ品質管理**の監視項目追加
+- **新しいディレクトリ構造**に対応
+- **トラブルシューティング**の拡充
+- **診断コマンド**の追加
+- **バックアップ手順**の強化
+
+### Version 1.0 (2025年8月)
+- 初版作成
+- 基本的なバックテストシステム運用手順
+
+---
+
+**最終更新**: 2025年8月13日  
+**バージョン**: 2.0  
+**更新者**: AI Assistant (GitHub Copilot)
