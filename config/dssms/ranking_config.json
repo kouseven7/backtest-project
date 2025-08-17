@@ -1,0 +1,33 @@
+{
+  "ranking_system": {
+    "scoring_weights": {
+      "fundamental": 0.4,
+      "technical": 0.3,
+      "volume": 0.2,
+      "volatility": 0.1
+    },
+    "priority_classification": {
+      "adaptive_priority_levels": 3,
+      "perfect_order_weight": 0.35,
+      "level_1_threshold": 0.8,
+      "level_2_threshold": 0.6
+    },
+    "affordability_penalty": {
+      "high_price_threshold": 5000,
+      "penalty_rate": 0.15,
+      "max_investment_ratio": 0.8
+    },
+    "technical_indicators": {
+      "rsi_period": 14,
+      "rsi_oversold": 30,
+      "rsi_overbought": 70,
+      "macd_fast": 12,
+      "macd_slow": 26,
+      "macd_signal": 9
+    },
+    "cache_settings": {
+      "cache_duration_minutes": 30,
+      "max_cache_size": 1000
+    }
+  }
+}
