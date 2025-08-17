@@ -1,0 +1,62 @@
+{
+  "weights": {
+    "fundamental": 0.40,
+    "technical": 0.30,
+    "volume": 0.20,
+    "volatility": 0.10
+  },
+  "technical_indicators": {
+    "rsi": {
+      "period": 14,
+      "weight": 0.35,
+      "thresholds": {
+        "oversold": 30,
+        "overbought": 70,
+        "optimal_range": [40, 60]
+      }
+    },
+    "macd": {
+      "fast": 12,
+      "slow": 26,
+      "signal": 9,
+      "weight": 0.35
+    },
+    "sma": {
+      "periods": [5, 25, 75],
+      "weight": 0.30
+    }
+  },
+  "volume_analysis": {
+    "volume_ratio_weight": 0.60,
+    "liquidity_weight": 0.40,
+    "lookback_period": 20,
+    "min_volume_threshold": 1000000
+  },
+  "volatility_analysis": {
+    "period": 20,
+    "optimal_range": [0.15, 0.30],
+    "penalty_multiplier": 0.5,
+    "annualization_factor": 252
+  },
+  "scoring_normalization": {
+    "method": "min_max",
+    "clip_outliers": true,
+    "outlier_threshold": 3.0
+  },
+  "cache_settings": {
+    "enabled": true,
+    "ttl_seconds": 300,
+    "max_size": 1000
+  },
+  "error_handling": {
+    "graceful_degradation": true,
+    "partial_score_threshold": 0.5,
+    "fallback_score": 0.3,
+    "max_retries": 3
+  },
+  "data_sources": {
+    "primary": "yfinance",
+    "backup": "cached_data",
+    "timeout_seconds": 30
+  }
+}
