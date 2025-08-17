@@ -1,0 +1,35 @@
+{
+  "screening": {
+    "nikkei225_filters": {
+      "min_price": 500,
+      "min_market_cap": 10000000000,
+      "min_trading_volume": 100000,
+      "max_symbols": 50,
+      "min_shares_affordable": 100
+    },
+    "perfect_order": {
+      "daily": {"short": 5, "medium": 25, "long": 75},
+      "weekly": {"short": 13, "medium": 26, "long": 52},
+      "monthly": {"short": 9, "medium": 24, "long": 60}
+    },
+    "priority_logic": {
+      "level_1": "all_timeframes_perfect_order",
+      "level_2": "monthly_weekly_perfect_order",
+      "level_3": "others"
+    }
+  },
+  "fundamental_analysis": {
+    "required_quarters": 3,
+    "min_operating_margin": 0.02,
+    "stability_threshold": 0.8,
+    "growth_threshold": 0.05
+  },
+  "data_sources": {
+    "nikkei225_list": "nikkei225_components.json",
+    "backup_method": "yahoo_finance_api"
+  },
+  "cache_settings": {
+    "timeout_minutes": 5,
+    "max_entries": 1000
+  }
+}
