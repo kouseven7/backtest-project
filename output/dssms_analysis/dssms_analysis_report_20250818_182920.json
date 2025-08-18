@@ -1,0 +1,105 @@
+{
+  "report_metadata": {
+    "report_version": "1.0",
+    "generation_tool": "DSSMSAnalyzer",
+    "analysis_period": "2024-08-18 18:29:20.460701 - 2025-08-18 18:29:20.460708",
+    "data_sources": [
+      "backtest_results",
+      "realtime_data"
+    ],
+    "analysis_types": [
+      "accuracy",
+      "optimization",
+      "performance"
+    ]
+  },
+  "performance_data": {
+    "timestamp": "2025-08-18T18:29:20.460643",
+    "data_period": {
+      "start_date": "2024-08-18T18:29:20.460648",
+      "end_date": "2025-08-18T18:29:20.460653"
+    },
+    "basic_metrics": {
+      "total_return": 0.13647951659244378,
+      "volatility": 0.18177855889815495,
+      "max_drawdown": 0.10893052278394771,
+      "sharpe_ratio": 1.5148924986566272,
+      "total_trades": 339
+    },
+    "dssms_specific": {
+      "symbol_switches": 56,
+      "selection_accuracy": 0.5748526856537708,
+      "average_holding_period": 8.870031312892683,
+      "switch_success_rate": 0.7816058509248156
+    },
+    "comparison_data": {
+      "vs_buy_and_hold": 0.2046062491451899,
+      "vs_index": 0.04320839419592826,
+      "vs_random_selection": 0.03331138074604254
+    }
+  },
+  "analysis_results": {
+    "metadata": {
+      "report_version": "1.0",
+      "generation_tool": "DSSMSAnalyzer",
+      "analysis_period": "2024-08-18 18:29:20.460701 - 2025-08-18 18:29:20.460708",
+      "data_sources": [
+        "backtest_results",
+        "realtime_data"
+      ],
+      "analysis_types": [
+        "accuracy",
+        "optimization",
+        "performance"
+      ]
+    },
+    "executive_summary": {
+      "key_performance_indicators": {
+        "total_return": "13.65%",
+        "selection_accuracy": "57.5%",
+        "switch_success_rate": "78.2%"
+      },
+      "performance_grade": "B+",
+      "key_insights": [
+        "DSSMSシステムは安定した銘柄選択精度を維持",
+        "切替頻度の最適化により更なる改善の余地あり",
+        "インデックス比較でアウトパフォーマンスを達成"
+      ],
+      "critical_recommendations": [
+        "パラメータ最適化の実装推奨",
+        "リスク管理の強化検討",
+        "選択精度向上策の実行"
+      ]
+    },
+    "detailed_analysis": {
+      "performance_breakdown": {
+        "total_return": 0.13647951659244378,
+        "volatility": 0.18177855889815495,
+        "max_drawdown": 0.10893052278394771,
+        "sharpe_ratio": 1.5148924986566272,
+        "total_trades": 339
+      },
+      "dssms_analysis": {
+        "symbol_switches": 56,
+        "selection_accuracy": 0.5748526856537708,
+        "average_holding_period": 8.870031312892683,
+        "switch_success_rate": 0.7816058509248156
+      },
+      "risk_analysis": {
+        "var_95": 0.04174146968332292,
+        "expected_shortfall": 0.056944172172293646,
+        "correlation_analysis": "低相関を維持"
+      },
+      "comparison_analysis": {
+        "vs_buy_and_hold": 0.2046062491451899,
+        "vs_index": 0.04320839419592826,
+        "vs_random_selection": 0.03331138074604254
+      }
+    },
+    "recommendations": [
+      "短期的推奨: 切替パラメータの調整実施",
+      "中期的推奨: 選択アルゴリズムの改良検討",
+      "長期的推奨: 新たな評価指標の導入"
+    ]
+  }
+}
