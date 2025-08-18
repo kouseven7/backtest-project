@@ -1,0 +1,58 @@
+{
+  "scheduling": {
+    "mode": "hybrid",
+    "fixed_schedule": {
+      "morning_screening": "09:30",
+      "afternoon_screening": "12:30",
+      "emergency_check_interval": 60
+    },
+    "adaptive_schedule": {
+      "enabled": false,
+      "market_condition_adjustment": true,
+      "volatility_based_frequency": true
+    }
+  },
+  "market_hours": {
+    "timezone": "Asia/Tokyo",
+    "trading_sessions": {
+      "morning": {"start": "09:00", "end": "11:30"},
+      "afternoon": {"start": "12:30", "end": "15:00"}
+    },
+    "holidays": "auto_detect",
+    "outside_hours_monitoring": false
+  },
+  "emergency_detection": {
+    "check_frequency_seconds": 60,
+    "analysis_depth": "hierarchical",
+    "alert_thresholds": {
+      "emergency_score_immediate": 40,
+      "emergency_score_prepare": 25,
+      "emergency_score_monitor": 15
+    }
+  },
+  "integration": {
+    "kabu_api_mode": "phase4_only",
+    "existing_system_integration": "gradual",
+    "error_handling_system": "existing_enhanced"
+  },
+  "history": {
+    "log_level": "detailed",
+    "retention_days": 90,
+    "daily_summary_generation": true,
+    "performance_tracking": true
+  },
+  "perfect_order_detection": {
+    "timeframes": ["daily", "weekly", "monthly"],
+    "breakdown_threshold": 0.3,
+    "confirmation_periods": 3
+  },
+  "market_holidays": [
+    "2025-01-01", "2025-01-02", "2025-01-03",
+    "2025-01-13", "2025-02-11", "2025-02-23",
+    "2025-03-21", "2025-04-29", "2025-05-03",
+    "2025-05-04", "2025-05-05", "2025-07-21",
+    "2025-08-11", "2025-09-15", "2025-09-23",
+    "2025-10-13", "2025-11-03", "2025-11-23",
+    "2025-12-29", "2025-12-30", "2025-12-31"
+  ]
+}

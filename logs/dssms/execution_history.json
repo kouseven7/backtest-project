@@ -1,0 +1,50 @@
+[
+  {
+    "timestamp": "2025-08-18T13:58:02.167599",
+    "event_type": "monitoring",
+    "symbol": "6758",
+    "event_details": {
+      "event_type": "monitoring_start",
+      "symbol": "6758",
+      "start_time": "2025-08-18T13:58:02.167593"
+    },
+    "market_conditions": {
+      "timestamp": "2025-08-18T13:58:02.167601",
+      "market_open": true,
+      "nikkei225_trend": "unknown",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2025-08-18T13:58:02.168559",
+    "event_type": "emergency_check",
+    "symbol": "6758",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2025-08-18T13:58:02.168564",
+      "market_open": true,
+      "nikkei225_trend": "unknown",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2025-08-18T13:58:02.178517",
+    "event_type": "screening",
+    "session_type": "test",
+    "execution_status": "test",
+    "selected_symbol": "TEST",
+    "candidate_count": 5,
+    "screening_duration_seconds": 1.0,
+    "priority_distribution": {},
+    "market_conditions": {
+      "timestamp": "2025-08-18T13:58:02.178523",
+      "market_open": true,
+      "nikkei225_trend": "unknown",
+      "volatility_level": "normal"
+    }
+  }
+]
