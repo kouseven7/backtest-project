@@ -1,0 +1,45 @@
+{
+  "switch_criteria": {
+    "perfect_order_breakdown_threshold": 0.7,
+    "score_difference_threshold": 0.15,
+    "minimum_holding_period_hours": 4,
+    "confidence_threshold": 0.6,
+    "immediate_exit_conditions": {
+      "perfect_order_breakdown": true,
+      "fundamental_deterioration": true,
+      "volume_spike_anomaly": true
+    }
+  },
+  "risk_control": {
+    "max_daily_switches": 3,
+    "max_weekly_switches": 10,
+    "drawdown_restriction_threshold": 0.05,
+    "position_concentration_limit": 0.3,
+    "switch_frequency_cooldown_minutes": 30,
+    "emergency_stop_conditions": {
+      "market_crash_threshold": -0.03,
+      "volatility_spike_multiplier": 2.0
+    }
+  },
+  "fund_management": {
+    "update_schedule": "daily",
+    "emergency_triggers": ["market_crash", "volatility_spike", "perfect_order_breakdown"],
+    "drawdown_fund_reduction": {
+      "5_percent": 0.8,
+      "10_percent": 0.6,
+      "15_percent": 0.4,
+      "20_percent": 0.2
+    },
+    "available_fund_calculation": {
+      "base_ratio": 0.9,
+      "conservative_ratio": 0.7,
+      "aggressive_ratio": 1.0
+    }
+  },
+  "logging": {
+    "log_level": "INFO",
+    "log_switches": true,
+    "log_evaluations": true,
+    "performance_tracking": true
+  }
+}
