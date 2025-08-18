@@ -1,0 +1,27 @@
+{
+  "registration_strategy": {
+    "max_symbols": 50,
+    "priority_allocation": {
+      "level1_percentage": 40,
+      "level2_percentage": 35,
+      "level3_percentage": 25
+    },
+    "update_frequencies": {
+      "level1": "1min",
+      "level2": "3min", 
+      "level3": "5min"
+    }
+  },
+  "adaptive_frequency": {
+    "high_volatility_multiplier": 0.5,
+    "low_volatility_multiplier": 2.0,
+    "market_hours_adjustment": true
+  },
+  "exchange_mapping": {
+    "1": "東証",
+    "2": "名証",
+    "3": "福証",
+    "5": "札証"
+  },
+  "default_exchange": 1
+}

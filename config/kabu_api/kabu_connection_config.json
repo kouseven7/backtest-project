@@ -1,0 +1,24 @@
+{
+  "authentication": {
+    "api_password": "${KABU_API_PASSWORD}",
+    "base_url": "http://localhost:18080/kabusapi",
+    "timeout_seconds": 30,
+    "retry_count": 3
+  },
+  "connection_settings": {
+    "keep_alive_interval": 300,
+    "health_check_interval": 60,
+    "auto_reconnect": true,
+    "max_reconnect_attempts": 5
+  },
+  "api_limits": {
+    "requests_per_second": 10,
+    "requests_per_minute": 100,
+    "board_data_limit": 50
+  },
+  "development_settings": {
+    "use_test_password": "qwerty",
+    "use_test_symbols": ["9433", "5401", "6758", "8035"],
+    "debug_mode": true
+  }
+}

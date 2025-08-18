@@ -1,0 +1,38 @@
+{
+  "order_settings": {
+    "default_order_type": "market",
+    "execution_timeout": 30,
+    "partial_fill_acceptance": true,
+    "price_tolerance_percentage": 0.5
+  },
+  "risk_integration": {
+    "phase4_only_mode": true,
+    "integration_schedule": {
+      "full_integration_after_days": 30,
+      "gradual_integration_steps": 5
+    }
+  },
+  "position_limits": {
+    "max_position_per_symbol": 1000000,
+    "max_daily_orders": 10,
+    "concentration_limit": 0.1
+  },
+  "order_types": {
+    "cash_buy": {
+      "security_type": 1,
+      "side": "2",
+      "cash_margin": 1,
+      "deliv_type": 2,
+      "fund_type": "AA",
+      "account_type": 2
+    },
+    "cash_sell": {
+      "security_type": 1,
+      "side": "1",
+      "cash_margin": 1,
+      "deliv_type": 2,
+      "fund_type": "AA",
+      "account_type": 2
+    }
+  }
+}
