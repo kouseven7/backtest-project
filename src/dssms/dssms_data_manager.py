@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 import pandas as pd
 import yfinance as yf
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime, timedelta
 import threading
 import time
@@ -323,3 +323,184 @@ if __name__ == "__main__":
             
     except Exception as e:
         print(f"Test failed: {e}")
+
+
+# 拡張メソッドを追加
+def _extend_dssms_data_manager():
+    """DSSMSDataManagerに日経225対応メソッドを追加"""
+    
+    def get_nikkei225_data(self, period: str = "1y") -> pd.DataFrame:
+        """
+        日経225指数データ取得（市場時間考慮）
+        
+        Args:
+            period: データ期間 ("1y", "6mo", "3mo", "1mo")
+            
+        Returns:
+            日経225指数データ
+        """
+        try:
+            # キャッシュチェック
+            cache_key = f"^N225_{period}"
+            timeframe = "daily"
+            
+            if (cache_key in self._timeframe_cache[timeframe] and 
+                cache_key in self._cache_timestamps[timeframe] and 
+                datetime.now() - self._cache_timestamps[timeframe][cache_key] < self._cache_expiry[timeframe]):
+                return self._timeframe_cache[timeframe][cache_key]
+            
+            # Yahoo Financeから取得
+            ticker = yf.Ticker("^N225")
+            data = ticker.history(period=period)
+            
+            if data.empty:
+                self.logger.warning("Failed to fetch Nikkei 225 data")
+                return pd.DataFrame()
+            
+            # データクリーニング
+            data = data.dropna()
+            
+            # キャッシュ保存
+            self._timeframe_cache[timeframe][cache_key] = data
+            self._cache_timestamps[timeframe][cache_key] = datetime.now()
+            
+            self.logger.info(f"Nikkei 225 data fetched: {len(data)} records for {period}")
+            return data
+            
+        except Exception as e:
+            self.logger.error(f"Error fetching Nikkei 225 data: {e}")
+            return pd.DataFrame()
+    
+    def get_realtime_nikkei225_data(self) -> Dict[str, Any]:
+        """
+        リアルタイム日経225データ取得（市場時間考慮）
+        
+        Returns:
+            リアルタイムデータの辞書
+        """
+        try:
+            # 基本データ取得
+            data = self.get_nikkei225_data(period="5d")  # 直近5日分
+            
+            if data.empty:
+                return {"error": "No data available"}
+            
+            latest = data.iloc[-1]
+            previous = data.iloc[-2] if len(data) > 1 else latest
+            
+            # 変化率計算
+            price_change = latest['Close'] - previous['Close']
+            price_change_pct = (price_change / previous['Close']) * 100
+            
+            # 市場時間判定
+            now = datetime.now()
+            is_market_hours = self._is_market_hours(now)
+            
+            result = {
+                "symbol": "^N225",
+                "current_price": float(latest['Close']),
+                "previous_close": float(previous['Close']),
+                "price_change": float(price_change),
+                "price_change_pct": float(price_change_pct),
+                "volume": int(latest['Volume']),
+                "high": float(latest['High']),
+                "low": float(latest['Low']),
+                "is_market_hours": is_market_hours,
+                "last_update": latest.name.strftime('%Y-%m-%d %H:%M:%S'),
+                "data_points": len(data)
+            }
+            
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"Error getting realtime Nikkei 225 data: {e}")
+            return {"error": str(e)}
+    
+    def _is_market_hours(self, timestamp: datetime) -> bool:
+        """
+        市場時間判定
+        
+        Args:
+            timestamp: 判定する時刻
+            
+        Returns:
+            市場時間内かどうか
+        """
+        try:
+            weekday = timestamp.weekday()
+            if weekday >= 5:  # 土日
+                return False
+            
+            time_str = timestamp.strftime('%H:%M')
+            
+            # 午前: 09:00-11:30, 午後: 12:30-15:00
+            morning_start = "09:00"
+            morning_end = "11:30"
+            afternoon_start = "12:30" 
+            afternoon_end = "15:00"
+            
+            return ((morning_start <= time_str <= morning_end) or 
+                   (afternoon_start <= time_str <= afternoon_end))
+            
+        except Exception:
+            return False
+    
+    def calculate_market_indicators(self, data: pd.DataFrame) -> Dict[str, float]:
+        """
+        市場指標計算（ADX、RSI、ボラティリティ等）
+        
+        Args:
+            data: 価格データ
+            
+        Returns:
+            計算された指標の辞書
+        """
+        try:
+            if len(data) < 20:
+                return {"error": "Insufficient data"}
+            
+            close = data['Close'].astype(float)
+            high = data['High'].astype(float)
+            low = data['Low'].astype(float)
+            volume = data['Volume'].astype(float)
+            
+            indicators = {}
+            
+            # RSI計算
+            delta = close.diff()
+            gain = delta.where(delta > 0, 0).rolling(window=14).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+            rs = gain / loss
+            rsi = 100 - (100 / (1 + rs))
+            indicators['rsi'] = float(rsi.iloc[-1])
+            
+            # ボラティリティ計算
+            returns = close.pct_change().dropna()
+            volatility = returns.rolling(window=20).std().iloc[-1] * np.sqrt(252)
+            indicators['volatility'] = float(volatility)
+            
+            # 出来高比率
+            avg_volume = volume.rolling(window=20).mean()
+            volume_ratio = volume.iloc[-1] / avg_volume.iloc[-1]
+            indicators['volume_ratio'] = float(volume_ratio)
+            
+            # 価格変化率
+            price_change_1d = (close.iloc[-1] - close.iloc[-2]) / close.iloc[-2] * 100
+            price_change_5d = (close.iloc[-1] - close.iloc[-6]) / close.iloc[-6] * 100
+            indicators['price_change_1d'] = float(price_change_1d)
+            indicators['price_change_5d'] = float(price_change_5d)
+            
+            return indicators
+            
+        except Exception as e:
+            self.logger.error(f"Error calculating market indicators: {e}")
+            return {"error": str(e)}
+    
+    # DSSMSDataManagerクラスにメソッドを追加
+    DSSMSDataManager.get_nikkei225_data = get_nikkei225_data
+    DSSMSDataManager.get_realtime_nikkei225_data = get_realtime_nikkei225_data
+    DSSMSDataManager._is_market_hours = _is_market_hours
+    DSSMSDataManager.calculate_market_indicators = calculate_market_indicators
+
+# 拡張を実行
+_extend_dssms_data_manager()

@@ -1,0 +1,61 @@
+{
+  "monitoring": {
+    "check_interval_minutes": 15,
+    "market_hours": {DSSMS Phase 3 Task 3.1「市場全体監視システム」
+      "morning_start": "09:00",
+      "morning_end": "11:30", 
+      "afternoon_start": "12:30",
+      "afternoon_end": "15:00"
+    },
+    "out_of_hours_behavior": "use_last_available"
+  },
+  "nikkei225_analysis": {
+    "symbol": "^N225",
+    "timeframes": {
+      "daily": {"short": 5, "medium": 25, "long": 75},
+      "weekly": {"short": 13, "medium": 26, "long": 52},
+      "monthly": {"short": 9, "medium": 24, "long": 60}
+    },
+    "trend_strength_indicators": {
+      "adx_period": 14,
+      "momentum_period": 10,
+      "rsi_period": 14
+    }
+  },
+  "health_scoring": {
+    "weights": {
+      "perfect_order_status": 0.40,
+      "volatility_level": 0.25,
+      "volume_profile": 0.20,
+      "trend_strength": 0.15
+    },
+    "thresholds": {
+      "volatility": {
+        "low": 0.01,
+        "high": 0.03
+      },
+      "volume_change": {
+        "significant_increase": 1.5,
+        "significant_decrease": 0.7
+      }
+    }
+  },
+  "halt_conditions": {
+    "levels": {
+      "normal": {"min_health_score": 0.7, "action": "continue"},
+      "warning": {"min_health_score": 0.5, "action": "monitor_closely"},
+      "caution": {"min_health_score": 0.3, "action": "reduce_exposure"},
+      "halt": {"min_health_score": 0.0, "action": "stop_trading"}
+    },
+    "emergency_conditions": {
+      "market_crash_threshold": -0.05,
+      "volatility_spike_threshold": 0.05,
+      "volume_dry_up_threshold": 0.3
+    }
+  },
+  "logging": {
+    "log_level": "INFO",
+    "log_file": "logs/dssms/market_monitoring.log",
+    "metrics_file": "logs/dssms/market_health_metrics.json"
+  }
+}
