@@ -1,24 +1,40 @@
 {
   "switch_criteria": {
     "perfect_order_breakdown_threshold": 0.7,
-    "score_difference_threshold": 0.15,
-    "minimum_holding_period_hours": 4,
-    "confidence_threshold": 0.6,
+    "score_difference_threshold": 0.25,
+    "minimum_holding_period_hours": 24,
+    "confidence_threshold": 0.75,
+    "strategy_specific_holding_periods": {
+      "Opening_Gap": 4,
+      "VWAP_Breakout": 12,
+      "Breakout": 12,
+      "VWAP_Bounce": 6,
+      "Momentum_Investing": 48,
+      "Contrarian": 8,
+      "GC_Strategy": 24
+    },
     "immediate_exit_conditions": {
       "perfect_order_breakdown": true,
       "fundamental_deterioration": true,
-      "volume_spike_anomaly": true
+      "volume_spike_anomaly": true,
+      "stop_loss_triggered": true,
+      "market_crash": true
     }
   },
   "risk_control": {
-    "max_daily_switches": 3,
-    "max_weekly_switches": 10,
-    "drawdown_restriction_threshold": 0.05,
+    "max_daily_switches": 2,
+    "max_weekly_switches": 6,
+    "drawdown_restriction_threshold": 0.03,
     "position_concentration_limit": 0.3,
-    "switch_frequency_cooldown_minutes": 30,
+    "switch_frequency_cooldown_minutes": 60,
+    "transaction_cost_awareness": {
+      "cost_per_switch": 0.003,
+      "max_daily_cost_ratio": 0.01
+    },
     "emergency_stop_conditions": {
       "market_crash_threshold": -0.03,
-      "volatility_spike_multiplier": 2.0
+      "volatility_spike_multiplier": 2.0,
+      "consecutive_loss_limit": 3
     }
   },
   "fund_management": {

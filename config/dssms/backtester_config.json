@@ -1,0 +1,19 @@
+{
+  "default_backtest_period": {
+    "default_start_date": "2023-01-01",
+    "default_end_date": "2023-12-31",
+    "default_period_days": 365,
+    "quick_test_days": 90,
+    "extended_test_days": 730
+  },
+  "rebalance_settings": {
+    "frequency": "monthly",
+    "min_days_between": 30,
+    "max_days_between": 90
+  },
+  "test_periods": {
+    "short_term": 90,
+    "medium_term": 365,
+    "long_term": 1095
+  }
+}

@@ -596,27 +596,47 @@ class DSSMSBacktester:
             return {'date': date, 'market_trend': 'unknown'}
 
     def _update_symbol_ranking(self, date: datetime, symbols: List[str]) -> Dict[str, Any]:
-        """銘柄ランキング更新"""
+        """銘柄ランキング更新（実データ使用版）"""
         try:
-            # 簡易ランキング（実際にはranking_systemを使用）
-            ranking_scores = {}
-            for symbol in symbols:
-                # ダミースコア（実際は複合スコアリング）
-                score = np.random.uniform(0.3, 0.9)
-                ranking_scores[symbol] = score
+            # DSSMS統合パッチをインポート
+            try:
+                from src.dssms.dssms_integration_patch import update_symbol_ranking_with_real_data
+                
+                # 実データベースのランキング取得
+                ranking_scores = update_symbol_ranking_with_real_data(symbols, date)
+                
+                self.logger.debug(f"実データランキング取得: {len(ranking_scores)}銘柄")
+                
+            except ImportError:
+                self.logger.warning("統合パッチ未使用: フォールバック実行")
+                # フォールバック: 改良されたダミーランキング
+                ranking_scores = {}
+                for symbol in symbols:
+                    # より現実的なスコア分布
+                    if symbol.endswith('.T'):  # 日本株
+                        score = np.random.beta(2, 5) * 0.8 + 0.1  # 0.1-0.9のバイアス分布
+                    else:
+                        score = np.random.uniform(0.2, 0.8)
+                    ranking_scores[symbol] = score
             
             # 上位5銘柄を選択
             top_symbols = sorted(ranking_scores.items(), key=lambda x: x[1], reverse=True)[:5]
             
-            return {
+            result = {
                 'date': date,
                 'rankings': dict(top_symbols),
                 'top_symbol': top_symbols[0][0] if top_symbols else None,
-                'top_score': top_symbols[0][1] if top_symbols else 0
+                'top_score': top_symbols[0][1] if top_symbols else 0,
+                'total_symbols': len(ranking_scores),
+                'data_source': 'real_data' if 'update_symbol_ranking_with_real_data' in locals() else 'fallback'
             }
+            
+            self.logger.info(f"ランキング更新完了: 上位={result['top_symbol']} ({result['top_score']:.3f})")
+            return result
+            
         except Exception as e:
             self.logger.warning(f"ランキング更新エラー {date}: {e}")
-            return {'date': date, 'rankings': {}}
+            return {'date': date, 'rankings': {}, 'error': str(e)}
 
     def _evaluate_switch_decision(self, date: datetime, current_position: Optional[str], 
                                 ranking_result: Dict[str, Any], market_condition: Dict[str, Any]) -> Dict[str, Any]:
@@ -710,18 +730,39 @@ class DSSMSBacktester:
 
     def _update_portfolio_value(self, date: datetime, position: Optional[str], 
                               current_value: float) -> float:
-        """ポートフォリオ価値更新"""
+        """ポートフォリオ価値更新（実データ使用版）"""
         try:
             if not position:
                 return current_value
             
-            # 簡易的な価格変動シミュレーション（実際は実データを使用）
-            daily_return = np.random.normal(0.001, 0.02)  # 平均0.1%、標準偏差2%
-            new_value = current_value * (1 + daily_return)
+            # DSSMS統合パッチを使用
+            try:
+                from src.dssms.dssms_integration_patch import update_portfolio_value_with_real_data
+                
+                # 実データベースの価値更新
+                new_value = update_portfolio_value_with_real_data(position, current_value, date)
+                
+                # 日次リターン計算
+                daily_return = (new_value / current_value) - 1 if current_value > 0 else 0.0
+                
+                self.logger.debug(f"実データ価値更新: {position} {daily_return:+.4f}")
+                
+            except ImportError:
+                self.logger.warning("統合パッチ未使用: フォールバック実行")
+                # フォールバック: より現実的な価格変動
+                daily_return = np.random.normal(0.0005, 0.015)  # 平均0.05%、標準偏差1.5%
+                new_value = current_value * (1 + daily_return)
+            
+            # 価値の妥当性チェック
+            if new_value <= 0:
+                self.logger.warning(f"異常な価値: {new_value:.2f} -> {current_value:.2f}に修正")
+                new_value = current_value * 0.99  # 1%減少に修正
+                daily_return = -0.01
             
             # 履歴記録
             self.performance_history['daily_returns'].append(daily_return)
             
+            self.logger.debug(f"価値更新: {current_value:,.0f} -> {new_value:,.0f} ({daily_return:+.2%})")
             return new_value
             
         except Exception as e:
