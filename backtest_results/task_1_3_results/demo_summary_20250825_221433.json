@@ -1,0 +1,71 @@
+{
+  "demo_info": {
+    "start_time": "2025-08-25T22:14:31.166267",
+    "end_time": "2025-08-25T22:14:33.929915",
+    "total_execution_time": 2.76365,
+    "config": {
+      "run_issue_detection": true,
+      "run_integration": true,
+      "run_validation": true,
+      "continue_on_error": true,
+      "detailed_logging": true
+    }
+  },
+  "phase_results": [
+    {
+      "phase": "setup",
+      "success": true,
+      "execution_time": 0.0006783008575439453,
+      "details": {
+        "directories_created": 4,
+        "import_status": {
+          "pandas": true,
+          "numpy": true,
+          "yfinance": true,
+          "matplotlib": true,
+          "seaborn": true
+        },
+        "python_version": "3.13.1 (tags/v3.13.1:0671451, Dec  3 2024, 19:06:28) [MSC v.1942 64 bit (AMD64)]",
+        "start_time": "2025-08-25T22:14:31.166267"
+      },
+      "error_message": null
+    },
+    {
+      "phase": "issue_detection",
+      "success": true,
+      "execution_time": 2.7433297634124756,
+      "details": {
+        "system_health": 0.0,
+        "detected_issues": 1,
+        "fixed_issues": 0,
+        "remaining_issues": 1,
+        "execution_time": 2.742541
+      },
+      "error_message": null
+    },
+    {
+      "phase": "integration",
+      "success": false,
+      "execution_time": 0.0002505779266357422,
+      "details": {
+        "error": "argument should be a str or an os.PathLike object where __fspath__ returns a str, not 'dict'"
+      },
+      "error_message": "argument should be a str or an os.PathLike object where __fspath__ returns a str, not 'dict'"
+    },
+    {
+      "phase": "validation",
+      "success": false,
+      "execution_time": 0.01649022102355957,
+      "details": {
+        "error": "'ComprehensiveValidationResult' object has no attribute 'basic_results'"
+      },
+      "error_message": "'ComprehensiveValidationResult' object has no attribute 'basic_results'"
+    }
+  ],
+  "summary": {
+    "overall_success": false,
+    "successful_phases": 2,
+    "failed_phases": 2,
+    "total_phases": 4
+  }
+}

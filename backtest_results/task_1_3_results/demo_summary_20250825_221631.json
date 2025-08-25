@@ -1,0 +1,76 @@
+{
+  "demo_info": {
+    "start_time": "2025-08-25T22:16:30.840282",
+    "end_time": "2025-08-25T22:16:31.546901",
+    "total_execution_time": 0.706623,
+    "config": {
+      "run_issue_detection": true,
+      "run_integration": true,
+      "run_validation": true,
+      "continue_on_error": true,
+      "detailed_logging": true
+    }
+  },
+  "phase_results": [
+    {
+      "phase": "setup",
+      "success": true,
+      "execution_time": 0.0007047653198242188,
+      "details": {
+        "directories_created": 4,
+        "import_status": {
+          "pandas": true,
+          "numpy": true,
+          "yfinance": true,
+          "matplotlib": true,
+          "seaborn": true
+        },
+        "python_version": "3.13.1 (tags/v3.13.1:0671451, Dec  3 2024, 19:06:28) [MSC v.1942 64 bit (AMD64)]",
+        "start_time": "2025-08-25T22:16:30.840282"
+      },
+      "error_message": null
+    },
+    {
+      "phase": "issue_detection",
+      "success": true,
+      "execution_time": 0.6758301258087158,
+      "details": {
+        "system_health": 0.0,
+        "detected_issues": 1,
+        "fixed_issues": 0,
+        "remaining_issues": 1,
+        "execution_time": 0.675155
+      },
+      "error_message": null
+    },
+    {
+      "phase": "integration",
+      "success": false,
+      "execution_time": 0.00018215179443359375,
+      "details": {
+        "error": "'DSSMSQuickFixIntegrationManager' object has no attribute 'run_comprehensive_integration'"
+      },
+      "error_message": "'DSSMSQuickFixIntegrationManager' object has no attribute 'run_comprehensive_integration'"
+    },
+    {
+      "phase": "validation",
+      "success": true,
+      "execution_time": 0.026365995407104492,
+      "details": {
+        "overall_score": 0.0,
+        "basic_score": 0,
+        "integration_score": 0,
+        "performance_score": 0,
+        "recommendation_count": 2,
+        "execution_time": 0.025579
+      },
+      "error_message": null
+    }
+  ],
+  "summary": {
+    "overall_success": false,
+    "successful_phases": 3,
+    "failed_phases": 1,
+    "total_phases": 4
+  }
+}
