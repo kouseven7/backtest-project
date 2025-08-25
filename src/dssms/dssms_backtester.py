@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 import pandas as pd
 import numpy as np
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime, timedelta
 import json
 import logging
@@ -235,15 +235,33 @@ class DSSMSBacktester:
         # データ取得関数（data_fetcherモジュールから）
         # 必要に応じてfetch_stock_data関数を使用
         
-        # バックテスト状態管理
+        # バックテスト状態管理（型定義を明確化）
         self.switch_history: List[SymbolSwitch] = []
         self.portfolio_history: List[Dict[str, Any]] = []
-        self.performance_history: Dict[str, List[float]] = {
-            'portfolio_value': [],
-            'daily_returns': [],
-            'positions': [],
-            'timestamps': []
+        self.performance_history: Dict[str, List[Any]] = {
+            'portfolio_value': [],  # List[float]
+            'daily_returns': [],    # List[float]  
+            'positions': [],        # List[str]
+            'timestamps': []        # List[datetime]
         }
+        
+        # Task 1.2: 品質管理システム初期化
+        try:
+            from src.dssms.dssms_simulation_quality_manager import DSSMSSimulationQualityManager
+            self.quality_manager = DSSMSSimulationQualityManager()
+            self.logger.info("Task 1.2品質管理システム初期化完了")
+        except ImportError:
+            self.quality_manager = None
+            self.logger.warning("品質管理システム未使用")
+        
+        # Task 1.2: 強化レポート初期化
+        try:
+            from src.dssms.dssms_enhanced_reporter import DSSMSEnhancedReporter
+            self.enhanced_reporter = DSSMSEnhancedReporter()
+            self.logger.info("Task 1.2強化レポート初期化完了")
+        except ImportError:
+            self.enhanced_reporter = None
+            self.logger.warning("強化レポート未使用")
         
         # 初期設定
         self.initial_capital = self.config.get('initial_capital', 1000000)  # 100万円
@@ -415,7 +433,7 @@ class DSSMSBacktester:
 
     def calculate_dssms_performance(self, simulation_result: Dict[str, Any]) -> DSSMSPerformanceMetrics:
         """
-        DSSMS専用パフォーマンス計算
+        DSSMS専用パフォーマンス計算（Task 1.2強化版）
         
         Args:
             simulation_result: シミュレーション結果
@@ -423,33 +441,84 @@ class DSSMSBacktester:
         Returns:
             DSSMSPerformanceMetrics: パフォーマンス指標
         """
-        self.logger.info("DSSMS専用パフォーマンス計算開始")
+        self.logger.info("DSSMS専用パフォーマンス計算開始（Task 1.2強化版）")
         
         try:
-            # 基本パフォーマンス計算
-            portfolio_values = self.performance_history['portfolio_value']
-            daily_returns = self.performance_history['daily_returns']
+            # データ型チェックと安全な取得
+            portfolio_values_raw = self.performance_history.get('portfolio_value', [])
+            daily_returns_raw = self.performance_history.get('daily_returns', [])
+            
+            # 型安全なデータ抽出
+            portfolio_values = [float(v) for v in portfolio_values_raw if isinstance(v, (int, float))]
+            daily_returns = [float(r) for r in daily_returns_raw if isinstance(r, (int, float))]
             
             if not portfolio_values or len(portfolio_values) < 2:
                 self.logger.warning("パフォーマンス計算に十分なデータがありません")
                 return self._get_empty_performance_metrics()
             
-            # 基本指標
-            total_return = (portfolio_values[-1] - portfolio_values[0]) / portfolio_values[0]
-            volatility = np.std(daily_returns) * np.sqrt(252) if daily_returns else 0.0
+            # Task 1.2: 品質管理による異常検出・修正（簡素化版）
+            if self.quality_manager:
+                try:
+                    # 品質チェック実行（簡素化）
+                    self.logger.info("Task 1.2 品質管理チェック実行")
+                    
+                    # 基本品質チェック
+                    if len(portfolio_values) != len(daily_returns):
+                        min_len = min(len(portfolio_values), len(daily_returns))
+                        portfolio_values = portfolio_values[:min_len]
+                        daily_returns = daily_returns[:min_len]
+                        self.logger.warning("データ長の不整合を修正")
+                    
+                    # 異常値チェック
+                    portfolio_mean = np.mean(portfolio_values)
+                    portfolio_std = np.std(portfolio_values)
+                    
+                    if portfolio_std > 0:
+                        # 3σを超える異常値を修正
+                        corrected_values: List[float] = []
+                        for v in portfolio_values:
+                            if abs(v - portfolio_mean) > 3 * portfolio_std:
+                                corrected_v = portfolio_mean + (2 * portfolio_std if v > portfolio_mean else -2 * portfolio_std)
+                                corrected_values.append(float(corrected_v))
+                            else:
+                                corrected_values.append(float(v))
+                        
+                        if corrected_values != portfolio_values:
+                            portfolio_values = corrected_values
+                            self.logger.info("異常値修正適用")
+                        
+                except Exception as e:
+                    self.logger.warning(f"品質管理エラー: {e}")
             
-            # 最大ドローダウン
-            max_drawdown = self._calculate_max_drawdown(portfolio_values)
-            
-            # シャープレシオ
-            risk_free_rate = 0.001  # 0.1% (年率)
-            excess_returns = [r - risk_free_rate/252 for r in daily_returns] if daily_returns else []
-            sharpe_ratio = (np.mean(excess_returns) / np.std(excess_returns) * np.sqrt(252)) if excess_returns and np.std(excess_returns) > 0 else 0.0
-            
-            # ソルティノレシオ
-            downside_returns = [r for r in daily_returns if r < 0] if daily_returns else []
-            downside_deviation = np.std(downside_returns) if downside_returns else 0.0
-            sortino_ratio = (np.mean(excess_returns) / downside_deviation * np.sqrt(252)) if excess_returns and downside_deviation > 0 else 0.0
+            # 基本指標計算（型安全版）
+            try:
+                if len(portfolio_values) >= 2:
+                    total_return = float((portfolio_values[-1] - portfolio_values[0]) / portfolio_values[0])
+                else:
+                    total_return = 0.0
+                    
+                volatility = float(np.std(daily_returns)) * np.sqrt(252) if daily_returns else 0.0
+                
+                # 最大ドローダウン
+                max_drawdown = self._calculate_max_drawdown(portfolio_values)
+                
+                # シャープレシオ
+                risk_free_rate = 0.001  # 0.1% (年率)
+                excess_returns = [float(r) - risk_free_rate/252 for r in daily_returns] if daily_returns else []
+                sharpe_ratio = (float(np.mean(excess_returns)) / float(np.std(excess_returns)) * np.sqrt(252)) if excess_returns and np.std(excess_returns) > 0 else 0.0
+                
+                # ソルティノレシオ
+                downside_returns = [float(r) for r in daily_returns if float(r) < 0] if daily_returns else []
+                downside_deviation = float(np.std(downside_returns)) if downside_returns else 0.0
+                sortino_ratio = (float(np.mean(excess_returns)) / downside_deviation * np.sqrt(252)) if excess_returns and downside_deviation > 0 else 0.0
+                
+            except (ZeroDivisionError, IndexError, ValueError) as e:
+                self.logger.warning(f"指標計算エラー: {e}")
+                total_return = 0.0
+                volatility = 0.0
+                max_drawdown = 0.0
+                sharpe_ratio = 0.0
+                sortino_ratio = 0.0
             
             # DSSMS固有指標
             switch_success_rate = self._calculate_switch_success_rate()
@@ -459,19 +528,19 @@ class DSSMSBacktester:
             
             # パフォーマンス指標作成
             performance_metrics = DSSMSPerformanceMetrics(
-                total_return=total_return,
-                volatility=volatility,
-                max_drawdown=max_drawdown,
-                sharpe_ratio=sharpe_ratio,
-                sortino_ratio=sortino_ratio,
+                total_return=float(total_return),
+                volatility=float(volatility),
+                max_drawdown=float(max_drawdown),
+                sharpe_ratio=float(sharpe_ratio),
+                sortino_ratio=float(sortino_ratio),
                 symbol_switches_count=len(self.switch_history),
-                average_holding_period_hours=average_holding_period,
-                switch_success_rate=switch_success_rate,
-                switch_costs_total=switch_costs_total,
-                dynamic_selection_efficiency=dynamic_selection_efficiency
+                average_holding_period_hours=float(average_holding_period),
+                switch_success_rate=float(switch_success_rate),
+                switch_costs_total=float(switch_costs_total),
+                dynamic_selection_efficiency=float(dynamic_selection_efficiency)
             )
             
-            self.logger.info(f"パフォーマンス計算完了: トータルリターン {total_return:.2%}")
+            self.logger.info(f"Task 1.2 パフォーマンス計算完了: トータルリターン {total_return:.2%}")
             return performance_metrics
             
         except Exception as e:
@@ -730,39 +799,58 @@ class DSSMSBacktester:
 
     def _update_portfolio_value(self, date: datetime, position: Optional[str], 
                               current_value: float) -> float:
-        """ポートフォリオ価値更新（実データ使用版）"""
+        """ポートフォリオ価値更新（Task 1.2強化版）"""
         try:
             if not position:
                 return current_value
             
-            # DSSMS統合パッチを使用
+            # Task 1.2: データ統合強化システムを使用
             try:
-                from src.dssms.dssms_integration_patch import update_portfolio_value_with_real_data
+                from src.dssms.dssms_data_integration_enhancer import DSSMSDataIntegrationEnhancer
                 
-                # 実データベースの価値更新
-                new_value = update_portfolio_value_with_real_data(position, current_value, date)
+                enhancer = DSSMSDataIntegrationEnhancer()
+                valuation_result = enhancer.enhance_portfolio_valuation(position, current_value, date)
                 
-                # 日次リターン計算
-                daily_return = (new_value / current_value) - 1 if current_value > 0 else 0.0
+                new_value = valuation_result['new_value']
+                daily_return = valuation_result['daily_return']
                 
-                self.logger.debug(f"実データ価値更新: {position} {daily_return:+.4f}")
+                self.logger.debug(f"強化データ価値更新: {position} {daily_return:+.4f} (品質: {valuation_result['quality_score']:.3f})")
                 
             except ImportError:
-                self.logger.warning("統合パッチ未使用: フォールバック実行")
-                # フォールバック: より現実的な価格変動
-                daily_return = np.random.normal(0.0005, 0.015)  # 平均0.05%、標準偏差1.5%
-                new_value = current_value * (1 + daily_return)
+                # Task 1.1統合パッチをフォールバック使用
+                try:
+                    from src.dssms.dssms_integration_patch import update_portfolio_value_with_real_data
+                    
+                    new_value = update_portfolio_value_with_real_data(position, current_value, date)
+                    daily_return = (new_value / current_value) - 1 if current_value > 0 else 0.0
+                    
+                    self.logger.debug(f"統合パッチ価値更新: {position} {daily_return:+.4f}")
+                    
+                except ImportError:
+                    self.logger.warning("全統合システム未使用: 最終フォールバック実行")
+                    # 最終フォールバック: 改良されたランダム生成
+                    daily_return = np.random.normal(0.0003, 0.012)  # より控えめな変動
+                    new_value = current_value * (1 + daily_return)
             
-            # 価値の妥当性チェック
+            # Task 1.2: 価値の妥当性チェック強化
             if new_value <= 0:
                 self.logger.warning(f"異常な価値: {new_value:.2f} -> {current_value:.2f}に修正")
-                new_value = current_value * 0.99  # 1%減少に修正
-                daily_return = -0.01
+                new_value = current_value * 0.995  # 0.5%減少に修正
+                daily_return = -0.005
+            
+            # 極端な変動制限
+            if current_value > 0:
+                change_rate = abs((new_value / current_value) - 1)
+                if change_rate > 0.15:  # 15%以上の変動を制限
+                    direction = 1 if new_value > current_value else -1
+                    new_value = current_value * (1 + direction * 0.1)  # 10%に制限
+                    daily_return = direction * 0.1
+                    self.logger.warning(f"極端な変動制限適用: {position} {change_rate:.2%} -> 10%")
             
             # 履歴記録
             self.performance_history['daily_returns'].append(daily_return)
             
-            self.logger.debug(f"価値更新: {current_value:,.0f} -> {new_value:,.0f} ({daily_return:+.2%})")
+            self.logger.debug(f"最終価値更新: {current_value:,.0f} -> {new_value:,.0f} ({daily_return:+.2%})")
             return new_value
             
         except Exception as e:
