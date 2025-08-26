@@ -1,0 +1,25 @@
+{
+  "monitoring_interval_seconds": 10,
+  "comprehensive_check_interval_minutes": 5,
+  "enable_automated_actions": true,
+  "enable_threshold_adjustments": true,
+  "max_concurrent_actions": 3,
+  "system_health_check_interval_minutes": 1,
+  "data_retention_days": 30,
+  "log_level": "INFO",
+  "performance_monitoring": {
+    "track_execution_times": true,
+    "alert_on_slow_operations": true,
+    "max_operation_time_seconds": 30
+  },
+  "integration_settings": {
+    "portfolio_manager_integration": true,
+    "drawdown_controller_integration": true,
+    "existing_system_compatibility": true
+  },
+  "safety_settings": {
+    "require_manual_approval_for_critical": true,
+    "emergency_stop_enabled": true,
+    "failsafe_mode_on_error": true
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "default_threshold_set": "balanced",
+  "auto_adjustment_enabled": true,
+  "adjustment_sensitivity": 0.1,
+  "min_adjustment_interval_hours": 6,
+  "regime_detection_enabled": true,
+  "volatility_window": 30,
+  "regime_lookback_days": 60,
+  "threshold_bounds": {
+    "max_drawdown": {
+      "min": 0.02,
+      "max": 0.25
+    },
+    "var_95_threshold": {
+      "min": 0.01,
+      "max": 0.10
+    },
+    "volatility_threshold": {
+      "min": 0.10,
+      "max": 0.50
+    },
+    "concentration_threshold": {
+      "min": 0.10,
+      "max": 0.50
+    },
+    "correlation_threshold": {
+      "min": 0.60,
+      "max": 0.95
+    }
+  },
+  "adjustment_rules": {
+    "market_stress_multiplier": 1.5,
+    "low_volatility_relaxation": 0.8,
+    "high_correlation_tightening": 1.2
+  }
+}

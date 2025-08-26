@@ -1,0 +1,115 @@
+{
+  "threshold_sets": [
+    {
+      "threshold_id": "conservative",
+      "name": "Conservative Risk Profile",
+      "description": "Low risk tolerance with tight controls",
+      "active": false,
+      "created_time": "2025-08-26T22:34:04.322033",
+      "last_updated": "2025-08-26T22:34:04.322036",
+      "max_drawdown": 0.05,
+      "var_95_threshold": 0.02,
+      "volatility_threshold": 0.15,
+      "concentration_threshold": 0.2,
+      "correlation_threshold": 0.7,
+      "max_position_size": 0.1,
+      "stop_loss_threshold": 0.03,
+      "profit_target_threshold": 0.05,
+      "min_sharpe_ratio": 0.8,
+      "max_tracking_error": 0.05,
+      "adjustment_mode": "adaptive",
+      "volatility_lookback": 30,
+      "adjustment_frequency": 7,
+      "max_adjustment_factor": 1.5,
+      "regime_specific": {
+        "bull": {
+          "max_drawdown": 0.07,
+          "volatility_threshold": 0.18
+        },
+        "bear": {
+          "max_drawdown": 0.03,
+          "volatility_threshold": 0.12
+        },
+        "high_volatility": {
+          "var_95_threshold": 0.015,
+          "concentration_threshold": 0.15
+        }
+      }
+    },
+    {
+      "threshold_id": "balanced",
+      "name": "Balanced Risk Profile",
+      "description": "Moderate risk tolerance with balanced controls",
+      "active": true,
+      "created_time": "2025-08-26T22:34:04.322049",
+      "last_updated": "2025-08-26T22:51:04.229151",
+      "max_drawdown": 0.08,
+      "var_95_threshold": 0.03,
+      "volatility_threshold": 0.2,
+      "concentration_threshold": 0.3,
+      "correlation_threshold": 0.8,
+      "max_position_size": 0.15,
+      "stop_loss_threshold": 0.05,
+      "profit_target_threshold": 0.1,
+      "min_sharpe_ratio": 0.5,
+      "max_tracking_error": 0.08,
+      "adjustment_mode": "market_regime",
+      "volatility_lookback": 30,
+      "adjustment_frequency": 5,
+      "max_adjustment_factor": 2.0,
+      "regime_specific": {
+        "bull": {
+          "max_drawdown": 0.12,
+          "volatility_threshold": 0.3
+        },
+        "bear": {
+          "max_drawdown": 0.08,
+          "volatility_threshold": 0.2
+        },
+        "high_volatility": {
+          "var_95_threshold": 0.025,
+          "concentration_threshold": 0.25
+        }
+      }
+    },
+    {
+      "threshold_id": "aggressive",
+      "name": "Aggressive Risk Profile",
+      "description": "High risk tolerance with looser controls",
+      "active": false,
+      "created_time": "2025-08-26T22:34:04.322055",
+      "last_updated": "2025-08-26T22:34:04.322055",
+      "max_drawdown": 0.2,
+      "var_95_threshold": 0.05,
+      "volatility_threshold": 0.4,
+      "concentration_threshold": 0.4,
+      "correlation_threshold": 0.85,
+      "max_position_size": 0.25,
+      "stop_loss_threshold": 0.08,
+      "profit_target_threshold": 0.15,
+      "min_sharpe_ratio": 0.3,
+      "max_tracking_error": 0.12,
+      "adjustment_mode": "volatility_based",
+      "volatility_lookback": 20,
+      "adjustment_frequency": 3,
+      "max_adjustment_factor": 2.5,
+      "regime_specific": {
+        "bull": {
+          "max_drawdown": 0.25,
+          "volatility_threshold": 0.45
+        },
+        "bear": {
+          "max_drawdown": 0.15,
+          "volatility_threshold": 0.35
+        },
+        "high_volatility": {
+          "var_95_threshold": 0.04,
+          "concentration_threshold": 0.35
+        }
+      }
+    }
+  ],
+  "active_threshold_id": "balanced",
+  "threshold_history": [],
+  "last_saved": "2025-08-26T22:51:04.229270"
+}

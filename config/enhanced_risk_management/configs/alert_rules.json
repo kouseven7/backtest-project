@@ -1,0 +1,50 @@
+{
+  "alert_rules": [
+    {
+      "rule_name": "critical_drawdown",
+      "condition": "drawdown > 0.10",
+      "severity": "critical",
+      "cooldown_minutes": 15,
+      "action_required": true,
+      "auto_action_available": true
+    },
+    {
+      "rule_name": "high_volatility",
+      "condition": "volatility > 0.25",
+      "severity": "high",
+      "cooldown_minutes": 30,
+      "action_required": false,
+      "auto_action_available": false
+    },
+    {
+      "rule_name": "var_breach",
+      "condition": "var_95 > 0.05",
+      "severity": "high",
+      "cooldown_minutes": 20,
+      "action_required": true,
+      "auto_action_available": false
+    },
+    {
+      "rule_name": "concentration_risk",
+      "condition": "concentration_risk > 0.30",
+      "severity": "medium",
+      "cooldown_minutes": 60,
+      "action_required": true,
+      "auto_action_available": true
+    },
+    {
+      "rule_name": "correlation_spike",
+      "condition": "correlation_risk > 0.80",
+      "severity": "medium",
+      "cooldown_minutes": 45,
+      "action_required": false,
+      "auto_action_available": false
+    }
+  ],
+  "notification_settings": {
+    "channels": ["log", "console", "file"],
+    "escalation_enabled": true,
+    "escalation_minutes": 60,
+    "max_alerts_per_hour": 10
+  }
+}

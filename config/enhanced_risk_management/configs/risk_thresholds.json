@@ -1,0 +1,48 @@
+{
+  "risk_thresholds": {
+    "portfolio_level": {
+      "max_drawdown": 0.15,
+      "var_95": 0.05,
+      "volatility": 0.25,
+      "correlation_limit": 0.80
+    },
+    "position_level": {
+      "max_weight": 0.20,
+      "concentration_risk": 0.30
+    }
+  },
+  "monitoring": {
+    "frequency_minutes": 10,
+    "alert_cooldown_minutes": 30,
+    "enable_auto_actions": false,
+    "enable_background_monitoring": true
+  },
+  "alert_rules": {
+    "critical_alerts": {
+      "drawdown_threshold": 0.10,
+      "var_breach": 0.03,
+      "correlation_spike": 0.80
+    },
+    "warning_alerts": {
+      "drawdown_threshold": 0.05,
+      "volatility_spike": 0.20
+    }
+  },
+  "action_policies": {
+    "auto_reduce_positions": {
+      "enabled": true,
+      "max_reduction": 0.20,
+      "requires_approval": true
+    },
+    "emergency_stop": {
+      "enabled": true,
+      "drawdown_threshold": 0.20,
+      "requires_approval": false
+    },
+    "rebalance_weights": {
+      "enabled": true,
+      "frequency_hours": 24,
+      "requires_approval": true
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "enabled_actions": [
+    "position_reduction",
+    "rebalance_portfolio",
+    "hedge_position",
+    "alert_only"
+  ],
+  "approval_required": {
+    "emergency_liquidation": true,
+    "stop_trading": true,
+    "position_reduction": false,
+    "rebalance_portfolio": false,
+    "hedge_position": true,
+    "alert_only": false
+  },
+  "cooldown_minutes": {
+    "position_reduction": 15,
+    "stop_trading": 60,
+    "rebalance_portfolio": 30,
+    "hedge_position": 45,
+    "emergency_liquidation": 120,
+    "alert_only": 5
+  },
+  "max_daily_actions": {
+    "position_reduction": 5,
+    "stop_trading": 2,
+    "rebalance_portfolio": 3,
+    "hedge_position": 4,
+    "emergency_liquidation": 1,
+    "alert_only": 20
+  },
+  "execution_settings": {
+    "timeout_seconds": 30,
+    "retry_attempts": 3,
+    "retry_delay_seconds": 5,
+    "require_confirmation": {
+      "emergency_liquidation": true,
+      "stop_trading": true
+    }
+  }
+}
