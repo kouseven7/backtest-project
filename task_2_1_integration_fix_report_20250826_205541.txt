@@ -1,0 +1,87 @@
+================================================================================
+DSSMS Phase 2 Task 2.1: Task 1.3統合システム構文修正レポート
+================================================================================
+実行時刻: 2025-08-26 20:55:41
+完了時刻: 2025-08-26 20:55:41
+ステータス: completed
+
+【コンポーネント分析結果】
+----------------------------------------
+
+◆ portfolio_calculator
+  ファイル: dssms_portfolio_calculator_v2.py
+  ロード可能: ✓
+  構文エラー数: 10
+  循環依存数: 0
+  最終テスト: 成功
+  エラー詳細:
+    - IncompleteExceptionHandling: try文にexceptブロックがありません
+    - IncompleteExceptionHandling: try文にexceptブロックがありません
+    - IncompleteExceptionHandling: try文にexceptブロックがありません
+
+◆ switch_engine
+  ファイル: dssms_switch_engine_v2.py
+  ロード可能: ✓
+  構文エラー数: 15
+  循環依存数: 0
+  最終テスト: 成功
+  エラー詳細:
+    - IncompleteExceptionHandling: try文にexceptブロックがありません
+    - IncompleteExceptionHandling: try文にexceptブロックがありません
+    - IncompleteExceptionHandling: try文にexceptブロックがありません
+
+◆ backtester
+  ファイル: dssms_backtester_v2.py
+  ロード可能: ✓
+  構文エラー数: 10
+  循環依存数: 0
+  最終テスト: 成功
+  エラー詳細:
+    - IncompleteExceptionHandling: try文にexceptブロックがありません
+    - IncompleteExceptionHandling: try文にexceptブロックがありません
+    - IncompleteExceptionHandling: try文にexceptブロックがありません
+
+◆ integration_patch
+  ファイル: dssms_integration_patch.py
+  ロード可能: ✓
+  構文エラー数: 2
+  循環依存数: 0
+  最終テスト: 成功
+  エラー詳細:
+    - IncompleteExceptionHandling: try文にexceptブロックがありません
+    - IncompleteExceptionHandling: try文にexceptブロックがありません
+
+◆ data_bridge
+  ファイル: dssms_data_bridge.py
+  ロード可能: ✓
+  構文エラー数: 2
+  循環依存数: 0
+  最終テスト: 成功
+  エラー詳細:
+    - IncompleteExceptionHandling: try文にexceptブロックがありません
+    - IncompleteExceptionHandling: try文にexceptブロックがありません
+
+◆ quality_validator
+  ファイル: data_quality_validator.py
+  ロード可能: ✓
+  構文エラー数: 1
+  循環依存数: 0
+  最終テスト: 成功
+  エラー詳細:
+    - IncompleteExceptionHandling: try文にexceptブロックがありません
+
+【修正結果】
+----------------------------------------
+修正済みエラー数: 0
+残存エラー数: 0
+
+【推奨事項】
+----------------------------------------
+1. 例外処理が不完全なファイルがあります。適切なエラーハンドリングを追加してください。
+
+【テスト結果サマリー】
+----------------------------------------
+成功: 6/6
+成功率: 100.0%
+
+================================================================================

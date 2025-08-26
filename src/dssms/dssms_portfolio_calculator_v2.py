@@ -158,6 +158,33 @@ class DSSMSPortfolioCalculatorV2:
         
         self.logger.info(f"DSSMSポートフォリオ計算エンジンV2初期化完了: 初期資本{initial_capital:,.0f}円")
     
+    @property
+    def current_capital(self) -> float:
+        """現在の資本取得"""
+        return self.cash + sum(
+            pos.market_value for pos in self.current_positions.values()
+        )
+    
+    @property
+    def total_portfolio_value(self) -> float:
+        """総ポートフォリオ価値"""
+        return self.current_capital
+    
+    def calculate_portfolio_weights(self, data: pd.DataFrame) -> Optional[Dict[str, float]]:
+        """ポートフォリオ重み計算"""
+        if data.empty:
+            return None
+        
+        try:
+            # シンプルな等重み計算
+            symbols = data.get('symbol', pd.Series()).unique() if 'symbol' in data.columns else ['default']
+            weight_per_symbol = 1.0 / len(symbols)
+            weights = {symbol: weight_per_symbol for symbol in symbols}
+            return weights
+        except Exception as e:
+            self.logger.error(f"ポートフォリオ重み計算エラー: {e}")
+            return None
+
     def _load_config(self, config_path: Optional[str]) -> Dict[str, Any]:
         """設定読み込み"""
         default_config = {
