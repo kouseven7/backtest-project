@@ -1,0 +1,13 @@
+{
+  "fixes_applied": [
+    "DSSMSバックテスター修正",
+    "簡易シミュレーション成功",
+    "レポート生成修正"
+  ],
+  "errors_found": [
+    "yfinanceデータが空"
+  ],
+  "status": "success",
+  "timestamp": "2025-08-26T12:06:12.981734",
+  "patch_version": "1.0.0"
+}

@@ -1,0 +1,34 @@
+{
+  "validation_levels": {
+    "basic": {
+      "max_rows": 1000,
+      "checks": ["missing", "duplicates"],
+      "timeout_seconds": 30
+    },
+    "standard": {
+      "max_rows": 5000,
+      "checks": ["missing", "duplicates", "outliers"],
+      "timeout_seconds": 60
+    },
+    "comprehensive": {
+      "max_rows": 999999999,
+      "checks": ["missing", "duplicates", "outliers", "statistical"],
+      "timeout_seconds": 180
+    }
+  },
+  "thresholds": {
+    "missing_data_ratio": 0.1,
+    "outlier_zscore": 3.0,
+    "price_change_limit": 0.5,
+    "min_price": 0.01,
+    "max_price": 1000000,
+    "min_volume": 0,
+    "zero_volume_threshold": 0.1
+  },
+  "dssms_specific": {
+    "portfolio_value_threshold": 0.1,
+    "symbol_delisting_check": true,
+    "active_trading_days": 30,
+    "fallback_enabled": true
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "cleaning_rules": {
+    "auto_repair": true,
+    "fallback_enabled": true,
+    "preserve_original": true,
+    "emergency_mode": false
+  },
+  "thresholds": {
+    "max_missing_ratio": 0.3,
+    "outlier_multiplier": 5.0,
+    "min_trading_days": 30,
+    "portfolio_value_minimum": 1.0
+  },
+  "repair_methods": {
+    "missing_values": "interpolation",
+    "outliers": "cap",
+    "duplicates": "keep_last",
+    "price_consistency": "auto_fix"
+  },
+  "dssms_portfolio_rules": {
+    "prevent_total_loss": true,
+    "minimum_portfolio_ratio": 0.01,
+    "emergency_cash_reserve": 0.05,
+    "max_single_position": 0.3
+  },
+  "symbol_filtering": {
+    "exclude_delisted": true,
+    "min_market_cap": null,
+    "require_recent_trading": true,
+    "recent_days_threshold": 7
+  }
+}

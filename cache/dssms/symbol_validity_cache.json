@@ -1,0 +1,121 @@
+{
+  "validity_cache": {
+    "SPY": {
+      "symbol": "SPY",
+      "is_valid": true,
+      "status": "valid",
+      "checks": {
+        "info": {
+          "status": "passed",
+          "ticker_info_count": 99,
+          "has_name": true
+        },
+        "price": {
+          "status": "passed",
+          "data_points": 21,
+          "latest_price": 642.469970703125,
+          "date_range": "2025-07-28 to 2025-08-25"
+        },
+        "trading": {
+          "status": "passed",
+          "avg_volume": 63364600.0,
+          "zero_volume_ratio": 0.0
+        }
+      },
+      "last_check": "2025-08-26T15:06:39.473364",
+      "issues": [],
+      "critical_failures": 0,
+      "warnings": 0
+    },
+    "^GSPC": {
+      "symbol": "^GSPC",
+      "is_valid": true,
+      "status": "valid",
+      "checks": {
+        "info": {
+          "status": "passed",
+          "ticker_info_count": 68,
+          "has_name": true
+        },
+        "price": {
+          "status": "passed",
+          "data_points": 21,
+          "latest_price": 6439.31982421875,
+          "date_range": "2025-07-28 to 2025-08-25"
+        },
+        "trading": {
+          "status": "passed",
+          "avg_volume": 4373163333.333333,
+          "zero_volume_ratio": 0.0
+        }
+      },
+      "last_check": "2025-08-26T15:06:40.520695",
+      "issues": [],
+      "critical_failures": 0,
+      "warnings": 0
+    },
+    "^N225": {
+      "symbol": "^N225",
+      "is_valid": true,
+      "status": "valid_with_warnings",
+      "checks": {
+        "info": {
+          "status": "passed",
+          "ticker_info_count": 68,
+          "has_name": true
+        },
+        "price": {
+          "status": "passed",
+          "data_points": 21,
+          "latest_price": 42406.51171875,
+          "date_range": "2025-07-28 to 2025-08-26"
+        },
+        "trading": {
+          "status": "warning",
+          "reason": "取引活動低下: 25.0%がゼロ出来高"
+        }
+      },
+      "last_check": "2025-08-26T15:06:41.143863",
+      "issues": [
+        "trading: 取引活動低下: 25.0%がゼロ出来高"
+      ],
+      "critical_failures": 0,
+      "warnings": 1
+    },
+    "^IXIC": {
+      "symbol": "^IXIC",
+      "is_valid": true,
+      "status": "valid",
+      "checks": {
+        "info": {
+          "status": "passed",
+          "ticker_info_count": 68,
+          "has_name": true
+        },
+        "price": {
+          "status": "passed",
+          "data_points": 21,
+          "latest_price": 21449.2890625,
+          "date_range": "2025-07-28 to 2025-08-25"
+        },
+        "trading": {
+          "status": "passed",
+          "avg_volume": 8125026666.666667,
+          "zero_volume_ratio": 0.0
+        }
+      },
+      "last_check": "2025-08-26T15:06:41.752989",
+      "issues": [],
+      "critical_failures": 0,
+      "warnings": 0
+    }
+  },
+  "last_update_times": {
+    "SPY": "2025-08-26T15:06:40.520685",
+    "^GSPC": "2025-08-26T15:06:41.119779",
+    "^N225": "2025-08-26T15:06:41.752977",
+    "^IXIC": "2025-08-26T15:06:42.450476"
+  },
+  "cache_version": "1.0",
+  "last_save": "2025-08-26T15:20:55.303726"
+}

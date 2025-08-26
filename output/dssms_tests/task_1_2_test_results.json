@@ -1,0 +1,294 @@
+{
+  "data_validation": {
+    "status": "passed",
+    "normal_result": {
+      "symbol": "NORMAL_TEST",
+      "validation_level": "comprehensive",
+      "data_size": 238,
+      "timestamp": "2025-08-26T15:20:55.115587",
+      "checks": {
+        "missing": {
+          "missing_cells": 0,
+          "total_cells": 1190,
+          "missing_ratio": 0.0,
+          "status": "passed"
+        },
+        "duplicates": {
+          "duplicate_rows": 0,
+          "status": "passed"
+        },
+        "outliers": {
+          "outliers_by_column": {
+            "Open": 0,
+            "High": 0,
+            "Low": 0,
+            "Close": 0,
+            "Volume": 0
+          },
+          "total_outliers": 0,
+          "status": "passed"
+        },
+        "price_consistency": {
+          "extreme_price_changes": 0,
+          "max_daily_change": 0.19413382864708084,
+          "status": "passed"
+        },
+        "statistical": {
+          "coefficient_variations": {
+            "Open_cv": 0.02903664234461463,
+            "High_cv": 0.02490516276879776,
+            "Low_cv": 0.03059911031535864,
+            "Close_cv": 0.0537903917662201,
+            "Volume_cv": 0.4918987697375744
+          },
+          "status": "passed"
+        },
+        "trading_patterns": {
+          "zero_volume_days": 0,
+          "ohlc_inconsistencies": 31,
+          "status": "warning"
+        }
+      },
+      "quality_score": 0.9500000000000001,
+      "status": "passed"
+    },
+    "problematic_result": {
+      "symbol": "PROBLEM_TEST",
+      "validation_level": "comprehensive",
+      "data_size": 238,
+      "timestamp": "2025-08-26T15:20:55.120032",
+      "checks": {
+        "missing": {
+          "missing_cells": 5,
+          "total_cells": 1190,
+          "missing_ratio": 0.004201680672268907,
+          "status": "passed"
+        },
+        "duplicates": {
+          "duplicate_rows": 0,
+          "status": "passed"
+        },
+        "outliers": {
+          "outliers_by_column": {
+            "Open": 0,
+            "High": 0,
+            "Low": 0,
+            "Close": 1,
+            "Volume": 0
+          },
+          "total_outliers": 1,
+          "status": "passed"
+        },
+        "price_consistency": {
+          "extreme_price_changes": 2,
+          "max_daily_change": 8.964504187679829,
+          "status": "warning"
+        },
+        "statistical": {
+          "coefficient_variations": {
+            "Open_cv": 0.02903664234461463,
+            "High_cv": 0.02490516276879776,
+            "Low_cv": 0.03059911031535864,
+            "Close_cv": 0.5392023802755282,
+            "Volume_cv": 0.5173840057397378
+          },
+          "status": "passed"
+        },
+        "trading_patterns": {
+          "zero_volume_days": 5,
+          "ohlc_inconsistencies": 32,
+          "status": "warning"
+        }
+      },
+      "quality_score": 0.8500000000000001,
+      "status": "passed"
+    },
+    "success_checks": 3,
+    "total_checks": 3
+  },
+  "data_cleaning": {
+    "status": "passed",
+    "cleaning_log": {
+      "symbol": "CLEANING_TEST",
+      "original_size": 238,
+      "timestamp": "2025-08-26T15:20:55.125045",
+      "operations": [
+        {
+          "operation": "duplicate_removal",
+          "method": "keep_last",
+          "removed_count": 0,
+          "status": "success"
+        },
+        {
+          "operation": "missing_value_repair",
+          "method": "interpolation",
+          "original_missing": 5,
+          "final_missing": 0,
+          "repaired_count": 5,
+          "status": "success"
+        },
+        {
+          "operation": "outlier_handling",
+          "method": "cap",
+          "outlier_count": 0,
+          "processed_columns": [],
+          "status": "success"
+        },
+        {
+          "operation": "price_consistency_fix",
+          "fixes_applied": 32,
+          "status": "success"
+        },
+        {
+          "operation": "final_validation",
+          "data_size": 238,
+          "issues": [],
+          "issue_count": 0,
+          "status": "passed"
+        }
+      ],
+      "warnings": [],
+      "status": "success",
+      "final_size": 238,
+      "data_retention": 1.0
+    },
+    "missing_reduction": "5",
+    "data_retention": 1.0,
+    "success_checks": "3",
+    "total_checks": 3
+  },
+  "portfolio_fixing": {
+    "status": "failed",
+    "fix_log": {
+      "timestamp": "2025-08-26T15:20:55.277701",
+      "initial_capital": 1000000,
+      "operations": [
+        {
+          "operation": "input_validation",
+          "issues": [],
+          "issue_count": 0,
+          "status": "passed"
+        },
+        {
+          "operation": "calculation_diagnosis",
+          "issues": [
+            "緊急事態: ポートフォリオ価値 0.01円 (比率: 0.0000)"
+          ],
+          "emergency_required": true,
+          "status": "warning"
+        },
+        {
+          "operation": "emergency_repair",
+          "method": "equal_weight_reconstruction",
+          "symbols_used": 2,
+          "final_value": 999878.2818790632,
+          "status": "success"
+        },
+        {
+          "operation": "final_validation",
+          "issues": [],
+          "issue_count": 0,
+          "status": "passed"
+        }
+      ],
+      "warnings": [
+        "緊急モード発動: ポートフォリオ価値が危険水準"
+      ],
+      "emergency_triggered": true,
+      "status": "passed"
+    },
+    "value_improvement": 999878.2718790632,
+    "final_value": 999878.2818790632,
+    "success_checks": "2",
+    "total_checks": 3
+  },
+  "symbol_validity": {
+    "status": "passed",
+    "validity_results": {
+      "SPY": {
+        "symbol": "SPY",
+        "is_valid": true,
+        "status": "valid",
+        "checks": {
+          "info": {
+            "status": "passed",
+            "ticker_info_count": 99,
+            "has_name": true
+          },
+          "price": {
+            "status": "passed",
+            "data_points": 21,
+            "latest_price": 642.469970703125,
+            "date_range": "2025-07-28 to 2025-08-25"
+          },
+          "trading": {
+            "status": "passed",
+            "avg_volume": 63364600.0,
+            "zero_volume_ratio": 0.0
+          }
+        },
+        "last_check": "2025-08-26T15:06:39.473364",
+        "issues": [],
+        "critical_failures": 0,
+        "warnings": 0
+      },
+      "^GSPC": {
+        "symbol": "^GSPC",
+        "is_valid": true,
+        "status": "valid",
+        "checks": {
+          "info": {
+            "status": "passed",
+            "ticker_info_count": 68,
+            "has_name": true
+          },
+          "price": {
+            "status": "passed",
+            "data_points": 21,
+            "latest_price": 6439.31982421875,
+            "date_range": "2025-07-28 to 2025-08-25"
+          },
+          "trading": {
+            "status": "passed",
+            "avg_volume": 4373163333.333333,
+            "zero_volume_ratio": 0.0
+          }
+        },
+        "last_check": "2025-08-26T15:06:40.520695",
+        "issues": [],
+        "critical_failures": 0,
+        "warnings": 0
+      }
+    },
+    "valid_symbols": [
+      "SPY",
+      "^GSPC",
+      "^N225",
+      "^IXIC"
+    ],
+    "valid_count": 4,
+    "success_checks": 2,
+    "total_checks": 2
+  },
+  "integrated_workflow": {
+    "status": "passed",
+    "workflow_log": [
+      "データ品質: 0.850",
+      "クリーニング: success",
+      "ポートフォリオ修正: passed"
+    ],
+    "success_checks": 3,
+    "total_checks": 3,
+    "components_tested": 3
+  },
+  "summary": {
+    "total_test_suites": 5,
+    "passed_test_suites": 4,
+    "failed_test_suites": 1,
+    "overall_success_rate": 0.8,
+    "total_individual_checks": 14,
+    "passed_individual_checks": "13",
+    "individual_success_rate": 0.9285714285714286,
+    "timestamp": "2025-08-26T15:20:55.461939"
+  }
+}
