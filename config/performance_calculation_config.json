@@ -1,0 +1,142 @@
+{
+  "calculation_settings": {
+    "risk_free_rate": 0.001,
+    "trading_days_per_year": 252,
+    "default_currency": "JPY",
+    "precision_digits": 8,
+    "calculation_timeout_seconds": 30,
+    "enable_multithreading": true,
+    "max_worker_threads": 4
+  },
+  "validation_rules": {
+    "max_single_day_return": 0.20,
+    "min_portfolio_value_ratio": 0.01,
+    "max_drawdown_threshold": 0.99,
+    "anomaly_detection_window": 20,
+    "value_change_threshold_percent": 15.0,
+    "minimum_data_points": 5,
+    "confidence_score_threshold": 0.3
+  },
+  "performance_metrics": {
+    "enable_risk_adjusted_returns": true,
+    "calculate_sector_attribution": true,
+    "include_transaction_costs": true,
+    "benchmark_comparison": true,
+    "enable_monte_carlo_simulation": false,
+    "enable_stress_testing": true,
+    "calculate_tail_risk": true,
+    "enable_rolling_metrics": true,
+    "rolling_window_days": 30
+  },
+  "portfolio_tracking": {
+    "tracking_mode": "hybrid",
+    "update_interval_seconds": 1.0,
+    "anomaly_detection_enabled": true,
+    "auto_correction_enabled": true,
+    "historical_retention_days": 365,
+    "cache_size_limit": 10000,
+    "real_time_alerts": {
+      "enable_value_alerts": true,
+      "alert_threshold_percent": 10.0,
+      "alert_cooldown_minutes": 5
+    }
+  },
+  "trade_analysis": {
+    "analysis_level": "comprehensive",
+    "enable_pattern_recognition": true,
+    "calculate_trade_attribution": true,
+    "minimum_trades_for_statistics": 10,
+    "confidence_interval": 0.95,
+    "enable_clustering_analysis": false,
+    "trade_categorization": {
+      "by_strategy": true,
+      "by_symbol": true,
+      "by_time_period": true,
+      "by_market_condition": false
+    }
+  },
+  "risk_management": {
+    "enable_var_calculation": true,
+    "var_confidence_levels": [0.95, 0.99],
+    "enable_stress_testing": true,
+    "stress_test_scenarios": ["market_crash", "sector_rotation", "volatility_spike"],
+    "drawdown_monitoring": {
+      "enable_real_time": true,
+      "warning_threshold": 0.15,
+      "critical_threshold": 0.25
+    },
+    "correlation_analysis": {
+      "enable": true,
+      "lookback_days": 252,
+      "warning_correlation": 0.8
+    }
+  },
+  "caching": {
+    "enable_calculation_cache": true,
+    "cache_expiry_hours": 24,
+    "max_cache_size_mb": 100,
+    "cache_compression": true,
+    "persistent_cache": false
+  },
+  "integration": {
+    "legacy_system_support": true,
+    "enable_fallback_calculation": true,
+    "compatibility_mode": "hybrid",
+    "data_source_priority": ["dssms_v2", "enhanced_calculator", "legacy"],
+    "cross_validation_enabled": true
+  },
+  "output_settings": {
+    "report_formats": ["json", "excel", "csv"],
+    "chart_generation": {
+      "enable": true,
+      "formats": ["png", "svg"],
+      "include_charts": ["portfolio_value", "drawdown", "returns_distribution", "rolling_sharpe"]
+    },
+    "export_frequency": "daily",
+    "automatic_backup": true
+  },
+  "logging": {
+    "log_level": "INFO",
+    "log_calculations": true,
+    "log_anomalies": true,
+    "log_performance_metrics": true,
+    "detailed_error_logging": true,
+    "log_rotation": {
+      "enable": true,
+      "max_file_size_mb": 50,
+      "backup_count": 5
+    }
+  },
+  "alerts_and_notifications": {
+    "enable_alerts": true,
+    "alert_channels": ["log", "console"],
+    "alert_types": {
+      "anomaly_detection": true,
+      "calculation_errors": true,
+      "performance_warnings": true,
+      "data_quality_issues": true
+    },
+    "notification_thresholds": {
+      "critical_error": "immediate",
+      "warning": "hourly_digest",
+      "info": "daily_digest"
+    }
+  },
+  "experimental_features": {
+    "enable_ml_anomaly_detection": false,
+    "enable_predictive_analytics": false,
+    "enable_automated_optimization": false,
+    "enable_advanced_attribution": false
+  },
+  "quality_assurance": {
+    "enable_cross_validation": true,
+    "data_integrity_checks": true,
+    "calculation_verification": true,
+    "benchmark_comparison": true,
+    "automated_testing": {
+      "enable": true,
+      "test_frequency": "daily",
+      "test_scenarios": ["normal_market", "volatile_market", "trending_market"]
+    }
+  }
+}
