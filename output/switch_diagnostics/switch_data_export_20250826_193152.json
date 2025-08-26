@@ -1,0 +1,162 @@
+[
+  {
+    "id": "SW_20250826_193152_768426",
+    "timestamp": "2025-08-26 19:31:52.768443",
+    "engine_used": "v2",
+    "decision_factors": {
+      "demo": true,
+      "iteration": 0
+    },
+    "input_conditions": {
+      "test_mode": true,
+      "demo_run": true
+    },
+    "output_result": {
+      "switches_count": 2
+    },
+    "success": true,
+    "execution_time_ms": 120.5,
+    "performance_impact": null,
+    "notes": null
+  },
+  {
+    "id": "SW_20250826_193152_774097",
+    "timestamp": "2025-08-26 19:31:52.774114",
+    "engine_used": "v2",
+    "decision_factors": {
+      "demo": true,
+      "iteration": 1
+    },
+    "input_conditions": {
+      "test_mode": true,
+      "demo_run": true
+    },
+    "output_result": {
+      "switches_count": 0
+    },
+    "success": false,
+    "execution_time_ms": 89.2,
+    "performance_impact": null,
+    "notes": null
+  },
+  {
+    "id": "SW_20250826_193152_779830",
+    "timestamp": "2025-08-26 19:31:52.779855",
+    "engine_used": "legacy",
+    "decision_factors": {
+      "demo": true,
+      "iteration": 2
+    },
+    "input_conditions": {
+      "test_mode": true,
+      "demo_run": true
+    },
+    "output_result": {
+      "switches_count": 1
+    },
+    "success": true,
+    "execution_time_ms": 156.8,
+    "performance_impact": null,
+    "notes": null
+  },
+  {
+    "id": "SW_20250826_193152_816399",
+    "timestamp": "2025-08-26 19:31:52.816424",
+    "engine_used": "hybrid",
+    "decision_factors": {
+      "demo": true,
+      "iteration": 3
+    },
+    "input_conditions": {
+      "test_mode": true,
+      "demo_run": true
+    },
+    "output_result": {
+      "switches_count": 3
+    },
+    "success": true,
+    "execution_time_ms": 134.1,
+    "performance_impact": null,
+    "notes": null
+  },
+  {
+    "id": "SW_20250826_193152_822996",
+    "timestamp": "2025-08-26 19:31:52.823017",
+    "engine_used": "v2",
+    "decision_factors": {
+      "demo": true,
+      "iteration": 4
+    },
+    "input_conditions": {
+      "test_mode": true,
+      "demo_run": true
+    },
+    "output_result": {
+      "switches_count": 1
+    },
+    "success": true,
+    "execution_time_ms": 98.7,
+    "performance_impact": null,
+    "notes": null
+  },
+  {
+    "id": "SW_20250826_193152_852351",
+    "timestamp": "2025-08-26 19:31:52.852374",
+    "engine_used": "legacy",
+    "decision_factors": {
+      "demo": true,
+      "iteration": 5
+    },
+    "input_conditions": {
+      "test_mode": true,
+      "demo_run": true
+    },
+    "output_result": {
+      "switches_count": 0
+    },
+    "success": false,
+    "execution_time_ms": 201.3,
+    "performance_impact": null,
+    "notes": null
+  },
+  {
+    "id": "SW_20250826_193152_858657",
+    "timestamp": "2025-08-26 19:31:52.858678",
+    "engine_used": "hybrid",
+    "decision_factors": {
+      "demo": true,
+      "iteration": 6
+    },
+    "input_conditions": {
+      "test_mode": true,
+      "demo_run": true
+    },
+    "output_result": {
+      "switches_count": 2
+    },
+    "success": true,
+    "execution_time_ms": 145.6,
+    "performance_impact": null,
+    "notes": null
+  },
+  {
+    "id": "SW_20250826_193152_865071",
+    "timestamp": "2025-08-26 19:31:52.865092",
+    "engine_used": "v2",
+    "decision_factors": {
+      "demo": true,
+      "iteration": 7
+    },
+    "input_conditions": {
+      "test_mode": true,
+      "demo_run": true
+    },
+    "output_result": {
+      "switches_count": 1
+    },
+    "success": true,
+    "execution_time_ms": 87.4,
+    "performance_impact": null,
+    "notes": null
+  }
+]

@@ -1,0 +1,48 @@
+{
+  "demo_metadata": {
+    "start_time": "2025-08-26T19:21:15.445709",
+    "end_time": "2025-08-26T19:21:15.840022",
+    "duration_seconds": 0.394321
+  },
+  "component_status": {
+    "coordinator": "❌ エラー: name 'SwitchDecision' is not defined",
+    "diagnostics": "✅ 利用可能",
+    "backtester": "❌ エラー: name 'SwitchDecision' is not defined"
+  },
+  "demo_results": {
+    "demo_1": {
+      "components_status": {
+        "coordinator": "❌ エラー: name 'SwitchDecision' is not defined",
+        "diagnostics": "✅ 利用可能",
+        "backtester": "❌ エラー: name 'SwitchDecision' is not defined"
+      },
+      "available_components": 1,
+      "total_components": 3,
+      "success": true
+    },
+    "demo_2": {
+      "success": false,
+      "reason": "coordinator_unavailable"
+    },
+    "demo_3": {
+      "records_created": 8,
+      "analysis_success": true,
+      "report_generated": false,
+      "export_success": true,
+      "overall_success_rate": 0.75,
+      "success": true
+    },
+    "demo_4": {
+      "success": false,
+      "reason": "backtester_unavailable"
+    }
+  },
+  "overall_assessment": {
+    "success_level": 2,
+    "status": "部分的成功",
+    "reason": "一部機能が動作、改善の余地あり",
+    "success_rate": 0.5,
+    "available_components": 1,
+    "total_components": 3
+  }
+}

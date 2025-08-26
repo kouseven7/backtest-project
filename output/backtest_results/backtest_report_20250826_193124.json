@@ -1,0 +1,82 @@
+{
+  "backtest_metadata": {
+    "start_date": "2025-08-19",
+    "end_date": "2025-08-26",
+    "total_days": 8,
+    "symbols_tested": [
+      "7203",
+      "6758",
+      "9984",
+      "9983",
+      "8306"
+    ],
+    "execution_time_seconds": 0.0016624927520751953,
+    "mock_execution": true
+  },
+  "overall_performance": {
+    "total_switch_attempts": 4,
+    "successful_switches": 1,
+    "failed_switches": 3,
+    "overall_success_rate": 0.25,
+    "avg_switches_per_day": 0.125,
+    "avg_execution_time_ms": 141.2290783774318,
+    "total_pnl": -3530.4113597192077,
+    "sharpe_ratio": 0.5846599830564578,
+    "max_drawdown": 0.06284554141616885
+  },
+  "engine_performance": {
+    "v2": {
+      "attempts": 2,
+      "successes": 0,
+      "avg_execution_time": 81.59785411819695,
+      "success_rate": 0.0
+    },
+    "legacy": {
+      "attempts": 1,
+      "successes": 0,
+      "avg_execution_time": 101.3641756247122,
+      "success_rate": 0.0
+    },
+    "hybrid": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_execution_time": 104.3778640771787,
+      "success_rate": 0
+    }
+  },
+  "target_achievement": {
+    "success_rate_target": 0.3,
+    "success_rate_achieved": false,
+    "daily_switch_target": 1,
+    "daily_switch_achieved": false,
+    "overall_target_achievement": false
+  },
+  "daily_statistics": {
+    "avg_daily_attempts": 0.5,
+    "max_daily_switches": 1,
+    "min_daily_switches": 0,
+    "daily_success_variance": 0.12381237023990799,
+    "profitable_days_ratio": 0.7408095583292995
+  },
+  "switch_analysis": {
+    "total_symbol_changes": 3,
+    "avg_switches_per_execution": 2.1106166726014393,
+    "most_traded_symbols": [
+      "7203",
+      "6758",
+      "9984"
+    ],
+    "switch_frequency_distribution": {
+      "1_switch": 0.4300059953250039,
+      "2_switches": 0.2982933490631017,
+      "3_switches": 0.16395542201965485
+    }
+  },
+  "risk_metrics": {
+    "value_at_risk_95": 1695.3414575141571,
+    "expected_shortfall": 2281.2123106476456,
+    "volatility_annual": 0.3471911810732066,
+    "correlation_with_market": 0.7739998251435314,
+    "beta": 1.1378035018069714
+  }
+}
