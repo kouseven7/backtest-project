@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSSMS 詳細分析レポート</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .header { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%); color: white; padding: 40px; text-align: center; }
+        .critical { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%); }
+        .warning { background: linear-gradient(135deg, #ffa726 0%, #fb8c00 100%); }
+        .good { background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%); }
+        
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 30px; }
+        .metric-card { background: #f8f9fa; border-radius: 10px; padding: 25px; text-align: center; transition: transform 0.2s; }
+        .metric-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        
+        .big-number { font-size: 48px; font-weight: bold; margin: 15px 0; }
+        .section { margin: 30px; padding: 25px; background: #f8f9fa; border-radius: 10px; }
+        
+        .strategy-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        .strategy-card { background: white; border-radius: 8px; padding: 20px; border-left: 5px solid #007bff; }
+        
+        .portfolio-status { padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .status-critical { background: #ffebee; border-left: 5px solid #f44336; }
+        .status-warning { background: #fff3e0; border-left: 5px solid #ff9800; }
+        .status-good { background: #e8f5e8; border-left: 5px solid #4caf50; }
+        
+        .anomaly-list { background: #ffcdd2; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .recommendation-list { background: #c8e6c9; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f5f5f5; font-weight: bold; }
+        
+        .timestamp { color: #666; font-size: 0.9em; }
+        .highlight { background: #fff3cd; padding: 10px; border-radius: 5px; border-left: 4px solid #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header critical">
+            <h1>🔄 DSSMS 詳細分析レポート</h1>
+            <p class="timestamp">生成日時: 2025-08-27 20:29:04</p>
+            <div class="big-number">ポートフォリオ健康度: CRITICAL</div>
+        </div>
+
+        <!-- パフォーマンス ダッシュボード -->
+        <div class="dashboard">
+            <div class="metric-card">
+                <h3>切り替え成功率</h3>
+                <div class="big-number critical">0.0%</div>
+                <p>失敗回数: 0</p>
+            </div>
+            <div class="metric-card">
+                <h3>ポートフォリオ価値</h3>
+                <div class="big-number critical">¥0</div>
+                <p>変化率: -100.00%</p>
+            </div>
+            <div class="metric-card">
+                <h3>総リターン</h3>
+                <div class="big-number critical">-100.00%</div>
+                <p>シャープ比: -999.00</p>
+            </div>
+            <div class="metric-card">
+                <h3>最大ドローダウン</h3>
+                <div class="big-number critical">100.0%</div>
+                <p>リスクエクスポージャー: 100.0%</p>
+            </div>
+        </div>
+
+        <!-- 戦略分析セクション -->
+        <div class="section">
+            <h2>📊 戦略別パフォーマンス分析</h2>
+            <p>戦略データが利用できません。</p>
+        </div>
+
+        <!-- ポートフォリオ診断セクション -->
+        <div class="section">
+            <h2>💼 ポートフォリオ詳細診断</h2>
+            
+        <div class="portfolio-status status-critical">
+            <h3>📈 現在のポートフォリオ状態: CRITICAL</h3>
+            
+            <table>
+                <tr><td>現在価値</td><td>¥0</td></tr>
+                <tr><td>初期価値</td><td>¥1,000,000</td></tr>
+                <tr><td>価値変化率</td><td>-100.00%</td></tr>
+                <tr><td>ポジション数</td><td>0</td></tr>
+                <tr><td>キャッシュ比率</td><td>100.0%</td></tr>
+                <tr><td>リスクエクスポージャー</td><td>100.0%</td></tr>
+                <tr><td>多様化スコア</td><td>0.0/100</td></tr>
+            </table>
+            
+            <div class="highlight">
+                <strong>⚠️ 検出された異常:</strong><br>ポートフォリオ価値が異常に低い<br>最大ドローダウンが危険レベル
+            </div>
+        </div>
+        
+        </div>
+
+        <!-- システム状態セクション -->
+        <div class="section">
+            <h2>⚙️ システム状態</h2>
+            
+        <table>
+            <tr><td>切り替え頻度</td><td>0回</td></tr>
+            <tr><td>最後の切り替え</td><td>不明</td></tr>
+            <tr><td>アクティブ戦略</td><td>なし</td></tr>
+            <tr><td>失敗した切り替え</td><td>0回</td></tr>
+        </table>
+        
+        <h4>📊 戦略分布</h4>
+        <table>
+            <thead><tr><th>戦略</th><th>使用率</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        
+        </div>
+    </div>
+</body>
+</html>
+        

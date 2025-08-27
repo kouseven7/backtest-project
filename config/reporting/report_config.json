@@ -1,0 +1,71 @@
+{
+  "report_generation": {
+    "default_output_directory": "output",
+    "enable_error_diagnostics": true,
+    "enable_performance_metrics": true,
+    "enable_risk_analysis": true,
+    "max_report_age_hours": 168,
+    "auto_cleanup_old_reports": true
+  },
+  "emergency_mode": {
+    "triggers": [
+      "ZERO_SWITCHING_SUCCESS",
+      "PORTFOLIO_VALUE_COLLAPSE",
+      "TOTAL_RETURN_FAILURE",
+      "MAX_DRAWDOWN_FAILURE",
+      "IMPORT_ERROR_INTELLIGENT_SWITCH"
+    ],
+    "enable_auto_activation": true,
+    "notification_level": "CRITICAL"
+  },
+  "dssms_analysis": {
+    "analysis_window_hours": 24,
+    "min_switching_threshold": 5.0,
+    "portfolio_health_thresholds": {
+      "critical": 10.0,
+      "warning": 50.0,
+      "good": 80.0,
+      "excellent": 95.0
+    },
+    "strategy_performance_weights": {
+      "return": 0.4,
+      "risk_adjusted": 0.3,
+      "consistency": 0.3
+    }
+  },
+  "error_diagnostics": {
+    "log_analysis_hours": 24,
+    "confidence_threshold": 0.7,
+    "max_errors_per_report": 50,
+    "enable_root_cause_analysis": true,
+    "enable_auto_fix_suggestions": true
+  },
+  "report_templates": {
+    "excel_template": "templates/excel_report_template.xlsx",
+    "html_template": "templates/html_report_template.html",
+    "use_custom_templates": false
+  },
+  "performance_monitoring": {
+    "enable_real_time_monitoring": false,
+    "monitoring_interval_minutes": 15,
+    "alert_thresholds": {
+      "portfolio_value_drop_percent": 10.0,
+      "switching_failure_rate": 20.0,
+      "error_rate_per_hour": 5
+    }
+  },
+  "integration": {
+    "simple_excel_exporter": {
+      "enabled": true,
+      "fallback_mode": true
+    },
+    "existing_strategy_comparison": {
+      "enabled": true,
+      "merge_reports": true
+    },
+    "external_apis": {
+      "enabled": false,
+      "notification_webhook": ""
+    }
+  }
+}
