@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-08-27T06:22:18.777871",
+  "critical_issues": [
+    "Switch Coordinator V2初期化エラー: name 'IntelligentSwitchManager' is not defined",
+    "切替エンジン診断エラー: name 'IntelligentSwitchManager' is not defined",
+    "成功率ターゲット確認エラー: name 'IntelligentSwitchManager' is not defined"
+  ],
+  "success_rate_current": 0.0,
+  "success_rate_target": 0.3,
+  "root_causes": [
+    "コンポーネント初期化プロセスに問題",
+    "切替エンジン・ロジック問題",
+    "成功率計算・閾値設定問題",
+    "例外処理・エラーハンドリング不備"
+  ],
+  "recommended_fixes": [
+    "コンポーネント初期化順序と依存関係の見直し",
+    "必須属性の明示的初期化追加",
+    "切替決定ロジックの簡素化・安定化",
+    "フォールバック切替メカニズムの追加",
+    "設定ファイルの妥当性検証強化",
+    "デフォルト設定値の適切な設定",
+    "成功率計算方法の見直し・修正",
+    "現実的な成功率ターゲットの設定",
+    "包括的エラーハンドリングの追加",
+    "グレースフルデグラデーション機能の実装",
+    "統合テストスイートの強化",
+    "リアルタイム監視・アラート機能の追加",
+    "段階的ロールバック機能の実装"
+  ],
+  "emergency_patches_applied": [],
+  "validation_results": {}
+}

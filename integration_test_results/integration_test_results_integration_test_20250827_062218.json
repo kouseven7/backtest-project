@@ -1,0 +1,169 @@
+{
+  "test_summary": {
+    "session_id": "integration_test_20250827_062218",
+    "start_time": "2025-08-27T06:22:18.773043",
+    "tests_executed": 6,
+    "tests_passed": 3,
+    "tests_failed": 3,
+    "overall_success": false,
+    "execution_time": 1.018985,
+    "final_success_rate": 0.0,
+    "end_time": "2025-08-27T06:22:19.792028"
+  },
+  "individual_test_results": [
+    {
+      "test_name": "emergency_diagnostics_integration",
+      "timestamp": "2025-08-27T06:22:18.989043",
+      "success": true,
+      "execution_time": 0.21582460403442383,
+      "details": {
+        "critical_issues_count": 3,
+        "root_causes_count": 4,
+        "recommended_fixes_count": 13,
+        "current_success_rate": 0.0,
+        "fixes_applied": 7,
+        "post_fix_success_rate": 0.0
+      },
+      "errors": [],
+      "performance_metrics": {
+        "fix_application_time": 0.08087635040283203,
+        "diagnostic_time": 0.13455939292907715
+      }
+    },
+    {
+      "test_name": "switch_engine_operation",
+      "timestamp": "2025-08-27T06:22:18.990746",
+      "success": false,
+      "execution_time": 0.0015277862548828125,
+      "details": {},
+      "errors": [
+        "name 'IntelligentSwitchManager' is not defined"
+      ],
+      "performance_metrics": {}
+    },
+    {
+      "test_name": "data_flow_integration",
+      "timestamp": "2025-08-27T06:22:18.997430",
+      "success": true,
+      "execution_time": 0.006505012512207031,
+      "details": {
+        "test_data_shape": [
+          30,
+          5
+        ],
+        "test_data_columns": [
+          "Open",
+          "High",
+          "Low",
+          "Close",
+          "Volume"
+        ],
+        "data_processing_tests": 3
+      },
+      "errors": [],
+      "performance_metrics": {
+        "data_creation_time": 0.0023741722106933594,
+        "average_processing_time": 0.0009885629018147786,
+        "max_processing_time": 0.0012004375457763672
+      }
+    },
+    {
+      "test_name": "performance_and_success_rate",
+      "timestamp": "2025-08-27T06:22:19.684809",
+      "success": false,
+      "execution_time": 0.6871495246887207,
+      "details": {
+        "performance_tests_total": 20,
+        "performance_tests_successful": 0,
+        "final_success_rate": 0.0
+      },
+      "errors": [
+        "最終成功率目標未達成: 0.00% < 30.00%"
+      ],
+      "performance_metrics": {
+        "final_success_rate": 0.0,
+        "average_execution_time": 0.0343305230140686,
+        "max_execution_time": 0.13259458541870117,
+        "min_execution_time": 0.022563934326171875
+      }
+    },
+    {
+      "test_name": "error_handling_recovery",
+      "timestamp": "2025-08-27T06:22:19.791413",
+      "success": true,
+      "execution_time": 0.10645604133605957,
+      "details": {
+        "recovery_tests": [
+          {
+            "scenario": "invalid_data",
+            "recovered": true,
+            "recovery_time": 0.0005960464477539062,
+            "error_handled": true
+          },
+          {
+            "scenario": "empty_data",
+            "recovered": true,
+            "recovery_time": 0.002506732940673828,
+            "error_handled": true
+          },
+          {
+            "scenario": "corrupted_config",
+            "recovered": true,
+            "recovery_time": 1.430511474609375e-06,
+            "error_handled": true
+          },
+          {
+            "scenario": "network_timeout",
+            "recovered": true,
+            "recovery_time": 0.10029053688049316,
+            "error_handled": true
+          },
+          {
+            "scenario": "memory_pressure",
+            "recovered": true,
+            "recovery_time": 0.002588987350463867,
+            "error_handled": true
+          }
+        ],
+        "recovery_rate": 1.0,
+        "scenarios_tested": 5,
+        "scenarios_recovered": 5
+      },
+      "errors": [],
+      "performance_metrics": {
+        "recovery_rate": 1.0,
+        "average_recovery_time": 0.021196746826171876
+      }
+    },
+    {
+      "test_name": "base_system_integration",
+      "timestamp": "2025-08-27T06:22:19.792019",
+      "success": false,
+      "execution_time": 0.00038909912109375,
+      "details": {
+        "base_test_initialized": true,
+        "available_methods": [
+          "setUp"
+        ],
+        "required_methods": [
+          "setUp",
+          "test_switch_coordinator_initialization",
+          "test_diagnostics_functionality"
+        ]
+      },
+      "errors": [
+        "必須メソッド不存在: test_switch_coordinator_initialization",
+        "必須メソッド不存在: test_diagnostics_functionality"
+      ],
+      "performance_metrics": {}
+    }
+  ],
+  "test_config": {
+    "test_session_id": "integration_test_20250827_062218",
+    "temp_dir": "C:\\Users\\imega\\AppData\\Local\\Temp\\dssms_integration_test_kh70_qkm",
+    "results_dir": "C:\\Users\\imega\\Documents\\my_backtest_project\\integration_test_results",
+    "success_rate_target": 0.3,
+    "max_test_duration": 300,
+    "retry_count": 3
+  }
+}

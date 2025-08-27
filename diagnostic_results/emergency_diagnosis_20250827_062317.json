@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-08-27T06:23:17.352951",
+  "critical_issues": [],
+  "success_rate_current": 0.2,
+  "success_rate_target": 0.3,
+  "root_causes": [
+    "システム統合・連携問題"
+  ],
+  "recommended_fixes": [
+    "統合テストスイートの強化",
+    "リアルタイム監視・アラート機能の追加",
+    "段階的ロールバック機能の実装"
+  ],
+  "emergency_patches_applied": [],
+  "validation_results": {}
+}

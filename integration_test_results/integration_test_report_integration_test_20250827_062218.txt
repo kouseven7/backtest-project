@@ -1,0 +1,36 @@
+================================================================================
+🧪 DSSMS 統合テストレポート
+================================================================================
+テストセッションID: integration_test_20250827_062218
+レポート生成時刻: 2025-08-27 06:22:20
+実行テスト数: 6
+
+📊 テスト実行統計:
+- 成功テスト: 3/6 (50.0%)
+- 総実行時間: 1.02秒
+- 平均実行時間: 0.17秒
+
+🔍 個別テスト結果:
+  1. emergency_diagnostics_integration: ✅ 成功 (0.22秒)
+  2. switch_engine_operation: ❌ 失敗 (0.00秒)
+     エラー: name 'IntelligentSwitchManager' is not defined
+  3. data_flow_integration: ✅ 成功 (0.01秒)
+  4. performance_and_success_rate: ❌ 失敗 (0.69秒)
+     エラー: 最終成功率目標未達成: 0.00% < 30.00%
+  5. error_handling_recovery: ✅ 成功 (0.11秒)
+  6. base_system_integration: ❌ 失敗 (0.00秒)
+     エラー: 必須メソッド不存在: test_switch_coordinator_initialization, 必須メソッド不存在: test_diagnostics_functionality
+
+📈 パフォーマンス指標:
+  - emergency_diagnostics_integration: {'fix_application_time': 0.08087635040283203, 'diagnostic_time': 0.13455939292907715}
+  - data_flow_integration: {'data_creation_time': 0.0023741722106933594, 'average_processing_time': np.float64(0.0009885629018147786), 'max_processing_time': 0.0012004375457763672}
+  - performance_and_success_rate: {'final_success_rate': 0.0, 'average_execution_time': np.float64(0.0343305230140686), 'max_execution_time': 0.13259458541870117, 'min_execution_time': 0.022563934326171875}
+
+🛠️ 推奨改善事項:
+  - switch_engine_operation: name 'IntelligentSwitchManager' is not defined
+  - performance_and_success_rate: 最終成功率目標未達成: 0.00% < 30.00%
+  - base_system_integration: 必須メソッド不存在: test_switch_coordinator_initialization, 必須メソッド不存在: test_diagnostics_functionality
+
+================================================================================
+統合テストレポート完了
+================================================================================

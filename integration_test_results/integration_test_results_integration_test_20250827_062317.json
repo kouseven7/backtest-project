@@ -1,0 +1,209 @@
+{
+  "test_summary": {
+    "session_id": "integration_test_20250827_062317",
+    "start_time": "2025-08-27T06:23:17.348472",
+    "tests_executed": 6,
+    "tests_passed": 3,
+    "tests_failed": 3,
+    "overall_success": false,
+    "execution_time": 1.60026,
+    "final_success_rate": 0.0,
+    "end_time": "2025-08-27T06:23:18.948732"
+  },
+  "individual_test_results": [
+    {
+      "test_name": "emergency_diagnostics_integration",
+      "timestamp": "2025-08-27T06:23:17.583389",
+      "success": true,
+      "execution_time": 0.2347724437713623,
+      "details": {
+        "critical_issues_count": 0,
+        "root_causes_count": 1,
+        "recommended_fixes_count": 3,
+        "current_success_rate": 0.2,
+        "fixes_applied": 0,
+        "post_fix_success_rate": 0.2
+      },
+      "errors": [],
+      "performance_metrics": {
+        "fix_application_time": 0.06525635719299316,
+        "diagnostic_time": 0.1691911220550537
+      }
+    },
+    {
+      "test_name": "switch_engine_operation",
+      "timestamp": "2025-08-27T06:23:17.599164",
+      "success": false,
+      "execution_time": 0.01563858985900879,
+      "details": {
+        "coordinator_available": true,
+        "switch_tests": [
+          {
+            "attempt": 1,
+            "success": true,
+            "execution_time": 0.0008673667907714844,
+            "switches_count": 1
+          },
+          {
+            "attempt": 2,
+            "success": false,
+            "execution_time": 0.0013363361358642578,
+            "switches_count": 0
+          },
+          {
+            "attempt": 3,
+            "success": false,
+            "execution_time": 0.0012738704681396484,
+            "switches_count": 0
+          },
+          {
+            "attempt": 4,
+            "success": false,
+            "execution_time": 0.0013294219970703125,
+            "switches_count": 0
+          },
+          {
+            "attempt": 5,
+            "success": false,
+            "execution_time": 0.0013494491577148438,
+            "switches_count": 0
+          }
+        ],
+        "success_rate": 0.2,
+        "successful_switches": 1,
+        "total_attempts": 5
+      },
+      "errors": [
+        "成功率目標未達成: 20.00% < 30.00%"
+      ],
+      "performance_metrics": {
+        "average_switch_time": 0.0012312889099121093,
+        "success_rate": 0.2
+      }
+    },
+    {
+      "test_name": "data_flow_integration",
+      "timestamp": "2025-08-27T06:23:17.604771",
+      "success": true,
+      "execution_time": 0.005383491516113281,
+      "details": {
+        "test_data_shape": [
+          30,
+          5
+        ],
+        "test_data_columns": [
+          "Open",
+          "High",
+          "Low",
+          "Close",
+          "Volume"
+        ],
+        "data_processing_tests": 3
+      },
+      "errors": [],
+      "performance_metrics": {
+        "data_creation_time": 0.0027637481689453125,
+        "average_processing_time": 0.000503381093343099,
+        "max_processing_time": 0.0005674362182617188
+      }
+    },
+    {
+      "test_name": "performance_and_success_rate",
+      "timestamp": "2025-08-27T06:23:18.840092",
+      "success": false,
+      "execution_time": 1.2351205348968506,
+      "details": {
+        "performance_tests_total": 20,
+        "performance_tests_successful": 0,
+        "final_success_rate": 0.0
+      },
+      "errors": [
+        "最終成功率目標未達成: 0.00% < 30.00%"
+      ],
+      "performance_metrics": {
+        "final_success_rate": 0.0,
+        "average_execution_time": 0.06173360347747803,
+        "max_execution_time": 0.11357712745666504,
+        "min_execution_time": 0.05077505111694336
+      }
+    },
+    {
+      "test_name": "error_handling_recovery",
+      "timestamp": "2025-08-27T06:23:18.948006",
+      "success": true,
+      "execution_time": 0.1077573299407959,
+      "details": {
+        "recovery_tests": [
+          {
+            "scenario": "invalid_data",
+            "recovered": true,
+            "recovery_time": 0.0009396076202392578,
+            "error_handled": true
+          },
+          {
+            "scenario": "empty_data",
+            "recovered": true,
+            "recovery_time": 0.003228425979614258,
+            "error_handled": true
+          },
+          {
+            "scenario": "corrupted_config",
+            "recovered": true,
+            "recovery_time": 1.430511474609375e-06,
+            "error_handled": true
+          },
+          {
+            "scenario": "network_timeout",
+            "recovered": true,
+            "recovery_time": 0.1005716323852539,
+            "error_handled": true
+          },
+          {
+            "scenario": "memory_pressure",
+            "recovered": true,
+            "recovery_time": 0.0024416446685791016,
+            "error_handled": true
+          }
+        ],
+        "recovery_rate": 1.0,
+        "scenarios_tested": 5,
+        "scenarios_recovered": 5
+      },
+      "errors": [],
+      "performance_metrics": {
+        "recovery_rate": 1.0,
+        "average_recovery_time": 0.021436548233032225
+      }
+    },
+    {
+      "test_name": "base_system_integration",
+      "timestamp": "2025-08-27T06:23:18.948725",
+      "success": false,
+      "execution_time": 0.0005490779876708984,
+      "details": {
+        "base_test_initialized": true,
+        "available_methods": [
+          "setUp"
+        ],
+        "required_methods": [
+          "setUp",
+          "test_switch_coordinator_initialization",
+          "test_diagnostics_functionality"
+        ]
+      },
+      "errors": [
+        "必須メソッド不存在: test_switch_coordinator_initialization",
+        "必須メソッド不存在: test_diagnostics_functionality"
+      ],
+      "performance_metrics": {}
+    }
+  ],
+  "test_config": {
+    "test_session_id": "integration_test_20250827_062317",
+    "temp_dir": "C:\\Users\\imega\\AppData\\Local\\Temp\\dssms_integration_test_wzbe0704",
+    "results_dir": "C:\\Users\\imega\\Documents\\my_backtest_project\\integration_test_results",
+    "success_rate_target": 0.3,
+    "max_test_duration": 300,
+    "retry_count": 3
+  }
+}
