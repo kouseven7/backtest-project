@@ -1,0 +1,49 @@
+{
+  "analysis_mode": "comprehensive",
+  "enable_regime_analysis": true,
+  "enable_stock_selection_analysis": true,
+  "enable_correlation_analysis": true,
+  "lookback_period": 252,
+  "min_data_points": 30,
+  "regime_detection_window": 20,
+  "significance_threshold": 0.05,
+  "performance_difference_threshold": 0.02,
+  "correlation_threshold": 0.7,
+  "output_format": "excel",
+  "include_detailed_charts": true,
+  "export_raw_data": false,
+  "auto_cleanup_days": 30,
+  "max_stored_reports": 100,
+  "include_executive_summary": true,
+  "include_performance_charts": true,
+  "include_risk_analysis": true,
+  "performance_thresholds": {
+    "good_sharpe_ratio": 1.0,
+    "poor_sharpe_ratio": 0.5,
+    "high_correlation": 0.7,
+    "good_diversification": 0.7,
+    "high_volatility": 0.25,
+    "max_drawdown_warning": 0.15
+  },
+  "integration_settings": {
+    "use_existing_switching_analyzer": true,
+    "use_simple_excel_exporter": true,
+    "fallback_analysis_enabled": true,
+    "cache_analysis_results": true,
+    "enable_performance_tracking": true
+  },
+  "advanced_features": {
+    "enable_monte_carlo_simulation": false,
+    "enable_stress_testing": false,
+    "enable_scenario_analysis": false,
+    "enable_portfolio_optimization": false,
+    "enable_real_time_monitoring": false
+  },
+  "logging": {
+    "log_level": "INFO",
+    "log_to_file": true,
+    "log_file_path": "logs/dssms_comparison_analysis.log",
+    "max_log_size_mb": 10,
+    "backup_count": 5
+  }
+}
