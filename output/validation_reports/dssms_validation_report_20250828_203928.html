@@ -1,0 +1,407 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSSMS 自動検証レポート</title>
+    <style>
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        header {
+            text-align: center;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #007acc;
+            margin: 0;
+        }
+        
+        .timestamp {
+            color: #666;
+            margin: 10px 0 0 0;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007acc;
+        }
+        
+        .summary-card.excellent {
+            border-left-color: #28a745;
+            background-color: #d4edda;
+        }
+        
+        .summary-card.good {
+            border-left-color: #007acc;
+            background-color: #d1ecf1;
+        }
+        
+        .summary-card.needs-improvement {
+            border-left-color: #ffc107;
+            background-color: #fff3cd;
+        }
+        
+        .summary-card.needs-fix {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        
+        .big-text {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #007acc;
+            color: white;
+        }
+        
+        .result-card {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .result-card.success {
+            border-left: 4px solid #28a745;
+            background-color: #f8fff9;
+        }
+        
+        .result-card.failure {
+            border-left: 4px solid #dc3545;
+            background-color: #fff8f8;
+        }
+        
+        .result-meta {
+            display: flex;
+            gap: 20px;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .status {
+            font-weight: bold;
+        }
+        
+        .errors {
+            background-color: #f8d7da;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .warnings {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .suggestions {
+            background-color: #d1ecf1;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .priority-issue {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #ffc107;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 14px;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DSSMS 自動検証レポート</h1>
+            <p class="timestamp">生成日時: 2025年08月28日 20:39:28</p>
+        </header>
+        
+        <section class="summary">
+            
+        <h2>検証結果サマリー</h2>
+        <div class="summary-grid">
+            <div class="summary-card needs-improvement">
+                <h3>総合ステータス</h3>
+                <p class="big-text">要改善</p>
+                <p>スコア: 72.8%</p>
+            </div>
+            
+            <div class="summary-card">
+                <h3>検証実行結果</h3>
+                <p>成功: 3/5 (60.0%)</p>
+                <p>失敗: 2 件</p>
+            </div>
+            
+            <div class="summary-card">
+                <h3>問題発見状況</h3>
+                <p>エラー: 3 件</p>
+                <p>警告: 5 件</p>
+            </div>
+        </div>
+        
+        <div class="level-breakdown">
+            <h3>レベル別結果</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>検証レベル</th>
+                        <th>実行数</th>
+                        <th>成功数</th>
+                        <th>成功率</th>
+                        <th>平均スコア</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td>basic</td>
+                        <td>1</td>
+                        <td>1</td>
+                        <td>100.0%</td>
+                        <td>95.0%</td>
+                    </tr>
+
+                    <tr>
+                        <td>unit</td>
+                        <td>1</td>
+                        <td>0</td>
+                        <td>0.0%</td>
+                        <td>54.0%</td>
+                    </tr>
+
+                    <tr>
+                        <td>integration</td>
+                        <td>1</td>
+                        <td>1</td>
+                        <td>100.0%</td>
+                        <td>80.0%</td>
+                    </tr>
+
+                    <tr>
+                        <td>performance</td>
+                        <td>1</td>
+                        <td>0</td>
+                        <td>0.0%</td>
+                        <td>39.0%</td>
+                    </tr>
+
+                    <tr>
+                        <td>production</td>
+                        <td>1</td>
+                        <td>1</td>
+                        <td>100.0%</td>
+                        <td>96.2%</td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+        
+        </section>
+        
+        <section class="detailed-results">
+            
+        <h2>詳細検証結果</h2>
+        
+            <div class="result-card success">
+                <h3>Basic Validation - basic_system_validation</h3>
+                <div class="result-meta">
+                    <span>実行時刻: 2025-08-28 20:39:24</span>
+                    <span>実行時間: 0.85秒</span>
+                    <span>スコア: 95.0%</span>
+                    <span class="status">成功</span>
+                </div>
+                
+                <div class="result-details"><h4>詳細情報</h4><ul><li><strong>import_check:</strong> 1.0</li><li><strong>config_check:</strong> 0.8</li><li><strong>directory_check:</strong> 1.0</li><li><strong>logging_check:</strong> 1.0</li><li><strong>dependency_check:</strong> 1.0</li></ul></div>
+                
+                
+            </div>
+            
+            <div class="result-card failure">
+                <h3>Unit Validation - unit_component_validation</h3>
+                <div class="result-meta">
+                    <span>実行時刻: 2025-08-28 20:39:26</span>
+                    <span>実行時間: 2.09秒</span>
+                    <span>スコア: 54.0%</span>
+                    <span class="status">失敗</span>
+                </div>
+                
+                <div class="result-details"><h4>詳細情報</h4><ul><li><strong>hierarchical_ranking_system_score:</strong> 0.3</li><li><strong>intelligent_switch_manager_score:</strong> 0.7</li><li><strong>market_condition_monitor_score:</strong> 0.7</li><li><strong>dssms_scheduler_score:</strong> 0.7</li><li><strong>dssms_backtester_v2_score:</strong> 0.3</li></ul></div>
+                
+                <div class="errors"><h4>エラー</h4><ul><li>コンポーネント hierarchical_ranking_system の検証失敗</li><li>コンポーネント dssms_backtester_v2 の検証失敗</li></ul></div><div class="warnings"><h4>警告</h4><ul><li>コンポーネント intelligent_switch_manager に改善の余地あり</li><li>コンポーネント market_condition_monitor に改善の余地あり</li><li>コンポーネント dssms_scheduler に改善の余地あり</li></ul></div>
+            </div>
+            
+            <div class="result-card success">
+                <h3>Integration Validation - integration_system_validation</h3>
+                <div class="result-meta">
+                    <span>実行時刻: 2025-08-28 20:39:26</span>
+                    <span>実行時間: 0.01秒</span>
+                    <span>スコア: 80.0%</span>
+                    <span class="status">成功</span>
+                </div>
+                
+                <div class="result-details"><h4>詳細情報</h4><ul><li><strong>ranking_switch_integration:</strong> 0.8</li><li><strong>switch_monitor_integration:</strong> 0.8</li><li><strong>backtest_performance_integration:</strong> 0.8</li><li><strong>data_quality_integration:</strong> 0.8</li><li><strong>scheduler_integration:</strong> 0.8</li></ul></div>
+                
+                
+            </div>
+            
+            <div class="result-card failure">
+                <h3>Performance Validation - performance_validation</h3>
+                <div class="result-meta">
+                    <span>実行時刻: 2025-08-28 20:39:26</span>
+                    <span>実行時間: 0.00秒</span>
+                    <span>スコア: 39.0%</span>
+                    <span class="status">失敗</span>
+                </div>
+                
+                <div class="result-details"><h4>詳細情報</h4><ul><li><strong>backtest_execution:</strong><ul><li>dates: DatetimeIndex(['2025-05-30', '2025-05-31', '2025-06-01', '2025-06-02',
+               '2025-06-03', '2025-06-04', '2025-06-05', '2025-06-06',
+               '2025-06-07', '2025-06-08', '2025-06-09', '2025-06-10',
+               '2025-06-11', '2025-06-12', '2025-06-13', '2025-06-14',
+               '2025-06-15', '2025-06-16', '2025-06-17', '2025-06-18',
+               '2025-06-19', '2025-06-20', '2025-06-21', '2025-06-22',
+               '2025-06-23', '2025-06-24', '2025-06-25', '2025-06-26',
+               '2025-06-27', '2025-06-28', '2025-06-29', '2025-06-30',
+               '2025-07-01', '2025-07-02', '2025-07-03', '2025-07-04',
+               '2025-07-05', '2025-07-06', '2025-07-07', '2025-07-08',
+               '2025-07-09', '2025-07-10', '2025-07-11', '2025-07-12',
+               '2025-07-13', '2025-07-14', '2025-07-15', '2025-07-16',
+               '2025-07-17', '2025-07-18', '2025-07-19', '2025-07-20',
+               '2025-07-21', '2025-07-22', '2025-07-23', '2025-07-24',
+               '2025-07-25', '2025-07-26', '2025-07-27', '2025-07-28',
+               '2025-07-29', '2025-07-30', '2025-07-31', '2025-08-01',
+               '2025-08-02', '2025-08-03', '2025-08-04', '2025-08-05',
+               '2025-08-06', '2025-08-07', '2025-08-08', '2025-08-09',
+               '2025-08-10', '2025-08-11', '2025-08-12', '2025-08-13',
+               '2025-08-14', '2025-08-15', '2025-08-16', '2025-08-17',
+               '2025-08-18', '2025-08-19', '2025-08-20', '2025-08-21',
+               '2025-08-22', '2025-08-23', '2025-08-24', '2025-08-25',
+               '2025-08-26', '2025-08-27', '2025-08-28'],
+              dtype='datetime64[ns]', freq='D')</li><li>portfolio_values: [np.float64(1010734.2830602246), np.float64(1008747.9011003311), np.float64(1022621.9884887277), np.float64(1054589.7624852723), np.float64(1050494.7192585682), np.float64(1046415.9222968074), np.float64(1080303.323731487), np.float64(1097748.8121634894), np.float64(1088319.7122231945), np.float64(1100999.9438029588), np.float64(1091676.286683125), np.float64(1082381.105152963), np.float64(1088484.9178551447), np.float64(1047704.1719906245), np.float64(1012398.2631389184), np.float64(1001823.0033896649), np.float64(982330.9114943777), np.float64(989290.6735968329), np.float64(972116.1111494199), np.float64(945435.3404002595), np.float64(973905.211527631), np.float64(970286.6413831878), np.float64(972373.3049948), np.float64(945443.4615865214), np.float64(935906.1546057308), np.float64(938731.1422173008), np.float64(917872.6568187063), np.float64(925503.8137093704), np.float64(915126.3487967128), np.float64(910519.7171514473), np.float64(900290.8182376631), np.float64(934362.8317389596), np.float64(934858.0959018157), np.float64(915829.7898773721), np.float64(931628.6763895974), np.float64(909626.5202566861), np.float64(914153.9787755411), np.float64(879056.4971419164), np.float64(856408.7308256816), np.float64(860465.7314335312), np.float64(873862.6077365773), np.float64(877556.7444844466), np.float64(876229.0312760773), np.float64(871653.2985111012), np.float64(846575.4497534108), np.float64(835064.6614237308), np.float64(828039.4499666662), np.float64(846208.6596615565), np.float64(852701.0820343043), np.float64(823316.3179369771), np.float64(829311.4433990171), np.float64(823587.8297177475), np.float64(813096.6055591181), np.float64(823694.1211267154), np.float64(841337.6413349041), np.float64(857681.1318247584), np.float64(843971.6560269229), np.float64(839427.5037335211), np.float64(845660.4784425339), np.float64(862836.6060041795), np.float64(855257.8938276414), np.float64(852766.3740356697), np.float64(834579.681849859), np.float64(815280.7507203001), np.float64(829181.7085700998), np.float64(852336.4424193862), np.float64(851790.7745564023), np.float64(869568.208463813), np.float64(876553.206838917), np.float64(865944.813610503), np.float64(872896.5424664242), np.float64(900445.7957214988), np.float64(900520.9642321978), np.float64(929421.269275852), np.float64(881467.8698948269), np.float64(896662.6571865998), np.float64(898941.024422484), np.float64(894284.3777632692), np.float64(896641.0098444225), np.float64(861715.6066778355), np.float64(858619.0852812184), np.float64(865438.4539393202), np.float64(891711.3314458162), np.float64(883181.7519832627), np.float64(869607.36145144), np.float64(861576.4149653767), np.float64(878039.4535937784), np.float64(884515.0140505321), np.float64(875851.0089802042), np.float64(885542.6057707687), np.float64(887970.3659756155)]</li><li>daily_returns: [ 1.07342831e-02 -1.96528602e-03  1.37537708e-02  3.12605971e-02
+ -3.88306749e-03 -3.88273914e-03  3.23842563e-02  1.61486946e-02
+ -8.58948772e-03  1.16512009e-02 -8.46835386e-03 -8.51459507e-03
+  5.63924543e-03 -3.74656049e-02 -3.36983567e-02 -1.04457506e-02
+ -1.94566224e-02  7.08494665e-03 -1.73604815e-02 -2.74460740e-02
+  3.01129754e-02 -3.71552601e-03  2.15056409e-03 -2.76949637e-02
+ -1.00876545e-02  3.01845179e-03 -2.22198715e-02  8.31396037e-03
+ -1.12127738e-02 -5.03387500e-03 -1.12341322e-02  3.78455637e-02
+  5.30055505e-04 -2.03542186e-02  1.72508982e-02 -2.36168730e-02
+  4.97727190e-03 -3.83934025e-02 -2.57637210e-02  4.73722472e-03
+  1.55693316e-02  4.22736562e-03 -1.51296565e-03 -5.22207391e-03
+ -2.87704398e-02 -1.35968842e-02 -8.41277542e-03  2.19424445e-02
+  7.67236579e-03 -3.44608031e-02  7.28167939e-03 -6.90164561e-03
+ -1.27384400e-02  1.30335258e-02  2.14199904e-02  1.94256024e-02
+ -1.59843505e-02 -5.38424752e-03  7.42526863e-03  2.03109025e-02
+ -8.78348476e-03 -2.91317953e-03 -2.13266995e-02 -2.31241325e-02
+  1.70505164e-02  2.79248006e-02 -6.40202432e-04  2.08706580e-02
+  8.03272050e-03 -1.21023951e-02  8.02791211e-03  3.15607313e-02
+  8.34792178e-05  3.20928731e-02 -5.15949021e-02  1.72380501e-02
+  2.54094136e-03 -5.18014701e-03  2.63521553e-03 -3.89513783e-02
+ -3.59343776e-03  7.94225143e-03  3.03578809e-02 -9.56540437e-03
+ -1.53698721e-02 -9.23514087e-03  1.91080424e-02  7.37502219e-03
+ -9.79520408e-03  1.10653487e-02  2.74155099e-03]</li><li>strategy_switches: [{'date': Timestamp('2025-06-08 00:00:00'), 'from_strategy': 'VWAP_Breakout', 'to_strategy': 'Mean_Reversion', 'success': np.True_}, {'date': Timestamp('2025-06-11 00:00:00'), 'from_strategy': 'Mean_Reversion', 'to_strategy': 'Momentum_Strategy', 'success': np.False_}, {'date': Timestamp('2025-06-12 00:00:00'), 'from_strategy': 'Momentum_Strategy', 'to_strategy': 'Contrarian_Strategy', 'success': np.True_}, {'date': Timestamp('2025-06-13 00:00:00'), 'from_strategy': 'Contrarian_Strategy', 'to_strategy': 'VWAP_Breakout', 'success': np.True_}, {'date': Timestamp('2025-06-28 00:00:00'), 'from_strategy': 'VWAP_Breakout', 'to_strategy': 'Mean_Reversion', 'success': np.False_}, {'date': Timestamp('2025-07-08 00:00:00'), 'from_strategy': 'Mean_Reversion', 'to_strategy': 'Momentum_Strategy', 'success': np.False_}, {'date': Timestamp('2025-07-09 00:00:00'), 'from_strategy': 'Momentum_Strategy', 'to_strategy': 'Contrarian_Strategy', 'success': np.True_}, {'date': Timestamp('2025-07-25 00:00:00'), 'from_strategy': 'Contrarian_Strategy', 'to_strategy': 'VWAP_Breakout', 'success': np.False_}, {'date': Timestamp('2025-08-06 00:00:00'), 'from_strategy': 'VWAP_Breakout', 'to_strategy': 'Mean_Reversion', 'success': np.True_}, {'date': Timestamp('2025-08-20 00:00:00'), 'from_strategy': 'Mean_Reversion', 'to_strategy': 'Momentum_Strategy', 'success': np.True_}]</li><li>final_value: 887970.3659756155</li><li>total_return: -0.1120296340243846</li><li>execution_success: True</li></ul></li><li><strong>performance_metrics:</strong><ul><li>total_return: -0.1120296340243846</li><li>volatility: 0.2936285494076197</li><li>max_drawdown: -0.26149260030785754</li><li>sharpe_ratio: -1.040580901311698</li><li>calmar_ratio: -0.42842372553751473</li><li>win_rate: 0.4835164835164835</li><li>profit_factor: 0.8579049577056862</li><li>average_daily_return: -0.0011331121452120125</li><li>return_std: 0.01849685998955247</li></ul></li><li><strong>criteria_evaluation:</strong><ul><li>score: 0.25</li><li>passed_criteria: 2</li><li>total_criteria: 8</li><li>details: {'total_return_threshold': {'value': np.float64(-0.1120296340243846), 'threshold': 0.1, 'passed': np.False_}, 'switch_success_rate': {'value': 0.0, 'threshold': 0.8, 'passed': True}, 'max_drawdown_limit': {'value': -0.26149260030785754, 'threshold': 0.15, 'passed': True}, 'sharpe_ratio_min': {'value': np.float64(-1.040580901311698), 'threshold': 1.5, 'passed': np.False_}, 'volatility_max': {'value': np.float64(0.2936285494076197), 'threshold': 0.25, 'passed': np.False_}, 'calmar_ratio_min': {'value': np.float64(-0.42842372553751473), 'threshold': 1.0, 'passed': np.False_}, 'win_rate_min': {'value': 0.4835164835164835, 'threshold': 0.55, 'passed': False}, 'profit_factor_min': {'value': np.float64(0.8579049577056862), 'threshold': 1.3, 'passed': np.False_}}</li></ul></li><li><strong>switching_effectiveness:</strong><ul><li>score: 0.7</li><li>success_rate: 0.6</li><li>total_switches: 10</li><li>successful_switches: 6</li></ul></li><li><strong>risk_adjusted_evaluation:</strong><ul><li>score: 0.0</li><li>sharpe_score: 0.0</li><li>calmar_score: 0.0</li><li>drawdown_score: 0.0</li></ul></li></ul></div>
+                
+                <div class="errors"><h4>エラー</h4><ul><li>高水準パフォーマンス基準を満たしていません</li></ul></div><div class="warnings"><h4>警告</h4><ul><li>総リターンが基準値(10.0%)を下回っています</li><li>戦略切替の成功率が低下しています</li></ul></div><div class="suggestions"><h4>改善提案</h4><ul><li>ポートフォリオ構成を見直し、より収益性の高い戦略を検討してください</li><li>切替アルゴリズムの最適化を実施してください</li></ul></div>
+            </div>
+            
+            <div class="result-card success">
+                <h3>Production Validation - production_validation</h3>
+                <div class="result-meta">
+                    <span>実行時刻: 2025-08-28 20:39:26</span>
+                    <span>実行時間: 1.72秒</span>
+                    <span>スコア: 96.2%</span>
+                    <span class="status">成功</span>
+                </div>
+                
+                <div class="result-details"><h4>詳細情報</h4><ul><li><strong>system_resources:</strong><ul><li>score: 1.0</li><li>memory_gb: 31.957534790039062</li><li>memory_available_gb: 17.106243133544922</li><li>memory_usage_percent: 46.5</li><li>disk_free_gb: 802.635913848877</li><li>disk_usage_percent: 15.797014006626645</li><li>cpu_count: 8</li><li>cpu_usage_percent: 13.8</li><li>python_version: 3.13.1</li><li>requirements_met: {'memory': True, 'disk': True, 'cpu': True, 'python': True}</li></ul></li><li><strong>system_stability:</strong><ul><li>score: 0.819</li><li>uptime_hours: 39.042777897222216</li><li>process_count: 239</li><li>load_average: None</li><li>memory_usage_percent: 46.5</li><li>stability_indicators: {'sufficient_uptime': True, 'reasonable_process_count': False, 'acceptable_memory_usage': True}</li></ul></li><li><strong>network_connectivity:</strong><ul><li>score: 0.9933214843273163</li><li>successful_connections: 4</li><li>total_tests: 4</li><li>average_connection_time: 0.06678515672683716</li><li>local_ip: 192.168.0.33</li><li>connectivity_status: {'internet_accessible': True, 'fast_connection': True}</li></ul></li><li><strong>data_integrity:</strong><ul><li>score: 1.0</li><li>directories_found: 5</li><li>total_directories: 5</li><li>files_found: 4</li><li>total_files: 4</li><li>config_integrity: {'score': 1.0, 'valid_files': 3, 'total_files': 3}</li><li>integrity_status: {'directories_complete': True, 'files_complete': True, 'config_valid': True}</li></ul></li><li><strong>security_settings:</strong><ul><li>score: 1.0</li><li>file_security: {'secure_files': 319, 'total_files': 319}</li><li>log_management: {'score': 1.0, 'log_files': 34, 'recent_logs': 3}</li></ul></li><li><strong>backup_recovery:</strong><ul><li>score: 0.9</li><li>backup_ready: True</li><li>config_backup: {'score': 1.0, 'backup_test': 'success'}</li></ul></li><li><strong>load_test:</strong><ul><li>score: 1.0</li><li>calculation_time: 0.0006992816925048828</li><li>memory_increase: 0.0</li><li>performance_indicators: {'fast_calculation': True, 'low_memory_impact': True}</li></ul></li></ul></div>
+                
+                
+            </div>
+            
+        </section>
+        
+        <section class="recommendations">
+            
+        <h2>推奨事項</h2>
+        
+            <div class="priority-issues">
+                <h3>優先対応事項</h3>
+            
+                <div class="priority-issue">
+                    <h4>unit (スコア: 54.0%)</h4>
+                    <ul>
+                </ul></div>
+                <div class="priority-issue">
+                    <h4>performance (スコア: 39.0%)</h4>
+                    <ul>
+                <li>ポートフォリオ構成を見直し、より収益性の高い戦略を検討してください</li><li>切替アルゴリズムの最適化を実施してください</li></ul></div></div>
+            <div class="general-recommendations">
+                <h3>一般的な改善提案</h3>
+                <ul>
+            <li>ポートフォリオ構成を見直し、より収益性の高い戦略を検討してください</li><li>切替アルゴリズムの最適化を実施してください</li></ul></div>
+        </section>
+        
+        <footer>
+            <p>DSSMS Phase 3 Task 3.3: 自動検証フレームワーク</p>
+            <p>Generated by GitHub Copilot Agent</p>
+        </footer>
+    </div>
+</body>
+</html>

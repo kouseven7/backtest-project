@@ -1,0 +1,229 @@
+{
+  "test_scenarios": {
+    "basic_scenarios": {
+      "clean_system": {
+        "description": "クリーンなシステム環境での基本テスト",
+        "prerequisites": ["全モジュール正常", "設定ファイル完備"],
+        "expected_outcome": "全ての基本検証が成功",
+        "test_data": "minimal_dataset"
+      },
+      "missing_dependencies": {
+        "description": "依存関係不足環境でのテスト",
+        "prerequisites": ["一部パッケージ未インストール"],
+        "expected_outcome": "依存関係エラーの適切な検出",
+        "test_data": "minimal_dataset"
+      },
+      "corrupted_config": {
+        "description": "設定ファイル破損環境でのテスト", 
+        "prerequisites": ["設定ファイル不正"],
+        "expected_outcome": "設定エラーの検出と修復提案",
+        "test_data": "minimal_dataset"
+      }
+    },
+    "integration_scenarios": {
+      "normal_market": {
+        "description": "通常市場環境での統合テスト",
+        "prerequisites": ["全モジュール正常"],
+        "market_conditions": {
+          "volatility": "normal",
+          "trend": "mixed",
+          "liquidity": "high"
+        },
+        "expected_outcome": "統合機能の正常動作",
+        "test_data": "integration_baseline"
+      },
+      "volatile_market": {
+        "description": "高ボラティリティ市場での統合テスト",
+        "prerequisites": ["全モジュール正常"],
+        "market_conditions": {
+          "volatility": "high",
+          "trend": "declining",
+          "liquidity": "medium"
+        },
+        "expected_outcome": "ボラティリティ対応の確認",
+        "test_data": "stress_baseline"
+      },
+      "strategy_switching": {
+        "description": "戦略切替機能の統合テスト",
+        "prerequisites": ["切替管理システム正常"],
+        "switch_events": 5,
+        "expected_success_rate": 0.80,
+        "test_data": "integration_baseline"
+      }
+    },
+    "performance_scenarios": {
+      "bull_market": {
+        "description": "強気市場でのパフォーマンステスト",
+        "market_regime": "bull",
+        "test_period_days": 252,
+        "expected_metrics": {
+          "total_return_min": 0.15,
+          "sharpe_ratio_min": 1.8,
+          "max_drawdown_max": 0.10
+        },
+        "test_data": "bull_market_scenario"
+      },
+      "bear_market": {
+        "description": "弱気市場でのパフォーマンステスト",
+        "market_regime": "bear",
+        "test_period_days": 252,
+        "expected_metrics": {
+          "total_return_min": -0.05,
+          "sharpe_ratio_min": 0.8,
+          "max_drawdown_max": 0.20
+        },
+        "test_data": "bear_market_scenario"
+      },
+      "sideways_market": {
+        "description": "横ばい市場でのパフォーマンステスト",
+        "market_regime": "sideways",
+        "test_period_days": 252,
+        "expected_metrics": {
+          "total_return_min": 0.03,
+          "sharpe_ratio_min": 1.2,
+          "volatility_max": 0.15
+        },
+        "test_data": "sideways_market_scenario"
+      },
+      "crisis_scenario": {
+        "description": "金融危機シナリオでのパフォーマンステスト",
+        "market_regime": "crisis",
+        "test_period_days": 90,
+        "stress_events": ["market_crash", "liquidity_crisis"],
+        "expected_metrics": {
+          "max_drawdown_max": 0.30,
+          "recovery_time_max_days": 60
+        },
+        "test_data": "crisis_scenario"
+      }
+    },
+    "stress_scenarios": {
+      "market_crash": {
+        "description": "市場暴落シナリオ",
+        "crash_magnitude": 0.20,
+        "crash_duration_days": 5,
+        "recovery_pattern": "V_shaped",
+        "expected_behavior": "適切なリスク制御",
+        "test_data": "market_crash"
+      },
+      "liquidity_crisis": {
+        "description": "流動性危機シナリオ",
+        "liquidity_reduction": 0.60,
+        "affected_symbols_ratio": 0.80,
+        "duration_days": 30,
+        "expected_behavior": "取引量調整",
+        "test_data": "liquidity_crisis"
+      },
+      "high_volatility": {
+        "description": "高ボラティリティ継続シナリオ",
+        "volatility_multiplier": 3.0,
+        "duration_days": 45,
+        "correlation_increase": 0.50,
+        "expected_behavior": "ポジション調整",
+        "test_data": "high_volatility"
+      },
+      "data_outage": {
+        "description": "データ供給停止シナリオ",
+        "outage_duration_hours": 6,
+        "affected_data_sources": ["primary", "secondary"],
+        "expected_behavior": "フォールバック動作",
+        "test_data": "limited_data"
+      }
+    },
+    "production_scenarios": {
+      "normal_operation": {
+        "description": "通常運用環境での本番テスト",
+        "system_load": "normal",
+        "concurrent_users": 1,
+        "data_frequency": "real_time",
+        "expected_response_time_ms": 1000,
+        "uptime_requirement": 0.999
+      },
+      "high_load": {
+        "description": "高負荷環境での本番テスト",
+        "system_load": "high",
+        "concurrent_users": 5,
+        "data_frequency": "high_frequency",
+        "expected_response_time_ms": 2000,
+        "memory_usage_max": 0.80
+      },
+      "extended_operation": {
+        "description": "長期運用テスト",
+        "operation_duration_hours": 24,
+        "memory_leak_threshold": 0.10,
+        "cpu_usage_average_max": 0.70,
+        "expected_stability": "no_degradation"
+      }
+    }
+  },
+  "scenario_execution_rules": {
+    "basic_scenarios": {
+      "execution_order": ["clean_system", "missing_dependencies", "corrupted_config"],
+      "stop_on_critical_failure": true,
+      "retry_count": 2
+    },
+    "integration_scenarios": {
+      "execution_order": ["normal_market", "strategy_switching", "volatile_market"],
+      "stop_on_critical_failure": false,
+      "retry_count": 1
+    },
+    "performance_scenarios": {
+      "execution_order": ["bull_market", "sideways_market", "bear_market", "crisis_scenario"],
+      "stop_on_critical_failure": false,
+      "retry_count": 0,
+      "parallel_execution": false
+    },
+    "stress_scenarios": {
+      "execution_order": ["high_volatility", "market_crash", "liquidity_crisis", "data_outage"],
+      "stop_on_critical_failure": false,
+      "retry_count": 0,
+      "execution_isolation": true
+    },
+    "production_scenarios": {
+      "execution_order": ["normal_operation", "high_load", "extended_operation"],
+      "stop_on_critical_failure": true,
+      "retry_count": 1,
+      "requires_clean_environment": true
+    }
+  },
+  "data_requirements": {
+    "minimal_dataset": {
+      "symbols": ["AAPL"],
+      "period_days": 30,
+      "data_quality": "basic"
+    },
+    "integration_baseline": {
+      "symbols": ["AAPL", "GOOGL", "MSFT", "TSLA"],
+      "period_days": 120,
+      "data_quality": "high",
+      "include_regime_changes": true
+    },
+    "performance_baseline": {
+      "symbols": ["AAPL", "GOOGL", "MSFT", "TSLA", "NVDA", "AMZN", "META", "NFLX"],
+      "period_days": 252,
+      "data_quality": "high",
+      "include_benchmarks": true
+    },
+    "stress_baseline": {
+      "symbols": ["AAPL", "GOOGL", "MSFT"],
+      "period_days": 60,
+      "data_quality": "stress",
+      "include_extreme_events": true
+    }
+  },
+  "validation_matrix": {
+    "scenario_validation_mapping": {
+      "basic_scenarios": ["basic"],
+      "integration_scenarios": ["basic", "unit", "integration"],
+      "performance_scenarios": ["basic", "unit", "integration", "performance"],
+      "stress_scenarios": ["integration", "performance"],
+      "production_scenarios": ["basic", "unit", "integration", "performance", "production"]
+    },
+    "required_validations_by_environment": {
+      "development": ["basic_scenarios"],
+      "testing": ["basic_scenarios", "integration_scenarios", "performance_scenarios"],
+      "staging": ["integration_scenarios", "performance_scenarios", "stress_scenarios"],
+      "production": ["production_scenarios"]
+    }
+  }
+}

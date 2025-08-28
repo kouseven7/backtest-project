@@ -1,0 +1,107 @@
+{
+  "timestamp": "2025-08-28T20:39:28.711736",
+  "summary": {
+    "total": 5,
+    "success": 3,
+    "failed": 2,
+    "success_rate": 0.6,
+    "overall_score": 0.7284553610747752,
+    "level_summary": {
+      "basic": {
+        "count": 1,
+        "success": 1,
+        "avg_score": 0.9500000000000001
+      },
+      "unit": {
+        "count": 1,
+        "success": 0,
+        "avg_score": 0.5399999999999999
+      },
+      "integration": {
+        "count": 1,
+        "success": 1,
+        "avg_score": 0.8
+      },
+      "performance": {
+        "count": 1,
+        "success": 0,
+        "avg_score": 0.3904285827247786
+      },
+      "production": {
+        "count": 1,
+        "success": 1,
+        "avg_score": 0.9618482226490974
+      }
+    },
+    "total_errors": 3,
+    "total_warnings": 5,
+    "unique_errors": 3,
+    "unique_warnings": 5
+  },
+  "results": [
+    {
+      "level": "basic",
+      "test_name": "basic_system_validation",
+      "timestamp": "2025-08-28T20:39:24.872571",
+      "success": true,
+      "execution_time": 0.8531250953674316,
+      "score": 0.9500000000000001,
+      "details": {
+        "import_check": 1.0,
+        "config_check": 0.8,
+        "directory_check": 1.0,
+        "logging_check": 1.0,
+        "dependency_check": 1.0
+      },
+      "errors": [],
+      "warnings": [],
+      "suggestions": []
+    },
+    {
+      "level": "unit",
+      "test_name": "unit_component_validation",
+      "timestamp": "2025-08-28T20:39:26.968249",
+      "success": false,
+      "execution_time": 2.094606876373291,
+      "score": 0.5399999999999999,
+      "details": {
+        "hierarchical_ranking_system_score": 0.3,
+        "intelligent_switch_manager_score": 0.7,
+        "market_condition_monitor_score": 0.7,
+        "dssms_scheduler_score": 0.7,
+        "dssms_backtester_v2_score": 0.3
+      },
+      "errors": [
+        "コンポーネント hierarchical_ranking_system の検証失敗",
+        "コンポーネント dssms_backtester_v2 の検証失敗"
+      ],
+      "warnings": [
+        "コンポーネント intelligent_switch_manager に改善の余地あり",
+        "コンポーネント market_condition_monitor に改善の余地あり",
+        "コンポーネント dssms_scheduler に改善の余地あり"
+      ],
+      "suggestions": []
+    },
+    {
+      "level": "integration",
+      "test_name": "integration_system_validation",
+      "timestamp": "2025-08-28T20:39:26.977508",
+      "success": true,
+      "execution_time": 0.008242368698120117,
+      "score": 0.8,
+      "details": {
+        "ranking_switch_integration": 0.8,
+        "switch_monitor_integration": 0.8,
+        "backtest_performance_integration": 0.8,
+        "data_quality_integration": 0.8,
+        "scheduler_integration": 0.8
+      },
+      "errors": [],
+      "warnings": [],
+      "suggestions": []
+    },
+    {
+      "level": "performance",
+      "test_name": "performance_validation",
+      "timestamp": "2025-08-28T20:39:26.978521",
+      "success": 

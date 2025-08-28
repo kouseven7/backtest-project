@@ -1,0 +1,142 @@
+{
+  "performance_criteria": {
+    "high_level": {
+      "description": "DSSMS高水準パフォーマンス基準",
+      "total_return_min": 0.10,
+      "switch_success_rate_min": 0.80,
+      "max_drawdown_max": 0.15,
+      "sharpe_ratio_min": 1.5,
+      "volatility_max": 0.25,
+      "calmar_ratio_min": 1.0,
+      "win_rate_min": 0.55,
+      "profit_factor_min": 1.3,
+      "information_ratio_min": 0.8,
+      "sortino_ratio_min": 2.0
+    },
+    "acceptable": {
+      "description": "最低限許容可能な基準",
+      "total_return_min": 0.05,
+      "switch_success_rate_min": 0.60,
+      "max_drawdown_max": 0.25,
+      "sharpe_ratio_min": 1.0,
+      "volatility_max": 0.35,
+      "calmar_ratio_min": 0.5,
+      "win_rate_min": 0.45,
+      "profit_factor_min": 1.1
+    },
+    "minimum": {
+      "description": "システム稼働最低基準",
+      "total_return_min": 0.00,
+      "switch_success_rate_min": 0.30,
+      "max_drawdown_max": 0.50,
+      "sharpe_ratio_min": 0.5,
+      "volatility_max": 0.50
+    }
+  },
+  "system_criteria": {
+    "basic_validation": {
+      "import_success_rate_min": 0.80,
+      "config_file_completeness_min": 0.80,
+      "directory_structure_score_min": 0.70,
+      "logging_system_score_min": 0.70,
+      "dependencies_score_min": 0.90
+    },
+    "integration_validation": {
+      "data_flow_integrity_min": 0.85,
+      "module_communication_score_min": 0.80,
+      "error_handling_coverage_min": 0.75,
+      "api_compatibility_score_min": 0.90
+    },
+    "production_validation": {
+      "system_resources_score_min": 0.80,
+      "stability_score_min": 0.75,
+      "network_connectivity_score_min": 0.85,
+      "data_integrity_score_min": 0.90,
+      "security_score_min": 0.70,
+      "backup_readiness_score_min": 0.60
+    }
+  },
+  "validation_thresholds": {
+    "overall_success_threshold": 0.75,
+    "level_success_thresholds": {
+      "basic": 0.70,
+      "unit": 0.75,
+      "integration": 0.80,
+      "performance": 0.75,
+      "production": 0.85
+    },
+    "early_termination_threshold": 0.50,
+    "warning_threshold": 0.60,
+    "critical_threshold": 0.40
+  },
+  "scoring_weights": {
+    "validation_levels": {
+      "basic": 0.15,
+      "unit": 0.20,
+      "integration": 0.25,
+      "performance": 0.25,
+      "production": 0.15
+    },
+    "performance_metrics": {
+      "return_metrics": 0.30,
+      "risk_metrics": 0.25,
+      "efficiency_metrics": 0.20,
+      "consistency_metrics": 0.15,
+      "switching_metrics": 0.10
+    },
+    "system_aspects": {
+      "functionality": 0.35,
+      "reliability": 0.25,
+      "performance": 0.20,
+      "security": 0.15,
+      "usability": 0.05
+    }
+  },
+  "benchmark_targets": {
+    "market_benchmark": {
+      "description": "市場ベンチマーク（S&P 500相当）",
+      "annual_return": 0.08,
+      "volatility": 0.16,
+      "sharpe_ratio": 0.5,
+      "max_drawdown": 0.20
+    },
+    "strategy_benchmarks": {
+      "conservative": {
+        "annual_return": 0.06,
+        "volatility": 0.12,
+        "sharpe_ratio": 0.8,
+        "max_drawdown": 0.10
+      },
+      "balanced": {
+        "annual_return": 0.10,
+        "volatility": 0.18,
+        "sharpe_ratio": 1.2,
+        "max_drawdown": 0.15
+      },
+      "aggressive": {
+        "annual_return": 0.15,
+        "volatility": 0.25,
+        "sharpe_ratio": 1.5,
+        "max_drawdown": 0.25
+      }
+    }
+  },
+  "quality_gates": {
+    "development": {
+      "basic_validation_required": true,
+      "unit_validation_required": true,
+      "minimum_score": 0.60
+    },
+    "testing": {
+      "integration_validation_required": true,
+      "performance_validation_required": true,
+      "minimum_score": 0.75
+    },
+    "production": {
+      "all_validations_required": true,
+      "production_validation_required": true,
+      "minimum_score": 0.85,
+      "zero_critical_issues": true
+    }
+  }
+}
