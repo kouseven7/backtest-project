@@ -1,0 +1,96 @@
+{
+  "emergency_targets": {
+    "description": "緊急修正目標 - 致命的問題の解決",
+    "total_return": {
+      "minimum": -50.0,
+      "target": -20.0,
+      "description": "総リターン -100%からの改善"
+    },
+    "portfolio_value": {
+      "minimum": 500000.0,
+      "target": 800000.0,
+      "description": "ポートフォリオ価値 0.01円からの回復"
+    },
+    "switching_success_rate": {
+      "minimum": 0.1,
+      "target": 0.3,
+      "description": "切替成功率 0%からの改善"
+    },
+    "max_drawdown": {
+      "maximum": 80.0,
+      "target": 60.0,
+      "description": "最大ドローダウン制御"
+    }
+  },
+  "basic_targets": {
+    "description": "基本目標 - 一般的なパフォーマンス水準",
+    "total_return": {
+      "minimum": 0.0,
+      "target": 15.0,
+      "stretch": 25.0
+    },
+    "sharpe_ratio": {
+      "minimum": 0.5,
+      "target": 1.0,
+      "stretch": 1.5
+    },
+    "switching_success_rate": {
+      "minimum": 0.5,
+      "target": 0.7,
+      "stretch": 0.8
+    },
+    "max_drawdown": {
+      "maximum": 25.0,
+      "target": 15.0,
+      "stretch": 10.0
+    },
+    "volatility": {
+      "maximum": 30.0,
+      "target": 20.0,
+      "stretch": 15.0
+    }
+  },
+  "optimization_targets": {
+    "description": "最適化目標 - 高度なパフォーマンス",
+    "total_return": {
+      "minimum": 20.0,
+      "target": 35.0,
+      "stretch": 50.0
+    },
+    "sharpe_ratio": {
+      "minimum": 1.2,
+      "target": 1.8,
+      "stretch": 2.5
+    },
+    "information_ratio": {
+      "minimum": 0.8,
+      "target": 1.2,
+      "stretch": 1.8
+    },
+    "calmar_ratio": {
+      "minimum": 1.0,
+      "target": 1.5,
+      "stretch": 2.0
+    },
+    "switching_efficiency": {
+      "minimum": 0.7,
+      "target": 0.85,
+      "stretch": 0.95
+    }
+  },
+  "evaluation_settings": {
+    "target_phases": {
+      "current_phase": "emergency",
+      "progression": ["emergency", "basic", "optimization"]
+    },
+    "measurement_period": {
+      "backtest_days": 252,
+      "minimum_trades": 10,
+      "evaluation_frequency": "monthly"
+    },
+    "benchmark": {
+      "index": "^N225",
+      "comparison_metrics": ["total_return", "sharpe_ratio", "max_drawdown"]
+    }
+  }
+}

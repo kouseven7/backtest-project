@@ -1,0 +1,82 @@
+{
+  "emergency_thresholds": {
+    "portfolio_loss_limit": -30.0,
+    "drawdown_limit": 40.0,
+    "var_limit": 10.0,
+    "overall_score_limit": 30.0,
+    "risk_adjusted_score_limit": 25.0,
+    "consecutive_losses": 5,
+    "daily_loss_limit": -5.0,
+    "weekly_loss_limit": -15.0
+  },
+  "auto_fix_enabled": true,
+  "fix_escalation_rules": {
+    "level_1": {
+      "description": "軽微な調整",
+      "max_position_size": 0.05,
+      "stop_loss_tight": 0.02,
+      "reduce_leverage": 0.8,
+      "trigger_conditions": {
+        "max_drawdown": 25.0,
+        "daily_loss": -3.0
+      }
+    },
+    "level_2": {
+      "description": "中程度の調整",
+      "max_position_size": 0.03,
+      "stop_loss_tight": 0.015,
+      "reduce_leverage": 0.6,
+      "pause_new_positions": true,
+      "trigger_conditions": {
+        "max_drawdown": 35.0,
+        "daily_loss": -4.0,
+        "overall_score": 40.0
+      }
+    },
+    "level_3": {
+      "description": "緊急停止",
+      "emergency_stop": true,
+      "close_all_positions": true,
+      "notify_administrators": true,
+      "trigger_conditions": {
+        "max_drawdown": 50.0,
+        "portfolio_loss": -30.0,
+        "overall_score": 25.0
+      }
+    }
+  },
+  "notification_settings": {
+    "email_alerts": true,
+    "log_level": "WARNING",
+    "telegram_notifications": false,
+    "webhook_url": null,
+    "alert_thresholds": {
+      "portfolio_loss": -20.0,
+      "drawdown": 30.0,
+      "var_limit": 8.0
+    }
+  },
+  "recovery_settings": {
+    "auto_recovery_enabled": true,
+    "recovery_conditions": {
+      "profit_streak": 3,
+      "drawdown_recovery": 0.5,
+      "performance_improvement": 10.0
+    },
+    "gradual_position_increase": {
+      "enabled": true,
+      "increment_rate": 0.1,
+      "max_recovery_time_hours": 24
+    }
+  },
+  "backtesting_mode": {
+    "enabled": false,
+    "simulate_fixes": true,
+    "log_simulated_actions": true
+  },
+  "maintenance_settings": {
+    "max_fix_history": 1000,
+    "cleanup_interval_days": 30,
+    "config_backup_enabled": true
+  }
+}
