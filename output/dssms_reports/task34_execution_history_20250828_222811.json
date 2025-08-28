@@ -1,0 +1,73 @@
+{
+  "export_metadata": {
+    "export_timestamp": "2025-08-28T22:28:11.242922",
+    "total_executions": 5,
+    "workflow_config": {
+      "enable_auto_phase_transition": true,
+      "enable_emergency_fixes": true,
+      "enable_detailed_reporting": true
+    }
+  },
+  "execution_history": [
+    {
+      "execution_id": "monitoring_20250828_222811",
+      "start_time": "2025-08-28T22:28:11.238995",
+      "end_time": "2025-08-28T22:28:11.239079",
+      "success": true,
+      "overall_score": 77.5,
+      "risk_adjusted_score": 77.5,
+      "emergency_fix_executed": false,
+      "phase_transition_recommended": false,
+      "execution_summary": "目標達成率: 100.0% (4指標中); 総合スコア: 77.5; リスク調整後スコア: 77.5",
+      "errors": []
+    },
+    {
+      "execution_id": "monitoring_20250828_222811",
+      "start_time": "2025-08-28T22:28:11.239240",
+      "end_time": "2025-08-28T22:28:11.239302",
+      "success": true,
+      "overall_score": 77.5,
+      "risk_adjusted_score": 77.5,
+      "emergency_fix_executed": false,
+      "phase_transition_recommended": false,
+      "execution_summary": "目標達成率: 100.0% (4指標中); 総合スコア: 77.5; リスク調整後スコア: 77.5",
+      "errors": []
+    },
+    {
+      "execution_id": "monitoring_20250828_222811",
+      "start_time": "2025-08-28T22:28:11.239449",
+      "end_time": "2025-08-28T22:28:11.239507",
+      "success": true,
+      "overall_score": 77.5,
+      "risk_adjusted_score": 77.5,
+      "emergency_fix_executed": false,
+      "phase_transition_recommended": false,
+      "execution_summary": "目標達成率: 100.0% (4指標中); 総合スコア: 77.5; リスク調整後スコア: 77.5",
+      "errors": []
+    },
+    {
+      "execution_id": "monitoring_20250828_222811",
+      "start_time": "2025-08-28T22:28:11.239648",
+      "end_time": "2025-08-28T22:28:11.239701",
+      "success": true,
+      "overall_score": 77.5,
+      "risk_adjusted_score": 77.5,
+      "emergency_fix_executed": false,
+      "phase_transition_recommended": false,
+      "execution_summary": "目標達成率: 100.0% (4指標中); 総合スコア: 77.5; リスク調整後スコア: 77.5",
+      "errors": []
+    },
+    {
+      "execution_id": "monitoring_20250828_222811",
+      "start_time": "2025-08-28T22:28:11.239877",
+      "end_time": "2025-08-28T22:28:11.239987",
+      "success": true,
+      "overall_score": 75.15,
+      "risk_adjusted_score": 75.15,
+      "emergency_fix_executed": false,
+      "phase_transition_recommended": false,
+      "execution_summary": "目標達成率: 100.0% (4指標中); 総合スコア: 75.2; リスク調整後スコア: 75.2",
+      "errors": []
+    }
+  ]
+}

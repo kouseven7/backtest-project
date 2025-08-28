@@ -53,10 +53,18 @@ def fetch_stock_data(ticker: str, start_date: str, end_date: str, max_retries=3,
     yfinanceを用いて株価データを取得する（リトライ付き）。
     データが空の場合やその他のエラー発生時にはログ出力を行い、例外を再スローする。
     """
+    # 日本株の場合は.Tサフィックスを追加
+    yahoo_ticker = ticker
+    if ticker.isdigit() and len(ticker) == 4:
+        yahoo_ticker = f"{ticker}.T"
+    elif ticker.isdigit() and len(ticker) >= 4 and not ticker.endswith('.T'):
+        yahoo_ticker = f"{ticker}.T"
+    
     for attempt in range(max_retries):
         try:
             logger.info(f"{ticker} のデータ取得を開始します: {start_date} から {end_date}")
-            data = yf.download(ticker, start=start_date, end=end_date)
+            logger.info(f"Yahoo Finance ticker: {yahoo_ticker}")
+            data = yf.download(yahoo_ticker, start=start_date, end=end_date)
             if data.empty:
                 raise ValueError(f"{ticker} の取得データが空です。")
             logger.info(f"{ticker} のデータ取得に成功しました。")

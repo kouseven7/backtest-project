@@ -40,12 +40,6 @@ try:
     from src.dssms.market_condition_monitor import MarketConditionMonitor
     from src.dssms.comprehensive_scoring_engine import ComprehensiveScoringEngine
     from src.dssms.perfect_order_detector import PerfectOrderDetector
-    # Task 3.4 コンポーネントの追加
-    from src.dssms.task34_workflow_coordinator import Task34WorkflowCoordinator, Task34WorkflowConfig
-    from src.dssms.performance_target_manager import PerformanceTargetManager, TargetPhase
-    from src.dssms.comprehensive_evaluator import ComprehensiveEvaluator
-    from src.dssms.emergency_fix_coordinator import EmergencyFixCoordinator
-    from src.dssms.performance_achievement_reporter import PerformanceAchievementReporter
 except ImportError:
     # 直接実行時の相対インポート対応
     try:
@@ -222,16 +216,6 @@ class DSSMSBacktester:
             else:
                 self.perfect_order_detector = None
                 
-            # Task 3.4 コンポーネントの初期化
-            task34_config = Task34WorkflowConfig(
-                enable_auto_phase_transition=self.config.get('enable_auto_phase_transition', True),
-                enable_emergency_fixes=self.config.get('enable_emergency_fixes', True),
-                enable_detailed_reporting=self.config.get('enable_detailed_reporting', True),
-                report_formats=self.config.get('report_formats', ['excel', 'json', 'text'])
-            )
-            self.task34_coordinator = Task34WorkflowCoordinator(task34_config)
-            self.logger.info("Task 3.4 ワークフローコーディネーターを初期化しました")
-                
         except Exception as e:
             self.logger.warning(f"DSSMS components initialization failed: {e}")
             self.ranking_system = None
@@ -240,7 +224,6 @@ class DSSMSBacktester:
             self.market_monitor = None
             self.scoring_engine = None
             self.perfect_order_detector = None
-            self.task34_coordinator = None
         
         # リスク管理
         try:
@@ -765,30 +748,19 @@ class DSSMSBacktester:
 
     def _execute_switch(self, date: datetime, current_position: Optional[str], 
                        switch_decision: Dict[str, Any], portfolio_value: float) -> Dict[str, Any]:
-        """修正版: 切替実行"""
+        """切替実行"""
         try:
-            target_symbol = switch_decision.get('target_symbol')
-            if not target_symbol:
-                return {
-                    'new_position': current_position,
-                    'portfolio_value': portfolio_value,
-                    'switch_cost': 0.0
-                }
-            
-            trigger = switch_decision.get('trigger', SwitchTrigger.DAILY_EVALUATION)
+            target_symbol = switch_decision['target_symbol']
+            trigger = switch_decision['trigger']
             
             # 切替コスト計算
             switch_cost = portfolio_value * self.switch_cost_rate
             
-            # 保有期間計算
-            holding_period_hours = 24.0
+            # 保有期間計算（簡易版）
+            holding_period_hours = 24.0  # デフォルト1日
             
-            # 現実的な損益計算
-            if current_position:
-                # 既存ポジションからの損益（-3%～+5%の範囲）
-                profit_loss = portfolio_value * np.random.uniform(-0.03, 0.05)
-            else:
-                profit_loss = 0.0
+            # 損益計算（簡易版）
+            profit_loss = 0.0
             
             # 切替記録作成
             switch_record = SymbolSwitch(
@@ -796,41 +768,25 @@ class DSSMSBacktester:
                 from_symbol=current_position or "CASH",
                 to_symbol=target_symbol,
                 trigger=trigger,
-                from_score=switch_decision.get('current_score', 0.0),
-                to_score=switch_decision.get('target_score', 0.0),
+                from_score=0.0,  # 実際はranking_resultから取得
+                to_score=0.0,    # 実際はranking_resultから取得
                 switch_cost=switch_cost,
                 holding_period_hours=holding_period_hours,
-                profit_loss_at_switch=profit_loss
+                profit_loss_at_switch=profit_loss,
+                reason=switch_decision.get('reason', '')
             )
             
             self.switch_history.append(switch_record)
             
-            # ポートフォリオ価値更新（損益とコストを反映）
-            new_portfolio_value = portfolio_value + profit_loss - switch_cost
+            # ポートフォリオ価値更新
+            new_portfolio_value = portfolio_value - switch_cost
             
-            # パフォーマンス履歴更新
-            self.performance_history['portfolio_value'].append(float(new_portfolio_value))
-            self.performance_history['positions'].append(target_symbol)
-            self.performance_history['timestamps'].append(date)
-            
-            # 日次リターン計算
-            if len(self.performance_history['portfolio_value']) > 1:
-                prev_value = self.performance_history['portfolio_value'][-2]
-                daily_return = (new_portfolio_value - prev_value) / prev_value if prev_value > 0 else 0.0
-            else:
-                daily_return = 0.0
-            
-            self.performance_history['daily_returns'].append(float(daily_return))
-            
-            self.logger.info(f"切替実行: {current_position} -> {target_symbol}, "
-                           f"損益: {profit_loss:+,.0f}円, コスト: {switch_cost:,.0f}円, "
-                           f"新価値: {new_portfolio_value:,.0f}円")
+            self.logger.info(f"切替実行: {current_position} -> {target_symbol}, コスト: {switch_cost:,.0f}円")
             
             return {
                 'new_position': target_symbol,
                 'portfolio_value': new_portfolio_value,
-                'switch_cost': switch_cost,
-                'profit_loss': profit_loss
+                'switch_cost': switch_cost
             }
             
         except Exception as e:
@@ -838,35 +794,68 @@ class DSSMSBacktester:
             return {
                 'new_position': current_position,
                 'portfolio_value': portfolio_value,
-                'switch_cost': 0.0,
-                'profit_loss': 0.0
+                'switch_cost': 0.0
             }
 
     def _update_portfolio_value(self, date: datetime, position: Optional[str], 
                               current_value: float) -> float:
-        """修正版: ポートフォリオ価値更新"""
+        """ポートフォリオ価値更新（Task 1.2強化版）"""
         try:
-            if not position or position == "CASH":
+            if not position:
                 return current_value
             
-            # 現実的な日次リターン生成（年率10-15%程度を想定）
-            daily_return = np.random.normal(0.0003, 0.015)  # 平均0.03%、標準偏差1.5%
+            # Task 1.2: データ統合強化システムを使用
+            try:
+                from src.dssms.dssms_data_integration_enhancer import DSSMSDataIntegrationEnhancer
+                
+                enhancer = DSSMSDataIntegrationEnhancer()
+                valuation_result = enhancer.enhance_portfolio_valuation(position, current_value, date)
+                
+                new_value = valuation_result['new_value']
+                daily_return = valuation_result['daily_return']
+                
+                self.logger.debug(f"強化データ価値更新: {position} {daily_return:+.4f} (品質: {valuation_result['quality_score']:.3f})")
+                
+            except ImportError:
+                # Task 1.1統合パッチをフォールバック使用
+                try:
+                    from src.dssms.dssms_integration_patch import update_portfolio_value_with_real_data
+                    
+                    new_value = update_portfolio_value_with_real_data(position, current_value, date)
+                    daily_return = (new_value / current_value) - 1 if current_value > 0 else 0.0
+                    
+                    self.logger.debug(f"統合パッチ価値更新: {position} {daily_return:+.4f}")
+                    
+                except ImportError:
+                    self.logger.warning("全統合システム未使用: 最終フォールバック実行")
+                    # 最終フォールバック: 改良されたランダム生成
+                    daily_return = np.random.normal(0.0003, 0.012)  # より控えめな変動
+                    new_value = current_value * (1 + daily_return)
             
-            # 価値更新
-            new_value = current_value * (1 + daily_return)
+            # Task 1.2: 価値の妥当性チェック強化
+            if new_value <= 0:
+                self.logger.warning(f"異常な価値: {new_value:.2f} -> {current_value:.2f}に修正")
+                new_value = current_value * 0.995  # 0.5%減少に修正
+                daily_return = -0.005
             
-            # 最小値チェック（完全に0にならないようにする）
-            new_value = max(new_value, current_value * 0.8)  # 最大でも20%の日次下落まで
+            # 極端な変動制限
+            if current_value > 0:
+                change_rate = abs((new_value / current_value) - 1)
+                if change_rate > 0.15:  # 15%以上の変動を制限
+                    direction = 1 if new_value > current_value else -1
+                    new_value = current_value * (1 + direction * 0.1)  # 10%に制限
+                    daily_return = direction * 0.1
+                    self.logger.warning(f"極端な変動制限適用: {position} {change_rate:.2%} -> 10%")
             
-            self.logger.debug(f"価値更新: {position} {daily_return:+.4f} "
-                            f"{current_value:,.0f} -> {new_value:,.0f}")
+            # 履歴記録
+            self.performance_history['daily_returns'].append(daily_return)
             
+            self.logger.debug(f"最終価値更新: {current_value:,.0f} -> {new_value:,.0f} ({daily_return:+.2%})")
             return new_value
             
         except Exception as e:
-            self.logger.warning(f"価値更新エラー {date}: {e}")
-            # エラー時は小幅な変動のみ
-            return current_value * (1 + np.random.uniform(-0.01, 0.01))
+            self.logger.warning(f"ポートフォリオ価値更新エラー {date}: {e}")
+            return current_value
 
     def _record_daily_state(self, date: datetime, position: Optional[str], 
                           portfolio_value: float, market_condition: Dict[str, Any]):
@@ -895,7 +884,6 @@ class DSSMSBacktester:
             total_return = (final_value - self.initial_capital) / self.initial_capital
             trading_days = len(self.performance_history['portfolio_value'])
             
-            # 基本的な結果
             result = {
                 'success': True,
                 'start_date': start_date,
@@ -908,68 +896,6 @@ class DSSMSBacktester:
                 'portfolio_history': self.portfolio_history,
                 'switch_history': [s.to_dict() for s in self.switch_history]
             }
-            
-            # Task 3.4: パフォーマンス評価・目標達成確認システムの実行
-            if self.task34_coordinator:
-                try:
-                    self.logger.info("Task 3.4 パフォーマンス評価システム実行中...")
-                    
-                    # DSSMSパフォーマンスデータの準備
-                    performance_data = self._prepare_task34_performance_data(result)
-                    risk_metrics = self._prepare_task34_risk_metrics(result)
-                    
-                    # Task 3.4 フルワークフロー実行
-                    task34_result = self.task34_coordinator.execute_full_workflow(
-                        performance_data=performance_data,
-                        risk_metrics=risk_metrics,
-                        execution_id=f"dssms_backtest_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-                    )
-                    
-                    # Task 3.4 結果を統合
-                    result['task34_evaluation'] = {
-                        'execution_id': task34_result.execution_id,
-                        'success': task34_result.success,
-                        'overall_score': task34_result.evaluation_result.overall_score,
-                        'risk_adjusted_score': task34_result.evaluation_result.risk_adjusted_score,
-                        'confidence_level': task34_result.evaluation_result.confidence_level,
-                        'target_achievements': [
-                            {
-                                'metric': tr.metric_name,
-                                'achievement': tr.achievement_level.value,
-                                'current_value': tr.value,
-                                'target_value': tr.target_value
-                            } for tr in task34_result.target_results
-                        ],
-                        'dimension_scores': [
-                            {
-                                'dimension': ds.dimension_name,
-                                'score': ds.score,
-                                'status': ds.status
-                            } for ds in task34_result.evaluation_result.dimension_scores
-                        ],
-                        'emergency_fix_executed': task34_result.emergency_fix_result is not None,
-                        'phase_transition_recommended': task34_result.phase_transition_recommended,
-                        'next_recommended_phase': task34_result.next_recommended_phase.value if task34_result.next_recommended_phase else None,
-                        'report_files': task34_result.report_files,
-                        'recommendations': task34_result.evaluation_result.recommendations,
-                        'alerts': task34_result.evaluation_result.alerts
-                    }
-                    
-                    self.logger.info(f"Task 3.4 評価完了: 総合スコア {task34_result.evaluation_result.overall_score:.1f}")
-                    
-                    # 緊急修正が実行された場合の詳細ログ
-                    if task34_result.emergency_fix_result:
-                        fix_result = task34_result.emergency_fix_result
-                        self.logger.warning(f"緊急修正実行: {fix_result.trigger_condition}")
-                        self.logger.info(f"実行済みアクション: {len(fix_result.actions_executed)}件")
-                        self.logger.info(f"保留アクション: {len(fix_result.actions_pending)}件")
-                    
-                except Exception as e:
-                    self.logger.error(f"Task 3.4 評価システム実行エラー: {e}")
-                    result['task34_evaluation'] = {
-                        'success': False,
-                        'error': str(e)
-                    }
             
             return result
             
@@ -1451,132 +1377,6 @@ class DSSMSBacktester:
         except Exception as e:
             self.logger.error(f"レポート内容生成エラー: {e}")
             return f"レポート生成エラー: {e}"
-
-    def _prepare_task34_performance_data(self, simulation_result: Dict[str, Any]) -> Dict[str, float]:
-        """Task 3.4用パフォーマンスデータの準備"""
-        try:
-            # 基本計算
-            total_return_pct = simulation_result.get('total_return', 0.0) * 100
-            portfolio_values = self.performance_history.get('portfolio_value', [])
-            daily_returns = self.performance_history.get('daily_returns', [])
-            
-            # ボラティリティ計算
-            volatility = np.std(daily_returns) * np.sqrt(252) * 100 if daily_returns else 0.0
-            
-            # 最大ドローダウン計算
-            max_drawdown = self._calculate_max_drawdown(portfolio_values) * 100
-            
-            # シャープレシオ計算
-            risk_free_rate = 0.01  # 1%
-            excess_returns = [(r - risk_free_rate/252) for r in daily_returns] if daily_returns else []
-            sharpe_ratio = (np.mean(excess_returns) / np.std(excess_returns) * np.sqrt(252)) if excess_returns and np.std(excess_returns) > 0 else 0.0
-            
-            # ソルティノレシオ計算
-            negative_returns = [r for r in daily_returns if r < 0] if daily_returns else []
-            sortino_ratio = (np.mean(daily_returns) / np.std(negative_returns) * np.sqrt(252)) if negative_returns and np.std(negative_returns) > 0 else 0.0
-            
-            # DSSMS固有指標
-            switch_count = simulation_result.get('switch_count', 0)
-            trading_days = simulation_result.get('trading_days', 1)
-            switch_success_rate = self._calculate_switch_success_rate()
-            
-            # 平均保有期間計算
-            if self.switch_history:
-                avg_holding_period = np.mean([s.holding_period_hours for s in self.switch_history])
-            else:
-                avg_holding_period = trading_days * 24  # 全期間保有と仮定
-            
-            # 切替コスト合計
-            total_switch_costs = sum(s.switch_cost for s in self.switch_history)
-            
-            performance_data = {
-                # 収益性指標
-                "total_return": total_return_pct,
-                "annual_return": total_return_pct * (365 / max(trading_days, 1)),
-                "portfolio_value": simulation_result.get('final_value', self.initial_capital),
-                "profit_factor": max(total_return_pct + 100, 0) / 100 if total_return_pct >= -100 else 0.01,
-                "average_win": max(np.mean([r for r in daily_returns if r > 0]) * 100, 0) if daily_returns else 0.0,
-                
-                # リスク管理指標
-                "max_drawdown": max_drawdown,
-                "value_at_risk": np.percentile(daily_returns, 5) * 100 if daily_returns else 0.0,
-                "sharpe_ratio": sharpe_ratio,
-                "sortino_ratio": sortino_ratio,
-                "risk_return_ratio": volatility / max(abs(total_return_pct), 0.1),
-                
-                # 安定性指標
-                "volatility": volatility,
-                "consistency_ratio": 1.0 - (volatility / 100) if volatility > 0 else 1.0,
-                "win_rate": len([r for r in daily_returns if r > 0]) / len(daily_returns) if daily_returns else 0.0,
-                "switching_success_rate": switch_success_rate,
-                "trade_frequency": switch_count / max(trading_days / 252, 1),  # 年次換算
-                
-                # 効率性指標
-                "trades_per_day": switch_count / max(trading_days, 1),
-                "execution_speed": 0.1,  # 固定値（実際の実装では測定）
-                "cost_efficiency": 1.0 - (total_switch_costs / simulation_result.get('final_value', self.initial_capital)),
-                "capital_utilization": 0.95,  # 固定値（実際の実装では計算）
-                "information_ratio": sharpe_ratio * 0.8,  # 簡易計算
-                
-                # 適応性指標
-                "strategy_correlation": 0.3,  # 固定値（複数戦略間の相関）
-                "parameter_adaptation_rate": min(switch_count / max(trading_days / 10, 1), 1.0),
-                "market_regime_detection": 0.7,  # 固定値（市場環境検出精度）
-                
-                # 追加メトリクス
-                "evaluation_period_days": trading_days,
-                "trade_count": switch_count,
-                "stop_loss_percent": 0.02,  # 固定値（2%）
-                "max_position_size": 1.0  # 固定値（全資金投入）
-            }
-            
-            return performance_data
-            
-        except Exception as e:
-            self.logger.error(f"Task 3.4 パフォーマンスデータ準備エラー: {e}")
-            return {}
-
-    def _prepare_task34_risk_metrics(self, simulation_result: Dict[str, Any]) -> Dict[str, float]:
-        """Task 3.4用リスク指標データの準備"""
-        try:
-            portfolio_values = self.performance_history.get('portfolio_value', [])
-            daily_returns = self.performance_history.get('daily_returns', [])
-            
-            # 基本リスク指標
-            max_drawdown = self._calculate_max_drawdown(portfolio_values) * 100
-            var_5_percent = np.percentile(daily_returns, 5) * 100 if daily_returns else 0.0
-            cvar_5_percent = np.mean([r for r in daily_returns if r <= np.percentile(daily_returns, 5)]) * 100 if daily_returns else 0.0
-            
-            # ベータ計算（市場指数との相関、簡易版）
-            market_beta = 1.0  # 固定値（実際の実装では市場データとの回帰分析）
-            
-            # トラッキングエラー（ベンチマークとの差）
-            tracking_error = np.std(daily_returns) * np.sqrt(252) * 100 if daily_returns else 0.0
-            
-            # リスク調整係数
-            adjustment_factor = max(0.5, min(1.0, 1.0 - max_drawdown / 100))
-            
-            risk_metrics = {
-                "max_drawdown": max_drawdown,
-                "value_at_risk": abs(var_5_percent),
-                "conditional_var": abs(cvar_5_percent),
-                "beta": market_beta,
-                "tracking_error": tracking_error,
-                "adjustment_factor": adjustment_factor
-            }
-            
-            return risk_metrics
-            
-        except Exception as e:
-            self.logger.error(f"Task 3.4 リスク指標データ準備エラー: {e}")
-            return {
-                "max_drawdown": 0.0,
-                "value_at_risk": 0.0,
-                "conditional_var": 0.0,
-                "beta": 1.0,
-                "tracking_error": 0.0,
-                "adjustment_factor": 1.0
-            }
 
 
 def main():
