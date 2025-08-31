@@ -1,0 +1,186 @@
+{
+  "integration": {
+    "use_dssms_priority": true,
+    "fallback_to_strategies": true,
+    "enable_hybrid_mode": true,
+    "dssms_weight": 0.7,
+    "strategy_weight": 0.3,
+    "confidence_threshold": 0.6,
+    "enable_hierarchical_switching": true,
+    "symbol_switch_threshold": 0.15,
+    "strategy_switch_threshold": 0.10,
+    "max_position_size": 0.20,
+    "stop_loss_threshold": 0.05,
+    "enable_risk_management": true
+  },
+  "performance": {
+    "calculation_engine": "dssms",
+    "use_advanced_metrics": true,
+    "enable_benchmark_comparison": true,
+    "risk_free_rate": 0.001,
+    "benchmark_symbol": "^N225",
+    "performance_window": 252,
+    "update_frequency": "daily"
+  },
+  "switching": {
+    "hierarchical_levels": [
+      "symbol_level",
+      "strategy_level", 
+      "hybrid_level",
+      "fallback_level"
+    ],
+    "confidence_thresholds": {
+      "symbol_level": 0.6,
+      "strategy_level": 0.6,
+      "hybrid_level": 0.4,
+      "fallback_level": 0.1
+    },
+    "market_adjustments": {
+      "trending": {
+        "dssms": 1.1,
+        "strategy": 1.0,
+        "hybrid": 1.05
+      },
+      "sideways": {
+        "dssms": 0.9,
+        "strategy": 1.1,
+        "hybrid": 1.0
+      },
+      "volatile": {
+        "dssms": 1.2,
+        "strategy": 0.8,
+        "hybrid": 1.1
+      },
+      "stable": {
+        "dssms": 1.0,
+        "strategy": 1.0,
+        "hybrid": 1.0
+      },
+      "uncertain": {
+        "dssms": 0.8,
+        "strategy": 0.8,
+        "hybrid": 0.7
+      }
+    },
+    "learning": {
+      "enabled": true,
+      "learning_rate": 0.01,
+      "adaptation_window": 10,
+      "weight_bounds": {
+        "min_weight": 0.2,
+        "max_weight": 0.8
+      }
+    }
+  },
+  "risk_management": {
+    "position_sizing": {
+      "max_position_weight": 0.20,
+      "max_sector_weight": 0.40,
+      "max_correlation": 0.7
+    },
+    "stop_loss": {
+      "default_threshold": 0.05,
+      "trailing_stop": true,
+      "trailing_distance": 0.03
+    },
+    "exposure_limits": {
+      "max_leverage": 1.0,
+      "max_drawdown_limit": 0.15,
+      "var_limit": 0.02
+    }
+  },
+  "data": {
+    "sources": {
+      "primary": "yfinance",
+      "backup": "alpha_vantage"
+    },
+    "update_schedule": {
+      "market_data": "daily_after_close",
+      "fundamental_data": "weekly",
+      "earnings_data": "quarterly"
+    },
+    "quality_checks": {
+      "missing_data_threshold": 0.05,
+      "outlier_detection": true,
+      "data_validation": true
+    }
+  },
+  "execution": {
+    "mode": "backtest",
+    "start_date": "2024-01-01",
+    "end_date": "2024-12-31",
+    "initial_capital": 1000000,
+    "transaction_costs": {
+      "commission": 0.001,
+      "slippage": 0.0005,
+      "market_impact": 0.0002
+    },
+    "rebalancing": {
+      "frequency": "daily",
+      "threshold": 0.05,
+      "method": "equal_weight"
+    }
+  },
+  "reporting": {
+    "output_formats": ["excel", "json", "html"],
+    "include_charts": true,
+    "detail_level": "comprehensive",
+    "export_path": "output/integration_results",
+    "auto_timestamp": true,
+    "metrics_to_include": [
+      "total_return",
+      "annualized_return", 
+      "sharpe_ratio",
+      "sortino_ratio",
+      "max_drawdown",
+      "calmar_ratio",
+      "win_rate",
+      "profit_factor",
+      "dssms_contribution",
+      "strategy_contribution",
+      "hybrid_efficiency",
+      "switch_success_rate"
+    ]
+  },
+  "logging": {
+    "level": "INFO",
+    "file_output": true,
+    "log_path": "logs/integration_logs",
+    "max_file_size": "10MB",
+    "backup_count": 5,
+    "format": "[%(levelname)s] %(asctime)s %(name)s: %(message)s"
+  },
+  "testing": {
+    "enable_staged_testing": true,
+    "test_levels": [
+      "individual_components",
+      "integration_tests", 
+      "stress_tests",
+      "performance_tests"
+    ],
+    "test_data": {
+      "symbols": ["7203", "6758", "8306", "9984", "7267"],
+      "test_period": "2024-01-01_to_2024-06-30",
+      "sample_size": 1000,
+      "monte_carlo_runs": 100
+    },
+    "validation": {
+      "cross_validation": true,
+      "walk_forward": true,
+      "out_of_sample": true,
+      "validation_ratio": 0.3
+    }
+  },
+  "metadata": {
+    "version": "2.1.0",
+    "created_date": "2025-01-28",
+    "description": "DSSMS Phase 2 Task 2.1 統合システム設定",
+    "author": "DSSMS Integration Team",
+    "last_modified": "2025-01-28",
+    "compatibility": {
+      "dssms_version": ">=5.0.0",
+      "python_version": ">=3.8.0",
+      "pandas_version": ">=1.3.0"
+    }
+  }
+}
