@@ -1,0 +1,157 @@
+{
+  "ranking_weights": {
+    "hierarchical": 0.6,
+    "comprehensive": 0.3,
+    "adaptive": 0.1
+  },
+  "hierarchical_ranking": {
+    "priority_weights": {
+      "perfect_order": 0.4,
+      "fundamental": 0.3,
+      "technical": 0.2,
+      "volume": 0.1
+    },
+    "selection_criteria": {
+      "max_candidates": 20,
+      "min_confidence": 0.5,
+      "fund_allocation_ratio": 0.8
+    }
+  },
+  "comprehensive_scoring": {
+    "weights": {
+      "fundamental": 0.40,
+      "technical": 0.30,
+      "volume": 0.20,
+      "volatility": 0.10
+    }
+  },
+  "market_analysis": {
+    "volatility_window": 20,
+    "trend_detection_period": 50,
+    "volume_threshold_multiplier": 1.5,
+    "market_index_symbol": "^N225"
+  },
+  "data_integration": {
+    "max_workers": 4,
+    "batch_size": 10,
+    "cache_enabled": true,
+    "cache_ttl_minutes": 30,
+    "min_data_quality": 0.3
+  },
+  "adaptive_scoring": {
+    "enabled": true,
+    "update_frequency_minutes": 15,
+    "learning_rate": 0.1,
+    "performance_lookback_days": 30,
+    "bonus_multiplier": 0.1,
+    "max_performance_history": 1000,
+    "initial_weights": {
+      "market_momentum": 0.3,
+      "volatility_regime": 0.25,
+      "sector_rotation": 0.2,
+      "risk_sentiment": 0.15,
+      "technical_convergence": 0.1
+    }
+  },
+  "optimization": {
+    "cache_enabled": true,
+    "cache_ttl_minutes": 10,
+    "parallel_processing": true,
+    "max_workers": 4,
+    "max_cache_size": 1000,
+    "max_memory_mb": 512,
+    "default_ttl_minutes": 15,
+    "cleanup_interval_minutes": 5,
+    "auto_optimization": true,
+    "optimization_threshold": {
+      "memory_usage_percent": 80,
+      "cache_hit_rate_min": 0.7,
+      "response_time_max_ms": 1000
+    },
+    "max_performance_history": 1440
+  },
+  "thresholds": {
+    "min_confidence": 0.3,
+    "max_processing_time_ms": 5000,
+    "cache_hit_rate_target": 0.8,
+    "max_symbols_per_batch": 50
+  },
+  "market_conditions": {
+    "trending_up": {
+      "weight_adjustment": 1.1,
+      "momentum_boost": 0.15,
+      "volatility_penalty": -0.05
+    },
+    "trending_down": {
+      "weight_adjustment": 0.9,
+      "momentum_boost": -0.1,
+      "volatility_penalty": -0.1
+    },
+    "sideways": {
+      "weight_adjustment": 1.0,
+      "momentum_boost": 0.0,
+      "volatility_penalty": 0.0
+    },
+    "high_volatility": {
+      "weight_adjustment": 0.95,
+      "momentum_boost": -0.05,
+      "volatility_penalty": -0.2
+    },
+    "low_volatility": {
+      "weight_adjustment": 1.05,
+      "momentum_boost": 0.1,
+      "volatility_penalty": 0.1
+    }
+  },
+  "sector_analysis": {
+    "enabled": true,
+    "sector_rotation_weight": 0.3,
+    "relative_strength_weight": 0.4,
+    "sector_momentum_weight": 0.3,
+    "sectors": {
+      "technology": { "base_score": 0.7 },
+      "financial": { "base_score": 0.5 },
+      "industrial": { "base_score": 0.6 },
+      "healthcare": { "base_score": 0.8 },
+      "consumer": { "base_score": 0.4 },
+      "materials": { "base_score": 0.5 },
+      "energy": { "base_score": 0.4 },
+      "utilities": { "base_score": 0.3 },
+      "real_estate": { "base_score": 0.4 },
+      "communication": { "base_score": 0.6 }
+    }
+  },
+  "technical_analysis": {
+    "convergence_weight": 0.4,
+    "signal_strength_weight": 0.3,
+    "momentum_weight": 0.3,
+    "timeframe_weights": {
+      "daily": 0.5,
+      "weekly": 0.3,
+      "monthly": 0.2
+    }
+  },
+  "risk_management": {
+    "sentiment_analysis_enabled": true,
+    "liquidity_analysis_enabled": true,
+    "volatility_adjustment_enabled": true,
+    "risk_weights": {
+      "market_sentiment": 0.4,
+      "liquidity": 0.3,
+      "volatility": 0.3
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "performance_logging": true,
+    "cache_logging": true,
+    "error_logging": true,
+    "detailed_timing": false
+  },
+  "experimental": {
+    "ml_enhanced_scoring": false,
+    "advanced_market_regime_detection": false,
+    "real_time_weight_adjustment": false,
+    "sentiment_integration": false
+  }
+}

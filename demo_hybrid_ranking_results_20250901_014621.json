@@ -1,0 +1,113 @@
+{
+  "basic_demo": {
+    "rankings_count": 0,
+    "execution_time": 5.691340684890747,
+    "average_score": 0.0,
+    "score_distribution": {},
+    "top_performers": []
+  },
+  "performance_test": {
+    "5_symbols": {
+      "average_time_seconds": 0.0286556879679362,
+      "min_time_seconds": 0.017554521560668945,
+      "max_time_seconds": 0.04220890998840332,
+      "rankings_generated": 0,
+      "time_per_symbol_ms": 5.73113759358724
+    },
+    "10_symbols": {
+      "average_time_seconds": 0.04979999860127767,
+      "min_time_seconds": 0.03901481628417969,
+      "max_time_seconds": 0.06695294380187988,
+      "rankings_generated": 0,
+      "time_per_symbol_ms": 4.9799998601277675
+    },
+    "15_symbols": {
+      "average_time_seconds": 0.7012404600779215,
+      "min_time_seconds": 0.07013702392578125,
+      "max_time_seconds": 1.9361793994903564,
+      "rankings_generated": 0,
+      "time_per_symbol_ms": 46.74936400519477
+    },
+    "20_symbols": {
+      "average_time_seconds": 0.6920363903045654,
+      "min_time_seconds": 0.10139989852905273,
+      "max_time_seconds": 1.8651225566864014,
+      "rankings_generated": 0,
+      "time_per_symbol_ms": 34.60181951522827
+    },
+    "25_symbols": {
+      "average_time_seconds": 0.8142893314361572,
+      "min_time_seconds": 0.1290454864501953,
+      "max_time_seconds": 2.1404266357421875,
+      "rankings_generated": 0,
+      "time_per_symbol_ms": 32.57157325744629
+    },
+    "system_status": {
+      "active_symbols_count": 25,
+      "last_full_update": "2025-09-01T01:46:15.992193",
+      "cache_hit_rate": 0.0,
+      "average_processing_time_ms": 745.8551669966871,
+      "total_rankings_generated": 0,
+      "error_count": 0,
+      "market_condition": "sideways",
+      "cache_size": 0
+    }
+  },
+  "market_condition_test": {
+    "run_1": {
+      "execution_time": 0.0665578842163086,
+      "rankings_count": 0,
+      "average_score": 0.0,
+      "top3_symbols": [],
+      "score_distribution": {}
+    },
+    "run_2": {
+      "execution_time": 0.10393977165222168,
+      "rankings_count": 0,
+      "average_score": 0.0,
+      "top3_symbols": [],
+      "score_distribution": {}
+    },
+    "run_3": {
+      "execution_time": 0.1380019187927246,
+      "rankings_count": 0,
+      "average_score": 0.0,
+      "top3_symbols": [],
+      "score_distribution": {}
+    },
+    "run_4": {
+      "execution_time": 0.1477668285369873,
+      "rankings_count": 0,
+      "average_score": 0.0,
+      "top3_symbols": [],
+      "score_distribution": {}
+    },
+    "run_5": {
+      "execution_time": 0.07030200958251953,
+      "rankings_count": 0,
+      "average_score": 0.0,
+      "top3_symbols": [],
+      "score_distribution": {}
+    }
+  },
+  "cache_test": {
+    "first_execution_time": 0.06962466239929199,
+    "second_execution_time": 0.0404512882232666,
+    "speedup_ratio": 1.7211976542009253,
+    "cache_hit_rate": 0.0,
+    "rankings_consistency": {
+      "consistency_score": 0.0,
+      "top5_match_count": 0
+    }
+  },
+  "system_status": {
+    "active_symbols_count": 25,
+    "last_full_update": "2025-09-01T01:46:21.679187",
+    "cache_hit_rate": 0.0,
+    "average_processing_time_ms": 221.2624316169437,
+    "total_rankings_generated": 0,
+    "error_count": 0,
+    "market_condition": "sideways",
+    "cache_size": 0
+  }
+}
