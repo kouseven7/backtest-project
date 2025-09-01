@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-09-01T12:27:31.383666",
+  "system_info": {
+    "cpu_count": 8,
+    "memory_total_gb": 31.957534790039062,
+    "memory_available_gb": 17.77456283569336,
+    "platform": "win32",
+    "python_version": "3.13.1 (tags/v3.13.1:0671451, Dec  3 2024, 19:06:28) [MSC v.1942 64 bit (AMD64)]"
+  },
+  "tests": {
+    "data_loading": {
+      "execution_time": 0.0015425682067871094,
+      "memory_usage_mb": 0.57421875,
+      "success_rate": 1.0
+    },
+    "computation": {
+      "execution_time": 0.07665634155273438,
+      "cpu_usage_percent": 14.0,
+      "success_rate": 1.0
+    },
+    "memory_usage": {
+      "memory_usage_mb": -0.2421875,
+      "peak_memory_mb": 171.87890625,
+      "success_rate": 1.0
+    },
+    "parallel_processing": {
+      "sequential_time": 0.402515172958374,
+      "parallel_time": 0.20431041717529297,
+      "speedup_ratio": 1.9701157607300395,
+      "efficiency": 0.49252894018250987
+    }
+  }
+}

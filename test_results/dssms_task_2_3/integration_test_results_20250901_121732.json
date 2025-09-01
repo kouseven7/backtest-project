@@ -1,0 +1,51 @@
+{
+  "start_time": "2025-09-01T12:17:32.429884",
+  "tests_executed": [
+    {
+      "test_name": "config_loading_test",
+      "start_time": "2025-09-01T12:17:32.430487",
+      "passed": true,
+      "execution_time": 0.0006368160247802734,
+      "error": null,
+      "details": {
+        "logger_initialized": true,
+        "risk_manager_initialized": true,
+        "total_assets": 1000000
+      },
+      "end_time": "2025-09-01T12:17:32.431131"
+    },
+    {
+      "test_name": "logger_initialization_test",
+      "start_time": "2025-09-01T12:17:32.431353",
+      "passed": true,
+      "execution_time": 0.0003345012664794922,
+      "error": null,
+      "details": {
+        "logger_created": true,
+        "log_level": 20,
+        "handlers_count": 1
+      },
+      "end_time": "2025-09-01T12:17:32.431694"
+    },
+    {
+      "test_name": "data_fetcher_integration_test",
+      "start_time": "2025-09-01T12:17:32.431852",
+      "passed": true,
+      "execution_time": 0.0011641979217529297,
+      "error": null,
+      "details": {
+        "data_shape": [
+          100,
+          7
+        ],
+        "columns": [
+          "Date",
+          "Open",
+          "High",
+          "Low",
+          "Close",
+          "Adj Close",
+          "Volume"
+        ],
+        "data_types": {
+          "Date": 
