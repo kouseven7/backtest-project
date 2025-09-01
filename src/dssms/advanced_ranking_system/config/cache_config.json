@@ -1,0 +1,194 @@
+{
+  "cache_settings": {
+    "enable_caching": true,
+    "default_cache_strategy": "LRU",
+    "cache_size_limit": 10000,
+    "enable_persistent_cache": true,
+    "persistent_cache_file": "ranking_cache.pkl",
+    "enable_compression": true,
+    "compression_algorithm": "gzip",
+    "compression_level": 6,
+    "enable_encryption": false,
+    "encryption_key": null
+  },
+  "cache_strategies": {
+    "LRU": {
+      "max_size": 5000,
+      "eviction_policy": "least_recently_used",
+      "enable_auto_cleanup": true,
+      "cleanup_interval_seconds": 300
+    },
+    "LFU": {
+      "max_size": 3000,
+      "eviction_policy": "least_frequently_used",
+      "frequency_decay_factor": 0.9,
+      "enable_frequency_aging": true
+    },
+    "TTL": {
+      "max_size": 8000,
+      "default_ttl_seconds": 600,
+      "enable_ttl_extension": true,
+      "ttl_extension_factor": 1.5,
+      "max_ttl_seconds": 3600
+    },
+    "HYBRID": {
+      "max_size": 7000,
+      "lru_portion": 0.6,
+      "lfu_portion": 0.4,
+      "enable_adaptive_allocation": true
+    }
+  },
+  "cache_categories": {
+    "ranking_scores": {
+      "strategy": "TTL",
+      "ttl_seconds": 300,
+      "max_size": 2000,
+      "enable_compression": true,
+      "priority": "high"
+    },
+    "technical_indicators": {
+      "strategy": "LRU",
+      "max_size": 1500,
+      "enable_compression": true,
+      "priority": "medium"
+    },
+    "fundamental_data": {
+      "strategy": "LFU",
+      "max_size": 1000,
+      "ttl_seconds": 1800,
+      "enable_compression": false,
+      "priority": "medium"
+    },
+    "market_data": {
+      "strategy": "TTL",
+      "ttl_seconds": 60,
+      "max_size": 3000,
+      "enable_compression": true,
+      "priority": "high"
+    },
+    "volatility_calculations": {
+      "strategy": "LRU",
+      "max_size": 1000,
+      "enable_compression": true,
+      "priority": "low"
+    },
+    "correlation_matrices": {
+      "strategy": "LFU",
+      "max_size": 500,
+      "ttl_seconds": 900,
+      "enable_compression": true,
+      "priority": "medium"
+    },
+    "optimization_results": {
+      "strategy": "TTL",
+      "ttl_seconds": 1200,
+      "max_size": 800,
+      "enable_compression": true,
+      "priority": "high"
+    },
+    "performance_metrics": {
+      "strategy": "LRU",
+      "max_size": 1200,
+      "enable_compression": false,
+      "priority": "low"
+    }
+  },
+  "cache_performance": {
+    "enable_performance_monitoring": true,
+    "track_hit_rate": true,
+    "track_access_patterns": true,
+    "track_memory_usage": true,
+    "track_compression_ratio": true,
+    "performance_log_interval_seconds": 600,
+    "alert_on_low_hit_rate": true,
+    "low_hit_rate_threshold": 0.7,
+    "alert_on_high_memory_usage": true,
+    "high_memory_usage_threshold": 0.9
+  },
+  "cache_cleanup": {
+    "enable_automatic_cleanup": true,
+    "cleanup_interval_seconds": 300,
+    "memory_threshold_cleanup": 0.85,
+    "aggressive_cleanup_threshold": 0.95,
+    "cleanup_batch_size": 100,
+    "enable_background_cleanup": true,
+    "background_cleanup_threads": 2
+  },
+  "cache_persistence": {
+    "enable_cache_persistence": true,
+    "persistence_interval_seconds": 600,
+    "persistence_directory": "cache",
+    "enable_backup_persistence": true,
+    "backup_retention_days": 7,
+    "enable_incremental_persistence": true,
+    "compression_on_save": true,
+    "verification_on_load": true
+  },
+  "cache_synchronization": {
+    "enable_multi_threading": true,
+    "thread_safety_level": "full",
+    "lock_timeout_seconds": 5,
+    "enable_read_write_locks": true,
+    "enable_lock_free_reads": true,
+    "deadlock_detection": true,
+    "deadlock_timeout_seconds": 10
+  },
+  "cache_warming": {
+    "enable_cache_warming": true,
+    "warm_on_startup": true,
+    "warming_strategy": "priority_based",
+    "warming_batch_size": 50,
+    "warming_thread_count": 2,
+    "warm_categories": [
+      "ranking_scores",
+      "market_data",
+      "technical_indicators"
+    ],
+    "preload_common_calculations": true,
+    "preload_recent_data": true,
+    "recent_data_days": 30
+  },
+  "cache_validation": {
+    "enable_data_validation": true,
+    "validate_on_retrieve": false,
+    "validate_on_store": true,
+    "enable_checksum_validation": true,
+    "enable_schema_validation": true,
+    "enable_timestamp_validation": true,
+    "max_age_validation_seconds": 3600,
+    "enable_corruption_detection": true
+  },
+  "cache_statistics": {
+    "enable_detailed_statistics": true,
+    "track_category_statistics": true,
+    "track_access_frequency": true,
+    "track_response_times": true,
+    "statistics_retention_days": 30,
+    "enable_statistics_export": true,
+    "export_format": "json",
+    "export_interval_hours": 24
+  },
+  "cache_debugging": {
+    "enable_debug_mode": false,
+    "log_cache_operations": false,
+    "log_hit_miss_details": false,
+    "log_eviction_details": false,
+    "log_performance_warnings": true,
+    "debug_sample_rate": 0.1,
+    "enable_cache_dump": false,
+    "dump_on_error": true
+  },
+  "advanced_features": {
+    "enable_predictive_caching": true,
+    "predictive_model": "ml_based",
+    "prediction_accuracy_threshold": 0.8,
+    "enable_adaptive_ttl": true,
+    "adaptive_ttl_factor": 1.2,
+    "enable_cache_partitioning": true,
+    "partition_strategy": "time_based",
+    "enable_distributed_caching": false,
+    "distributed_cache_nodes": [],
+    "enable_cache_hierarchy": true,
+    "hierarchy_levels": 3
+  }
+}

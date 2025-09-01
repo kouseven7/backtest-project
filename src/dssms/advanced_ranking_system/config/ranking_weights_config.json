@@ -1,0 +1,289 @@
+{
+  "ranking_weights": {
+    "momentum_analysis": {
+      "base_weight": 0.25,
+      "adaptive_range": [0.15, 0.35],
+      "sub_weights": {
+        "price_momentum": 0.30,
+        "volume_momentum": 0.25,
+        "earnings_momentum": 0.20,
+        "relative_strength": 0.25
+      }
+    },
+    "volatility_analysis": {
+      "base_weight": 0.20,
+      "adaptive_range": [0.10, 0.30],
+      "sub_weights": {
+        "historical_volatility": 0.35,
+        "implied_volatility": 0.25,
+        "volatility_risk_premium": 0.20,
+        "volatility_clustering": 0.20
+      }
+    },
+    "volume_analysis": {
+      "base_weight": 0.15,
+      "adaptive_range": [0.08, 0.25],
+      "sub_weights": {
+        "volume_trend": 0.30,
+        "volume_price_trend": 0.25,
+        "accumulation_distribution": 0.20,
+        "money_flow_index": 0.25
+      }
+    },
+    "technical_analysis": {
+      "base_weight": 0.20,
+      "adaptive_range": [0.15, 0.30],
+      "sub_weights": {
+        "trend_indicators": 0.30,
+        "oscillators": 0.25,
+        "support_resistance": 0.20,
+        "pattern_recognition": 0.25
+      }
+    },
+    "fundamental_analysis": {
+      "base_weight": 0.20,
+      "adaptive_range": [0.10, 0.35],
+      "sub_weights": {
+        "valuation_metrics": 0.35,
+        "profitability_metrics": 0.25,
+        "financial_health": 0.20,
+        "growth_metrics": 0.20
+      }
+    }
+  },
+  "technical_indicator_weights": {
+    "trend_indicators": {
+      "sma_cross": 0.20,
+      "ema_cross": 0.25,
+      "macd": 0.20,
+      "adx": 0.15,
+      "parabolic_sar": 0.10,
+      "ichimoku": 0.10
+    },
+    "oscillators": {
+      "rsi": 0.25,
+      "stochastic": 0.20,
+      "williams_r": 0.15,
+      "cci": 0.15,
+      "mfi": 0.15,
+      "roc": 0.10
+    },
+    "volatility_indicators": {
+      "bollinger_bands": 0.30,
+      "atr": 0.25,
+      "keltner_channels": 0.20,
+      "volatility_ratio": 0.25
+    },
+    "volume_indicators": {
+      "obv": 0.25,
+      "ad_line": 0.20,
+      "chaikin_oscillator": 0.20,
+      "volume_sma_ratio": 0.20,
+      "vwap": 0.15
+    }
+  },
+  "fundamental_indicator_weights": {
+    "valuation_metrics": {
+      "pe_ratio": 0.25,
+      "pb_ratio": 0.20,
+      "ps_ratio": 0.15,
+      "peg_ratio": 0.20,
+      "ev_ebitda": 0.20
+    },
+    "profitability_metrics": {
+      "roe": 0.25,
+      "roa": 0.20,
+      "profit_margin": 0.20,
+      "operating_margin": 0.20,
+      "roic": 0.15
+    },
+    "financial_health": {
+      "debt_to_equity": 0.25,
+      "current_ratio": 0.20,
+      "quick_ratio": 0.20,
+      "interest_coverage": 0.20,
+      "debt_to_assets": 0.15
+    },
+    "growth_metrics": {
+      "revenue_growth": 0.30,
+      "earnings_growth": 0.25,
+      "eps_growth": 0.25,
+      "book_value_growth": 0.20
+    }
+  },
+  "market_regime_weights": {
+    "bull_market": {
+      "momentum_analysis": 0.35,
+      "volatility_analysis": 0.10,
+      "volume_analysis": 0.15,
+      "technical_analysis": 0.20,
+      "fundamental_analysis": 0.20
+    },
+    "bear_market": {
+      "momentum_analysis": 0.15,
+      "volatility_analysis": 0.30,
+      "volume_analysis": 0.20,
+      "technical_analysis": 0.20,
+      "fundamental_analysis": 0.15
+    },
+    "sideways_market": {
+      "momentum_analysis": 0.20,
+      "volatility_analysis": 0.20,
+      "volume_analysis": 0.15,
+      "technical_analysis": 0.25,
+      "fundamental_analysis": 0.20
+    },
+    "high_volatility": {
+      "momentum_analysis": 0.20,
+      "volatility_analysis": 0.35,
+      "volume_analysis": 0.20,
+      "technical_analysis": 0.15,
+      "fundamental_analysis": 0.10
+    },
+    "low_volatility": {
+      "momentum_analysis": 0.25,
+      "volatility_analysis": 0.10,
+      "volume_analysis": 0.15,
+      "technical_analysis": 0.25,
+      "fundamental_analysis": 0.25
+    }
+  },
+  "sector_weights": {
+    "technology": {
+      "momentum_analysis": 0.30,
+      "volatility_analysis": 0.20,
+      "volume_analysis": 0.15,
+      "technical_analysis": 0.20,
+      "fundamental_analysis": 0.15
+    },
+    "healthcare": {
+      "momentum_analysis": 0.20,
+      "volatility_analysis": 0.15,
+      "volume_analysis": 0.15,
+      "technical_analysis": 0.20,
+      "fundamental_analysis": 0.30
+    },
+    "financial": {
+      "momentum_analysis": 0.25,
+      "volatility_analysis": 0.25,
+      "volume_analysis": 0.15,
+      "technical_analysis": 0.15,
+      "fundamental_analysis": 0.20
+    },
+    "consumer_discretionary": {
+      "momentum_analysis": 0.25,
+      "volatility_analysis": 0.20,
+      "volume_analysis": 0.20,
+      "technical_analysis": 0.20,
+      "fundamental_analysis": 0.15
+    },
+    "consumer_staples": {
+      "momentum_analysis": 0.15,
+      "volatility_analysis": 0.15,
+      "volume_analysis": 0.15,
+      "technical_analysis": 0.20,
+      "fundamental_analysis": 0.35
+    },
+    "energy": {
+      "momentum_analysis": 0.30,
+      "volatility_analysis": 0.25,
+      "volume_analysis": 0.20,
+      "technical_analysis": 0.15,
+      "fundamental_analysis": 0.10
+    },
+    "utilities": {
+      "momentum_analysis": 0.15,
+      "volatility_analysis": 0.15,
+      "volume_analysis": 0.15,
+      "technical_analysis": 0.20,
+      "fundamental_analysis": 0.35
+    },
+    "materials": {
+      "momentum_analysis": 0.25,
+      "volatility_analysis": 0.20,
+      "volume_analysis": 0.20,
+      "technical_analysis": 0.20,
+      "fundamental_analysis": 0.15
+    },
+    "industrials": {
+      "momentum_analysis": 0.20,
+      "volatility_analysis": 0.20,
+      "volume_analysis": 0.15,
+      "technical_analysis": 0.20,
+      "fundamental_analysis": 0.25
+    },
+    "real_estate": {
+      "momentum_analysis": 0.20,
+      "volatility_analysis": 0.20,
+      "volume_analysis": 0.15,
+      "technical_analysis": 0.20,
+      "fundamental_analysis": 0.25
+    },
+    "communication": {
+      "momentum_analysis": 0.25,
+      "volatility_analysis": 0.20,
+      "volume_analysis": 0.15,
+      "technical_analysis": 0.20,
+      "fundamental_analysis": 0.20
+    }
+  },
+  "time_horizon_weights": {
+    "short_term": {
+      "days": 30,
+      "momentum_analysis": 0.35,
+      "volatility_analysis": 0.25,
+      "volume_analysis": 0.20,
+      "technical_analysis": 0.15,
+      "fundamental_analysis": 0.05
+    },
+    "medium_term": {
+      "days": 90,
+      "momentum_analysis": 0.25,
+      "volatility_analysis": 0.20,
+      "volume_analysis": 0.15,
+      "technical_analysis": 0.20,
+      "fundamental_analysis": 0.20
+    },
+    "long_term": {
+      "days": 252,
+      "momentum_analysis": 0.15,
+      "volatility_analysis": 0.15,
+      "volume_analysis": 0.10,
+      "technical_analysis": 0.20,
+      "fundamental_analysis": 0.40
+    }
+  },
+  "adaptive_weights": {
+    "enable_adaptive_weighting": true,
+    "adaptation_period_days": 30,
+    "performance_lookback_days": 60,
+    "weight_adjustment_factor": 0.1,
+    "max_weight_change": 0.05,
+    "min_weight_threshold": 0.05,
+    "max_weight_threshold": 0.50,
+    "enable_momentum_adaptation": true,
+    "enable_volatility_adaptation": true,
+    "enable_performance_adaptation": true
+  },
+  "risk_adjusted_weights": {
+    "enable_risk_adjustment": true,
+    "risk_free_rate": 0.02,
+    "enable_sharpe_adjustment": true,
+    "enable_sortino_adjustment": true,
+    "enable_calmar_adjustment": true,
+    "enable_max_drawdown_adjustment": true,
+    "risk_penalty_factor": 0.5,
+    "volatility_penalty_factor": 0.3
+  },
+  "ensemble_weights": {
+    "enable_ensemble_ranking": true,
+    "ensemble_methods": ["weighted_average", "rank_averaging", "bayesian_model_averaging"],
+    "method_weights": {
+      "weighted_average": 0.40,
+      "rank_averaging": 0.35,
+      "bayesian_model_averaging": 0.25
+    },
+    "cross_validation_folds": 5,
+    "enable_out_of_sample_validation": true
+  }
+}

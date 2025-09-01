@@ -1,0 +1,121 @@
+{
+  "advanced_ranking_engine": {
+    "enable_async_processing": true,
+    "max_concurrent_tasks": 8,
+    "enable_caching": true,
+    "cache_ttl_seconds": 300,
+    "ranking_threshold": 0.1,
+    "enable_real_time": true,
+    "log_level": "INFO"
+  },
+  "technical_indicators": {
+    "rsi_period": 14,
+    "macd_fast": 12,
+    "macd_slow": 26,
+    "macd_signal": 9,
+    "bollinger_period": 20,
+    "bollinger_std": 2,
+    "sma_periods": [5, 10, 20, 50],
+    "ema_periods": [5, 10, 20, 50],
+    "stochastic_k": 14,
+    "stochastic_d": 3,
+    "williams_r_period": 14,
+    "cci_period": 20,
+    "atr_period": 14,
+    "obv_enabled": true,
+    "mfi_period": 14,
+    "adx_period": 14,
+    "ppo_fast": 12,
+    "ppo_slow": 26,
+    "roc_period": 10
+  },
+  "fundamental_analysis": {
+    "enable_pe_ratio": true,
+    "enable_pb_ratio": true,
+    "enable_roe": true,
+    "enable_roa": true,
+    "enable_debt_ratio": true,
+    "enable_current_ratio": true,
+    "enable_quick_ratio": true,
+    "enable_revenue_growth": true,
+    "enable_profit_margin": true,
+    "enable_operating_margin": true,
+    "enable_eps_growth": true,
+    "enable_dividend_yield": true,
+    "pe_ratio_weight": 0.15,
+    "pb_ratio_weight": 0.10,
+    "roe_weight": 0.20,
+    "roa_weight": 0.15,
+    "debt_ratio_weight": 0.10,
+    "current_ratio_weight": 0.08,
+    "revenue_growth_weight": 0.12,
+    "profit_margin_weight": 0.10
+  },
+  "risk_management": {
+    "max_correlation_threshold": 0.8,
+    "volatility_threshold": 0.25,
+    "drawdown_threshold": 0.15,
+    "var_confidence_level": 0.95,
+    "enable_stop_loss": true,
+    "stop_loss_percentage": 0.05,
+    "enable_position_sizing": true,
+    "max_position_size": 0.10,
+    "enable_sector_limits": true,
+    "max_sector_allocation": 0.30
+  },
+  "performance_optimization": {
+    "enable_parallel_processing": true,
+    "chunk_size": 1000,
+    "enable_gpu_acceleration": false,
+    "memory_limit_mb": 2048,
+    "enable_data_compression": true,
+    "compression_level": 6,
+    "enable_result_pooling": true,
+    "pool_size": 100
+  },
+  "data_sources": {
+    "primary_source": "yahoo_finance",
+    "backup_sources": ["alpha_vantage", "quandl"],
+    "enable_data_validation": true,
+    "data_quality_threshold": 0.95,
+    "enable_missing_data_interpolation": true,
+    "interpolation_method": "linear",
+    "enable_outlier_detection": true,
+    "outlier_threshold": 3.0
+  },
+  "market_regime_detection": {
+    "enable_regime_detection": true,
+    "lookback_period": 252,
+    "regime_indicators": ["volatility", "trend", "momentum"],
+    "volatility_threshold_low": 0.10,
+    "volatility_threshold_high": 0.25,
+    "trend_threshold": 0.05,
+    "momentum_threshold": 0.02,
+    "regime_change_sensitivity": 0.8
+  },
+  "alert_system": {
+    "enable_alerts": true,
+    "alert_types": ["ranking_change", "performance_drop", "system_error"],
+    "ranking_change_threshold": 0.20,
+    "performance_drop_threshold": 0.15,
+    "alert_cooldown_minutes": 15,
+    "enable_email_alerts": false,
+    "enable_log_alerts": true
+  },
+  "integration": {
+    "enable_dssms_integration": true,
+    "enable_hybrid_mode": true,
+    "fallback_to_original": true,
+    "integration_mode": "enhanced",
+    "sync_interval_seconds": 60,
+    "enable_cross_validation": true
+  },
+  "debugging": {
+    "enable_debug_mode": false,
+    "debug_sample_size": 100,
+    "enable_timing_logs": true,
+    "enable_memory_tracking": true,
+    "enable_detailed_logging": false,
+    "log_ranking_details": false
+  }
+}
