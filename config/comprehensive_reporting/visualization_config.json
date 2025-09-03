@@ -1,0 +1,232 @@
+{
+  "chart_library": "chartjs",
+  "version": "4.4.0",
+  "cdn_url": "https://cdn.jsdelivr.net/npm/chart.js",
+  
+  "default_settings": {
+    "responsive": true,
+    "maintain_aspect_ratio": false,
+    "animation": {
+      "duration": 1000,
+      "easing": "easeInOutQuart"
+    },
+    "plugins": {
+      "legend": {
+        "display": true,
+        "position": "top"
+      },
+      "title": {
+        "display": true,
+        "font": {
+          "size": 16,
+          "weight": "bold"
+        }
+      }
+    }
+  },
+  
+  "chart_types": {
+    "line": {
+      "enabled": true,
+      "default_options": {
+        "scales": {
+          "x": {
+            "type": "category",
+            "title": {
+              "display": true
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "title": {
+              "display": true
+            }
+          }
+        },
+        "elements": {
+          "line": {
+            "tension": 0.1
+          },
+          "point": {
+            "radius": 4,
+            "hoverRadius": 6
+          }
+        }
+      }
+    },
+    
+    "bar": {
+      "enabled": true,
+      "default_options": {
+        "scales": {
+          "x": {
+            "title": {
+              "display": true
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "title": {
+              "display": true
+            }
+          }
+        }
+      }
+    },
+    
+    "pie": {
+      "enabled": true,
+      "default_options": {
+        "plugins": {
+          "legend": {
+            "position": "right"
+          }
+        }
+      }
+    },
+    
+    "doughnut": {
+      "enabled": true,
+      "default_options": {
+        "cutout": "50%",
+        "plugins": {
+          "legend": {
+            "position": "right"
+          }
+        }
+      }
+    },
+    
+    "scatter": {
+      "enabled": true,
+      "default_options": {
+        "scales": {
+          "x": {
+            "type": "linear",
+            "title": {
+              "display": true
+            }
+          },
+          "y": {
+            "beginAtZero": false,
+            "title": {
+              "display": true
+            }
+          }
+        }
+      }
+    },
+    
+    "area": {
+      "enabled": true,
+      "default_options": {
+        "fill": true,
+        "backgroundColor": "rgba(54, 162, 235, 0.2)"
+      }
+    }
+  },
+  
+  "color_schemes": {
+    "default": [
+      "#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6",
+      "#1abc9c", "#34495e", "#e67e22", "#95a5a6", "#e91e63"
+    ],
+    
+    "corporate": [
+      "#2c3e50", "#3498db", "#95a5a6", "#7f8c8d", "#bdc3c7",
+      "#ecf0f1", "#f39c12", "#e67e22", "#d35400", "#c0392b"
+    ],
+    
+    "financial": [
+      "#27ae60", "#e74c3c", "#3498db", "#f39c12", "#9b59b6",
+      "#16a085", "#2980b9", "#8e44ad", "#2c3e50", "#7f8c8d"
+    ],
+    
+    "gradient": [
+      "#667eea", "#764ba2", "#f093fb", "#f5576c", "#4facfe",
+      "#00f2fe", "#fa709a", "#fee140", "#a8edea", "#fed6e3"
+    ]
+  },
+  
+  "layout_options": {
+    "grid": {
+      "columns": 12,
+      "small_charts": {
+        "columns": 6,
+        "height": "300px"
+      },
+      "medium_charts": {
+        "columns": 8,
+        "height": "400px"
+      },
+      "large_charts": {
+        "columns": 12,
+        "height": "500px"
+      }
+    },
+    
+    "responsive_breakpoints": {
+      "mobile": {
+        "max_width": "768px",
+        "chart_height": "250px",
+        "grid_columns": 1
+      },
+      "tablet": {
+        "max_width": "1024px", 
+        "chart_height": "350px",
+        "grid_columns": 2
+      },
+      "desktop": {
+        "min_width": "1025px",
+        "chart_height": "400px",
+        "grid_columns": 3
+      }
+    }
+  },
+  
+  "performance": {
+    "max_data_points": 10000,
+    "lazy_loading": true,
+    "animation_threshold": 1000,
+    "decimation": {
+      "enabled": true,
+      "algorithm": "lttb",
+      "samples": 500
+    }
+  },
+  
+  "accessibility": {
+    "screen_reader_support": true,
+    "high_contrast_mode": false,
+    "keyboard_navigation": true,
+    "aria_labels": true
+  },
+  
+  "export": {
+    "image_format": "png",
+    "image_quality": 0.8,
+    "background_color": "#ffffff",
+    "include_data_url": false
+  },
+  
+  "interaction": {
+    "hover": {
+      "enabled": true,
+      "mode": "nearest",
+      "intersect": false
+    },
+    "click": {
+      "enabled": true,
+      "mode": "nearest",
+      "intersect": true
+    },
+    "zoom": {
+      "enabled": false,
+      "mode": "x"
+    },
+    "pan": {
+      "enabled": false,
+      "mode": "x"
+    }
+  }
+}

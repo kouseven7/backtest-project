@@ -1,0 +1,52 @@
+{
+  "execution": {
+    "mode": "simulation",
+    "event_queue_size": 8000,
+    "event_worker_count": 6,
+    "enable_market_polling": true,
+    "market_data_poll_interval": 1.0,
+    "performance_monitor_interval": 10.0,
+    "emergency_monitor_interval": 5.0,
+    "initial_portfolio_value": 1000000.0,
+    "initial_cash": 1000000.0
+  },
+  "market": {
+    "primary_market": "tse",
+    "enable_pre_market": false,
+    "enable_after_market": false,
+    "enable_lunch_break": true,
+    "timezone": "Asia/Tokyo"
+  },
+  "risk": {
+    "max_position_size": 0.1,
+    "max_drawdown": 0.15,
+    "max_daily_loss": 0.05,
+    "concentration_limit": 0.3,
+    "var_confidence": 0.95
+  },
+  "emergency": {
+    "thresholds": {
+      "market_crash_percent": -5.0,
+      "volume_spike_multiplier": 3.0,
+      "portfolio_loss_percent": -10.0,
+      "concentration_risk_percent": 30.0,
+      "system_latency_ms": 1000.0,
+      "error_rate_percent": 5.0
+    },
+    "auto_emergency_stop": true,
+    "auto_position_reduction": true
+  },
+  "system": {
+    "enable_logging": true,
+    "log_level": "INFO",
+    "log_rotation": true,
+    "max_log_files": 10,
+    "enable_metrics": true,
+    "metrics_interval": 60.0
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-09-01T18:19:27.600311",
+    "description": "DSSMS Phase 3 Task 3.2 リアルタイム実行設定"
+  }
+}

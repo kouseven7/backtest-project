@@ -1,0 +1,130 @@
+{
+  "templates": {
+    "base": {
+      "name": "Bootstrap 5 Base",
+      "description": "Bootstrap 5ベースのレスポンシブテンプレート",
+      "css_framework": "bootstrap5",
+      "version": "5.3.0",
+      "custom_css_enabled": true
+    },
+    
+    "comprehensive": {
+      "name": "包括的レポート",
+      "sections": [
+        "metadata",
+        "visualization",
+        "data_tables",
+        "detailed_analysis"
+      ],
+      "default_active": true
+    },
+    
+    "comparison": {
+      "name": "比較レポート",
+      "sections": [
+        "comparison_overview",
+        "comparison_visualization",
+        "comparison_details"
+      ]
+    },
+    
+    "performance": {
+      "name": "パフォーマンスレポート",
+      "sections": [
+        "performance_summary",
+        "performance_metrics"
+      ]
+    },
+    
+    "risk": {
+      "name": "リスクレポート", 
+      "sections": [
+        "risk_summary",
+        "risk_metrics"
+      ]
+    }
+  },
+  
+  "themes": {
+    "default": {
+      "primary_color": "#3498db",
+      "secondary_color": "#2c3e50",
+      "success_color": "#2ecc71",
+      "warning_color": "#f39c12",
+      "danger_color": "#e74c3c",
+      "info_color": "#17a2b8",
+      "light_color": "#f8f9fa",
+      "dark_color": "#343a40"
+    },
+    
+    "dark": {
+      "primary_color": "#0d6efd",
+      "secondary_color": "#6c757d",
+      "success_color": "#198754",
+      "warning_color": "#ffc107",
+      "danger_color": "#dc3545",
+      "info_color": "#0dcaf0",
+      "light_color": "#f8f9fa",
+      "dark_color": "#212529"
+    }
+  },
+  
+  "layout": {
+    "container_type": "container-fluid",
+    "header_enabled": true,
+    "footer_enabled": true,
+    "navigation_enabled": false,
+    "sidebar_enabled": false
+  },
+  
+  "components": {
+    "cards": {
+      "border_enabled": true,
+      "shadow_enabled": true,
+      "rounded_corners": true
+    },
+    
+    "tables": {
+      "striped": true,
+      "bordered": true,
+      "hover": true,
+      "responsive": true
+    },
+    
+    "charts": {
+      "container_class": "chart-container",
+      "default_height": "400px",
+      "responsive": true
+    }
+  },
+  
+  "fonts": {
+    "primary_font": "Arial, sans-serif",
+    "monospace_font": "Monaco, 'Courier New', monospace",
+    "base_size": "14px",
+    "heading_scale": 1.2
+  },
+  
+  "responsive": {
+    "breakpoints": {
+      "xs": "0px",
+      "sm": "576px", 
+      "md": "768px",
+      "lg": "992px",
+      "xl": "1200px",
+      "xxl": "1400px"
+    },
+    
+    "grid": {
+      "columns": 12,
+      "gutter": "1.5rem"
+    }
+  },
+  
+  "customization": {
+    "custom_css_path": "templates/reports/custom.css",
+    "custom_js_path": "templates/reports/custom.js",
+    "logo_path": null,
+    "favicon_path": null
+  }
+}

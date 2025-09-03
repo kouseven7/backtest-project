@@ -1,0 +1,81 @@
+{
+  "output_directory": "output/comprehensive_reports",
+  "report_levels": ["summary", "detailed", "comprehensive"],
+  "default_level": "comprehensive",
+  "export_formats": ["html", "excel", "pdf", "json"],
+  "visualization_enabled": true,
+  "interactive_features": true,
+  "integration_mode": "hybrid",
+  "template_theme": "bootstrap5",
+  
+  "data_aggregation": {
+    "cache_enabled": true,
+    "cache_duration_hours": 24,
+    "auto_refresh": true,
+    "max_file_size_mb": 100,
+    "include_existing_reports": true
+  },
+  
+  "performance_settings": {
+    "max_data_points": 10000,
+    "chart_optimization": true,
+    "lazy_loading": true,
+    "memory_limit_mb": 512
+  },
+  
+  "visualization_config": {
+    "chart_library": "chartjs",
+    "default_colors": [
+      "#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6",
+      "#1abc9c", "#34495e", "#e67e22", "#95a5a6", "#e91e63"
+    ],
+    "animation_duration": 1000,
+    "responsive": true,
+    "maintain_aspect_ratio": false
+  },
+  
+  "export_settings": {
+    "excel": {
+      "include_charts": false,
+      "include_formatting": true,
+      "max_rows_per_sheet": 65000
+    },
+    "pdf": {
+      "page_size": "A4",
+      "orientation": "portrait",
+      "include_charts": true
+    },
+    "json": {
+      "indent": 2,
+      "ensure_ascii": false,
+      "include_raw_data": true
+    }
+  },
+  
+  "integration": {
+    "existing_reports": {
+      "strategy_comparison": true,
+      "error_diagnostic": true,
+      "dssms_enhanced": true,
+      "report_integration_manager": true
+    },
+    "data_sources": {
+      "dssms_results": "output",
+      "strategy_results": "output",
+      "backtest_data": "data",
+      "config_data": "config"
+    }
+  },
+  
+  "security": {
+    "sanitize_html": true,
+    "limit_file_access": true,
+    "max_export_size_mb": 50
+  },
+  
+  "logging": {
+    "level": "INFO",
+    "include_performance_metrics": true,
+    "log_export_activities": true
+  }
+}

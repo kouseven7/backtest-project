@@ -1,0 +1,15 @@
+DSSMS実運用テスト結果
+==================================================
+
+実行日時: 2025年09月03日 09:40:53
+総合結果: 成功
+
+backtest_success: True
+execution_time: 81.15255737304688
+total_return: -0.08641482726673712
+switch_count: 13
+annual_switches: 52.72222222222222
+annual_costs: 0.0
+improvement_metrics: {'switch_reduction': 0.9853549382716049, 'cost_reduction': 1.0, 'speed_improvement': 0.32372868855794273, 'target_achievement': {'switch_reduction': 1.1197215207631874, 'cost_reduction': 1.2658227848101264, 'speed_improvement': 0.4316382514105903}}
+overall_improvement_achievement: 0.9390608523279681
+report_generation_success: False
