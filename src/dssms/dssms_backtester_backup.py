@@ -69,7 +69,7 @@ except ImportError:
 # 既存システムインポート
 from config.logger_config import setup_logger
 from config.risk_management import RiskManagement
-from output.dssms_excel_exporter_v2 import DSSMSExcelExporterV2  # 新しいV2システム
+from output.simple_excel_exporter import save_backtest_results_simple
 from data_fetcher import fetch_stock_data
 from trade_simulation import simulate_trades
 
@@ -190,9 +190,6 @@ class DSSMSBacktester:
         self.logger = setup_logger('dssms.backtester')
         self.config = config or self._get_default_config()
         
-        # 決定論的モード設定
-        self._setup_deterministic_mode()
-        
         # 既存DSSMSコンポーネントの初期化
         try:
             if HierarchicalRankingSystem:
@@ -289,71 +286,6 @@ class DSSMSBacktester:
         self.min_holding_period_hours = self.config.get('min_holding_period_hours', 24)  # 1日
         
         self.logger.info("DSSMSBacktester初期化完了")
-
-    def _setup_deterministic_mode(self):
-        """決定論的モード設定"""
-        try:
-            # 設定ファイル読み込み
-            config_path = Path(__file__).parent.parent.parent / "config" / "dssms" / "dssms_backtester_config.json"
-            if config_path.exists():
-                with open(config_path, 'r', encoding='utf-8') as f:
-                    config = json.load(f)
-                    
-                execution_mode = config.get('execution_mode', {})
-                randomness_control = config.get('randomness_control', {})
-                
-                if execution_mode.get('deterministic', True):
-                    # ランダムシード固定
-                    import random
-                    
-                    seed = execution_mode.get('random_seed', 42)
-                    np.random.seed(seed)
-                    random.seed(seed)
-                    
-                    self.logger.info(f"決定論的モード有効: シード={seed}")
-                    
-                    # ランダム要素制御設定
-                    self.deterministic_config = {
-                        'enable_score_noise': randomness_control.get('scoring', {}).get('enable_noise', False),
-                        'enable_switching_probability': randomness_control.get('switching', {}).get('enable_probabilistic', False),
-                        'use_fixed_execution': config.get('performance_calculation', {}).get('use_fixed_execution_price', True),
-                        'enable_random_baseline': randomness_control.get('comparison', {}).get('enable_random_baseline', True),
-                        'random_seed': seed
-                    }
-                else:
-                    self.deterministic_config = {
-                        'enable_score_noise': True,
-                        'enable_switching_probability': True, 
-                        'use_fixed_execution': False,
-                        'enable_random_baseline': True,
-                        'random_seed': 42
-                    }
-            else:
-                # デフォルト決定論的設定
-                self.deterministic_config = {
-                    'enable_score_noise': False,
-                    'enable_switching_probability': False,
-                    'use_fixed_execution': True,
-                    'enable_random_baseline': True,
-                    'random_seed': 42
-                }
-                
-                import random
-                np.random.seed(42)
-                random.seed(42)
-                
-                self.logger.info("デフォルト決定論的モード使用")
-                
-        except Exception as e:
-            self.logger.warning(f"決定論的モード設定エラー: {e}")
-            # フォールバック設定
-            self.deterministic_config = {
-                'enable_score_noise': False,
-                'enable_switching_probability': False,
-                'use_fixed_execution': True,
-                'enable_random_baseline': True,
-                'random_seed': 42
-            }
 
     def _get_default_config(self) -> Dict[str, Any]:
         """デフォルト設定取得"""
@@ -585,7 +517,7 @@ class DSSMSBacktester:
                 volatility = float(np.std(daily_returns)) * np.sqrt(252) if daily_returns else 0.0
                 
                 # 最大ドローダウン
-                max_drawdown = self._calculate_max_drawdown()
+                max_drawdown = self._calculate_max_drawdown(portfolio_values)
                 
                 # シャープレシオ
                 risk_free_rate = 0.001  # 0.1% (年率)
@@ -750,7 +682,7 @@ class DSSMSBacktester:
             return {'date': date, 'market_trend': 'unknown'}
 
     def _update_symbol_ranking(self, date: datetime, symbols: List[str]) -> Dict[str, Any]:
-        """現実的な銘柄ランキング更新（安定性重視）"""
+        """銘柄ランキング更新（実データ使用版）"""
         try:
             # DSSMS統合パッチをインポート
             try:
@@ -762,43 +694,19 @@ class DSSMSBacktester:
                 self.logger.debug(f"実データランキング取得: {len(ranking_scores)}銘柄")
                 
             except ImportError:
-                self.logger.warning("統合パッチ未使用: 安定ランキング実行")
-                
-                # 前回のランキングを取得（継続性のため）
-                previous_rankings = getattr(self, '_previous_rankings', {})
-                
+                self.logger.warning("統合パッチ未使用: フォールバック実行")
+                # フォールバック: 改良されたダミーランキング
                 ranking_scores = {}
                 for symbol in symbols:
-                    # 前回スコアがあれば継続性を持たせる
-                    if symbol in previous_rankings:
-                        base_score = previous_rankings[symbol]
-                        # 決定論的モードでの制御
-                        if self.deterministic_config.get('enable_score_noise', False):
-                            # 小さな変動のみ（±5%以内）
-                            variation = np.random.normal(0, 0.05)
-                            new_score = max(0.1, min(0.9, base_score + variation))
-                        else:
-                            # 決定論的モード: 固定変動（±2%）
-                            hash_variation = hash(symbol + str(date)) % 100 / 10000  # 0-0.01範囲
-                            new_score = max(0.1, min(0.9, base_score + hash_variation - 0.005))
+                    # より現実的なスコア分布
+                    if symbol.endswith('.T'):  # 日本株
+                        score = np.random.beta(2, 5) * 0.8 + 0.1  # 0.1-0.9のバイアス分布
                     else:
-                        # 新規銘柄
-                        if self.deterministic_config.get('enable_score_noise', False):
-                            new_score = np.random.normal(0.5, 0.1)
-                        else:
-                            # 決定論的モード: ハッシュベース初期スコア
-                            hash_score = (hash(symbol) % 100) / 100  # 0-1範囲
-                            new_score = 0.3 + hash_score * 0.4  # 0.3-0.7範囲
-                        new_score = max(0.1, min(0.9, new_score))
-                    
-                    ranking_scores[symbol] = new_score
-                
-                # ランキングを保存（次回使用のため）
-                self._previous_rankings = ranking_scores.copy()
+                        score = np.random.uniform(0.2, 0.8)
+                    ranking_scores[symbol] = score
             
-            # 上位銘柄選択（変更を最小限に）
-            sorted_symbols = sorted(ranking_scores.items(), key=lambda x: x[1], reverse=True)
-            top_symbols = sorted_symbols[:5]
+            # 上位5銘柄を選択
+            top_symbols = sorted(ranking_scores.items(), key=lambda x: x[1], reverse=True)[:5]
             
             result = {
                 'date': date,
@@ -806,10 +714,10 @@ class DSSMSBacktester:
                 'top_symbol': top_symbols[0][0] if top_symbols else None,
                 'top_score': top_symbols[0][1] if top_symbols else 0,
                 'total_symbols': len(ranking_scores),
-                'data_source': 'real_data' if 'update_symbol_ranking_with_real_data' in locals() else 'stable_fallback'
+                'data_source': 'real_data' if 'update_symbol_ranking_with_real_data' in locals() else 'fallback'
             }
             
-            self.logger.info(f"安定ランキング更新: 上位={result['top_symbol']} ({result['top_score']:.3f})")
+            self.logger.info(f"ランキング更新完了: 上位={result['top_symbol']} ({result['top_score']:.3f})")
             return result
             
         except Exception as e:
@@ -818,7 +726,7 @@ class DSSMSBacktester:
 
     def _evaluate_switch_decision(self, date: datetime, current_position: Optional[str], 
                                 ranking_result: Dict[str, Any], market_condition: Dict[str, Any]) -> Dict[str, Any]:
-        """改善版: 切替判定（過度な切替を抑制）"""
+        """切替判定"""
         try:
             should_switch = False
             reason = ""
@@ -831,78 +739,29 @@ class DSSMSBacktester:
                 should_switch = True
                 reason = "初期ポジション設定"
                 target_symbol = top_symbol
-                return {
-                    'should_switch': should_switch,
-                    'target_symbol': target_symbol,
-                    'reason': reason,
-                    'trigger': SwitchTrigger.DAILY_EVALUATION if should_switch else None
-                }
             
-            # 既存ポジションがある場合の厳格な切替判定
-            if current_position and top_symbol and current_position != top_symbol:
+            # 既存ポジションがある場合の切替判定
+            elif current_position and top_symbol and current_position != top_symbol:
                 current_score = ranking_result.get('rankings', {}).get(current_position, 0)
                 top_score = ranking_result.get('rankings', {}).get(top_symbol, 0)
                 
-                # 1. 最小保有期間チェック（24時間未満なら切替しない）
-                if len(self.switch_history) > 0:
-                    last_switch = self.switch_history[-1]
-                    hours_since_last_switch = (date - last_switch.timestamp).total_seconds() / 3600
-                    if hours_since_last_switch < 24.0:  # 最小24時間保有
-                        return {
-                            'should_switch': False,
-                            'target_symbol': current_position,
-                            'reason': f"最小保有期間未満: {hours_since_last_switch:.1f}時間",
-                            'trigger': None
-                        }
-                
-                # 2. スコア差の厳格化（20%以上の差が必要）
-                score_threshold = 0.20  # 10% -> 20%に変更
-                score_diff = top_score - current_score
-                
-                if score_diff > score_threshold:
-                    # 3. 追加条件: 連続切替回数制限
-                    recent_switches = [s for s in self.switch_history 
-                                     if (date - s.timestamp).days <= 7]  # 過去7日
-                    
-                    if len(recent_switches) >= 3:  # 週3回以上の切替を制限
-                        return {
-                            'should_switch': False,
-                            'target_symbol': current_position,
-                            'reason': f"週間切替制限: {len(recent_switches)}回",
-                            'trigger': None
-                        }
-                    
-                    # 4. 市場ボラティリティチェック（高ボラ時は切替しない）
-                    if market_condition.get('volatility_level') == 'high':
-                        return {
-                            'should_switch': False,
-                            'target_symbol': current_position,
-                            'reason': "高ボラティリティ期間",
-                            'trigger': None
-                        }
-                    
-                    # 全条件をクリアした場合のみ切替
+                # スコア差が十分大きい場合に切替
+                score_threshold = 0.1
+                if top_score - current_score > score_threshold:
                     should_switch = True
-                    reason = f"スコア大幅改善: {current_score:.3f} -> {top_score:.3f} (+{score_diff:.3f})"
+                    reason = f"スコア改善: {current_score:.3f} -> {top_score:.3f}"
                     target_symbol = top_symbol
-                else:
-                    reason = f"スコア差不足: {score_diff:.3f} < {score_threshold}"
             
             return {
                 'should_switch': should_switch,
-                'target_symbol': target_symbol or current_position,
+                'target_symbol': target_symbol,
                 'reason': reason,
                 'trigger': SwitchTrigger.DAILY_EVALUATION if should_switch else None
             }
             
         except Exception as e:
             self.logger.warning(f"切替判定エラー {date}: {e}")
-            return {
-                'should_switch': False,
-                'target_symbol': current_position,
-                'reason': f"エラー: {e}",
-                'trigger': None
-            }
+            return {'should_switch': False}
 
     def _execute_switch(self, date: datetime, current_position: Optional[str], 
                        switch_decision: Dict[str, Any], portfolio_value: float) -> Dict[str, Any]:
@@ -921,24 +780,13 @@ class DSSMSBacktester:
             # 切替コスト計算
             switch_cost = portfolio_value * self.switch_cost_rate
             
-            # 保有期間計算（実際の最後のスイッチからの時間）
-            if len(self.switch_history) > 0:
-                last_switch = self.switch_history[-1]
-                holding_period_hours = (date - last_switch.timestamp).total_seconds() / 3600
-            else:
-                holding_period_hours = 24.0  # 初回は24時間とする
+            # 保有期間計算
+            holding_period_hours = 24.0
             
-            # 現実的な損益計算（決定論的制御）
+            # 現実的な損益計算
             if current_position:
-                # 決定論的モードでの損益計算
-                if self.deterministic_config.get('use_fixed_execution', True):
-                    # 固定損益率（シンボルとタイムスタンプのハッシュベース）
-                    hash_value = hash(current_position + str(date)) % 1000 / 1000  # 0-1範囲
-                    profit_rate = -0.01 + hash_value * 0.04  # -1%〜+3%範囲
-                    profit_loss = portfolio_value * profit_rate
-                else:
-                    # 既存ポジションからの損益（-3%～+5%の範囲）
-                    profit_loss = portfolio_value * np.random.uniform(-0.03, 0.05)
+                # 既存ポジションからの損益（-3%～+5%の範囲）
+                profit_loss = portfolio_value * np.random.uniform(-0.03, 0.05)
             else:
                 profit_loss = 0.0
             
@@ -1432,488 +1280,59 @@ class DSSMSBacktester:
                 self.logger.info("Excel出力が無効化されています")
                 return ""
             
-            self.logger.info("DSSMS専用Excel出力システムV2での出力開始")
-            
             # 出力ディレクトリ設定
             if output_dir is None:
                 output_dir = "backtest_results/dssms_results"
             
-            # バックテスト結果データを準備
-            backtest_result = self._prepare_dssms_result_data()
+            # タイムスタンプ
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"dssms_backtest_results_{timestamp}.xlsx"
             
-            # 新しいDSSMS Excel Exporter V2を使用
-            exporter = DSSMSExcelExporterV2(initial_capital=self.initial_capital)
-            output_path = exporter.export_dssms_results(backtest_result, None)
+            # DSSMSバックテスト用のデータフレーム作成
+            summary_data = {
+                'DSSMS Performance': [
+                    f"{performance_metrics.total_return:.2%}",
+                    f"{performance_metrics.volatility:.2%}",
+                    f"{performance_metrics.max_drawdown:.2%}",
+                    f"{performance_metrics.sharpe_ratio:.3f}",
+                    f"{performance_metrics.sortino_ratio:.3f}",
+                    performance_metrics.symbol_switches_count,
+                    f"{performance_metrics.average_holding_period_hours:.1f}",
+                    f"{performance_metrics.switch_success_rate:.2%}",
+                    f"{performance_metrics.switch_costs_total:,.0f}",
+                    f"{performance_metrics.dynamic_selection_efficiency:.3f}"
+                ]
+            }
+            
+            # Excel出力（既存システムを活用）
+            # 簡易的なデータフレーム作成
+            portfolio_df = pd.DataFrame(self.portfolio_history)
+            
+            # 簡易的なシグナル列追加（Excel出力システム互換性のため）
+            portfolio_df['Entry_Signal'] = 0
+            portfolio_df['Exit_Signal'] = 0
+            portfolio_df['Adj Close'] = portfolio_df.get('portfolio_value', self.initial_capital)
+            
+            # 既存のExcel出力システムを使用
+            output_path = save_backtest_results_simple(
+                stock_data=portfolio_df,
+                ticker="DSSMS_BACKTEST",
+                output_dir=output_dir,
+                filename=filename
+            )
             
             if output_path:
-                self.logger.info(f"DSSMS結果をExcel V2で出力しました: {output_path}")
-                self.logger.info(f"銘柄切り替え回数: {len(self.switch_history)}回")
-                self.logger.info(f"ポートフォリオ履歴: {len(self.portfolio_history)}日分")
+                self.logger.info(f"DSSMS結果をExcelに出力しました: {output_path}")
                 return output_path
             else:
-                self.logger.error("Excel V2出力に失敗しました")
+                self.logger.error("Excel出力に失敗しました")
                 return ""
                 
         except Exception as e:
             self.logger.error(f"Excel出力エラー: {e}")
             import traceback
             self.logger.error(traceback.format_exc())
-                
-        except Exception as e:
-            self.logger.error(f"Excel V2出力エラー: {e}")
-            import traceback
-            self.logger.error(traceback.format_exc())
             return ""
-    
-    def _prepare_dssms_result_data(self) -> Dict[str, Any]:
-        """
-        DSSMS専用Excel出力システムV2用のバックテスト結果データを準備
-        
-        Returns:
-            Dict[str, Any]: DSSMS Excel Exporter V2用の結果データ
-        """
-        try:
-            self.logger.info("DSSMS結果データ準備開始")
-            
-            # 基本パフォーマンス指標
-            final_value = self.portfolio_history[-1] if self.portfolio_history else self.initial_capital
-            total_return = (final_value - self.initial_capital) / self.initial_capital
-            
-            # 切替成功率計算
-            successful_switches = sum(1 for switch in self.switch_history 
-                                    if switch.get("profit_loss", 0) > 0)
-            switch_success_rate = (successful_switches / len(self.switch_history) 
-                                 if self.switch_history else 0)
-            
-            # 平均保有期間計算
-            avg_holding_hours = np.mean([switch.get("holding_period_hours", 24) 
-                                       for switch in self.switch_history]) if self.switch_history else 24
-            
-            # 切替コスト合計
-            total_switch_cost = sum(switch.get("switch_cost", 0) 
-                                  for switch in self.switch_history)
-            
-            # 日次リターン計算
-            daily_returns = self._calculate_daily_returns()
-            
-            # 結果データ辞書作成
-            result_data = {
-                "execution_time": datetime.now().strftime("%Y年%m月%d日 %H:%M:%S"),
-                "backtest_period": f"{self.start_date} - {self.end_date}",
-                "initial_capital": self.initial_capital,
-                "final_portfolio_value": final_value,
-                "total_return": total_return,
-                "annualized_return": self._calculate_annualized_return(total_return),
-                "max_drawdown": self._calculate_max_drawdown(),
-                "sharpe_ratio": self._calculate_sharpe_ratio(daily_returns),
-                "switch_count": len(self.switch_history),
-                "switch_success_rate": switch_success_rate,
-                "avg_holding_period_hours": avg_holding_hours,
-                "total_switch_cost": total_switch_cost,
-                "daily_returns": daily_returns,
-                "portfolio_values": self.portfolio_history,
-                "switch_history": self.switch_history,
-                "start_date": self.start_date,
-                "end_date": self.end_date
-            }
-            
-            self.logger.info(f"DSSMS結果データ準備完了: {len(self.switch_history)}回の切替データ")
-            return result_data
-            
-        except Exception as e:
-            self.logger.error(f"DSSMS結果データ準備エラー: {e}")
-            return {}
-    
-    def _calculate_daily_returns(self) -> List[float]:
-        """日次リターン計算"""
-        if len(self.portfolio_history) < 2:
-            return [0.0]
-        
-        returns = []
-        for i in range(1, len(self.portfolio_history)):
-            daily_return = (self.portfolio_history[i] / self.portfolio_history[i-1]) - 1
-            returns.append(daily_return)
-        
-        return [0.0] + returns  # 初日は0%リターン
-    
-    def _calculate_annualized_return(self, total_return: float) -> float:
-        """年率リターン計算"""
-        if not self.portfolio_history:
-            return 0.0
-        
-        days = len(self.portfolio_history)
-        if days < 365:
-            # 短期間の場合は年率換算
-            return (1 + total_return) ** (365 / days) - 1
-        else:
-            return total_return
-    
-    def _calculate_max_drawdown(self) -> float:
-        """最大ドローダウン計算（portfolio_historyから）"""
-        if len(self.portfolio_history) < 2:
-            return 0.0
-        
-        # portfolio_historyから値を抽出
-        values = []
-        for record in self.portfolio_history:
-            if isinstance(record, dict) and 'portfolio_value' in record:
-                values.append(record['portfolio_value'])
-            elif isinstance(record, (int, float)):
-                values.append(record)
-        
-        if len(values) < 2:
-            return 0.0
-        
-        values = np.array(values)
-        peak = np.maximum.accumulate(values)
-        drawdown = (values - peak) / peak
-        
-        return np.min(drawdown)
-    
-    def _calculate_sharpe_ratio(self, daily_returns: List[float]) -> float:
-        """シャープレシオ計算"""
-        if not daily_returns or len(daily_returns) < 2:
-            return 0.0
-        
-        returns_array = np.array(daily_returns)
-        mean_return = np.mean(returns_array)
-        std_return = np.std(returns_array)
-        
-        if std_return == 0:
-            return 0.0
-        
-        # 年率換算
-        sharpe = (mean_return * 252) / (std_return * np.sqrt(252))
-        return sharpe
-
-    def _prepare_excel_data(self) -> pd.DataFrame:
-        """
-        DSSMSバックテストデータをExcel出力システム用に変換（改良版）
-        各銘柄切り替えを個別の取引として正確に分離
-        
-        NOTE: この関数は廃止予定です。新しいV2システムを使用してください。
-        
-        Returns:
-            pd.DataFrame: Excel出力システム用のデータフレーム
-        """
-        self.logger.warning("_prepare_excel_data()は廃止予定です。新しいV2システムを使用してください。")
-        return pd.DataFrame()
-        try:
-            self.logger.info("DSSMS Excel用データ準備開始（改良版）")
-            
-            # 1. switch_historyから個別取引を生成
-            individual_trades = self._convert_switches_to_trades()
-            
-            if not individual_trades:
-                self.logger.warning("個別取引データが空です")
-                return pd.DataFrame()
-            
-            # 2. ポートフォリオ履歴ベースのデータフレーム作成
-            portfolio_df = self._create_portfolio_dataframe()
-            
-            if portfolio_df.empty:
-                self.logger.warning("ポートフォリオデータフレームが空です") 
-                return pd.DataFrame()
-            
-            # 3. 取引シグナルを正確に設定
-            portfolio_df = self._set_accurate_trade_signals(portfolio_df, individual_trades)
-            
-            # 4. Excel出力システム互換性のための列追加
-            portfolio_df = self._add_excel_compatibility_columns(portfolio_df)
-            
-            # 5. 統計情報をログ出力
-            self._log_conversion_statistics(portfolio_df, individual_trades)
-            
-            return portfolio_df
-            
-        except Exception as e:
-            self.logger.error(f"Excel用データ準備エラー（改良版）: {e}")
-            import traceback
-            self.logger.error(traceback.format_exc())
-            return pd.DataFrame()
-            return ""
-
-    def _convert_switches_to_trades(self) -> list:
-        """
-        switch_historyを個別取引リストに変換（損益計算修正版）
-        
-        Returns:
-            list: 個別取引のリスト
-        """
-        try:
-            trades = []
-            
-            self.logger.info(f"銘柄切り替え履歴を個別取引に変換中: {len(self.switch_history)}件")
-            
-            for i, switch in enumerate(self.switch_history):
-                # 切り替え情報の取得
-                switch_time = getattr(switch, 'switch_time', None) or getattr(switch, 'timestamp', None)
-                from_symbol = getattr(switch, 'from_symbol', None)
-                to_symbol = getattr(switch, 'to_symbol', None)
-                
-                # 正確な損益・コスト情報を取得
-                profit_loss = getattr(switch, 'profit_loss_at_switch', 0)
-                switch_cost = getattr(switch, 'switch_cost', 0)
-                holding_period = getattr(switch, 'holding_period_hours', 0)
-                
-                # Portfolio価値の変化
-                portfolio_before = getattr(switch, 'portfolio_value_before', 0)
-                portfolio_after = getattr(switch, 'portfolio_value_after', 0)
-                
-                # 理由・トリガー情報
-                reason = getattr(switch, 'reason', 'DSSMS切り替え')
-                trigger = getattr(switch, 'trigger', 'daily_evaluation')
-                
-                if not switch_time:
-                    self.logger.warning(f"切り替え{i+1}: 日時情報なし")
-                    continue
-                
-                # 前のポジションのExit取引（初回以外）
-                if i > 0 and from_symbol:
-                    # 前回の切り替えからこの切り替えまでの損益を計算
-                    prev_switch = self.switch_history[i-1]
-                    prev_portfolio_value = getattr(prev_switch, 'portfolio_value_after', portfolio_before)
-                    
-                    # この期間の実際の損益（手数料除く）
-                    period_pnl = portfolio_before - prev_portfolio_value + switch_cost/2
-                    
-                    exit_trade = {
-                        'trade_id': f"DSSMS_EXIT_{i}",
-                        'date': switch_time,
-                        'symbol': from_symbol,
-                        'action': 'SELL',
-                        'strategy': f"DSSMS_{trigger}",
-                        'entry_date': getattr(prev_switch, 'timestamp', switch_time),
-                        'exit_date': switch_time,
-                        'pnl': period_pnl,  # 正確な期間損益
-                        'holding_period_hours': holding_period,
-                        'switch_cost': switch_cost / 2,  # ExitとEntryで分割
-                        'reason': f"Exit_{reason}",
-                        'portfolio_value_before': prev_portfolio_value,
-                        'portfolio_value_after': portfolio_before,
-                        'trade_type': 'EXIT'
-                    }
-                    trades.append(exit_trade)
-                    
-                    self.logger.debug(f"Exit取引: {from_symbol} 損益={period_pnl:.0f}円")
-                
-                # 新しいポジションのEntry取引
-                if to_symbol:
-                    entry_trade = {
-                        'trade_id': f"DSSMS_ENTRY_{i+1}",
-                        'date': switch_time,
-                        'symbol': to_symbol,
-                        'action': 'BUY',
-                        'strategy': f"DSSMS_{trigger}",
-                        'entry_date': switch_time,
-                        'exit_date': None,  # 次の切り替えまたは期間終了
-                        'pnl': 0,  # Entry時点では未実現
-                        'holding_period_hours': 0,  # 未完了
-                        'switch_cost': switch_cost / 2,  # ExitとEntryで分割
-                        'reason': f"Entry_{reason}",
-                        'portfolio_value_before': portfolio_before,
-                        'portfolio_value_after': portfolio_after,
-                        'trade_type': 'ENTRY'
-                    }
-                    trades.append(entry_trade)
-                    
-                    self.logger.debug(f"Entry取引: {to_symbol}")
-            
-            # 最後のポジションの決済処理
-            if trades and len(self.switch_history) > 0:
-                last_switch = self.switch_history[-1]
-                final_portfolio_value = getattr(last_switch, 'portfolio_value_after', 0)
-                
-                # 最後のエントリーの最終決済
-                last_entry_trades = [t for t in trades if t['trade_type'] == 'ENTRY']
-                if last_entry_trades:
-                    last_entry = last_entry_trades[-1]
-                    initial_value = last_entry['portfolio_value_after']
-                    final_pnl = final_portfolio_value - initial_value
-                    
-                    final_exit = {
-                        'trade_id': f"DSSMS_FINAL_EXIT",
-                        'date': last_switch.timestamp,
-                        'symbol': last_entry['symbol'],
-                        'action': 'SELL',
-                        'strategy': 'DSSMS_FINAL',
-                        'entry_date': last_entry['entry_date'],
-                        'exit_date': last_switch.timestamp,
-                        'pnl': final_pnl,
-                        'holding_period_hours': getattr(last_switch, 'holding_period_hours', 0),
-                        'switch_cost': 0,  # 最終決済は手数料なし
-                        'reason': 'Final_Settlement',
-                        'portfolio_value_before': initial_value,
-                        'portfolio_value_after': final_portfolio_value,
-                        'trade_type': 'FINAL_EXIT'
-                    }
-                    trades.append(final_exit)
-                    
-                    self.logger.debug(f"最終決済: 損益={final_pnl:.0f}円")
-            
-            self.logger.info(f"個別取引変換完了: {len(trades)}件の取引生成")
-            
-            # 損益合計をチェック
-            total_pnl = sum(t['pnl'] for t in trades)
-            self.logger.info(f"計算された総損益: {total_pnl:.0f}円")
-            
-            return trades
-            
-        except Exception as e:
-            self.logger.error(f"切り替え→取引変換エラー: {e}")
-            return []
-
-    def _create_portfolio_dataframe(self) -> pd.DataFrame:
-        """
-        ポートフォリオ履歴からベースDataFrameを作成
-        
-        Returns:
-            pd.DataFrame: ポートフォリオベースのDataFrame
-        """
-        try:
-            if not self.portfolio_history:
-                self.logger.warning("ポートフォリオ履歴が空です")
-                return pd.DataFrame()
-            
-            # ポートフォリオ履歴をDataFrameに変換
-            portfolio_df = pd.DataFrame(self.portfolio_history)
-            
-            # 日付列の処理
-            if 'date' in portfolio_df.columns:
-                portfolio_df['date'] = pd.to_datetime(portfolio_df['date'])
-                portfolio_df.set_index('date', inplace=True)
-            else:
-                self.logger.error("日付列が見つかりません")
-                return pd.DataFrame()
-            
-            # 基本列の追加
-            portfolio_df['Adj Close'] = portfolio_df.get('portfolio_value', self.initial_capital)
-            portfolio_df['Close'] = portfolio_df['Adj Close']
-            portfolio_df['Open'] = portfolio_df['Adj Close']
-            portfolio_df['High'] = portfolio_df['Adj Close'] * 1.005
-            portfolio_df['Low'] = portfolio_df['Adj Close'] * 0.995
-            portfolio_df['Volume'] = 1000000
-            portfolio_df['Strategy'] = 'DSSMS'
-            
-            # シグナル列を初期化
-            portfolio_df['Entry_Signal'] = 0
-            portfolio_df['Exit_Signal'] = 0
-            
-            self.logger.info(f"ポートフォリオDataFrame作成完了: {len(portfolio_df)}行")
-            return portfolio_df
-            
-        except Exception as e:
-            self.logger.error(f"ポートフォリオDataFrame作成エラー: {e}")
-            return pd.DataFrame()
-
-    def _set_accurate_trade_signals(self, portfolio_df: pd.DataFrame, trades: list) -> pd.DataFrame:
-        """
-        個別取引情報を基に正確なEntry/Exitシグナルを設定
-        
-        Args:
-            portfolio_df: ポートフォリオDataFrame
-            trades: 個別取引リスト
-            
-        Returns:
-            pd.DataFrame: シグナル設定済みDataFrame
-        """
-        try:
-            self.logger.info(f"取引シグナル設定開始: {len(trades)}件の取引")
-            
-            for trade in trades:
-                trade_date = trade['date']
-                
-                # 日付のマッチング（柔軟な処理）
-                matched_dates = []
-                
-                for idx in portfolio_df.index:
-                    idx_date = pd.to_datetime(idx).date() if hasattr(idx, 'date') else pd.to_datetime(idx).date()
-                    trade_date_only = pd.to_datetime(trade_date).date() if hasattr(trade_date, 'date') else pd.to_datetime(trade_date).date()
-                    
-                    if idx_date == trade_date_only:
-                        matched_dates.append(idx)
-                
-                # マッチした日付にシグナルを設定
-                for match_date in matched_dates:
-                    if trade['trade_type'] == 'ENTRY':
-                        portfolio_df.loc[match_date, 'Entry_Signal'] = 1
-                        portfolio_df.loc[match_date, 'Strategy'] = trade['strategy']
-                    elif trade['trade_type'] == 'EXIT':
-                        portfolio_df.loc[match_date, 'Exit_Signal'] = -1
-                    
-                    self.logger.debug(f"シグナル設定: {match_date} {trade['trade_type']} {trade['symbol']}")
-            
-            # 統計情報
-            entry_signals = (portfolio_df['Entry_Signal'] == 1).sum()
-            exit_signals = (portfolio_df['Exit_Signal'] == -1).sum()
-            
-            self.logger.info(f"シグナル設定完了: Entry={entry_signals}件, Exit={exit_signals}件")
-            return portfolio_df
-            
-        except Exception as e:
-            self.logger.error(f"シグナル設定エラー: {e}")
-            return portfolio_df
-
-    def _add_excel_compatibility_columns(self, portfolio_df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Excel出力システムとの互換性のための列を追加
-        
-        Args:
-            portfolio_df: ポートフォリオDataFrame
-            
-        Returns:
-            pd.DataFrame: 互換性列追加済みDataFrame
-        """
-        try:
-            # 必要な列が不足している場合は追加
-            required_columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume', 'Strategy']
-            
-            for col in required_columns:
-                if col not in portfolio_df.columns:
-                    if col in ['Open', 'High', 'Low', 'Close', 'Adj Close']:
-                        portfolio_df[col] = portfolio_df.get('portfolio_value', self.initial_capital)
-                    elif col == 'Volume':
-                        portfolio_df[col] = 1000000
-                    elif col == 'Strategy':
-                        portfolio_df[col] = 'DSSMS'
-            
-            self.logger.info("Excel互換性列の追加完了")
-            return portfolio_df
-            
-        except Exception as e:
-            self.logger.error(f"Excel互換性列追加エラー: {e}")
-            return portfolio_df
-
-    def _log_conversion_statistics(self, portfolio_df: pd.DataFrame, trades: list):
-        """
-        変換統計情報をログ出力
-        
-        Args:
-            portfolio_df: ポートフォリオDataFrame
-            trades: 個別取引リスト
-        """
-        try:
-            entry_count = (portfolio_df['Entry_Signal'] == 1).sum()
-            exit_count = (portfolio_df['Exit_Signal'] == -1).sum()
-            trade_count = len(trades)
-            
-            self.logger.info("=== DSSMS Excel変換統計 ===")
-            self.logger.info(f"データ期間: {portfolio_df.index[0]} - {portfolio_df.index[-1]}")
-            self.logger.info(f"総行数: {len(portfolio_df)}行")
-            self.logger.info(f"個別取引数: {trade_count}件")
-            self.logger.info(f"エントリーシグナル: {entry_count}件")
-            self.logger.info(f"エグジットシグナル: {exit_count}件")
-            self.logger.info(f"銘柄切り替え回数: {len(self.switch_history)}回")
-            
-            # 取引タイプ別統計
-            entry_trades = [t for t in trades if t['trade_type'] == 'ENTRY']
-            exit_trades = [t for t in trades if t['trade_type'] == 'EXIT']
-            
-            self.logger.info(f"ENTRY取引: {len(entry_trades)}件")
-            self.logger.info(f"EXIT取引: {len(exit_trades)}件")
-            
-        except Exception as e:
-            self.logger.error(f"統計情報出力エラー: {e}")
 
     def generate_detailed_report(self, simulation_result: Dict[str, Any], 
                                performance_metrics: DSSMSPerformanceMetrics,
@@ -2045,7 +1464,7 @@ class DSSMSBacktester:
             volatility = np.std(daily_returns) * np.sqrt(252) * 100 if daily_returns else 0.0
             
             # 最大ドローダウン計算
-            max_drawdown = self._calculate_max_drawdown() * 100
+            max_drawdown = self._calculate_max_drawdown(portfolio_values) * 100
             
             # シャープレシオ計算
             risk_free_rate = 0.01  # 1%
@@ -2124,7 +1543,7 @@ class DSSMSBacktester:
             daily_returns = self.performance_history.get('daily_returns', [])
             
             # 基本リスク指標
-            max_drawdown = self._calculate_max_drawdown() * 100
+            max_drawdown = self._calculate_max_drawdown(portfolio_values) * 100
             var_5_percent = np.percentile(daily_returns, 5) * 100 if daily_returns else 0.0
             cvar_5_percent = np.mean([r for r in daily_returns if r <= np.percentile(daily_returns, 5)]) * 100 if daily_returns else 0.0
             

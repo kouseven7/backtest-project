@@ -1,0 +1,255 @@
+{
+  "execution_environments": {
+    "controlled_short_term": {
+      "environment_type": "controlled_short_term",
+      "period_days": 30,
+      "symbol_count": 3,
+      "final_value": 938497.4670455253,
+      "total_return": -0.06150253295447468,
+      "switch_count": 4,
+      "execution_time": "2025-09-03T16:58:46.270072",
+      "data_dependency": "minimal",
+      "network_calls": "limited"
+    },
+    "production_like_long_term": {
+      "environment_type": "production_like_long_term",
+      "period_days": 364,
+      "symbol_count": 10,
+      "final_value": 3062882.8500833777,
+      "total_return": 2.0628828500833776,
+      "switch_count": 117,
+      "execution_time": "2025-09-03T16:58:53.347280",
+      "data_dependency": "extensive",
+      "network_calls": "heavy"
+    },
+    "environment_differences": {
+      "final_value": {
+        "env1_value": 938497.4670455253,
+        "env2_value": 3062882.8500833777,
+        "absolute_difference": 2124385.383037852,
+        "percentage_difference": 226.3602681556093
+      },
+      "total_return": {
+        "env1_value": -0.06150253295447468,
+        "env2_value": 2.0628828500833776,
+        "absolute_difference": 2.1243853830378523,
+        "percentage_difference": 3454.142912472177
+      },
+      "switch_count": {
+        "env1_value": 4,
+        "env2_value": 117,
+        "absolute_difference": 113,
+        "percentage_difference": 2825.0
+      },
+      "execution_conditions": {
+        "period_ratio": 12.133333333333333,
+        "symbol_ratio": 3.3333333333333335,
+        "data_dependency_change": "minimal -> extensive",
+        "network_dependency_change": "limited -> heavy"
+      }
+    }
+  },
+  "data_source_analysis": {
+    "yfinance_api_variance": {
+      "error": "'Adj Close'"
+    },
+    "data_timing_variance": {
+      "timing_variance": 25101.349140368264,
+      "max_difference": 59557,
+      "timing_dependent": "True",
+      "results": [
+        {
+          "execution_time": "2025-09-03T16:58:53.659557",
+          "timestamp_hash": -18130114077423079,
+          "delay_seconds": 0,
+          "simulated_value": 1076921
+        },
+        {
+          "execution_time": "2025-09-03T16:58:54.159682",
+          "timestamp_hash": 5268076258670233911,
+          "delay_seconds": 0.5,
+          "simulated_value": 1033911
+        },
+        {
+          "execution_time": "2025-09-03T16:58:55.160093",
+          "timestamp_hash": 7812301237643617364,
+          "delay_seconds": 1.0,
+          "simulated_value": 1017364
+        }
+      ]
+    },
+    "cache_vs_live": {
+      "cache_available": false,
+      "live_data_variable": true,
+      "recommendation": "データキャッシュシステムの導入を推奨",
+      "variance_source": "ライブデータ取得による変動性が主な原因と推定"
+    }
+  },
+  "configuration_differences": {
+    "dssms_config": {
+      "exists": true,
+      "deterministic_mode": true,
+      "random_seed": 42,
+      "config_hash": "0f86aa6e910e87dea4354e704d409f6c"
+    },
+    "environment_variables": {
+      "PYTHONHASHSEED": "NOT_SET",
+      "PYTHONPATH": "NOT_SET",
+      "TZ": "NOT_SET",
+      "LANG": "ja_JP.UTF-8",
+      "LC_ALL": "NOT_SET"
+    }
+  },
+  "timing_dependencies": {
+    "execution_time_variance": 393072.1536418812,
+    "time_dependent": "True",
+    "execution_attempts": [
+      {
+        "attempt": 1,
+        "execution_time": "2025-09-03T16:58:55.163401",
+        "time_dependent_value": 966344,
+        "system_timestamp": 1756886335.163401
+      },
+      {
+        "attempt": 2,
+        "execution_time": "2025-09-03T16:58:55.263816",
+        "time_dependent_value": 263979,
+        "system_timestamp": 1756886335.263816
+      },
+      {
+        "attempt": 3,
+        "execution_time": "2025-09-03T16:58:55.364465",
+        "time_dependent_value": 44821,
+        "system_timestamp": 1756886335.364465
+      }
+    ],
+    "variance_significant": "True"
+  },
+  "network_dependencies": {
+    "network_variance": 38389.280074868126,
+    "network_dependent": "True",
+    "network_conditions_tested": [
+      {
+        "condition": "optimal",
+        "delay": 0.0,
+        "network_dependent_value": 52769,
+        "timestamp": "2025-09-03T16:58:55.466095"
+      },
+      {
+        "condition": "moderate_delay",
+        "delay": 0.5,
+        "network_dependent_value": 750,
+        "timestamp": "2025-09-03T16:58:55.966907"
+      },
+      {
+        "condition": "high_delay",
+        "delay": 1.0,
+        "network_dependent_value": 94600,
+        "timestamp": "2025-09-03T16:58:56.967141"
+      }
+    ],
+    "variance_significant": "True"
+  },
+  "variance_sources": [
+    {
+      "source": "execution_environment",
+      "metric": "final_value",
+      "severity": "high",
+      "percentage_difference": 226.3602681556093,
+      "description": "実行環境の違いによるfinal_valueの差異"
+    },
+    {
+      "source": "execution_environment",
+      "metric": "total_return",
+      "severity": "high",
+      "percentage_difference": 3454.142912472177,
+      "description": "実行環境の違いによるtotal_returnの差異"
+    },
+    {
+      "source": "execution_environment",
+      "metric": "switch_count",
+      "severity": "high",
+      "percentage_difference": 2825.0,
+      "description": "実行環境の違いによるswitch_countの差異"
+    },
+    {
+      "source": "timing_dependency",
+      "metric": "execution_timing",
+      "severity": "moderate",
+      "description": "実行タイミングによる差異",
+      "variance": 393072.1536418812
+    },
+    {
+      "source": "network_dependency",
+      "metric": "network_conditions",
+      "severity": "moderate",
+      "description": "ネットワーク状況による差異",
+      "variance": 38389.280074868126
+    },
+    {
+      "source": "production_environment",
+      "metric": "full_year_simulation",
+      "severity": "critical",
+      "description": "本格運用環境での大幅な差異",
+      "variance_coefficient": 0.1375158438565512,
+      "value_range": 1028911.9745881702
+    }
+  ],
+  "production_reproduction": {
+    "runs_executed": 3,
+    "successful_runs": 3,
+    "final_value_mean": 3311708.770586107,
+    "final_value_std": 455412.4261942902,
+    "final_value_range": 1028911.9745881702,
+    "total_return_mean": 2.311708770586107,
+    "total_return_std": 0.4554124261942902,
+    "total_return_range": 1.02891197458817,
+    "variance_coefficient": 0.1375158438565512,
+    "production_runs": [
+      {
+        "run_id": 1,
+        "start_time": "2025-09-03T16:58:56.989127",
+        "end_time": "2025-09-03T16:59:01.124327",
+        "execution_duration_seconds": 4.1352,
+        "final_value": 3062882.8500833777,
+        "total_return": 2.0628828500833776,
+        "switch_count": 117,
+        "success": true
+      },
+      {
+        "run_id": 2,
+        "start_time": "2025-09-03T16:59:01.124794",
+        "end_time": "2025-09-03T16:59:05.216523",
+        "execution_duration_seconds": 4.091729,
+        "final_value": 3950577.7181315566,
+        "total_return": 2.9505777181315564,
+        "switch_count": 118,
+        "success": true
+      },
+      {
+        "run_id": 3,
+        "start_time": "2025-09-03T16:59:05.216913",
+        "end_time": "2025-09-03T16:59:09.488194",
+        "execution_duration_seconds": 4.271281,
+        "final_value": 2921665.7435433865,
+        "total_return": 1.9216657435433864,
+        "switch_count": 113,
+        "success": true
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "priority": "medium",
+      "action": "固定タイムスタンプ実行",
+      "description": "実行時刻に依存する要素を固定値に置換",
+      "implementation": "決定論的モードで時刻依存計算をハッシュベース固定値に変更"
+    },
+    {
+      "priority": "critical",
+      "action": "完全オフライン実行環境",
+      "description": "外部データ取得を排除した完全制御環境での実行",
+      "implementation": "事前データ準備、ネットワーク非依存実行、結果検証システム"
+    }
+  ]
+}

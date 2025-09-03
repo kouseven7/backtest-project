@@ -1,0 +1,30 @@
+{
+  "ranking_weights": {
+    "technical_score": 0.3,
+    "fundamental_score": 0.25,
+    "momentum_score": 0.2,
+    "volatility_score": 0.15,
+    "volume_score": 0.1
+  },
+  "ranking_criteria": {
+    "min_score_threshold": 0.2,
+    "max_positions": 2,
+    "rebalance_frequency": "daily"
+  },
+  "hierarchical_levels": {
+    "tier1_threshold": 0.8,
+    "tier2_threshold": 0.6,
+    "tier3_threshold": 0.4
+  },
+  "filtering_rules": {
+    "exclude_low_volume": true,
+    "min_volume_threshold": 100000,
+    "exclude_gap_stocks": true,
+    "max_gap_percentage": 0.1
+  },
+  "scoring_parameters": {
+    "lookback_period_days": 20,
+    "volatility_window": 14,
+    "momentum_window": 10
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "yfinance_settings": {
+    "default_period": "1y",
+    "timezone": "Asia/Tokyo",
+    "suffix": ".T",
+    "retry_attempts": 3,
+    "retry_delay": 1
+  },
+  "data_quality": {
+    "min_data_points": 100,
+    "max_missing_ratio": 0.1,
+    "required_columns": [
+      "Open",
+      "High",
+      "Low",
+      "Close",
+      "Volume"
+    ]
+  },
+  "fallback_options": {
+    "use_cached_data": true,
+    "cache_duration_hours": 24,
+    "alternative_sources": [
+      "yahoo_fin",
+      "quandl"
+    ]
+  }
+}

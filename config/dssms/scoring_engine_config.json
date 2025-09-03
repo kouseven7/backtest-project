@@ -48,10 +48,17 @@
     "ttl_seconds": 300,
     "max_size": 1000
   },
+  "randomness_control": {
+    "enable_score_noise": false,
+    "enable_random_selection": false,
+    "deterministic_mode": true,
+    "random_seed": 42,
+    "noise_level": 0.0
+  },
   "error_handling": {
     "graceful_degradation": true,
     "partial_score_threshold": 0.5,
-    "fallback_score": 0.3,
+    "fallback_score": 0.5,
     "max_retries": 3
   },
   "data_sources": {

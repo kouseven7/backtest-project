@@ -1,0 +1,20 @@
+{
+  "summary": {
+    "test_date": "2025-09-03 16:39:14",
+    "period": "2023-12-01 - 2023-12-31",
+    "symbols": [
+      "6758",
+      "7203",
+      "9984"
+    ],
+    "initial_capital": 1000000,
+    "final_value": 929639.1003128437,
+    "total_return": -0.07036089968715631,
+    "switches": 0,
+    "deterministic_mode": true,
+    "random_seed": 42
+  },
+  "trades": [],
+  "daily_values": [],
+  "rankings": []
+}

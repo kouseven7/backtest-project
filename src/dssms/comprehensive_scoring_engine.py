@@ -38,6 +38,9 @@ class ComprehensiveScoringEngine:
         self.config = self._load_config(config_path)
         self.weights = self.config["weights"]
         
+        # 決定論的モード設定
+        self._setup_deterministic_mode()
+        
         # 既存コンポーネント初期化
         try:
             self.fundamental_analyzer = FundamentalAnalyzer()
@@ -53,6 +56,19 @@ class ComprehensiveScoringEngine:
         self.cache_timestamps = {}
         
         self.logger.info("ComprehensiveScoringEngine initialized")
+    
+    def _setup_deterministic_mode(self):
+        """決定論的モード設定"""
+        randomness_config = self.config.get("randomness_control", {})
+        self.deterministic_mode = randomness_config.get("deterministic_mode", True)
+        self.enable_score_noise = randomness_config.get("enable_score_noise", False)
+        
+        if self.deterministic_mode:
+            seed = randomness_config.get("random_seed", 42)
+            np.random.seed(seed)
+            self.logger.info(f"決定論的モード有効: シード={seed}")
+        else:
+            self.logger.info("非決定論的モード: ランダム要素有効")
     
     def _load_config(self, config_path: Path) -> Dict[str, Any]:
         """設定ファイル読み込み"""
@@ -307,8 +323,14 @@ class ComprehensiveScoringEngine:
             return self.config["error_handling"]["fallback_score"]
     
     def calculate_composite_score(self, symbol: str) -> float:
-        """総合スコア計算"""
+        """総合スコア計算（決定論的バージョン）"""
         try:
+            # 決定論的モードでのシード再設定
+            if self.deterministic_mode:
+                randomness_config = self.config.get("randomness_control", {})
+                seed = randomness_config.get("random_seed", 42)
+                np.random.seed(seed)
+            
             # ファンダメンタルスコア取得
             fundamental_score = 0.5  # デフォルト値
             if self.fundamental_analyzer:
@@ -330,12 +352,19 @@ class ComprehensiveScoringEngine:
                 volatility_score * self.weights["volatility"]
             )
             
+            # ノイズ追加の制御（決定論的モードでは無効）
+            if self.enable_score_noise and not self.deterministic_mode:
+                noise = np.random.normal(0, 0.01)  # 小さなノイズ
+                composite_score += noise
+                self.logger.debug(f"ノイズ追加: {noise:.4f}")
+            
             # 0-1範囲にクリップ
             composite_score = max(0.0, min(1.0, composite_score))
             
             self.logger.debug(f"総合スコア {symbol}: {composite_score:.3f} "
                             f"(F:{fundamental_score:.3f}, T:{technical_score:.3f}, "
-                            f"V:{volume_score:.3f}, Vol:{volatility_score:.3f})")
+                            f"V:{volume_score:.3f}, Vol:{volatility_score:.3f}) "
+                            f"決定論的:{self.deterministic_mode}")
             
             return composite_score
             
