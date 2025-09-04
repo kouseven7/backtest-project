@@ -1,0 +1,92 @@
+{
+    "conditional_execution": {
+        "enabled": true,
+        "description": "日次目標の条件付き実行システム - 収益性重視アプローチ",
+        "cost_efficiency": {
+            "max_switching_cost_ratio": 0.005,
+            "description": "切替コストが期待収益の0.5%以下の場合のみ実行"
+        },
+        "profit_protection": {
+            "minimum_expected_benefit_yen": 1000,
+            "profit_loss_threshold": 0.0,
+            "description": "最低1000円の期待利益、損失予想時はスキップ"
+        },
+        "market_suitability": {
+            "volatility_threshold": 0.02,
+            "trend_strength_minimum": 0.1,
+            "volume_ratio_minimum": 0.8,
+            "description": "市場適合性：ボラティリティ2%以上、トレンド強度10%以上、出来高比率80%以上"
+        },
+        "holding_period_optimization": {
+            "minimum_holding_days": 1,
+            "recent_switch_cooldown_hours": 6,
+            "description": "最低1日保有、6時間以内の連続切替禁止"
+        }
+    },
+    "emergency_mode": {
+        "enabled": false,
+        "description": "緊急時のみ強制実行（通常は無効）"
+    },
+    "intelligent_daily_target": {
+        "enabled": true,
+        "description": "インテリジェント日次目標システム - ハイブリッド適応型",
+        "base_daily_target": 1,
+        "market_weight": 0.4,
+        "performance_weight": 0.4,
+        "market_adaptability": {
+            "volatility_thresholds": {
+                "crisis": 0.35,
+                "high": 0.25,
+                "medium": 0.15,
+                "low": 0.10
+            },
+            "trend_strength_thresholds": {
+                "strong": 0.20,
+                "moderate": 0.10,
+                "weak": 0.05
+            },
+            "volume_ratio_thresholds": {
+                "high": 1.5,
+                "normal": 0.8,
+                "low": 0.5
+            }
+        },
+        "target_multipliers": {
+            "crisis_mode": 0.0,
+            "high_volatility": 0.3,
+            "medium_volatility": 0.7,
+            "low_volatility": 1.2,
+            "strong_trend": 1.5,
+            "weak_trend": 0.8,
+            "high_volume": 1.3,
+            "low_volume": 0.6
+        },
+        "performance_momentum": {
+            "lookback_days": 7,
+            "success_rate_weight": 0.7,
+            "profit_trend_weight": 0.3,
+            "momentum_multiplier_range": [0.5, 1.8]
+        },
+        "scoring_integration": {
+            "comprehensive_scoring_weight": 0.2,
+            "score_thresholds": {
+                "excellent": 0.7,
+                "poor": 0.3
+            },
+            "target_adjustments": {
+                "excellent_positions": 0.5,
+                "poor_positions": 1.8
+            }
+        },
+        "logging": {
+            "intelligent_target_log": true,
+            "detailed_calculation_log": true,
+            "adaptation_tracking": true
+        }
+    },
+    "logging": {
+        "detailed_decision_log": true,
+        "performance_tracking": true,
+        "cost_analysis_log": true
+    }
+}

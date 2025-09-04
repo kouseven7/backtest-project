@@ -1,0 +1,46 @@
+{
+  "optimization_rules": {
+    "performance_threshold": 0.05,
+    "confidence_threshold": 0.7,
+    "lookback_period": 20,
+    "min_data_points": 10,
+    "sharpe_ratio_weight": 0.25,
+    "momentum_weight": 0.2,
+    "consistency_weight": 0.15,
+    "risk_penalty_factor": 0.5
+  },
+  "daily_target": {
+    "target_threshold": 0.02,
+    "achievement_ratio": 0.8,
+    "time_pressure_factor": 0.5,
+    "min_confidence_override": 0.8,
+    "market_session_hours": 6.5,
+    "urgency_multiplier": 1.2,
+    "late_session_threshold": 0.7
+  },
+  "emergency_constraints": {
+    "max_drawdown_threshold": 0.05,
+    "var_threshold": 0.03,
+    "volatility_threshold": 0.25,
+    "emergency_confidence": 0.9,
+    "risk_override_threshold": 0.95,
+    "emergency_cooldown": 300,
+    "correlation_risk_threshold": 0.8,
+    "exposure_concentration_threshold": 0.7
+  },
+  "engine_settings": {
+    "max_history_length": 1000,
+    "decision_timeout": 30,
+    "enable_level_override": true,
+    "logging_level": "INFO",
+    "parallel_evaluation": false,
+    "fallback_to_maintenance": true
+  },
+  "integration_settings": {
+    "dssms_coordinator_integration": true,
+    "risk_management_integration": true,
+    "strategy_modules_integration": true,
+    "analysis_modules_integration": true,
+    "fallback_system_enabled": true
+  }
+}
