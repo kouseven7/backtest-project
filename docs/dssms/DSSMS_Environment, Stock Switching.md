@@ -278,3 +278,416 @@ config/dssms/
 ---
 
 **最終目標**: 信頼性の高い決定論的DSSMSシステムによる実取引成功準備完了
+
+---
+
+# 🚨 緊急問題調査・解決ロードマップ
+**Main.py実行エラー & DSSMS出力システム不整合問題**
+
+## 📊 問題現状
+
+### 🔴 主要問題
+1. **main.py実行エラー**: `ModuleNotFoundError: No module named 'output.simple_excel_exporter'`
+2. **DSSMS出力不整合**: Excelレポートとテキストレポートのデータ乖離
+3. **Excel出力異常**: サマリーシートの値が0または空白
+4. **取引履歴不整合**: 取引回数・損益計算の相違
+
+### 📈 影響範囲
+- **即座の影響**: main.pyによる統合バックテスト実行不可
+- **中期的影響**: DSSMSシステムの信頼性低下
+- **長期的影響**: 実取引準備の大幅遅延
+
+---
+
+## 🔍 Phase 1: 問題把握・原因特定
+
+### Phase 1.1: モジュール構造調査
+**目的**: インポートエラーの根本原因特定  
+**期間**: 即時実行  
+
+#### Task 1.1.1: 出力関連モジュール存在確認
+```powershell
+# 実行コマンド
+python -c "
+import os
+import glob
+
+print('=== 出力関連ファイル構造調査 ===')
+# outputディレクトリの全ファイル確認
+output_files = glob.glob('output/*.py')
+print('📁 output/内のPythonファイル:')
+for f in output_files:
+    print(f'  {f}')
+
+# simple_excel_exporterの存在確認
+simple_excel_files = glob.glob('**/simple_excel_exporter.py', recursive=True)
+print('\\n🔍 simple_excel_exporter.pyの場所:')
+for f in simple_excel_files:
+    print(f'  {f}')
+
+# __init__.pyの存在確認
+init_files = glob.glob('output/__init__.py')
+print('\\n📋 output/__init__.py:')
+print(f'  存在: {\"あり\" if init_files else \"なし\"}')
+"
+```
+**期待結果**: 欠損ファイルの特定、モジュール構造の把握
+
+#### Task 1.1.2: main.pyインポート依存関係調査
+```powershell
+# main.pyの詳細インポート解析
+python -c "
+import ast
+import os
+
+print('=== main.py インポート依存関係調査 ===')
+
+try:
+    with open('main.py', 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    tree = ast.parse(content)
+    imports = []
+    
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                imports.append(f'import {alias.name}')
+        elif isinstance(node, ast.ImportFrom):
+            module = node.module or ''
+            for alias in node.names:
+                imports.append(f'from {module} import {alias.name}')
+    
+    print('📋 main.pyの全インポート文:')
+    for imp in imports:
+        print(f'  {imp}')
+        
+    # 問題のあるインポートの特定
+    problem_imports = [imp for imp in imports if 'output' in imp and 'simple_excel_exporter' in imp]
+    print('\\n❌ 問題のあるインポート:')
+    for imp in problem_imports:
+        print(f'  {imp}')
+        
+except Exception as e:
+    print(f'❌ エラー: {e}')
+"
+```
+
+### Phase 1.2: インポートパス詳細調査
+**目的**: Pythonモジュール解決メカニズムの問題特定  
+
+#### Task 1.2.1: システムパス・環境調査
+```powershell
+python -c "
+import sys
+import os
+
+print('=== インポートパス調査 ===')
+print('現在のワーキングディレクトリ:', os.getcwd())
+print('\\nPythonパス:')
+for i, path in enumerate(sys.path):
+    print(f'  {i}: {path}')
+
+print('\\n=== モジュール検索テスト ===')
+try:
+    import output
+    print('✅ outputモジュール: インポート成功')
+    print(f'   パス: {output.__file__}')
+    print(f'   内容: {dir(output)}')
+except ImportError as e:
+    print(f'❌ outputモジュール: {e}')
+
+try:
+    from output import simple_excel_exporter
+    print('✅ simple_excel_exporter: インポート成功')
+except ImportError as e:
+    print(f'❌ simple_excel_exporter: {e}')
+    
+try:
+    import output.simple_excel_exporter
+    print('✅ output.simple_excel_exporter (直接): インポート成功')
+except ImportError as e:
+    print(f'❌ output.simple_excel_exporter (直接): {e}')
+"
+```
+
+### Phase 1.3: DSSMS出力システム調査
+**目的**: 出力システムの内部構造と動作フロー把握  
+
+#### Task 1.3.1: DSSMSバックテスター出力機能調査
+```powershell
+python -c "
+import inspect
+import sys
+sys.path.append('src')
+
+print('=== DSSMS出力システム調査 ===')
+try:
+    from dssms.dssms_backtester import DSSMSBacktester
+    
+    # クラスのメソッド一覧
+    methods = [method for method in dir(DSSMSBacktester) if not method.startswith('_')]
+    print('🔧 DSSMSBacktesterの公開メソッド:')
+    for method in methods:
+        print(f'  - {method}')
+    
+    # 出力関連メソッドの特定
+    output_methods = [m for m in methods if any(keyword in m.lower() for keyword in ['save', 'export', 'output', 'write', 'generate'])]
+    print('\\n📤 出力関連メソッド:')
+    for method in output_methods:
+        print(f'  - {method}')
+        
+    # 実際のインスタンス作成テスト
+    print('\\n🧪 インスタンス作成テスト:')
+    instance = DSSMSBacktester()
+    print('✅ DSSMSBacktesterインスタンス作成成功')
+    
+except ImportError as e:
+    print(f'❌ DSSMSBacktesterインポートエラー: {e}')
+except Exception as e:
+    print(f'❌ インスタンス作成エラー: {e}')
+"
+```
+
+#### Task 1.3.2: 既存出力ファイル分析
+```powershell
+python -c "
+import glob
+import os
+from datetime import datetime
+
+print('=== 既存出力ファイル分析 ===')
+
+# Excel出力ファイル
+excel_files = glob.glob('**/*.xlsx', recursive=True)
+excel_files.sort(key=os.path.getmtime, reverse=True)
+print('📊 最新のExcelファイル (上位5件):')
+for i, f in enumerate(excel_files[:5]):
+    mtime = datetime.fromtimestamp(os.path.getmtime(f))
+    size = os.path.getsize(f)
+    print(f'  {i+1}. {f}')
+    print(f'     更新: {mtime.strftime(\"%Y-%m-%d %H:%M:%S\")} | サイズ: {size:,} bytes')
+
+# レポートファイル
+report_files = glob.glob('**/*report*.txt', recursive=True)
+report_files.sort(key=os.path.getmtime, reverse=True)
+print('\\n📋 最新のレポートファイル (上位5件):')
+for i, f in enumerate(report_files[:5]):
+    mtime = datetime.fromtimestamp(os.path.getmtime(f))
+    size = os.path.getsize(f)
+    print(f'  {i+1}. {f}')
+    print(f'     更新: {mtime.strftime(\"%Y-%m-%d %H:%M:%S\")} | サイズ: {size:,} bytes')
+
+# DSSMSファイルのフィルタリング
+dssms_files = [f for f in excel_files + report_files if 'dssms' in f.lower()]
+print(f'\\n🎯 DSSMS関連ファイル数: {len(dssms_files)}')
+"
+```
+
+### Phase 1.4: データ不整合詳細調査
+**目的**: Excel出力とテキストレポートの乖離原因特定  
+
+#### Task 1.4.1: 最新出力ファイル内容比較
+```powershell
+python -c "
+import pandas as pd
+import glob
+import os
+import json
+
+print('=== データ不整合調査 ===')
+
+# 最新のExcelファイルを特定
+excel_files = glob.glob('**/*dssms*.xlsx', recursive=True)
+if excel_files:
+    latest_excel = max(excel_files, key=os.path.getmtime)
+    print(f'📊 最新Excelファイル: {latest_excel}')
+    
+    try:
+        # Excelファイルのシート一覧
+        xls = pd.ExcelFile(latest_excel)
+        print(f'   シート一覧: {xls.sheet_names}')
+        
+        # 各シートの基本情報
+        for sheet in xls.sheet_names:
+            try:
+                df = pd.read_excel(latest_excel, sheet_name=sheet)
+                print(f'\\n📋 [{sheet}] シート:')
+                print(f'   形状: {df.shape}')
+                print(f'   列名: {list(df.columns)[:10]}')  # 最初の10列
+                if not df.empty:
+                    print(f'   先頭3行:')
+                    print(df.head(3).to_string())
+            except Exception as e:
+                print(f'   ❌ {sheet}シート読み込みエラー: {e}')
+                
+    except Exception as e:
+        print(f'   ❌ Excel読み込みエラー: {e}')
+else:
+    print('❌ DSSMSのExcelファイルが見つかりません')
+
+# 最新のレポートファイル内容確認
+report_files = glob.glob('**/*dssms*report*.txt', recursive=True)
+if report_files:
+    latest_report = max(report_files, key=os.path.getmtime)
+    print(f'\\n📋 最新レポートファイル: {latest_report}')
+    
+    try:
+        with open(latest_report, 'r', encoding='utf-8') as f:
+            content = f.read()
+            lines = content.split('\\n')
+            
+        # 重要な数値を抽出
+        key_values = {}
+        for line in lines:
+            if '総リターン:' in line:
+                key_values['総リターン'] = line.strip()
+            elif '最終ポートフォリオ価値:' in line:
+                key_values['最終価値'] = line.strip()
+            elif '銘柄切替回数:' in line:
+                key_values['切替回数'] = line.strip()
+        
+        print('   📊 重要指標:')
+        for key, value in key_values.items():
+            print(f'     {key}: {value}')
+            
+    except Exception as e:
+        print(f'   ❌ レポート読み込みエラー: {e}')
+else:
+    print('❌ DSSMSのレポートファイルが見つかりません')
+"
+```
+
+### Phase 1.5: main.py実行環境調査
+**目的**: main.py実行時の詳細エラー情報取得  
+
+#### Task 1.5.1: main.py段階的実行テスト
+```powershell
+# 段階的インポートテスト
+python -c "
+print('=== main.py 段階的実行テスト ===')
+
+import sys
+import traceback
+
+# Step 1: 基本インポート
+try:
+    print('Step 1: 基本ライブラリインポート')
+    import pandas as pd
+    import numpy as np
+    import logging
+    print('✅ 基本ライブラリ: OK')
+except Exception as e:
+    print(f'❌ 基本ライブラリ: {e}')
+
+# Step 2: プロジェクト設定インポート
+try:
+    print('\\nStep 2: プロジェクト設定インポート')
+    from config.logger_config import setup_logger
+    from config.optimized_parameters import get_optimized_parameters
+    print('✅ プロジェクト設定: OK')
+except Exception as e:
+    print(f'❌ プロジェクト設定: {e}')
+    traceback.print_exc()
+
+# Step 3: 統合システムインポート
+try:
+    print('\\nStep 3: 統合システムインポート')
+    from config.multi_strategy_manager import MultiStrategyManager
+    print('✅ 統合システム: OK')
+except Exception as e:
+    print(f'❌ 統合システム: {e}')
+
+# Step 4: 問題のある出力モジュールインポート
+try:
+    print('\\nStep 4: 出力モジュールインポート')
+    from output.simple_simulation_handler import simulate_and_save
+    print('✅ 出力モジュール: OK')
+except Exception as e:
+    print(f'❌ 出力モジュール: {e}')
+    traceback.print_exc()
+"
+```
+
+---
+
+## 🛠️ Phase 2: 解決策設計・実装
+
+### Phase 2.1: 緊急修復 - モジュール構造修正
+**目的**: main.py実行エラーの即座解決  
+**優先度**: 🔴 最高  
+
+#### Task 2.1.1: 欠損ファイル作成
+- **simple_excel_exporter.py**: 基本Excel出力機能
+- **__init__.py修正**: 適切なモジュール公開
+- **インポートパス修正**: main.pyの依存関係正規化
+
+#### Task 2.1.2: 暫定出力システム構築
+- **統合出力ハンドラー**: 一時的な出力統合機能
+- **エラーハンドリング強化**: 堅牢な例外処理
+- **フォールバック機能**: 出力失敗時の代替処理
+
+### Phase 2.2: DSSMS出力システム再構築
+**目的**: データ整合性の確保と信頼性向上  
+**優先度**: 🟡 高  
+
+#### Task 2.2.1: 統一データ収集システム
+- **単一データソース**: 一元化されたデータ管理
+- **計算ロジック統一**: Excel・テキスト出力の同一計算基盤
+- **検証システム**: 出力データの自動整合性チェック
+
+#### Task 2.2.2: 多形式出力エンジン
+- **テンプレートシステム**: 柔軟な出力フォーマット対応
+- **動的レポート生成**: 設定ベースのレポート構成
+- **品質保証**: 出力前データ検証・承認フロー
+
+### Phase 2.3: 長期安定化
+**目的**: 将来的な拡張性と保守性確保  
+**優先度**: 🟢 中  
+
+#### Task 2.3.1: アーキテクチャ最適化
+- **依存関係整理**: クリーンなモジュール構造
+- **設定外部化**: 柔軟な設定管理システム
+- **テスト自動化**: 継続的品質保証
+
+---
+
+## 📅 実行スケジュール
+
+### 🚨 即時実行 (Phase 1)
+**今日実行**: 全調査タスクの順次実行  
+**所要時間**: 2-3時間  
+**成果物**: 問題調査レポート・根本原因特定
+
+### ⚡ 緊急修復 (Phase 2.1)
+**明日実行**: モジュール構造修正・main.py実行復旧  
+**所要時間**: 4-6時間  
+**成果物**: 動作するmain.py・基本出力機能
+
+### 🔧 システム再構築 (Phase 2.2-2.3)
+**今週内**: 出力システム全面改修・品質向上  
+**所要時間**: 2-3日  
+**成果物**: 信頼性の高い統合出力システム
+
+---
+
+## ✅ 成功基準
+
+### Phase 1 完了基準
+- [ ] 全問題の根本原因特定完了
+- [ ] 修復計画の詳細設計完了
+- [ ] 影響範囲・リスク評価完了
+
+### Phase 2.1 完了基準
+- [ ] main.py正常実行確認
+- [ ] 基本的な出力機能復旧
+- [ ] エラーハンドリング強化
+
+### Phase 2.2-2.3 完了基準
+- [ ] Excel・テキストレポートの完全整合性
+- [ ] 10回連続実行での同一結果保証
+- [ ] 包括的テストスイートによる品質確認
+
+---
+
+**注意**: この緊急対応ロードマップは既存の長期計画と並行実行し、システムの安定性を最優先として進行する。
