@@ -19,6 +19,8 @@ from trade_simulation import simulate_trades
 from output.excel_result_exporter import save_backtest_results, save_splits_to_excel
 # 新しいExcel出力モジュールもインポート
 from output.simple_excel_exporter import save_backtest_results_simple
+# テキストレポート機能を追加
+from output.main_text_reporter import generate_main_text_report
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\output.log")
@@ -66,6 +68,21 @@ def simulate_and_save(data: pd.DataFrame, ticker: str, splits: Optional[List[Tup
             logger.warning("新Excel出力に失敗しました")
     except Exception as e:
         logger.warning(f"新Excel出力エラー: {e}")
+    
+    # テキストレポート生成（新機能）
+    try:
+        text_report_path = generate_main_text_report(
+            stock_data=data,
+            ticker=ticker,
+            optimized_params=None,  # パラメータは必要に応じて渡す
+            output_dir=None  # デフォルトディレクトリを使用
+        )
+        if text_report_path:
+            logger.info(f"テキストレポート生成: {text_report_path}")
+        else:
+            logger.warning("テキストレポート生成に失敗しました")
+    except Exception as e:
+        logger.warning(f"テキストレポート生成エラー: {e}")
     
     # ウォークフォワード分割結果がある場合は保存
     if splits:

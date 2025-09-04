@@ -1,18 +1,20 @@
 """
-シンプルExcel出力システム - 緊急修復版
+シンプルExcel出力システム - Phase 2.3 強化版
 File: simple_excel_exporter.py
 Description: 
-  main.py実行エラー解決のための緊急対応版
-  save_backtest_results_simple関数を提供し、基本的なExcel出力を実現
+  Phase 2.3: データ品質最適化対応版
+  - data_extraction_enhancer.py統合
+  - 正確な取引データ抽出
+  - Excel品質向上
 
 Author: GitHub Copilot  
 Created: 2025-09-04
-Version: 1.0 (Emergency Fix)
+Version: 2.3 (Enhanced Data Quality)
 
 Purpose:
-  - ModuleNotFoundError解決
-  - 基本Excel出力機能提供
-  - 後のPhaseでの機能拡張準備
+  - 正確なトレード抽出とパフォーマンス計算
+  - Excel出力品質向上
+  - データ品質検証強化
 """
 
 import pandas as pd
@@ -21,25 +23,87 @@ from datetime import datetime
 from typing import Dict, Any, Optional, Union, List
 import warnings
 
+# 新規追加: データ抽出エンハンサー
+from .data_extraction_enhancer import MainDataExtractor, extract_and_analyze_main_data
+
 # 警告を抑制
 warnings.filterwarnings('ignore')
 
+class ExcelDataProcessor:
+    """Excel出力用データ処理クラス - Phase 2.3拡張"""
+    
+    def __init__(self):
+        self.extractor = MainDataExtractor()
+    
+    def process_main_data(self, stock_data: pd.DataFrame, ticker: str = "UNKNOWN") -> Dict[str, Any]:
+        """
+        main.pyデータを正確に処理
+        
+        Args:
+            stock_data: main.pyから渡されるDataFrame
+            ticker: 銘柄コード
+            
+        Returns:
+            Dict: 処理済みデータ
+        """
+        if stock_data is None or stock_data.empty:
+            return self._get_empty_data(ticker)
+        
+        # データ抽出エンハンサーで処理
+        analyzed_data = extract_and_analyze_main_data(stock_data, ticker)
+        
+        # Excel用に再構造化
+        return {
+            'metadata': {
+                'ticker': analyzed_data['ticker'],
+                'analysis_date': analyzed_data['extraction_timestamp'],
+                'data_quality': analyzed_data['data_quality'],
+                'period_start': analyzed_data['period']['start_date'],
+                'period_end': analyzed_data['period']['end_date'],
+                'total_days': analyzed_data['period']['total_days']
+            },
+            'summary': analyzed_data['performance'],
+            'trades': analyzed_data['trades'],
+            'raw_data': stock_data
+        }
+    
+    def _get_empty_data(self, ticker: str) -> Dict[str, Any]:
+        """空データの場合のデフォルト構造"""
+        return {
+            'metadata': {
+                'ticker': ticker,
+                'analysis_date': datetime.now(),
+                'data_quality': 'empty',
+                'period_start': datetime.now(),
+                'period_end': datetime.now(),
+                'total_days': 0
+            },
+            'summary': {
+                'final_portfolio_value': 1000000.0,
+                'total_return': 0.0,
+                'total_pnl': 0.0,
+                'num_trades': 0,
+                'win_rate': 0.0
+            },
+            'trades': [],
+            'raw_data': pd.DataFrame()
+        }
+
 def save_backtest_results_simple(
-    stock_data: Union[Dict[str, Any], Any] = None,
+    stock_data: Union[Dict[str, Any], pd.DataFrame, Any] = None,
     results: Union[Dict[str, Any], Any] = None,
     ticker: str = "UNKNOWN",
     filename: Optional[str] = None,
     output_dir: str = "backtest_results/improved_results"
 ) -> str:
     """
-    バックテスト結果をシンプルなExcel形式で保存
+    バックテスト結果をExcel形式で保存 - Phase 2.3強化版
     
-    緊急修復版: main.py実行エラー解決が主目的
-    基本的なExcel出力機能を提供し、後のPhaseで機能拡張予定
+    データ抽出エンハンサーを使用して正確な解析結果を出力
     
     Args:
-        stock_data: 株価データ（互換性のため）
-        results: バックテスト結果データ（辞書形式またはオブジェクト）
+        stock_data: 株価DataFrame（main.pyから渡される）
+        results: バックテスト結果データ（互換性のため）
         ticker: 銘柄コード
         filename: 出力ファイル名（Noneの場合は自動生成）
         output_dir: 出力ディレクトリ
@@ -52,13 +116,10 @@ def save_backtest_results_simple(
     """
     
     try:
-        # データの優先順位: results > stock_data
-        target_data = results if results is not None else stock_data
-        
         # 1. ファイル名生成
         if filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"simple_backtest_{ticker}_{timestamp}.xlsx"
+            filename = f"enhanced_backtest_{ticker}_{timestamp}.xlsx"
         
         # 2. 出力ディレクトリ確保
         if not output_dir:
@@ -66,18 +127,29 @@ def save_backtest_results_simple(
         os.makedirs(output_dir, exist_ok=True)
         filepath = os.path.join(output_dir, filename)
         
-        # 3. 結果データ正規化
-        normalized_data = _normalize_results_data(target_data)
+        # 3. データ処理（Phase 2.3新機能）
+        processor = ExcelDataProcessor()
+        
+        # stock_dataを優先して使用
+        if isinstance(stock_data, pd.DataFrame) and not stock_data.empty:
+            normalized_data = processor.process_main_data(stock_data, ticker)
+        else:
+            # フォールバック: 従来の処理
+            target_data = results if results is not None else stock_data
+            normalized_data = _normalize_results_data(target_data)
         
         # 4. Excel出力実行
         _create_excel_output(normalized_data, filepath)
         
-        print(f"✅ Excel出力完了: {filepath}")
+        print(f"✅ Phase 2.3 Enhanced Excel出力完了: {filepath}")
+        print(f"📊 最終ポートフォリオ価値: {normalized_data['summary'].get('final_portfolio_value', 0):,.0f}円")
+        print(f"🎯 総取引数: {normalized_data['summary'].get('num_trades', 0)}件")
         return filepath
         
     except Exception as e:
         print(f"⚠️ Excel出力エラー: {e}")
         # フォールバック: CSV出力
+        target_data = stock_data if stock_data is not None else results
         fallback_path = _create_fallback_output(target_data, output_dir, filename)
         print(f"📄 フォールバックCSV出力: {fallback_path}")
         return fallback_path

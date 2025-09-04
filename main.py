@@ -528,9 +528,31 @@ def main():
             # 最適化パラメータを使用して戦略を適用
             stock_data = apply_strategies_with_optimized_params(stock_data, index_data, optimized_params)
             
-        # バックテスト結果をExcelに出力（新Excel出力モジュール使用）
-        backtest_results = simulate_and_save(stock_data, ticker)
-        logger.info(f"改良版Excel出力: {backtest_results}")
+        # バックテスト結果をテキストレポート形式で出力（改良版）
+        try:
+            from output.main_text_reporter import generate_main_text_report
+            
+            text_report_path = generate_main_text_report(
+                stock_data=stock_data,
+                ticker=ticker,
+                optimized_params=optimized_params,
+                output_dir=None  # デフォルトディレクトリを使用
+            )
+            
+            if text_report_path:
+                logger.info(f"包括的テキストレポート生成完了: {text_report_path}")
+            else:
+                logger.warning("テキストレポート生成に失敗しました")
+                
+        except Exception as e:
+            logger.warning(f"テキストレポート生成エラー: {e}")
+        
+        # 従来のExcel出力も保持（参考用）
+        try:
+            backtest_results = simulate_and_save(stock_data, ticker)
+            logger.info(f"従来Excel出力: {backtest_results}")
+        except Exception as e:
+            logger.warning(f"Excel出力エラー: {e}")
         
         logger.info("マルチ戦略バックテストシステムが正常に完了しました")
         
