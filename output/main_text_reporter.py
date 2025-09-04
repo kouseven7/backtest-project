@@ -515,28 +515,41 @@ class MainTextReporter:
         lines.append("8. 統計サマリー")
         lines.append("-" * 40)
         
-        stats = analysis.get('basic_stats', {})
-        metrics = analysis.get('performance_metrics', {})
-        trades = analysis.get('trades', [])
+        # 正しいキー名を使用してデータを取得
+        performance = analysis.get('performance', {})
+        period = analysis.get('period', {})
+        trades_info = analysis.get('trades', {})
+        trades_list = trades_info.get('trade_list', []) if isinstance(trades_info, dict) else trades_info
         
         # 実行サマリー
         lines.append("実行サマリー:")
         lines.append(f"  レポート生成日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        lines.append(f"  総データ行数: {stats.get('total_rows', 0)}")
-        lines.append(f"  有効シグナル数: {stats.get('total_signals', 0)}")
-        lines.append(f"  実行取引数: {len(trades)}")
+        lines.append(f"  総データ行数: {period.get('trading_days', 0)}")
+        lines.append(f"  有効シグナル数: {len(trades_list) if isinstance(trades_list, list) else 0}")
+        lines.append(f"  実行取引数: {len(trades_list) if isinstance(trades_list, list) else 0}")
         lines.append("")
         
         # パフォーマンス要約
         lines.append("パフォーマンス要約:")
-        lines.append(f"  初期資金: ¥{stats.get('initial_capital', 1000000):,.0f}")
-        lines.append(f"  最終資金: ¥{stats.get('final_portfolio_value', 0):,.0f}")
-        lines.append(f"  総リターン: {stats.get('total_return_pct', 0):.2f}%")
+        lines.append(f"  初期資金: ¥{performance.get('initial_capital', 1000000):,.0f}")
+        lines.append(f"  最終資金: ¥{performance.get('final_portfolio_value', 0):,.0f}")
+        lines.append(f"  総リターン: {performance.get('total_return', 0) * 100:.2f}%")
         
-        if trades:
-            lines.append(f"  システム期待値: ¥{np.mean([t.get('pnl', 0) for t in trades]):,.0f}")
-            lines.append(f"  勝率: {metrics.get('win_rate', 0):.2f}%")
-            lines.append(f"  プロフィットファクター: {metrics.get('profit_factor', 0):.2f}")
+        if trades_list and len(trades_list) > 0:
+            # 取引リストから期待値を計算
+            if isinstance(trades_list, list):
+                pnls = [trade.get('pnl', 0) for trade in trades_list if isinstance(trade, dict)]
+                avg_pnl = np.mean(pnls) if pnls else 0
+            else:
+                avg_pnl = 0
+                
+            lines.append(f"  システム期待値: ¥{avg_pnl:,.0f}")
+            lines.append(f"  勝率: {performance.get('win_rate', 0) * 100:.2f}%")
+            lines.append(f"  プロフィットファクター: {performance.get('profit_factor', 0):.2f}")
+        else:
+            lines.append(f"  システム期待値: ¥0")
+            lines.append(f"  勝率: 0.00%")
+            lines.append(f"  プロフィットファクター: 0.00")
         
         lines.append("")
         lines.append("=" * 80)
