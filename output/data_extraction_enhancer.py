@@ -207,7 +207,20 @@ class MainDataExtractor:
         
         # 取引統計
         winning_trades = [t for t in trades if t['pnl'] > 0]
+        losing_trades = [t for t in trades if t['pnl'] < 0]
         win_rate = len(winning_trades) / len(trades) if trades else 0
+        
+        # 利益・損失統計
+        total_profit = sum(t['pnl'] for t in winning_trades) if winning_trades else 0
+        total_loss = abs(sum(t['pnl'] for t in losing_trades)) if losing_trades else 0
+        avg_profit = total_profit / len(winning_trades) if winning_trades else 0
+        avg_loss = total_loss / len(losing_trades) if losing_trades else 0
+        
+        # プロフィットファクター
+        profit_factor = total_profit / total_loss if total_loss > 0 else float('inf') if total_profit > 0 else 0
+        
+        # 純利益
+        net_profit = total_profit - total_loss
         
         avg_holding_days = np.mean([t['holding_period_days'] for t in trades]) if trades else 0
         avg_pnl = total_pnl / len(trades) if trades else 0
@@ -221,11 +234,19 @@ class MainDataExtractor:
             'sharpe_ratio': sharpe_ratio,
             'num_trades': len(trades),
             'winning_trades': len(winning_trades),
+            'losing_trades': len(losing_trades),
             'win_rate': win_rate,
             'avg_holding_days': avg_holding_days,
             'avg_pnl': avg_pnl,
             'max_profit': max([t['pnl'] for t in trades]) if trades else 0,
-            'max_loss': min([t['pnl'] for t in trades]) if trades else 0
+            'max_loss': min([t['pnl'] for t in trades]) if trades else 0,
+            # 新しく追加した指標
+            'total_profit': total_profit,
+            'total_loss': total_loss,
+            'avg_profit': avg_profit,
+            'avg_loss': avg_loss,
+            'profit_factor': profit_factor,
+            'net_profit': net_profit
         }
     
     def _get_zero_performance(self) -> Dict[str, float]:
@@ -239,11 +260,18 @@ class MainDataExtractor:
             'sharpe_ratio': 0.0,
             'num_trades': 0,
             'winning_trades': 0,
+            'losing_trades': 0,
             'win_rate': 0.0,
             'avg_holding_days': 0.0,
             'avg_pnl': 0.0,
             'max_profit': 0.0,
-            'max_loss': 0.0
+            'max_loss': 0.0,
+            'total_profit': 0.0,
+            'total_loss': 0.0,
+            'avg_profit': 0.0,
+            'avg_loss': 0.0,
+            'profit_factor': 0.0,
+            'net_profit': 0.0
         }
     
     def _calculate_daily_returns(self, stock_data: pd.DataFrame, trades: List[Dict[str, Any]]) -> List[float]:
