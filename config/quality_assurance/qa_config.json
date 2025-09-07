@@ -1,0 +1,85 @@
+{
+  "quality_assurance": {
+    "validation_thresholds": {
+      "performance_metrics": {
+        "min_total_return": -0.50,
+        "max_total_return": 10.0,
+        "min_sharpe_ratio": -3.0,
+        "max_sharpe_ratio": 5.0,
+        "max_drawdown": 0.60,
+        "min_win_rate": 0.05,
+        "max_win_rate": 0.95,
+        "tolerance_percentage": 0.05
+      },
+      "data_consistency": {
+        "missing_data_threshold": 0.02,
+        "duplicate_data_threshold": 0.01,
+        "outlier_detection_std": 3.0,
+        "timestamp_consistency": true,
+        "price_data_consistency": true
+      },
+      "output_format": {
+        "required_columns": [
+          "Date",
+          "Entry_Signal",
+          "Exit_Signal",
+          "Position",
+          "Price",
+          "Profit_Loss",
+          "Cumulative_Return"
+        ],
+        "column_data_types": {
+          "Date": "datetime",
+          "Entry_Signal": "int",
+          "Exit_Signal": "int",
+          "Position": "float",
+          "Price": "float",
+          "Profit_Loss": "float",
+          "Cumulative_Return": "float"
+        },
+        "validate_column_ranges": true
+      }
+    },
+    "error_handling": {
+      "critical_errors": {
+        "action": "stop_processing",
+        "log_level": "ERROR",
+        "notify": true
+      },
+      "warnings": {
+        "action": "continue_processing",
+        "log_level": "WARN",
+        "notify": false
+      },
+      "info": {
+        "action": "continue_processing",
+        "log_level": "INFO",
+        "notify": false
+      }
+    },
+    "regression_testing": {
+      "enabled": true,
+      "tolerance_threshold": 0.05,
+      "baseline_comparison": true,
+      "performance_comparison": true,
+      "output_format_comparison": true,
+      "test_cases_directory": "tests/regression",
+      "baseline_data_directory": "tests/baseline_data"
+    },
+    "logging": {
+      "quality_log_file": "logs/quality_assurance.log",
+      "validation_log_file": "logs/validation_results.log",
+      "regression_log_file": "logs/regression_tests.log",
+      "log_level": "INFO",
+      "detailed_validation_logs": true,
+      "performance_logs": true
+    },
+    "integration": {
+      "unified_output_engine_integration": true,
+      "existing_validator_integration": true,
+      "automatic_correction": true,
+      "pre_output_validation": true,
+      "post_output_validation": false
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "ticker": "UNKNOWN",
+    "start_date": "2025-09-07T23:38:55.833926",
+    "end_date": "2025-09-07T23:38:55.833928",
+    "generation_timestamp": "2025-09-07T23:38:55.833928",
+    "data_source": "simple_excel_exporter",
+    "analysis_type": "standard_backtest",
+    "version": "1.0"
+  },
+  "performance": {
+    "total_return": 0.0,
+    "total_pnl": 0.0,
+    "win_rate": 0.0,
+    "total_trades": 0,
+    "winning_trades": 0,
+    "losing_trades": 0,
+    "average_win": 0.0,
+    "average_loss": 0.0,
+    "profit_factor": 0.0,
+    "sharpe_ratio": 0.0,
+    "max_drawdown": 0.0,
+    "portfolio_value": 1000000.0,
+    "initial_capital": 1000000.0
+  },
+  "trades": []
+}

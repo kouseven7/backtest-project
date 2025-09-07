@@ -1,0 +1,18 @@
+[
+  {
+    "timestamp": "2025-09-07T23:38:55.835205",
+    "ticker": "UNKNOWN",
+    "data_source": "simple_excel_exporter",
+    "output_files": {
+      "json": "output\\qa_integration_test_20250907_233855.json"
+    },
+    "performance_summary": {
+      "total_trades": 0,
+      "win_rate": 0.0,
+      "total_return": 0.0,
+      "sharpe_ratio": 0.0,
+      "max_drawdown": 0.0,
+      "reliability_score": 0.0
+    }
+  }
+]

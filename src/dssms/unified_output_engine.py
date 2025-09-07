@@ -1,6 +1,7 @@
 """
 DSSMS Unified Output Engine
 Phase 2.3 Task 2.3.2: 多形式出力エンジン構築
+Phase 2.3 Task 2.3.3: 品質保証システム統合
 
 Purpose:
   - 既存出力システムの統合とラッピング
@@ -10,13 +11,15 @@ Purpose:
 
 Author: GitHub Copilot Agent
 Created: 2025-01-24
-Version: 1.0
+Updated: 2025-01-24 (Quality Assurance Integration)
+Version: 1.1
 
 Integration:
   - simple_excel_exporter.py ラッピング
   - dssms_excel_exporter_v2.py 統合
   - main_text_reporter.py 連携
   - data_extraction_enhancer.py 利用
+  - quality_assurance_engine.py 統合
 """
 
 import json
@@ -33,23 +36,35 @@ sys.path.append(str(project_root))
 from config.logger_config import setup_logger
 from src.dssms.output_data_model import UnifiedOutputModel, UnifiedDataModelConverter
 
+# 品質保証システムのインポート
+try:
+    from src.dssms.quality_assurance_engine import QualityAssuranceEngine, QualityAssuranceReport
+    qa_available = True
+except ImportError:
+    QualityAssuranceEngine = None
+    QualityAssuranceReport = None
+    qa_available = False
+
 # data_extraction_enhancerのインポート（outputディレクトリから）
 try:
     sys.path.append(str(project_root / "output"))
     from data_extraction_enhancer import MainDataExtractor
+    data_extractor_available = True
 except ImportError:
     MainDataExtractor = None
+    data_extractor_available = False
 
 
 class UnifiedOutputEngine:
-    """統一出力エンジン - 既存システムのラッパー"""
+    """統一出力エンジン - 既存システムのラッパー + 品質保証統合"""
     
-    def __init__(self, output_base_dir: Optional[str] = None):
+    def __init__(self, output_base_dir: Optional[str] = None, enable_quality_assurance: bool = True):
         """
         初期化
         
         Args:
             output_base_dir: 出力ベースディレクトリ
+            enable_quality_assurance: 品質保証システム有効化フラグ
         """
         self.logger = setup_logger(__name__)
         self.output_base_dir = Path(output_base_dir) if output_base_dir else Path("output")
@@ -58,13 +73,28 @@ class UnifiedOutputEngine:
         # 統一データモデル変換器
         self.converter = UnifiedDataModelConverter()
         
+        # 品質保証システム初期化
+        self.enable_quality_assurance = enable_quality_assurance and qa_available
+        if self.enable_quality_assurance:
+            try:
+                self.qa_engine = QualityAssuranceEngine()
+                self.logger.info("品質保証システム統合完了")
+            except Exception as e:
+                self.logger.warning(f"品質保証システム初期化失敗: {e}")
+                self.enable_quality_assurance = False
+                self.qa_engine = None
+        else:
+            self.qa_engine = None
+            if not qa_available:
+                self.logger.info("品質保証システムが利用できません")
+        
         # 既存出力システムの初期化
         self._init_existing_exporters()
         
         # 出力履歴
         self.output_history: List[Dict[str, Any]] = []
         
-        self.logger.info("統一出力エンジンが初期化されました")
+        self.logger.info(f"統一出力エンジンが初期化されました (QA: {'有効' if self.enable_quality_assurance else '無効'})")
     
     def _init_existing_exporters(self):
         """既存出力システムの初期化"""
@@ -73,7 +103,7 @@ class UnifiedOutputEngine:
             self.simple_excel_exporter = None
             self.dssms_excel_exporter = None
             self.text_reporter = None
-            self.data_extractor = MainDataExtractor() if MainDataExtractor else None
+            self.data_extractor = MainDataExtractor() if data_extractor_available and MainDataExtractor else None
             
             self.logger.info(f"出力システム初期化完了: data_extractor={'あり' if self.data_extractor else 'なし'}")
                 
@@ -84,6 +114,135 @@ class UnifiedOutputEngine:
             self.text_reporter = None
             self.data_extractor = None
     
+    def generate_unified_output_with_qa(self, 
+                                       data: Dict[str, Any], 
+                                       output_formats: List[str] = ['excel', 'json', 'text'],
+                                       output_prefix: str = 'qa_report',
+                                       run_regression_tests: bool = True,
+                                       force_enhanced_extraction: bool = True) -> Dict[str, Any]:
+        """
+        品質保証付き統一出力生成
+        
+        Args:
+            data: 入力データ（既存システム形式）
+            output_formats: 出力形式のリスト
+            output_prefix: 出力ファイルのプレフィックス
+            run_regression_tests: リグレッションテスト実行フラグ
+            force_enhanced_extraction: MainDataExtractorの強制使用
+            
+        Returns:
+            Dict[str, Any]: 出力結果と品質保証レポート
+        """
+        self.logger.info("品質保証付き統一出力生成開始")
+        
+        result = {
+            'output_files': {},
+            'qa_report': None,
+            'qa_summary': "",
+            'action_required': False,
+            'success': False
+        }
+        
+        try:
+            # 1. データをDataFrame形式に変換
+            backtest_results = self._convert_to_dataframe_format(data)
+            
+            # 2. 品質保証実行（出力前検証）
+            if self.enable_quality_assurance and self.qa_engine:
+                qa_report = self.qa_engine.run_quality_assurance(
+                    backtest_results, 
+                    metadata={'output_prefix': output_prefix},
+                    run_regression_tests=run_regression_tests
+                )
+                
+                result['qa_report'] = qa_report
+                result['qa_summary'] = qa_report.execution_summary
+                result['action_required'] = qa_report.action_required
+                
+                # 品質保証失敗時の処理
+                if qa_report.action_required:
+                    self.logger.error("品質保証チェック失敗により出力を停止します")
+                    result['qa_summary'] = "品質保証チェック失敗: " + qa_report.execution_summary
+                    
+                    # 品質保証レポートは生成
+                    qa_report_file = self.qa_engine.save_quality_report(qa_report)
+                    result['output_files']['qa_report'] = str(qa_report_file)
+                    
+                    return result
+                
+                self.logger.info(f"品質保証チェック完了: {qa_report.quality_assessment.quality_level}")
+            
+            # 3. 通常の統一出力生成
+            output_files = self.generate_unified_output(
+                data=data,
+                output_formats=output_formats,
+                output_prefix=output_prefix,
+                force_enhanced_extraction=force_enhanced_extraction
+            )
+            
+            result['output_files'].update(output_files)
+            
+            # 4. 品質保証レポート保存
+            if self.enable_quality_assurance and result['qa_report']:
+                qa_report_file = self.qa_engine.save_quality_report(result['qa_report'])
+                result['output_files']['qa_report'] = str(qa_report_file)
+            
+            result['success'] = True
+            self.logger.info("品質保証付き統一出力生成完了")
+            
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"品質保証付き統一出力生成エラー: {e}")
+            result['qa_summary'] = f"出力生成エラー: {e}"
+            result['action_required'] = True
+            return result
+    
+    def _convert_to_dataframe_format(self, data: Dict[str, Any]) -> Dict[str, pd.DataFrame]:
+        """データをDataFrame形式に変換"""
+        backtest_results = {}
+        
+        try:
+            # 統一データモデルに変換
+            unified_model = self.converter.convert_to_unified_model(data)
+            
+            # 戦略ごとのDataFrame作成
+            for strategy_name, strategy_data in unified_model.strategies.items():
+                df_data = {
+                    'Date': strategy_data.dates,
+                    'Entry_Signal': strategy_data.entry_signals,
+                    'Exit_Signal': strategy_data.exit_signals,
+                    'Position': strategy_data.positions,
+                    'Price': strategy_data.prices,
+                    'Profit_Loss': strategy_data.profit_loss,
+                    'Cumulative_Return': strategy_data.cumulative_returns
+                }
+                
+                # 最小長に合わせる
+                min_length = min(len(values) for values in df_data.values() if values)
+                if min_length > 0:
+                    for key in df_data:
+                        if df_data[key] and len(df_data[key]) > min_length:
+                            df_data[key] = df_data[key][:min_length]
+                        elif not df_data[key]:
+                            df_data[key] = [0] * min_length
+                    
+                    backtest_results[strategy_name] = pd.DataFrame(df_data)
+            
+        except Exception as e:
+            self.logger.warning(f"DataFrame変換エラー、代替方法を試行: {e}")
+            
+            # 代替方法：直接変換
+            if isinstance(data, dict):
+                for key, value in data.items():
+                    if isinstance(value, pd.DataFrame):
+                        backtest_results[key] = value
+                    elif isinstance(value, dict) and 'data' in value:
+                        if isinstance(value['data'], pd.DataFrame):
+                            backtest_results[key] = value['data']
+        
+        return backtest_results
+
     def generate_unified_output(self, 
                               data: Dict[str, Any], 
                               output_formats: List[str] = ['excel', 'json', 'text'],

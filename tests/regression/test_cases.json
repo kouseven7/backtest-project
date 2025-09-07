@@ -1,0 +1,29 @@
+{
+  "performance_regression": {
+    "name": "performance_regression",
+    "description": "主要パフォーマンスメトリクスの回帰テスト",
+    "test_type": "performance",
+    "tolerance": 0.05,
+    "enabled": true,
+    "created_at": "2025-09-07T23:38:55.666389",
+    "last_run": "2025-09-07T23:38:55.678476"
+  },
+  "output_format_stability": {
+    "name": "output_format_stability",
+    "description": "出力フォーマットの安定性テスト",
+    "test_type": "output_format",
+    "tolerance": 0.0,
+    "enabled": true,
+    "created_at": "2025-09-07T23:38:55.666395",
+    "last_run": "2025-09-07T23:38:55.678691"
+  },
+  "consistency_maintenance": {
+    "name": "consistency_maintenance",
+    "description": "戦略一貫性の維持テスト",
+    "test_type": "consistency",
+    "tolerance": 0.1,
+    "enabled": true,
+    "created_at": "2025-09-07T23:38:55.666398",
+    "last_run": "2025-09-07T23:38:55.680676"
+  }
+}
