@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>統一バックテストレポート - DEMO_BASIC</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .metric-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        .positive { color: #27ae60; }
+        .negative { color: #e74c3c; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #34495e;
+            color: white;
+        }
+        .quality-score {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+        }
+        .score-excellent { background-color: #27ae60; }
+        .score-good { background-color: #f39c12; }
+        .score-poor { background-color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>統一バックテストレポート</h1>
+        <p>DEMO_BASIC | 2024-01-01 ～ 2024-12-31</p>
+        <p>生成日時: 2025年09月07日 15時44分</p>
+    </div>
+
+    <div class="section">
+        <h2>📊 パフォーマンス概要</h2>
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-value positive">
+                    18.50%
+                </div>
+                <div class="metric-label">総リターン</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value positive">
+                    ¥185,000
+                </div>
+                <div class="metric-label">総損益</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">65.0%</div>
+                <div class="metric-label">勝率</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">25</div>
+                <div class="metric-label">総取引数</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">1.450</div>
+                <div class="metric-label">シャープレシオ</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value negative">-12.00%</div>
+                <div class="metric-label">最大ドローダウン</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📋 取引履歴（最初の10取引）</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>戦略</th>
+                    <th>エントリー</th>
+                    <th>エグジット</th>
+                    <th>損益</th>
+                    <th>損益率</th>
+                    <th>期間</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td>VWAPBreakout</td>
+                    <td>2024-01-15<br>¥2500.00</td>
+                    <td>2024-01-22<br>¥2650.00</td>
+                    <td class="positive">¥15000</td>
+                    <td class="positive">6.00%</td>
+                    <td>7日</td>
+                </tr>
+
+                <tr>
+                    <td>MeanReversion</td>
+                    <td>2024-02-05<br>¥2750.00</td>
+                    <td>2024-02-12<br>¥2680.00</td>
+                    <td class="negative">¥-7000</td>
+                    <td class="negative">-2.50%</td>
+                    <td>7日</td>
+                </tr>
+
+                <tr>
+                    <td>TrendFollowing</td>
+                    <td>2024-03-10<br>¥2800.00</td>
+                    <td>2024-03-20<br>¥2950.00</td>
+                    <td class="positive">¥15000</td>
+                    <td class="positive">5.40%</td>
+                    <td>10日</td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>ℹ️ システム情報</h2>
+        <p><strong>データソース:</strong> simple_excel_exporter</p>
+        <p><strong>分析タイプ:</strong> standard_backtest</p>
+        <p><strong>バージョン:</strong> 1.0</p>
+    </div>
+</body>
+</html>

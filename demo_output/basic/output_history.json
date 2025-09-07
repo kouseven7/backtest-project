@@ -1,0 +1,20 @@
+[
+  {
+    "timestamp": "2025-09-07T15:44:32.359724",
+    "ticker": "DEMO_BASIC",
+    "data_source": "simple_excel_exporter",
+    "output_files": {
+      "json": "demo_output\\basic\\demo_basic_unified_20250907_154432.json",
+      "text": "demo_output\\basic\\demo_basic_unified_20250907_154432.txt",
+      "html": "demo_output\\basic\\demo_basic_unified_20250907_154432.html"
+    },
+    "performance_summary": {
+      "total_trades": 3,
+      "win_rate": 0.65,
+      "total_return": 0.185,
+      "sharpe_ratio": 1.45,
+      "max_drawdown": -0.12,
+      "reliability_score": 0.0
+    }
+  }
+]

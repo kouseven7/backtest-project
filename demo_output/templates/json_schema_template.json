@@ -1,0 +1,204 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DSSMS統一出力データスキーマ",
+  "version": "1.0",
+  "type": "object",
+  "required": [
+    "metadata",
+    "performance",
+    "trades"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "ticker": {
+          "type": "string"
+        },
+        "start_date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "generation_timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "data_source": {
+          "type": "string"
+        },
+        "analysis_type": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ticker",
+        "start_date",
+        "end_date",
+        "generation_timestamp"
+      ]
+    },
+    "performance": {
+      "type": "object",
+      "properties": {
+        "total_return": {
+          "type": "number"
+        },
+        "total_pnl": {
+          "type": "number"
+        },
+        "win_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "total_trades": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "winning_trades": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "losing_trades": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "average_win": {
+          "type": "number"
+        },
+        "average_loss": {
+          "type": "number"
+        },
+        "profit_factor": {
+          "type": "number"
+        },
+        "sharpe_ratio": {
+          "type": "number"
+        },
+        "max_drawdown": {
+          "type": "number"
+        },
+        "portfolio_value": {
+          "type": "number"
+        },
+        "initial_capital": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "total_return",
+        "total_pnl",
+        "win_rate",
+        "total_trades"
+      ]
+    },
+    "trades": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "trade_id": {
+            "type": "string"
+          },
+          "strategy": {
+            "type": "string"
+          },
+          "entry_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "exit_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "entry_price": {
+            "type": "number"
+          },
+          "exit_price": {
+            "type": "number"
+          },
+          "shares": {
+            "type": "integer"
+          },
+          "profit_loss": {
+            "type": "number"
+          },
+          "profit_loss_pct": {
+            "type": "number"
+          },
+          "duration_days": {
+            "type": "integer"
+          },
+          "is_winner": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "trade_id",
+          "strategy",
+          "entry_date",
+          "exit_date"
+        ]
+      }
+    },
+    "dssms_metrics": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "strategy_scores": {
+          "type": "object"
+        },
+        "switch_decisions": {
+          "type": "array"
+        },
+        "ranking_data": {
+          "type": "object"
+        },
+        "market_conditions": {
+          "type": "object"
+        },
+        "switch_success_rate": {
+          "type": "number"
+        },
+        "switch_frequency": {
+          "type": "number"
+        }
+      }
+    },
+    "quality_assurance": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data_quality_score": {
+          "type": "number"
+        },
+        "validation_score": {
+          "type": "number"
+        },
+        "reliability_score": {
+          "type": "number"
+        },
+        "enhancement_applied": {
+          "type": "boolean"
+        },
+        "validation_errors": {
+          "type": "array"
+        },
+        "quality_recommendations": {
+          "type": "array"
+        }
+      }
+    }
+  }
+}

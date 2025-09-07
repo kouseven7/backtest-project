@@ -1,0 +1,20 @@
+[
+  {
+    "timestamp": "2025-09-07T15:44:32.365821",
+    "ticker": "DEMO_DSSMS",
+    "data_source": "dssms_system",
+    "output_files": {
+      "json": "demo_output\\dssms\\demo_dssms_unified_20250907_154432.json",
+      "text": "demo_output\\dssms\\demo_dssms_unified_20250907_154432.txt",
+      "html": "demo_output\\dssms\\demo_dssms_unified_20250907_154432.html"
+    },
+    "performance_summary": {
+      "total_trades": 2,
+      "win_rate": 0.72,
+      "total_return": 0.225,
+      "sharpe_ratio": 1.68,
+      "max_drawdown": -0.095,
+      "reliability_score": 0.87
+    }
+  }
+]

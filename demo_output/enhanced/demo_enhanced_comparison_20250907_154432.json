@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "ticker": "DEMO_ENHANCED",
+    "start_date": "2024-01-01T00:00:00",
+    "end_date": "2024-12-31T00:00:00",
+    "generation_timestamp": "2025-09-07T15:44:32.369577",
+    "data_source": "main_data_extractor",
+    "analysis_type": "enhanced_extraction",
+    "version": "1.0"
+  },
+  "performance": {
+    "total_return": 0.195,
+    "total_pnl": 195000,
+    "win_rate": 0.68,
+    "total_trades": 28,
+    "winning_trades": 19,
+    "losing_trades": 9,
+    "average_win": 25500,
+    "average_loss": -8900,
+    "profit_factor": 1.85,
+    "sharpe_ratio": 1.52,
+    "max_drawdown": -0.108,
+    "portfolio_value": 1195000,
+    "initial_capital": 1000000
+  },
+  "trades": [
+    {
+      "trade_id": "EXT_0001",
+      "strategy": "Enhanced_VWAP",
+      "entry_date": "2024-01-12T00:00:00",
+      "exit_date": "2024-01-19T00:00:00",
+      "entry_price": 2480.0,
+      "exit_price": 2620.0,
+      "shares": 100,
+      "profit_loss": 14000.0,
+      "profit_loss_pct": 0.056,
+      "duration_days": 7,
+      "is_winner": true
+    },
+    {
+      "trade_id": "EXT_0002",
+      "strategy": "Enhanced_MeanRev",
+      "entry_date": "2024-02-08T00:00:00",
+      "exit_date": "2024-02-14T00:00:00",
+      "entry_price": 2730.0,
+      "exit_price": 2850.0,
+      "shares": 100,
+      "profit_loss": 12000.0,
+      "profit_loss_pct": 0.044,
+      "duration_days": 6,
+      "is_winner": true
+    }
+  ],
+  "quality_assurance": {
+    "data_quality_score": 0.91,
+    "validation_score": 0.8,
+    "reliability_score": 0.85,
+    "enhancement_applied": true,
+    "validation_errors": [],
+    "quality_recommendations": []
+  }
+}

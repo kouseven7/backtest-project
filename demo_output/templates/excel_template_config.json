@@ -1,0 +1,235 @@
+{
+  "name": "DSSMS統一Excelテンプレート",
+  "version": "1.0",
+  "sheets": {
+    "Summary": {
+      "layout": "vertical_metrics",
+      "sections": [
+        {
+          "title": "基本情報",
+          "metrics": [
+            {
+              "label": "銘柄",
+              "field": "metadata.ticker"
+            },
+            {
+              "label": "分析期間",
+              "field": "metadata.period"
+            },
+            {
+              "label": "生成日時",
+              "field": "metadata.generation_timestamp"
+            },
+            {
+              "label": "データソース",
+              "field": "metadata.data_source"
+            }
+          ]
+        },
+        {
+          "title": "パフォーマンス指標",
+          "metrics": [
+            {
+              "label": "総リターン",
+              "field": "performance.total_return",
+              "format": "percentage"
+            },
+            {
+              "label": "総損益",
+              "field": "performance.total_pnl",
+              "format": "currency"
+            },
+            {
+              "label": "勝率",
+              "field": "performance.win_rate",
+              "format": "percentage"
+            },
+            {
+              "label": "総取引数",
+              "field": "performance.total_trades",
+              "format": "integer"
+            },
+            {
+              "label": "勝ち取引数",
+              "field": "performance.winning_trades",
+              "format": "integer"
+            },
+            {
+              "label": "負け取引数",
+              "field": "performance.losing_trades",
+              "format": "integer"
+            },
+            {
+              "label": "平均勝ち",
+              "field": "performance.average_win",
+              "format": "currency"
+            },
+            {
+              "label": "平均負け",
+              "field": "performance.average_loss",
+              "format": "currency"
+            },
+            {
+              "label": "プロフィットファクター",
+              "field": "performance.profit_factor",
+              "format": "decimal"
+            },
+            {
+              "label": "シャープレシオ",
+              "field": "performance.sharpe_ratio",
+              "format": "decimal"
+            },
+            {
+              "label": "最大ドローダウン",
+              "field": "performance.max_drawdown",
+              "format": "percentage"
+            },
+            {
+              "label": "ポートフォリオ価値",
+              "field": "performance.portfolio_value",
+              "format": "currency"
+            }
+          ]
+        }
+      ]
+    },
+    "Trades": {
+      "layout": "table",
+      "columns": [
+        {
+          "header": "取引ID",
+          "field": "trade_id",
+          "width": 12
+        },
+        {
+          "header": "戦略",
+          "field": "strategy",
+          "width": 15
+        },
+        {
+          "header": "エントリー日",
+          "field": "entry_date",
+          "width": 12,
+          "format": "date"
+        },
+        {
+          "header": "エグジット日",
+          "field": "exit_date",
+          "width": 12,
+          "format": "date"
+        },
+        {
+          "header": "エントリー価格",
+          "field": "entry_price",
+          "width": 12,
+          "format": "currency"
+        },
+        {
+          "header": "エグジット価格",
+          "field": "exit_price",
+          "width": 12,
+          "format": "currency"
+        },
+        {
+          "header": "株数",
+          "field": "shares",
+          "width": 10,
+          "format": "integer"
+        },
+        {
+          "header": "損益",
+          "field": "profit_loss",
+          "width": 12,
+          "format": "currency"
+        },
+        {
+          "header": "損益率",
+          "field": "profit_loss_pct",
+          "width": 10,
+          "format": "percentage"
+        },
+        {
+          "header": "期間（日）",
+          "field": "duration_days",
+          "width": 10,
+          "format": "integer"
+        },
+        {
+          "header": "勝敗",
+          "field": "is_winner",
+          "width": 8,
+          "format": "boolean"
+        }
+      ]
+    },
+    "DSSMS_Analysis": {
+      "layout": "conditional",
+      "condition": "dssms_metrics_exists",
+      "sections": [
+        {
+          "title": "DSSMS指標",
+          "metrics": [
+            {
+              "label": "戦略切り替え成功率",
+              "field": "dssms_metrics.switch_success_rate",
+              "format": "percentage"
+            },
+            {
+              "label": "戦略切り替え頻度",
+              "field": "dssms_metrics.switch_frequency",
+              "format": "decimal"
+            }
+          ]
+        },
+        {
+          "title": "戦略スコア",
+          "layout": "key_value_table",
+          "data_field": "dssms_metrics.strategy_scores"
+        }
+      ]
+    },
+    "Quality_Assurance": {
+      "layout": "conditional",
+      "condition": "quality_assurance_exists",
+      "sections": [
+        {
+          "title": "品質保証指標",
+          "metrics": [
+            {
+              "label": "データ品質スコア",
+              "field": "quality_assurance.data_quality_score",
+              "format": "decimal"
+            },
+            {
+              "label": "検証スコア",
+              "field": "quality_assurance.validation_score",
+              "format": "decimal"
+            },
+            {
+              "label": "信頼性スコア",
+              "field": "quality_assurance.reliability_score",
+              "format": "decimal"
+            },
+            {
+              "label": "品質向上適用",
+              "field": "quality_assurance.enhancement_applied",
+              "format": "boolean"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "styling": {
+    "header_font": {
+      "bold": true,
+      "color": "FFFFFF"
+    },
+    "header_fill": {
+      "color": "366092"
+    },
+    "positive_color": "27AE60",
+    "negative_color": "E74C3C",
+    "neutral_color": "34495E"
+  }
+}

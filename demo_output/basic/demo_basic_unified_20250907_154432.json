@@ -1,0 +1,67 @@
+{
+  "metadata": {
+    "ticker": "DEMO_BASIC",
+    "start_date": "2024-01-01T00:00:00",
+    "end_date": "2024-12-31T00:00:00",
+    "generation_timestamp": "2025-09-07T15:44:32.356720",
+    "data_source": "simple_excel_exporter",
+    "analysis_type": "standard_backtest",
+    "version": "1.0"
+  },
+  "performance": {
+    "total_return": 0.185,
+    "total_pnl": 185000,
+    "win_rate": 0.65,
+    "total_trades": 25,
+    "winning_trades": 2,
+    "losing_trades": 1,
+    "average_win": 15000.0,
+    "average_loss": -7000.0,
+    "profit_factor": 4.285714285714286,
+    "sharpe_ratio": 1.45,
+    "max_drawdown": -0.12,
+    "portfolio_value": 1185000,
+    "initial_capital": 1000000.0
+  },
+  "trades": [
+    {
+      "trade_id": "T0001",
+      "strategy": "VWAPBreakout",
+      "entry_date": "2024-01-15T00:00:00",
+      "exit_date": "2024-01-22T00:00:00",
+      "entry_price": 2500.0,
+      "exit_price": 2650.0,
+      "shares": 100,
+      "profit_loss": 15000.0,
+      "profit_loss_pct": 0.06,
+      "duration_days": 7,
+      "is_winner": true
+    },
+    {
+      "trade_id": "T0002",
+      "strategy": "MeanReversion",
+      "entry_date": "2024-02-05T00:00:00",
+      "exit_date": "2024-02-12T00:00:00",
+      "entry_price": 2750.0,
+      "exit_price": 2680.0,
+      "shares": 100,
+      "profit_loss": -7000.0,
+      "profit_loss_pct": -0.025,
+      "duration_days": 7,
+      "is_winner": false
+    },
+    {
+      "trade_id": "T0003",
+      "strategy": "TrendFollowing",
+      "entry_date": "2024-03-10T00:00:00",
+      "exit_date": "2024-03-20T00:00:00",
+      "entry_price": 2800.0,
+      "exit_price": 2950.0,
+      "shares": 100,
+      "profit_loss": 15000.0,
+      "profit_loss_pct": 0.054,
+      "duration_days": 10,
+      "is_winner": true
+    }
+  ]
+}

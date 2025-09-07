@@ -1,0 +1,35 @@
+[
+  {
+    "timestamp": "2025-09-07T15:44:32.372502",
+    "ticker": "DEMO_ENHANCED",
+    "data_source": "main_data_extractor",
+    "output_files": {
+      "json": "demo_output\\enhanced\\demo_enhanced_unified_20250907_154432.json",
+      "text": "demo_output\\enhanced\\demo_enhanced_unified_20250907_154432.txt"
+    },
+    "performance_summary": {
+      "total_trades": 2,
+      "win_rate": 0.68,
+      "total_return": 0.195,
+      "sharpe_ratio": 1.52,
+      "max_drawdown": -0.108,
+      "reliability_score": 0.85
+    }
+  },
+  {
+    "timestamp": "2025-09-07T15:44:32.374963",
+    "ticker": "DEMO_ENHANCED",
+    "data_source": "main_data_extractor",
+    "output_files": {
+      "json": "demo_output\\enhanced\\demo_enhanced_comparison_20250907_154432.json"
+    },
+    "performance_summary": {
+      "total_trades": 2,
+      "win_rate": 0.68,
+      "total_return": 0.195,
+      "sharpe_ratio": 1.52,
+      "max_drawdown": -0.108,
+      "reliability_score": 0.85
+    }
+  }
+]

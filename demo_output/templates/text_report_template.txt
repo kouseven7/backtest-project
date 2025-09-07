@@ -1,0 +1,30 @@
+{{border_line}}
+{{title}}
+{{border_line}}
+
+銘柄: {{ticker}}
+分析期間: {{period}}
+生成日時: {{generation_date}}
+データソース: {{data_source}}
+分析タイプ: {{analysis_type}}
+
+{{section_separator}}
+パフォーマンス概要
+{{section_separator}}
+{{performance_summary}}
+
+{{dssms_section}}
+
+{{quality_section}}
+
+{{section_separator}}
+取引履歴サマリー
+{{section_separator}}
+総取引数: {{total_trades}}
+勝ち取引数: {{winning_trades}}
+負け取引数: {{losing_trades}}
+勝率: {{win_rate}}
+
+{{trades_detail_section}}
+
+{{footer_section}}

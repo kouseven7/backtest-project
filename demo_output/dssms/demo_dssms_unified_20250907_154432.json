@@ -1,0 +1,110 @@
+{
+  "metadata": {
+    "ticker": "DEMO_DSSMS",
+    "start_date": "2024-01-01T00:00:00",
+    "end_date": "2024-12-31T00:00:00",
+    "generation_timestamp": "2025-09-07T15:44:32.362599",
+    "data_source": "dssms_system",
+    "analysis_type": "dssms_backtest",
+    "version": "1.0"
+  },
+  "performance": {
+    "total_return": 0.225,
+    "total_pnl": 0.225,
+    "win_rate": 0.72,
+    "total_trades": 35,
+    "winning_trades": 2,
+    "losing_trades": 0,
+    "average_win": 49500.0,
+    "average_loss": 0.0,
+    "profit_factor": 0.0,
+    "sharpe_ratio": 1.68,
+    "max_drawdown": -0.095,
+    "portfolio_value": 1225000,
+    "initial_capital": 1000000.0
+  },
+  "trades": [
+    {
+      "trade_id": "DSSMS_0001",
+      "strategy": "DSSMS_Adaptive",
+      "entry_date": "2024-01-10T00:00:00",
+      "exit_date": "2024-01-18T00:00:00",
+      "entry_price": 2450.0,
+      "exit_price": 2580.0,
+      "shares": 100,
+      "profit_loss": 53000.0,
+      "profit_loss_pct": 0.053,
+      "duration_days": 8,
+      "is_winner": true
+    },
+    {
+      "trade_id": "DSSMS_0002",
+      "strategy": "DSSMS_Adaptive",
+      "entry_date": "2024-02-15T00:00:00",
+      "exit_date": "2024-02-22T00:00:00",
+      "entry_price": 2720.0,
+      "exit_price": 2845.0,
+      "shares": 100,
+      "profit_loss": 46000.0,
+      "profit_loss_pct": 0.046,
+      "duration_days": 7,
+      "is_winner": true
+    }
+  ],
+  "dssms_metrics": {
+    "strategy_scores": {
+      "VWAP_Breakout": 0.85,
+      "Mean_Reversion": 0.72,
+      "Trend_Following": 0.91,
+      "Momentum": 0.68,
+      "Contrarian": 0.55,
+      "Swing_Trading": 0.78,
+      "Day_Trading": 0.62
+    },
+    "switch_decisions": [
+      {
+        "date": "2024-01-15",
+        "from_strategy": "VWAP_Breakout",
+        "to_strategy": "Trend_Following",
+        "confidence": 0.82,
+        "market_condition": "bullish"
+      },
+      {
+        "date": "2024-02-20",
+        "from_strategy": "Trend_Following",
+        "to_strategy": "Mean_Reversion",
+        "confidence": 0.75,
+        "market_condition": "sideways"
+      }
+    ],
+    "ranking_data": {
+      "current_ranking": [
+        "Trend_Following",
+        "VWAP_Breakout",
+        "Swing_Trading",
+        "Mean_Reversion"
+      ],
+      "confidence_scores": [
+        0.91,
+        0.85,
+        0.78,
+        0.72
+      ],
+      "last_update": "2024-12-31"
+    },
+    "market_conditions": {},
+    "switch_success_rate": 0.78,
+    "switch_frequency": 0.25
+  },
+  "quality_assurance": {
+    "data_quality_score": 0.88,
+    "validation_score": 0.92,
+    "reliability_score": 0.87,
+    "enhancement_applied": true,
+    "validation_errors": [],
+    "quality_recommendations": [
+      "Trend_Following戦略の重みを増加",
+      "Contrarian戦略のパラメータ調整を検討"
+    ]
+  }
+}
