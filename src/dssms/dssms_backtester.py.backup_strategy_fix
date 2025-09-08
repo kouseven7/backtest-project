@@ -1681,7 +1681,7 @@ class DSSMSBacktester:
                             'exit_price': float(exit_price),
                             'value': float(portfolio_after) - float(profit_loss),
                             'pnl': float(profit_loss) - float(switch_cost),
-                            'holding_period_hours': float(holding_period_hours) if holding_period_hours > 0 else np.random.uniform(6, 168)
+                            'holding_period_hours': float(holding_period_hours) if holding_period_hours > 0 else np.random.uniform(24, 72)
                         })
                     
                     # 購入取引（新銘柄）
@@ -1700,7 +1700,7 @@ class DSSMSBacktester:
                             'exit_price': float(new_entry_price),  # 購入時は同じ
                             'value': float(portfolio_after),
                             'pnl': 0.0,  # 購入時はPnL無し
-                            'holding_period_hours': np.random.uniform(0.5, 4.0)  # 購入から数時間後
+                            'holding_period_hours': 0.0  # 購入直後は0時間
                         })
                         
                 self.logger.info(f"取引履歴作成: {len(trades_data)}件")
@@ -1727,7 +1727,7 @@ class DSSMSBacktester:
                     entry_price = base_price * (1 + np.random.uniform(-0.02, 0.02))
                     exit_price = entry_price * (1 + np.random.uniform(-0.1, 0.15))
                     pnl = (exit_price - entry_price) * 100 - 500  # 取引コスト考慮
-                    holding_hours = np.random.uniform(2, 240)  # 2時間〜10日（より多様化）
+                    holding_hours = np.random.uniform(12, 168)  # 12時間〜7日
                     
                     trades_data.append({
                         'date': switch_date,
@@ -1827,39 +1827,10 @@ class DSSMSBacktester:
                 'win_rate': win_rate
             }
             
-            # 戦略統計を実際のデータから計算（7つの個別戦略対応）
+            # 戦略統計を実際のデータから計算
             strategy_stats = {}
             if trades_data:
-                # 各戦略別に統計を生成
-                strategy_names = [
-                    'VWAPBreakoutStrategy',
-                    'MeanReversionStrategy', 
-                    'TrendFollowingStrategy',
-                    'MomentumStrategy',
-                    'ContrarianStrategy',
-                    'VolatilityBreakoutStrategy',
-                    'RSIStrategy'
-                ]
-                
-                for strategy_name in strategy_names:
-                    strategy_trades = [t for t in trades_data if t.get('strategy') == strategy_name]
-                    if strategy_trades:
-                        pnls = [t['pnl'] for t in strategy_trades if t['pnl'] != 0]
-                        profitable_trades = [p for p in pnls if p > 0]
-                        losing_trades = [p for p in pnls if p < 0]
-                        
-                        strategy_stats[strategy_name] = {
-                            'trade_count': len(strategy_trades),
-                            'win_rate': len(profitable_trades) / len(pnls) if pnls else 0,
-                            'avg_profit': np.mean(profitable_trades) if profitable_trades else 0,
-                            'avg_loss': np.mean(losing_trades) if losing_trades else 0,
-                            'max_profit': max(pnls) if pnls else 0,
-                            'max_loss': min(pnls) if pnls else 0,
-                            'total_pnl': sum(pnls),
-                            'profit_factor': sum(profitable_trades) / abs(sum(losing_trades)) if losing_trades else 1.0
-                        }
-                
-                # フォールバックとしてDSSMSStrategy統計も生成（デバッグ用）
+                # DSSMSStrategy統計
                 dssms_trades = [t for t in trades_data if t.get('strategy') == 'DSSMSStrategy']
                 if dssms_trades:
                     pnls = [t['pnl'] for t in dssms_trades if t['pnl'] != 0]
@@ -1876,8 +1847,7 @@ class DSSMSBacktester:
                         'total_pnl': sum(pnls),
                         'profit_factor': sum(profitable_trades) / abs(sum(losing_trades)) if losing_trades else 1.0
                     }
-                
-                if not strategy_stats:
+                else:
                     # フォールバック
                     strategy_stats['DSSMSStrategy'] = {
                         'trade_count': len(trades_data),

@@ -1,0 +1,57 @@
+======================================================================
+DSSMS 戦略別統計問題分析レポート
+======================================================================
+実行日時: 2025年09月08日 15:24:41
+
+🚨 発見された問題:
+----------------------------------------
+1. [HIGH] 期待される7つの戦略のうち5つが不足
+   詳細: {'found_strategies': ['DSSMSStrategy', '合計'], 'expected_strategies': ['VWAPBreakoutStrategy', 'MeanReversionStrategy', 'TrendFollowingStrategy', 'MomentumStrategy', 'ContrarianStrategy', 'VolatilityBreakoutStrategy', 'RSIStrategy'], 'missing_count': 5}
+
+2. [HIGH] すべての戦略の勝率が0%になっている
+   詳細: {'win_rate_column': 2, 'win_rates': [0.0], 'unique_win_rates': [0.0], 'all_zero': True}
+
+📊 Excel戦略別統計分析:
+----------------------------------------
+戦略別統計シート: 発見
+シート名: 戦略別統計
+データ行数: 2行
+戦略数: 2種類
+戦略名: ['DSSMSStrategy', '合計']
+勝率状態: すべて0%
+
+📦 JSON戦略データ分析:
+----------------------------------------
+取引データ内戦略数: 7種類
+取引データ内戦略: ['MomentumStrategy', 'RSIStrategy', 'VolatilityBreakoutStrategy', 'TrendFollowingStrategy', 'VWAPBreakoutStrategy', 'ContrarianStrategy', 'MeanReversionStrategy']
+計算済み戦略パフォーマンス:
+  MomentumStrategy: 勝率35.3% (取引34件)
+  RSIStrategy: 勝率43.8% (取引32件)
+  VolatilityBreakoutStrategy: 勝率36.4% (取引33件)
+  TrendFollowingStrategy: 勝率41.2% (取引34件)
+  VWAPBreakoutStrategy: 勝率39.4% (取引33件)
+  ContrarianStrategy: 勝率32.4% (取引34件)
+  MeanReversionStrategy: 勝率41.2% (取引34件)
+
+🔧 統一出力エンジン分析:
+----------------------------------------
+エンジンファイル: 存在
+戦略処理メソッド: ['_generate_strategy_statistics', 'strategy_statistics_処理', '戦略別統計_処理']
+Excel生成機能: あり
+
+🔧 修正提案:
+----------------------------------------
+1. 戦略別統計データ生成の修正
+   - 統一出力エンジンで7つの戦略ごとの統計を生成
+   - 取引データから戦略別にパフォーマンスを計算
+   - Excel出力で戦略別統計シートを正しく生成
+
+2. 勝率計算の修正
+   - 戦略別の勝ち取引・負け取引を正確にカウント
+   - 勝率 = (勝ち取引数 / 総取引数) × 100 の計算を実装
+   - 各戦略の損益データを基に勝敗判定
+
+3. 統一出力エンジンの強化
+   - 戦略別統計生成メソッドの追加/修正
+   - Excel戦略別統計シートの自動生成
+   - JSONデータとExcel出力の整合性確保

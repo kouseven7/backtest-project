@@ -490,7 +490,12 @@ class UnifiedOutputEngine:
             return None
     
     def _convert_unified_to_dssms_format(self, unified_model: UnifiedOutputModel) -> Dict[str, Any]:
-        """統一モデルからDSSMS形式への逆変換"""
+        """統一モデルからDSSMS形式への逆変換（戦略別統計対応版）"""
+        # 戦略別統計を生成
+        strategy_statistics = self._generate_strategy_statistics_from_trades(
+            [trade.to_dict() for trade in unified_model.trades]
+        )
+        
         return {
             'ticker': unified_model.metadata.ticker,
             'start_date': unified_model.metadata.start_date.isoformat(),
@@ -508,11 +513,11 @@ class UnifiedOutputEngine:
             'switch_success_rate': unified_model.dssms_metrics.switch_success_rate if unified_model.dssms_metrics else 0.0,
             'switch_frequency': unified_model.dssms_metrics.switch_frequency if unified_model.dssms_metrics else 0.0,
             'trades': [trade.to_dict() for trade in unified_model.trades],
+            'strategy_statistics': strategy_statistics,  # 戦略別統計を追加
             'reliability_score': unified_model.quality_assurance.reliability_score if unified_model.quality_assurance else 0.0,
             'recommended_actions': unified_model.quality_assurance.quality_recommendations if unified_model.quality_assurance else [],
             'enhanced_data': unified_model.raw_data
         }
-    
     def _convert_unified_to_excel_format(self, unified_model: UnifiedOutputModel) -> Dict[str, Any]:
         """統一モデルからExcel形式への逆変換"""
         return {
@@ -1050,6 +1055,131 @@ if __name__ == "__main__":
     for format_type, filepath in output_files.items():
         print(f"  {format_type}: {filepath}")
 
+
+    def _generate_strategy_statistics_from_trades(self, trades: List[Any]) -> Dict[str, Any]:
+        """取引データから戦略別統計を生成"""
+        try:
+            strategy_stats = {}
+            
+            # 戦略別に取引をグループ化
+            strategy_trades = {}
+            for trade in trades:
+                strategy = trade.get('strategy', 'UnknownStrategy')
+                if strategy not in strategy_trades:
+                    strategy_trades[strategy] = []
+                strategy_trades[strategy].append(trade)
+            
+            # 各戦略の統計を計算
+            for strategy, trades_list in strategy_trades.items():
+                if not trades_list:
+                    continue
+                
+                # 基本統計
+                total_trades = len(trades_list)
+                pnls = [float(trade.get('pnl', 0)) for trade in trades_list]
+                winning_trades = len([p for p in pnls if p > 0])
+                losing_trades = len([p for p in pnls if p < 0])
+                
+                win_rate = (winning_trades / total_trades * 100) if total_trades > 0 else 0
+                
+                # 損益統計
+                winning_pnls = [p for p in pnls if p > 0]
+                losing_pnls = [p for p in pnls if p < 0]
+                
+                avg_profit = sum(winning_pnls) / len(winning_pnls) if winning_pnls else 0
+                avg_loss = sum(losing_pnls) / len(losing_pnls) if losing_pnls else 0
+                max_profit = max(winning_pnls) if winning_pnls else 0
+                max_loss = min(losing_pnls) if losing_pnls else 0
+                
+                total_profit = sum(winning_pnls)
+                total_loss = abs(sum(losing_pnls))
+                profit_factor = total_profit / total_loss if total_loss > 0 else float('inf') if total_profit > 0 else 0
+                
+                total_pnl = sum(pnls)
+                
+                strategy_stats[strategy] = {
+                    'trade_count': total_trades,
+                    'winning_trades': winning_trades,
+                    'losing_trades': losing_trades,
+                    'win_rate': win_rate,
+                    'avg_profit': avg_profit,
+                    'avg_loss': avg_loss,
+                    'max_profit': max_profit,
+                    'max_loss': max_loss,
+                    'profit_factor': profit_factor,
+                    'total_pnl': total_pnl
+                }
+            
+            return strategy_stats
+            
+        except Exception as e:
+            self.logger.error(f"戦略別統計生成エラー: {e}")
+            return {}
+    
+    def _create_strategy_statistics_excel_sheet(self, workbook: Any, strategy_stats: Dict[str, Any]) -> None:
+        """戦略別統計Excelシート作成"""
+        try:
+            # 既存の戦略別統計シートがあれば削除
+            if '戦略別統計' in workbook.sheetnames:
+                workbook.remove(workbook['戦略別統計'])
+            
+            # 新しいシートを作成
+            ws = workbook.create_sheet('戦略別統計')
+            
+            # ヘッダー設定
+            headers = [
+                '戦略名', '取引回数', '勝率', '平均利益', '平均損失', 
+                '最大利益', '最大損失', 'プロフィットファクター', '総損益'
+            ]
+            
+            for col, header in enumerate(headers, 1):
+                cell = ws.cell(row=1, column=col)
+                cell.value = header
+                cell.font = openpyxl.styles.Font(bold=True)
+                cell.fill = openpyxl.styles.PatternFill(
+                    start_color="366092", end_color="366092", fill_type="solid"
+                )
+            
+            # データ行を追加
+            row = 2
+            total_stats = {
+                'trade_count': 0,
+                'winning_trades': 0,
+                'total_pnl': 0
+            }
+            
+            for strategy, stats in strategy_stats.items():
+                ws.cell(row=row, column=1).value = strategy
+                ws.cell(row=row, column=2).value = stats['trade_count']
+                ws.cell(row=row, column=3).value = f"{stats['win_rate']:.2f}%"
+                ws.cell(row=row, column=4).value = f"{stats['avg_profit']:,.2f}"
+                ws.cell(row=row, column=5).value = f"{stats['avg_loss']:,.2f}"
+                ws.cell(row=row, column=6).value = f"{stats['max_profit']:,.2f}"
+                ws.cell(row=row, column=7).value = f"{stats['max_loss']:,.2f}"
+                ws.cell(row=row, column=8).value = f"{stats['profit_factor']:.3f}"
+                ws.cell(row=row, column=9).value = f"{stats['total_pnl']:,.2f}"
+                
+                # 合計統計に加算
+                total_stats['trade_count'] += stats['trade_count']
+                total_stats['winning_trades'] += stats['winning_trades']
+                total_stats['total_pnl'] += stats['total_pnl']
+                
+                row += 1
+            
+            # 合計行を追加
+            total_win_rate = (total_stats['winning_trades'] / total_stats['trade_count'] * 100) if total_stats['trade_count'] > 0 else 0
+            
+            ws.cell(row=row, column=1).value = "合計"
+            ws.cell(row=row, column=2).value = total_stats['trade_count']
+            ws.cell(row=row, column=3).value = f"{total_win_rate:.2f}%"
+            ws.cell(row=row, column=9).value = f"{total_stats['total_pnl']:,.2f}"
+            
+            # セル幅調整
+            for col in range(1, len(headers) + 1):
+                ws.column_dimensions[openpyxl.utils.get_column_letter(col)].width = 15
+            
+        except Exception as e:
+            self.logger.error(f"戦略別統計シート作成エラー: {e}")
     def _enhance_trade_history_for_excel(self, trades_data: List[Dict]) -> List[Dict]:
         """Excel用の取引履歴データを強化"""
         enhanced_trades = []

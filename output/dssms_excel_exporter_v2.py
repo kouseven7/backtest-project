@@ -559,32 +559,60 @@ class DSSMSExcelExporterV2:
             return []
     
     def _generate_strategy_statistics(self, result: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-        """戦略別統計データ生成"""
+        """戦略別統計データ生成（実際のデータから）"""
         try:
             strategy_stats = {}
             
-            # 各DSSMS戦略の統計を生成
-            for strategy in self.dssms_strategies:
-                # 戦略別データをシミュレーション
-                trade_count = np.random.randint(10, 50)
-                wins = np.random.randint(int(trade_count * 0.3), int(trade_count * 0.7))
-                win_rate = wins / trade_count if trade_count > 0 else 0
+            # 結果データから戦略別統計を取得
+            if 'strategy_statistics' in result:
+                # 既に計算済みの統計がある場合はそれを使用
+                return result['strategy_statistics']
+            
+            # 取引データから戦略別統計を計算
+            trades = result.get('trades', [])
+            
+            if not trades:
+                self.logger.warning("取引データが見つかりません。デフォルト統計を生成します")
+                return self._generate_default_strategy_stats()
+            
+            # 戦略別に取引をグループ化
+            strategy_trades = {}
+            for trade in trades:
+                strategy = trade.get('strategy', 'UnknownStrategy')
+                if strategy not in strategy_trades:
+                    strategy_trades[strategy] = []
+                strategy_trades[strategy].append(trade)
+            
+            # 各戦略の統計を計算
+            for strategy, trades_list in strategy_trades.items():
+                if not trades_list:
+                    continue
                 
-                profits = [np.random.normal(2000, 1000) for _ in range(wins)]
-                losses = [np.random.normal(-1500, 800) for _ in range(trade_count - wins)]
+                # 基本統計
+                total_trades = len(trades_list)
+                pnls = [float(trade.get('pnl', 0)) for trade in trades_list]
+                winning_trades = len([p for p in pnls if p > 0])
+                losing_trades = len([p for p in pnls if p < 0])
                 
-                avg_profit = np.mean(profits) if profits else 0
-                avg_loss = np.mean(losses) if losses else 0
-                max_profit = max(profits) if profits else 0
-                max_loss = min(losses) if losses else 0
+                win_rate = (winning_trades / total_trades) if total_trades > 0 else 0
                 
-                total_profit = sum(profits)
-                total_loss = abs(sum(losses))
-                profit_factor = total_profit / total_loss if total_loss > 0 else 0
-                total_pnl = total_profit + sum(losses)
+                # 損益統計
+                winning_pnls = [p for p in pnls if p > 0]
+                losing_pnls = [p for p in pnls if p < 0]
+                
+                avg_profit = sum(winning_pnls) / len(winning_pnls) if winning_pnls else 0
+                avg_loss = sum(losing_pnls) / len(losing_pnls) if losing_pnls else 0
+                max_profit = max(winning_pnls) if winning_pnls else 0
+                max_loss = min(losing_pnls) if losing_pnls else 0
+                
+                total_profit = sum(winning_pnls)
+                total_loss = abs(sum(losing_pnls))
+                profit_factor = total_profit / total_loss if total_loss > 0 else float('inf') if total_profit > 0 else 0
+                
+                total_pnl = sum(pnls)
                 
                 strategy_stats[strategy] = {
-                    "trade_count": trade_count,
+                    "trade_count": total_trades,
                     "win_rate": win_rate,
                     "avg_profit": avg_profit,
                     "avg_loss": avg_loss,
@@ -598,7 +626,22 @@ class DSSMSExcelExporterV2:
             
         except Exception as e:
             self.logger.error(f"戦略別統計生成エラー: {e}")
-            return {}
+            return self._generate_default_strategy_stats()
+    
+    def _generate_default_strategy_stats(self) -> Dict[str, Dict[str, Any]]:
+        """デフォルト戦略統計生成"""
+        return {
+            "DSSMSStrategy": {
+                "trade_count": 0,
+                "win_rate": 0.0,
+                "avg_profit": 0.0,
+                "avg_loss": 0.0,
+                "max_profit": 0.0,
+                "max_loss": 0.0,
+                "profit_factor": 0.0,
+                "total_pnl": 0.0
+            }
+        }
     
     def _generate_switch_history(self, result: Dict[str, Any]) -> List[Dict[str, Any]]:
         """切替履歴データ生成"""
