@@ -1,0 +1,254 @@
+{
+  "excel_analysis": {
+    "total_trades": 234,
+    "headers": [
+      "日付",
+      "戦略名",
+      "銘柄",
+      "売買区分",
+      "数量",
+      "エントリー価格",
+      "エグジット価格",
+      "損益",
+      "累積損益",
+      "保有期間"
+    ],
+    "issues_found": [],
+    "sample_data": [
+      [
+        "2023-01-01",
+        "DSSMSStrategy",
+        "CASH",
+        "売り",
+        100,
+        "1,000.00",
+        "1,000.00",
+        "-1,000.00",
+        "-1,000.00",
+        "24.0時間"
+      ],
+      [
+        "2023-01-01",
+        "DSSMSStrategy",
+        "9984",
+        "買い",
+        100,
+        "1,000.00",
+        "1,000.00",
+        "0.00",
+        "-1,000.00",
+        "24.0時間"
+      ],
+      [
+        "2023-01-04",
+        "DSSMSStrategy",
+        "9984",
+        "売り",
+        100,
+        "1,000.00",
+        "1,000.00",
+        "-992.26",
+        "-1,992.26",
+        "24.0時間"
+      ],
+      [
+        "2023-01-04",
+        "DSSMSStrategy",
+        "7741",
+        "買い",
+        100,
+        "1,000.00",
+        "1,000.00",
+        "0.00",
+        "-1,992.26",
+        "24.0時間"
+      ],
+      [
+        "2023-01-07",
+        "DSSMSStrategy",
+        "7741",
+        "売り",
+        100,
+        "1,000.00",
+        "1,000.00",
+        "-1,000.29",
+        "-2,992.56",
+        "24.0時間"
+      ]
+    ],
+    "strategy_analysis": {
+      "strategy_column_index": 1,
+      "unique_strategies": [
+        "DSSMSStrategy"
+      ],
+      "strategy_count": 1,
+      "total_entries": 234
+    },
+    "price_analysis": {
+      "entry_column_index": 5,
+      "exit_column_index": 6,
+      "entry_prices_unique": 0,
+      "entry_prices_sample": [],
+      "exit_prices_unique": 0,
+      "exit_prices_sample": []
+    },
+    "holding_period_analysis": {
+      "holding_column_index": 9,
+      "unique_periods": [
+        "24.0時間"
+      ],
+      "unique_count": 1,
+      "sample_periods": [
+        "24.0時間",
+        "24.0時間",
+        "24.0時間",
+        "24.0時間",
+        "24.0時間",
+        "24.0時間",
+        "24.0時間",
+        "24.0時間",
+        "24.0時間",
+        "24.0時間"
+      ]
+    },
+    "profit_loss_analysis": {
+      "pnl_column_index": 7,
+      "total_profit": -16527.62,
+      "average_profit": -123.34044776119403,
+      "winning_trades": 0,
+      "total_trades": 134,
+      "win_rate": 0.0,
+      "profit_sample": [
+        0.0,
+        -992.26,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "json_analysis": {
+    "trades_count": 234,
+    "switches_count": 117,
+    "trades_sample": [
+      {
+        "date": "2023-01-01 00:00:00",
+        "symbol": "CASH",
+        "strategy": "DSSMSStrategy",
+        "action": "sell",
+        "quantity": 100,
+        "price": 1000.0,
+        "value": 1000000.0,
+        "pnl": -1000.0
+      },
+      {
+        "date": "2023-01-01 01:00:00",
+        "symbol": "9984",
+        "strategy": "DSSMSStrategy",
+        "action": "buy",
+        "quantity": 100,
+        "price": 1000.0,
+        "value": 1000000.0,
+        "pnl": 0.0
+      },
+      {
+        "date": "2023-01-04 00:00:00",
+        "symbol": "9984",
+        "strategy": "DSSMSStrategy",
+        "action": "sell",
+        "quantity": 100,
+        "price": 1000.0,
+        "value": 1000000.0,
+        "pnl": -992.2646263267648
+      }
+    ],
+    "switches_sample": [
+      {
+        "date": "2023-01-01 00:00:00",
+        "from_symbol": "CASH",
+        "to_symbol": "9984",
+        "reason": "ランキング更新: 9984が上位に",
+        "cost": 1000.0,
+        "profit_loss": 0.0,
+        "net_gain": -1000.0,
+        "success": false
+      },
+      {
+        "date": "2023-01-04 00:00:00",
+        "from_symbol": "9984",
+        "to_symbol": "7741",
+        "reason": "ランキング更新: 7741が上位に",
+        "cost": 992.2646263267648,
+        "profit_loss": 0.0,
+        "net_gain": -992.2646263267648,
+        "success": false
+      },
+      {
+        "date": "2023-01-07 00:00:00",
+        "from_symbol": "7741",
+        "to_symbol": "6861",
+        "reason": "ランキング更新: 6861が上位に",
+        "cost": 1000.294444785265,
+        "profit_loss": 0.0,
+        "net_gain": -1000.294444785265,
+        "success": false
+      }
+    ],
+    "json_strategies": [
+      "DSSMSStrategy"
+    ],
+    "json_entry_prices_unique": 1,
+    "json_exit_prices_unique": 1,
+    "json_holding_periods_unique": 1,
+    "json_avg_holding_period": 0.0
+  },
+  "text_analysis": {
+    "text_avg_holding_period": 74.9,
+    "content_sample": "================================================================================\nDSSMS (動的銘柄選択管理システム) 統一バックテストレポート\n================================================================================\n\n実行日時: 2025年09月08日 14:54:23\nバックテスト期間: 2023-01-01 00:00:00 - 2023-12-31 00:00:00\n初期資本: 999,000円\n最終ポートフォリオ価値: 3,315,214.42円\n\n【基本パフォーマンス指標】\n----------------------------------------\n総リターン: +231.52%\n年率ボラティリティ: 20.17%\n最大ドローダウン: -16.09%\nシャープレシオ: 3.447\nソルティノレシオ: 0.000\n\n【DSSMS固有指標】\n------------------------------"
+  },
+  "issues_found": [
+    {
+      "category": "strategy_naming",
+      "severity": "high",
+      "description": "戦略名がDSSMSストラテジーのみで、具体的な戦略が特定できない",
+      "details": {
+        "strategy_column_index": 1,
+        "unique_strategies": [
+          "DSSMSStrategy"
+        ],
+        "strategy_count": 1,
+        "total_entries": 234
+      }
+    },
+    {
+      "category": "fixed_holding_period",
+      "severity": "high",
+      "description": "保有期間がすべて24時間になっている",
+      "details": {
+        "holding_column_index": 9,
+        "unique_periods": [
+          "24.0時間"
+        ],
+        "unique_count": 1,
+        "sample_periods": [
+          "24.0時間",
+          "24.0時間",
+          "24.0時間",
+          "24.0時間",
+          "24.0時間",
+          "24.0時間",
+          "24.0時間",
+          "24.0時間",
+          "24.0時間",
+          "24.0時間"
+        ]
+      }
+    }
+  ],
+  "timestamp": "2025-09-08T15:06:23.767078"
+}
