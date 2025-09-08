@@ -188,9 +188,6 @@ class DSSMSBacktester:
             config: バックテスト設定（オプション）
         """
         self.logger = setup_logger('dssms.backtester')
-        
-        # 統一出力システムとの一貫性確保用
-        self._unified_total_return = 0.0
         self.config = config or self._get_default_config()
         
         # 決定論的モード設定
@@ -615,10 +612,8 @@ class DSSMSBacktester:
             dynamic_selection_efficiency = self._calculate_selection_efficiency()
             
             # パフォーマンス指標作成
-            # 統一出力システムで計算された正確な値を使用
-            unified_return = getattr(self, '_unified_total_return', total_return)
             performance_metrics = DSSMSPerformanceMetrics(
-                total_return=float(unified_return),
+                total_return=float(total_return),
                 volatility=float(volatility),
                 max_drawdown=float(max_drawdown),
                 sharpe_ratio=float(sharpe_ratio),
@@ -1739,10 +1734,6 @@ class DSSMSBacktester:
                 win_rate = win_count / len(switches_data) if switches_data else 0.6
                 
                 self.logger.info(f"パフォーマンス計算: 総リターン{total_return:.2f}%, 勝率{win_rate:.2f}")
-                
-                # 統一出力用の正確なリターン値を保存（確実に実行）
-                self._unified_total_return = float(total_return)
-                self.logger.info(f"統一リターン値保存: {self._unified_total_return:.2f}%")
             else:
                 # フォールバック値
                 final_value = self.initial_capital
@@ -2500,7 +2491,6 @@ class DSSMSBacktester:
 def main():
     """デモ実行用メイン関数"""
     logger = setup_logger('dssms.backtester.demo')
-    logger.info("=== DSSMS リターン計算デバッグ開始 ===")
     logger.info("DSSMSBacktesterデモ開始")
     
     try:
@@ -2576,20 +2566,7 @@ def main():
         logger.info("=" * 60)
         logger.info("DSSMSバックテスト完了")
         logger.info("=" * 60)
-        # 統一出力システムで計算された実際のリターンを表示
-        # 統一出力システムで計算された実際のリターンを取得
-        unified_return = getattr(backtester, '_unified_total_return', None)
-        if unified_return is not None:
-            actual_return = unified_return
-            logger.info(f"統一リターン値使用: {actual_return:.2f}%")
-            # unified_return は既にパーセント値なので、そのまま表示
-            logger.info(f"総リターン: {actual_return:.2f}% (実際の計算値)")
-        else:
-            actual_return = performance_metrics.total_return
-            logger.info(f"フォールバック値使用: {actual_return:.2f}%")
-            # performance_metrics.total_return は小数値なので、パーセント形式で表示
-            logger.info(f"総リターン: {actual_return:.2%} (フォールバック値)")
-        logger.info(f"参考: パフォーマンス指標値: {performance_metrics.total_return:.2%}")
+        logger.info(f"総リターン: {performance_metrics.total_return:.2%}")
         logger.info(f"銘柄切替回数: {performance_metrics.symbol_switches_count}")
         logger.info(f"切替成功率: {performance_metrics.switch_success_rate:.2%}")
         logger.info(f"Excel出力: {excel_path}")

@@ -486,7 +486,7 @@ print('現在のスケジュール:', info)
 
 ```powershell
 # DSSMSバックテスターの直接実行
-python src\dssms\dssms_backtester.py
+python "src\dssms\dssms_backtester.py"
 # 期待される結果: 
 # - システム初期化メッセージ（警告含む）
 # - デフォルト設定でのバックテスト結果
