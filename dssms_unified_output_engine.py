@@ -363,7 +363,19 @@ class DSSMSUnifiedOutputEngine:
                     wrong_years = df.index.year != expected_year
                     if wrong_years.any():
                         logger.info(f"   {key}: 日付修正 ({wrong_years.sum()}件)")
-                        df.index = df.index.map(lambda x: x.replace(year=expected_year))
+                        def safe_year_replace(date_obj):
+                            try:
+                                return date_obj.replace(year=expected_year)
+                            except ValueError:
+                                # 2月29日などの問題があれば28日に変更
+                                if date_obj.month == 2 and date_obj.day == 29:
+                                    return date_obj.replace(year=expected_year, day=28)
+                                else:
+                                    # その他の問題は月末日に調整
+                                    from calendar import monthrange
+                                    last_day = monthrange(expected_year, date_obj.month)[1]
+                                    return date_obj.replace(year=expected_year, day=min(date_obj.day, last_day))
+                        df.index = df.index.map(safe_year_replace)
                 
                 # 'date'列がある場合
                 if 'date' in df.columns:
@@ -371,7 +383,19 @@ class DSSMSUnifiedOutputEngine:
                     wrong_years = df['date'].dt.year != expected_year
                     if wrong_years.any():
                         logger.info(f"   {key}.date: 日付修正 ({wrong_years.sum()}件)")
-                        df['date'] = df['date'].apply(lambda x: x.replace(year=expected_year))
+                        def safe_year_replace_col(date_obj):
+                            try:
+                                return date_obj.replace(year=expected_year)
+                            except ValueError:
+                                # 2月29日などの問題があれば28日に変更
+                                if date_obj.month == 2 and date_obj.day == 29:
+                                    return date_obj.replace(year=expected_year, day=28)
+                                else:
+                                    # その他の問題は月末日に調整
+                                    from calendar import monthrange
+                                    last_day = monthrange(expected_year, date_obj.month)[1]
+                                    return date_obj.replace(year=expected_year, day=min(date_obj.day, last_day))
+                        df['date'] = df['date'].apply(safe_year_replace_col)
     
     def _validate_data_source(self, data: Dict[str, Any]) -> bool:
         """データソースの検証"""
