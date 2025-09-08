@@ -500,8 +500,8 @@ class UnifiedOutputEngine:
         processed_switches = []
         if unified_model.raw_data and 'switches' in unified_model.raw_data:
             for switch_data in unified_model.raw_data['switches']:
-                # パフォーマンス値を数値として保持（キー名を修正）
-                profit_loss = switch_data.get('profit_loss_at_switch', switch_data.get('profit_loss', 0.0))
+                # パフォーマンス値を数値として保持
+                profit_loss = switch_data.get('profit_loss', 0.0)
                 switch_cost = switch_data.get('cost', switch_data.get('switch_cost', 0.0))
                 
                 # 数値型に確実に変換
@@ -525,12 +525,9 @@ class UnifiedOutputEngine:
                     'switch_price': 0.0,  # 価格情報は別途取得
                     'switch_cost': switch_cost_float,
                     'profit_loss_at_switch': profit_loss_float,
-                    'performance_after': profit_loss_float,  # 数値のまま保持（パーセント変換はExcel出力時）
+                    'performance_after': profit_loss_float,  # パフォーマンス値として使用
                     'net_gain': profit_loss_float - switch_cost_float,
-                    'success': is_successful,
-                    # デバッグ用の追加情報
-                    '_profit_loss_raw': switch_data.get('profit_loss_at_switch', switch_data.get('profit_loss', 0.0)),
-                    '_is_successful_calculated': is_successful
+                    'success': is_successful
                 }
                 processed_switches.append(processed_switch)
         

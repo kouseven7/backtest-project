@@ -149,13 +149,17 @@ class DSSMSUnifiedOutputEngine:
             if hasattr(backtester, 'switch_history') and backtester.switch_history:
                 switches_data = []
                 for switch in backtester.switch_history:
+                    # switch_historyの各要素はSymbolSwitchオブジェクトなので、to_dict()を呼ぶ
+                    switch_dict = switch.to_dict() if hasattr(switch, 'to_dict') else switch
+                    
                     switches_data.append({
-                        'date': pd.to_datetime(switch.get('date', datetime.now())),
-                        'from_symbol': switch.get('from_symbol', 'N/A'),
-                        'to_symbol': switch.get('to_symbol', 'N/A'),
-                        'reason': switch.get('reason', 'Unknown'),
-                        'cost': switch.get('cost', 0.0),
-                        'success': switch.get('success', False)
+                        'date': pd.to_datetime(switch_dict.get('timestamp', datetime.now())),
+                        'from_symbol': switch_dict.get('from_symbol', 'N/A'),
+                        'to_symbol': switch_dict.get('to_symbol', 'N/A'),
+                        'reason': switch_dict.get('reason', 'Unknown'),
+                        'cost': switch_dict.get('switch_cost', 0.0),
+                        'profit_loss_at_switch': switch_dict.get('profit_loss_at_switch', 0.0),  # 正しいキー名使用
+                        'success': switch_dict.get('profit_loss_at_switch', 0.0) > 0  # 実際のパフォーマンスで成功判定
                     })
                 
                 if switches_data:
@@ -704,7 +708,43 @@ class DSSMSUnifiedOutputEngine:
         
         formatted_switches = []
         
-        for _, switch in switches_df.iterrows():
+        for i, switch in switches_df.iterrows():
+            # 実際のパフォーマンス値を取得（複数のキー名をチェック）
+            profit_loss = switch.get('profit_loss_at_switch', 
+                                   switch.get('profit_loss', 
+                                            switch.get('performance_after', 0)))
+            
+            # デバッグログ追加（詳細）
+            if i < 3:  # 最初の3件だけログ出力
+                logger.info(f"切り替え{i+1}: 生Switch行データ: {dict(switch)}")
+                logger.info(f"切り替え{i+1}: profit_loss_at_switch={switch.get('profit_loss_at_switch', 'キーなし')}")
+                logger.info(f"切り替え{i+1}: profit_loss={switch.get('profit_loss', 'キーなし')}")
+                logger.info(f"切り替え{i+1}: performance_after={switch.get('performance_after', 'キーなし')}")
+                logger.info(f"切り替え{i+1}: 最終profit_loss値={profit_loss} (型: {type(profit_loss)})")
+            
+            # 数値型に変換
+            try:
+                if isinstance(profit_loss, str):
+                    # 文字列の場合、%記号を削除して数値に変換
+                    profit_loss_clean = profit_loss.replace('%', '').replace(',', '').strip()
+                    profit_loss_float = float(profit_loss_clean)
+                else:
+                    profit_loss_float = float(profit_loss)
+                    
+                # 小数形式（0.1352）の場合は百分率に変換
+                if isinstance(profit_loss, (int, float)) and abs(profit_loss_float) < 1.0:
+                    profit_loss_float = profit_loss_float * 100.0
+                    
+            except (ValueError, TypeError):
+                profit_loss_float = 0.0
+            
+            # デバッグログ追加
+            if i < 3:  # 最初の3件だけログ出力
+                logger.info(f"切り替え{i+1}: 変換後profit_loss_float={profit_loss_float}")
+            
+            # 成功判定（正の損益かどうか）
+            is_successful = profit_loss_float > 0
+            
             formatted_switches.append({
                 '切替日': switch.get('date', datetime.now()).strftime('%Y-%m-%d'),
                 '切替前銘柄': f"{switch.get('from_symbol', 'N/A')}.T",
@@ -712,8 +752,8 @@ class DSSMSUnifiedOutputEngine:
                 '切替理由': switch.get('reason', 'パフォーマンス向上のため'),
                 '切替時価格': f"{np.random.uniform(1000, 3000):,.2f}",  # TODO: 実際の価格
                 '切替コスト': f"{switch.get('cost', 0):,.2f}",
-                '切替後パフォーマンス': f"{np.random.uniform(-10, 15):.2f}%",  # TODO: 実際の計算
-                '成功判定': '成功' if switch.get('success', False) else '失敗'
+                '切替後パフォーマンス': f"{profit_loss_float:.2f}%",
+                '成功判定': '成功' if is_successful else '失敗'
             })
         
         return pd.DataFrame(formatted_switches)

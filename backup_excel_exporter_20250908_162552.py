@@ -352,36 +352,14 @@ class DSSMSExcelExporterV2:
             ws[f"D{row_idx}"] = switch.get("reason", "")
             ws[f"E{row_idx}"] = switch.get("switch_price", 0)
             ws[f"F{row_idx}"] = switch.get("switch_cost", 0)
-            # パフォーマンス値の処理（文字列パーセントから数値への変換）
+            # パフォーマンス値の処理（型安全）
             performance = switch.get("performance_after", 0)
             try:
-                # パフォーマンス値が文字列（例: "13.52%"）の場合の処理
-                if isinstance(performance, str) and '%' in performance:
-                    # パーセント記号を除去して数値に変換
-                    performance_str = performance.replace('%', '').replace(',', '').strip()
-                    performance_val = float(performance_str)
-                else:
-                    # 数値の場合はそのまま使用
-                    performance_val = float(performance) if performance is not None else 0.0
-                
-                # パフォーマンス値を数値として設定（パーセント形式で表示）
-                ws[f"G{row_idx}"] = performance_val / 100.0  # パーセント表示のため100で割る
-                
-                # 成功判定（元の数値ベースで正確に判定）
-                is_successful = performance_val > 0
-                success_status = "成功" if is_successful else "失敗"
-                
-                # デバッグログ出力（最初の5件のみ）
-                if row_idx <= 6:
-                    print(f"DEBUG Switch {row_idx-1}: Raw='{performance}' -> Numeric={performance_val:.4f} -> Success={success_status}")
-                    self.logger.info(f"Switch {row_idx-1}: Raw='{performance}' -> Numeric={performance_val:.4f} -> Success={success_status}")
-                
-            except (ValueError, TypeError) as e:
-                self.logger.warning(f"Row {row_idx}: Invalid performance value: {performance}, Error: {e}")
+                performance_val = float(performance) if performance is not None else 0.0
+                ws[f"G{row_idx}"] = performance_val
+            except (ValueError, TypeError):
                 ws[f"G{row_idx}"] = 0.0
-                success_status = "失敗"
-                
-            ws[f"H{row_idx}"] = success_status
+            ws[f"H{row_idx}"] = switch.get("success", "")
             
             # フォーマット設定
             if isinstance(switch.get("date"), datetime):
@@ -672,7 +650,7 @@ class DSSMSExcelExporterV2:
         }
     
     def _generate_switch_history(self, result: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """切替履歴データ生成（最終修正版）"""
+        """切替履歴データ生成（修正版）"""
         try:
             switch_history = []
             
@@ -680,37 +658,22 @@ class DSSMSExcelExporterV2:
             switches = result.get("switch_history", [])
             
             if not switches:
-                self.logger.warning("switch_historyが見つかりません。サンプル生成します。")
+                # サンプル切替履歴生成
                 switches = self._generate_sample_switch_history(result)
             
-            self.logger.info(f"処理する切替データ: {len(switches)}件")
-            
             for i, switch in enumerate(switches):
-                # パフォーマンス値の取得（複数のフィールドから試行）
-                profit_loss_raw = switch.get("profit_loss_at_switch", 
-                                            switch.get("performance_after", 
-                                                     switch.get("profit_loss", 0.0)))
+                # パフォーマンス値の適切な処理
+                profit_loss = switch.get("profit_loss_at_switch", 0.0)
                 
                 # 数値型に確実に変換
                 try:
-                    profit_loss_float = float(profit_loss_raw) if profit_loss_raw is not None else 0.0
+                    profit_loss_float = float(profit_loss) if profit_loss is not None else 0.0
                 except (ValueError, TypeError):
                     profit_loss_float = 0.0
                 
-                # 成功判定ロジック（統一出力エンジンの値を優先）
-                is_successful_calculated = profit_loss_float > 0
-                
-                # 統一出力エンジンで設定された成功判定を優先使用
-                existing_success = switch.get("success")
-                if isinstance(existing_success, bool):
-                    final_success = existing_success
-                    print(f"DEBUG: Using unified engine success value: {existing_success} for profit_loss: {profit_loss_float}")
-                else:
-                    final_success = is_successful_calculated
-                    print(f"DEBUG: Calculating success locally: {is_successful_calculated} for profit_loss: {profit_loss_float}")
-                
-                success_status = "成功" if final_success else "失敗"
-                print(f"DEBUG: Final success status: '{success_status}' for switch {i+1}")
+                # 成功判定ロジック（バックテスターと同じ基準）
+                is_successful = profit_loss_float > 0
+                success_status = "成功" if is_successful else "失敗"
                 
                 # 日付の処理
                 date_value = switch.get("timestamp", switch.get("date", datetime.now() - timedelta(days=i*2)))
@@ -722,23 +685,21 @@ class DSSMSExcelExporterV2:
                     "reason": switch.get("reason", switch.get("trigger", "技術的指標による判定")),
                     "switch_price": float(switch.get("switch_price", 0.0)),
                     "switch_cost": float(switch.get("switch_cost", 0.0)),
-                    "performance_after": profit_loss_float,  # 数値として保持
+                    "performance_after": profit_loss_float,
                     "success": success_status
                 }
                 
                 switch_history.append(switch_data)
                 
-                # 詳細デバッグ情報（最初の5件）
-                if i < 5:
-                    self.logger.info(f"Switch {i+1}: Raw={profit_loss_raw}, Float={profit_loss_float:.6f}, Success={success_status}")
+                # デバッグ情報をログ出力
+                if i < 3:  # 最初の3件のみログ出力
+                    self.logger.info(f"Switch {i+1}: Performance={profit_loss_float:.4f}, Success={success_status}")
             
             self.logger.info(f"切替履歴データ生成完了: {len(switch_history)}件")
             return switch_history
             
         except Exception as e:
             self.logger.error(f"切替履歴生成エラー: {e}")
-            import traceback
-            self.logger.error(traceback.format_exc())
             return []
     
     def _map_switch_to_strategy(self, switch: Dict[str, Any]) -> str:

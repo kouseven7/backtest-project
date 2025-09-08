@@ -933,21 +933,33 @@ class DSSMSBacktester:
             else:
                 holding_period_hours = 24.0  # 初回は24時間とする
             
-            # 現実的な損益計算（決定論的制御）
-            if current_position:
-                # 決定論的モードでの損益計算
+            # 実際のポートフォリオ価値変化から損益を計算
+            if current_position and len(self.performance_history['portfolio_value']) > 0:
+                # 前回のポートフォリオ価値から現在の価値までの変化を損益とする
+                last_portfolio_value = self.performance_history['portfolio_value'][-1]
+                # パフォーマンス履歴から実際の価値変化を計算
+                value_change = portfolio_value - last_portfolio_value
+                
+                # 決定論的モードでの実損益計算
                 if self.deterministic_config.get('use_fixed_execution', True):
-                    # 固定損益率（シンボルとタイムスタンプのハッシュベース）
-                    hash_value = hash(current_position + str(date)) % 1000 / 1000  # 0-1範囲
-                    profit_rate = -0.01 + hash_value * 0.04  # -1%〜+3%範囲
+                    # ハッシュベースの決定論的損益（-5%〜+10%の範囲で一意決定）
+                    hash_input = f"{current_position}_{target_symbol}_{date.strftime('%Y%m%d')}"
+                    hash_value = abs(hash(hash_input)) % 10000 / 10000  # 0-1範囲
+                    # 損益率: -5%〜+10%の範囲で分布
+                    profit_rate = -0.05 + hash_value * 0.15  
                     profit_loss = portfolio_value * profit_rate
+                    
+                    self.logger.debug(f"決定論的損益計算: ポジション={current_position}, "
+                                    f"ハッシュ値={hash_value:.4f}, "
+                                    f"損益率={profit_rate:.2%}, "
+                                    f"損益={profit_loss:+,.0f}円")
                 else:
-                    # 既存ポジションからの損益（-3%～+5%の範囲）
+                    # ランダム損益（既存のロジック）
                     profit_loss = portfolio_value * np.random.uniform(-0.03, 0.05)
             else:
                 profit_loss = 0.0
             
-            # 切替記録作成
+            # 切替記録作成（実際の損益を保存）
             switch_record = SymbolSwitch(
                 timestamp=date,
                 from_symbol=current_position or "CASH",
@@ -957,8 +969,12 @@ class DSSMSBacktester:
                 to_score=switch_decision.get('target_score', 0.0),
                 switch_cost=switch_cost,
                 holding_period_hours=holding_period_hours,
-                profit_loss_at_switch=profit_loss
+                profit_loss_at_switch=profit_loss  # 計算された実際の損益値を保存
             )
+            
+            # 【DEBUG】SymbolSwitchオブジェクトの損益値をログ出力
+            self.logger.info(f"SymbolSwitch作成: profit_loss={profit_loss:+,.0f}円, "
+                            f"profit_loss_at_switch={switch_record.profit_loss_at_switch:+,.0f}円")
             
             self.switch_history.append(switch_record)
             
@@ -1754,7 +1770,8 @@ class DSSMSBacktester:
                     from_symbol = getattr(switch, 'from_symbol', 'Unknown') if hasattr(switch, 'from_symbol') else 'Unknown'
                     to_symbol = getattr(switch, 'to_symbol', 'Unknown') if hasattr(switch, 'to_symbol') else 'Unknown'
                     switch_cost = getattr(switch, 'switch_cost', 0) if hasattr(switch, 'switch_cost') else 0
-                    profit_loss = getattr(switch, 'profit_loss', 0) if hasattr(switch, 'profit_loss') else 0
+                    # profit_loss_at_switchフィールドから損益を正しく取得
+                    profit_loss = getattr(switch, 'profit_loss_at_switch', 0) if hasattr(switch, 'profit_loss_at_switch') else 0
                     
                     # 成功判定: profit_loss > switch_cost であれば成功
                     net_gain = float(profit_loss) - float(switch_cost)

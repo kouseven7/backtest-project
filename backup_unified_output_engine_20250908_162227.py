@@ -496,44 +496,6 @@ class UnifiedOutputEngine:
             [trade.to_dict() for trade in unified_model.trades]
         )
         
-        # 切替履歴データの適切な変換
-        processed_switches = []
-        if unified_model.raw_data and 'switches' in unified_model.raw_data:
-            for switch_data in unified_model.raw_data['switches']:
-                # パフォーマンス値を数値として保持（キー名を修正）
-                profit_loss = switch_data.get('profit_loss_at_switch', switch_data.get('profit_loss', 0.0))
-                switch_cost = switch_data.get('cost', switch_data.get('switch_cost', 0.0))
-                
-                # 数値型に確実に変換
-                try:
-                    profit_loss_float = float(profit_loss)
-                    switch_cost_float = float(switch_cost)
-                except (ValueError, TypeError):
-                    profit_loss_float = 0.0
-                    switch_cost_float = 0.0
-                
-                # 成功判定（正の損益かどうか）
-                is_successful = profit_loss_float > 0
-                
-                processed_switch = {
-                    'date': switch_data.get('date'),
-                    'timestamp': switch_data.get('date'),
-                    'from_symbol': switch_data.get('from_symbol', ''),
-                    'to_symbol': switch_data.get('to_symbol', ''),
-                    'reason': switch_data.get('reason', '技術的指標による判定'),
-                    'trigger': switch_data.get('reason', '技術的指標による判定'),
-                    'switch_price': 0.0,  # 価格情報は別途取得
-                    'switch_cost': switch_cost_float,
-                    'profit_loss_at_switch': profit_loss_float,
-                    'performance_after': profit_loss_float,  # 数値のまま保持（パーセント変換はExcel出力時）
-                    'net_gain': profit_loss_float - switch_cost_float,
-                    'success': is_successful,
-                    # デバッグ用の追加情報
-                    '_profit_loss_raw': switch_data.get('profit_loss_at_switch', switch_data.get('profit_loss', 0.0)),
-                    '_is_successful_calculated': is_successful
-                }
-                processed_switches.append(processed_switch)
-        
         return {
             'ticker': unified_model.metadata.ticker,
             'start_date': unified_model.metadata.start_date.isoformat(),
@@ -554,8 +516,7 @@ class UnifiedOutputEngine:
             'strategy_statistics': strategy_statistics,  # 戦略別統計を追加
             'reliability_score': unified_model.quality_assurance.reliability_score if unified_model.quality_assurance else 0.0,
             'recommended_actions': unified_model.quality_assurance.quality_recommendations if unified_model.quality_assurance else [],
-            'enhanced_data': unified_model.raw_data,
-            'switch_history': processed_switches  # 処理済み切替履歴を追加
+            'enhanced_data': unified_model.raw_data
         }
     def _convert_unified_to_excel_format(self, unified_model: UnifiedOutputModel) -> Dict[str, Any]:
         """統一モデルからExcel形式への逆変換"""
