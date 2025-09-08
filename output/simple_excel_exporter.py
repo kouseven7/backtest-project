@@ -49,6 +49,19 @@ class ExcelDataProcessor:
         if stock_data is None or stock_data.empty:
             return self._get_empty_data(ticker)
         
+        # DEBUG: データの内容を確認
+        print(f"🔍 DEBUG: stock_dataの形状: {stock_data.shape}")
+        print(f"🔍 DEBUG: stock_dataの列: {stock_data.columns.tolist()}")
+        
+        # Entry_Signal/Exit_Signal列の存在確認
+        required_cols = ['Entry_Signal', 'Exit_Signal']
+        missing_cols = [col for col in required_cols if col not in stock_data.columns]
+        
+        if missing_cols:
+            print(f"⚠️ WARNING: 必要な列が不足: {missing_cols}")
+            print("🔄 フォールバック処理: 基本データのみでExcel出力を実行")
+            return self._process_basic_data(stock_data, ticker)
+        
         # データ抽出エンハンサーで処理
         analyzed_data = extract_and_analyze_main_data(stock_data, ticker)
         
@@ -67,6 +80,50 @@ class ExcelDataProcessor:
             'raw_data': stock_data
         }
     
+    def _process_basic_data(self, stock_data: pd.DataFrame, ticker: str) -> Dict[str, Any]:
+        """
+        Entry_Signal/Exit_Signal列がない場合の基本データ処理
+        
+        Args:
+            stock_data: 基本的な株価DataFrame
+            ticker: 銘柄コード
+            
+        Returns:
+            Dict: 基本データ構造
+        """
+        # 基本的なパフォーマンス計算
+        if not stock_data.empty and 'Close' in stock_data.columns:
+            initial_price = stock_data['Close'].iloc[0]
+            final_price = stock_data['Close'].iloc[-1]
+            total_return = (final_price - initial_price) / initial_price
+            final_value = 1000000 * (1 + total_return)  # 100万円の初期資本と仮定
+        else:
+            total_return = 0.0
+            final_value = 1000000.0
+        
+        return {
+            'metadata': {
+                'ticker': ticker,
+                'analysis_date': datetime.now(),
+                'data_quality': 'basic',
+                'period_start': stock_data.index[0] if not stock_data.empty else datetime.now(),
+                'period_end': stock_data.index[-1] if not stock_data.empty else datetime.now(),
+                'total_days': len(stock_data)
+            },
+            'summary': {
+                'final_portfolio_value': final_value,
+                'total_return': total_return,
+                'total_pnl': final_value - 1000000,
+                'num_trades': 0,
+                'win_rate': 0.0,
+                'initial_capital': 1000000.0,
+                'max_drawdown': 0.0,
+                'sharpe_ratio': 0.0
+            },
+            'trades': [],
+            'raw_data': stock_data
+        }
+
     def _get_empty_data(self, ticker: str) -> Dict[str, Any]:
         """空データの場合のデフォルト構造"""
         return {

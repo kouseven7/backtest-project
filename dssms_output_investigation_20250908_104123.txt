@@ -1,0 +1,411 @@
+DSSMS出力システム調査レポート
+==================================================
+
+調査実行時刻: 2025-09-08 10:41:23.718830
+
+【調査結果サマリー】
+------------------------------
+- 発見ファイル: 12個
+- excel_analysis: 分析済み
+- backtester_error: 分析済み
+- source_analysis: 分析済み
+- 検出された不整合: 2件
+- 修正提案: 4件
+
+【詳細データ】
+------------------------------
+{
+  "existing_files": {
+    "excel_dssms_backtest_results_v2_20250907_234504.xlsx": "backtest_results/dssms_results\\dssms_backtest_results_v2_20250907_234504.xlsx",
+    "excel_dssms_backtest_results_v2_20250908_091640.xlsx": "backtest_results/dssms_results\\dssms_backtest_results_v2_20250908_091640.xlsx",
+    "excel_dssms_backtest_results_v2_20250908_101936.xlsx": "backtest_results/dssms_results\\dssms_backtest_results_v2_20250908_101936.xlsx",
+    "text_dssms_detailed_report_20250908_101936.txt": "backtest_results/dssms_results\\dssms_detailed_report_20250908_101936.txt",
+    "text_dssms_emergency_report_20250826_120612.txt": "backtest_results/dssms_results\\dssms_emergency_report_20250826_120612.txt",
+    "text_dssms_emergency_report_20250826_120651.txt": "backtest_results/dssms_results\\dssms_emergency_report_20250826_120651.txt",
+    "text_task_2_1_integration_test_report_20250826_205834.txt": ".\\task_2_1_integration_test_report_20250826_205834.txt",
+    "text_task_2_1_integration_test_report_20250826_210115.txt": ".\\task_2_1_integration_test_report_20250826_210115.txt",
+    "text_task_2_1_integration_test_report_20250826_210335.txt": ".\\task_2_1_integration_test_report_20250826_210335.txt",
+    "excel_improved_backtest_9119.T_20250814_161223.xlsx": "backtest_results/improved_results\\improved_backtest_9119.T_20250814_161223.xlsx",
+    "excel_improved_backtest_9404.T_20250814_162036.xlsx": "backtest_results/improved_results\\improved_backtest_9404.T_20250814_162036.xlsx",
+    "excel_improved_backtest_9434.T_20250814_162402.xlsx": "backtest_results/improved_results\\improved_backtest_9434.T_20250814_162402.xlsx"
+  },
+  "excel_analysis": {
+    "サマリー": {
+      "rows": 16,
+      "columns": 2,
+      "column_names": [
+        "DSSMS バックテスト結果サマリー V2",
+        "Unnamed: 1"
+      ],
+      "has_data": true,
+      "sample_data": [
+        {
+          "DSSMS バックテスト結果サマリー V2": NaN,
+          "Unnamed: 1": NaN
+        },
+        {
+          "DSSMS バックテスト結果サマリー V2": "実行日時",
+          "Unnamed: 1": "2025-09-08 10:19:36"
+        },
+        {
+          "DSSMS バックテスト結果サマリー V2": "バックテスト期間",
+          "Unnamed: 1": NaN
+        }
+      ]
+    },
+    "パフォーマンス指標": {
+      "rows": 7,
+      "columns": 4,
+      "column_names": [
+        "詳細パフォーマンス指標",
+        "Unnamed: 1",
+        "Unnamed: 2",
+        "Unnamed: 3"
+      ],
+      "has_data": true,
+      "sample_data": [
+        {
+          "詳細パフォーマンス指標": NaN,
+          "Unnamed: 1": NaN,
+          "Unnamed: 2": NaN,
+          "Unnamed: 3": NaN
+        },
+        {
+          "詳細パフォーマンス指標": "指標名",
+          "Unnamed: 1": "値",
+          "Unnamed: 2": "ベンチマーク",
+          "Unnamed: 3": "評価"
+        },
+        {
+          "詳細パフォーマンス指標": "総リターン",
+          "Unnamed: 1": "0.0000",
+          "Unnamed: 2": 0.08,
+          "Unnamed: 3": "要改善"
+        }
+      ]
+    },
+    "取引履歴": {
+      "rows": 19,
+      "columns": 10,
+      "column_names": [
+        "日付",
+        "戦略名",
+        "銘柄",
+        "売買区分",
+        "数量",
+        "エントリー価格",
+        "エグジット価格",
+        "損益",
+        "累積損益",
+        "保有期間"
+      ],
+      "has_data": true,
+      "sample_data": [
+        {
+          "日付": "2025-09-08 10:19:36.262000",
+          "戦略名": "BreakoutStrategy",
+          "銘柄": "9984.T",
+          "売買区分": "買い",
+          "数量": 100,
+          "エントリー価格": 928.6745474805238,
+          "エグジット価格": NaN,
+          "損益": 0.0,
+          "累積損益": 0.0,
+          "保有期間": NaN
+        },
+        {
+          "日付": "2025-09-05 10:19:36.262000",
+          "戦略名": "BreakoutStrategy",
+          "銘柄": "9984.T",
+          "売買区分": "売り",
+          "数量": 100,
+          "エントリー価格": 928.6745474805238,
+          "エグジット価格": 1036.19478897588,
+          "損益": 3628.521795079226,
+          "累積損益": 3628.521795079226,
+          "保有期間": "53.6時間"
+        },
+        {
+          "日付": "2025-09-05 10:19:36.262000",
+          "戦略名": "VWAPBreakoutStrategy",
+          "銘柄": "6758.T",
+          "売買区分": "買い",
+          "数量": 100,
+          "エントリー価格": 1003.994031725399,
+          "エグジット価格": NaN,
+          "損益": 0.0,
+          "累積損益": 3628.521795079226,
+          "保有期間": NaN
+        }
+      ],
+      "date_issue": "2025年データ検出: 2025"
+    },
+    "損益推移": {
+      "rows": 100,
+      "columns": 5,
+      "column_names": [
+        "日付",
+        "ポートフォリオ価値",
+        "日次損益",
+        "日次リターン",
+        "累積リターン"
+      ],
+      "has_data": true,
+      "sample_data": [
+        {
+          "日付": "2025-05-31 10:19:36.268000",
+          "ポートフォリオ価値": 998001.5493953872,
+          "日次損益": 0.0,
+          "日次リターン": 0.0,
+          "累積リターン": -0.001998450604612823
+        },
+        {
+          "日付": "2025-06-01 10:19:36.268000",
+          "ポートフォリオ価値": 1032066.731275497,
+          "日次損益": 34065.18188010936,
+          "日次リターン": 0.03413339578555452,
+          "累積リターン": 0.03206673127549654
+        },
+        {
+          "日付": "2025-06-02 10:19:36.268000",
+          "ポートフォリオ価値": 1029726.604961712,
+          "日次損益": -2340.126313784043,
+          "日次リターン": -0.002267417641582115,
+          "累積リターン": 0.02972660496171249
+        }
+      ],
+      "date_issue": "2025年データ検出: 2025"
+    },
+    "戦略別統計": {
+      "rows": 7,
+      "columns": 9,
+      "column_names": [
+        "戦略名",
+        "取引回数",
+        "勝率",
+        "平均利益",
+        "平均損失",
+        "最大利益",
+        "最大損失",
+        "プロフィットファクター",
+        "総損益"
+      ],
+      "has_data": true,
+      "sample_data": [
+        {
+          "戦略名": "VWAPBreakoutStrategy",
+          "取引回数": 17,
+          "勝率": 0.4705882352941176,
+          "平均利益": 2141.453117291116,
+          "平均損失": -1467.608354322655,
+          "最大利益": 4502.962575602973,
+          "最大損失": -2527.754960860683,
+          "プロフィットファクター": 1.297017611292542,
+          "総損益": 3923.149749425036
+        },
+        {
+          "戦略名": "BreakoutStrategy",
+          "取引回数": 15,
+          "勝率": 0.4666666666666667,
+          "平均利益": 2184.018330586122,
+          "平均損失": -1493.037444427476,
+          "最大利益": 3619.813234242322,
+          "最大損失": -2607.538523486749,
+          "プロフィットファクター": 1.279951850099554,
+          "総損益": 3343.82875868305
+        },
+        {
+          "戦略名": "OpeningGapStrategy",
+          "取引回数": 49,
+          "勝率": 0.5102040816326531,
+          "平均利益": 2331.452112589227,
+          "平均損失": -1322.425553562342,
+          "最大利益": 4107.803454424177,
+          "最大損失": -3816.174649483748,
+          "プロフィットファクター": 1.836470827466727,
+          "総損益": 26548.08952923448
+        }
+      ]
+    },
+    "切替分析": {
+      "rows": 10,
+      "columns": 8,
+      "column_names": [
+        "切替日",
+        "切替前銘柄",
+        "切替後銘柄",
+        "切替理由",
+        "切替時価格",
+        "切替コスト",
+        "切替後パフォーマンス",
+        "成功判定"
+      ],
+      "has_data": true,
+      "sample_data": [
+        {
+          "切替日": "2025-09-08 10:19:36.277000",
+          "切替前銘柄": "7203.T",
+          "切替後銘柄": "9984.T",
+          "切替理由": "パフォーマンス向上のため",
+          "切替時価格": 1402.671208253998,
+          "切替コスト": 1651.559087491236,
+          "切替後パフォーマンス": 0.1033517233911699,
+          "成功判定": "失敗"
+        },
+        {
+          "切替日": "2025-09-05 10:19:36.277000",
+          "切替前銘柄": "9984.T",
+          "切替後銘柄": "6758.T",
+          "切替理由": "パフォーマンス向上のため",
+          "切替時価格": 1742.83127646569,
+          "切替コスト": 1895.907394362371,
+          "切替後パフォーマンス": -0.04091585243281221,
+          "成功判定": "失敗"
+        },
+        {
+          "切替日": "2025-09-02 10:19:36.277000",
+          "切替前銘柄": "6758.T",
+          "切替後銘柄": "8031.T",
+          "切替理由": "パフォーマンス向上のため",
+          "切替時価格": 1097.85700271645,
+          "切替コスト": 1294.905200949802,
+          "切替後パフォーマンス": 0.03841945838485833,
+          "成功判定": "失敗"
+        }
+      ]
+    },
+    "チャート": {
+      "rows": 2,
+      "columns": 1,
+      "column_names": [
+        "パフォーマンスチャート"
+      ],
+      "has_data": true,
+      "sample_data": [
+        {
+          "パフォーマンスチャート": NaN
+        },
+        {
+          "パフォーマンスチャート": "注：チャート機能は今後のバージョンで実装予定"
+        }
+      ]
+    }
+  },
+  "backtester_error": "DSSMSBacktester.simulate_dynamic_selection() missing 1 required positional argument: 'symbol_universe'",
+  "source_analysis": {
+    "dssms_backtester": {
+      "file_exists": true,
+      "line_count": 2234,
+      "imports": [
+        "import sys",
+        "from pathlib import Path",
+        "import pandas as pd",
+        "import numpy as np",
+        "from typing import Dict, List, Optional, Tuple, Any"
+      ],
+      "data_sources": [
+        "def _prepare_excel_data(self) -> pd.DataFrame:",
+        "pd.DataFrame: Excel出力システム用のデータフレーム",
+        "3. calculate_dssms_performance: DSSMS専用パフォーマンス計算",
+        "def calculate_dssms_performance(self, simulation_result: Dict[str, Any]) -> DSSMSPerformanceMetrics:",
+        "from src.dssms.performance_target_manager import PerformanceTargetManager, TargetPhase",
+        "self.config = config or self._get_default_config()",
+        "from data_fetcher import fetch_stock_data",
+        "'portfolio_value': [],  # List[float]",
+        "portfolio_value = self.initial_capital"
+      ],
+      "calculation_methods": [
+        "def calculate_dssms_performance(self, simulation_result: Dict[str, Any]) -> DSSMSPerformanceMetrics:",
+        "def _calculate_daily_returns(self) -> List[float]:",
+        "def _calculate_annualized_return(self, total_return: float) -> float:",
+        "def _calculate_sharpe_ratio(self, daily_returns: List[float]) -> float:"
+      ]
+    },
+    "dssms_excel_exporter_v2": {
+      "file_exists": false
+    },
+    "simple_excel_exporter": {
+      "file_exists": true,
+      "line_count": 733,
+      "imports": [
+        "import pandas as pd",
+        "import os",
+        "from datetime import datetime",
+        "from typing import Dict, Any, Optional, Union, List",
+        "import warnings"
+      ],
+      "data_sources": [
+        "def process_main_data(self, stock_data: pd.DataFrame, ticker: str = \"UNKNOWN\") -> Dict[str, Any]:",
+        "stock_data: main.pyから渡されるDataFrame",
+        "summary = _calculate_summary_from_trades(trades, results)",
+        "daily_pnl = _calculate_daily_pnl_from_dataframe(results)",
+        "return self._get_empty_data(ticker)",
+        "def _get_empty_data(self, ticker: str) -> Dict[str, Any]:",
+        "'final_portfolio_value': final_value,",
+        "'final_portfolio_value': 1000000.0,"
+      ],
+      "calculation_methods": [
+        "def get_summary_from_results(results: Any) -> Dict[str, Any]:",
+        "def process_main_data(self, stock_data: pd.DataFrame, ticker: str = \"UNKNOWN\") -> Dict[str, Any]:"
+      ]
+    },
+    "main_text_reporter": {
+      "file_exists": true,
+      "line_count": 607,
+      "imports": [
+        "import os",
+        "import pandas as pd",
+        "import numpy as np",
+        "from typing import Dict, List, Tuple, Optional, Any",
+        "from datetime import datetime"
+      ],
+      "data_sources": [
+        "stock_data: pd.DataFrame,",
+        "stock_data (pd.DataFrame): バックテスト結果データ",
+        "strategy_ev = self._calculate_strategy_expected_values(trades)",
+        "avg_holding_days = self._calculate_average_holding_period(trades)",
+        "lines.append(f\"最終ポートフォリオ値: ¥{performance.get('final_portfolio_value', 0):,.0f}\")",
+        "lines.append(f\"  最終資金: ¥{performance.get('final_portfolio_value', 0):,.0f}\")"
+      ],
+      "calculation_methods": []
+    }
+  },
+  "inconsistencies": [
+    {
+      "type": "date_inconsistency",
+      "location": "Excel:取引履歴",
+      "issue": "2025年データ検出: 2025"
+    },
+    {
+      "type": "date_inconsistency",
+      "location": "Excel:損益推移",
+      "issue": "2025年データ検出: 2025"
+    }
+  ],
+  "proposals": [
+    {
+      "priority": "High",
+      "title": "日付データ修正",
+      "description": "バックテスト期間（2023年）と出力データ（2025年）の日付不整合を修正",
+      "action": "バックテスターの日付管理ロジック修正"
+    },
+    {
+      "priority": "Critical",
+      "title": "統一出力エンジン構築",
+      "description": "単一データソースから全出力形式を生成する統一システム",
+      "action": "DSSMSUnifiedOutputEngine実装"
+    },
+    {
+      "priority": "High",
+      "title": "データ検証システム",
+      "description": "出力前のデータ整合性チェック機能",
+      "action": "ValidationEngine実装"
+    },
+    {
+      "priority": "Medium",
+      "title": "銘柄切り替え機能修正",
+      "description": "DSSMSの動的銘柄選択機能の修正",
+      "action": "SwitchManager見直し"
+    }
+  ]
+}
