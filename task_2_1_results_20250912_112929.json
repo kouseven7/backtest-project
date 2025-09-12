@@ -1,0 +1,149 @@
+{
+  "timestamp": "2025-09-12T11:29:28.770759",
+  "engine_date_fixes": {
+    "dssms_unified_output_engine_fixed.py": {
+      "method_lines": 40,
+      "important_lines": [
+        "expected_year = self.validation_rules['backtest_year']",
+        "if hasattr(df.index, 'year'):",
+        "wrong_years = df.index.year != expected_year",
+        "if wrong_years.any():",
+        "logger.info(f\"   {key}: インデックス日付修正 ({wrong_years.sum()}件)\")",
+        "if date_obj.year != expected_year:",
+        "new_date = date_obj.replace(year=expected_year)",
+        "new_index.append(date_obj.replace(year=expected_year, day=28))",
+        "new_index.append(date_obj.replace(year=expected_year, day=28))",
+        "df['date'] = pd.to_datetime(df['date'])",
+        "wrong_years = df['date'].dt.year != expected_year",
+        "if wrong_years.any():",
+        "logger.info(f\"   {key}.date: 列日付修正 ({wrong_years.sum()}件)\")"
+      ],
+      "expected_year_usage": [],
+      "boundary_processing": []
+    },
+    "dssms_unified_output_engine_fixed_v4.py": {
+      "method_lines": 46,
+      "important_lines": [
+        "pd.to_datetime(original_date)",
+        "trade['日付'] = pd.to_datetime(original_date, unit='D', origin='2023-01-01').strftime('%Y-%m-%d')",
+        "trade['日付'] = pd.to_datetime(int(original_date), unit='D', origin='2023-01-01').strftime('%Y-%m-%d')",
+        "pd.to_datetime(original_date)",
+        "pv['日付'] = pd.to_datetime(original_date, unit='D', origin='2023-01-01').strftime('%Y-%m-%d')",
+        "pv['日付'] = pd.to_datetime(int(original_date), unit='D', origin='2023-01-01').strftime('%Y-%m-%d')"
+      ],
+      "expected_year_usage": [],
+      "boundary_processing": [
+        "trade['日付'] = pd.to_datetime(original_date, unit='D', origin='2023-01-01').strftime('%Y-%m-%d')",
+        "trade['日付'] = pd.to_datetime(int(original_date), unit='D', origin='2023-01-01').strftime('%Y-%m-%d')",
+        "pv['日付'] = pd.to_datetime(original_date, unit='D', origin='2023-01-01').strftime('%Y-%m-%d')",
+        "pv['日付'] = pd.to_datetime(int(original_date), unit='D', origin='2023-01-01').strftime('%Y-%m-%d')"
+      ]
+    }
+  },
+  "excel_data_analysis": {
+    "サマリー": {
+      "rows": 15,
+      "columns": 2,
+      "date_columns": [],
+      "date_patterns": []
+    },
+    "パフォーマンス指標": {
+      "rows": 5,
+      "columns": 4,
+      "date_columns": [],
+      "date_patterns": []
+    },
+    "取引履歴": {
+      "rows": 2,
+      "columns": 10,
+      "date_columns": [
+        "日付"
+      ],
+      "date_patterns": [
+        [
+          0,
+          "2023-01-01"
+        ],
+        [
+          1,
+          "2023-01-01"
+        ]
+      ]
+    },
+    "損益推移": {
+      "rows": 366,
+      "columns": 5,
+      "date_columns": [
+        "date"
+      ],
+      "date_patterns": [
+        [
+          0,
+          "2023-01-01"
+        ],
+        [
+          364,
+          "2023-12-31"
+        ],
+        [
+          365,
+          "2023-01-01"
+        ]
+      ]
+    },
+    "戦略別統計": {
+      "rows": 3,
+      "columns": 9,
+      "date_columns": [],
+      "date_patterns": [
+        [
+          0,
+          "2023-01-01"
+        ],
+        [
+          364,
+          "2023-12-31"
+        ],
+        [
+          365,
+          "2023-01-01"
+        ]
+      ]
+    },
+    "切替分析": {
+      "rows": 1,
+      "columns": 8,
+      "date_columns": [],
+      "date_patterns": [
+        [
+          0,
+          "2023-01-01"
+        ],
+        [
+          364,
+          "2023-12-31"
+        ],
+        [
+          365,
+          "2023-01-01"
+        ]
+      ]
+    }
+  },
+  "date_loop_detection": {
+    "portfolio_methods": [],
+    "date_processing_count": 28,
+    "portfolio_value_generation": [
+      "portfolio_value = self.initial_capital",
+      "portfolio_value = switch_result['portfolio_value']",
+      "portfolio_value = self._update_portfolio_value(",
+      "simulation_result = self._finalize_simulation_result(start_date, end_date, portfolio_value)",
+      "portfolio_values_raw = self.performance_history.get('portfolio_value', [])",
+      "portfolio_values = [float(v) for v in portfolio_values_raw if isinstance(v, (int, float))]",
+      "if len(portfolio_values) != len(daily_returns):",
+      "min_len = min(len(portfolio_values), len(daily_returns))",
+      "portfolio_values = portfolio_values[:min_len]",
+      "portfolio_mean = np.mean(portfolio_values)"
+    ]
+  }
+}

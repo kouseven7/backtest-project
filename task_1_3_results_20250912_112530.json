@@ -1,0 +1,78 @@
+{
+  "timestamp": "2025-09-12T11:25:30.568660",
+  "engine_analysis": {
+    "dssms_unified_output_engine.py": {
+      "exists": true,
+      "file_size": 37776,
+      "switch_history_usage": [
+        "            if hasattr(backtester, 'switch_history') and backtester.switch_history:",
+        "                for switch in backtester.switch_history:",
+        "                    # switch_historyの各要素はSymbolSwitchオブジェクトなので、to_dict()を呼ぶ"
+      ],
+      "data_conversion_methods": [],
+      "excel_output_methods": [],
+      "date_fixing_methods": [
+        "def _fix_date_inconsistencies(self, data: Dict[str, Any]):"
+      ],
+      "holding_period_calculation": []
+    },
+    "dssms_unified_output_engine_fixed.py": {
+      "exists": true,
+      "file_size": 30256,
+      "switch_history_usage": [
+        "            if hasattr(backtester, 'switch_history') and backtester.switch_history:",
+        "                trades_data = self._create_accurate_trade_history(backtester.switch_history)",
+        "            if hasattr(backtester, 'switch_history') and backtester.switch_history:",
+        "                switches_df = pd.DataFrame(backtester.switch_history)",
+        "    def _create_accurate_trade_history(self, switch_history: List[Dict]) -> pd.DataFrame:"
+      ],
+      "data_conversion_methods": [],
+      "excel_output_methods": [],
+      "date_fixing_methods": [
+        "def _fix_date_inconsistencies_improved(self, data: Dict[str, Any]):"
+      ],
+      "holding_period_calculation": [
+        "            holding_period_days = (exit_date - entry_date).days",
+        "            holding_period_hours = holding_period_days * 24 + (exit_date - entry_date).seconds / 3600",
+        "                'holding_period_hours': 0"
+      ]
+    },
+    "dssms_unified_output_engine_fixed_v3.py": {
+      "exists": true,
+      "file_size": 0,
+      "switch_history_usage": [],
+      "data_conversion_methods": [],
+      "excel_output_methods": [],
+      "date_fixing_methods": [],
+      "holding_period_calculation": []
+    },
+    "dssms_unified_output_engine_fixed_v4.py": {
+      "exists": true,
+      "file_size": 20314,
+      "switch_history_usage": [
+        "            if hasattr(backtester, 'switch_history') and backtester.switch_history:",
+        "                logger.info(\"✅ スイッチ履歴検出: %d件\", len(backtester.switch_history))",
+        "                data['trades'] = self._create_accurate_trade_history_v4(backtester.switch_history)",
+        "    def _create_accurate_trade_history_v4(self, switch_history: List) -> List[Dict]:",
+        "        for i, switch in enumerate(switch_history):"
+      ],
+      "data_conversion_methods": [
+        "def _convert_portfolio_values(self, portfolio_history):",
+        "def convert_dates(obj):"
+      ],
+      "excel_output_methods": [
+        "def _generate_complete_excel_output(self, filepath: Path):"
+      ],
+      "date_fixing_methods": [
+        "def _fix_date_inconsistencies_improved(self):",
+        "def convert_dates(obj):"
+      ],
+      "holding_period_calculation": [
+        "                    '平均保有期間(時間)': stats.get('avg_holding_period_hours', 0.0),"
+      ]
+    }
+  },
+  "data_flow_success": true,
+  "logic_analysis_success": true,
+  "engine_usage_success": true
+}

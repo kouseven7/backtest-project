@@ -1,0 +1,214 @@
+{
+  "v1_success_factors": {
+    "file_structure": {
+      "file_size": 37776,
+      "line_count": 900,
+      "is_substantial": true
+    },
+    "implementation_quality": {
+      "class_count": 1,
+      "method_count": 24,
+      "comment_count": 94,
+      "docstring_count": 22,
+      "documentation_ratio": 0.1288888888888889
+    },
+    "code_patterns": {
+      "error_handling": 31,
+      "type_hints": 32,
+      "logging": 15,
+      "data_validation": 19,
+      "pandas_usage": 80,
+      "calculation_formulas": 11
+    },
+    "success_factors": [
+      "実質的なコード量（5KB以上）",
+      "高い文書化率（10%以上）",
+      "充実したエラーハンドリング",
+      "統計計算式の実装",
+      "豊富なメソッド実装"
+    ]
+  },
+  "failure_analysis": {
+    "v2": {
+      "critical_issues": [],
+      "implementation_gaps": {
+        "missing_methods": [
+          "calculate_win_rate",
+          "calculate_profit_factor",
+          "calculate_average_profit_loss"
+        ],
+        "missing_calculations": [
+          "win_rate_calculation",
+          "profit_factor_calculation",
+          "average_profit_calculation"
+        ]
+      },
+      "quality_problems": []
+    },
+    "v3": {
+      "critical_issues": [
+        "完全空ファイル（0 bytes）",
+        "極少行数（0 lines）- 実装不足"
+      ],
+      "implementation_gaps": {
+        "missing_methods": [
+          "_convert_backtester_results",
+          "_fix_date_inconsistencies",
+          "calculate_win_rate",
+          "calculate_profit_factor",
+          "calculate_average_profit_loss"
+        ],
+        "missing_calculations": [
+          "win_rate_calculation",
+          "profit_factor_calculation",
+          "average_profit_calculation",
+          "trade_count_calculation"
+        ]
+      },
+      "quality_problems": [
+        "エラーハンドリング不足（0箇所のみ）",
+        "型ヒント不足（0箇所のみ）"
+      ]
+    },
+    "v4": {
+      "critical_issues": [],
+      "implementation_gaps": {
+        "missing_methods": [
+          "calculate_win_rate",
+          "calculate_profit_factor",
+          "calculate_average_profit_loss"
+        ],
+        "missing_calculations": [
+          "win_rate_calculation",
+          "profit_factor_calculation",
+          "average_profit_calculation"
+        ]
+      },
+      "quality_problems": []
+    }
+  },
+  "error_patterns": {
+    "patterns": [
+      "分母欠如パターン: 2件"
+    ],
+    "common_errors": {
+      "missing_denominator": [
+        [
+          "v1",
+          "win_rate",
+          "s"
+        ],
+        [
+          "v1",
+          "profit_factor",
+          "0"
+        ]
+      ],
+      "wrong_formula": [],
+      "variable_misuse": [],
+      "incomplete_calculation": []
+    },
+    "formula_accuracy": {}
+  },
+  "quality_guidelines": {
+    "rules": [
+      "最小ファイルサイズ: 5KB以上（実質的な実装の証拠）",
+      "最小メソッド数: 10個以上（機能の完全性）",
+      "文書化率: 10%以上（保守性の確保）",
+      "エラーハンドリング: 5箇所以上（堅牢性の確保）"
+    ],
+    "best_practices": [
+      "統計計算式は数学的に正確な公式を使用する",
+      "勝率 = profitable_trades / total_trades",
+      "プロフィットファクター = total_profit / abs(total_loss)",
+      "分母がゼロの場合の例外処理を必須とする",
+      "型ヒントを活用してコードの可読性を向上させる",
+      "重要メソッドには必ずdocstringを記述する",
+      "データ検証ロジックを各計算の前に実装する"
+    ],
+    "quality_metrics": {
+      "minimum_score": 80.0,
+      "file_size_minimum": 5000,
+      "method_count_minimum": 10,
+      "documentation_ratio_minimum": 0.1,
+      "error_handling_minimum": 5,
+      "calculation_accuracy": 1.0
+    },
+    "implementation_standards": {
+      "required_methods": [
+        "_convert_backtester_results",
+        "_fix_date_inconsistencies",
+        "calculate_win_rate",
+        "calculate_profit_factor",
+        "calculate_average_profit_loss"
+      ],
+      "required_calculations": [
+        "win_rate_calculation",
+        "profit_factor_calculation",
+        "average_profit_calculation",
+        "total_trades_calculation"
+      ],
+      "code_style": [
+        "type_hints_required",
+        "docstrings_required",
+        "error_handling_required",
+        "data_validation_required"
+      ]
+    }
+  },
+  "priority_analysis": {
+    "priorities": [
+      {
+        "rank": 1,
+        "version": "v2",
+        "priority_level": "Medium",
+        "gap": 48.3,
+        "estimated_cost": 15,
+        "efficiency": 3.2199999999999998
+      },
+      {
+        "rank": 2,
+        "version": "v4",
+        "priority_level": "Medium",
+        "gap": 25.0,
+        "estimated_cost": 15,
+        "efficiency": 1.6666666666666667
+      },
+      {
+        "rank": 3,
+        "version": "v3",
+        "priority_level": "High",
+        "gap": 80.0,
+        "estimated_cost": 49,
+        "efficiency": 1.6326530612244898
+      }
+    ],
+    "cost_efficiency": {
+      "total_gap": 153.3,
+      "total_cost": 79,
+      "overall_efficiency": 1.9405063291139242,
+      "recommended_order": [
+        "v2",
+        "v4",
+        "v3"
+      ]
+    },
+    "improvement_roadmap": {
+      "phase_1_emergency": {
+        "targets": [
+          "v3"
+        ],
+        "timeline": "1-2日",
+        "focus": "完全未実装エンジンの基本実装"
+      },
+      "phase_2_improvement": {
+        "targets": [
+          "v2",
+          "v4"
+        ],
+        "timeline": "3-5日",
+        "focus": "計算式正確性とエラーハンドリング改善"
+      }
+    }
+  }
+}

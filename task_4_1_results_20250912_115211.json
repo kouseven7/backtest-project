@@ -1,0 +1,325 @@
+{
+  "analysis_timestamp": "20250912_115211",
+  "findings": {
+    "excel_statistics_analysis": {
+      "file_name": "dssms_unified_backtest_20250910_213413.xlsx",
+      "sheet_names": [
+        "サマリー",
+        "パフォーマンス指標",
+        "取引履歴",
+        "損益推移",
+        "戦略別統計",
+        "切替分析"
+      ],
+      "strategy_stats_analysis": {
+        "戦略別統計": {
+          "max_row": 4,
+          "max_column": 9,
+          "sample_data": [
+            {
+              "col_1": "戦略名",
+              "col_2": "取引回数",
+              "col_3": "勝率",
+              "col_4": "平均利益",
+              "col_5": "平均損失"
+            },
+            {
+              "col_1": "VWAPBreakoutStrategy",
+              "col_2": "1",
+              "col_3": "0.00%",
+              "col_4": "0.00",
+              "col_5": "-1,000.00"
+            },
+            {
+              "col_1": "MeanReversionStrategy",
+              "col_2": "1",
+              "col_3": "0.00%",
+              "col_4": "0.00",
+              "col_5": "0.00"
+            },
+            {
+              "col_1": "合計",
+              "col_2": "2",
+              "col_3": "",
+              "col_4": "",
+              "col_5": ""
+            }
+          ],
+          "statistics_items_found": {
+            "勝率": true,
+            "利益": true,
+            "損失": true,
+            "プロフィットファクター": false,
+            "取引数": false
+          }
+        }
+      }
+    }
+  },
+  "data_sources": {
+    "backtester_analysis": {
+      "file_size": 117532,
+      "statistics_methods_found": 3,
+      "method_details": [
+        "Line 1255: def _get_empty_performance_metrics(self) -> DSSMSPerformanceMetrics:",
+        "Line 1548: def _convert_to_unified_format(self, simulation_result, performance_metrics, comparison_result):",
+        "Line 2337: def _log_conversion_statistics(self, portfolio_df: pd.DataFrame, trades: list):"
+      ],
+      "win_rate_implementations": [
+        "Line 1647: 'TrendFollowingStrategy',",
+        "Line 1730: 'TrendFollowingStrategy',",
+        "Line 1822: win_rate = win_count / len(switches_data) if switches_data else 0.6",
+        "Line 1824: self.logger.info(f\"パフォーマンス計算: 総リターン{total_return:.2f}%, 勝率{win_rate:.2f}\")",
+        "Line 1836: win_rate = 0.6"
+      ],
+      "profit_implementations": [
+        "Line 100: profit_loss_at_switch: float",
+        "Line 114: 'profit_loss_at_switch': self.profit_loss_at_switch,",
+        "Line 493: successful_switches = sum(1 for s in self.switch_history if s.profit_loss_at_switch > 0)",
+        "Line 950: profit_loss = portfolio_value * profit_rate",
+        "Line 955: f\"損益={profit_loss:+,.0f}円\")"
+      ]
+    },
+    "trade_history_analysis": {
+      "dssms_unified_output_engine.py": {
+        "trade_history_usage": 5,
+        "usage_details": [
+          "Line 130: if hasattr(backtester, 'trade_history') and backtester.trade_history:",
+          "Line 132: for trade in backtester.trade_history:",
+          "Line 475: trade_history = self._create_trade_history_sheet()",
+          "Line 476: trade_history.to_excel(writer, sheet_name='取引履歴', index=False)",
+          "Line 592: def _create_trade_history_sheet(self) -> pd.DataFrame:"
+        ],
+        "statistics_calculations": 9,
+        "calculation_details": [
+          "win_rate Line 255: 'win_rate': 0.65",
+          "win_rate Line 268: 'win_rate': 0.0",
+          "win_rate Line 301: metrics['win_rate'] = profitable_trades / total_trades",
+          "win_rate Line 325: 'win_rate': len(profit_trades) / len(strategy_trades) if len(strategy_trades) > 0 else 0,",
+          "win_rate Line 564: ('勝率', performance.get('win_rate', 0), 0.5, self._evaluate_metric('win_rate', performance.get('win_rate', 0)))"
+        ]
+      },
+      "dssms_unified_output_engine_fixed.py": {
+        "trade_history_usage": 4,
+        "usage_details": [
+          "Line 126: trades_data = self._create_accurate_trade_history(backtester.switch_history)",
+          "Line 151: def _create_accurate_trade_history(self, switch_history: List[Dict]) -> pd.DataFrame:",
+          "Line 354: self._create_trade_history_sheet_fixed(wb)",
+          "Line 459: def _create_trade_history_sheet_fixed(self, workbook):"
+        ],
+        "statistics_calculations": 3,
+        "calculation_details": [
+          "average Line 386: ['平均保有期間', f\"{self._calculate_average_holding_period():.1f}時間\"],",
+          "average Line 543: f.write(f\"平均保有期間: {self._calculate_average_holding_period():.1f}時間\\n\")",
+          "average Line 661: def _calculate_average_holding_period(self) -> float:"
+        ]
+      },
+      "dssms_unified_output_engine_fixed_v3.py": {
+        "trade_history_usage": 0,
+        "usage_details": [],
+        "statistics_calculations": 0,
+        "calculation_details": []
+      },
+      "dssms_unified_output_engine_fixed_v4.py": {
+        "trade_history_usage": 2,
+        "usage_details": [
+          "Line 90: data['trades'] = self._create_accurate_trade_history_v4(backtester.switch_history)",
+          "Line 124: def _create_accurate_trade_history_v4(self, switch_history: List) -> List[Dict]:"
+        ],
+        "statistics_calculations": 1,
+        "calculation_details": [
+          "win_rate Line 213: '勝率(%)': metrics.get('win_rate', 0.0)"
+        ]
+      }
+    },
+    "switch_statistics_potential": {
+      "dssms_unified_output_engine.py": {
+        "switch_stats_usage": 0,
+        "usage_details": [],
+        "switch_calculations": 0,
+        "calculation_details": []
+      },
+      "dssms_unified_output_engine_fixed.py": {
+        "switch_stats_usage": 0,
+        "usage_details": [],
+        "switch_calculations": 16,
+        "calculation_details": [
+          "switch_count Line 572: 'switch_count': self._count_switches(),",
+          "holding_period Line 168: holding_period_days = (exit_date - entry_date).days",
+          "holding_period Line 169: holding_period_hours = holding_period_days * 24 + (exit_date - entry_date).seconds / 3600"
+        ]
+      },
+      "dssms_unified_output_engine_fixed_v3.py": {
+        "switch_stats_usage": 0,
+        "usage_details": [],
+        "switch_calculations": 0,
+        "calculation_details": []
+      },
+      "dssms_unified_output_engine_fixed_v4.py": {
+        "switch_stats_usage": 0,
+        "usage_details": [],
+        "switch_calculations": 1,
+        "calculation_details": [
+          "holding_period Line 223: '平均保有期間(時間)': stats.get('avg_holding_period_hours', 0.0),"
+        ]
+      }
+    }
+  },
+  "calculation_implementations": {
+    "dssms_unified_output_engine.py": {
+      "win_rate": {
+        "implemented": true,
+        "implementation_count": 7,
+        "details": [
+          "Line 255: 'win_rate': 0.65",
+          "Line 268: 'win_rate': 0.0"
+        ]
+      },
+      "profit_factor": {
+        "implemented": true,
+        "implementation_count": 2,
+        "details": [
+          "Line 331: 'profit_factor': abs(profit_trades['pnl'].sum() / loss_trades['pnl'].sum()) if len(loss_trades) > 0 and loss_trades['pnl'].sum() != 0 else 0",
+          "Line 681: 'プロフィットファクター': f\"{stats.get('profit_factor', 0):.3f}\","
+        ]
+      },
+      "average_profit": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "average_loss": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "total_trades": {
+        "implemented": true,
+        "implementation_count": 6,
+        "details": [
+          "Line 299: total_trades = len(trades_df)",
+          "Line 300: if total_trades > 0:"
+        ]
+      },
+      "profitable_trades": {
+        "implemented": true,
+        "implementation_count": 2,
+        "details": [
+          "Line 298: profitable_trades = len(trades_df[trades_df['pnl'] > 0])",
+          "Line 301: metrics['win_rate'] = profitable_trades / total_trades"
+        ]
+      }
+    },
+    "dssms_unified_output_engine_fixed.py": {
+      "win_rate": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "profit_factor": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "average_profit": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "average_loss": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "total_trades": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "profitable_trades": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      }
+    },
+    "dssms_unified_output_engine_fixed_v3.py": {
+      "win_rate": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "profit_factor": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "average_profit": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "average_loss": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "total_trades": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "profitable_trades": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      }
+    },
+    "dssms_unified_output_engine_fixed_v4.py": {
+      "win_rate": {
+        "implemented": true,
+        "implementation_count": 1,
+        "details": [
+          "Line 213: '勝率(%)': metrics.get('win_rate', 0.0)"
+        ]
+      },
+      "profit_factor": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "average_profit": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "average_loss": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "total_trades": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      },
+      "profitable_trades": {
+        "implemented": false,
+        "implementation_count": 0,
+        "details": []
+      }
+    }
+  },
+  "problems_identified": [
+    "dssms_unified_output_engine_fixed.py: 0/6項目のみ実装",
+    "dssms_unified_output_engine_fixed_v3.py: 0/6項目のみ実装",
+    "dssms_unified_output_engine_fixed_v4.py: 1/6項目のみ実装",
+    "v3エンジンで統計計算が完全未実装"
+  ],
+  "recommendations": [
+    "v3エンジンの統計計算実装（現在完全未実装）",
+    "DSSMSBacktester.get_strategy_statistics()メソッド実装",
+    "trade_historyからの統計計算ロジック統一",
+    "Excel戦略別統計シートの自動計算機能追加",
+    "switch_historyベースの統計計算代替実装"
+  ]
+}

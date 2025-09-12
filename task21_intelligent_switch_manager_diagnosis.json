@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-09-11T22:55:25.935106",
+  "switch_manager_status": {
+    "exists": true,
+    "type": "<class 'src.dssms.intelligent_switch_manager.IntelligentSwitchManager'>",
+    "methods": [
+      "check_perfect_order_breakdown",
+      "confidence_threshold",
+      "config",
+      "data_manager",
+      "evaluate_current_position",
+      "execute_switch_with_risk_control",
+      "fund_scheduler",
+      "logger",
+      "market_monitor",
+      "min_holding_hours"
+    ]
+  },
+  "backtester_initialization": {},
+  "decision_logic": {
+    "test_error": "DSSMSBacktester._evaluate_switch_decision() got an unexpected keyword argument 'current_symbol'"
+  }
+}

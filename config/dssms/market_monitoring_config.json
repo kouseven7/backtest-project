@@ -1,7 +1,7 @@
 {
   "monitoring": {
     "check_interval_minutes": 15,
-    "market_hours": {DSSMS Phase 3 Task 3.1「市場全体監視システム」
+    "market_hours": {
       "morning_start": "09:00",
       "morning_end": "11:30", 
       "afternoon_start": "12:30",

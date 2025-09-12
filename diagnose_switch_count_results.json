@@ -1,0 +1,48 @@
+{
+  "switch_count": {
+    "success": true,
+    "switch_count": 3,
+    "config": {
+      "min_holding_period_hours": 24,
+      "switch_cost_rate": 0.001,
+      "deterministic_config": {
+        "enable_score_noise": false,
+        "enable_switching_probability": false,
+        "use_fixed_execution": true,
+        "enable_random_baseline": true,
+        "random_seed": 42
+      }
+    }
+  },
+  "data_persistence": {
+    "success": true,
+    "results_files_count": 3,
+    "config_files_count": 61,
+    "pycache_dirs": 1188,
+    "dssms_logs_count": 2
+  },
+  "engine_integration": {
+    "success": true,
+    "engine_status": {
+      "dssms_unified_output_engine.py": {
+        "exists": true,
+        "size": 43812
+      },
+      "dssms_unified_output_engine_fixed.py": {
+        "exists": true,
+        "size": 34675
+      },
+      "dssms_unified_output_engine_fixed_v3.py": {
+        "exists": true,
+        "size": 0
+      },
+      "dssms_unified_output_engine_fixed_v4.py": {
+        "exists": true,
+        "size": 23725
+      },
+      "DSSMSExcelExporterV2": {
+        "available": true
+      }
+    }
+  }
+}

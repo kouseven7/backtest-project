@@ -1,0 +1,1028 @@
+{
+  "formula_analysis": {
+    "v1": {
+      "file_exists": true,
+      "file_size": 37776,
+      "formulas": {
+        "win_rate": [
+          "s",
+          "s",
+          "0",
+          ")"
+        ],
+        "profit_factor": [
+          "0"
+        ],
+        "average_profit": [
+          ","
+        ],
+        "average_loss": [
+          ",",
+          ",",
+          ","
+        ],
+        "max_drawdown": [
+          ")"
+        ],
+        "total_trades": [
+          ")",
+          "0",
+          "t",
+          ",",
+          ")",
+          ",",
+          ")",
+          ",",
+          ",",
+          ",",
+          ",",
+          ",",
+          ",",
+          ",",
+          "0"
+        ]
+      },
+      "implementation_quality": "comprehensive",
+      "critical_issues": []
+    },
+    "v2": {
+      "file_exists": true,
+      "file_size": 30256,
+      "formulas": {
+        "win_rate": [
+          ",",
+          ")",
+          ")",
+          ":"
+        ],
+        "total_trades": [
+          ")"
+        ]
+      },
+      "implementation_quality": "minimal",
+      "critical_issues": []
+    },
+    "v3": {
+      "file_exists": true,
+      "file_size": 0,
+      "formulas": {},
+      "implementation_quality": "none",
+      "critical_issues": []
+    },
+    "v4": {
+      "file_exists": true,
+      "file_size": 20314,
+      "formulas": {
+        "win_rate": [
+          ",",
+          "0",
+          ")"
+        ],
+        "total_trades": [
+          ")",
+          "0",
+          ")",
+          ":",
+          ")",
+          ",",
+          ",",
+          ",",
+          ",",
+          ")",
+          ")",
+          ":",
+          ")"
+        ]
+      },
+      "implementation_quality": "minimal",
+      "critical_issues": []
+    }
+  },
+  "correct_formulas": {
+    "win_rate": {
+      "formula": "profitable_trades / total_trades",
+      "description": "勝率 = 利益取引数 ÷ 総取引数",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "data_type": "percentage",
+      "validation_rules": [
+        "profitable_trades <= total_trades",
+        "total_trades > 0",
+        "0 <= result <= 1"
+      ],
+      "common_errors": [
+        "分母（total_trades）の欠如",
+        "count()とlen()の混同",
+        "結果の範囲チェック不備"
+      ]
+    },
+    "profit_factor": {
+      "formula": "total_profit / abs(total_loss)",
+      "description": "プロフィットファクター = 総利益 ÷ 総損失の絶対値",
+      "expected_range": [
+        0.0,
+        Infinity
+      ],
+      "data_type": "ratio",
+      "validation_rules": [
+        "total_loss != 0",
+        "total_profit >= 0",
+        "result >= 0"
+      ],
+      "common_errors": [
+        "分母（total_loss）の欠如",
+        "abs()による絶対値変換の欠如",
+        "ゼロ除算の未対応"
+      ]
+    },
+    "average_profit": {
+      "formula": "sum(profitable_trades) / count(profitable_trades)",
+      "description": "平均利益 = 利益取引の合計 ÷ 利益取引数",
+      "expected_range": [
+        0.0,
+        Infinity
+      ],
+      "data_type": "currency",
+      "validation_rules": [
+        "count(profitable_trades) > 0",
+        "all(profitable_trades) > 0",
+        "result > 0"
+      ],
+      "common_errors": [
+        "全取引での平均計算（利益取引のみでない）",
+        "sum()とcount()の不一致",
+        "ゼロ除算の未対応"
+      ]
+    },
+    "average_loss": {
+      "formula": "sum(loss_trades) / count(loss_trades)",
+      "description": "平均損失 = 損失取引の合計 ÷ 損失取引数",
+      "expected_range": [
+        -Infinity,
+        0.0
+      ],
+      "data_type": "currency",
+      "validation_rules": [
+        "count(loss_trades) > 0",
+        "all(loss_trades) < 0",
+        "result < 0"
+      ],
+      "common_errors": [
+        "損失の符号処理（負値→正値変換）",
+        "全取引での平均計算",
+        "abs()の誤用"
+      ]
+    },
+    "max_drawdown": {
+      "formula": "min(cumulative_returns) - peak_value",
+      "description": "最大ドローダウン = 累積リターンの最小値 - ピーク値",
+      "expected_range": [
+        -Infinity,
+        0.0
+      ],
+      "data_type": "percentage",
+      "validation_rules": [
+        "result <= 0",
+        "cumulative_returns is not empty",
+        "peak_value >= max(cumulative_returns)"
+      ],
+      "common_errors": [
+        "単純な最小値計算（ピークからの落差でない）",
+        "結果の符号間違い（正値で表示）",
+        "累積計算の実装不備"
+      ]
+    },
+    "total_trades": {
+      "formula": "count(all_trades)",
+      "description": "総取引数 = 全取引のカウント",
+      "expected_range": [
+        0,
+        Infinity
+      ],
+      "data_type": "integer",
+      "validation_rules": [
+        "result >= 0",
+        "result == count(profitable_trades) + count(loss_trades)",
+        "result is integer"
+      ],
+      "common_errors": [
+        "float型での計算",
+        "null/NaN値の未除外",
+        "重複取引の重複カウント"
+      ]
+    }
+  },
+  "error_patterns": {
+    "classified_errors": [
+      {
+        "version": "v1",
+        "formula_type": "win_rate",
+        "implementation": "s",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+        "expected": "profitable_trades / total_trades",
+        "actual": "s"
+      },
+      {
+        "version": "v1",
+        "formula_type": "win_rate",
+        "implementation": "s",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+        "expected": "profitable_trades / total_trades",
+        "actual": "s"
+      },
+      {
+        "version": "v1",
+        "formula_type": "win_rate",
+        "implementation": "0",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+        "expected": "profitable_trades / total_trades",
+        "actual": "0"
+      },
+      {
+        "version": "v1",
+        "formula_type": "win_rate",
+        "implementation": ")",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+        "expected": "profitable_trades / total_trades",
+        "actual": ")"
+      },
+      {
+        "version": "v1",
+        "formula_type": "profit_factor",
+        "implementation": "0",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 total_profit / abs(total_loss) に対して除算なし",
+        "expected": "total_profit / abs(total_loss)",
+        "actual": "0"
+      },
+      {
+        "version": "v1",
+        "formula_type": "average_profit",
+        "implementation": ",",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 sum(profitable_trades) / count(profitable_trades) に対して除算なし",
+        "expected": "sum(profitable_trades) / count(profitable_trades)",
+        "actual": ","
+      },
+      {
+        "version": "v1",
+        "formula_type": "average_loss",
+        "implementation": ",",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 sum(loss_trades) / count(loss_trades) に対して除算なし",
+        "expected": "sum(loss_trades) / count(loss_trades)",
+        "actual": ","
+      },
+      {
+        "version": "v1",
+        "formula_type": "average_loss",
+        "implementation": ",",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 sum(loss_trades) / count(loss_trades) に対して除算なし",
+        "expected": "sum(loss_trades) / count(loss_trades)",
+        "actual": ","
+      },
+      {
+        "version": "v1",
+        "formula_type": "average_loss",
+        "implementation": ",",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 sum(loss_trades) / count(loss_trades) に対して除算なし",
+        "expected": "sum(loss_trades) / count(loss_trades)",
+        "actual": ","
+      },
+      {
+        "version": "v2",
+        "formula_type": "win_rate",
+        "implementation": ",",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+        "expected": "profitable_trades / total_trades",
+        "actual": ","
+      },
+      {
+        "version": "v2",
+        "formula_type": "win_rate",
+        "implementation": ")",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+        "expected": "profitable_trades / total_trades",
+        "actual": ")"
+      },
+      {
+        "version": "v2",
+        "formula_type": "win_rate",
+        "implementation": ")",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+        "expected": "profitable_trades / total_trades",
+        "actual": ")"
+      },
+      {
+        "version": "v2",
+        "formula_type": "win_rate",
+        "implementation": ":",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+        "expected": "profitable_trades / total_trades",
+        "actual": ":"
+      },
+      {
+        "version": "v4",
+        "formula_type": "win_rate",
+        "implementation": ",",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+        "expected": "profitable_trades / total_trades",
+        "actual": ","
+      },
+      {
+        "version": "v4",
+        "formula_type": "win_rate",
+        "implementation": "0",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+        "expected": "profitable_trades / total_trades",
+        "actual": "0"
+      },
+      {
+        "version": "v4",
+        "formula_type": "win_rate",
+        "implementation": ")",
+        "category": "missing_denominator",
+        "severity": "critical",
+        "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+        "expected": "profitable_trades / total_trades",
+        "actual": ")"
+      }
+    ],
+    "error_categories": {
+      "missing_denominator": [
+        {
+          "version": "v1",
+          "formula_type": "win_rate",
+          "implementation": "s",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": "s"
+        },
+        {
+          "version": "v1",
+          "formula_type": "win_rate",
+          "implementation": "s",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": "s"
+        },
+        {
+          "version": "v1",
+          "formula_type": "win_rate",
+          "implementation": "0",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": "0"
+        },
+        {
+          "version": "v1",
+          "formula_type": "win_rate",
+          "implementation": ")",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": ")"
+        },
+        {
+          "version": "v1",
+          "formula_type": "profit_factor",
+          "implementation": "0",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 total_profit / abs(total_loss) に対して除算なし",
+          "expected": "total_profit / abs(total_loss)",
+          "actual": "0"
+        },
+        {
+          "version": "v1",
+          "formula_type": "average_profit",
+          "implementation": ",",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 sum(profitable_trades) / count(profitable_trades) に対して除算なし",
+          "expected": "sum(profitable_trades) / count(profitable_trades)",
+          "actual": ","
+        },
+        {
+          "version": "v1",
+          "formula_type": "average_loss",
+          "implementation": ",",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 sum(loss_trades) / count(loss_trades) に対して除算なし",
+          "expected": "sum(loss_trades) / count(loss_trades)",
+          "actual": ","
+        },
+        {
+          "version": "v1",
+          "formula_type": "average_loss",
+          "implementation": ",",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 sum(loss_trades) / count(loss_trades) に対して除算なし",
+          "expected": "sum(loss_trades) / count(loss_trades)",
+          "actual": ","
+        },
+        {
+          "version": "v1",
+          "formula_type": "average_loss",
+          "implementation": ",",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 sum(loss_trades) / count(loss_trades) に対して除算なし",
+          "expected": "sum(loss_trades) / count(loss_trades)",
+          "actual": ","
+        },
+        {
+          "version": "v2",
+          "formula_type": "win_rate",
+          "implementation": ",",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": ","
+        },
+        {
+          "version": "v2",
+          "formula_type": "win_rate",
+          "implementation": ")",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": ")"
+        },
+        {
+          "version": "v2",
+          "formula_type": "win_rate",
+          "implementation": ")",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": ")"
+        },
+        {
+          "version": "v2",
+          "formula_type": "win_rate",
+          "implementation": ":",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": ":"
+        },
+        {
+          "version": "v4",
+          "formula_type": "win_rate",
+          "implementation": ",",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": ","
+        },
+        {
+          "version": "v4",
+          "formula_type": "win_rate",
+          "implementation": "0",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": "0"
+        },
+        {
+          "version": "v4",
+          "formula_type": "win_rate",
+          "implementation": ")",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": ")"
+        }
+      ],
+      "wrong_formula": [],
+      "variable_misuse": [],
+      "incomplete_calculation": [],
+      "type_mismatch": [],
+      "range_violation": [],
+      "mathematical_error": []
+    },
+    "severity_levels": {
+      "critical": [
+        {
+          "version": "v1",
+          "formula_type": "win_rate",
+          "implementation": "s",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": "s"
+        },
+        {
+          "version": "v1",
+          "formula_type": "win_rate",
+          "implementation": "s",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": "s"
+        },
+        {
+          "version": "v1",
+          "formula_type": "win_rate",
+          "implementation": "0",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": "0"
+        },
+        {
+          "version": "v1",
+          "formula_type": "win_rate",
+          "implementation": ")",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": ")"
+        },
+        {
+          "version": "v1",
+          "formula_type": "profit_factor",
+          "implementation": "0",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 total_profit / abs(total_loss) に対して除算なし",
+          "expected": "total_profit / abs(total_loss)",
+          "actual": "0"
+        },
+        {
+          "version": "v1",
+          "formula_type": "average_profit",
+          "implementation": ",",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 sum(profitable_trades) / count(profitable_trades) に対して除算なし",
+          "expected": "sum(profitable_trades) / count(profitable_trades)",
+          "actual": ","
+        },
+        {
+          "version": "v1",
+          "formula_type": "average_loss",
+          "implementation": ",",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 sum(loss_trades) / count(loss_trades) に対して除算なし",
+          "expected": "sum(loss_trades) / count(loss_trades)",
+          "actual": ","
+        },
+        {
+          "version": "v1",
+          "formula_type": "average_loss",
+          "implementation": ",",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 sum(loss_trades) / count(loss_trades) に対して除算なし",
+          "expected": "sum(loss_trades) / count(loss_trades)",
+          "actual": ","
+        },
+        {
+          "version": "v1",
+          "formula_type": "average_loss",
+          "implementation": ",",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 sum(loss_trades) / count(loss_trades) に対して除算なし",
+          "expected": "sum(loss_trades) / count(loss_trades)",
+          "actual": ","
+        },
+        {
+          "version": "v2",
+          "formula_type": "win_rate",
+          "implementation": ",",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": ","
+        },
+        {
+          "version": "v2",
+          "formula_type": "win_rate",
+          "implementation": ")",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": ")"
+        },
+        {
+          "version": "v2",
+          "formula_type": "win_rate",
+          "implementation": ")",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": ")"
+        },
+        {
+          "version": "v2",
+          "formula_type": "win_rate",
+          "implementation": ":",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": ":"
+        },
+        {
+          "version": "v4",
+          "formula_type": "win_rate",
+          "implementation": ",",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": ","
+        },
+        {
+          "version": "v4",
+          "formula_type": "win_rate",
+          "implementation": "0",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": "0"
+        },
+        {
+          "version": "v4",
+          "formula_type": "win_rate",
+          "implementation": ")",
+          "category": "missing_denominator",
+          "severity": "critical",
+          "description": "分母が欠如: 期待公式 profitable_trades / total_trades に対して除算なし",
+          "expected": "profitable_trades / total_trades",
+          "actual": ")"
+        }
+      ],
+      "major": [],
+      "minor": [],
+      "warning": []
+    }
+  },
+  "test_cases": {
+    "test_scenarios": [
+      {
+        "formula_name": "win_rate",
+        "test_data": {
+          "profitable_trades": [
+            100,
+            150,
+            200,
+            75,
+            120
+          ],
+          "loss_trades": [
+            -50,
+            -80,
+            -30,
+            -100
+          ],
+          "total_profit": 645,
+          "total_loss": -260,
+          "total_trades": 9,
+          "cumulative_returns": [
+            0,
+            100,
+            50,
+            250,
+            170,
+            370,
+            290,
+            390,
+            310,
+            430
+          ],
+          "peak_value": 430
+        },
+        "expected_result": 0.5555555555555556,
+        "validation_checks": [
+          "profitable_trades <= total_trades",
+          "total_trades > 0",
+          "0 <= result <= 1"
+        ],
+        "error_conditions": [
+          "total_trades = 0"
+        ]
+      },
+      {
+        "formula_name": "profit_factor",
+        "test_data": {
+          "profitable_trades": [
+            100,
+            150,
+            200,
+            75,
+            120
+          ],
+          "loss_trades": [
+            -50,
+            -80,
+            -30,
+            -100
+          ],
+          "total_profit": 645,
+          "total_loss": -260,
+          "total_trades": 9,
+          "cumulative_returns": [
+            0,
+            100,
+            50,
+            250,
+            170,
+            370,
+            290,
+            390,
+            310,
+            430
+          ],
+          "peak_value": 430
+        },
+        "expected_result": 2.480769230769231,
+        "validation_checks": [
+          "total_loss != 0",
+          "total_profit >= 0",
+          "result >= 0"
+        ],
+        "error_conditions": [
+          "total_loss = 0"
+        ]
+      },
+      {
+        "formula_name": "average_profit",
+        "test_data": {
+          "profitable_trades": [
+            100,
+            150,
+            200,
+            75,
+            120
+          ],
+          "loss_trades": [
+            -50,
+            -80,
+            -30,
+            -100
+          ],
+          "total_profit": 645,
+          "total_loss": -260,
+          "total_trades": 9,
+          "cumulative_returns": [
+            0,
+            100,
+            50,
+            250,
+            170,
+            370,
+            290,
+            390,
+            310,
+            430
+          ],
+          "peak_value": 430
+        },
+        "expected_result": 129.0,
+        "validation_checks": [
+          "count(profitable_trades) > 0",
+          "all(profitable_trades) > 0",
+          "result > 0"
+        ],
+        "error_conditions": []
+      },
+      {
+        "formula_name": "average_loss",
+        "test_data": {
+          "profitable_trades": [
+            100,
+            150,
+            200,
+            75,
+            120
+          ],
+          "loss_trades": [
+            -50,
+            -80,
+            -30,
+            -100
+          ],
+          "total_profit": 645,
+          "total_loss": -260,
+          "total_trades": 9,
+          "cumulative_returns": [
+            0,
+            100,
+            50,
+            250,
+            170,
+            370,
+            290,
+            390,
+            310,
+            430
+          ],
+          "peak_value": 430
+        },
+        "expected_result": -65.0,
+        "validation_checks": [
+          "count(loss_trades) > 0",
+          "all(loss_trades) < 0",
+          "result < 0"
+        ],
+        "error_conditions": []
+      },
+      {
+        "formula_name": "max_drawdown",
+        "test_data": {
+          "profitable_trades": [
+            100,
+            150,
+            200,
+            75,
+            120
+          ],
+          "loss_trades": [
+            -50,
+            -80,
+            -30,
+            -100
+          ],
+          "total_profit": 645,
+          "total_loss": -260,
+          "total_trades": 9,
+          "cumulative_returns": [
+            0,
+            100,
+            50,
+            250,
+            170,
+            370,
+            290,
+            390,
+            310,
+            430
+          ],
+          "peak_value": 430
+        },
+        "expected_result": -430,
+        "validation_checks": [
+          "result <= 0",
+          "cumulative_returns is not empty",
+          "peak_value >= max(cumulative_returns)"
+        ],
+        "error_conditions": []
+      },
+      {
+        "formula_name": "total_trades",
+        "test_data": {
+          "profitable_trades": [
+            100,
+            150,
+            200,
+            75,
+            120
+          ],
+          "loss_trades": [
+            -50,
+            -80,
+            -30,
+            -100
+          ],
+          "total_profit": 645,
+          "total_loss": -260,
+          "total_trades": 9,
+          "cumulative_returns": [
+            0,
+            100,
+            50,
+            250,
+            170,
+            370,
+            290,
+            390,
+            310,
+            430
+          ],
+          "peak_value": 430
+        },
+        "expected_result": 9,
+        "validation_checks": [
+          "result >= 0",
+          "result == count(profitable_trades) + count(loss_trades)",
+          "result is integer"
+        ],
+        "error_conditions": []
+      }
+    ],
+    "validation_functions": {
+      "check_range": "<function create_formula_test_cases.<locals>.<lambda> at 0x000001715F9C3420>",
+      "check_type": "<function create_formula_test_cases.<locals>.<lambda> at 0x000001715F9C3380>",
+      "check_non_zero": "<function create_formula_test_cases.<locals>.<lambda> at 0x000001715F9C34C0>",
+      "check_positive": "<function create_formula_test_cases.<locals>.<lambda> at 0x000001715F9C3560>",
+      "check_negative": "<function create_formula_test_cases.<locals>.<lambda> at 0x000001715F9C3600>",
+      "check_percentage": "<function create_formula_test_cases.<locals>.<lambda> at 0x000001715F9C36A0>"
+    },
+    "expected_results": {}
+  },
+  "correction_plan": {
+    "phases": [
+      {
+        "phase": 1,
+        "name": "緊急修正（Critical）",
+        "timeline": "1-2日",
+        "targets": [
+          "average_profit",
+          "profit_factor",
+          "win_rate",
+          "average_loss"
+        ],
+        "errors_to_fix": 16,
+        "priority": "highest",
+        "description": "数学的に完全に間違った計算式の修正"
+      }
+    ],
+    "priority_matrix": {
+      "critical_formulas": [
+        "profit_factor",
+        "win_rate"
+      ],
+      "important_formulas": [
+        "average_profit",
+        "average_loss"
+      ],
+      "secondary_formulas": [
+        "max_drawdown",
+        "total_trades"
+      ]
+    },
+    "testing_strategy": {
+      "unit_tests": "6個のシナリオテスト",
+      "integration_tests": "全エンジン統合テスト",
+      "regression_tests": "既存機能回帰テスト",
+      "performance_tests": "計算パフォーマンステスト",
+      "validation_frequency": "各修正後に即座実行"
+    },
+    "success_criteria": {
+      "error_reduction_target": "90%以上（エラー削減率）",
+      "accuracy_target": "100%（数学的正確性）",
+      "performance_target": "修正前比120%以内（実行時間）",
+      "regression_target": "0件（既存機能劣化）",
+      "current_error_count": 16,
+      "target_error_count": 1
+    }
+  }
+}

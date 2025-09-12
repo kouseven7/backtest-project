@@ -1,0 +1,247 @@
+{
+  "analysis_timestamp": "20250912_114134",
+  "findings": {
+    "symbol_switch_analysis": {
+      "found_files": [
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "fix_dssms_critical.py",
+        "fix_dssms_data_integration.py"
+      ],
+      "timestamp_usage": {
+        "dssms_unified_output_engine.py": [
+          "Line 23: self.output_timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")",
+          "Line 156: 'date': pd.to_datetime(switch_dict.get('timestamp', datetime.now())),",
+          "Line 462: excel_path = Path(output_dir) / f\"dssms_unified_backtest_{self.output_timestamp}.xlsx\"",
+          "Line 763: text_path = Path(output_dir) / f\"dssms_unified_report_{self.output_timestamp}.txt\"",
+          "Line 832: json_path = Path(output_dir) / f\"dssms_unified_data_{self.output_timestamp}.json\""
+        ],
+        "dssms_unified_output_engine_fixed.py": [
+          "Line 26: self.output_timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")",
+          "Line 343: excel_file = output_path / f\"dssms_unified_backtest_{self.output_timestamp}.xlsx\"",
+          "Line 446: if isinstance(date_value, pd.Timestamp):",
+          "Line 518: text_file = output_path / f\"dssms_unified_report_{self.output_timestamp}.txt\"",
+          "Line 560: json_file = output_path / f\"dssms_unified_data_{self.output_timestamp}.json\""
+        ],
+        "dssms_unified_output_engine_fixed_v4.py": [
+          "Line 24: self.output_timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")",
+          "Line 25: self.session_id = f\"dssms_backtest_{self.output_timestamp}\"",
+          "Line 83: 'timestamp': datetime.now().isoformat(),",
+          "Line 131: entry_date = pd.to_datetime(switch.timestamp)",
+          "Line 136: exit_date = pd.to_datetime(next_switch.timestamp)"
+        ]
+      }
+    },
+    "date_calculation_patterns": {
+      "timedelta": [
+        "dssms_unified_output_engine.py Line 10: from datetime import datetime, timedelta",
+        "dssms_unified_output_engine_fixed.py Line 13: from datetime import datetime, timedelta",
+        "dssms_unified_output_engine_fixed_v4.py Line 10: from datetime import datetime, timedelta",
+        "dssms_unified_output_engine_fixed_v4.py Line 139: exit_date = entry_date + pd.Timedelta(hours=24)"
+      ],
+      "pd.Timestamp": [
+        "dssms_unified_output_engine_fixed.py Line 446: if isinstance(date_value, pd.Timestamp):",
+        "dssms_unified_output_engine_fixed.py Line 582: 'date': idx.isoformat() if isinstance(idx, pd.Timestamp) else str(idx),"
+      ],
+      "datetime": [
+        "dssms_unified_output_engine.py Line 10: from datetime import datetime, timedelta",
+        "dssms_unified_output_engine.py Line 536: datetime.now().strftime('%Y-%m-%d %H:%M:%S'),",
+        "dssms_unified_output_engine.py Line 608: '日付': trade.get('date', datetime.now()).strftime('%Y-%m-%d'),",
+        "dssms_unified_output_engine.py Line 749: '切替日': switch.get('date', datetime.now()).strftime('%Y-%m-%d'),",
+        "dssms_unified_output_engine_fixed.py Line 13: from datetime import datetime, timedelta"
+      ],
+      "date difference": [
+        "dssms_unified_output_engine.py Line 187: date_range = pd.date_range('2023-01-01', '2023-12-31', freq='D')",
+        "dssms_unified_output_engine_fixed.py Line 168: holding_period_days = (exit_date - entry_date).days",
+        "dssms_unified_output_engine_fixed.py Line 169: holding_period_hours = holding_period_days * 24 + (exit_date - entry_date).seconds / 3600",
+        "dssms_unified_output_engine_fixed_v4.py Line 142: actual_holding_hours = (exit_date - entry_date).total_seconds() / 3600",
+        "dssms_unified_output_engine_fixed_v4.py Line 191: '日付': entry.get('date', '2023-01-01'),"
+      ]
+    },
+    "default_value_analysis": {
+      "dssms_unified_output_engine.py": [],
+      "dssms_unified_output_engine_fixed.py": [
+        "Line 474: holding_period = trade.get('holding_period_hours', 0)",
+        "Line 477: holding_period = 24  # デフォルト24時間",
+        "Line 596: 'holding_period_hours': float(trade.get('holding_period_hours', 0))"
+      ],
+      "dssms_unified_output_engine_fixed_v3.py": [],
+      "dssms_unified_output_engine_fixed_v4.py": [
+        "Line 223: '平均保有期間(時間)': stats.get('avg_holding_period_hours', 0.0),"
+      ]
+    }
+  },
+  "calculation_methods": {
+    "dssms_unified_output_engine.py": {
+      "file_exists": true,
+      "file_size": 37776,
+      "keyword_occurrences": {
+        "holding_period": [],
+        "保有期間": [
+          "Line 531: '平均保有期間',",
+          "Line 598: 'エントリー価格', 'エグジット価格', '損益', '累積損益', '保有期間'])",
+          "Line 617: '保有期間': '24.0時間'  # TODO: 実際の計算",
+          "Line 809: f.write(\"平均保有期間: 74.9時間\\n\")  # TODO: 実際の計算"
+        ],
+        "actual_holding": [],
+        "24.0": [
+          "Line 617: '保有期間': '24.0時間'  # TODO: 実際の計算"
+        ],
+        "24時間": [],
+        "timedelta": [
+          "Line 10: from datetime import datetime, timedelta"
+        ],
+        "timestamp": [
+          "Line 23: self.output_timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")",
+          "Line 156: 'date': pd.to_datetime(switch_dict.get('timestamp', datetime.now())),",
+          "Line 462: excel_path = Path(output_dir) / f\"dssms_unified_backtest_{self.output_timestamp}.xlsx\"",
+          "Line 763: text_path = Path(output_dir) / f\"dssms_unified_report_{self.output_timestamp}.txt\"",
+          "Line 832: json_path = Path(output_dir) / f\"dssms_unified_data_{self.output_timestamp}.json\""
+        ]
+      },
+      "calculation_methods": [],
+      "fixed_24_hour_usage": [
+        "Line 617: '保有期間': '24.0時間'  # TODO: 実際の計算"
+      ],
+      "has_actual_holding_calculation": false
+    },
+    "dssms_unified_output_engine_fixed.py": {
+      "file_exists": true,
+      "file_size": 30256,
+      "keyword_occurrences": {
+        "holding_period": [
+          "Line 168: holding_period_days = (exit_date - entry_date).days",
+          "Line 169: holding_period_hours = holding_period_days * 24 + (exit_date - entry_date).seconds / 3600",
+          "Line 180: 'holding_period_hours': 0",
+          "Line 192: 'holding_period_hours': holding_period_hours",
+          "Line 386: ['平均保有期間', f\"{self._calculate_average_holding_period():.1f}時間\"],"
+        ],
+        "保有期間": [
+          "Line 7: 2. 保有期間の正確な計算（24時間固定の解消）",
+          "Line 124: # 取引履歴の変換（保有期間の正確な計算を含む）",
+          "Line 152: \"\"\"正確な保有期間を計算した取引履歴を作成\"\"\"",
+          "Line 167: # 保有期間の計算（時間単位）",
+          "Line 386: ['平均保有期間', f\"{self._calculate_average_holding_period():.1f}時間\"],"
+        ],
+        "actual_holding": [],
+        "24.0": [],
+        "24時間": [
+          "Line 7: 2. 保有期間の正確な計算（24時間固定の解消）",
+          "Line 477: holding_period = 24  # デフォルト24時間"
+        ],
+        "timedelta": [
+          "Line 13: from datetime import datetime, timedelta"
+        ],
+        "timestamp": [
+          "Line 26: self.output_timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")",
+          "Line 343: excel_file = output_path / f\"dssms_unified_backtest_{self.output_timestamp}.xlsx\"",
+          "Line 446: if isinstance(date_value, pd.Timestamp):",
+          "Line 518: text_file = output_path / f\"dssms_unified_report_{self.output_timestamp}.txt\"",
+          "Line 560: json_file = output_path / f\"dssms_unified_data_{self.output_timestamp}.json\""
+        ]
+      },
+      "calculation_methods": [],
+      "fixed_24_hour_usage": [
+        "Line 7: 2. 保有期間の正確な計算（24時間固定の解消）",
+        "Line 477: holding_period = 24  # デフォルト24時間"
+      ],
+      "has_actual_holding_calculation": false
+    },
+    "dssms_unified_output_engine_fixed_v3.py": {
+      "file_exists": true,
+      "file_size": 0,
+      "keyword_occurrences": {
+        "holding_period": [],
+        "保有期間": [],
+        "actual_holding": [],
+        "24.0": [],
+        "24時間": [],
+        "timedelta": [],
+        "timestamp": []
+      },
+      "calculation_methods": [],
+      "fixed_24_hour_usage": [],
+      "has_actual_holding_calculation": false
+    },
+    "dssms_unified_output_engine_fixed_v4.py": {
+      "file_exists": true,
+      "file_size": 20314,
+      "keyword_occurrences": {
+        "holding_period": [
+          "Line 223: '平均保有期間(時間)': stats.get('avg_holding_period_hours', 0.0),"
+        ],
+        "保有期間": [
+          "Line 5: 元の完全な出力形式 + v3の修正（日付処理・保有期間計算）",
+          "Line 125: \"\"\"v3の保有期間計算 + 完全な取引履歴データ\"\"\"",
+          "Line 133: # 次のスイッチの日付を取得（保有期間計算用）",
+          "Line 141: # 実際の保有期間を計算",
+          "Line 155: '保有期間': f\"{actual_holding_hours:.1f}時間\","
+        ],
+        "actual_holding": [
+          "Line 142: actual_holding_hours = (exit_date - entry_date).total_seconds() / 3600",
+          "Line 155: '保有期間': f\"{actual_holding_hours:.1f}時間\","
+        ],
+        "24.0": [],
+        "24時間": [
+          "Line 138: # 最後のスイッチの場合は24時間とする"
+        ],
+        "timedelta": [
+          "Line 10: from datetime import datetime, timedelta",
+          "Line 139: exit_date = entry_date + pd.Timedelta(hours=24)"
+        ],
+        "timestamp": [
+          "Line 24: self.output_timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")",
+          "Line 25: self.session_id = f\"dssms_backtest_{self.output_timestamp}\"",
+          "Line 83: 'timestamp': datetime.now().isoformat(),",
+          "Line 131: entry_date = pd.to_datetime(switch.timestamp)",
+          "Line 136: exit_date = pd.to_datetime(next_switch.timestamp)"
+        ]
+      },
+      "calculation_methods": [
+        {
+          "line_number": 142,
+          "context": [
+            "                    exit_date = entry_date + pd.Timedelta(hours=24)",
+            "                ",
+            "                # 実際の保有期間を計算",
+            "                actual_holding_hours = (exit_date - entry_date).total_seconds() / 3600",
+            "                ",
+            "                trade_record = {",
+            "                    '日付': entry_date.strftime('%Y-%m-%d'),"
+          ],
+          "calculation_line": "actual_holding_hours = (exit_date - entry_date).total_seconds() / 3600"
+        },
+        {
+          "line_number": 155,
+          "context": [
+            "                    'To_Score': float(getattr(switch, 'to_score', 0.0)),",
+            "                    '損益': float(switch.profit_loss_at_switch),",
+            "                    'コスト': float(switch.switch_cost),",
+            "                    '保有期間': f\"{actual_holding_hours:.1f}時間\",",
+            "                    '備考': ''",
+            "                }",
+            "                "
+          ],
+          "calculation_line": "'保有期間': f\"{actual_holding_hours:.1f}時間\","
+        }
+      ],
+      "fixed_24_hour_usage": [
+        "Line 138: # 最後のスイッチの場合は24時間とする"
+      ],
+      "has_actual_holding_calculation": true
+    }
+  },
+  "problems_identified": [
+    "24時間固定値の過剰使用: 4箇所で発見",
+    "一部エンジンでactual_holding_hours計算が未実装",
+    "v3エンジンが空ファイル状態で保有期間計算不可能"
+  ],
+  "recommendations": [
+    "v3エンジンの実装完了（現在空ファイル）",
+    "24時間固定値を動的計算に変更",
+    "actual_holding_hours計算ロジックの統一",
+    "SymbolSwitchのtimestamp取得方法統一",
+    "最後のスイッチでのデフォルト値処理改善"
+  ]
+}

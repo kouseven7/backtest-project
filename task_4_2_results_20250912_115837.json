@@ -1,0 +1,1991 @@
+{
+  "analysis_timestamp": "20250912_115837",
+  "detailed_implementations": {
+    "dssms_unified_output_engine.py": {
+      "file_exists": true,
+      "file_size": 37776,
+      "calculations": {
+        "win_rate": {
+          "implemented": true,
+          "implementation_quality": "高品質",
+          "found_implementations": [
+            {
+              "line": 255,
+              "content": "'win_rate': 0.65",
+              "matched_keywords": [
+                "win_rate"
+              ]
+            },
+            {
+              "line": 268,
+              "content": "'win_rate': 0.0",
+              "matched_keywords": [
+                "win_rate"
+              ]
+            },
+            {
+              "line": 297,
+              "content": "# 勝率",
+              "matched_keywords": [
+                "勝率"
+              ]
+            },
+            {
+              "line": 298,
+              "content": "profitable_trades = len(trades_df[trades_df['pnl'] > 0])",
+              "matched_keywords": [
+                "profitable"
+              ]
+            },
+            {
+              "line": 301,
+              "content": "metrics['win_rate'] = profitable_trades / total_trades",
+              "matched_keywords": [
+                "win_rate",
+                "profitable"
+              ]
+            },
+            {
+              "line": 325,
+              "content": "'win_rate': len(profit_trades) / len(strategy_trades) if len(strategy_trades) > 0 else 0,",
+              "matched_keywords": [
+                "win_rate"
+              ]
+            },
+            {
+              "line": 564,
+              "content": "('勝率', performance.get('win_rate', 0), 0.5, self._evaluate_metric('win_rate', performance.get('win_rate', 0)))",
+              "matched_keywords": [
+                "win_rate",
+                "勝率"
+              ]
+            },
+            {
+              "line": 588,
+              "content": "elif metric_type == 'win_rate':",
+              "matched_keywords": [
+                "win_rate"
+              ]
+            },
+            {
+              "line": 660,
+              "content": "return pd.DataFrame(columns=['戦略名', '取引回数', '勝率', '平均利益', '平均損失',",
+              "matched_keywords": [
+                "勝率"
+              ]
+            },
+            {
+              "line": 676,
+              "content": "'勝率': f\"{stats.get('win_rate', 0)*100:.2f}%\",",
+              "matched_keywords": [
+                "win_rate",
+                "勝率"
+              ]
+            },
+            {
+              "line": 690,
+              "content": "'勝率': '',",
+              "matched_keywords": [
+                "勝率"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": true
+        },
+        "profit_factor": {
+          "implemented": true,
+          "implementation_quality": "高品質",
+          "found_implementations": [
+            {
+              "line": 161,
+              "content": "'profit_loss_at_switch': switch_dict.get('profit_loss_at_switch', 0.0),  # 正しいキー名使用",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 162,
+              "content": "'success': switch_dict.get('profit_loss_at_switch', 0.0) > 0  # 実際のパフォーマンスで成功判定",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 298,
+              "content": "profitable_trades = len(trades_df[trades_df['pnl'] > 0])",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 301,
+              "content": "metrics['win_rate'] = profitable_trades / total_trades",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 320,
+              "content": "profit_trades = strategy_trades[strategy_trades['pnl'] > 0]",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 325,
+              "content": "'win_rate': len(profit_trades) / len(strategy_trades) if len(strategy_trades) > 0 else 0,",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 326,
+              "content": "'avg_profit': profit_trades['pnl'].mean() if len(profit_trades) > 0 else 0,",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 328,
+              "content": "'max_profit': strategy_trades['pnl'].max() if len(strategy_trades) > 0 else 0,",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 331,
+              "content": "'profit_factor': abs(profit_trades['pnl'].sum() / loss_trades['pnl'].sum()) if len(loss_trades) > 0 and loss_trades['pnl'].sum() != 0 else 0",
+              "matched_keywords": [
+                "profit_factor",
+                "profit",
+                "factor"
+              ]
+            },
+            {
+              "line": 661,
+              "content": "'最大利益', '最大損失', 'プロフィットファクター', '総損益'])",
+              "matched_keywords": [
+                "プロフィットファクター"
+              ]
+            },
+            {
+              "line": 677,
+              "content": "'平均利益': f\"{stats.get('avg_profit', 0):,.2f}\",",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 679,
+              "content": "'最大利益': f\"{stats.get('max_profit', 0):,.2f}\",",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 681,
+              "content": "'プロフィットファクター': f\"{stats.get('profit_factor', 0):.3f}\",",
+              "matched_keywords": [
+                "profit_factor",
+                "プロフィットファクター",
+                "profit",
+                "factor"
+              ]
+            },
+            {
+              "line": 695,
+              "content": "'プロフィットファクター': '',",
+              "matched_keywords": [
+                "プロフィットファクター"
+              ]
+            },
+            {
+              "line": 713,
+              "content": "profit_loss = switch.get('profit_loss_at_switch',",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 714,
+              "content": "switch.get('profit_loss',",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 720,
+              "content": "logger.info(f\"切り替え{i+1}: profit_loss_at_switch={switch.get('profit_loss_at_switch', 'キーなし')}\")",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 721,
+              "content": "logger.info(f\"切り替え{i+1}: profit_loss={switch.get('profit_loss', 'キーなし')}\")",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 723,
+              "content": "logger.info(f\"切り替え{i+1}: 最終profit_loss値={profit_loss} (型: {type(profit_loss)})\")",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 727,
+              "content": "if isinstance(profit_loss, str):",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 729,
+              "content": "profit_loss_clean = profit_loss.replace('%', '').replace(',', '').strip()",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 730,
+              "content": "profit_loss_float = float(profit_loss_clean)",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 732,
+              "content": "profit_loss_float = float(profit_loss)",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 735,
+              "content": "if isinstance(profit_loss, (int, float)) and abs(profit_loss_float) < 1.0:",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 736,
+              "content": "profit_loss_float = profit_loss_float * 100.0",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 739,
+              "content": "profit_loss_float = 0.0",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 743,
+              "content": "logger.info(f\"切り替え{i+1}: 変換後profit_loss_float={profit_loss_float}\")",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 746,
+              "content": "is_successful = profit_loss_float > 0",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 755,
+              "content": "'切替後パフォーマンス': f\"{profit_loss_float:.2f}%\",",
+              "matched_keywords": [
+                "profit"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": true
+        },
+        "average_profit": {
+          "implemented": true,
+          "implementation_quality": "高品質",
+          "found_implementations": [
+            {
+              "line": 161,
+              "content": "'profit_loss_at_switch': switch_dict.get('profit_loss_at_switch', 0.0),  # 正しいキー名使用",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 162,
+              "content": "'success': switch_dict.get('profit_loss_at_switch', 0.0) > 0  # 実際のパフォーマンスで成功判定",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 287,
+              "content": "avg_return = daily_returns.mean() * 252  # 年率化",
+              "matched_keywords": [
+                "mean"
+              ]
+            },
+            {
+              "line": 298,
+              "content": "profitable_trades = len(trades_df[trades_df['pnl'] > 0])",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 301,
+              "content": "metrics['win_rate'] = profitable_trades / total_trades",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 320,
+              "content": "profit_trades = strategy_trades[strategy_trades['pnl'] > 0]",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 325,
+              "content": "'win_rate': len(profit_trades) / len(strategy_trades) if len(strategy_trades) > 0 else 0,",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 326,
+              "content": "'avg_profit': profit_trades['pnl'].mean() if len(profit_trades) > 0 else 0,",
+              "matched_keywords": [
+                "mean",
+                "profit"
+              ]
+            },
+            {
+              "line": 327,
+              "content": "'avg_loss': loss_trades['pnl'].mean() if len(loss_trades) > 0 else 0,",
+              "matched_keywords": [
+                "mean"
+              ]
+            },
+            {
+              "line": 328,
+              "content": "'max_profit': strategy_trades['pnl'].max() if len(strategy_trades) > 0 else 0,",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 331,
+              "content": "'profit_factor': abs(profit_trades['pnl'].sum() / loss_trades['pnl'].sum()) if len(loss_trades) > 0 and loss_trades['pnl'].sum() != 0 else 0",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 547,
+              "content": "f'{switches[\"success\"].mean() * 100:.2f}%' if not switches.empty and 'success' in switches.columns else '0.00%',",
+              "matched_keywords": [
+                "mean"
+              ]
+            },
+            {
+              "line": 660,
+              "content": "return pd.DataFrame(columns=['戦略名', '取引回数', '勝率', '平均利益', '平均損失',",
+              "matched_keywords": [
+                "平均利益"
+              ]
+            },
+            {
+              "line": 677,
+              "content": "'平均利益': f\"{stats.get('avg_profit', 0):,.2f}\",",
+              "matched_keywords": [
+                "平均利益",
+                "profit"
+              ]
+            },
+            {
+              "line": 679,
+              "content": "'最大利益': f\"{stats.get('max_profit', 0):,.2f}\",",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 681,
+              "content": "'プロフィットファクター': f\"{stats.get('profit_factor', 0):.3f}\",",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 691,
+              "content": "'平均利益': '',",
+              "matched_keywords": [
+                "平均利益"
+              ]
+            },
+            {
+              "line": 713,
+              "content": "profit_loss = switch.get('profit_loss_at_switch',",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 714,
+              "content": "switch.get('profit_loss',",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 720,
+              "content": "logger.info(f\"切り替え{i+1}: profit_loss_at_switch={switch.get('profit_loss_at_switch', 'キーなし')}\")",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 721,
+              "content": "logger.info(f\"切り替え{i+1}: profit_loss={switch.get('profit_loss', 'キーなし')}\")",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 723,
+              "content": "logger.info(f\"切り替え{i+1}: 最終profit_loss値={profit_loss} (型: {type(profit_loss)})\")",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 727,
+              "content": "if isinstance(profit_loss, str):",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 729,
+              "content": "profit_loss_clean = profit_loss.replace('%', '').replace(',', '').strip()",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 730,
+              "content": "profit_loss_float = float(profit_loss_clean)",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 732,
+              "content": "profit_loss_float = float(profit_loss)",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 735,
+              "content": "if isinstance(profit_loss, (int, float)) and abs(profit_loss_float) < 1.0:",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 736,
+              "content": "profit_loss_float = profit_loss_float * 100.0",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 739,
+              "content": "profit_loss_float = 0.0",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 743,
+              "content": "logger.info(f\"切り替え{i+1}: 変換後profit_loss_float={profit_loss_float}\")",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 746,
+              "content": "is_successful = profit_loss_float > 0",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 755,
+              "content": "'切替後パフォーマンス': f\"{profit_loss_float:.2f}%\",",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 802,
+              "content": "success_rate = switches_df['success'].mean() * 100",
+              "matched_keywords": [
+                "mean"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "average_loss": {
+          "implemented": true,
+          "implementation_quality": "高品質",
+          "found_implementations": [
+            {
+              "line": 161,
+              "content": "'profit_loss_at_switch': switch_dict.get('profit_loss_at_switch', 0.0),  # 正しいキー名使用",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 162,
+              "content": "'success': switch_dict.get('profit_loss_at_switch', 0.0) > 0  # 実際のパフォーマンスで成功判定",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 287,
+              "content": "avg_return = daily_returns.mean() * 252  # 年率化",
+              "matched_keywords": [
+                "mean"
+              ]
+            },
+            {
+              "line": 321,
+              "content": "loss_trades = strategy_trades[strategy_trades['pnl'] < 0]",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 326,
+              "content": "'avg_profit': profit_trades['pnl'].mean() if len(profit_trades) > 0 else 0,",
+              "matched_keywords": [
+                "mean"
+              ]
+            },
+            {
+              "line": 327,
+              "content": "'avg_loss': loss_trades['pnl'].mean() if len(loss_trades) > 0 else 0,",
+              "matched_keywords": [
+                "mean",
+                "loss"
+              ]
+            },
+            {
+              "line": 329,
+              "content": "'max_loss': strategy_trades['pnl'].min() if len(strategy_trades) > 0 else 0,",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 331,
+              "content": "'profit_factor': abs(profit_trades['pnl'].sum() / loss_trades['pnl'].sum()) if len(loss_trades) > 0 and loss_trades['pnl'].sum() != 0 else 0",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 547,
+              "content": "f'{switches[\"success\"].mean() * 100:.2f}%' if not switches.empty and 'success' in switches.columns else '0.00%',",
+              "matched_keywords": [
+                "mean"
+              ]
+            },
+            {
+              "line": 660,
+              "content": "return pd.DataFrame(columns=['戦略名', '取引回数', '勝率', '平均利益', '平均損失',",
+              "matched_keywords": [
+                "平均損失"
+              ]
+            },
+            {
+              "line": 678,
+              "content": "'平均損失': f\"{stats.get('avg_loss', 0):,.2f}\",",
+              "matched_keywords": [
+                "平均損失",
+                "loss"
+              ]
+            },
+            {
+              "line": 680,
+              "content": "'最大損失': f\"{stats.get('max_loss', 0):,.2f}\",",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 692,
+              "content": "'平均損失': '',",
+              "matched_keywords": [
+                "平均損失"
+              ]
+            },
+            {
+              "line": 713,
+              "content": "profit_loss = switch.get('profit_loss_at_switch',",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 714,
+              "content": "switch.get('profit_loss',",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 720,
+              "content": "logger.info(f\"切り替え{i+1}: profit_loss_at_switch={switch.get('profit_loss_at_switch', 'キーなし')}\")",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 721,
+              "content": "logger.info(f\"切り替え{i+1}: profit_loss={switch.get('profit_loss', 'キーなし')}\")",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 723,
+              "content": "logger.info(f\"切り替え{i+1}: 最終profit_loss値={profit_loss} (型: {type(profit_loss)})\")",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 727,
+              "content": "if isinstance(profit_loss, str):",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 729,
+              "content": "profit_loss_clean = profit_loss.replace('%', '').replace(',', '').strip()",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 730,
+              "content": "profit_loss_float = float(profit_loss_clean)",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 732,
+              "content": "profit_loss_float = float(profit_loss)",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 735,
+              "content": "if isinstance(profit_loss, (int, float)) and abs(profit_loss_float) < 1.0:",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 736,
+              "content": "profit_loss_float = profit_loss_float * 100.0",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 739,
+              "content": "profit_loss_float = 0.0",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 743,
+              "content": "logger.info(f\"切り替え{i+1}: 変換後profit_loss_float={profit_loss_float}\")",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 746,
+              "content": "is_successful = profit_loss_float > 0",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 755,
+              "content": "'切替後パフォーマンス': f\"{profit_loss_float:.2f}%\",",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 802,
+              "content": "success_rate = switches_df['success'].mean() * 100",
+              "matched_keywords": [
+                "mean"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "total_trades": {
+          "implemented": true,
+          "implementation_quality": "高品質",
+          "found_implementations": [
+            {
+              "line": 127,
+              "content": "logger.info(f\"   ポートフォリオ履歴: {len(df_portfolio)}行\")",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 146,
+              "content": "logger.info(f\"   取引履歴: {len(trades_data)}件\")",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 167,
+              "content": "logger.info(f\"   切り替え履歴: {len(switches_data)}件\")",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 219,
+              "content": "'symbol': f\"{symbols[i % len(symbols)]}.T\",",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 220,
+              "content": "'strategy': strategies[i % len(strategies)],",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 236,
+              "content": "'from_symbol': symbols[i % len(symbols)],",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 237,
+              "content": "'to_symbol': symbols[(i + 1) % len(symbols)],",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 298,
+              "content": "profitable_trades = len(trades_df[trades_df['pnl'] > 0])",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 299,
+              "content": "total_trades = len(trades_df)",
+              "matched_keywords": [
+                "total_trades",
+                "len"
+              ]
+            },
+            {
+              "line": 300,
+              "content": "if total_trades > 0:",
+              "matched_keywords": [
+                "total_trades"
+              ]
+            },
+            {
+              "line": 301,
+              "content": "metrics['win_rate'] = profitable_trades / total_trades",
+              "matched_keywords": [
+                "total_trades"
+              ]
+            },
+            {
+              "line": 324,
+              "content": "'trade_count': len(strategy_trades),",
+              "matched_keywords": [
+                "count",
+                "len"
+              ]
+            },
+            {
+              "line": 325,
+              "content": "'win_rate': len(profit_trades) / len(strategy_trades) if len(strategy_trades) > 0 else 0,",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 326,
+              "content": "'avg_profit': profit_trades['pnl'].mean() if len(profit_trades) > 0 else 0,",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 327,
+              "content": "'avg_loss': loss_trades['pnl'].mean() if len(loss_trades) > 0 else 0,",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 328,
+              "content": "'max_profit': strategy_trades['pnl'].max() if len(strategy_trades) > 0 else 0,",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 329,
+              "content": "'max_loss': strategy_trades['pnl'].min() if len(strategy_trades) > 0 else 0,",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 330,
+              "content": "'total_pnl': strategy_trades['pnl'].sum() if len(strategy_trades) > 0 else 0,",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 331,
+              "content": "'profit_factor': abs(profit_trades['pnl'].sum() / loss_trades['pnl'].sum()) if len(loss_trades) > 0 and loss_trades['pnl'].sum() != 0 else 0",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 379,
+              "content": "from calendar import monthrange",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 399,
+              "content": "from calendar import monthrange",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 453,
+              "content": "logger.info(f\"✅ 全出力生成完了: {len(output_files)}ファイル\")",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 546,
+              "content": "f'{len(switches)}回',",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 665,
+              "content": "total_trades = 0",
+              "matched_keywords": [
+                "total_trades"
+              ]
+            },
+            {
+              "line": 670,
+              "content": "trade_count = stats.get('trade_count', 0)",
+              "matched_keywords": [
+                "count"
+              ]
+            },
+            {
+              "line": 671,
+              "content": "total_trades += trade_count",
+              "matched_keywords": [
+                "total_trades",
+                "count"
+              ]
+            },
+            {
+              "line": 675,
+              "content": "'取引回数': trade_count,",
+              "matched_keywords": [
+                "count"
+              ]
+            },
+            {
+              "line": 689,
+              "content": "'取引回数': total_trades,",
+              "matched_keywords": [
+                "total_trades"
+              ]
+            },
+            {
+              "line": 799,
+              "content": "f.write(f\"銘柄切替回数: {len(switches_df)}回\\n\")",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 820,
+              "content": "if len(switches_df) > 50:",
+              "matched_keywords": [
+                "len"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "profitable_trades": {
+          "implemented": true,
+          "implementation_quality": "高品質",
+          "found_implementations": [
+            {
+              "line": 255,
+              "content": "'win_rate': 0.65",
+              "matched_keywords": [
+                "win"
+              ]
+            },
+            {
+              "line": 268,
+              "content": "'win_rate': 0.0",
+              "matched_keywords": [
+                "win"
+              ]
+            },
+            {
+              "line": 298,
+              "content": "profitable_trades = len(trades_df[trades_df['pnl'] > 0])",
+              "matched_keywords": [
+                "profitable_trades"
+              ]
+            },
+            {
+              "line": 301,
+              "content": "metrics['win_rate'] = profitable_trades / total_trades",
+              "matched_keywords": [
+                "profitable_trades",
+                "win"
+              ]
+            },
+            {
+              "line": 325,
+              "content": "'win_rate': len(profit_trades) / len(strategy_trades) if len(strategy_trades) > 0 else 0,",
+              "matched_keywords": [
+                "win"
+              ]
+            },
+            {
+              "line": 564,
+              "content": "('勝率', performance.get('win_rate', 0), 0.5, self._evaluate_metric('win_rate', performance.get('win_rate', 0)))",
+              "matched_keywords": [
+                "win"
+              ]
+            },
+            {
+              "line": 588,
+              "content": "elif metric_type == 'win_rate':",
+              "matched_keywords": [
+                "win"
+              ]
+            },
+            {
+              "line": 676,
+              "content": "'勝率': f\"{stats.get('win_rate', 0)*100:.2f}%\",",
+              "matched_keywords": [
+                "win"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": true
+        }
+      }
+    },
+    "dssms_unified_output_engine_fixed.py": {
+      "file_exists": true,
+      "file_size": 30256,
+      "calculations": {
+        "win_rate": {
+          "implemented": false,
+          "implementation_quality": "未実装",
+          "found_implementations": [],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "profit_factor": {
+          "implemented": true,
+          "implementation_quality": "低品質",
+          "found_implementations": [
+            {
+              "line": 191,
+              "content": "'pnl': getattr(switch, 'profit_loss', 0),",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 504,
+              "content": "profit_loss = switch.get('profit_loss', 0)",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 505,
+              "content": "is_success = profit_loss > 0",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 512,
+              "content": "ws.cell(row=row_idx, column=6, value=f\"{profit_loss:,.2f}\")",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 607,
+              "content": "'profit_loss': float(switch.get('profit_loss', 0)),",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 656,
+              "content": "successful_switches = switches_df[switches_df.get('profit_loss', pd.Series([0])) > 0]",
+              "matched_keywords": [
+                "profit"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "average_profit": {
+          "implemented": true,
+          "implementation_quality": "部分実装",
+          "found_implementations": [
+            {
+              "line": 191,
+              "content": "'pnl': getattr(switch, 'profit_loss', 0),",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 504,
+              "content": "profit_loss = switch.get('profit_loss', 0)",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 505,
+              "content": "is_success = profit_loss > 0",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 512,
+              "content": "ws.cell(row=row_idx, column=6, value=f\"{profit_loss:,.2f}\")",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 607,
+              "content": "'profit_loss': float(switch.get('profit_loss', 0)),",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 656,
+              "content": "successful_switches = switches_df[switches_df.get('profit_loss', pd.Series([0])) > 0]",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 670,
+              "content": "return periods.mean() if len(periods) > 0 else 0.0",
+              "matched_keywords": [
+                "mean"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "average_loss": {
+          "implemented": true,
+          "implementation_quality": "部分実装",
+          "found_implementations": [
+            {
+              "line": 191,
+              "content": "'pnl': getattr(switch, 'profit_loss', 0),",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 504,
+              "content": "profit_loss = switch.get('profit_loss', 0)",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 505,
+              "content": "is_success = profit_loss > 0",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 512,
+              "content": "ws.cell(row=row_idx, column=6, value=f\"{profit_loss:,.2f}\")",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 607,
+              "content": "'profit_loss': float(switch.get('profit_loss', 0)),",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 656,
+              "content": "successful_switches = switches_df[switches_df.get('profit_loss', pd.Series([0])) > 0]",
+              "matched_keywords": [
+                "loss"
+              ]
+            },
+            {
+              "line": 670,
+              "content": "return periods.mean() if len(periods) > 0 else 0.0",
+              "matched_keywords": [
+                "mean"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "total_trades": {
+          "implemented": true,
+          "implementation_quality": "高品質",
+          "found_implementations": [
+            {
+              "line": 115,
+              "content": "elif len(portfolio_df) > 0:",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 118,
+              "content": "date_range = pd.date_range(start=start_date, periods=len(portfolio_df), freq='D')",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 122,
+              "content": "logger.info(f\"ポートフォリオデータ: {len(portfolio_df)}行\")",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 128,
+              "content": "logger.info(f\"取引履歴: {len(trades_data)}行\")",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 136,
+              "content": "logger.info(f\"切替履歴: {len(switches_df)}行\")",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 161,
+              "content": "if i + 1 < len(switch_history):",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 330,
+              "content": "logger.info(f\"✅ 全出力生成完了: {len(results)}ファイル\")",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 384,
+              "content": "['銘柄切替回数', f\"{self._count_switches()}回\"],",
+              "matched_keywords": [
+                "count"
+              ]
+            },
+            {
+              "line": 419,
+              "content": "if len(numeric_cols) > 0:",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 427,
+              "content": "if len(values) > 0:",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 540,
+              "content": "f.write(f\"銘柄切替回数: {self._count_switches()}回\\n\")",
+              "matched_keywords": [
+                "count"
+              ]
+            },
+            {
+              "line": 572,
+              "content": "'switch_count': self._count_switches(),",
+              "matched_keywords": [
+                "count"
+              ]
+            },
+            {
+              "line": 583,
+              "content": "'value': float(row.iloc[0]) if len(row) > 0 else 0.0",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 632,
+              "content": "if len(numeric_cols) > 0:",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 637,
+              "content": "initial_value = values.iloc[0] if len(values) > 0 else 1000000",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 638,
+              "content": "final_value = values.iloc[-1] if len(values) > 0 else initial_value",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 644,
+              "content": "def _count_switches(self) -> int:",
+              "matched_keywords": [
+                "count"
+              ]
+            },
+            {
+              "line": 647,
+              "content": "return len(switches_df) if not switches_df.empty else 0",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 657,
+              "content": "return (len(successful_switches) / len(switches_df) * 100) if len(switches_df) > 0 else 0.0",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 670,
+              "content": "return periods.mean() if len(periods) > 0 else 0.0",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 676,
+              "content": "if len(dates) > 1:",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 678,
+              "content": "for i in range(len(dates)-1)]",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 679,
+              "content": "return sum(periods) / len(periods) if periods else 0.0",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 695,
+              "content": "return len(switches_df) * 5000  # 仮のコスト（1回5000円）",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 710,
+              "content": "if len(numeric_cols) > 0:",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 715,
+              "content": "return values.iloc[-1] if len(values) > 0 else 1000000.0",
+              "matched_keywords": [
+                "len"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "profitable_trades": {
+          "implemented": false,
+          "implementation_quality": "未実装",
+          "found_implementations": [],
+          "code_snippets": [],
+          "formula_matches": false
+        }
+      }
+    },
+    "dssms_unified_output_engine_fixed_v3.py": {
+      "file_exists": true,
+      "file_size": 0,
+      "calculations": {
+        "win_rate": {
+          "implemented": false,
+          "implementation_quality": "未実装",
+          "found_implementations": [],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "profit_factor": {
+          "implemented": false,
+          "implementation_quality": "未実装",
+          "found_implementations": [],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "average_profit": {
+          "implemented": false,
+          "implementation_quality": "未実装",
+          "found_implementations": [],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "average_loss": {
+          "implemented": false,
+          "implementation_quality": "未実装",
+          "found_implementations": [],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "total_trades": {
+          "implemented": false,
+          "implementation_quality": "未実装",
+          "found_implementations": [],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "profitable_trades": {
+          "implemented": false,
+          "implementation_quality": "未実装",
+          "found_implementations": [],
+          "code_snippets": [],
+          "formula_matches": false
+        }
+      }
+    },
+    "dssms_unified_output_engine_fixed_v4.py": {
+      "file_exists": true,
+      "file_size": 20314,
+      "calculations": {
+        "win_rate": {
+          "implemented": true,
+          "implementation_quality": "低品質",
+          "found_implementations": [
+            {
+              "line": 213,
+              "content": "'勝率(%)': metrics.get('win_rate', 0.0)",
+              "matched_keywords": [
+                "win_rate",
+                "勝率"
+              ]
+            },
+            {
+              "line": 221,
+              "content": "'成功切替回数': stats.get('profitable_switches', 0),",
+              "matched_keywords": [
+                "profitable"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "profit_factor": {
+          "implemented": true,
+          "implementation_quality": "低品質",
+          "found_implementations": [
+            {
+              "line": 153,
+              "content": "'損益': float(switch.profit_loss_at_switch),",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 221,
+              "content": "'成功切替回数': stats.get('profitable_switches', 0),",
+              "matched_keywords": [
+                "profit"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "average_profit": {
+          "implemented": true,
+          "implementation_quality": "低品質",
+          "found_implementations": [
+            {
+              "line": 153,
+              "content": "'損益': float(switch.profit_loss_at_switch),",
+              "matched_keywords": [
+                "profit"
+              ]
+            },
+            {
+              "line": 221,
+              "content": "'成功切替回数': stats.get('profitable_switches', 0),",
+              "matched_keywords": [
+                "profit"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "average_loss": {
+          "implemented": true,
+          "implementation_quality": "低品質",
+          "found_implementations": [
+            {
+              "line": 153,
+              "content": "'損益': float(switch.profit_loss_at_switch),",
+              "matched_keywords": [
+                "loss"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": false
+        },
+        "total_trades": {
+          "implemented": true,
+          "implementation_quality": "高品質",
+          "found_implementations": [
+            {
+              "line": 89,
+              "content": "logger.info(\"✅ スイッチ履歴検出: %d件\", len(backtester.switch_history))",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 91,
+              "content": "logger.info(\"✅ 取引履歴変換完了: %d件\", len(data['trades']))",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 134,
+              "content": "if i + 1 < len(switch_history):",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 236,
+              "content": "'分析期間': f\"{len(pv_data)}日間\"",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 239,
+              "content": "return summary if len(summary) > 1 else None  # ヘッダーのみなら None",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 265,
+              "content": "'総切替回数': len(trades),",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 266,
+              "content": "'成功切替数': len([t for t in trades if t.get('損益', 0) > 0]),",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 267,
+              "content": "'失敗切替数': len([t for t in trades if t.get('損益', 0) <= 0]),",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 268,
+              "content": "'切替成功率': len([t for t in trades if t.get('損益', 0) > 0]) / len(trades) * 100 if trades else 0,",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 269,
+              "content": "'総取引コスト': sum([t.get('コスト', 0) for t in trades]),",
+              "matched_keywords": [
+                "総取引"
+              ]
+            },
+            {
+              "line": 281,
+              "content": "if isinstance(original_date, str) and len(original_date) >= 10:",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 301,
+              "content": "if isinstance(original_date, str) and len(original_date) >= 10:",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 354,
+              "content": "logger.info(\"✅ 全出力生成完了: %dファイル\", len(output_files))",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 410,
+              "content": "if pv_list and len(pv_list) > 0:",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 433,
+              "content": "trade_count = len(self.results_data.get('trades', []))",
+              "matched_keywords": [
+                "count",
+                "len"
+              ]
+            },
+            {
+              "line": 434,
+              "content": "successful_trades = len([t for t in self.results_data.get('trades', []) if t.get('損益', 0) > 0])",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 435,
+              "content": "success_rate = (successful_trades / trade_count * 100) if trade_count > 0 else 0",
+              "matched_keywords": [
+                "count"
+              ]
+            },
+            {
+              "line": 438,
+              "content": "f.write(f\"銘柄切替回数: {trade_count}回\\n\")",
+              "matched_keywords": [
+                "count"
+              ]
+            },
+            {
+              "line": 449,
+              "content": "if trade_count > 50:",
+              "matched_keywords": [
+                "count"
+              ]
+            },
+            {
+              "line": 461,
+              "content": "if len(self.results_data['trades']) > 10:",
+              "matched_keywords": [
+                "len"
+              ]
+            },
+            {
+              "line": 462,
+              "content": "f.write(f\"... および {len(self.results_data['trades']) - 10} 件の追加取引\\n\")",
+              "matched_keywords": [
+                "len"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": true
+        },
+        "profitable_trades": {
+          "implemented": true,
+          "implementation_quality": "低品質",
+          "found_implementations": [
+            {
+              "line": 213,
+              "content": "'勝率(%)': metrics.get('win_rate', 0.0)",
+              "matched_keywords": [
+                "win"
+              ]
+            }
+          ],
+          "code_snippets": [],
+          "formula_matches": true
+        }
+      }
+    }
+  },
+  "calculation_formulas": {
+    "dssms_unified_output_engine.py": {
+      "win_rate": {
+        "target_name": "勝率計算",
+        "expected_formula": "profitable_trades / total_trades",
+        "actual_formulas": [
+          "len(trades_df[trades_df['pnl'] > 0])",
+          "profitable_trades / total_trades",
+          "'win_rate':",
+          "['戦略名', '取引回数', '勝率', '平均利益', '平均損失',"
+        ],
+        "formula_quality": "一致"
+      },
+      "profit_factor": {
+        "target_name": "プロフィットファクター",
+        "expected_formula": "total_profit / abs(total_loss)",
+        "actual_formulas": [
+          "len(trades_df[trades_df['pnl'] > 0])",
+          "profitable_trades / total_trades",
+          "strategy_trades[strategy_trades['pnl'] > 0]",
+          "0 else 0",
+          "switch.get('profit_loss_at_switch',",
+          "{switch.get('profit_loss_at_switch', 'キーなし')}\")",
+          "{switch.get('profit_loss', 'キーなし')}\")",
+          "{profit_loss} (型: {type(profit_loss)})\")",
+          "profit_loss.replace('%', '').replace(',', '').strip()",
+          "float(profit_loss_clean)",
+          "float(profit_loss)",
+          "profit_loss_float * 100.0",
+          "0.0",
+          "{profit_loss_float}\")",
+          "profit_loss_float > 0"
+        ],
+        "formula_quality": "一致"
+      },
+      "average_profit": {
+        "target_name": "平均利益",
+        "expected_formula": "profit_trades.mean()",
+        "actual_formulas": [
+          "daily_returns.mean() * 252  # 年率化",
+          "len(trades_df[trades_df['pnl'] > 0])",
+          "profitable_trades / total_trades",
+          "strategy_trades[strategy_trades['pnl'] > 0]",
+          "0 else 0",
+          "['戦略名', '取引回数', '勝率', '平均利益', '平均損失',",
+          "switch.get('profit_loss_at_switch',",
+          "{switch.get('profit_loss_at_switch', 'キーなし')}\")",
+          "{switch.get('profit_loss', 'キーなし')}\")",
+          "{profit_loss} (型: {type(profit_loss)})\")",
+          "profit_loss.replace('%', '').replace(',', '').strip()",
+          "float(profit_loss_clean)",
+          "float(profit_loss)",
+          "profit_loss_float * 100.0",
+          "0.0",
+          "{profit_loss_float}\")",
+          "profit_loss_float > 0",
+          "switches_df['success'].mean() * 100"
+        ],
+        "formula_quality": "不一致"
+      },
+      "average_loss": {
+        "target_name": "平均損失",
+        "expected_formula": "loss_trades.mean()",
+        "actual_formulas": [
+          "daily_returns.mean() * 252  # 年率化",
+          "strategy_trades[strategy_trades['pnl'] < 0]",
+          "0 else 0",
+          "['戦略名', '取引回数', '勝率', '平均利益', '平均損失',",
+          "switch.get('profit_loss_at_switch',",
+          "{switch.get('profit_loss_at_switch', 'キーなし')}\")",
+          "{switch.get('profit_loss', 'キーなし')}\")",
+          "{profit_loss} (型: {type(profit_loss)})\")",
+          "profit_loss.replace('%', '').replace(',', '').strip()",
+          "float(profit_loss_clean)",
+          "float(profit_loss)",
+          "profit_loss_float * 100.0",
+          "0.0",
+          "{profit_loss_float}\")",
+          "profit_loss_float > 0",
+          "switches_df['success'].mean() * 100"
+        ],
+        "formula_quality": "不一致"
+      },
+      "total_trades": {
+        "target_name": "総取引数",
+        "expected_formula": "len(trades)",
+        "actual_formulas": [
+          "len(trades_df[trades_df['pnl'] > 0])",
+          "len(trades_df)",
+          "profitable_trades / total_trades",
+          "0 else 0",
+          "0",
+          "stats.get('trade_count', 0)",
+          "trade_count"
+        ],
+        "formula_quality": "不一致"
+      },
+      "profitable_trades": {
+        "target_name": "利益取引数",
+        "expected_formula": "len([t for t in trades if t > 0])",
+        "actual_formulas": [
+          "len(trades_df[trades_df['pnl'] > 0])",
+          "profitable_trades / total_trades",
+          "'win_rate':"
+        ],
+        "formula_quality": "一致"
+      }
+    },
+    "dssms_unified_output_engine_fixed.py": {
+      "profit_factor": {
+        "target_name": "プロフィットファクター",
+        "expected_formula": "total_profit / abs(total_loss)",
+        "actual_formulas": [
+          "switch.get('profit_loss', 0)",
+          "profit_loss > 0",
+          "f\"{profit_loss:,.2f}\")",
+          "switches_df[switches_df.get('profit_loss', pd.Series([0])) > 0]"
+        ],
+        "formula_quality": "不一致"
+      },
+      "average_profit": {
+        "target_name": "平均利益",
+        "expected_formula": "profit_trades.mean()",
+        "actual_formulas": [
+          "switch.get('profit_loss', 0)",
+          "profit_loss > 0",
+          "f\"{profit_loss:,.2f}\")",
+          "switches_df[switches_df.get('profit_loss', pd.Series([0])) > 0]"
+        ],
+        "formula_quality": "不一致"
+      },
+      "average_loss": {
+        "target_name": "平均損失",
+        "expected_formula": "loss_trades.mean()",
+        "actual_formulas": [
+          "switch.get('profit_loss', 0)",
+          "profit_loss > 0",
+          "f\"{profit_loss:,.2f}\")",
+          "switches_df[switches_df.get('profit_loss', pd.Series([0])) > 0]"
+        ],
+        "formula_quality": "不一致"
+      },
+      "total_trades": {
+        "target_name": "総取引数",
+        "expected_formula": "len(trades)",
+        "actual_formulas": [
+          "'D')",
+          "values.iloc[0] if len(values) > 0 else 1000000",
+          "values.iloc[-1] if len(values) > 0 else initial_value"
+        ],
+        "formula_quality": "不一致"
+      }
+    },
+    "dssms_unified_output_engine_fixed_v3.py": {},
+    "dssms_unified_output_engine_fixed_v4.py": {
+      "win_rate": {
+        "target_name": "勝率計算",
+        "expected_formula": "profitable_trades / total_trades",
+        "actual_formulas": [],
+        "formula_quality": "不一致"
+      },
+      "profit_factor": {
+        "target_name": "プロフィットファクター",
+        "expected_formula": "total_profit / abs(total_loss)",
+        "actual_formulas": [],
+        "formula_quality": "不一致"
+      },
+      "average_profit": {
+        "target_name": "平均利益",
+        "expected_formula": "profit_trades.mean()",
+        "actual_formulas": [],
+        "formula_quality": "不一致"
+      },
+      "average_loss": {
+        "target_name": "平均損失",
+        "expected_formula": "loss_trades.mean()",
+        "actual_formulas": [],
+        "formula_quality": "不一致"
+      },
+      "total_trades": {
+        "target_name": "総取引数",
+        "expected_formula": "len(trades)",
+        "actual_formulas": [
+          "0]),",
+          "10:",
+          "10:",
+          "len(self.results_data.get('trades', []))",
+          "len([t for t in self.results_data.get('trades', []) if t.get('損益', 0) > 0])",
+          "(successful_trades / trade_count * 100) if trade_count > 0 else 0"
+        ],
+        "formula_quality": "一致"
+      },
+      "profitable_trades": {
+        "target_name": "利益取引数",
+        "expected_formula": "len([t for t in trades if t > 0])",
+        "actual_formulas": [],
+        "formula_quality": "一致"
+      }
+    }
+  },
+  "implementation_quality": {
+    "dssms_unified_output_engine.py": {
+      "total_calculations": 6,
+      "implemented_count": 6,
+      "high_quality_count": 6,
+      "formula_matched_count": 3,
+      "implementation_percentage": 100.0,
+      "quality_percentage": 100.0,
+      "formula_match_percentage": 50.0,
+      "total_score": 85.0
+    },
+    "dssms_unified_output_engine_fixed.py": {
+      "total_calculations": 6,
+      "implemented_count": 4,
+      "high_quality_count": 1,
+      "formula_matched_count": 0,
+      "implementation_percentage": 66.7,
+      "quality_percentage": 16.7,
+      "formula_match_percentage": 0.0,
+      "total_score": 31.7
+    },
+    "dssms_unified_output_engine_fixed_v3.py": {
+      "total_calculations": 6,
+      "implemented_count": 0,
+      "high_quality_count": 0,
+      "formula_matched_count": 0,
+      "implementation_percentage": 0.0,
+      "quality_percentage": 0.0,
+      "formula_match_percentage": 0.0,
+      "total_score": 0.0
+    },
+    "dssms_unified_output_engine_fixed_v4.py": {
+      "total_calculations": 6,
+      "implemented_count": 6,
+      "high_quality_count": 1,
+      "formula_matched_count": 2,
+      "implementation_percentage": 100.0,
+      "quality_percentage": 16.7,
+      "formula_match_percentage": 33.3,
+      "total_score": 55.0
+    }
+  },
+  "problems_identified": [
+    "実装率50%未満のエンジン: dssms_unified_output_engine_fixed_v3.py",
+    "高品質実装25%未満のエンジン: dssms_unified_output_engine_fixed.py, dssms_unified_output_engine_fixed_v3.py, dssms_unified_output_engine_fixed_v4.py",
+    "公式一致率30%未満のエンジン: dssms_unified_output_engine_fixed.py, dssms_unified_output_engine_fixed_v3.py",
+    "v3エンジンで計算ロジックが完全未実装（スコア0点）"
+  ],
+  "recommendations": [
+    "v3エンジンの計算ロジック実装（現在完全未実装）",
+    "低品質実装エンジンの計算式修正",
+    "期待公式との一致率向上",
+    "統一的な計算ロジック実装ガイドライン策定",
+    "計算精度検証テストの追加"
+  ]
+}

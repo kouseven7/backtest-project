@@ -1,0 +1,212 @@
+{
+  "analysis_timestamp": "20250912_113658",
+  "findings": {
+    "backtester_portfolio_usage": {
+      "total_occurrences": 27,
+      "usage_lines": [
+        "Line 536: portfolio_values_raw = self.performance_history.get('portfolio_value', [])",
+        "Line 540: portfolio_values = [float(v) for v in portfolio_values_raw if isinstance(v, (int, float))]",
+        "Line 543: if not portfolio_values or len(portfolio_values) < 2:",
+        "Line 554: if len(portfolio_values) != len(daily_returns):",
+        "Line 555: min_len = min(len(portfolio_values), len(daily_returns))",
+        "Line 556: portfolio_values = portfolio_values[:min_len]",
+        "Line 561: portfolio_mean = np.mean(portfolio_values)",
+        "Line 562: portfolio_std = np.std(portfolio_values)",
+        "Line 567: for v in portfolio_values:",
+        "Line 574: if corrected_values != portfolio_values:"
+      ]
+    }
+  },
+  "data_flow_analysis": {
+    "conversion_methods": {
+      "dssms_unified_output_engine.py": {
+        "method_found": true,
+        "method_lines_count": 92,
+        "first_10_lines": [
+          "Line 90: def _convert_backtester_results(self, results: Any, backtester: Any) -> Dict[str, Any]:",
+          "Line 91: \"\"\"バックテスター結果を統一形式に変換\"\"\"",
+          "Line 92: logger.info(\"🔄 バックテスター結果変換中...\")",
+          "Line 93: ",
+          "Line 94: converted_data = {",
+          "Line 95: 'portfolio_values': pd.DataFrame(),",
+          "Line 96: 'trades': pd.DataFrame(),",
+          "Line 97: 'switches': pd.DataFrame(),",
+          "Line 98: 'performance_metrics': {},",
+          "Line 99: 'strategy_statistics': {},"
+        ]
+      },
+      "dssms_unified_output_engine_fixed.py": {
+        "method_found": true,
+        "method_lines_count": 58,
+        "first_10_lines": [
+          "Line 93: def _convert_backtester_results(self, results: Any, backtester: Any) -> Dict[str, Any]:",
+          "Line 94: \"\"\"バックテスター結果を統一形式に変換\"\"\"",
+          "Line 95: logger.info(\"🔄 バックテスター結果変換中...\")",
+          "Line 96: ",
+          "Line 97: converted_data = {",
+          "Line 98: 'portfolio_values': pd.DataFrame(),",
+          "Line 99: 'trades': pd.DataFrame(),",
+          "Line 100: 'switches': pd.DataFrame(),",
+          "Line 101: 'performance_metrics': {},",
+          "Line 102: 'strategy_statistics': {},"
+        ]
+      },
+      "dssms_unified_output_engine_fixed_v3.py": {
+        "method_found": false,
+        "method_lines_count": 0,
+        "first_10_lines": []
+      },
+      "dssms_unified_output_engine_fixed_v4.py": {
+        "method_found": true,
+        "method_lines_count": 46,
+        "first_10_lines": [
+          "Line 78: def _convert_backtester_results_v4(self, backtester) -> Dict[str, Any]:",
+          "Line 79: \"\"\"v3ベースの変換ロジック + 完全データ構造\"\"\"",
+          "Line 80: try:",
+          "Line 81: data = {",
+          "Line 82: 'session_id': self.session_id,",
+          "Line 83: 'timestamp': datetime.now().isoformat(),",
+          "Line 84: 'trades': []",
+          "Line 85: }",
+          "Line 86: ",
+          "Line 87: # スイッチ履歴から取引データを作成（v3の改良版）"
+        ]
+      }
+    },
+    "date_fix_methods": {
+      "dssms_unified_output_engine.py": {
+        "fix_method_found": true,
+        "fix_method_lines": 15,
+        "datetime_conversions": 4,
+        "datetime_usage_sample": [
+          "Line 110: 'date': pd.to_datetime(date),",
+          "Line 134: 'date': pd.to_datetime(trade.get('date', datetime.now())),",
+          "Line 156: 'date': pd.to_datetime(switch_dict.get('timestamp', datetime.now())),",
+          "Line 386: df['date'] = pd.to_datetime(df['date'])"
+        ]
+      },
+      "dssms_unified_output_engine_fixed.py": {
+        "fix_method_found": true,
+        "fix_method_lines": 39,
+        "datetime_conversions": 6,
+        "datetime_usage_sample": [
+          "Line 113: portfolio_df['date'] = pd.to_datetime(portfolio_df['date'])",
+          "Line 134: switches_df['date'] = pd.to_datetime(switches_df['date'])",
+          "Line 158: entry_date = pd.to_datetime(getattr(switch, 'date', datetime.now()))",
+          "Line 162: exit_date = pd.to_datetime(getattr(switch_history[i + 1], 'date', datetime.now()))",
+          "Line 250: df['date'] = pd.to_datetime(df['date'])"
+        ]
+      },
+      "dssms_unified_output_engine_fixed_v3.py": {
+        "fix_method_found": false,
+        "fix_method_lines": 0,
+        "datetime_conversions": 0,
+        "datetime_usage_sample": []
+      },
+      "dssms_unified_output_engine_fixed_v4.py": {
+        "fix_method_found": true,
+        "fix_method_lines": 45,
+        "datetime_conversions": 8,
+        "datetime_usage_sample": [
+          "Line 131: entry_date = pd.to_datetime(switch.timestamp)",
+          "Line 136: exit_date = pd.to_datetime(next_switch.timestamp)",
+          "Line 284: pd.to_datetime(original_date)",
+          "Line 292: trade['日付'] = pd.to_datetime(original_date, unit='D', origin='2023-01-01').strftime('%Y-%m-%d')",
+          "Line 294: trade['日付'] = pd.to_datetime(int(original_date), unit='D', origin='2023-01-01').strftime('%Y-%m-%d')"
+        ]
+      }
+    },
+    "excel_output": {
+      "file_name": "dssms_unified_backtest_20250910_213413.xlsx",
+      "sheet_names": [
+        "サマリー",
+        "パフォーマンス指標",
+        "取引履歴",
+        "損益推移",
+        "戦略別統計",
+        "切替分析"
+      ],
+      "sheets_analysis": {
+        "損益推移": {
+          "max_row": 367,
+          "max_column": 5,
+          "sample_data": [
+            {
+              "col_1": "2023-01-01 00:00:00",
+              "col_2": "999,000.00",
+              "col_3": "0.00",
+              "col_4": "0.00%"
+            },
+            {
+              "col_1": "2023-01-02 00:00:00",
+              "col_2": "1,006,742.96",
+              "col_3": "7,742.96",
+              "col_4": "0.78%"
+            },
+            {
+              "col_1": "2023-01-03 00:00:00",
+              "col_2": "1,004,957.04",
+              "col_3": "-1,785.93",
+              "col_4": "-0.18%"
+            },
+            {
+              "col_1": "2023-01-04 00:00:00",
+              "col_2": "1,015,022.01",
+              "col_3": "10,064.97",
+              "col_4": "1.00%"
+            },
+            {
+              "col_1": "2023-01-05 00:00:00",
+              "col_2": "1,038,515.15",
+              "col_3": "23,493.14",
+              "col_4": "2.31%"
+            },
+            {
+              "col_1": "2023-01-06 00:00:00",
+              "col_2": "1,035,179.13",
+              "col_3": "-3,336.02",
+              "col_4": "-0.32%"
+            },
+            {
+              "col_1": "2023-01-07 00:00:00",
+              "col_2": "1,031,854.07",
+              "col_3": "-3,325.05",
+              "col_4": "-0.32%"
+            },
+            {
+              "col_1": "2023-01-08 00:00:00",
+              "col_2": "1,056,606.39",
+              "col_3": "24,752.31",
+              "col_4": "2.40%"
+            },
+            {
+              "col_1": "2023-01-09 00:00:00",
+              "col_2": "1,069,086.52",
+              "col_3": "12,480.13",
+              "col_4": "1.18%"
+            },
+            {
+              "col_1": "2023-01-10 00:00:00",
+              "col_2": "1,061,878.61",
+              "col_3": "-7,207.91",
+              "col_4": "-0.67%"
+            }
+          ]
+        }
+      }
+    },
+    "date_loop_correlation": {
+      "task_2_1_findings": [],
+      "portfolio_data_impact": [
+        "Task 2.1で発見されたorigin='2023-01-01'固定問題がポートフォリオ価値データにも影響"
+      ]
+    }
+  },
+  "problems_identified": [],
+  "recommendations": [
+    "DSSMSBacktester.portfolio_valuesの生成ロジック詳細調査",
+    "各エンジンでの変換ロジック統一",
+    "日付変換時のorigin問題解決（Task 2.1連携）",
+    "Excel出力時のデータ整合性検証強化"
+  ]
+}
