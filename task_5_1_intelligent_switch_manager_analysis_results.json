@@ -1,0 +1,2572 @@
+{
+  "timestamp": "2025-09-14T07:14:38.076135",
+  "intelligent_switch_manager_files": [
+    {
+      "absolute_path": "C:\\Users\\imega\\Documents\\my_backtest_project\\task21_intelligent_switch_manager_diagnosis.py",
+      "relative_path": "task21_intelligent_switch_manager_diagnosis.py",
+      "size_bytes": 8242,
+      "line_count": 202,
+      "classes": [],
+      "functions": [
+        "diagnose_intelligent_switch_manager",
+        "diagnose_switching_frequency_impact"
+      ],
+      "imports": [
+        "logging",
+        "json",
+        "datetime",
+        "pathlib",
+        "src.dssms.dssms_backtester",
+        "src.dssms.dssms_backtester",
+        "inspect"
+      ],
+      "contains_intelligent_switch_manager": true,
+      "implementation_quality": {
+        "has_docstrings": true,
+        "has_type_hints": true,
+        "has_error_handling": true,
+        "has_logging": true,
+        "has_tests": true,
+        "complexity_score": 23
+      },
+      "last_modified": "2025-09-12T11:49:43.123827"
+    },
+    {
+      "absolute_path": "C:\\Users\\imega\\Documents\\my_backtest_project\\task_5_1_intelligent_switch_manager_analysis.py",
+      "relative_path": "task_5_1_intelligent_switch_manager_analysis.py",
+      "size_bytes": 20373,
+      "line_count": 457,
+      "classes": [
+        "IntelligentSwitchManagerAnalyzer"
+      ],
+      "functions": [
+        "main",
+        "__init__",
+        "analyze_intelligent_switch_manager_integration",
+        "_find_intelligent_switch_manager_files",
+        "_analyze_file_structure",
+        "_assess_implementation_quality",
+        "_analyze_dssms_usage_patterns",
+        "_check_isw_imports",
+        "_check_isw_usage",
+        "_extract_initialization_patterns",
+        "_extract_method_calls",
+        "_assess_integration_quality",
+        "_analyze_integration_patterns",
+        "_calculate_average_integration_quality",
+        "_identify_integration_issues",
+        "_generate_recommendations",
+        "_calculate_summary_statistics",
+        "_generate_detailed_report"
+      ],
+      "imports": [
+        "os",
+        "re",
+        "ast",
+        "inspect",
+        "pathlib",
+        "typing",
+        "datetime",
+        "json"
+      ],
+      "contains_intelligent_switch_manager": true,
+      "implementation_quality": {
+        "has_docstrings": true,
+        "has_type_hints": true,
+        "has_error_handling": true,
+        "has_logging": true,
+        "has_tests": true,
+        "complexity_score": 72
+      },
+      "last_modified": "2025-09-14T07:14:12.128265"
+    },
+    {
+      "absolute_path": "C:\\Users\\imega\\Documents\\my_backtest_project\\test_intelligent_switch_manager.py",
+      "relative_path": "test_intelligent_switch_manager.py",
+      "size_bytes": 15040,
+      "line_count": 308,
+      "classes": [],
+      "functions": [
+        "test_intelligent_switch_manager",
+        "test_integration_with_existing_dssms",
+        "main"
+      ],
+      "imports": [
+        "sys",
+        "pathlib",
+        "logging",
+        "traceback",
+        "warnings",
+        "time",
+        "typing",
+        "src.dssms.intelligent_switch_manager",
+        "src.dssms.market_condition_monitor",
+        "src.dssms.hierarchical_ranking_system",
+        "src.dssms.comprehensive_scoring_engine",
+        "src.dssms.intelligent_switch_manager",
+        "json"
+      ],
+      "contains_intelligent_switch_manager": true,
+      "implementation_quality": {
+        "has_docstrings": true,
+        "has_type_hints": true,
+        "has_error_handling": true,
+        "has_logging": true,
+        "has_tests": true,
+        "complexity_score": 24
+      },
+      "last_modified": "2025-08-18T18:13:43.292526"
+    },
+    {
+      "absolute_path": "C:\\Users\\imega\\Documents\\my_backtest_project\\src\\dssms\\intelligent_switch_manager.py",
+      "relative_path": "src\\dssms\\intelligent_switch_manager.py",
+      "size_bytes": 30584,
+      "line_count": 717,
+      "classes": [
+        "SwitchDecision",
+        "PositionEvaluation",
+        "SwitchRecord",
+        "PositionTracker",
+        "SwitchHistoryManager",
+        "DSSMSRiskController",
+        "FundUpdateScheduler",
+        "IntelligentSwitchManager",
+        "DSSMSIntelligentSwitchIntegrator"
+      ],
+      "functions": [
+        "__init__",
+        "add_position",
+        "remove_position",
+        "get_holding_period",
+        "get_current_positions",
+        "__init__",
+        "add_switch_record",
+        "_update_counters",
+        "get_recent_switches",
+        "__init__",
+        "check_switch_allowance",
+        "__init__",
+        "should_update_funds",
+        "calculate_available_funds",
+        "__init__",
+        "_load_config",
+        "_get_default_config",
+        "evaluate_current_position",
+        "check_perfect_order_breakdown",
+        "should_immediate_switch",
+        "execute_switch_with_risk_control",
+        "update_available_funds_after_drawdown",
+        "_assess_risk_level",
+        "_determine_position_recommendation",
+        "_execute_position_switch",
+        "_estimate_current_portfolio_value",
+        "__init__",
+        "get_switch_recommendation",
+        "execute_recommended_switch",
+        "get_system_status"
+      ],
+      "imports": [
+        "sys",
+        "pathlib",
+        "pandas",
+        "numpy",
+        "typing",
+        "datetime",
+        "json",
+        "logging",
+        "time",
+        "dataclasses",
+        "enum",
+        "market_condition_monitor",
+        "hierarchical_ranking_system",
+        "comprehensive_scoring_engine",
+        "perfect_order_detector",
+        "dssms_data_manager",
+        "config.risk_management",
+        "config.logger_config",
+        "traceback"
+      ],
+      "contains_intelligent_switch_manager": true,
+      "implementation_quality": {
+        "has_docstrings": true,
+        "has_type_hints": true,
+        "has_error_handling": true,
+        "has_logging": true,
+        "has_tests": true,
+        "complexity_score": 76
+      },
+      "last_modified": "2025-08-18T12:52:55.038090"
+    },
+    {
+      "absolute_path": "C:\\Users\\imega\\Documents\\my_backtest_project\\task21_intelligent_switch_manager_diagnosis.py",
+      "relative_path": "task21_intelligent_switch_manager_diagnosis.py",
+      "size_bytes": 8242,
+      "line_count": 202,
+      "classes": [],
+      "functions": [
+        "diagnose_intelligent_switch_manager",
+        "diagnose_switching_frequency_impact"
+      ],
+      "imports": [
+        "logging",
+        "json",
+        "datetime",
+        "pathlib",
+        "src.dssms.dssms_backtester",
+        "src.dssms.dssms_backtester",
+        "inspect"
+      ],
+      "contains_intelligent_switch_manager": true,
+      "implementation_quality": {
+        "has_docstrings": true,
+        "has_type_hints": true,
+        "has_error_handling": true,
+        "has_logging": true,
+        "has_tests": true,
+        "complexity_score": 23
+      },
+      "last_modified": "2025-09-12T11:49:43.123827"
+    },
+    {
+      "absolute_path": "C:\\Users\\imega\\Documents\\my_backtest_project\\task_5_1_intelligent_switch_manager_analysis.py",
+      "relative_path": "task_5_1_intelligent_switch_manager_analysis.py",
+      "size_bytes": 20373,
+      "line_count": 457,
+      "classes": [
+        "IntelligentSwitchManagerAnalyzer"
+      ],
+      "functions": [
+        "main",
+        "__init__",
+        "analyze_intelligent_switch_manager_integration",
+        "_find_intelligent_switch_manager_files",
+        "_analyze_file_structure",
+        "_assess_implementation_quality",
+        "_analyze_dssms_usage_patterns",
+        "_check_isw_imports",
+        "_check_isw_usage",
+        "_extract_initialization_patterns",
+        "_extract_method_calls",
+        "_assess_integration_quality",
+        "_analyze_integration_patterns",
+        "_calculate_average_integration_quality",
+        "_identify_integration_issues",
+        "_generate_recommendations",
+        "_calculate_summary_statistics",
+        "_generate_detailed_report"
+      ],
+      "imports": [
+        "os",
+        "re",
+        "ast",
+        "inspect",
+        "pathlib",
+        "typing",
+        "datetime",
+        "json"
+      ],
+      "contains_intelligent_switch_manager": true,
+      "implementation_quality": {
+        "has_docstrings": true,
+        "has_type_hints": true,
+        "has_error_handling": true,
+        "has_logging": true,
+        "has_tests": true,
+        "complexity_score": 72
+      },
+      "last_modified": "2025-09-14T07:14:12.128265"
+    },
+    {
+      "absolute_path": "C:\\Users\\imega\\Documents\\my_backtest_project\\test_intelligent_switch_manager.py",
+      "relative_path": "test_intelligent_switch_manager.py",
+      "size_bytes": 15040,
+      "line_count": 308,
+      "classes": [],
+      "functions": [
+        "test_intelligent_switch_manager",
+        "test_integration_with_existing_dssms",
+        "main"
+      ],
+      "imports": [
+        "sys",
+        "pathlib",
+        "logging",
+        "traceback",
+        "warnings",
+        "time",
+        "typing",
+        "src.dssms.intelligent_switch_manager",
+        "src.dssms.market_condition_monitor",
+        "src.dssms.hierarchical_ranking_system",
+        "src.dssms.comprehensive_scoring_engine",
+        "src.dssms.intelligent_switch_manager",
+        "json"
+      ],
+      "contains_intelligent_switch_manager": true,
+      "implementation_quality": {
+        "has_docstrings": true,
+        "has_type_hints": true,
+        "has_error_handling": true,
+        "has_logging": true,
+        "has_tests": true,
+        "complexity_score": 24
+      },
+      "last_modified": "2025-08-18T18:13:43.292526"
+    },
+    {
+      "absolute_path": "C:\\Users\\imega\\Documents\\my_backtest_project\\src\\dssms\\intelligent_switch_manager.py",
+      "relative_path": "src\\dssms\\intelligent_switch_manager.py",
+      "size_bytes": 30584,
+      "line_count": 717,
+      "classes": [
+        "SwitchDecision",
+        "PositionEvaluation",
+        "SwitchRecord",
+        "PositionTracker",
+        "SwitchHistoryManager",
+        "DSSMSRiskController",
+        "FundUpdateScheduler",
+        "IntelligentSwitchManager",
+        "DSSMSIntelligentSwitchIntegrator"
+      ],
+      "functions": [
+        "__init__",
+        "add_position",
+        "remove_position",
+        "get_holding_period",
+        "get_current_positions",
+        "__init__",
+        "add_switch_record",
+        "_update_counters",
+        "get_recent_switches",
+        "__init__",
+        "check_switch_allowance",
+        "__init__",
+        "should_update_funds",
+        "calculate_available_funds",
+        "__init__",
+        "_load_config",
+        "_get_default_config",
+        "evaluate_current_position",
+        "check_perfect_order_breakdown",
+        "should_immediate_switch",
+        "execute_switch_with_risk_control",
+        "update_available_funds_after_drawdown",
+        "_assess_risk_level",
+        "_determine_position_recommendation",
+        "_execute_position_switch",
+        "_estimate_current_portfolio_value",
+        "__init__",
+        "get_switch_recommendation",
+        "execute_recommended_switch",
+        "get_system_status"
+      ],
+      "imports": [
+        "sys",
+        "pathlib",
+        "pandas",
+        "numpy",
+        "typing",
+        "datetime",
+        "json",
+        "logging",
+        "time",
+        "dataclasses",
+        "enum",
+        "market_condition_monitor",
+        "hierarchical_ranking_system",
+        "comprehensive_scoring_engine",
+        "perfect_order_detector",
+        "dssms_data_manager",
+        "config.risk_management",
+        "config.logger_config",
+        "traceback"
+      ],
+      "contains_intelligent_switch_manager": true,
+      "implementation_quality": {
+        "has_docstrings": true,
+        "has_type_hints": true,
+        "has_error_handling": true,
+        "has_logging": true,
+        "has_tests": true,
+        "complexity_score": 76
+      },
+      "last_modified": "2025-08-18T12:52:55.038090"
+    },
+    {
+      "absolute_path": "C:\\Users\\imega\\Documents\\my_backtest_project\\src\\dssms\\strategy_based_switch_manager.py",
+      "relative_path": "src\\dssms\\strategy_based_switch_manager.py",
+      "size_bytes": 17640,
+      "line_count": 401,
+      "classes": [
+        "StrategyBasedSwitchManager"
+      ],
+      "functions": [
+        "test_strategy_based_switch_manager",
+        "__init__",
+        "_load_config",
+        "_get_default_config",
+        "can_switch",
+        "should_emergency_exit",
+        "execute_switch",
+        "close_position",
+        "reset_daily_counters",
+        "reset_weekly_counters",
+        "activate_emergency_stop",
+        "deactivate_emergency_stop",
+        "get_current_status",
+        "get_switch_statistics"
+      ],
+      "imports": [
+        "json",
+        "logging",
+        "datetime",
+        "typing",
+        "pandas",
+        "sys",
+        "config.logger_config"
+      ],
+      "contains_intelligent_switch_manager": false,
+      "implementation_quality": {
+        "has_docstrings": true,
+        "has_type_hints": true,
+        "has_error_handling": true,
+        "has_logging": true,
+        "has_tests": true,
+        "complexity_score": 39
+      },
+      "last_modified": "2025-08-21T21:35:29.289683"
+    },
+    {
+      "absolute_path": "C:\\Users\\imega\\Documents\\my_backtest_project\\task21_intelligent_switch_manager_diagnosis.py",
+      "relative_path": "task21_intelligent_switch_manager_diagnosis.py",
+      "size_bytes": 8242,
+      "line_count": 202,
+      "classes": [],
+      "functions": [
+        "diagnose_intelligent_switch_manager",
+        "diagnose_switching_frequency_impact"
+      ],
+      "imports": [
+        "logging",
+        "json",
+        "datetime",
+        "pathlib",
+        "src.dssms.dssms_backtester",
+        "src.dssms.dssms_backtester",
+        "inspect"
+      ],
+      "contains_intelligent_switch_manager": true,
+      "implementation_quality": {
+        "has_docstrings": true,
+        "has_type_hints": true,
+        "has_error_handling": true,
+        "has_logging": true,
+        "has_tests": true,
+        "complexity_score": 23
+      },
+      "last_modified": "2025-09-12T11:49:43.123827"
+    },
+    {
+      "absolute_path": "C:\\Users\\imega\\Documents\\my_backtest_project\\task_5_1_intelligent_switch_manager_analysis.py",
+      "relative_path": "task_5_1_intelligent_switch_manager_analysis.py",
+      "size_bytes": 20373,
+      "line_count": 457,
+      "classes": [
+        "IntelligentSwitchManagerAnalyzer"
+      ],
+      "functions": [
+        "main",
+        "__init__",
+        "analyze_intelligent_switch_manager_integration",
+        "_find_intelligent_switch_manager_files",
+        "_analyze_file_structure",
+        "_assess_implementation_quality",
+        "_analyze_dssms_usage_patterns",
+        "_check_isw_imports",
+        "_check_isw_usage",
+        "_extract_initialization_patterns",
+        "_extract_method_calls",
+        "_assess_integration_quality",
+        "_analyze_integration_patterns",
+        "_calculate_average_integration_quality",
+        "_identify_integration_issues",
+        "_generate_recommendations",
+        "_calculate_summary_statistics",
+        "_generate_detailed_report"
+      ],
+      "imports": [
+        "os",
+        "re",
+        "ast",
+        "inspect",
+        "pathlib",
+        "typing",
+        "datetime",
+        "json"
+      ],
+      "contains_intelligent_switch_manager": true,
+      "implementation_quality": {
+        "has_docstrings": true,
+        "has_type_hints": true,
+        "has_error_handling": true,
+        "has_logging": true,
+        "has_tests": true,
+        "complexity_score": 72
+      },
+      "last_modified": "2025-09-14T07:14:12.128265"
+    },
+    {
+      "absolute_path": "C:\\Users\\imega\\Documents\\my_backtest_project\\test_intelligent_switch_manager.py",
+      "relative_path": "test_intelligent_switch_manager.py",
+      "size_bytes": 15040,
+      "line_count": 308,
+      "classes": [],
+      "functions": [
+        "test_intelligent_switch_manager",
+        "test_integration_with_existing_dssms",
+        "main"
+      ],
+      "imports": [
+        "sys",
+        "pathlib",
+        "logging",
+        "traceback",
+        "warnings",
+        "time",
+        "typing",
+        "src.dssms.intelligent_switch_manager",
+        "src.dssms.market_condition_monitor",
+        "src.dssms.hierarchical_ranking_system",
+        "src.dssms.comprehensive_scoring_engine",
+        "src.dssms.intelligent_switch_manager",
+        "json"
+      ],
+      "contains_intelligent_switch_manager": true,
+      "implementation_quality": {
+        "has_docstrings": true,
+        "has_type_hints": true,
+        "has_error_handling": true,
+        "has_logging": true,
+        "has_tests": true,
+        "complexity_score": 24
+      },
+      "last_modified": "2025-08-18T18:13:43.292526"
+    },
+    {
+      "absolute_path": "C:\\Users\\imega\\Documents\\my_backtest_project\\src\\dssms\\intelligent_switch_manager.py",
+      "relative_path": "src\\dssms\\intelligent_switch_manager.py",
+      "size_bytes": 30584,
+      "line_count": 717,
+      "classes": [
+        "SwitchDecision",
+        "PositionEvaluation",
+        "SwitchRecord",
+        "PositionTracker",
+        "SwitchHistoryManager",
+        "DSSMSRiskController",
+        "FundUpdateScheduler",
+        "IntelligentSwitchManager",
+        "DSSMSIntelligentSwitchIntegrator"
+      ],
+      "functions": [
+        "__init__",
+        "add_position",
+        "remove_position",
+        "get_holding_period",
+        "get_current_positions",
+        "__init__",
+        "add_switch_record",
+        "_update_counters",
+        "get_recent_switches",
+        "__init__",
+        "check_switch_allowance",
+        "__init__",
+        "should_update_funds",
+        "calculate_available_funds",
+        "__init__",
+        "_load_config",
+        "_get_default_config",
+        "evaluate_current_position",
+        "check_perfect_order_breakdown",
+        "should_immediate_switch",
+        "execute_switch_with_risk_control",
+        "update_available_funds_after_drawdown",
+        "_assess_risk_level",
+        "_determine_position_recommendation",
+        "_execute_position_switch",
+        "_estimate_current_portfolio_value",
+        "__init__",
+        "get_switch_recommendation",
+        "execute_recommended_switch",
+        "get_system_status"
+      ],
+      "imports": [
+        "sys",
+        "pathlib",
+        "pandas",
+        "numpy",
+        "typing",
+        "datetime",
+        "json",
+        "logging",
+        "time",
+        "dataclasses",
+        "enum",
+        "market_condition_monitor",
+        "hierarchical_ranking_system",
+        "comprehensive_scoring_engine",
+        "perfect_order_detector",
+        "dssms_data_manager",
+        "config.risk_management",
+        "config.logger_config",
+        "traceback"
+      ],
+      "contains_intelligent_switch_manager": true,
+      "implementation_quality": {
+        "has_docstrings": true,
+        "has_type_hints": true,
+        "has_error_handling": true,
+        "has_logging": true,
+        "has_tests": true,
+        "complexity_score": 76
+      },
+      "last_modified": "2025-08-18T12:52:55.038090"
+    }
+  ],
+  "dssms_usage_patterns": {
+    "files_using_isw": [
+      {
+        "file_path": "analyze_dssms_randomness_impact.py",
+        "size_bytes": 7944,
+        "imports_isw": [],
+        "uses_isw": [
+          "intelligent_switch_manager."
+        ],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 1
+        }
+      },
+      {
+        "file_path": "check_dssms_core_logic.py",
+        "size_bytes": 5990,
+        "imports_isw": [
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "import IntelligentSwitchManager"
+        ],
+        "uses_isw": [
+          "IntelligentSwitchManager(",
+          "switch_manager =",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision"
+        ],
+        "initialization_patterns": [
+          "IntelligentSwitchManager()",
+          "switch_manager = I"
+        ],
+        "method_calls": [
+          "switch_manager.should_switch("
+        ],
+        "integration_quality": {
+          "proper_initialization": true,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 1
+        }
+      },
+      {
+        "file_path": "demo_balanced_dssms.py",
+        "size_bytes": 12564,
+        "imports_isw": [],
+        "uses_isw": [
+          "switch_manager =",
+          "switch_manager ="
+        ],
+        "initialization_patterns": [
+          "switch_manager = StrategyBasedSwitchMa",
+          "switch_manager = StrategyBasedSwitchMa"
+        ],
+        "method_calls": [
+          "switch_manager.reset_daily_counters(",
+          "switch_manager.should_emergency_exit(",
+          "switch_manager.close_position(",
+          "switch_manager.can_switch(",
+          "switch_manager.execute_switch(",
+          "switch_manager.get_current_status(",
+          "switch_manager.get_switch_statistics(",
+          "switch_manager.execute_switch(",
+          "switch_manager.can_switch(",
+          "switch_manager.can_switch(",
+          "switch_manager.close_position("
+        ],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 16
+        }
+      },
+      {
+        "file_path": "demo_dssms_task_1_4.py",
+        "size_bytes": 27449,
+        "imports_isw": [],
+        "uses_isw": [
+          "switch_decision",
+          "switch_decision"
+        ],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "demo_dssms_task_1_4_en.py",
+        "size_bytes": 26887,
+        "imports_isw": [],
+        "uses_isw": [
+          "switch_decision",
+          "switch_decision"
+        ],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "diagnose_dssms_logic.py",
+        "size_bytes": 4531,
+        "imports_isw": [],
+        "uses_isw": [
+          "intelligent_switch_manager."
+        ],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 1
+        }
+      },
+      {
+        "file_path": "dssms_final_validation.py",
+        "size_bytes": 43928,
+        "imports_isw": [],
+        "uses_isw": [
+          "intelligent_switch_manager."
+        ],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 3
+        }
+      },
+      {
+        "file_path": "dssms_strategy_stats_corrector.py",
+        "size_bytes": 27919,
+        "imports_isw": [],
+        "uses_isw": [
+          "switch_decision",
+          "switch_decision"
+        ],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_switch_optimization_patch.py",
+        "size_bytes": 6877,
+        "imports_isw": [],
+        "uses_isw": [
+          "switch_decision"
+        ],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "emergency_dssms_diagnosis.py",
+        "size_bytes": 9283,
+        "imports_isw": [
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "import IntelligentSwitchManager"
+        ],
+        "uses_isw": [
+          "IntelligentSwitchManager(",
+          "switch_manager ="
+        ],
+        "initialization_patterns": [
+          "IntelligentSwitchManager()",
+          "switch_manager = I"
+        ],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": true,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "fix_dssms_critical.py",
+        "size_bytes": 9747,
+        "imports_isw": [],
+        "uses_isw": [
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision"
+        ],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "fix_dssms_data_integration.py",
+        "size_bytes": 11211,
+        "imports_isw": [],
+        "uses_isw": [
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision"
+        ],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "fix_dssms_switching_issue.py",
+        "size_bytes": 12785,
+        "imports_isw": [],
+        "uses_isw": [
+          "switch_decision"
+        ],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "test_dssms_task_1_4_comprehensive.py",
+        "size_bytes": 22317,
+        "imports_isw": [],
+        "uses_isw": [
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision"
+        ],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_analyzer.py",
+        "size_bytes": 49396,
+        "imports_isw": [
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "from intelligent_switch_manager import IntelligentSwitchManager",
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "from intelligent_switch_manager import IntelligentSwitchManager",
+          "import IntelligentSwitchManager",
+          "import IntelligentSwitchManager"
+        ],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_backtester.py",
+        "size_bytes": 133213,
+        "imports_isw": [
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "from intelligent_switch_manager import IntelligentSwitchManager",
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "from intelligent_switch_manager import IntelligentSwitchManager",
+          "import IntelligentSwitchManager",
+          "import IntelligentSwitchManager"
+        ],
+        "uses_isw": [
+          "IntelligentSwitchManager(",
+          "switch_manager =",
+          "switch_manager =",
+          "switch_manager =",
+          ".switch_manager",
+          ".switch_manager",
+          ".switch_manager",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision"
+        ],
+        "initialization_patterns": [
+          "IntelligentSwitchManager()",
+          "switch_manager = I",
+          "switch_manager = ",
+          "switch_manager = ",
+          "self.switch_manager = I",
+          "self.switch_manager = ",
+          "self.switch_manager = "
+        ],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": true,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_backtester_backup.py",
+        "size_bytes": 78129,
+        "imports_isw": [
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "from intelligent_switch_manager import IntelligentSwitchManager",
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "from intelligent_switch_manager import IntelligentSwitchManager",
+          "import IntelligentSwitchManager",
+          "import IntelligentSwitchManager"
+        ],
+        "uses_isw": [
+          "IntelligentSwitchManager(",
+          "switch_manager =",
+          "switch_manager =",
+          "switch_manager =",
+          ".switch_manager",
+          ".switch_manager",
+          ".switch_manager",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision"
+        ],
+        "initialization_patterns": [
+          "IntelligentSwitchManager()",
+          "switch_manager = I",
+          "switch_manager = ",
+          "switch_manager = ",
+          "self.switch_manager = I",
+          "self.switch_manager = ",
+          "self.switch_manager = "
+        ],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": true,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_backtester_backup_20250828_222919.py",
+        "size_bytes": 66727,
+        "imports_isw": [
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "from intelligent_switch_manager import IntelligentSwitchManager",
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "from intelligent_switch_manager import IntelligentSwitchManager",
+          "import IntelligentSwitchManager",
+          "import IntelligentSwitchManager"
+        ],
+        "uses_isw": [
+          "IntelligentSwitchManager(",
+          "switch_manager =",
+          "switch_manager =",
+          "switch_manager =",
+          ".switch_manager",
+          ".switch_manager",
+          ".switch_manager",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision"
+        ],
+        "initialization_patterns": [
+          "IntelligentSwitchManager()",
+          "switch_manager = I",
+          "switch_manager = ",
+          "switch_manager = ",
+          "self.switch_manager = I",
+          "self.switch_manager = ",
+          "self.switch_manager = "
+        ],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": true,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_backtester_v2.py",
+        "size_bytes": 31705,
+        "imports_isw": [],
+        "uses_isw": [
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision"
+        ],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_backtester_v2_updated.py",
+        "size_bytes": 29102,
+        "imports_isw": [],
+        "uses_isw": [
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision"
+        ],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_scheduler.py",
+        "size_bytes": 22413,
+        "imports_isw": [
+          "from .intelligent_switch_manager import IntelligentSwitchManager",
+          "from .intelligent_switch_manager import IntelligentSwitchManager",
+          "import IntelligentSwitchManager"
+        ],
+        "uses_isw": [
+          "IntelligentSwitchManager("
+        ],
+        "initialization_patterns": [
+          "IntelligentSwitchManager()"
+        ],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": true,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_strategy_integration_manager.py",
+        "size_bytes": 28151,
+        "imports_isw": [
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "import IntelligentSwitchManager"
+        ],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_switch_coordinator_v2.py",
+        "size_bytes": 29411,
+        "imports_isw": [
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "from src.dssms.intelligent_switch_manager import IntelligentSwitchManager",
+          "import IntelligentSwitchManager",
+          "import IntelligentSwitchManager"
+        ],
+        "uses_isw": [
+          "IntelligentSwitchManager(",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision"
+        ],
+        "initialization_patterns": [
+          "IntelligentSwitchManager()"
+        ],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": true,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_switch_engine_v2.py",
+        "size_bytes": 47086,
+        "imports_isw": [],
+        "uses_isw": [
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision",
+          "switch_decision"
+        ],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      }
+    ],
+    "files_not_using_isw": [
+      {
+        "file_path": "analyze_dssms_structure.py",
+        "size_bytes": 8182,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "analyze_dssms_variance.py",
+        "size_bytes": 5629,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "analyze_dssms_variance_detailed.py",
+        "size_bytes": 7213,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "analyze_fixed_dssms_excel.py",
+        "size_bytes": 7734,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "analyze_latest_dssms_excel_issues.py",
+        "size_bytes": 10722,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "backup_dssms_excel_exporter_v2_20250908_161750.py",
+        "size_bytes": 34173,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "backup_dssms_excel_exporter_v2_20250908_161857.py",
+        "size_bytes": 34173,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "check_dssms_calculation_logic.py",
+        "size_bytes": 7105,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": false,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "create_dssms_fixes.py",
+        "size_bytes": 7357,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "create_minimal_dssms_test.py",
+        "size_bytes": 7452,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "debug_dssms_issue.py",
+        "size_bytes": 5819,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "debug_dssms_output.py",
+        "size_bytes": 3395,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "demo_dssms_enhanced_reporting.py",
+        "size_bytes": 18298,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "demo_dssms_excel_output.py",
+        "size_bytes": 2723,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "demo_dssms_phase1.py",
+        "size_bytes": 5330,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": false,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "demo_dssms_phase2.py",
+        "size_bytes": 11108,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "demo_dssms_task34_integration.py",
+        "size_bytes": 16315,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "demo_dssms_task_2_4_integration.py",
+        "size_bytes": 11030,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_comprehensive_issue_analyzer.py",
+        "size_bytes": 50192,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_emergency_patch.py",
+        "size_bytes": 19889,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_enhanced_excel_exporter.py",
+        "size_bytes": 7116,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_excel_fix_phase2.py",
+        "size_bytes": 12652,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_excel_fix_phase3.py",
+        "size_bytes": 8102,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_final_check.py",
+        "size_bytes": 9973,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_holding_period_fixer.py",
+        "size_bytes": 15133,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_integration_fix.py",
+        "size_bytes": 7729,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_operational_test.py",
+        "size_bytes": 14149,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_result_check.py",
+        "size_bytes": 8534,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_strategy_stats_analyzer.py",
+        "size_bytes": 21729,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_success_report.py",
+        "size_bytes": 6969,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_task_2_1_compatibility_patch.py",
+        "size_bytes": 12397,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_task_2_1_integration_manager.py",
+        "size_bytes": 23727,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_task_2_3_integration_test_suite.py",
+        "size_bytes": 26551,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_task_2_3_main_controller.py",
+        "size_bytes": 20310,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_task_2_3_performance_optimizer.py",
+        "size_bytes": 17113,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_task_2_3_quality_assurance.py",
+        "size_bytes": 24989,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_test_helper.py",
+        "size_bytes": 2432,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_trade_history_analyzer.py",
+        "size_bytes": 20606,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_trade_history_fixer.py",
+        "size_bytes": 27421,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_unified_output_engine.py",
+        "size_bytes": 43812,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_unified_output_engine_fixed.py",
+        "size_bytes": 34675,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_unified_output_engine_fixed_v3.py",
+        "size_bytes": 0,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": false,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "dssms_unified_output_engine_fixed_v4.py",
+        "size_bytes": 23725,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "final_dssms_verification.py",
+        "size_bytes": 3821,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "fix_dssms_excel_phase1.py",
+        "size_bytes": 7784,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "fix_dssms_issues.py",
+        "size_bytes": 6307,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "fix_dssms_perfect_order.py",
+        "size_bytes": 17205,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "fix_dssms_return_calculation.py",
+        "size_bytes": 7330,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "fix_dssms_return_final.py",
+        "size_bytes": 6437,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "fix_dssms_strategy_statistics.py",
+        "size_bytes": 9627,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": false,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "investigate_dssms_data_flow.py",
+        "size_bytes": 21067,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "investigate_dssms_production_variance.py",
+        "size_bytes": 33338,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "minimal_dssms_test.py",
+        "size_bytes": 6764,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "patch_dssms_backtester.py",
+        "size_bytes": 2400,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "run_dssms_task_2_3.py",
+        "size_bytes": 4170,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "test_deterministic_dssms.py",
+        "size_bytes": 5282,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "test_dssms_backtester_v2.py",
+        "size_bytes": 10234,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "test_dssms_excel_output.py",
+        "size_bytes": 10174,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "test_dssms_excel_v2.py",
+        "size_bytes": 11605,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "test_dssms_phase1.py",
+        "size_bytes": 12144,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "test_dssms_phase2.py",
+        "size_bytes": 21919,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": false,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "test_dssms_scheduler.py",
+        "size_bytes": 14274,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "test_dssms_switch_optimization.py",
+        "size_bytes": 2640,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "test_full_dssms_consistency.py",
+        "size_bytes": 6170,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "verify_dssms_fix.py",
+        "size_bytes": 7884,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "analysis\\dssms_comparison_analysis_engine.py",
+        "size_bytes": 36558,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "analysis\\dssms_comparison_report_generator.py",
+        "size_bytes": 44713,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "output\\dssms_excel_exporter_v2.py",
+        "size_bytes": 38236,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_data_bridge.py",
+        "size_bytes": 11317,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_data_diagnostics.py",
+        "size_bytes": 17829,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_data_integration_enhancer.py",
+        "size_bytes": 19406,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_data_manager.py",
+        "size_bytes": 19110,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_emergency_backtester.py",
+        "size_bytes": 9032,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_integration_demo.py",
+        "size_bytes": 31385,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_integration_patch.py",
+        "size_bytes": 2711,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": false,
+          "error_handling": true,
+          "logging_integration": false,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_issue_detector_fixer.py",
+        "size_bytes": 31459,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_performance_calculator_v2.py",
+        "size_bytes": 32046,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_portfolio_calculator_v2.py",
+        "size_bytes": 35733,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_quick_fix_integration_manager.py",
+        "size_bytes": 21775,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_simulation_quality_manager.py",
+        "size_bytes": 29102,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_staged_validator.py",
+        "size_bytes": 31266,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\dssms_strategy_bridge.py",
+        "size_bytes": 23872,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\dssms\\strategy_dssms_coordinator.py",
+        "size_bytes": 26103,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\reports\\dssms_enhanced_reporter.py",
+        "size_bytes": 43179,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      },
+      {
+        "file_path": "src\\testing\\dssms_validation_framework.py",
+        "size_bytes": 13018,
+        "imports_isw": [],
+        "uses_isw": [],
+        "initialization_patterns": [],
+        "method_calls": [],
+        "integration_quality": {
+          "proper_initialization": false,
+          "configuration_setup": true,
+          "error_handling": true,
+          "logging_integration": true,
+          "method_utilization_score": 0
+        }
+      }
+    ],
+    "import_patterns": {},
+    "usage_contexts": {}
+  },
+  "integration_analysis": {
+    "implementation_distribution": {
+      "total_implementations": 13,
+      "functional_implementations": 12,
+      "average_file_size": 18489.0,
+      "implementation_complexity": 624
+    },
+    "usage_distribution": {
+      "total_dssms_files": 109,
+      "files_using_isw": 24,
+      "files_not_using_isw": 85,
+      "usage_rate": 22.018348623853214
+    },
+    "integration_health": {
+      "has_implementations": true,
+      "has_usage": true,
+      "implementation_usage_ratio": 1.8461538461538463,
+      "average_integration_quality": 75.0
+    },
+    "version_consistency": {}
+  },
+  "identified_issues": [
+    {
+      "type": "low_usage_rate",
+      "severity": "high",
+      "description": "DSSMSファイルでのISW利用率が低い (22.0%)",
+      "impact": "一貫性のない銘柄切替処理"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "high",
+      "action": "DSSMS統合の標準化",
+      "description": "全DSSMSバックテスターでISMを統一利用する標準パターンを確立",
+      "estimated_effort": "中（2-3日）"
+    }
+  ],
+  "summary_statistics": {
+    "total_isw_implementations": 13,
+    "total_dssms_files": 109,
+    "files_with_isw": 24,
+    "integration_coverage": 22.018348623853214,
+    "critical_issues": 0,
+    "high_issues": 1,
+    "medium_issues": 0,
+    "total_issues": 1,
+    "overall_health_score": 75
+  }
+}

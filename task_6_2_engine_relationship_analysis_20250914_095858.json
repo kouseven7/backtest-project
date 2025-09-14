@@ -1,0 +1,601 @@
+{
+  "analysis_results": {
+    "discovered_files": {
+      "engine_files": [
+        "active_engine_impact_analyzer.py",
+        "backup_unified_output_engine_20250908_162227.py",
+        "backup_unified_output_engine_20250908_162552.py",
+        "context_engine_excel_impact_analyzer.py",
+        "demo_task_2_2_performance_engine_test.py",
+        "demo_unified_output_engine.py",
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "task_1_3_unified_engine_analysis.py",
+        "task_5_3_engine_coexistence_analysis.py",
+        "task_5_5_engine_quality_gap_analysis.py",
+        "task_6_1_current_engine_detailed_analysis.py",
+        "task_6_2_engine_relationship_analyzer.py",
+        "test_comprehensive_scoring_engine.py",
+        "analysis\\dssms_comparison_analysis_engine.py",
+        "analysis\\temporal_analysis_engine.py",
+        "config\\composite_backtest_engine.py",
+        "config\\composite_strategy_execution_engine.py",
+        "config\\metric_normalization_engine.py",
+        "config\\portfolio_weight_pattern_engine.py",
+        "config\\portfolio_weight_pattern_engine_v2.py",
+        "config\\realtime_update_engine.py",
+        "config\\resource_allocation_engine.py",
+        "config\\rule_engine_integrated_interface.py",
+        "config\\strategy_selection_rule_engine.py",
+        "config_backup\\composite_backtest_engine.py",
+        "config_backup\\composite_strategy_execution_engine.py",
+        "config_backup\\metric_normalization_engine.py",
+        "config_backup\\portfolio_weight_pattern_engine.py",
+        "config_backup\\portfolio_weight_pattern_engine_v2.py",
+        "config_backup\\realtime_update_engine.py",
+        "config_backup\\resource_allocation_engine.py",
+        "config_backup\\rule_engine_integrated_interface.py",
+        "config_backup\\strategy_selection_rule_engine.py",
+        "tests\\test_rule_engine_implementation.py",
+        "time-decay-optimization-project\\src\\core\\weighting_engine.py",
+        "strategy-comparison-interface\\src\\comparison\\ranking_engine.py",
+        "src\\analysis\\temporal_analysis_engine.py",
+        "src\\dssms\\comprehensive_scoring_engine.py",
+        "src\\dssms\\data_cleaning_engine.py",
+        "src\\dssms\\dssms_switch_engine_v2.py",
+        "src\\dssms\\hierarchical_switch_decision_engine.py",
+        "src\\dssms\\hybrid_ranking_engine.py",
+        "src\\dssms\\quality_assurance_engine.py",
+        "src\\dssms\\realtime_execution_engine.py",
+        "src\\dssms\\unified_output_engine.py",
+        "src\\reports\\comprehensive\\comprehensive_report_engine.py",
+        "src\\dssms\\advanced_ranking_system\\advanced_ranking_engine.py",
+        "src\\analysis\\comparison\\comparison_engine.py",
+        "src\\analysis\\trend_error_impact\\error_classification_engine.py",
+        "config_backup\\portfolio_correlation_optimizer\\optimization_engine.py",
+        "config_backup\\portfolio_var_calculator\\advanced_var_engine.py",
+        "config_backup\\portfolio_var_calculator\\var_backtesting_engine.py",
+        "config_backup\\trend_precision_adjustment\\correction_engine.py",
+        "config\\portfolio_correlation_optimizer\\optimization_engine.py",
+        "config\\portfolio_var_calculator\\advanced_var_engine.py",
+        "config\\portfolio_var_calculator\\var_backtesting_engine.py",
+        "config\\trend_precision_adjustment\\correction_engine.py",
+        "analysis\\trend_error_impact\\error_classification_engine.py",
+        ".venv\\Lib\\site-packages\\cffi\\vengine_cpy.py",
+        ".venv\\Lib\\site-packages\\cffi\\vengine_gen.py",
+        ".venv\\Lib\\site-packages\\matplotlib\\layout_engine.py",
+        ".venv\\Lib\\site-packages\\pip\\_vendor\\urllib3\\contrib\\appengine.py",
+        ".venv\\Lib\\site-packages\\pip\\_vendor\\urllib3\\contrib\\_appengine_environ.py",
+        ".venv\\Lib\\site-packages\\pandas\\tests\\indexes\\test_engines.py",
+        ".venv\\Lib\\site-packages\\pandas\\core\\computation\\engines.py",
+        "backup_unified_output_engine_20250908_162227.py",
+        "backup_unified_output_engine_20250908_162552.py",
+        "demo_unified_output_engine.py",
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "src\\dssms\\unified_output_engine.py",
+        "backup_unified_output_engine_20250908_162227.py",
+        "backup_unified_output_engine_20250908_162552.py",
+        "demo_unified_output_engine.py",
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "task_1_3_unified_engine_analysis.py",
+        "src\\dssms\\unified_output_engine.py",
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "analysis\\dssms_comparison_analysis_engine.py",
+        "src\\dssms\\dssms_switch_engine_v2.py"
+      ],
+      "output_files": [
+        "backup_unified_output_engine_20250908_162227.py",
+        "backup_unified_output_engine_20250908_162552.py",
+        "demo_unified_output_engine.py",
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "src\\dssms\\unified_output_engine.py",
+        "backup_unified_output_engine_20250908_162227.py",
+        "backup_unified_output_engine_20250908_162552.py",
+        "debug_dssms_output.py",
+        "debug_excel_output.py",
+        "demo_dssms_excel_output.py",
+        "demo_unified_output_engine.py",
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "excel_output_investigation_completion_report.py",
+        "test_dssms_excel_output.py",
+        "test_excel_output.py",
+        "examples\\demo_simple_excel_output.py",
+        "tests\\test_excel_output_fixes.py",
+        "src\\dssms\\output_data_model.py",
+        "src\\dssms\\output_data_validator.py",
+        "src\\dssms\\output_validator.py",
+        "src\\dssms\\unified_output_config.py",
+        "src\\dssms\\unified_output_engine.py",
+        ".venv\\Lib\\site-packages\\sklearn\\multioutput.py",
+        ".venv\\Lib\\site-packages\\sklearn\\tests\\test_multioutput.py",
+        ".venv\\Lib\\site-packages\\sklearn\\utils\\_set_output.py",
+        ".venv\\Lib\\site-packages\\sklearn\\utils\\tests\\test_set_output.py",
+        "backup_unified_output_engine_20250908_162227.py",
+        "backup_unified_output_engine_20250908_162552.py",
+        "demo_unified_output_engine.py",
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "src\\dssms\\unified_output_config.py",
+        "src\\dssms\\unified_output_engine.py",
+        "debug_dssms_output.py",
+        "demo_dssms_excel_output.py",
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "test_dssms_excel_output.py"
+      ],
+      "unified_files": [
+        "backup_unified_output_engine_20250908_162227.py",
+        "backup_unified_output_engine_20250908_162552.py",
+        "demo_unified_output_engine.py",
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "task_1_3_unified_engine_analysis.py",
+        "src\\dssms\\unified_output_engine.py",
+        "backup_unified_output_engine_20250908_162227.py",
+        "backup_unified_output_engine_20250908_162552.py",
+        "demo_unified_output_engine.py",
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "src\\dssms\\unified_output_config.py",
+        "src\\dssms\\unified_output_engine.py",
+        "backup_unified_output_engine_20250908_162227.py",
+        "backup_unified_output_engine_20250908_162552.py",
+        "demo_unified_output_engine.py",
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "task_1_3_unified_engine_analysis.py",
+        "indicators\\unified_trend_detector.py",
+        "tests\\test_unified_trend_detector.py",
+        "src\\dssms\\unified_output_config.py",
+        "src\\dssms\\unified_output_engine.py",
+        "src\\indicators\\unified_trend_detector.py",
+        "config\\enhanced_risk_management\\unified_risk_monitor.py",
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py"
+      ],
+      "dssms_files": [
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "analysis\\dssms_comparison_analysis_engine.py",
+        "src\\dssms\\dssms_switch_engine_v2.py",
+        "debug_dssms_output.py",
+        "demo_dssms_excel_output.py",
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "test_dssms_excel_output.py",
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "analyze_dssms_randomness_impact.py",
+        "analyze_dssms_structure.py",
+        "analyze_dssms_variance.py",
+        "analyze_dssms_variance_detailed.py",
+        "analyze_fixed_dssms_excel.py",
+        "analyze_latest_dssms_excel_issues.py",
+        "backup_dssms_excel_exporter_v2_20250908_161750.py",
+        "backup_dssms_excel_exporter_v2_20250908_161857.py",
+        "check_dssms_calculation_logic.py",
+        "check_dssms_core_logic.py",
+        "create_dssms_fixes.py",
+        "create_minimal_dssms_test.py",
+        "debug_dssms_issue.py",
+        "debug_dssms_output.py",
+        "demo_balanced_dssms.py",
+        "demo_dssms_enhanced_reporting.py",
+        "demo_dssms_excel_output.py",
+        "demo_dssms_phase1.py",
+        "demo_dssms_phase2.py",
+        "demo_dssms_task34_integration.py",
+        "demo_dssms_task_1_4.py",
+        "demo_dssms_task_1_4_en.py",
+        "demo_dssms_task_2_4_integration.py",
+        "diagnose_dssms_logic.py",
+        "dssms_comprehensive_issue_analyzer.py",
+        "dssms_emergency_patch.py",
+        "dssms_enhanced_excel_exporter.py",
+        "dssms_excel_fix_phase2.py",
+        "dssms_excel_fix_phase3.py",
+        "dssms_final_check.py",
+        "dssms_final_validation.py",
+        "dssms_holding_period_fixer.py",
+        "dssms_integration_fix.py",
+        "dssms_operational_test.py",
+        "dssms_result_check.py",
+        "dssms_strategy_stats_analyzer.py",
+        "dssms_strategy_stats_corrector.py",
+        "dssms_success_report.py",
+        "dssms_switch_optimization_patch.py",
+        "dssms_task_2_1_compatibility_patch.py",
+        "dssms_task_2_1_integration_manager.py",
+        "dssms_task_2_3_integration_test_suite.py",
+        "dssms_task_2_3_main_controller.py",
+        "dssms_task_2_3_performance_optimizer.py",
+        "dssms_task_2_3_quality_assurance.py",
+        "dssms_test_helper.py",
+        "dssms_trade_history_analyzer.py",
+        "dssms_trade_history_fixer.py",
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py",
+        "emergency_dssms_diagnosis.py",
+        "final_dssms_verification.py",
+        "fix_dssms_critical.py",
+        "fix_dssms_data_integration.py",
+        "fix_dssms_excel_phase1.py",
+        "fix_dssms_issues.py",
+        "fix_dssms_perfect_order.py",
+        "fix_dssms_return_calculation.py",
+        "fix_dssms_return_final.py",
+        "fix_dssms_strategy_statistics.py",
+        "fix_dssms_switching_issue.py",
+        "investigate_dssms_data_flow.py",
+        "investigate_dssms_production_variance.py",
+        "minimal_dssms_test.py",
+        "patch_dssms_backtester.py",
+        "run_dssms_task_2_3.py",
+        "test_deterministic_dssms.py",
+        "test_dssms_backtester_v2.py",
+        "test_dssms_excel_output.py",
+        "test_dssms_excel_v2.py",
+        "test_dssms_phase1.py",
+        "test_dssms_phase2.py",
+        "test_dssms_scheduler.py",
+        "test_dssms_switch_optimization.py",
+        "test_dssms_task_1_4_comprehensive.py",
+        "test_full_dssms_consistency.py",
+        "verify_dssms_fix.py",
+        "analysis\\dssms_comparison_analysis_engine.py",
+        "analysis\\dssms_comparison_report_generator.py",
+        "output\\dssms_excel_exporter_v2.py",
+        "src\\dssms\\dssms_analyzer.py",
+        "src\\dssms\\dssms_backtester.py",
+        "src\\dssms\\dssms_backtester_backup.py",
+        "src\\dssms\\dssms_backtester_backup_20250828_222919.py",
+        "src\\dssms\\dssms_backtester_v2.py",
+        "src\\dssms\\dssms_backtester_v2_updated.py",
+        "src\\dssms\\dssms_data_bridge.py",
+        "src\\dssms\\dssms_data_diagnostics.py",
+        "src\\dssms\\dssms_data_integration_enhancer.py",
+        "src\\dssms\\dssms_data_manager.py",
+        "src\\dssms\\dssms_emergency_backtester.py",
+        "src\\dssms\\dssms_integration_demo.py",
+        "src\\dssms\\dssms_integration_patch.py",
+        "src\\dssms\\dssms_issue_detector_fixer.py",
+        "src\\dssms\\dssms_performance_calculator_v2.py",
+        "src\\dssms\\dssms_portfolio_calculator_v2.py",
+        "src\\dssms\\dssms_quick_fix_integration_manager.py",
+        "src\\dssms\\dssms_scheduler.py",
+        "src\\dssms\\dssms_simulation_quality_manager.py",
+        "src\\dssms\\dssms_staged_validator.py",
+        "src\\dssms\\dssms_strategy_bridge.py",
+        "src\\dssms\\dssms_strategy_integration_manager.py",
+        "src\\dssms\\dssms_switch_coordinator_v2.py",
+        "src\\dssms\\dssms_switch_engine_v2.py",
+        "src\\dssms\\strategy_dssms_coordinator.py",
+        "src\\reports\\dssms_enhanced_reporter.py",
+        "src\\testing\\dssms_validation_framework.py"
+      ]
+    },
+    "important_engines": {
+      "dssms_unified_output_engine.py": {
+        "exists": true,
+        "size": 43812,
+        "modified": "2025-09-08 20:29:12.312231",
+        "location": "root"
+      },
+      "dssms_unified_output_engine_fixed.py": {
+        "exists": true,
+        "size": 34675,
+        "modified": "2025-09-09 00:23:15.250638",
+        "location": "root"
+      },
+      "dssms_unified_output_engine_fixed_v3.py": {
+        "exists": true,
+        "size": 0,
+        "modified": "2025-09-09 20:53:31.661721",
+        "location": "root"
+      },
+      "dssms_unified_output_engine_fixed_v4.py": {
+        "exists": true,
+        "size": 23725,
+        "modified": "2025-09-09 00:23:15.250638",
+        "location": "root"
+      },
+      "src/dssms/unified_output_engine.py": {
+        "exists": true,
+        "size": 59083,
+        "modified": "2025-09-08 20:29:12.286999",
+        "location": "src_directory"
+      }
+    },
+    "task42_relationship": {
+      "task42_engines": [
+        "dssms_unified_output_engine.py",
+        "dssms_unified_output_engine_fixed.py",
+        "dssms_unified_output_engine_fixed_v3.py",
+        "dssms_unified_output_engine_fixed_v4.py"
+      ],
+      "relationship_analysis": {
+        "dssms_unified_output_engine.py": {
+          "in_task42": true,
+          "exists_now": true,
+          "current_location": "root_directory",
+          "relationship_type": "significant_changes",
+          "current_size": 43812,
+          "last_modified": "2025-09-08 20:29:12.312231"
+        },
+        "dssms_unified_output_engine_fixed.py": {
+          "in_task42": true,
+          "exists_now": true,
+          "current_location": "root_directory",
+          "relationship_type": "significant_changes",
+          "current_size": 34675,
+          "last_modified": "2025-09-09 00:23:15.250638"
+        },
+        "dssms_unified_output_engine_fixed_v3.py": {
+          "in_task42": true,
+          "exists_now": true,
+          "current_location": "root_directory",
+          "relationship_type": "identical",
+          "current_size": 0,
+          "last_modified": "2025-09-09 20:53:31.661721"
+        },
+        "dssms_unified_output_engine_fixed_v4.py": {
+          "in_task42": true,
+          "exists_now": true,
+          "current_location": "root_directory",
+          "relationship_type": "significant_changes",
+          "current_size": 23725,
+          "last_modified": "2025-09-09 00:23:15.250638"
+        }
+      },
+      "current_engine": "dssms_unified_output_engine",
+      "task42_highest_score": {
+        "engine": "dssms_unified_output_engine.py",
+        "score": 85.0,
+        "same_as_current": false
+      }
+    },
+    "usage_analysis": {
+      "backtester_imports": [
+        "from src.dssms.comprehensive_scoring_engine import ComprehensiveScoringEngine",
+        "from comprehensive_scoring_engine import ComprehensiveScoringEngine",
+        "from dssms_unified_output_engine import DSSMSUnifiedOutputEngine"
+      ],
+      "engine_calls": [
+        "ComprehensiveScoringEngine",
+        "DSSMSUnifiedOutputEngine",
+        "engine",
+        "engine",
+        "output",
+        "output_files",
+        "output_files"
+      ],
+      "actual_execution_flow": {
+        "primary_engine": "unified_output_engine"
+      }
+    },
+    "dependencies": {
+      "inheritance_chain": {
+        "dssms_unified_output_engine.py": [],
+        "dssms_unified_output_engine_fixed.py": [],
+        "dssms_unified_output_engine_fixed_v3.py": [],
+        "dssms_unified_output_engine_fixed_v4.py": []
+      },
+      "import_dependencies": {
+        "dssms_unified_output_engine.py": [
+          "import pandas as pd",
+          "import json",
+          "import numpy as np",
+          "from datetime import datetime, timedelta",
+          "from typing import Dict, Any, Optional, List, Tuple",
+          "from pathlib import Path",
+          "import logging",
+          "import sys",
+          "from src.dssms.dssms_backtester import DSSMSBacktester",
+          "from datetime import datetime",
+          "import traceback",
+          "from calendar import monthrange",
+          "from calendar import monthrange"
+        ],
+        "dssms_unified_output_engine_fixed.py": [
+          "import pandas as pd",
+          "import json",
+          "import numpy as np",
+          "from datetime import datetime, timedelta",
+          "from typing import Dict, Any, Optional, List, Tuple",
+          "from pathlib import Path",
+          "import logging",
+          "import sys",
+          "from src.dssms.dssms_backtester import DSSMSBacktester",
+          "from datetime import datetime",
+          "import traceback",
+          "import traceback",
+          "import openpyxl",
+          "from openpyxl.styles import Font, PatternFill, Alignment"
+        ],
+        "dssms_unified_output_engine_fixed_v3.py": [],
+        "dssms_unified_output_engine_fixed_v4.py": [
+          "import pandas as pd",
+          "import json",
+          "import numpy as np",
+          "from datetime import datetime, timedelta",
+          "from typing import Dict, Any, Optional, List, Tuple",
+          "from pathlib import Path",
+          "import logging",
+          "import traceback"
+        ]
+      },
+      "version_evolution": {
+        "dssms_unified_output_engine.py": "original_version",
+        "dssms_unified_output_engine_fixed.py": "bug_fix_version",
+        "dssms_unified_output_engine_fixed_v3.py": "intermediate_version",
+        "dssms_unified_output_engine_fixed_v4.py": "latest_version"
+      }
+    },
+    "excel_responsibility": {
+      "responsible_engine": "dssms_unified_output_engine.py",
+      "excel_generation_methods": {
+        "dssms_unified_output_engine.py": {
+          "excel_methods": [
+            ".xlsx",
+            "_generate_excel_output",
+            "openpyxl"
+          ],
+          "has_excel_capability": true,
+          "openpyxl_usage": true,
+          "xlsx_references": 1
+        },
+        "dssms_unified_output_engine_fixed.py": {
+          "excel_methods": [
+            ".xlsx",
+            "_generate_excel_output",
+            "openpyxl"
+          ],
+          "has_excel_capability": true,
+          "openpyxl_usage": true,
+          "xlsx_references": 1
+        },
+        "dssms_unified_output_engine_fixed_v3.py": {
+          "excel_methods": [],
+          "has_excel_capability": false,
+          "openpyxl_usage": false,
+          "xlsx_references": 0
+        },
+        "dssms_unified_output_engine_fixed_v4.py": {
+          "excel_methods": [
+            ".xlsx",
+            "_generate_complete_excel_output",
+            "openpyxl"
+          ],
+          "has_excel_capability": true,
+          "openpyxl_usage": true,
+          "xlsx_references": 1
+        }
+      },
+      "output_flow": {},
+      "confidence_score": 17
+    },
+    "confusion_problems": {
+      "identified_problems": [
+        {
+          "problem": "multiple_similar_engines",
+          "description": "5個の類似エンジンファイルが並存",
+          "files": [
+            "dssms_unified_output_engine.py",
+            "dssms_unified_output_engine_fixed.py",
+            "dssms_unified_output_engine_fixed_v3.py",
+            "dssms_unified_output_engine_fixed_v4.py",
+            "src/dssms/unified_output_engine.py"
+          ],
+          "severity": "high"
+        },
+        {
+          "problem": "task42_current_engine_mismatch",
+          "description": "Task 4.2の最高スコアエンジンと現在使用中エンジンが異なる",
+          "task42_best": "dssms_unified_output_engine.py",
+          "current": "dssms_unified_output_engine",
+          "severity": "critical"
+        },
+        {
+          "problem": "mixed_engine_locations",
+          "description": "エンジンファイルがルートディレクトリとsrcディレクトリに分散",
+          "root_engines": [
+            "dssms_unified_output_engine.py",
+            "dssms_unified_output_engine_fixed.py",
+            "dssms_unified_output_engine_fixed_v3.py",
+            "dssms_unified_output_engine_fixed_v4.py"
+          ],
+          "src_engines": [
+            "src/dssms/unified_output_engine.py"
+          ],
+          "severity": "medium"
+        }
+      ],
+      "confusion_sources": {
+        "version_proliferation": true,
+        "lack_of_cleanup": true,
+        "unclear_primary_engine": false,
+        "inconsistent_task_results": true
+      },
+      "resolution_priorities": {
+        "multiple_similar_engines": 2,
+        "task42_current_engine_mismatch": 1,
+        "mixed_engine_locations": 3
+      }
+    }
+  },
+  "summary": {
+    "critical_findings": [
+      "🚨 Task 4.2の最高スコアエンジン(85.0点)と現在使用中エンジンが異なる"
+    ],
+    "engine_status": {
+      "dssms_unified_output_engine.py": {
+        "status": "active",
+        "size": 43812,
+        "location": "root"
+      },
+      "dssms_unified_output_engine_fixed.py": {
+        "status": "active",
+        "size": 34675,
+        "location": "root"
+      },
+      "dssms_unified_output_engine_fixed_v3.py": {
+        "status": "active",
+        "size": 0,
+        "location": "root"
+      },
+      "dssms_unified_output_engine_fixed_v4.py": {
+        "status": "active",
+        "size": 23725,
+        "location": "root"
+      },
+      "src/dssms/unified_output_engine.py": {
+        "status": "active",
+        "size": 59083,
+        "location": "src_directory"
+      }
+    },
+    "recommendations": [
+      "1. Critical問題の即座解決（エンジン不一致問題）",
+      "2. 不要エンジンファイルの整理（5個→1-2個）",
+      "3. Excel出力責任エンジンの明確化",
+      "4. エンジンファイル配置の標準化"
+    ]
+  }
+}

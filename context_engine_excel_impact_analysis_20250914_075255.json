@@ -1,0 +1,467 @@
+{
+  "dssms_unified_output_engine.py": {
+    "file_info": {
+      "size_bytes": 37776,
+      "line_count": 901,
+      "exists": true
+    },
+    "excel_impact": {
+      "impact_score": 29,
+      "found_keywords": [
+        "excel: 20",
+        "xlsx: 1",
+        "openpyxl: 1",
+        "ExcelWriter: 1",
+        "to_excel: 6"
+      ],
+      "has_excel_functionality": true
+    },
+    "current_usage": {
+      "main.py": {
+        "is_imported": false,
+        "import_count": 0
+      },
+      "src/dssms/dssms_backtester.py": {
+        "is_imported": true,
+        "import_count": 1
+      },
+      "src/dssms/dssms_backtester_v2.py": {
+        "is_imported": false,
+        "import_count": 0
+      }
+    },
+    "implementation_status": {
+      "status": "well_implemented",
+      "severity": "low",
+      "implemented_methods": [
+        "generate_excel",
+        "_generate_excel_output",
+        "to_excel",
+        "excel_output"
+      ]
+    },
+    "excel_output_methods": [
+      {
+        "line_number": 460,
+        "method_name": "def _generate_excel_output(self, output_dir: str) -> str:",
+        "context": [
+          "    ",
+          "    def _generate_excel_output(self, output_dir: str) -> str:",
+          "        \"\"\"Excel出力の生成\"\"\"",
+          "        excel_path = Path(output_dir) / f\"dssms_unified_backtest_{self.output_timestamp}.xlsx\""
+        ]
+      },
+      {
+        "line_number": 497,
+        "method_name": "def _create_summary_sheet(self) -> pd.DataFrame:",
+        "context": [
+          "    ",
+          "    def _create_summary_sheet(self) -> pd.DataFrame:",
+          "        \"\"\"サマリーシートの作成\"\"\"",
+          "        portfolio_df = self.data_source.get('portfolio_values', pd.DataFrame())"
+        ]
+      },
+      {
+        "line_number": 555,
+        "method_name": "def _create_performance_sheet(self) -> pd.DataFrame:",
+        "context": [
+          "    ",
+          "    def _create_performance_sheet(self) -> pd.DataFrame:",
+          "        \"\"\"パフォーマンス指標シートの作成\"\"\"",
+          "        performance = self.data_source.get('performance_metrics', {})"
+        ]
+      },
+      {
+        "line_number": 592,
+        "method_name": "def _create_trade_history_sheet(self) -> pd.DataFrame:",
+        "context": [
+          "    ",
+          "    def _create_trade_history_sheet(self) -> pd.DataFrame:",
+          "        \"\"\"取引履歴シートの作成\"\"\"",
+          "        trades_df = self.data_source.get('trades', pd.DataFrame())"
+        ]
+      },
+      {
+        "line_number": 622,
+        "method_name": "def _create_pnl_history_sheet(self) -> pd.DataFrame:",
+        "context": [
+          "    ",
+          "    def _create_pnl_history_sheet(self) -> pd.DataFrame:",
+          "        \"\"\"損益推移シートの作成\"\"\"",
+          "        portfolio_df = self.data_source.get('portfolio_values', pd.DataFrame())"
+        ]
+      },
+      {
+        "line_number": 655,
+        "method_name": "def _create_strategy_stats_sheet(self) -> pd.DataFrame:",
+        "context": [
+          "    ",
+          "    def _create_strategy_stats_sheet(self) -> pd.DataFrame:",
+          "        \"\"\"戦略別統計シートの作成\"\"\"",
+          "        strategy_stats = self.data_source.get('strategy_statistics', {})"
+        ]
+      },
+      {
+        "line_number": 701,
+        "method_name": "def _create_switch_analysis_sheet(self) -> pd.DataFrame:",
+        "context": [
+          "    ",
+          "    def _create_switch_analysis_sheet(self) -> pd.DataFrame:",
+          "        \"\"\"切り替え分析シートの作成\"\"\"",
+          "        switches_df = self.data_source.get('switches', pd.DataFrame())"
+        ]
+      }
+    ],
+    "potential_conflicts": [
+      "DSSMSUnifiedOutputEngine"
+    ]
+  },
+  "dssms_unified_output_engine_fixed.py": {
+    "file_info": {
+      "size_bytes": 30256,
+      "line_count": 738,
+      "exists": true
+    },
+    "excel_impact": {
+      "impact_score": 30,
+      "found_keywords": [
+        "excel: 14",
+        "xlsx: 1",
+        "openpyxl: 3",
+        "create_sheet: 3",
+        "workbook: 9"
+      ],
+      "has_excel_functionality": true
+    },
+    "current_usage": {
+      "main.py": {
+        "is_imported": false,
+        "import_count": 0
+      },
+      "src/dssms/dssms_backtester.py": {
+        "is_imported": false,
+        "import_count": 0
+      },
+      "src/dssms/dssms_backtester_v2.py": {
+        "is_imported": false,
+        "import_count": 0
+      }
+    },
+    "implementation_status": {
+      "status": "well_implemented",
+      "severity": "low",
+      "implemented_methods": [
+        "generate_excel",
+        "_generate_excel_output",
+        "excel_output"
+      ]
+    },
+    "excel_output_methods": [
+      {
+        "line_number": 337,
+        "method_name": "def _generate_excel_output(self, output_path: Path) -> Optional[Path]:",
+        "context": [
+          "    ",
+          "    def _generate_excel_output(self, output_path: Path) -> Optional[Path]:",
+          "        \"\"\"Excel出力の生成（修正版）\"\"\"",
+          "        try:"
+        ]
+      },
+      {
+        "line_number": 370,
+        "method_name": "def _create_summary_sheet(self, workbook):",
+        "context": [
+          "    ",
+          "    def _create_summary_sheet(self, workbook):",
+          "        \"\"\"サマリーシートの作成\"\"\"",
+          "        ws = workbook.active"
+        ]
+      },
+      {
+        "line_number": 393,
+        "method_name": "def _create_pnl_history_sheet_fixed(self, workbook):",
+        "context": [
+          "    ",
+          "    def _create_pnl_history_sheet_fixed(self, workbook):",
+          "        \"\"\"損益推移シートの作成（修正版）\"\"\"",
+          "        ws = workbook.create_sheet(\"損益推移\")"
+        ]
+      },
+      {
+        "line_number": 459,
+        "method_name": "def _create_trade_history_sheet_fixed(self, workbook):",
+        "context": [
+          "    ",
+          "    def _create_trade_history_sheet_fixed(self, workbook):",
+          "        \"\"\"取引履歴シートの作成（修正版・保有期間正確計算）\"\"\"",
+          "        ws = workbook.create_sheet(\"取引履歴\")"
+        ]
+      },
+      {
+        "line_number": 490,
+        "method_name": "def _create_switch_history_sheet(self, workbook):",
+        "context": [
+          "    ",
+          "    def _create_switch_history_sheet(self, workbook):",
+          "        \"\"\"切替履歴シートの作成\"\"\"",
+          "        ws = workbook.create_sheet(\"切替履歴\")"
+        ]
+      }
+    ],
+    "potential_conflicts": [
+      "DSSMSUnifiedOutputEngine"
+    ]
+  },
+  "dssms_unified_output_engine_fixed_v4.py": {
+    "file_info": {
+      "size_bytes": 20314,
+      "line_count": 480,
+      "exists": true
+    },
+    "excel_impact": {
+      "impact_score": 29,
+      "found_keywords": [
+        "excel: 20",
+        "xlsx: 1",
+        "openpyxl: 1",
+        "ExcelWriter: 1",
+        "to_excel: 6"
+      ],
+      "has_excel_functionality": true
+    },
+    "current_usage": {
+      "main.py": {
+        "is_imported": false,
+        "import_count": 0
+      },
+      "src/dssms/dssms_backtester.py": {
+        "is_imported": false,
+        "import_count": 0
+      },
+      "src/dssms/dssms_backtester_v2.py": {
+        "is_imported": false,
+        "import_count": 0
+      }
+    },
+    "implementation_status": {
+      "status": "well_implemented",
+      "severity": "low",
+      "implemented_methods": [
+        "to_excel",
+        "excel_output"
+      ]
+    },
+    "excel_output_methods": [
+      {
+        "line_number": 357,
+        "method_name": "def _generate_complete_excel_output(self, filepath: Path):",
+        "context": [
+          "    ",
+          "    def _generate_complete_excel_output(self, filepath: Path):",
+          "        \"\"\"完全なExcel出力（複数シート）\"\"\"",
+          "        with pd.ExcelWriter(filepath, engine='openpyxl') as writer:"
+        ]
+      }
+    ],
+    "potential_conflicts": [
+      "DSSMSUnifiedOutputEngine"
+    ]
+  },
+  "dssms_unified_output_engine_fixed_v3.py": {
+    "file_info": {
+      "size_bytes": 0,
+      "line_count": 1,
+      "exists": true
+    },
+    "excel_impact": {
+      "impact_score": 0,
+      "found_keywords": [],
+      "has_excel_functionality": false
+    },
+    "current_usage": {
+      "main.py": {
+        "is_imported": false,
+        "import_count": 0
+      },
+      "src/dssms/dssms_backtester.py": {
+        "is_imported": false,
+        "import_count": 0
+      },
+      "src/dssms/dssms_backtester_v2.py": {
+        "is_imported": false,
+        "import_count": 0
+      }
+    },
+    "implementation_status": {
+      "status": "empty_file",
+      "severity": "critical",
+      "description": "完全空ファイル - 実装なし"
+    },
+    "excel_output_methods": [],
+    "potential_conflicts": []
+  },
+  "dssms_excel_fix_phase3.py": {
+    "file_info": {
+      "size_bytes": 6679,
+      "line_count": 191,
+      "exists": true
+    },
+    "excel_impact": {
+      "impact_score": 2,
+      "found_keywords": [
+        "excel: 2"
+      ],
+      "has_excel_functionality": true
+    },
+    "current_usage": {
+      "main.py": {
+        "is_imported": false,
+        "import_count": 0
+      },
+      "src/dssms/dssms_backtester.py": {
+        "is_imported": false,
+        "import_count": 0
+      },
+      "src/dssms/dssms_backtester_v2.py": {
+        "is_imported": false,
+        "import_count": 0
+      }
+    },
+    "implementation_status": {
+      "status": "no_excel_methods",
+      "severity": "high",
+      "description": "Excel出力メソッドが実装されていない"
+    },
+    "excel_output_methods": [],
+    "potential_conflicts": []
+  },
+  "dssms_excel_fix_phase2.py": {
+    "file_info": {
+      "size_bytes": 10560,
+      "line_count": 301,
+      "exists": true
+    },
+    "excel_impact": {
+      "impact_score": 19,
+      "found_keywords": [
+        "excel: 19"
+      ],
+      "has_excel_functionality": true
+    },
+    "current_usage": {
+      "main.py": {
+        "is_imported": false,
+        "import_count": 0
+      },
+      "src/dssms/dssms_backtester.py": {
+        "is_imported": false,
+        "import_count": 0
+      },
+      "src/dssms/dssms_backtester_v2.py": {
+        "is_imported": false,
+        "import_count": 0
+      }
+    },
+    "implementation_status": {
+      "status": "no_excel_methods",
+      "severity": "high",
+      "description": "Excel出力メソッドが実装されていない"
+    },
+    "excel_output_methods": [
+      {
+        "line_number": 10,
+        "method_name": "def prepare_excel_data_improved(self) -> pd.DataFrame:",
+        "context": [
+          "",
+          "def prepare_excel_data_improved(self) -> pd.DataFrame:",
+          "    \"\"\"",
+          "    DSSMSバックテストデータをExcel出力システム用に変換（改良版）"
+        ]
+      },
+      {
+        "line_number": 223,
+        "method_name": "def _add_excel_compatibility_columns(self, portfolio_df: pd.DataFrame) -> pd.DataFrame:",
+        "context": [
+          "",
+          "def _add_excel_compatibility_columns(self, portfolio_df: pd.DataFrame) -> pd.DataFrame:",
+          "    \"\"\"",
+          "    Excel出力システムとの互換性のための列を追加"
+        ]
+      },
+      {
+        "line_number": 288,
+        "method_name": "def _prepare_excel_data(self) -> pd.DataFrame:",
+        "context": [
+          "",
+          "def _prepare_excel_data(self) -> pd.DataFrame:",
+          "    \"\"\"",
+          "    DSSMSバックテストデータをExcel出力システム用に変換（改良版）"
+        ]
+      }
+    ],
+    "potential_conflicts": []
+  },
+  "dssms_enhanced_excel_exporter.py": {
+    "file_info": {
+      "size_bytes": 6389,
+      "line_count": 168,
+      "exists": true
+    },
+    "excel_impact": {
+      "impact_score": 30,
+      "found_keywords": [
+        "excel: 12",
+        "xlsx: 1",
+        "openpyxl: 4",
+        "create_sheet: 1",
+        "workbook: 12"
+      ],
+      "has_excel_functionality": true
+    },
+    "current_usage": {
+      "main.py": {
+        "is_imported": false,
+        "import_count": 0
+      },
+      "src/dssms/dssms_backtester.py": {
+        "is_imported": false,
+        "import_count": 0
+      },
+      "src/dssms/dssms_backtester_v2.py": {
+        "is_imported": false,
+        "import_count": 0
+      }
+    },
+    "implementation_status": {
+      "status": "no_excel_methods",
+      "severity": "high",
+      "description": "Excel出力メソッドが実装されていない"
+    },
+    "excel_output_methods": [
+      {
+        "line_number": 29,
+        "method_name": "def create_enhanced_trade_history_sheet(self, workbook: openpyxl.Workbook, trades_data: List[Dict]):",
+        "context": [
+          "        ",
+          "    def create_enhanced_trade_history_sheet(self, workbook: openpyxl.Workbook, trades_data: List[Dict]):",
+          "        \"\"\"強化された取引履歴シートを作成\"\"\"",
+          "        if '取引履歴' in workbook.sheetnames:"
+        ]
+      },
+      {
+        "line_number": 125,
+        "method_name": "def apply_enhanced_exporter_to_existing_file(excel_path: str):",
+        "context": [
+          "",
+          "def apply_enhanced_exporter_to_existing_file(excel_path: str):",
+          "    \"\"\"既存のExcelファイルに強化エクスポーターを適用\"\"\"",
+          "    try:"
+        ]
+      }
+    ],
+    "potential_conflicts": [
+      "DSSMSExcelExporter",
+      "EnhancedDSSMSExcelExporter"
+    ]
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "core_problems": {
+    "data_flow_architecture": {
+      "id": "CORE-1",
+      "title": "データフロー・アーキテクチャ統一問題",
+      "description": "複数エンジン混在による処理フロー混乱",
+      "impact_level": "Critical",
+      "related_problems": [
+        "Problem 4",
+        "Problem 6",
+        "Problem 17",
+        "Problem 18"
+      ],
+      "reason": "85.0点エンジンが使用されていない根本構造問題"
+    },
+    "switch_mechanism_degradation": {
+      "id": "CORE-2",
+      "title": "切替メカニズム機能劣化",
+      "description": "切替数激減（117回→3回）の決定論的処理問題",
+      "impact_level": "Critical",
+      "related_problems": [
+        "Problem 1",
+        "Problem 3",
+        "Problem 7"
+      ],
+      "reason": "DSSMS主機能の根本的機能不全"
+    },
+    "output_consistency": {
+      "id": "CORE-3",
+      "title": "出力一貫性・正確性問題",
+      "description": "計算結果と出力結果の乖離",
+      "impact_level": "High",
+      "related_problems": [
+        "Problem 2",
+        "Problem 5",
+        "Problem 8-14"
+      ],
+      "reason": "正しい計算が正しく出力されない構造問題"
+    }
+  },
+  "dependency_matrix": {
+    "Problem 17": {
+      "depends_on": [],
+      "affects": [
+        "Problem 1",
+        "Problem 4",
+        "Problem 6",
+        "Problem 8-14"
+      ],
+      "type": "root_cause",
+      "priority": 1,
+      "reason": "85.0点エンジンが使用されないことで品質・機能が劣化"
+    },
+    "Problem 1": {
+      "depends_on": [
+        "Problem 17",
+        "Problem 3"
+      ],
+      "affects": [
+        "Problem 2",
+        "Problem 5"
+      ],
+      "type": "core_function",
+      "priority": 2,
+      "reason": "切替機能はDSSMSの中核、他機能への影響大"
+    },
+    "Problem 6": {
+      "depends_on": [
+        "Problem 17",
+        "Problem 18"
+      ],
+      "affects": [
+        "Problem 8-14"
+      ],
+      "type": "architecture",
+      "priority": 3,
+      "reason": "データフロー修正で出力問題が連鎖解決"
+    },
+    "Problem 18": {
+      "depends_on": [],
+      "affects": [
+        "Problem 17",
+        "Problem 6"
+      ],
+      "type": "infrastructure",
+      "priority": 4,
+      "reason": "ファイル整理後でないと正しいエンジン使用が困難"
+    }
+  },
+  "priority_strategy": {
+    "phase_1_infrastructure": {
+      "title": "Phase 1: インフラ整理（修正基盤構築）",
+      "duration": "1-2時間",
+      "problems": [
+        "Problem 18",
+        "Problem 17"
+      ],
+      "objective": "正しいエンジン使用の基盤構築",
+      "rationale": "後続修正で混乱回避、85.0点エンジン活用開始"
+    },
+    "phase_2_core_mechanism": {
+      "title": "Phase 2: コア機能復旧（切替メカニズム）",
+      "duration": "2-4時間",
+      "problems": [
+        "Problem 1",
+        "Problem 3"
+      ],
+      "objective": "DSSMS主機能の切替メカニズム復旧",
+      "rationale": "117回→3回の激減問題解決、システム中核機能回復"
+    },
+    "phase_3_data_flow": {
+      "title": "Phase 3: データフロー統一（出力品質向上）",
+      "duration": "3-5時間",
+      "problems": [
+        "Problem 6",
+        "Problem 2"
+      ],
+      "objective": "正しい計算結果の正しい出力保証",
+      "rationale": "計算と出力の一貫性確保、残存品質問題解決"
+    },
+    "phase_4_refinement": {
+      "title": "Phase 4: 詳細調整（完全性向上）",
+      "duration": "2-3時間",
+      "problems": [
+        "Problem 8-14残存分"
+      ],
+      "objective": "全出力要素の完全性確保",
+      "rationale": "戦略統計等の細部完成、最終品質到達"
+    }
+  },
+  "task_6_3_impact": {
+    "reliability_score": 90,
+    "major_issues": 1,
+    "problem_1_14_status": "resolved",
+    "engine_quality": "high_85_points"
+  }
+}

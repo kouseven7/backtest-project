@@ -1,0 +1,3275 @@
+{
+  "analysis_timestamp": "2025-09-14T07:37:39.208210",
+  "task": "5.4",
+  "purpose": "データ取得・前処理品質分析",
+  "data_sources_analyzed": [
+    {
+      "source_type": "csv_file",
+      "file_path": "balanced_dssms_simulation_results.csv",
+      "file_size_bytes": 6014,
+      "columns": [
+        "timestamp",
+        "has_position",
+        "current_stock",
+        "current_strategy",
+        "daily_switches",
+        "weekly_switches",
+        "can_switch",
+        "switch_reason"
+      ],
+      "sample_row_count": 77,
+      "data_types": {
+        "timestamp": "object",
+        "has_position": "bool",
+        "current_stock": "float64",
+        "current_strategy": "object",
+        "daily_switches": "int64",
+        "weekly_switches": "int64",
+        "can_switch": "bool",
+        "switch_reason": "object"
+      },
+      "null_counts": {
+        "timestamp": 0,
+        "has_position": 0,
+        "current_stock": 32,
+        "current_strategy": 32,
+        "daily_switches": 0,
+        "weekly_switches": 0,
+        "can_switch": 0,
+        "switch_reason": 0
+      },
+      "memory_usage": 17850
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "time_decay_visualization_data.csv",
+      "file_size_bytes": 2281,
+      "columns": [
+        "days_ago",
+        "decay_weight",
+        "strategy"
+      ],
+      "sample_row_count": 61,
+      "data_types": {
+        "days_ago": "int64",
+        "decay_weight": "float64",
+        "strategy": "object"
+      },
+      "null_counts": {
+        "days_ago": 0,
+        "decay_weight": 0,
+        "strategy": 0
+      },
+      "memory_usage": 4890
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "backtest_results\\improved_backtest_7203.T_20250820_133412.csv",
+      "file_size_bytes": 571,
+      "columns": [
+        "指標",
+        "値"
+      ],
+      "sample_row_count": 19,
+      "data_types": {
+        "指標": "object",
+        "値": "object"
+      },
+      "null_counts": {
+        "指標": 0,
+        "値": 0
+      },
+      "memory_usage": 2905
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "backtest_results\\improved_results\\MeanReversionStrategy_backtest_results.csv",
+      "file_size_bytes": 525,
+      "columns": [
+        "Strategy",
+        "MetricType",
+        "MetricName",
+        "Value"
+      ],
+      "sample_row_count": 9,
+      "data_types": {
+        "Strategy": "object",
+        "MetricType": "object",
+        "MetricName": "object",
+        "Value": "float64"
+      },
+      "null_counts": {
+        "Strategy": 0,
+        "MetricType": 0,
+        "MetricName": 0,
+        "Value": 0
+      },
+      "memory_usage": 1922
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "backtest_results\\improved_results\\TrendFollowingStrategy_backtest_results.csv",
+      "file_size_bytes": 535,
+      "columns": [
+        "Strategy",
+        "MetricType",
+        "MetricName",
+        "Value"
+      ],
+      "sample_row_count": 9,
+      "data_types": {
+        "Strategy": "object",
+        "MetricType": "object",
+        "MetricName": "object",
+        "Value": "float64"
+      },
+      "null_counts": {
+        "Strategy": 0,
+        "MetricType": 0,
+        "MetricName": 0,
+        "Value": 0
+      },
+      "memory_usage": 1931
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "backtest_results\\improved_results\\VWAPStrategy_backtest_results.csv",
+      "file_size_bytes": 445,
+      "columns": [
+        "Strategy",
+        "MetricType",
+        "MetricName",
+        "Value"
+      ],
+      "sample_row_count": 9,
+      "data_types": {
+        "Strategy": "object",
+        "MetricType": "object",
+        "MetricName": "object",
+        "Value": "float64"
+      },
+      "null_counts": {
+        "Strategy": 0,
+        "MetricType": 0,
+        "MetricName": 0,
+        "Value": 0
+      },
+      "memory_usage": 1841
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "backtest_results\\improved_results\\data_cache\\8411.T_2024-01-01_2025-06-01_1d.csv",
+      "file_size_bytes": 27377,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37008
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "backtest_results\\improved_results\\data_cache\\^N225_2024-01-01_2025-06-01_1d.csv",
+      "file_size_bytes": 26751,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36402
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config\\config.csv",
+      "file_size_bytes": 134,
+      "columns": [
+        "Symbol",
+        "Start Date",
+        "End Date",
+        "Strategy",
+        "Param1",
+        "Param2"
+      ],
+      "sample_row_count": 2,
+      "data_types": {
+        "Symbol": "object",
+        "Start Date": "object",
+        "End Date": "object",
+        "Strategy": "object",
+        "Param1": "int64",
+        "Param2": "int64"
+      },
+      "null_counts": {
+        "Symbol": 0,
+        "Start Date": 0,
+        "End Date": 0,
+        "Strategy": 0,
+        "Param1": 0,
+        "Param2": 0
+      },
+      "memory_usage": 619
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config\\GC戦略.csv",
+      "file_size_bytes": 299,
+      "columns": [
+        "項目",
+        "短期移動平均",
+        "中期移動平均",
+        "長期移動平均",
+        "利益確定%",
+        "損切割合%",
+        "出来高フィルター倍率%",
+        "エントリー条件",
+        "イグジット条件利益確定",
+        "イグジット条件損切"
+      ],
+      "sample_row_count": 1,
+      "data_types": {
+        "項目": "object",
+        "短期移動平均": "int64",
+        "中期移動平均": "int64",
+        "長期移動平均": "int64",
+        "利益確定%": "int64",
+        "損切割合%": "int64",
+        "出来高フィルター倍率%": "float64",
+        "エントリー条件": "object",
+        "イグジット条件利益確定": "object",
+        "イグジット条件損切": "object"
+      },
+      "null_counts": {
+        "項目": 0,
+        "短期移動平均": 0,
+        "中期移動平均": 0,
+        "長期移動平均": 0,
+        "利益確定%": 0,
+        "損切割合%": 0,
+        "出来高フィルター倍率%": 0,
+        "エントリー条件": 0,
+        "イグジット条件利益確定": 0,
+        "イグジット条件損切": 0
+      },
+      "memory_usage": 471
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config\\market_data.csv",
+      "file_size_bytes": 372,
+      "columns": [
+        "symbol",
+        "date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "sma5",
+        "sma25",
+        "rsi14",
+        "vwap",
+        "prev_day_volume_ratio",
+        "nikkei_futures_change",
+        "dow_change"
+      ],
+      "sample_row_count": 3,
+      "data_types": {
+        "symbol": "object",
+        "date": "object",
+        "open": "int64",
+        "high": "int64",
+        "low": "int64",
+        "close": "int64",
+        "volume": "int64",
+        "sma5": "int64",
+        "sma25": "int64",
+        "rsi14": "float64",
+        "vwap": "int64",
+        "prev_day_volume_ratio": "object",
+        "nikkei_futures_change": "object",
+        "dow_change": "object"
+      },
+      "null_counts": {
+        "symbol": 0,
+        "date": 0,
+        "open": 0,
+        "high": 0,
+        "low": 0,
+        "close": 0,
+        "volume": 0,
+        "sma5": 0,
+        "sma25": 0,
+        "rsi14": 0,
+        "vwap": 0,
+        "prev_day_volume_ratio": 0,
+        "nikkei_futures_change": 0,
+        "dow_change": 0
+      },
+      "memory_usage": 1176
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config\\strategy_params.csv",
+      "file_size_bytes": 162,
+      "columns": [
+        "strategy",
+        "short_ma",
+        "long_ma",
+        "rsi_period",
+        "rsi_buy",
+        "rsi_sell",
+        "vwap_threshold"
+      ],
+      "sample_row_count": 3,
+      "data_types": {
+        "strategy": "object",
+        "short_ma": "object",
+        "long_ma": "object",
+        "rsi_period": "object",
+        "rsi_buy": "object",
+        "rsi_sell": "object",
+        "vwap_threshold": "object"
+      },
+      "null_counts": {
+        "strategy": 0,
+        "short_ma": 0,
+        "long_ma": 0,
+        "rsi_period": 0,
+        "rsi_buy": 0,
+        "rsi_sell": 0,
+        "vwap_threshold": 0
+      },
+      "memory_usage": 1274
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config\\市場指標.csv",
+      "file_size_bytes": 84,
+      "columns": [
+        "指標名",
+        "ティッカー",
+        "期間"
+      ],
+      "sample_row_count": 2,
+      "data_types": {
+        "指標名": "object",
+        "ティッカー": "object",
+        "期間": "object"
+      },
+      "null_counts": {
+        "指標名": 0,
+        "ティッカー": 0,
+        "期間": 0
+      },
+      "memory_usage": 491
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config\\銘柄設定.csv",
+      "file_size_bytes": 61,
+      "columns": [
+        "銘柄",
+        "開始日",
+        "終了日"
+      ],
+      "sample_row_count": 1,
+      "data_types": {
+        "銘柄": "object",
+        "開始日": "object",
+        "終了日": "object"
+      },
+      "null_counts": {
+        "銘柄": 0,
+        "開始日": 0,
+        "終了日": 0
+      },
+      "memory_usage": 305
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config\\data_cache\\7203.T_2023-01-01_2024-01-01_1d.csv",
+      "file_size_bytes": 23306,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 38156
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config\\data_cache\\8410.T_2022-01-01_2023-01-01_1d.csv",
+      "file_size_bytes": 23149,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 38061
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config\\data_cache\\^N225_2023-01-01_2024-01-01_1d.csv",
+      "file_size_bytes": 19798,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36702
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config_backup\\config.csv",
+      "file_size_bytes": 134,
+      "columns": [
+        "Symbol",
+        "Start Date",
+        "End Date",
+        "Strategy",
+        "Param1",
+        "Param2"
+      ],
+      "sample_row_count": 2,
+      "data_types": {
+        "Symbol": "object",
+        "Start Date": "object",
+        "End Date": "object",
+        "Strategy": "object",
+        "Param1": "int64",
+        "Param2": "int64"
+      },
+      "null_counts": {
+        "Symbol": 0,
+        "Start Date": 0,
+        "End Date": 0,
+        "Strategy": 0,
+        "Param1": 0,
+        "Param2": 0
+      },
+      "memory_usage": 619
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config_backup\\GC戦略.csv",
+      "file_size_bytes": 299,
+      "columns": [
+        "項目",
+        "短期移動平均",
+        "中期移動平均",
+        "長期移動平均",
+        "利益確定%",
+        "損切割合%",
+        "出来高フィルター倍率%",
+        "エントリー条件",
+        "イグジット条件利益確定",
+        "イグジット条件損切"
+      ],
+      "sample_row_count": 1,
+      "data_types": {
+        "項目": "object",
+        "短期移動平均": "int64",
+        "中期移動平均": "int64",
+        "長期移動平均": "int64",
+        "利益確定%": "int64",
+        "損切割合%": "int64",
+        "出来高フィルター倍率%": "float64",
+        "エントリー条件": "object",
+        "イグジット条件利益確定": "object",
+        "イグジット条件損切": "object"
+      },
+      "null_counts": {
+        "項目": 0,
+        "短期移動平均": 0,
+        "中期移動平均": 0,
+        "長期移動平均": 0,
+        "利益確定%": 0,
+        "損切割合%": 0,
+        "出来高フィルター倍率%": 0,
+        "エントリー条件": 0,
+        "イグジット条件利益確定": 0,
+        "イグジット条件損切": 0
+      },
+      "memory_usage": 471
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config_backup\\market_data.csv",
+      "file_size_bytes": 372,
+      "columns": [
+        "symbol",
+        "date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "sma5",
+        "sma25",
+        "rsi14",
+        "vwap",
+        "prev_day_volume_ratio",
+        "nikkei_futures_change",
+        "dow_change"
+      ],
+      "sample_row_count": 3,
+      "data_types": {
+        "symbol": "object",
+        "date": "object",
+        "open": "int64",
+        "high": "int64",
+        "low": "int64",
+        "close": "int64",
+        "volume": "int64",
+        "sma5": "int64",
+        "sma25": "int64",
+        "rsi14": "float64",
+        "vwap": "int64",
+        "prev_day_volume_ratio": "object",
+        "nikkei_futures_change": "object",
+        "dow_change": "object"
+      },
+      "null_counts": {
+        "symbol": 0,
+        "date": 0,
+        "open": 0,
+        "high": 0,
+        "low": 0,
+        "close": 0,
+        "volume": 0,
+        "sma5": 0,
+        "sma25": 0,
+        "rsi14": 0,
+        "vwap": 0,
+        "prev_day_volume_ratio": 0,
+        "nikkei_futures_change": 0,
+        "dow_change": 0
+      },
+      "memory_usage": 1176
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config_backup\\strategy_params.csv",
+      "file_size_bytes": 162,
+      "columns": [
+        "strategy",
+        "short_ma",
+        "long_ma",
+        "rsi_period",
+        "rsi_buy",
+        "rsi_sell",
+        "vwap_threshold"
+      ],
+      "sample_row_count": 3,
+      "data_types": {
+        "strategy": "object",
+        "short_ma": "object",
+        "long_ma": "object",
+        "rsi_period": "object",
+        "rsi_buy": "object",
+        "rsi_sell": "object",
+        "vwap_threshold": "object"
+      },
+      "null_counts": {
+        "strategy": 0,
+        "short_ma": 0,
+        "long_ma": 0,
+        "rsi_period": 0,
+        "rsi_buy": 0,
+        "rsi_sell": 0,
+        "vwap_threshold": 0
+      },
+      "memory_usage": 1274
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config_backup\\市場指標.csv",
+      "file_size_bytes": 84,
+      "columns": [
+        "指標名",
+        "ティッカー",
+        "期間"
+      ],
+      "sample_row_count": 2,
+      "data_types": {
+        "指標名": "object",
+        "ティッカー": "object",
+        "期間": "object"
+      },
+      "null_counts": {
+        "指標名": 0,
+        "ティッカー": 0,
+        "期間": 0
+      },
+      "memory_usage": 491
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config_backup\\銘柄設定.csv",
+      "file_size_bytes": 61,
+      "columns": [
+        "銘柄",
+        "開始日",
+        "終了日"
+      ],
+      "sample_row_count": 1,
+      "data_types": {
+        "銘柄": "object",
+        "開始日": "object",
+        "終了日": "object"
+      },
+      "null_counts": {
+        "銘柄": 0,
+        "開始日": 0,
+        "終了日": 0
+      },
+      "memory_usage": 305
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "config_backup\\data_cache\\8410.T_2022-01-01_2023-01-01_1d.csv",
+      "file_size_bytes": 23149,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 38061
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\5803.T_2015-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 227349,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37906
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\5803.T_2018-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 159271,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37679
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\5803.T_2022-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 67930,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37747
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\5803.T_2023-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 37346,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37761
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\6758_2024-01-01_2024-06-30_1d.csv",
+      "file_size_bytes": 11282,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37951
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\6920.T_2018-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 156761,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37866
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\6920.T_2020-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 110465,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37562
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\6920.T_2022-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 66501,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37689
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\7203.T_2018-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 163215,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 38075
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\7203.T_2020-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 115636,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 38158
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\7203.T_2022-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 69366,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 38111
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\7203.T_2023-01-01_2023-12-31_1d.csv",
+      "file_size_bytes": 23263,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 38135
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\7203.T_2023-01-01_2024-01-01_1d.csv",
+      "file_size_bytes": 23319,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 38157
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\7203_2024-01-01_2024-06-30_1d.csv",
+      "file_size_bytes": 11248,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37926
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\7272.T_2022-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 68547,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37756
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\7972.T_2020-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 103523,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37797
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\7972.T_2022-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 58950,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37738
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\7974.T_2020-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 110264,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37891
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\7974.T_2022-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 65985,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37596
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\8306.T_2018-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 158147,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37789
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\8306.T_2020-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 114570,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 38054
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\8306.T_2022-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 65920,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37838
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\8306.T_2023-01-01_2024-12-31_1d.csv",
+      "file_size_bytes": 43496,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37866
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\8306.T_2023-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 43489,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37861
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\8306.T_2024-06-01_2024-12-31_1d.csv",
+      "file_size_bytes": 10883,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37291
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\8306_2024-01-01_2024-06-30_1d.csv",
+      "file_size_bytes": 11532,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 38160
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\8411.T_2025-01-01_2025-06-01_1d.csv",
+      "file_size_bytes": 7166,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 35879
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\9064.T_2022-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 68276,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37897
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\9101.T_2020-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 113084,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37946
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\9101.T_2023-01-01_2023-12-31_1d.csv",
+      "file_size_bytes": 22853,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37901
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\9101.T_2023-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 42158,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37917
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\9101.T_2024-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 22138,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37659
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\9336.T_2022-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 43432,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37937
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\9432.T_2022-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 70995,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 38293
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\9513.T_2022-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 68108,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37971
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\MSFT_2024-01-01_2024-01-30_1d.csv",
+      "file_size_bytes": 1870,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 21,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 7910
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^DJI_2015-01-05_2024-12-30_1d.csv",
+      "file_size_bytes": 201795,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36762
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^DJI_2018-01-01_2024-12-30_1d.csv",
+      "file_size_bytes": 140464,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36852
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^DJI_2020-01-06_2024-12-30_1d.csv",
+      "file_size_bytes": 99206,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36817
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^DJI_2021-01-04_2024-12-30_1d.csv",
+      "file_size_bytes": 78674,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36667
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^DJI_2022-01-04_2024-12-30_1d.csv",
+      "file_size_bytes": 58762,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36447
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^DJI_2023-01-04_2024-12-30_1d.csv",
+      "file_size_bytes": 38844,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36449
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^DJI_2024-01-04_2024-10-31_1d.csv",
+      "file_size_bytes": 16180,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36425
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^GSPC_2024-01-01_2024-01-30_1d.csv",
+      "file_size_bytes": 1734,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 21,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 7774
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^GSPC_2024-01-01_2024-06-30_1d.csv",
+      "file_size_bytes": 10811,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 37285
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^N225_2015-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 197047,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36746
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^N225_2018-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 137023,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36783
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^N225_2020-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 97712,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36733
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^N225_2021-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 78184,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36648
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^N225_2022-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 58431,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36701
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^N225_2023-01-01_2023-12-31_1d.csv",
+      "file_size_bytes": 19798,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36702
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^N225_2023-01-01_2024-01-01_1d.csv",
+      "file_size_bytes": 19798,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36702
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^N225_2023-01-01_2024-12-31_1d.csv",
+      "file_size_bytes": 38837,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36702
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^N225_2023-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 38837,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36702
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^N225_2024-01-01_2024-06-30_1d.csv",
+      "file_size_bytes": 9389,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36402
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^N225_2024-01-01_2024-11-01_1d.csv",
+      "file_size_bytes": 15939,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36402
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^N225_2024-01-01_2025-01-01_1d.csv",
+      "file_size_bytes": 19122,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36402
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^N225_2024-06-01_2024-12-31_1d.csv",
+      "file_size_bytes": 11369,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36449
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^N225_2025-01-01_2025-06-01_1d.csv",
+      "file_size_bytes": 7712,
+      "columns": [
+        "Price",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Price": "object",
+        "Close": "object",
+        "High": "object",
+        "Low": "object",
+        "Open": "object",
+        "Volume": "object"
+      },
+      "null_counts": {
+        "Price": 0,
+        "Close": 1,
+        "High": 1,
+        "Low": 1,
+        "Open": 1,
+        "Volume": 1
+      },
+      "memory_usage": 36425
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "data_cache\\^VIX_2024-01-04_2024-10-31_1d.csv",
+      "file_size_bytes": 24974,
+      "columns": [
+        "Date",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume",
+        "Adj Close"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Date": "object",
+        "Close": "float64",
+        "High": "float64",
+        "Low": "float64",
+        "Open": "float64",
+        "Volume": "int64",
+        "Adj Close": "float64"
+      },
+      "null_counts": {
+        "Date": 0,
+        "Close": 0,
+        "High": 0,
+        "Low": 0,
+        "Open": 0,
+        "Volume": 0,
+        "Adj Close": 0
+      },
+      "memory_usage": 12332
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "demo_outputs\\aggregated_data_sample.csv",
+      "file_size_bytes": 8869,
+      "columns": [
+        "Unnamed: 0",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "trend_type",
+        "trend_strength",
+        "strategy",
+        "confidence",
+        "reason",
+        "confidence_score",
+        "confidence_level",
+        "factors",
+        "Volume",
+        "volume_ma",
+        "volume_ratio"
+      ],
+      "sample_row_count": 60,
+      "data_types": {
+        "Unnamed: 0": "object",
+        "Open": "float64",
+        "High": "float64",
+        "Low": "float64",
+        "Close": "float64",
+        "trend_type": "object",
+        "trend_strength": "float64",
+        "strategy": "object",
+        "confidence": "float64",
+        "reason": "float64",
+        "confidence_score": "float64",
+        "confidence_level": "object",
+        "factors": "float64",
+        "Volume": "float64",
+        "volume_ma": "float64",
+        "volume_ratio": "float64"
+      },
+      "null_counts": {
+        "Unnamed: 0": 0,
+        "Open": 0,
+        "High": 0,
+        "Low": 0,
+        "Close": 0,
+        "trend_type": 0,
+        "trend_strength": 60,
+        "strategy": 0,
+        "confidence": 60,
+        "reason": 60,
+        "confidence_score": 0,
+        "confidence_level": 0,
+        "factors": 60,
+        "Volume": 60,
+        "volume_ma": 60,
+        "volume_ratio": 60
+      },
+      "memory_usage": 20952
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "logs\\alerts.csv",
+      "file_size_bytes": 474,
+      "columns": [
+        "2025-08-13T11:57:23.947823",
+        "high",
+        "system",
+        "High CPU Usage",
+        "CPU usage is 88.0%",
+        "system_monitor",
+        "None",
+        "None.1",
+        "system_high_1755053843"
+      ],
+      "sample_row_count": 2,
+      "data_types": {
+        "2025-08-13T11:57:23.947823": "object",
+        "high": "object",
+        "system": "object",
+        "High CPU Usage": "object",
+        "CPU usage is 88.0%": "object",
+        "system_monitor": "object",
+        "None": "float64",
+        "None.1": "object",
+        "system_high_1755053843": "object"
+      },
+      "null_counts": {
+        "2025-08-13T11:57:23.947823": 0,
+        "high": 0,
+        "system": 0,
+        "High CPU Usage": 0,
+        "CPU usage is 88.0%": 0,
+        "system_monitor": 0,
+        "None": 2,
+        "None.1": 1,
+        "system_high_1755053843": 0
+      },
+      "memory_usage": 1223
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "logs\\strategy_scoring\\demo_report_summary.csv",
+      "file_size_bytes": 318,
+      "columns": [
+        "strategy",
+        "ticker",
+        "total_score",
+        "trend_fitness",
+        "confidence",
+        "performance_score",
+        "stability_score",
+        "risk_adjusted_score",
+        "reliability_score",
+        "calculated_at"
+      ],
+      "sample_row_count": 2,
+      "data_types": {
+        "strategy": "object",
+        "ticker": "object",
+        "total_score": "float64",
+        "trend_fitness": "float64",
+        "confidence": "float64",
+        "performance_score": "float64",
+        "stability_score": "float64",
+        "risk_adjusted_score": "float64",
+        "reliability_score": "float64",
+        "calculated_at": "object"
+      },
+      "null_counts": {
+        "strategy": 0,
+        "ticker": 0,
+        "total_score": 0,
+        "trend_fitness": 0,
+        "confidence": 0,
+        "performance_score": 0,
+        "stability_score": 0,
+        "risk_adjusted_score": 0,
+        "reliability_score": 0,
+        "calculated_at": 0
+      },
+      "memory_usage": 639
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "output\\test_labeled_data.csv",
+      "file_size_bytes": 9914,
+      "columns": [
+        "Date",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume",
+        "Adj Close",
+        "trend",
+        "trend_confidence",
+        "trend_reliable"
+      ],
+      "sample_row_count": 100,
+      "data_types": {
+        "Date": "object",
+        "Close": "float64",
+        "High": "float64",
+        "Low": "float64",
+        "Open": "float64",
+        "Volume": "int64",
+        "Adj Close": "float64",
+        "trend": "object",
+        "trend_confidence": "float64",
+        "trend_reliable": "bool"
+      },
+      "null_counts": {
+        "Date": 0,
+        "Close": 0,
+        "High": 0,
+        "Low": 0,
+        "Open": 0,
+        "Volume": 0,
+        "Adj Close": 0,
+        "trend": 10,
+        "trend_confidence": 0,
+        "trend_reliable": 0
+      },
+      "memory_usage": 17240
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "output\\enhanced_trend_switching_results\\csv\\execution_summary_20250805_162805.csv",
+      "file_size_bytes": 179,
+      "columns": [
+        "total_jobs",
+        "completed_jobs",
+        "failed_jobs",
+        "success_rate",
+        "total_execution_time",
+        "average_time_per_job",
+        "parallel_mode",
+        "max_workers"
+      ],
+      "sample_row_count": 1,
+      "data_types": {
+        "total_jobs": "int64",
+        "completed_jobs": "int64",
+        "failed_jobs": "int64",
+        "success_rate": "float64",
+        "total_execution_time": "float64",
+        "average_time_per_job": "float64",
+        "parallel_mode": "bool",
+        "max_workers": "int64"
+      },
+      "null_counts": {
+        "total_jobs": 0,
+        "completed_jobs": 0,
+        "failed_jobs": 0,
+        "success_rate": 0,
+        "total_execution_time": 0,
+        "average_time_per_job": 0,
+        "parallel_mode": 0,
+        "max_workers": 0
+      },
+      "memory_usage": 189
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "output\\market_classification_test\\classification_results_20250805_194214.csv",
+      "file_size_bytes": 6912,
+      "columns": [
+        "timestamp",
+        "symbol",
+        "simple_condition",
+        "detailed_condition",
+        "confidence",
+        "trend_strength",
+        "volatility",
+        "momentum",
+        "volume_trend",
+        "price_momentum",
+        "risk_level",
+        "rsi",
+        "ma_slope",
+        "atr_ratio",
+        "volume_ratio"
+      ],
+      "sample_row_count": 25,
+      "data_types": {
+        "timestamp": "object",
+        "symbol": "object",
+        "simple_condition": "object",
+        "detailed_condition": "object",
+        "confidence": "float64",
+        "trend_strength": "float64",
+        "volatility": "float64",
+        "momentum": "float64",
+        "volume_trend": "float64",
+        "price_momentum": "float64",
+        "risk_level": "float64",
+        "rsi": "float64",
+        "ma_slope": "float64",
+        "atr_ratio": "float64",
+        "volume_ratio": "float64"
+      },
+      "null_counts": {
+        "timestamp": 0,
+        "symbol": 0,
+        "simple_condition": 0,
+        "detailed_condition": 0,
+        "confidence": 0,
+        "trend_strength": 0,
+        "volatility": 0,
+        "momentum": 0,
+        "volume_trend": 0,
+        "price_momentum": 0,
+        "risk_level": 0,
+        "rsi": 0,
+        "ma_slope": 0,
+        "atr_ratio": 0,
+        "volume_ratio": 0
+      },
+      "memory_usage": 8539
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "weight_learning_export\\constraint_violations_20250722_100419.csv",
+      "file_size_bytes": 1190,
+      "columns": [
+        "timestamp",
+        "constraint_name",
+        "parameter_name",
+        "current_value",
+        "min_allowed",
+        "max_allowed",
+        "violation_severity"
+      ],
+      "sample_row_count": 10,
+      "data_types": {
+        "timestamp": "object",
+        "constraint_name": "object",
+        "parameter_name": "object",
+        "current_value": "float64",
+        "min_allowed": "float64",
+        "max_allowed": "float64",
+        "violation_severity": "float64"
+      },
+      "null_counts": {
+        "timestamp": 0,
+        "constraint_name": 0,
+        "parameter_name": 0,
+        "current_value": 0,
+        "min_allowed": 0,
+        "max_allowed": 0,
+        "violation_severity": 0
+      },
+      "memory_usage": 2555
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "weight_learning_export\\constraint_violations_20250722_100541.csv",
+      "file_size_bytes": 1190,
+      "columns": [
+        "timestamp",
+        "constraint_name",
+        "parameter_name",
+        "current_value",
+        "min_allowed",
+        "max_allowed",
+        "violation_severity"
+      ],
+      "sample_row_count": 10,
+      "data_types": {
+        "timestamp": "object",
+        "constraint_name": "object",
+        "parameter_name": "object",
+        "current_value": "float64",
+        "min_allowed": "float64",
+        "max_allowed": "float64",
+        "violation_severity": "float64"
+      },
+      "null_counts": {
+        "timestamp": 0,
+        "constraint_name": 0,
+        "parameter_name": 0,
+        "current_value": 0,
+        "min_allowed": 0,
+        "max_allowed": 0,
+        "violation_severity": 0
+      },
+      "memory_usage": 2555
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "weight_learning_export\\constraint_violations_20250722_101212.csv",
+      "file_size_bytes": 1190,
+      "columns": [
+        "timestamp",
+        "constraint_name",
+        "parameter_name",
+        "current_value",
+        "min_allowed",
+        "max_allowed",
+        "violation_severity"
+      ],
+      "sample_row_count": 10,
+      "data_types": {
+        "timestamp": "object",
+        "constraint_name": "object",
+        "parameter_name": "object",
+        "current_value": "float64",
+        "min_allowed": "float64",
+        "max_allowed": "float64",
+        "violation_severity": "float64"
+      },
+      "null_counts": {
+        "timestamp": 0,
+        "constraint_name": 0,
+        "parameter_name": 0,
+        "current_value": 0,
+        "min_allowed": 0,
+        "max_allowed": 0,
+        "violation_severity": 0
+      },
+      "memory_usage": 2555
+    },
+    {
+      "source_type": "csv_file",
+      "file_path": "weight_learning_export\\constraint_violations_20250722_101308.csv",
+      "file_size_bytes": 1190,
+      "columns": [
+        "timestamp",
+        "constraint_name",
+        "parameter_name",
+        "current_value",
+        "min_allowed",
+        "max_allowed",
+        "violation_severity"
+      ],
+      "sample_row_count": 10,
+      "data_types": {
+        "timestamp": "object",
+        "constraint_name": "object",
+        "parameter_name": "object",
+        "current_value": "float64",
+        "min_allowed": "float64",
+        "max_allowed": "float64",
+        "violation_severity": "float64"
+      },
+      "null_counts": {
+        "timestamp": 0,
+        "constraint_name": 0,
+        "parameter_name": 0,
+        "current_value": 0,
+        "min_allowed": 0,
+        "max_allowed": 0,
+        "violation_severity": 0
+      },
+      "memory_usage": 2555
+    },
+    {
+      "source_type": "fetcher",
+      "file_path": "data_fetcher.py",
+      "file_size_bytes": 11869,
+      "apis_used": [
+        "yfinance",
+        "yahoo.*finance"
+      ],
+      "error_handling": {
+        "try_except_blocks": 3,
+        "error_logging": 4,
+        "exception_handling": 3
+      },
+      "has_caching": true,
+      "has_retry_logic": false
+    },
+    {
+      "source_type": "processor",
+      "file_path": "data_processor.py",
+      "file_size_bytes": 2832,
+      "processing_operations": {
+        "data_cleaning": 2,
+        "normalization": 0,
+        "feature_engineering": 1,
+        "filtering": 0,
+        "aggregation": 1
+      },
+      "total_operations": 4
+    },
+    {
+      "source_type": "processor",
+      "file_path": "time-decay-optimization-project\\src\\data\\data_processor.py",
+      "file_size_bytes": 541,
+      "processing_operations": {
+        "data_cleaning": 0,
+        "normalization": 0,
+        "feature_engineering": 0,
+        "filtering": 0,
+        "aggregation": 1
+      },
+      "total_operations": 1
+    }
+  ],
+  "delisting_warnings": [],
+  "data_completeness": {
+    "csv_files_analysis": [
+      {
+        "file_path": "balanced_dssms_simulation_results.csv",
+        "completeness_score": 0.8961038961038961,
+        "missing_ratio": 0.1038961038961039,
+        "total_cells": 616,
+        "missing_cells": 64,
+        "temporal_gaps": []
+      },
+      {
+        "file_path": "time_decay_visualization_data.csv",
+        "completeness_score": 1.0,
+        "missing_ratio": 0.0,
+        "total_cells": 183,
+        "missing_cells": 0,
+        "temporal_gaps": []
+      },
+      {
+        "file_path": "backtest_results\\improved_backtest_7203.T_20250820_133412.csv",
+        "completeness_score": 1.0,
+        "missing_ratio": 0.0,
+        "total_cells": 38,
+        "missing_cells": 0,
+        "temporal_gaps": []
+      },
+      {
+        "file_path": "backtest_results\\improved_results\\MeanReversionStrategy_backtest_results.csv",
+        "completeness_score": 1.0,
+        "missing_ratio": 0.0,
+        "total_cells": 36,
+        "missing_cells": 0,
+        "temporal_gaps": []
+      },
+      {
+        "file_path": "backtest_results\\improved_results\\TrendFollowingStrategy_backtest_results.csv",
+        "completeness_score": 1.0,
+        "missing_ratio": 0.0,
+        "total_cells": 36,
+        "missing_cells": 0,
+        "temporal_gaps": []
+      },
+      {
+        "file_path": "backtest_results\\improved_results\\VWAPStrategy_backtest_results.csv",
+        "completeness_score": 1.0,
+        "missing_ratio": 0.0,
+        "total_cells": 36,
+        "missing_cells": 0,
+        "temporal_gaps": []
+      },
+      {
+        "file_path": "backtest_results\\improved_results\\data_cache\\8411.T_2024-01-01_2025-06-01_1d.csv",
+        "completeness_score": 0.9975845410628019,
+        "missing_ratio": 0.0024154589371980675,
+        "total_cells": 2070,
+        "missing_cells": 5,
+        "temporal_gaps": []
+      },
+      {
+        "file_path": "backtest_results\\improved_results\\data_cache\\^N225_2024-01-01_2025-06-01_1d.csv",
+        "completeness_score": 0.9975845410628019,
+        "missing_ratio": 0.0024154589371980675,
+        "total_cells": 2070,
+        "missing_cells": 5,
+        "temporal_gaps": []
+      },
+      {
+        "file_path": "config\\config.csv",
+        "completeness_score": 1.0,
+        "missing_ratio": 0.0,
+        "total_cells": 12,
+        "missing_cells": 0,
+        "temporal_gaps": []
+      },
+      {
+        "file_path": "config\\GC戦略.csv",
+        "completeness_score": 1.0,
+        "missing_ratio": 0.0,
+        "total_cells": 10,
+        "missing_cells": 0,
+        "temporal_gaps": []
+      }
+    ],
+    "overall_completeness_score": 0.98912729782295,
+    "missing_data_patterns": [],
+    "temporal_gaps": []
+  },
+  "quality_statistics": {
+    "data_freshness": {
+      "average_age_days": 34.033720842196985,
+      "oldest_file_days": 62.707230281305534,
+      "newest_file_days": 10.339860212204082,
+      "freshness_score": 29.668461300641344
+    },
+    "data_accuracy_indicators": {},
+    "data_consistency": {},
+    "outlier_detection": {
+      "balanced_dssms_simulation_results.csv": {
+        "current_stock": {
+          "outlier_count": 0,
+          "outlier_ratio": 0.0,
+          "lower_bound": 3031.5,
+          "upper_bound": 14155.5
+        },
+        "daily_switches": {
+          "outlier_count": 0,
+          "outlier_ratio": 0.0,
+          "lower_bound": -1.5,
+          "upper_bound": 2.5
+        },
+        "weekly_switches": {
+          "outlier_count": 0,
+          "outlier_ratio": 0.0,
+          "lower_bound": -12.0,
+          "upper_bound": 44.0
+        }
+      },
+      "time_decay_visualization_data.csv": {
+        "days_ago": {
+          "outlier_count": 0,
+          "outlier_ratio": 0.0,
+          "lower_bound": -30.0,
+          "upper_bound": 90.0
+        },
+        "decay_weight": {
+          "outlier_count": 0,
+          "outlier_ratio": 0.0,
+          "lower_bound": -0.36634507669123206,
+          "upper_bound": 1.1711727380688164
+        }
+      }
+    }
+  },
+  "error_patterns": [],
+  "data_corruption_issues": [],
+  "market_data_gaps": [],
+  "data_preprocessing_issues": [
+    {
+      "file_path": "data_processor.py",
+      "preprocessing_issues": [
+        "insufficient_data_validation"
+      ],
+      "severity": "low"
+    },
+    {
+      "file_path": "time-decay-optimization-project\\src\\data\\data_processor.py",
+      "preprocessing_issues": [
+        "insufficient_data_validation"
+      ],
+      "severity": "low"
+    },
+    {
+      "file_path": "data_fetcher.py",
+      "preprocessing_issues": [
+        "potential_memory_issue"
+      ],
+      "severity": "low"
+    }
+  ],
+  "impact_assessment": {
+    "delisting_warnings_impact_percent": 0.0,
+    "data_completeness_impact_percent": 0.21745404354100106,
+    "data_quality_impact_percent": 7.033153869935866,
+    "data_corruption_impact_percent": 0.0,
+    "market_gaps_impact_percent": 0.0,
+    "total_switching_impact_percent": 7.250607913476867,
+    "impact_level": "low",
+    "primary_data_issues": [],
+    "mitigation_potential": {
+      "data_cleaning": 3.6253039567384335,
+      "alternative_sources": 0.0,
+      "gap_filling": 0.0
+    }
+  },
+  "summary_findings": {
+    "total_data_sources": 97,
+    "data_source_types": {
+      "csv_file": 94,
+      "fetcher": 1,
+      "processor": 2
+    },
+    "delisting_warnings_count": 0,
+    "data_corruption_files": 0,
+    "overall_quality_score": 89.17845164066995,
+    "data_completeness_score": 0.98912729782295,
+    "switching_impact_level": "low",
+    "total_switching_impact_percent": 7.250607913476867,
+    "primary_concerns": [],
+    "improvement_recommendations": [],
+    "data_health_status": "healthy"
+  }
+}

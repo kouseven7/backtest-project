@@ -1,0 +1,138 @@
+{
+  "task_6_3_results": {
+    "timestamp": "20250914_101214",
+    "verification_summary": {
+      "target_file": "dssms_unified_backtest_20250914_101133.xlsx",
+      "file_size": 11615,
+      "status": "COMPLETED",
+      "total_issues": 1,
+      "reliability_score": 90
+    },
+    "sheet_analysis": {
+      "サマリー": {
+        "max_row": 16,
+        "max_col": 2,
+        "data_rows": 15,
+        "headers": [
+          "項目",
+          "値"
+        ],
+        "has_data": true
+      },
+      "パフォーマンス指標": {
+        "max_row": 6,
+        "max_col": 4,
+        "data_rows": 5,
+        "headers": [
+          "指標名",
+          "値",
+          "ベンチマーク",
+          "評価"
+        ],
+        "has_data": true
+      },
+      "取引履歴": {
+        "max_row": 1,
+        "max_col": 10,
+        "data_rows": 0,
+        "headers": [
+          "日付",
+          "戦略名",
+          "銘柄",
+          "売買区分",
+          "数量",
+          "エントリー価格",
+          "エグジット価格",
+          "損益",
+          "累積損益",
+          "保有期間"
+        ],
+        "has_data": false
+      },
+      "損益推移": {
+        "max_row": 1,
+        "max_col": 5,
+        "data_rows": 0,
+        "headers": [
+          "ポートフォリオ価値",
+          "日次損益",
+          "日次リターン",
+          "累積リターン"
+        ],
+        "has_data": false
+      },
+      "戦略別統計": {
+        "max_row": 1,
+        "max_col": 9,
+        "data_rows": 0,
+        "headers": [
+          "戦略名",
+          "取引回数",
+          "勝率",
+          "平均利益",
+          "平均損失",
+          "最大利益",
+          "最大損失",
+          "プロフィットファクター",
+          "総損益"
+        ],
+        "has_data": false
+      },
+      "切替分析": {
+        "max_row": 56,
+        "max_col": 8,
+        "data_rows": 55,
+        "headers": [
+          "切替日",
+          "切替前銘柄",
+          "切替後銘柄",
+          "切替理由",
+          "切替時価格",
+          "切替コスト",
+          "切替後パフォーマンス",
+          "成功判定"
+        ],
+        "has_data": true
+      }
+    },
+    "numerical_verification": {
+      "trade_history": {
+        "sheet_found": true,
+        "total_trades": 0,
+        "strategy_distribution": {},
+        "holding_period_analysis": {},
+        "price_analysis": {},
+        "pnl_analysis": {},
+        "issues": []
+      },
+      "strategy_statistics": {
+        "sheet_found": false,
+        "strategy_count": 0,
+        "strategies_listed": [],
+        "metrics_analysis": {},
+        "issues": [
+          "戦略統計シートが見つからない"
+        ]
+      },
+      "switch_analysis": {
+        "sheet_found": true,
+        "switch_count": 55,
+        "success_rate_analysis": {},
+        "frequency_analysis": {},
+        "issues": []
+      }
+    },
+    "problem_correlation": {},
+    "engine_reliability": {
+      "total_issues_found": 1,
+      "reliability_score": 90,
+      "engine_quality_score": 85.0,
+      "quality_vs_output_mismatch": false,
+      "assessment": "高信頼性: 85.0点エンジンの品質が出力に反映されている"
+    },
+    "issues_found": [
+      "戦略統計シートが見つからない"
+    ],
+    "recommendations": []
+  }
+}
