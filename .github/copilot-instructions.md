@@ -47,3 +47,30 @@
 - Windows PowerShell環境では、複数コマンドを連結する際に `&&` ではなく `;` を使用してください。
   - 例: `python main.py ; echo done`
   - `&&` はPowerShellでは動作しません。
+
+## DSSMS 優先ガイド (新規)
+- Primary Focus: DSSMS Core (ranking / scoring / switching)
+- コード生成優先順位: dssms_* → adaptive/ranking/perfect_order → multi-strategy → 出力
+- 未実装プレースホルダは pass ではなく TODO(tag:phase, rationale) コメント必須
+- 切替イベント: SwitchEvent(JSON serializable) を破壊しない変更推奨
+- 再現性要素: seed, deterministic_mode, cache invalidation keys
+- Perfect Order 判定結果には timeframe 別 MA 値と判定フラグを保持
+
+## Error Severity Policy
+- CRITICAL: raise + 上位へ伝播
+- ERROR: ログ + フォールバック
+- WARNING: ログのみ
+- INFO/DEBUG: 状態追跡
+
+## KPI メタデータ出力
+- 50銘柄ランキング処理時間(ms)
+- 不要切替判定結果 (pending / evaluated)
+- Excel export hash (内容一意性)
+
+## 切替評価
+- 不要切替: 10営業日後 (p_after - p_before)/p_before - cost ≤ 0
+- cost デフォルト: 0.2% (設定値で上書き可)
+
+## 方針
+- kabu 実行タイミング固定しない
+- 強化学習: 現時点導入予定なし
