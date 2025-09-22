@@ -346,6 +346,24 @@ class DSSMSBacktester:
         self.switch_cost_rate = self.config.get('switch_cost_rate', 0.001)  # 0.1%
         self.min_holding_period_hours = self.config.get('min_holding_period_hours', 24)  # 1日
         
+        # Problem 6 Phase 3: 統一PortfolioDataManager統合
+        # Phase 1緊急修復 → Phase 2統一管理 → Phase 3完全統合
+        try:
+            from .portfolio_data_manager import create_unified_portfolio_manager
+        except ImportError:
+            # 相対import失敗時のフォールバック
+            import sys
+            import os
+            sys.path.append(os.path.dirname(__file__))
+            from portfolio_data_manager import create_unified_portfolio_manager
+        
+        self.unified_portfolio_manager = create_unified_portfolio_manager("basic")
+        
+        # Phase 1レガシーサポート (27箇所portfolio_values参照の移行期間)
+        self.portfolio_values: Dict[datetime, float] = {}
+        self.portfolio_values_raw: List[float] = []  # 連続値配列
+        self.logger.info("Problem 6 Phase 3: 統一ポートフォリオマネージャ統合完了")
+        
         self.logger.info("DSSMSBacktester初期化完了")
 
     def _setup_deterministic_mode(self):
@@ -939,7 +957,7 @@ class DSSMSBacktester:
                 'volatility': market_condition.get('volatility', 0.0),
                 'current_drawdown': self._calculate_current_drawdown(),
                 'sharpe_ratio': self._calculate_current_sharpe_ratio(current_position),
-                'portfolio_value': self.portfolio_values.get(date, 100000.0),
+                'portfolio_value': self.unified_portfolio_manager.get_unified_value(date, 100000.0),
                 'volatility_spike': market_condition.get('volatility_spike', False)
             }
             
@@ -1059,6 +1077,75 @@ class DSSMSBacktester:
                 'trigger': None
             }
             
+    def _sync_portfolio_values(self, date: datetime, value: float) -> None:
+        """
+        Problem 6 Phase 3: 統一portfolio_values管理
+        Phase 1緊急修復 → Phase 3統一マネージャー統合
+        """
+        try:
+            # Phase 3: 統一マネージャーへの保存
+            success = self.unified_portfolio_manager.store_unified_value(
+                date, value, f"dssms_backtester_{date.strftime('%Y%m%d')}"
+            )
+            
+            if success:
+                self.logger.debug(f"統一マネージャーに保存成功: {date} = {value:.2f}")
+            else:
+                self.logger.warning(f"統一マネージャー保存失敗: {date} = {value:.2f}")
+            
+            # Phase 1レガシーサポート (移行期間の互換性確保)
+            self.portfolio_values[date] = value
+            
+            # 2. 連続配列への格納  
+            self.portfolio_values_raw.append(value)
+            
+            # 3. performance_historyとの同期
+            if 'portfolio_value' not in self.performance_history:
+                self.performance_history['portfolio_value'] = []
+            self.performance_history['portfolio_value'].append(value)
+            
+            # 4. サイズ制限（メモリ管理）
+            max_history = self.config.get('max_portfolio_history', 10000)
+            if len(self.portfolio_values_raw) > max_history:
+                self.portfolio_values_raw = self.portfolio_values_raw[-max_history:]
+                self.performance_history['portfolio_value'] = self.performance_history['portfolio_value'][-max_history:]
+                
+            self.logger.debug(f"Portfolio値同期完了: {date} = {value:.2f}")
+            
+        except Exception as e:
+            self.logger.error(f"Portfolio値同期エラー {date}: {e}")
+            # フォールバック: 最小限の登録
+            self.portfolio_values[date] = value or 100000.0
+
+    def _migrate_phase1_to_unified(self) -> bool:
+        """
+        Problem 6 Phase 3: Phase 1データを統一マネージャーに一括移行
+        
+        Returns:
+            bool: 移行成功フラグ
+        """
+        try:
+            # Phase 1蓄積データを統一マネージャーに同期
+            sync_success = self.unified_portfolio_manager.sync_with_phase1_data(
+                portfolio_values=self.portfolio_values,
+                portfolio_values_raw=self.portfolio_values_raw,
+                performance_history=self.performance_history
+            )
+            
+            if sync_success:
+                validation_result = self.unified_portfolio_manager.validate_unified_integrity()
+                migrated_count = validation_result.get('statistics', {}).get('total_records', 0)
+                
+                self.logger.info(f"Phase 1→統一マネージャー移行完了: {migrated_count}件")
+                return True
+            else:
+                self.logger.warning("Phase 1データ移行に失敗")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"Phase 1データ移行エラー: {e}")
+            return False
+
     def _calculate_daily_performance(self, position: Optional[str]) -> float:
         """日次パフォーマンス計算（ISM統合用）"""
         # TODO(tag:phase1, rationale:ISM統合支援): 実装を必要に応じて拡張
@@ -1257,6 +1344,8 @@ class DSSMSBacktester:
         """修正版: ポートフォリオ価値更新"""
         try:
             if not position or position == "CASH":
+                # Problem 6 Phase 1: portfolio_values同期
+                self._sync_portfolio_values(date, current_value)
                 return current_value
             
             # 現実的な日次リターン生成（年率10-15%程度を想定）
@@ -1268,6 +1357,9 @@ class DSSMSBacktester:
             # 最小値チェック（完全に0にならないようにする）
             new_value = max(new_value, current_value * 0.8)  # 最大でも20%の日次下落まで
             
+            # Problem 6 Phase 1: portfolio_values同期
+            self._sync_portfolio_values(date, new_value)
+            
             self.logger.debug(f"価値更新: {position} {daily_return:+.4f} "
                             f"{current_value:,.0f} -> {new_value:,.0f}")
             
@@ -1276,7 +1368,10 @@ class DSSMSBacktester:
         except Exception as e:
             self.logger.warning(f"価値更新エラー {date}: {e}")
             # エラー時は小幅な変動のみ
-            return current_value * (1 + np.random.uniform(-0.01, 0.01))
+            fallback_value = current_value * (1 + np.random.uniform(-0.01, 0.01))
+            # Problem 6 Phase 1: エラー時もportfolio_values同期
+            self._sync_portfolio_values(date, fallback_value)
+            return fallback_value
 
     def _record_daily_state(self, date: datetime, position: Optional[str], 
                           portfolio_value: float, market_condition: Dict[str, Any]):

@@ -31,14 +31,16 @@
   },
   "switch_criteria": {
     "perfect_order_breakdown_threshold": 0.7,
-    "score_difference_threshold": 0.08,
-    "minimum_holding_period_hours": 2,
+    "score_difference_threshold": 0.12,
+    "minimum_holding_period_hours": 4,
     "confidence_threshold": 0.5
   },
   "risk_control": {
     "max_daily_switches": 5,
     "max_weekly_switches": 20,
-    "drawdown_restriction_threshold": 0.05
+    "drawdown_restriction_threshold": 0.05,
+    "volatility_threshold": 0.3,
+    "max_position_change_rate": 0.8
   },
   "intelligent_switch_manager": {
     "unified_switching": true,
