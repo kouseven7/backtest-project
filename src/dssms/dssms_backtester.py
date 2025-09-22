@@ -351,8 +351,29 @@ class DSSMSBacktester:
             self.enhanced_reporter = None
             self.logger.warning("強化レポート未使用")
         
-        # 初期設定
-        self.initial_capital = self.config.get('initial_capital', 1000000)  # 100万円
+        # Problem 10 Phase 1: Critical attributes安全初期化
+        # 初期設定（initial_capitalの安全な初期化）
+        try:
+            initial_capital_config = self.config.get('initial_capital', 1000000)
+            if not isinstance(initial_capital_config, (int, float)) or initial_capital_config <= 0:
+                self.logger.warning(f"無効なinitial_capital値: {initial_capital_config}, デフォルト値を使用")
+                self.initial_capital = 1000000.0
+            else:
+                self.initial_capital = float(initial_capital_config)
+        except (ValueError, TypeError) as e:
+            self.logger.error(f"initial_capital初期化エラー: {e}, デフォルト値を使用")
+            self.initial_capital = 1000000.0
+        
+        # daily_returns安全初期化（performance_historyで既に初期化済みだが検証）
+        if 'daily_returns' not in self.performance_history:
+            self.performance_history['daily_returns'] = []
+            self.logger.warning("daily_returns再初期化を実行")
+        
+        # _performance_metrics安全初期化（新規追加）
+        self._performance_metrics = None  # 遅延初期化用
+        self._performance_metrics_cache = {}  # キャッシュ管理
+        self._last_performance_calculation = None  # 最終計算時刻
+        
         self.switch_cost_rate = self.config.get('switch_cost_rate', 0.001)  # 0.1%
         self.min_holding_period_hours = self.config.get('min_holding_period_hours', 24)  # 1日
         
@@ -624,7 +645,7 @@ class DSSMSBacktester:
 
     def calculate_dssms_performance(self, simulation_result: Dict[str, Any]) -> DSSMSPerformanceMetrics:
         """
-        DSSMS専用パフォーマンス計算（Task 1.2強化版）
+        DSSMS専用パフォーマンス計算（Problem 10 Phase 1対応版）
         
         Args:
             simulation_result: シミュレーション結果
@@ -632,7 +653,12 @@ class DSSMSBacktester:
         Returns:
             DSSMSPerformanceMetrics: パフォーマンス指標
         """
-        self.logger.info("DSSMS専用パフォーマンス計算開始（Problem 6対応版）")
+        self.logger.info("DSSMS専用パフォーマンス計算開始（Problem 10 Phase 1対応版）")
+        
+        # Problem 10 Phase 1: Critical attributes安全性確認
+        if not self._validate_critical_attributes():
+            self.logger.error("Critical attributesが無効です - 空のメトリクスを返します")
+            return self._get_empty_performance_metrics()
         
         try:
             # ポートフォリオデータマネージャ経由でデータ取得 (Problem 6 統一インターフェース)
@@ -655,7 +681,7 @@ class DSSMSBacktester:
                 
                 self.logger.info(f"ポートフォリオマネージャ経由: {len(portfolio_values)}値取得")
             else:
-                # フォールバック：従来の直接アクセス方式
+                # フォールバック：従来の直接アクセス方式（Problem 10安全化）
                 portfolio_values_raw = self.performance_history.get('portfolio_value', [])
                 daily_returns_raw = self.performance_history.get('daily_returns', [])
                 
@@ -667,10 +693,25 @@ class DSSMSBacktester:
                     self.logger.warning("パフォーマンス計算に十分なデータがありません")
                     return self._get_empty_performance_metrics()
                 
-                # 基本指標計算（従来方式）
-                total_return = float((portfolio_values[-1] - portfolio_values[0]) / portfolio_values[0])
-                volatility = float(np.std(daily_returns)) * np.sqrt(252) if daily_returns else 0.0
-                max_drawdown = self._calculate_max_drawdown(portfolio_values)
+                # Problem 10 Phase 1: ZeroDivisionError prevention
+                if not hasattr(self, 'initial_capital') or self.initial_capital <= 0:
+                    self.logger.error("initial_capitalが無効または未設定です")
+                    return self._get_empty_performance_metrics()
+                
+                # 基本指標計算（従来方式 + 安全化）
+                try:
+                    total_return = float((portfolio_values[-1] - portfolio_values[0]) / portfolio_values[0])
+                except (IndexError, ZeroDivisionError) as e:
+                    self.logger.warning(f"total_return計算エラー: {e}")
+                    total_return = 0.0
+                
+                try:
+                    volatility = float(np.std(daily_returns)) * np.sqrt(252) if daily_returns else 0.0
+                except (ValueError, TypeError) as e:
+                    self.logger.warning(f"volatility計算エラー: {e}")
+                    volatility = 0.0
+                
+                max_drawdown = self._calculate_max_drawdown()
                 
                 self.logger.info(f"フォールバック方式: {len(portfolio_values)}値取得")
             
@@ -682,26 +723,50 @@ class DSSMSBacktester:
                 except Exception as e:
                     self.logger.warning(f"品質管理エラー: {e}")
             
-            # 基本指標計算継続（型安全版）
+            # 基本指標計算継続（型安全版 + Problem 10 Phase 2対応）
             try:
+                # Problem 10 Phase 2: 安全なdaily_returns取得
+                daily_returns_for_calculations = []
                 
-                # 最大ドローダウン
-                max_drawdown = self._calculate_max_drawdown()
+                # Step 1: フォールバック方式から取得（既定義の場合）
+                if 'daily_returns' in locals():
+                    daily_returns_for_calculations = daily_returns
                 
-                # シャープレシオ
-                risk_free_rate = 0.001  # 0.1% (年率)
-                excess_returns = [float(r) - risk_free_rate/252 for r in daily_returns] if daily_returns else []
-                sharpe_ratio = (float(np.mean(excess_returns)) / float(np.std(excess_returns)) * np.sqrt(252)) if excess_returns and np.std(excess_returns) > 0 else 0.0
+                # Step 2: performance_historyから再取得（バックアップ）
+                if not daily_returns_for_calculations:
+                    daily_returns_raw_backup = self.performance_history.get('daily_returns', [])
+                    daily_returns_for_calculations = [float(r) for r in daily_returns_raw_backup if isinstance(r, (int, float))]
+                    self.logger.info(f"daily_returns backup取得: {len(daily_returns_for_calculations)}件")
                 
-                # ソルティノレシオ
-                downside_returns = [float(r) for r in daily_returns if float(r) < 0] if daily_returns else []
-                downside_deviation = float(np.std(downside_returns)) if downside_returns else 0.0
-                sortino_ratio = (float(np.mean(excess_returns)) / downside_deviation * np.sqrt(252)) if excess_returns and downside_deviation > 0 else 0.0
+                # Problem 10 Phase 2: StatisticalCalculator統合（可能な場合）
+                if self.statistical_calculator and daily_returns_for_calculations:
+                    try:
+                        # 統計計算エンジンを使用した精密計算
+                        enhanced_stats = self.statistical_calculator.calculate_enhanced_statistics(
+                            returns=daily_returns_for_calculations,
+                            risk_free_rate=0.001
+                        )
+                        sharpe_ratio = enhanced_stats.get('sharpe_ratio', 0.0)
+                        sortino_ratio = enhanced_stats.get('sortino_ratio', 0.0)
+                        max_drawdown = enhanced_stats.get('max_drawdown', 0.0)
+                        self.logger.info("StatisticalCalculator使用で精密計算完了")
+                        
+                    except Exception as calc_error:
+                        self.logger.warning(f"StatisticalCalculator計算エラー: {calc_error} - フォールバック計算実行")
+                        # フォールバック計算実行
+                        sharpe_ratio, sortino_ratio = self._calculate_ratios_fallback(daily_returns_for_calculations)
+                        max_drawdown = self._calculate_max_drawdown()
+                else:
+                    # 従来計算方式（Problem 10安全化済み）
+                    sharpe_ratio, sortino_ratio = self._calculate_ratios_fallback(daily_returns_for_calculations)
+                    max_drawdown = self._calculate_max_drawdown()
                 
             except (ZeroDivisionError, IndexError, ValueError) as e:
                 self.logger.warning(f"指標計算エラー: {e}")
-                total_return = 0.0
-                volatility = 0.0
+                if 'total_return' not in locals():
+                    total_return = 0.0
+                if 'volatility' not in locals():
+                    volatility = 0.0
                 max_drawdown = 0.0
                 sharpe_ratio = 0.0
                 sortino_ratio = 0.0
@@ -1711,6 +1776,99 @@ class DSSMSBacktester:
         total_gains = sum(max(0, s.profit_loss_at_switch) for s in self.switch_history)
         
         return (total_gains - total_costs) / total_costs if total_costs > 0 else 0.0
+
+    def _validate_critical_attributes(self) -> bool:
+        """
+        Problem 10 Phase 1: Critical attributes安全性検証
+        
+        Returns:
+            bool: すべての必須属性が有効な場合True
+        """
+        try:
+            # initial_capital検証
+            if not hasattr(self, 'initial_capital'):
+                self.logger.error("initial_capital属性が存在しません")
+                return False
+            
+            if not isinstance(self.initial_capital, (int, float)) or self.initial_capital <= 0:
+                self.logger.error(f"invalid initial_capital: {self.initial_capital}")
+                return False
+            
+            # performance_history検証
+            if not hasattr(self, 'performance_history') or not isinstance(self.performance_history, dict):
+                self.logger.error("performance_history属性が無効または存在しません")
+                return False
+            
+            # daily_returns配列検証
+            if 'daily_returns' not in self.performance_history:
+                self.logger.warning("daily_returns配列が存在しません - 初期化します")
+                self.performance_history['daily_returns'] = []
+            
+            # _performance_metricsキャッシュ検証
+            if not hasattr(self, '_performance_metrics_cache'):
+                self.logger.info("_performance_metrics_cache初期化")
+                self._performance_metrics_cache = {}
+                
+            if not hasattr(self, '_last_performance_calculation'):
+                self._last_performance_calculation = None
+                
+            self.logger.debug("Critical attributes検証完了")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Critical attributes検証エラー: {e}")
+            return False
+
+    def _calculate_ratios_fallback(self, daily_returns: List[float]) -> Tuple[float, float]:
+        """
+        Problem 10 Phase 2: フォールバック計算方式でシャープ・ソルティノレシオ算出
+        
+        Args:
+            daily_returns: 日次リターン配列
+            
+        Returns:
+            Tuple[float, float]: (シャープレシオ, ソルティノレシオ)
+        """
+        try:
+            if not daily_returns or len(daily_returns) < 2:
+                return 0.0, 0.0
+            
+            risk_free_rate = 0.001  # 0.1% (年率)
+            
+            # シャープレシオ（ZeroDivisionError prevention）
+            try:
+                excess_returns = [float(r) - risk_free_rate/252 for r in daily_returns]
+                if excess_returns and len(excess_returns) > 1:
+                    excess_mean = float(np.mean(excess_returns))
+                    excess_std = float(np.std(excess_returns))
+                    sharpe_ratio = (excess_mean / excess_std * np.sqrt(252)) if excess_std > 0 else 0.0
+                else:
+                    sharpe_ratio = 0.0
+            except (ValueError, TypeError, ZeroDivisionError) as e:
+                self.logger.warning(f"シャープレシオ計算エラー: {e}")
+                sharpe_ratio = 0.0
+            
+            # ソルティノレシオ（ZeroDivisionError prevention）
+            try:
+                downside_returns = [float(r) for r in daily_returns if float(r) < 0]
+                if downside_returns and len(downside_returns) > 1:
+                    downside_deviation = float(np.std(downside_returns))
+                    if downside_deviation > 0:
+                        excess_returns_for_sortino = [float(r) - risk_free_rate/252 for r in daily_returns]
+                        sortino_ratio = (float(np.mean(excess_returns_for_sortino)) / downside_deviation * np.sqrt(252))
+                    else:
+                        sortino_ratio = 0.0
+                else:
+                    sortino_ratio = 0.0
+            except (ValueError, TypeError, ZeroDivisionError) as e:
+                self.logger.warning(f"ソルティノレシオ計算エラー: {e}")
+                sortino_ratio = 0.0
+            
+            return sharpe_ratio, sortino_ratio
+            
+        except Exception as e:
+            self.logger.error(f"フォールバック計算エラー: {e}")
+            return 0.0, 0.0
 
     def _get_empty_performance_metrics(self) -> DSSMSPerformanceMetrics:
         """空のパフォーマンス指標"""
@@ -3114,6 +3272,251 @@ class DSSMSBacktester:
                 "tracking_error": 0.0,
                 "adjustment_factor": 1.0
             }
+
+    # Problem 10 Phase 4.1: Quality Engine統合
+    def get_performance_summary_enhanced(self, simulation_result: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Phase 4.1: 85.0-point標準準拠の品質エンジン統合でパフォーマンスサマリー生成
+        
+        Args:
+            simulation_result: シミュレーション結果
+            
+        Returns:
+            Dict[str, Any]: 品質強化されたパフォーマンスサマリー
+        """
+        try:
+            self.logger.info("Phase 4.1: Quality Engine統合パフォーマンスサマリー生成開始")
+            
+            # Step 1: 基本パフォーマンス計算（既存）
+            performance_metrics = self.calculate_dssms_performance(simulation_result)
+            
+            # Step 2: 品質検証実行
+            quality_score = self._validate_output_quality(performance_metrics, simulation_result)
+            
+            # Step 3: 85.0-point標準での品質強化
+            enhanced_summary = {
+                # 基本指標（品質検証済み）
+                'total_return': float(performance_metrics.total_return),
+                'volatility': float(performance_metrics.volatility),
+                'max_drawdown': float(performance_metrics.max_drawdown),
+                'sharpe_ratio': float(performance_metrics.sharpe_ratio),
+                'sortino_ratio': float(performance_metrics.sortino_ratio),
+                
+                # DSSMS専用指標
+                'symbol_switches_count': int(performance_metrics.symbol_switches_count),
+                'switch_success_rate': float(performance_metrics.switch_success_rate),
+                'switch_costs_total': float(performance_metrics.switch_costs_total),
+                'dynamic_selection_efficiency': float(performance_metrics.dynamic_selection_efficiency),
+                
+                # Phase 4.1 品質エンジン統合指標
+                'quality_score': quality_score,
+                'quality_tier': 'PREMIUM' if quality_score >= 90.0 else 'STANDARD' if quality_score >= 85.0 else 'BASIC',
+                'data_completeness': self._calculate_data_completeness(simulation_result),
+                'calculation_precision': self._calculate_precision_score(performance_metrics),
+                'error_rate': self._calculate_error_rate(simulation_result),
+                
+                # メタデータ
+                'enhancement_timestamp': datetime.now().isoformat(),
+                'quality_engine_version': '4.1.0',
+                'statistical_confidence': self._calculate_statistical_confidence(performance_metrics)
+            }
+            
+            self.logger.info(f"Phase 4.1 品質スコア: {quality_score:.2f}, Tier: {enhanced_summary['quality_tier']}")
+            
+            return enhanced_summary
+            
+        except Exception as e:
+            self.logger.error(f"Phase 4.1 品質エンジン統合エラー: {e}")
+            # フォールバック: 基本サマリー返却
+            return {
+                'total_return': 0.0,
+                'quality_score': 0.0,
+                'quality_tier': 'ERROR',
+                'error_message': str(e)
+            }
+
+    def _validate_output_quality(self, metrics: DSSMSPerformanceMetrics, simulation_result: Dict[str, Any]) -> float:
+        """
+        Phase 4.1: 85.0-point標準でアウトプット品質検証
+        
+        Args:
+            metrics: パフォーマンス指標
+            simulation_result: シミュレーション結果
+            
+        Returns:
+            float: 品質スコア (0-100)
+        """
+        try:
+            quality_score = 0.0
+            
+            # 品質検証項目 (各20点満点、合計100点)
+            
+            # 1. 数値妥当性 (20点)
+            if not np.isnan(metrics.total_return) and not np.isinf(metrics.total_return):
+                quality_score += 5.0
+            if 0 <= metrics.volatility <= 2.0:  # 200%以下
+                quality_score += 5.0
+            if 0 <= metrics.max_drawdown <= 1.0:  # 100%以下
+                quality_score += 5.0
+            if -10 <= metrics.sharpe_ratio <= 10:  # 合理的範囲
+                quality_score += 5.0
+            
+            # 2. データ完全性 (20点)
+            portfolio_values = self.performance_history.get('portfolio_value', [])
+            if len(portfolio_values) >= 10:  # 最低10データポイント
+                quality_score += 10.0
+            elif len(portfolio_values) >= 5:
+                quality_score += 5.0
+            
+            daily_returns = self.performance_history.get('daily_returns', [])
+            if len(daily_returns) >= 10:
+                quality_score += 10.0
+            elif len(daily_returns) >= 5:
+                quality_score += 5.0
+            
+            # 3. 計算一貫性 (20点)
+            if metrics.symbol_switches_count >= 0:
+                quality_score += 5.0
+            if 0 <= metrics.switch_success_rate <= 1:
+                quality_score += 5.0
+            if metrics.switch_costs_total >= 0:
+                quality_score += 5.0
+            if 0 <= metrics.dynamic_selection_efficiency <= 2:
+                quality_score += 5.0
+            
+            # 4. 統計的妥当性 (20点)
+            if len(daily_returns) > 1:
+                calculated_volatility = np.std(daily_returns) * np.sqrt(252)
+                volatility_diff = abs(calculated_volatility - metrics.volatility)
+                if volatility_diff < 0.05:  # 5%以内の誤差
+                    quality_score += 10.0
+                elif volatility_diff < 0.1:  # 10%以内の誤差
+                    quality_score += 5.0
+            
+            # シャープレシオ再計算確認
+            if len(daily_returns) > 1 and np.std(daily_returns) > 0:
+                expected_sharpe = (np.mean(daily_returns) / np.std(daily_returns)) * np.sqrt(252)
+                sharpe_diff = abs(expected_sharpe - metrics.sharpe_ratio)
+                if sharpe_diff < 0.5:
+                    quality_score += 10.0
+                elif sharpe_diff < 1.0:
+                    quality_score += 5.0
+            
+            # 5. エラー回避 (20点)
+            error_count = 0
+            
+            # ZeroDivisionError チェック
+            if metrics.volatility == 0 and len(daily_returns) > 1:
+                error_count += 1
+            
+            # NaN/Inf チェック
+            for attr in ['total_return', 'volatility', 'sharpe_ratio', 'sortino_ratio']:
+                value = getattr(metrics, attr)
+                if np.isnan(value) or np.isinf(value):
+                    error_count += 1
+            
+            # エラー率 = (1 - error_count/max_errors) * 20
+            max_errors = 6
+            error_penalty = min(error_count, max_errors) / max_errors * 20
+            quality_score += (20 - error_penalty)
+            
+            # 最終スコア (0-100の範囲)
+            final_score = min(100.0, max(0.0, quality_score))
+            
+            self.logger.debug(f"品質検証完了: {final_score:.2f}/100")
+            return final_score
+            
+        except Exception as e:
+            self.logger.error(f"品質検証エラー: {e}")
+            return 0.0
+
+    def _calculate_data_completeness(self, simulation_result: Dict[str, Any]) -> float:
+        """データ完全性計算"""
+        try:
+            expected_fields = ['portfolio_value', 'daily_returns', 'switches', 'performance_history']
+            available_fields = sum(1 for field in expected_fields if field in simulation_result or 
+                                  field in self.performance_history)
+            return available_fields / len(expected_fields) * 100.0
+        except:
+            return 0.0
+
+    def _calculate_precision_score(self, metrics: DSSMSPerformanceMetrics) -> float:
+        """計算精度スコア算出"""
+        try:
+            precision_score = 0.0
+            
+            # 精度チェック項目
+            if abs(metrics.total_return) < 10:  # 1000%以下
+                precision_score += 25.0
+            if 0 <= metrics.volatility <= 1:  # 100%以下
+                precision_score += 25.0
+            if -5 <= metrics.sharpe_ratio <= 5:  # 合理的範囲
+                precision_score += 25.0
+            if 0 <= metrics.switch_success_rate <= 1:  # 0-100%
+                precision_score += 25.0
+            
+            return precision_score
+        except:
+            return 0.0
+
+    def _calculate_error_rate(self, simulation_result: Dict[str, Any]) -> float:
+        """エラー率計算"""
+        try:
+            total_calculations = 10  # 主要計算項目数
+            error_count = 0
+            
+            # エラーチェック
+            portfolio_values = self.performance_history.get('portfolio_value', [])
+            if not portfolio_values:
+                error_count += 1
+            
+            daily_returns = self.performance_history.get('daily_returns', [])
+            if not daily_returns:
+                error_count += 1
+            
+            # 計算エラーチェック
+            try:
+                if portfolio_values and len(portfolio_values) >= 2:
+                    test_return = (portfolio_values[-1] - portfolio_values[0]) / portfolio_values[0]
+                    if np.isnan(test_return) or np.isinf(test_return):
+                        error_count += 1
+            except:
+                error_count += 1
+            
+            return (error_count / total_calculations) * 100.0
+        except:
+            return 100.0  # 全エラー
+
+    def _calculate_statistical_confidence(self, metrics: DSSMSPerformanceMetrics) -> float:
+        """統計的信頼度計算"""
+        try:
+            confidence = 0.0
+            
+            # データ量評価
+            daily_returns = self.performance_history.get('daily_returns', [])
+            if len(daily_returns) >= 30:
+                confidence += 30.0
+            elif len(daily_returns) >= 10:
+                confidence += 20.0
+            elif len(daily_returns) >= 5:
+                confidence += 10.0
+            
+            # 統計的妥当性
+            if len(daily_returns) > 1:
+                if np.std(daily_returns) > 0:
+                    confidence += 20.0
+                if not np.isnan(np.mean(daily_returns)):
+                    confidence += 20.0
+            
+            # 指標一貫性
+            if 0 <= metrics.switch_success_rate <= 1:
+                confidence += 15.0
+            if metrics.symbol_switches_count >= 0:
+                confidence += 15.0
+            
+            return min(100.0, confidence)
+        except:
+            return 0.0
 
 
 def main():
