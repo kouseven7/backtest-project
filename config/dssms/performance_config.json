@@ -1,0 +1,32 @@
+{
+  "performance_optimization": {
+    "enable": true,
+    "cache": {
+      "enable_ranking_cache": true,
+      "enable_portfolio_cache": true,
+      "cache_size_limit": 1000,
+      "cache_ttl_seconds": 3600
+    },
+    "performance_monitoring": {
+      "enable_timing": true,
+      "warning_threshold_seconds": 30,
+      "log_slow_operations": true,
+      "detailed_metrics": false
+    },
+    "memory_optimization": {
+      "enable_gc_optimization": true,
+      "large_data_threshold_mb": 100,
+      "auto_cleanup_interval_minutes": 30
+    },
+    "ranking_optimization": {
+      "enable_parallel_processing": false,
+      "batch_size": 10,
+      "max_workers": 4
+    },
+    "debug": {
+      "log_cache_metrics": true,
+      "log_memory_usage": false,
+      "performance_profiling": false
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-09-22T13:42:31.734034",
+  "measurement_phase": "baseline",
+  "process_info": {
+    "pid": 13288,
+    "cpu_count": 8,
+    "memory_total_gb": 31.957534790039062
+  },
+  "memory_baseline": {
+    "memory_usage_mb": 17.6875,
+    "memory_after_gc_mb": 17.69140625,
+    "gc_objects_before": 189,
+    "gc_objects_collected": 0,
+    "cpu_percent": 0.0
+  },
+  "initialization": {
+    "success": true,
+    "execution_time": 3.0424935817718506,
+    "import_time": 3.012923002243042,
+    "init_time": 0.029570579528808594,
+    "optimization_enabled": true,
+    "backtester": 

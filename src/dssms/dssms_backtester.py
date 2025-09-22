@@ -27,6 +27,7 @@ import logging
 from dataclasses import dataclass, field
 from enum import Enum
 import warnings
+import time
 
 # プロジェクトルートを追加
 project_root = Path(__file__).parent.parent.parent
@@ -216,6 +217,21 @@ class DSSMSBacktester:
         else:
             self.statistical_calculator = None
             self.logger.warning("StatisticalCalculator利用不可 - フォールバックモードで動作")
+        
+        # Problem 8: 実行ランタイム最適化 - PerformanceOptimizer統合
+        # TODO(tag:phase2, rationale:50銘柄ランキング処理時間<30s): パフォーマンス最適化実装
+        performance_config = self.config.get('performance_optimization', {})
+        if performance_config.get('enable', True):
+            try:
+                from src.dssms.performance_optimizer import PerformanceOptimizer
+                self.performance_optimizer = PerformanceOptimizer(performance_config)
+                self.logger.info("PerformanceOptimizer統合完了 - 実行ランタイム最適化有効")
+            except ImportError as e:
+                self.performance_optimizer = None
+                self.logger.warning(f"PerformanceOptimizer利用不可: {e}")
+        else:
+            self.performance_optimizer = None
+            self.logger.info("PerformanceOptimizer無効化")
         
         # 決定論的モード設定
         self._setup_deterministic_mode()
@@ -790,7 +806,20 @@ class DSSMSBacktester:
 
     def _update_symbol_ranking(self, date: datetime, symbols: List[str]) -> Dict[str, Any]:
         """現実的な銘柄ランキング更新（安定性重視）"""
+        # Problem 8: ランキング計算パフォーマンス最適化
+        # TODO(tag:phase2, rationale:50銘柄ランキング処理時間<30s): 最適化実装
+        start_time = time.time()
+        
         try:
+            # キャッシュ最適化適用
+            if self.performance_optimizer:
+                symbols_data = {'symbols': symbols, 'date': date}
+                cached_result = self.performance_optimizer.optimize_ranking_calculation(symbols_data)
+                if cached_result and cached_result != symbols_data:
+                    execution_time = time.time() - start_time
+                    self.logger.debug(f"ランキング計算（キャッシュ）: {execution_time:.2f}s")
+                    return cached_result
+            
             # DSSMS統合パッチをインポート
             try:
                 from src.dssms.dssms_integration_patch import update_symbol_ranking_with_real_data

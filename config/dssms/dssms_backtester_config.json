@@ -79,5 +79,23 @@
     "score_calculation_log": true,
     "performance_breakdown_log": true,
     "log_level": "INFO"
+  },
+  "performance_optimization": {
+    "enable": true,
+    "cache": {
+      "enable_ranking_cache": true,
+      "enable_portfolio_cache": true,
+      "cache_size_limit": 1000,
+      "cache_ttl_seconds": 3600
+    },
+    "performance_monitoring": {
+      "enable_timing": true,
+      "warning_threshold_seconds": 30,
+      "log_slow_operations": true
+    },
+    "memory_optimization": {
+      "enable_gc_optimization": true,
+      "large_data_threshold_mb": 100
+    }
   }
 }
