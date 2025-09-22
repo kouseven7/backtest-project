@@ -1,0 +1,6710 @@
+{
+  "portfolio_values": [
+    {
+      "value": 999000.0,
+      "daily_return": 0.0,
+      "cumulative_return": -0.10000000000000009
+    },
+    {
+      "value": 992264.6263267647,
+      "daily_return": 0.030615000000000028,
+      "cumulative_return": -0.7735373673235291
+    },
+    {
+      "value": 1022642.8078617586,
+      "daily_return": 0.007574999999999929,
+      "cumulative_return": 2.264280786175865
+    },
+    {
+      "value": 1031272.2776002124,
+      "daily_return": -0.024660000000000033,
+      "cumulative_return": 3.127227760021234
+    },
+    {
+      "value": 1022290.3288369818,
+      "daily_return": 0.008189999999999998,
+      "cumulative_return": 2.2290328836981788
+    },
+    {
+      "value": 1030034.1780779219,
+      "daily_return": -0.049724999999999984,
+      "cumulative_return": 3.003417807792186
+    },
+    {
+      "value": 1025836.3703540635,
+      "daily_return": 8.999999999993436e-05,
+      "cumulative_return": 2.5836370354063387
+    },
+    {
+      "value": 1024364.5780515271,
+      "daily_return": 0.011835000000000019,
+      "cumulative_return": 2.436457805152714
+    },
+    {
+      "value": 1020045.2880237114,
+      "daily_return": -0.0035250000000000255,
+      "cumulative_return": 2.0045288023711416
+    },
+    {
+      "value": 1025419.8571445852,
+      "daily_return": 0.06409499999999996,
+      "cumulative_return": 2.5419857144585167
+    },
+    {
+      "value": 1040732.6332751072,
+      "daily_return": 0.04134000000000002,
+      "cumulative_return": 4.073263327510723
+    },
+    {
+      "value": 1015068.1665385431,
+      "daily_return": 0.0020250000000000055,
+      "cumulative_return": 1.5068166538543037
+    },
+    {
+      "value": 1016769.8386364754,
+      "daily_return": 0.06415500000000006,
+      "cumulative_return": 1.676983863647541
+    },
+    {
+      "value": 986761.367719402,
+      "daily_return": 0.028155000000000114,
+      "cumulative_return": -1.3238632280598073
+    },
+    {
+      "value": 981253.6384675385,
+      "daily_return": 0.023729999999999935,
+      "cumulative_return": -1.8746361532461453
+    },
+    {
+      "value": 989290.1057665877,
+      "daily_return": 0.017295000000000102,
+      "cumulative_return": -1.0709894233412287
+    },
+    {
+      "value": 967869.2799308886,
+      "daily_return": 0.047565000000000114,
+      "cumulative_return": -3.213072006911144
+    },
+    {
+      "value": 919741.9799863251,
+      "daily_return": -0.024405000000000142,
+      "cumulative_return": -8.025802001367488
+    },
+    {
+      "value": 920848.8463685133,
+      "daily_return": -0.01579500000000007,
+      "cumulative_return": -7.915115363148672
+    },
+    {
+      "value": 955149.2058865501,
+      "daily_return": 0.022154999999999897,
+      "cumulative_return": -4.485079411344984
+    },
+    {
+      "value": 956863.4794817506,
+      "daily_return": -0.0020399999999999923,
+      "cumulative_return": -4.313652051824935
+    },
+    {
+      "value": 949924.1765321154,
+      "daily_return": 0.020505000000000183,
+      "cumulative_return": -5.007582346788453
+    },
+    {
+      "value": 953912.1880248946,
+      "daily_return": 0.08319,
+      "cumulative_return": -4.608781197510547
+    },
+    {
+      "value": 965385.2171752772,
+      "daily_return": 0.06238499999999996,
+      "cumulative_return": -3.4614782824722856
+    },
+    {
+      "value": 951560.6836020923,
+      "daily_return": 0.08041500000000013,
+      "cumulative_return": -4.843931639790766
+    },
+    {
+      "value": 963080.5332610208,
+      "daily_return": 0.06054000000000001,
+      "cumulative_return": -3.6919466738979168
+    },
+    {
+      "value": 947899.1216495303,
+      "daily_return": 0.06658500000000013,
+      "cumulative_return": -5.210087835046973
+    },
+    {
+      "value": 947984.4325704786,
+      "daily_return": 0.08689500000000007,
+      "cumulative_return": -5.201556742952141
+    },
+    {
+      "value": 955129.472982178,
+      "daily_return": 0.06742500000000001,
+      "cumulative_return": -4.4870527017822015
+    },
+    {
+      "value": 956249.9647626571,
+      "daily_return": 0.013139999999999954,
+      "cumulative_return": -4.375003523734289
+    },
+    {
+      "value": 940142.3601467063,
+      "daily_return": 0.08864999999999998,
+      "cumulative_return": -5.985763985329362
+    },
+    {
+      "value": 951268.9449790426,
+      "daily_return": 0.060165000000000024,
+      "cumulative_return": -4.873105502095743
+    },
+    {
+      "value": 944628.6566114161,
+      "daily_return": 0.022005000000000018,
+      "cumulative_return": -5.537134338858385
+    },
+    {
+      "value": 946072.1550828953,
+      "daily_return": 0.011850000000000064,
+      "cumulative_return": -5.392784491710467
+    },
+    {
+      "value": 942737.2507362281,
+      "daily_return": 0.08687999999999987,
+      "cumulative_return": -5.7262749263771955
+    },
+    {
+      "value": 914382.4115940323,
+      "daily_return": -0.04221000000000003,
+      "cumulative_return": -8.561758840596767
+    },
+    {
+      "value": 917214.0845073751,
+      "daily_return": 0.05468999999999991,
+      "cumulative_return": -8.278591549262481
+    },
+    {
+      "value": 896585.4357474697,
+      "daily_return": 0.020639999999999974,
+      "cumulative_return": -10.341456425253037
+    },
+    {
+      "value": 954052.0792517037,
+      "daily_return": 0.021765000000000093,
+      "cumulative_return": -4.594792074829634
+    },
+    {
+      "value": 947408.5270145407,
+      "daily_return": 0.06298500000000011,
+      "cumulative_return": -5.25914729854593
+    },
+    {
+      "value": 964222.6184292326,
+      "daily_return": 0.0010950000000001087,
+      "cumulative_return": -3.5777381570767375
+    },
+    {
+      "value": 964659.8894481241,
+      "daily_return": 0.05725499999999999,
+      "cumulative_return": -3.5340110551875914
+    },
+    {
+      "value": 1004538.9292779096,
+      "daily_return": -0.0037199999999999295,
+      "cumulative_return": 0.45389292779096646
+    },
+    {
+      "value": 1009074.3000059483,
+      "daily_return": -0.02409000000000009,
+      "cumulative_return": 0.9074300005948333
+    },
+    {
+      "value": 999951.771064795,
+      "daily_return": -0.012689999999999856,
+      "cumulative_return": -0.004822893520506355
+    },
+    {
+      "value": 1008457.8215248027,
+      "daily_return": 0.04705499999999998,
+      "cumulative_return": 0.8457821524802789
+    },
+    {
+      "value": 1010499.9486133904,
+      "daily_return": -0.010755000000000034,
+      "cumulative_return": 1.0499948613390542
+    },
+    {
+      "value": 1007738.3636245576,
+      "daily_return": 0.07519500000000005,
+      "cumulative_return": 0.7738363624557598
+    },
+    {
+      "value": 992833.6504864894,
+      "daily_return": 0.07493999999999998,
+      "cumulative_return": -0.7166349513510584
+    },
+    {
+      "value": 1056528.8933334502,
+      "daily_return": 0.06763500000000001,
+      "cumulative_return": 5.652889333345024
+    },
+    {
+      "value": 1037603.4717309497,
+      "daily_return": 0.046515000000000015,
+      "cumulative_return": 3.760347173094969
+    },
+    {
+      "value": 1030583.4880540514,
+      "daily_return": 0.07871999999999998,
+      "cumulative_return": 3.058348805405142
+    },
+    {
+      "value": 1034479.865608139,
+      "daily_return": -0.024720000000000155,
+      "cumulative_return": 3.447986560813887
+    },
+    {
+      "value": 1063605.6462243362,
+      "daily_return": -0.04256999999999991,
+      "cumulative_return": 6.360564622433618
+    },
+    {
+      "value": 1069073.4071619583,
+      "daily_return": 0.07736999999999991,
+      "cumulative_return": 6.907340716195831
+    },
+    {
+      "value": 1056128.5701341077,
+      "daily_return": 0.07274999999999994,
+      "cumulative_return": 5.612857013410766
+    },
+    {
+      "value": 1090555.9713564909,
+      "daily_return": 0.020715000000000074,
+      "cumulative_return": 9.055597135649096
+    },
+    {
+      "value": 1116434.8645567803,
+      "daily_return": 0.005790000000000035,
+      "cumulative_return": 11.643486455678032
+    },
+    {
+      "value": 1103919.391429534,
+      "daily_return": 0.0792149999999999,
+      "cumulative_return": 10.3919391429534
+    },
+    {
+      "value": 1089373.9065882692,
+      "daily_return": 0.014624999999999921,
+      "cumulative_return": 8.937390658826928
+    },
+    {
+      "value": 1108214.6283027134,
+      "daily_return": 0.06642000000000003,
+      "cumulative_return": 10.821462830271344
+    },
+    {
+      "value": 1116724.3730182953,
+      "daily_return": 0.05775000000000004,
+      "cumulative_return": 11.672437301829518
+    },
+    {
+      "value": 1090351.3469163482,
+      "daily_return": 0.00091499999999997,
+      "cumulative_return": 9.035134691634816
+    },
+    {
+      "value": 1080875.5118666382,
+      "daily_return": 0.08595,
+      "cumulative_return": 8.087551186663822
+    },
+    {
+      "value": 1106348.8073030862,
+      "daily_return": -0.015269999999999909,
+      "cumulative_return": 10.634880730308605
+    },
+    {
+      "value": 1158972.2883224576,
+      "daily_return": -0.04005,
+      "cumulative_return": 15.897228832245759
+    },
+    {
+      "value": 1161330.935443063,
+      "daily_return": -0.04463999999999997,
+      "cumulative_return": 16.1330935443063
+    },
+    {
+      "value": 1187850.3405338984,
+      "daily_return": -0.031754999999999936,
+      "cumulative_return": 18.78503405338985
+    },
+    {
+      "value": 1158860.8529731685,
+      "daily_return": -0.00638999999999988,
+      "cumulative_return": 15.886085297316853
+    },
+    {
+      "value": 1160496.4943356323,
+      "daily_return": -0.03212999999999999,
+      "cumulative_return": 16.04964943356324
+    },
+    {
+      "value": 1151899.5319420686,
+      "daily_return": 0.08605500000000003,
+      "cumulative_return": 15.189953194206861
+    },
+    {
+      "value": 1133705.2788350435,
+      "daily_return": 0.068505,
+      "cumulative_return": 13.370527883504346
+    },
+    {
+      "value": 1116032.8510010096,
+      "daily_return": 0.05088,
+      "cumulative_return": 11.603285100100958
+    },
+    {
+      "value": 1114487.2339531523,
+      "daily_return": 0.062265000000000036,
+      "cumulative_return": 11.448723395315241
+    },
+    {
+      "value": 1111127.5631567654,
+      "daily_return": 0.05352000000000002,
+      "cumulative_return": 11.112756315676542
+    },
+    {
+      "value": 1098854.8690182192,
+      "daily_return": 0.01699500000000003,
+      "cumulative_return": 9.885486901821917
+    },
+    {
+      "value": 1123199.9986413177,
+      "daily_return": 0.04086000000000011,
+      "cumulative_return": 12.31999986413177
+    },
+    {
+      "value": 1099574.8281705943,
+      "daily_return": 0.012794999999999897,
+      "cumulative_return": 9.957482817059438
+    },
+    {
+      "value": 1076837.2551240383,
+      "daily_return": 0.06883500000000009,
+      "cumulative_return": 7.683725512403838
+    },
+    {
+      "value": 1086253.7000139328,
+      "daily_return": -0.029999999999999853,
+      "cumulative_return": 8.625370001393273
+    },
+    {
+      "value": 1088198.0773884882,
+      "daily_return": -0.030570000000000062,
+      "cumulative_return": 8.819807738848828
+    },
+    {
+      "value": 1100789.4071571196,
+      "daily_return": -0.034260000000000033,
+      "cumulative_return": 10.078940715711958
+    },
+    {
+      "value": 1098543.796766519,
+      "daily_return": 0.038099999999999926,
+      "cumulative_return": 9.854379676651902
+    },
+    {
+      "value": 1115455.2107549482,
+      "daily_return": -0.0016950000000000211,
+      "cumulative_return": 11.545521075494825
+    },
+    {
+      "value": 1106137.3916896484,
+      "daily_return": 0.03738000000000004,
+      "cumulative_return": 10.613739168964841
+    },
+    {
+      "value": 1098378.8407541476,
+      "daily_return": -0.03351000000000009,
+      "cumulative_return": 9.83788407541477
+    },
+    {
+      "value": 1120901.0988838116,
+      "daily_return": 0.04285500000000001,
+      "cumulative_return": 12.09010988838115
+    },
+    {
+      "value": 1113964.5449926036,
+      "daily_return": 0.017745000000000007,
+      "cumulative_return": 11.396454499260367
+    },
+    {
+      "value": 1089592.3445384144,
+      "daily_return": 0.08167499999999991,
+      "cumulative_return": 8.959234453841436
+    },
+    {
+      "value": 1108612.606984473,
+      "daily_return": -0.04896000000000005,
+      "cumulative_return": 10.861260698447307
+    },
+    {
+      "value": 1101556.9541267892,
+      "daily_return": -0.016544999999999935,
+      "cumulative_return": 10.155695412678934
+    },
+    {
+      "value": 1193195.4771405968,
+      "daily_return": 0.08425499999999986,
+      "cumulative_return": 19.31954771405968
+    },
+    {
+      "value": 1200306.3344110996,
+      "daily_return": 0.037919999999999975,
+      "cumulative_return": 20.030633441109956
+    },
+    {
+      "value": 1202636.0352851606,
+      "daily_return": 0.00532499999999999,
+      "cumulative_return": 20.26360352851606
+    },
+    {
+      "value": 1216089.3225223636,
+      "daily_return": 0.07093500000000011,
+      "cumulative_return": 21.608932252236368
+    },
+    {
+      "value": 1291955.0549079212,
+      "daily_return": 0.09721499999999987,
+      "cumulative_return": 29.19550549079213
+    },
+    {
+      "value": 1289280.554875126,
+      "daily_return": -0.005399999999999989,
+      "cumulative_return": 28.928055487512605
+    },
+    {
+      "value": 1392958.0506954095,
+      "daily_return": 0.07470000000000004,
+      "cumulative_return": 39.295805069540954
+    },
+    {
+      "value": 1384456.5267645272,
+      "daily_return": 0.09774000000000006,
+      "cumulative_return": 38.445652676452724
+    },
+    {
+      "value": 1379287.8931833794,
+      "daily_return": 0.04816500000000006,
+      "cumulative_return": 37.92878931833794
+    },
+    {
+      "value": 1356808.4127100178,
+      "daily_return": 0.06616500000000002,
+      "cumulative_return": 35.680841271001775
+    },
+    {
+      "value": 1350241.0340751372,
+      "daily_return": 0.03373499999999989,
+      "cumulative_return": 35.02410340751372
+    },
+    {
+      "value": 1431984.626278046,
+      "daily_return": -0.027344999999999942,
+      "cumulative_return": 43.1984626278046
+    },
+    {
+      "value": 1424435.7575207688,
+      "daily_return": 0.08542500000000011,
+      "cumulative_return": 42.44357575207689
+    },
+    {
+      "value": 1419728.166889372,
+      "daily_return": 0.021405000000000018,
+      "cumulative_return": 41.9728166889372
+    },
+    {
+      "value": 1412171.930469223,
+      "daily_return": -0.00014999999999996223,
+      "cumulative_return": 41.217193046922304
+    },
+    {
+      "value": 1506201.3984595165,
+      "daily_return": 0.07860000000000004,
+      "cumulative_return": 50.62013984595164
+    },
+    {
+      "value": 1471484.3033083854,
+      "daily_return": 0.062370000000000064,
+      "cumulative_return": 47.14843033083855
+    },
+    {
+      "value": 1485301.7605651848,
+      "daily_return": 0.0007500000000000995,
+      "cumulative_return": 48.530176056518485
+    },
+    {
+      "value": 1486158.0503918969,
+      "daily_return": -0.016545000000000056,
+      "cumulative_return": 48.615805039189695
+    },
+    {
+      "value": 1494352.3180508972,
+      "daily_return": 0.04642499999999996,
+      "cumulative_return": 49.43523180508973
+    },
+    {
+      "value": 1624204.06272793,
+      "daily_return": 0.08089499999999998,
+      "cumulative_return": 62.420406272792995
+    },
+    {
+      "value": 1579841.992864248,
+      "daily_return": -0.016020000000000117,
+      "cumulative_return": 57.98419928642482
+    },
+    {
+      "value": 1549993.0040848437,
+      "daily_return": 0.06793500000000001,
+      "cumulative_return": 54.99930040848437
+    },
+    {
+      "value": 1654501.2823852643,
+      "daily_return": 0.02287500000000008,
+      "cumulative_return": 65.45012823852643
+    },
+    {
+      "value": 1640711.729944482,
+      "daily_return": 0.08169000000000005,
+      "cumulative_return": 64.0711729944482
+    },
+    {
+      "value": 1644206.6874743202,
+      "daily_return": 0.025365000000000047,
+      "cumulative_return": 64.42066874743202
+    },
+    {
+      "value": 1642864.1903520934,
+      "daily_return": -0.0816501436500694,
+      "cumulative_return": 64.28641903520935
+    },
+    {
+      "value": 1664451.4258133199,
+      "daily_return": 1.313999999999993,
+      "cumulative_return": 66.44514258133198
+    },
+    {
+      "value": 1680446.9396070256,
+      "daily_return": 0.9610081463260256,
+      "cumulative_return": 68.04469396070256
+    },
+    {
+      "value": 1653701.2013658395,
+      "daily_return": -1.5915848106123898,
+      "cumulative_return": 65.37012013658395
+    },
+    {
+      "value": 1680321.3138079266,
+      "daily_return": 1.6097292799993612,
+      "cumulative_return": 68.03213138079268
+    },
+    {
+      "value": 1829281.7982769993,
+      "daily_return": 8.86499999999999,
+      "cumulative_return": 82.92817982769994
+    },
+    {
+      "value": 1858143.5993370048,
+      "daily_return": 1.5777668092029629,
+      "cumulative_return": 85.81435993370047
+    },
+    {
+      "value": 1817295.2749379957,
+      "daily_return": -2.1983405595554673,
+      "cumulative_return": 81.72952749379958
+    },
+    {
+      "value": 1926632.8451546403,
+      "daily_return": 6.016500000000002,
+      "cumulative_return": 92.66328451546401
+    },
+    {
+      "value": 1972859.6686670294,
+      "daily_return": 2.3993582185960705,
+      "cumulative_return": 97.28596686670295
+    },
+    {
+      "value": 1957978.584668697,
+      "daily_return": -0.7542900407298991,
+      "cumulative_return": 95.7978584668697
+    },
+    {
+      "value": 1925591.993122774,
+      "daily_return": -1.6540830323434452,
+      "cumulative_return": 92.55919931227739
+    },
+    {
+      "value": 1937215.1479008724,
+      "daily_return": 0.6036146192760716,
+      "cumulative_return": 93.72151479008724
+    },
+    {
+      "value": 1913609.5350753844,
+      "daily_return": -1.2185333596563375,
+      "cumulative_return": 91.36095350753844
+    },
+    {
+      "value": 1927715.1974911653,
+      "daily_return": 0.7371233345796036,
+      "cumulative_return": 92.77151974911652
+    },
+    {
+      "value": 1927335.6215145772,
+      "daily_return": -0.01969045931069502,
+      "cumulative_return": 92.73356215145772
+    },
+    {
+      "value": 1969746.6418660055,
+      "daily_return": 2.2005000000000052,
+      "cumulative_return": 96.97466418660055
+    },
+    {
+      "value": 2023359.9307380414,
+      "daily_return": 2.7218367952766886,
+      "cumulative_return": 102.33599307380415
+    },
+    {
+      "value": 2056340.9411079697,
+      "daily_return": 1.630012034383732,
+      "cumulative_return": 105.63409411079698
+    },
+    {
+      "value": 2093024.8993136592,
+      "daily_return": 1.7839433856685183,
+      "cumulative_return": 109.30248993136593
+    },
+    {
+      "value": 2117827.244370526,
+      "daily_return": 1.1850000000000138,
+      "cumulative_return": 111.78272443705262
+    },
+    {
+      "value": 2138967.952313299,
+      "daily_return": 0.9982262717116219,
+      "cumulative_return": 113.89679523132989
+    },
+    {
+      "value": 2209016.630586604,
+      "daily_return": 3.274882084958186,
+      "cumulative_return": 120.90166305866039
+    },
+    {
+      "value": 2191159.320738463,
+      "daily_return": -0.8083827709073788,
+      "cumulative_return": 119.11593207384632
+    },
+    {
+      "value": 2381527.2425242206,
+      "daily_return": 8.687999999999985,
+      "cumulative_return": 138.15272425242205
+    },
+    {
+      "value": 2395716.806047025,
+      "daily_return": 0.5958178125967883,
+      "cumulative_return": 139.57168060470252
+    },
+    {
+      "value": 2419800.989429046,
+      "daily_return": 1.0053017669379827,
+      "cumulative_return": 141.9800989429046
+    },
+    {
+      "value": 2317661.189665246,
+      "daily_return": -4.221000000000008,
+      "cumulative_return": 131.7661189665246
+    },
+    {
+      "value": 2314908.6472656503,
+      "daily_return": -0.11876379566907458,
+      "cumulative_return": 131.49086472656504
+    },
+    {
+      "value": 2337920.786979007,
+      "daily_return": 0.99408413980131,
+      "cumulative_return": 133.79207869790068
+    },
+    {
+      "value": 2385233.963154036,
+      "daily_return": 2.023728795198654,
+      "cumulative_return": 138.5233963154036
+    },
+    {
+      "value": 2515682.40859893,
+      "daily_return": 5.4689999999999905,
+      "cumulative_return": 151.56824085989302
+    },
+    {
+      "value": 2499369.227562014,
+      "daily_return": -0.6484594788736309,
+      "cumulative_return": 149.9369227562014
+    },
+    {
+      "value": 2409246.4973257803,
+      "daily_return": -3.6058189899434323,
+      "cumulative_return": 140.92464973257805
+    },
+    {
+      "value": 2373772.028767617,
+      "daily_return": -1.4724300148423741,
+      "cumulative_return": 137.3772028767617
+    },
+    {
+      "value": 2422766.6834413805,
+      "daily_return": 2.063999999999999,
+      "cumulative_return": 142.27666834413805
+    },
+    {
+      "value": 2413277.9070817675,
+      "daily_return": -0.39165043932892774,
+      "cumulative_return": 141.32779070817674
+    },
+    {
+      "value": 2461690.4603566313,
+      "daily_return": 2.00609109845149,
+      "cumulative_return": 146.16904603566314
+    },
+    {
+      "value": 2515269.1532262936,
+      "daily_return": 2.1765000000000034,
+      "cumulative_return": 151.52691532262935
+    },
+    {
+      "value": 2523478.976827849,
+      "daily_return": 0.32639940703860226,
+      "cumulative_return": 152.34789768278492
+    },
+    {
+      "value": 2525674.535193954,
+      "daily_return": 0.08700521725228949,
+      "cumulative_return": 152.5674535193954
+    },
+    {
+      "value": 2530979.63853428,
+      "daily_return": 0.2100469900773838,
+      "cumulative_return": 153.09796385342798
+    },
+    {
+      "value": 2690393.391067362,
+      "daily_return": 6.298500000000007,
+      "cumulative_return": 169.03933910673618
+    },
+    {
+      "value": 2684233.9788815035,
+      "daily_return": -0.22894094991122715,
+      "cumulative_return": 168.42339788815033
+    },
+    {
+      "value": 2720618.4995248383,
+      "daily_return": 1.3554899062300008,
+      "cumulative_return": 172.06184995248384
+    },
+    {
+      "value": 2768314.983315475,
+      "daily_return": 1.753148550558148,
+      "cumulative_return": 176.8314983315475
+    },
+    {
+      "value": 2696904.3420033925,
+      "daily_return": -2.5795706681671526,
+      "cumulative_return": 169.69043420033927
+    },
+    {
+      "value": 2699857.4522578865,
+      "daily_return": 0.10950000000000681,
+      "cumulative_return": 169.98574522578863
+    },
+    {
+      "value": 2686547.7435436635,
+      "daily_return": -0.4929782016117934,
+      "cumulative_return": 168.65477435436637
+    },
+    {
+      "value": 2673279.245404948,
+      "daily_return": -0.4938865564776407,
+      "cumulative_return": 167.3279245404948
+    },
+    {
+      "value": 2826337.8486006083,
+      "daily_return": 5.725500000000006,
+      "cumulative_return": 182.6337848600608
+    },
+    {
+      "value": 2866033.5237861658,
+      "daily_return": 1.4044915120537294,
+      "cumulative_return": 186.6033523786166
+    },
+    {
+      "value": 2881789.04765624,
+      "daily_return": 0.5497327138469954,
+      "cumulative_return": 188.17890476562397
+    },
+    {
+      "value": 2871068.792398959,
+      "daily_return": -0.37199999999999456,
+      "cumulative_return": 187.1068792398959
+    },
+    {
+      "value": 2975435.685265822,
+      "daily_return": 3.6351233778574077,
+      "cumulative_return": 197.5435685265822
+    },
+    {
+      "value": 2973756.7005988644,
+      "daily_return": -0.05642819555037315,
+      "cumulative_return": 197.37567005988646
+    },
+    {
+      "value": 2963757.891156175,
+      "daily_return": -0.3362349529359765,
+      "cumulative_return": 196.37578911561752
+    },
+    {
+      "value": 3007506.8328151773,
+      "daily_return": 1.4761307524325362,
+      "cumulative_return": 200.7506832815177
+    },
+    {
+      "value": 2935055.9932126594,
+      "daily_return": -2.4090000000000056,
+      "cumulative_return": 193.50559932126595
+    },
+    {
+      "value": 3008227.6065611877,
+      "daily_return": 2.4930227402045535,
+      "cumulative_return": 200.82276065611876
+    },
+    {
+      "value": 3054696.4695292227,
+      "daily_return": 1.5447256340139548,
+      "cumulative_return": 205.4696469529223
+    },
+    {
+      "value": 3090387.325727778,
+      "daily_return": 1.1683928846801583,
+      "cumulative_return": 209.03873257277777
+    },
+    {
+      "value": 3104349.298116571,
+      "daily_return": 0.4517871359540626,
+      "cumulative_return": 210.4349298116571
+    },
+    {
+      "value": 3110187.4385841493,
+      "daily_return": 0.18806325921894018,
+      "cumulative_return": 211.01874385841492
+    },
+    {
+      "value": 3070719.159988517,
+      "daily_return": -1.2689999999999868,
+      "cumulative_return": 207.0719159988517
+    },
+    {
+      "value": 3010194.111029136,
+      "daily_return": -1.9710382423773098,
+      "cumulative_return": 201.01941110291358
+    },
+    {
+      "value": 3151838.794923612,
+      "daily_return": 4.705500000000007,
+      "cumulative_return": 215.1838794923612
+    },
+    {
+      "value": 3093977.5005488074,
+      "daily_return": -1.835794853086925,
+      "cumulative_return": 209.39775005488076
+    },
+    {
+      "value": 3062748.197419064,
+      "daily_return": -1.009357796693866,
+      "cumulative_return": 206.2748197419064
+    },
+    {
+      "value": 3059611.236611506,
+      "daily_return": -0.10242307252688043,
+      "cumulative_return": 205.96112366115057
+    },
+    {
+      "value": 3178922.7351326714,
+      "daily_return": 3.899564006481482,
+      "cumulative_return": 217.89227351326713
+    },
+    {
+      "value": 3181501.6426353324,
+      "daily_return": 0.08112520238883203,
+      "cumulative_return": 218.15016426353324
+    },
+    {
+      "value": 3147284.5924687893,
+      "daily_return": -1.075500000000007,
+      "cumulative_return": 214.7284592468789
+    },
+    {
+      "value": 3111878.904545666,
+      "daily_return": -1.1249598465879473,
+      "cumulative_return": 211.18789045456663
+    },
+    {
+      "value": 3120717.9238506453,
+      "daily_return": 0.28404123605412224,
+      "cumulative_return": 212.07179238506453
+    },
+    {
+      "value": 3055477.0766823175,
+      "daily_return": -2.0905717453574724,
+      "cumulative_return": 205.54770766823177
+    },
+    {
+      "value": 3285233.6754634446,
+      "daily_return": 7.519500000000012,
+      "cumulative_return": 228.52336754634445
+    },
+    {
+      "value": 3321113.7826242615,
+      "daily_return": 1.0921630150328765,
+      "cumulative_return": 232.11137826242614
+    },
+    {
+      "value": 3569998.0494941236,
+      "daily_return": 7.494000000000001,
+      "cumulative_return": 256.99980494941235
+    },
+    {
+      "value": 3622300.4299825197,
+      "daily_return": 1.4650534751918798,
+      "cumulative_return": 262.230042998252
+    },
+    {
+      "value": 3673324.687204216,
+      "daily_return": 1.4086147244816605,
+      "cumulative_return": 267.3324687204216
+    },
+    {
+      "value": 3658432.5948718507,
+      "daily_return": -0.4054118162829745,
+      "cumulative_return": 265.8432594871851
+    },
+    {
+      "value": 3601080.426516738,
+      "daily_return": -1.5676704946130604,
+      "cumulative_return": 260.1080426516738
+    },
+    {
+      "value": 3585673.6700165784,
+      "daily_return": -0.42783705653201,
+      "cumulative_return": 258.56736700165783
+    },
+    {
+      "value": 3594745.466920752,
+      "daily_return": 0.2530011858031589,
+      "cumulative_return": 259.4745466920752
+    },
+    {
+      "value": 3837876.076575937,
+      "daily_return": 6.763500000000011,
+      "cumulative_return": 283.7876076575937
+    },
+    {
+      "value": 3819622.0266343607,
+      "daily_return": -0.4756289566770544,
+      "cumulative_return": 281.9622026634361
+    },
+    {
+      "value": 3997291.745203258,
+      "daily_return": 4.651500000000008,
+      "cumulative_return": 299.7291745203258
+    },
+    {
+      "value": 3928331.6856264905,
+      "daily_return": -1.7251695390890442,
+      "cumulative_return": 292.83316856264906
+    },
+    {
+      "value": 4237569.955919008,
+      "daily_return": 7.87199999999999,
+      "cumulative_return": 323.75699559190076
+    },
+    {
+      "value": 4124300.9544541403,
+      "daily_return": -2.672970656370033,
+      "cumulative_return": 312.43009544541405
+    },
+    {
+      "value": 4199563.559536289,
+      "daily_return": 1.8248572524967477,
+      "cumulative_return": 319.956355953629
+    },
+    {
+      "value": 4190837.1033342564,
+      "daily_return": -0.20779435954045855,
+      "cumulative_return": 319.0837103334257
+    },
+    {
+      "value": 4327708.264017469,
+      "daily_return": 3.2659623198982635,
+      "cumulative_return": 332.77082640174694
+    },
+    {
+      "value": 4289686.214327871,
+      "daily_return": -0.8785723845050053,
+      "cumulative_return": 328.9686214327871
+    },
+    {
+      "value": 4368214.105078119,
+      "daily_return": 1.830620861916632,
+      "cumulative_return": 336.8214105078119
+    },
+    {
+      "value": 4326482.746485423,
+      "daily_return": -0.9553414184570785,
+      "cumulative_return": 332.6482746485423
+    },
+    {
+      "value": 4219532.092992303,
+      "daily_return": -2.4720000000000186,
+      "cumulative_return": 321.95320929923025
+    },
+    {
+      "value": 4180067.765237481,
+      "daily_return": -0.9352773455702179,
+      "cumulative_return": 318.00677652374804
+    },
+    {
+      "value": 4002122.2804713217,
+      "daily_return": -4.256999999999989,
+      "cumulative_return": 300.21222804713216
+    },
+    {
+      "value": 4059022.8618951025,
+      "daily_return": 1.421760192121857,
+      "cumulative_return": 305.9022861895103
+    },
+    {
+      "value": 4373069.460719926,
+      "daily_return": 7.736999999999994,
+      "cumulative_return": 337.3069460719926
+    },
+    {
+      "value": 4430825.03656372,
+      "daily_return": 1.3207102325396125,
+      "cumulative_return": 343.08250365637196
+    },
+    {
+      "value": 4393401.5723786885,
+      "daily_return": -0.8446161578534062,
+      "cumulative_return": 339.3401572378688
+    },
+    {
+      "value": 4476323.714746699,
+      "daily_return": 1.8874246071504563,
+      "cumulative_return": 347.6323714746699
+    },
+    {
+      "value": 4479094.888812028,
+      "daily_return": 0.06190736510409689,
+      "cumulative_return": 347.9094888812027
+    },
+    {
+      "value": 4592633.528232341,
+      "daily_return": 2.534856756527115,
+      "cumulative_return": 359.2633528232341
+    },
+    {
+      "value": 4621200.0437983675,
+      "daily_return": 0.6220072947344724,
+      "cumulative_return": 362.12000437983676
+    },
+    {
+      "value": 4957392.346984698,
+      "daily_return": 7.274999999999987,
+      "cumulative_return": 395.73923469846983
+    },
+    {
+      "value": 4975587.319787695,
+      "daily_return": 0.36702708862783595,
+      "cumulative_return": 397.5587319787695
+    },
+    {
+      "value": 5046682.8027479015,
+      "daily_return": 1.4288862478096354,
+      "cumulative_return": 404.66828027479016
+    },
+    {
+      "value": 4986258.954075803,
+      "daily_return": -1.1972983251334446,
+      "cumulative_return": 398.6258954075803
+    },
+    {
+      "value": 4987502.4429848185,
+      "daily_return": 0.02493831388357126,
+      "cumulative_return": 398.75024429848185
+    },
+    {
+      "value": 4972054.843773053,
+      "daily_return": -0.309726148274736,
+      "cumulative_return": 397.2054843773053
+    },
+    {
+      "value": 5075050.959861812,
+      "daily_return": 2.071500000000004,
+      "cumulative_return": 407.50509598618123
+    },
+    {
+      "value": 5003535.429860832,
+      "daily_return": -1.409158855085213,
+      "cumulative_return": 400.35354298608326
+    },
+    {
+      "value": 5032505.899999727,
+      "daily_return": 0.5789999999999962,
+      "cumulative_return": 403.2505899999727
+    },
+    {
+      "value": 4945701.451096411,
+      "daily_return": -1.7248752535654388,
+      "cumulative_return": 394.57014510964103
+    },
+    {
+      "value": 4734104.890589394,
+      "daily_return": -4.278393319922468,
+      "cumulative_return": 373.4104890589394
+    },
+    {
+      "value": 5109117.009497432,
+      "daily_return": 7.921499999999981,
+      "cumulative_return": 410.91170094974314
+    },
+    {
+      "value": 5180663.905902836,
+      "daily_return": 1.4003769393498677,
+      "cumulative_return": 418.06639059028356
+    },
+    {
+      "value": 5119803.102078048,
+      "daily_return": -1.1747684260205227,
+      "cumulative_return": 411.98031020780473
+    },
+    {
+      "value": 5182336.224567654,
+      "daily_return": 1.221397019432735,
+      "cumulative_return": 418.2336224567654
+    },
+    {
+      "value": 5086388.682728293,
+      "daily_return": -1.8514341347538599,
+      "cumulative_return": 408.6388682728293
+    },
+    {
+      "value": 5006114.863279985,
+      "daily_return": -1.5782085179784189,
+      "cumulative_return": 400.61148632799853
+    },
+    {
+      "value": 4788247.456594882,
+      "daily_return": -4.352025725241903,
+      "cumulative_return": 378.8247456594882
+    },
+    {
+      "value": 4858275.575647581,
+      "daily_return": 1.4624999999999888,
+      "cumulative_return": 385.8275575647581
+    },
+    {
+      "value": 4883277.180443939,
+      "daily_return": 0.5146189096740361,
+      "cumulative_return": 388.32771804439386
+    },
+    {
+      "value": 4866257.482122996,
+      "daily_return": -0.34853025318942743,
+      "cumulative_return": 386.6257482122996
+    },
+    {
+      "value": 4934815.429577541,
+      "daily_return": 1.4088434018628027,
+      "cumulative_return": 393.48154295775413
+    },
+    {
+      "value": 5262585.870410081,
+      "daily_return": 6.641999999999992,
+      "cumulative_return": 426.2585870410081
+    },
+    {
+      "value": 5211422.1618118705,
+      "daily_return": -0.9722161283084896,
+      "cumulative_return": 421.14221618118705
+    },
+    {
+      "value": 5512381.791656506,
+      "daily_return": 5.774999999999997,
+      "cumulative_return": 451.2381791656506
+    },
+    {
+      "value": 5684576.878339109,
+      "daily_return": 3.1237873788647175,
+      "cumulative_return": 468.4576878339109
+    },
+    {
+      "value": 5595255.157584074,
+      "daily_return": -1.5712993713814072,
+      "cumulative_return": 459.5255157584074
+    },
+    {
+      "value": 5625342.286194667,
+      "daily_return": 0.5377257651925316,
+      "cumulative_return": 462.5342286194667
+    },
+    {
+      "value": 5602103.878222677,
+      "daily_return": -0.41310211520853013,
+      "cumulative_return": 460.2103878222677
+    },
+    {
+      "value": 5706064.236435068,
+      "daily_return": 1.8557377812382425,
+      "cumulative_return": 470.60642364350673
+    },
+    {
+      "value": 5837986.962448838,
+      "daily_return": 2.311974077883683,
+      "cumulative_return": 483.7986962448838
+    },
+    {
+      "value": 5884741.168430706,
+      "daily_return": 0.8008617744883706,
+      "cumulative_return": 488.4741168430706
+    },
+    {
+      "value": 5890125.7065998195,
+      "daily_return": 0.09149999999999991,
+      "cumulative_return": 489.012570659982
+    },
+    {
+      "value": 5907759.133365391,
+      "daily_return": 0.2993726729094037,
+      "cumulative_return": 490.77591333653913
+    },
+    {
+      "value": 6415531.030878146,
+      "daily_return": 8.594999999999997,
+      "cumulative_return": 541.5531030878146
+    },
+    {
+      "value": 6485728.342403936,
+      "daily_return": 1.0941777257085672,
+      "cumulative_return": 548.5728342403936
+    },
+    {
+      "value": 6386691.270615429,
+      "daily_return": -1.5269999999999895,
+      "cumulative_return": 538.6691270615429
+    },
+    {
+      "value": 6346887.522975757,
+      "daily_return": -0.6232295558547651,
+      "cumulative_return": 534.6887522975757
+    },
+    {
+      "value": 6248477.532243766,
+      "daily_return": -1.5505236287195356,
+      "cumulative_return": 524.8477532243766
+    },
+    {
+      "value": 6150269.937038162,
+      "daily_return": -1.5717043823687882,
+      "cumulative_return": 515.0269937038162
+    },
+    {
+      "value": 6242080.9479960995,
+      "daily_return": 1.4927964446736386,
+      "cumulative_return": 524.20809479961
+    },
+    {
+      "value": 6290871.627850499,
+      "daily_return": 0.7816412549097596,
+      "cumulative_return": 529.0871627850498
+    },
+    {
+      "value": 6304384.873690084,
+      "daily_return": 0.21480721017672622,
+      "cumulative_return": 530.4384873690084
+    },
+    {
+      "value": 6358427.830093753,
+      "daily_return": 0.8572280640607,
+      "cumulative_return": 535.8427830093752
+    },
+    {
+      "value": 6103772.795498498,
+      "daily_return": -4.005000000000003,
+      "cumulative_return": 510.37727954984973
+    },
+    {
+      "value": 6077293.798047875,
+      "daily_return": -0.43381361557479625,
+      "cumulative_return": 507.72937980478747
+    },
+    {
+      "value": 6010550.854304425,
+      "daily_return": -1.0982346083858618,
+      "cumulative_return": 501.05508543044255
+    },
+    {
+      "value": 6036437.6943673855,
+      "daily_return": 0.43068997651722896,
+      "cumulative_return": 503.6437694367385
+    },
+    {
+      "value": 6084311.929270092,
+      "daily_return": 0.7930875348449051,
+      "cumulative_return": 508.43119292700925
+    },
+    {
+      "value": 6065615.813861635,
+      "daily_return": -0.3072839727121024,
+      "cumulative_return": 506.5615813861634
+    },
+    {
+      "value": 6008295.509606388,
+      "daily_return": -0.9450038712351838,
+      "cumulative_return": 500.82955096063887
+    },
+    {
+      "value": 5960644.477271432,
+      "daily_return": -0.7930873616114442,
+      "cumulative_return": 496.06444772714326
+    },
+    {
+      "value": 5694561.3078060355,
+      "daily_return": -4.464000000000001,
+      "cumulative_return": 469.45613078060353
+    },
+    {
+      "value": 5704200.340923357,
+      "daily_return": 0.16926735171167717,
+      "cumulative_return": 470.42003409233575
+    },
+    {
+      "value": 5817514.871897218,
+      "daily_return": 1.9865103643172288,
+      "cumulative_return": 481.7514871897218
+    },
+    {
+      "value": 5632779.687140122,
+      "daily_return": -3.1754999999999978,
+      "cumulative_return": 463.2779687140122
+    },
+    {
+      "value": 5494002.754542655,
+      "daily_return": -2.4637379820535266,
+      "cumulative_return": 449.4002754542655
+    },
+    {
+      "value": 5493474.855846996,
+      "daily_return": -0.009608635438385082,
+      "cumulative_return": 449.34748558469965
+    },
+    {
+      "value": 5458371.551518135,
+      "daily_return": -0.6389999999999896,
+      "cumulative_return": 445.8371551518135
+    },
+    {
+      "value": 5482947.41847071,
+      "daily_return": 0.4502417382294066,
+      "cumulative_return": 448.294741847071
+    },
+    {
+      "value": 5581075.013244252,
+      "daily_return": 1.7896869563799545,
+      "cumulative_return": 458.10750132442524
+    },
+    {
+      "value": 5613694.347788989,
+      "daily_return": 0.5844632882971323,
+      "cumulative_return": 461.36943477889884
+    },
+    {
+      "value": 5448710.69372203,
+      "daily_return": -2.938949715563677,
+      "cumulative_return": 444.871069372203
+    },
+    {
+      "value": 5273643.619132741,
+      "daily_return": -3.212999999999999,
+      "cumulative_return": 427.36436191327414
+    },
+    {
+      "value": 5334388.8944663545,
+      "daily_return": 1.1518653841763093,
+      "cumulative_return": 433.43888944663547
+    },
+    {
+      "value": 5422869.308837493,
+      "daily_return": 1.6586794874090316,
+      "cumulative_return": 442.2869308837493
+    },
+    {
+      "value": 5432466.417166251,
+      "daily_return": 0.17697473020634735,
+      "cumulative_return": 443.24664171662505
+    },
+    {
+      "value": 5520151.054339467,
+      "daily_return": 1.6140852135990702,
+      "cumulative_return": 452.01510543394664
+    },
+    {
+      "value": 5995187.65332065,
+      "daily_return": 8.6055,
+      "cumulative_return": 499.51876533206496
+    },
+    {
+      "value": 6017061.597342563,
+      "daily_return": 0.36485837119373254,
+      "cumulative_return": 501.7061597342563
+    },
+    {
+      "value": 6120324.547999448,
+      "daily_return": 1.7161690799790241,
+      "cumulative_return": 512.0324547999448
+    },
+    {
+      "value": 6209148.187353992,
+      "daily_return": 1.4512896931842878,
+      "cumulative_return": 520.9148187353992
+    },
+    {
+      "value": 6634505.883928677,
+      "daily_return": 6.850500000000004,
+      "cumulative_return": 563.4505883928676
+    },
+    {
+      "value": 6754814.027071806,
+      "daily_return": 1.8133700572119604,
+      "cumulative_return": 575.4814027071806
+    },
+    {
+      "value": 6828607.382717467,
+      "daily_return": 1.0924557708015925,
+      "cumulative_return": 582.8607382717466
+    },
+    {
+      "value": 7176046.926350132,
+      "daily_return": 5.088000000000004,
+      "cumulative_return": 617.6046926350131
+    },
+    {
+      "value": 7005160.8650736045,
+      "daily_return": -2.381339796553461,
+      "cumulative_return": 600.5160865073605
+    },
+    {
+      "value": 6927117.266788617,
+      "daily_return": -1.1140871678493203,
+      "cumulative_return": 592.7117266788617
+    },
+    {
+      "value": 6950980.432304058,
+      "daily_return": 0.34448912291193956,
+      "cumulative_return": 595.0980432304058
+    },
+    {
+      "value": 6901805.423841635,
+      "daily_return": -0.707454278448072,
+      "cumulative_return": 590.1805423841635
+    },
+    {
+      "value": 7331546.338557134,
+      "daily_return": 6.2265000000000015,
+      "cumulative_return": 633.1546338557134
+    },
+    {
+      "value": 7297686.172834463,
+      "daily_return": -0.4618420747693808,
+      "cumulative_return": 629.7686172834464
+    },
+    {
+      "value": 7316863.472302569,
+      "daily_return": 0.262786025788464,
+      "cumulative_return": 631.686347230257
+    },
+    {
+      "value": 7708462.005340203,
+      "daily_return": 5.352000000000001,
+      "cumulative_return": 670.8462005340203
+    },
+    {
+      "value": 7875282.54319623,
+      "daily_return": 2.164122204149921,
+      "cumulative_return": 687.5282543196231
+    },
+    {
+      "value": 7987058.24778688,
+      "daily_return": 1.419323103362391,
+      "cumulative_return": 698.7058247786879
+    },
+    {
+      "value": 7928576.18491145,
+      "daily_return": -0.7322102964709698,
+      "cumulative_return": 692.857618491145
+    },
+    {
+      "value": 8063322.337174021,
+      "daily_return": 1.6995000000000093,
+      "cumulative_return": 706.3322337174021
+    },
+    {
+      "value": 8047867.328689439,
+      "daily_return": -0.19167047822620242,
+      "cumulative_return": 704.7867328689439
+    },
+    {
+      "value": 8010611.5204692865,
+      "daily_return": -0.4629277136234733,
+      "cumulative_return": 701.0611520469287
+    },
+    {
+      "value": 8085493.206691884,
+      "daily_return": 0.934781146623509,
+      "cumulative_return": 708.5493206691884
+    },
+    {
+      "value": 8415866.459117316,
+      "daily_return": 4.086000000000012,
+      "cumulative_return": 741.5866459117316
+    },
+    {
+      "value": 8269327.7745522475,
+      "daily_return": -1.741219222963264,
+      "cumulative_return": 726.9327774552247
+    },
+    {
+      "value": 8410028.942977285,
+      "daily_return": 1.7014825420033075,
+      "cumulative_return": 741.0028942977284
+    },
+    {
+      "value": 8434419.077875862,
+      "daily_return": 0.2900124965556028,
+      "cumulative_return": 743.4419077875863
+    },
+    {
+      "value": 8467813.45619745,
+      "daily_return": 0.39592979686275953,
+      "cumulative_return": 746.7813456197449
+    },
+    {
+      "value": 8576159.129369495,
+      "daily_return": 1.279499999999989,
+      "cumulative_return": 757.6159129369495
+    },
+    {
+      "value": 8530465.819171984,
+      "daily_return": -0.5327945704859061,
+      "cumulative_return": 753.0465819171983
+    },
+    {
+      "value": 8492371.092321025,
+      "daily_return": -0.4465726451343577,
+      "cumulative_return": 749.2371092321026
+    },
+    {
+      "value": 8290125.993154494,
+      "daily_return": -2.381491540677083,
+      "cumulative_return": 729.0125993154494
+    },
+    {
+      "value": 8315585.871078848,
+      "daily_return": 0.30711086834358525,
+      "cumulative_return": 731.5585871078848
+    },
+    {
+      "value": 8118740.442628899,
+      "daily_return": -2.3671865278256154,
+      "cumulative_return": 711.8740442628898
+    },
+    {
+      "value": 8177459.963495644,
+      "daily_return": 0.723258999122911,
+      "cumulative_return": 717.7459963495643
+    },
+    {
+      "value": 8740355.420082867,
+      "daily_return": 6.883499999999998,
+      "cumulative_return": 774.0355420082867
+    },
+    {
+      "value": 8937553.050319584,
+      "daily_return": 2.256174042803938,
+      "cumulative_return": 793.7553050319584
+    },
+    {
+      "value": 8669426.458809998,
+      "daily_return": -2.9999999999999805,
+      "cumulative_return": 766.9426458809997
+    },
+    {
+      "value": 8718271.743373666,
+      "daily_return": 0.5634200231784847,
+      "cumulative_return": 771.8271743373666
+    },
+    {
+      "value": 8635966.065733083,
+      "daily_return": -0.9440595574821353,
+      "cumulative_return": 763.5966065733082
+    },
+    {
+      "value": 8809717.907331193,
+      "daily_return": 2.0119560484095134,
+      "cumulative_return": 780.9717907331193
+    },
+    {
+      "value": 8540404.830904078,
+      "daily_return": -3.0570000000000097,
+      "cumulative_return": 754.0404830904079
+    },
+    {
+      "value": 8490823.12895425,
+      "daily_return": -0.580554469390171,
+      "cumulative_return": 749.082312895425
+    },
+    {
+      "value": 8580781.50531528,
+      "daily_return": 1.0594776854350618,
+      "cumulative_return": 758.078150531528
+    },
+    {
+      "value": 8248162.888314396,
+      "daily_return": -3.876320784940701,
+      "cumulative_return": 724.8162888314397
+    },
+    {
+      "value": 8275251.687997476,
+      "daily_return": 0.3284222201947351,
+      "cumulative_return": 727.5251687997477
+    },
+    {
+      "value": 8142775.756641233,
+      "daily_return": -1.6008689082942062,
+      "cumulative_return": 714.2775756641233
+    },
+    {
+      "value": 8012594.131336654,
+      "daily_return": -1.5987376933277786,
+      "cumulative_return": 701.2594131336654
+    },
+    {
+      "value": 7738082.65639706,
+      "daily_return": -3.426000000000007,
+      "cumulative_return": 673.808265639706
+    },
+    {
+      "value": 7942240.321138679,
+      "daily_return": 2.6383494956963682,
+      "cumulative_return": 694.2240321138679
+    },
+    {
+      "value": 8244839.677374062,
+      "daily_return": 3.8100000000000023,
+      "cumulative_return": 724.4839677374061
+    },
+    {
+      "value": 8368371.044711317,
+      "daily_return": 1.4982870761726996,
+      "cumulative_return": 736.8371044711317
+    },
+    {
+      "value": 8354186.655790531,
+      "daily_return": -0.1695000000000002,
+      "cumulative_return": 735.4186655790531
+    },
+    {
+      "value": 8316509.15381166,
+      "daily_return": -0.4510014383357852,
+      "cumulative_return": 731.650915381166
+    },
+    {
+      "value": 8542952.481674874,
+      "daily_return": 2.7228170338684743,
+      "cumulative_return": 754.2952481674874
+    },
+    {
+      "value": 8507845.182443205,
+      "daily_return": -0.41095042149627004,
+      "cumulative_return": 750.7845182443205
+    },
+    {
+      "value": 8501260.20574813,
+      "daily_return": -0.07739887778710486,
+      "cumulative_return": 750.126020574813
+    },
+    {
+      "value": 8442749.756663065,
+      "daily_return": -0.6882561840126034,
+      "cumulative_return": 744.2749756663065
+    },
+    {
+      "value": 8336019.583511117,
+      "daily_return": -1.2641636460646755,
+      "cumulative_return": 733.6019583511118
+    },
+    {
+      "value": 8647619.995542763,
+      "daily_return": 3.737999999999997,
+      "cumulative_return": 764.7619995542764
+    },
+    {
+      "value": 8580713.169858443,
+      "daily_return": -0.7737021945784628,
+      "cumulative_return": 758.0713169858443
+    },
+    {
+      "value": 8293173.4715364855,
+      "daily_return": -3.351000000000004,
+      "cumulative_return": 729.3173471536486
+    },
+    {
+      "value": 8083270.187773048,
+      "daily_return": -2.531036936389419,
+      "cumulative_return": 708.3270187773047
+    },
+    {
+      "value": 8057759.300463663,
+      "daily_return": -0.31560107130864656,
+      "cumulative_return": 705.7759300463664
+    },
+    {
+      "value": 7948467.905043432,
+      "daily_return": -1.3563497164024607,
+      "cumulative_return": 694.8467905043432
+    },
+    {
+      "value": 8289099.497114068,
+      "daily_return": 4.285500000000009,
+      "cumulative_return": 728.9099497114067
+    },
+    {
+      "value": 8130000.854301071,
+      "daily_return": -1.919371855391394,
+      "cumulative_return": 713.0000854301071
+    },
+    {
+      "value": 8233625.7335503455,
+      "daily_return": 1.274598626818757,
+      "cumulative_return": 723.3625733550346
+    },
+    {
+      "value": 8207765.058269459,
+      "daily_return": -0.3140861161020414,
+      "cumulative_return": 720.7765058269458
+    },
+    {
+      "value": 8204874.658944105,
+      "daily_return": -0.03521542472079142,
+      "cumulative_return": 720.4874658944104
+    },
+    {
+      "value": 8350470.159767068,
+      "daily_return": 1.77449999999999,
+      "cumulative_return": 735.0470159767068
+    },
+    {
+      "value": 8572123.023576139,
+      "daily_return": 2.654375856308122,
+      "cumulative_return": 757.2123023576138
+    },
+    {
+      "value": 9272251.171526719,
+      "daily_return": 8.167499999999993,
+      "cumulative_return": 827.2251171526718
+    },
+    {
+      "value": 9467170.6848714,
+      "daily_return": 2.1021811180357286,
+      "cumulative_return": 846.71706848714
+    },
+    {
+      "value": 9540969.89949576,
+      "daily_return": 0.7795276654543937,
+      "cumulative_return": 854.096989949576
+    },
+    {
+      "value": 9611382.582355624,
+      "daily_return": 0.7380034063789065,
+      "cumulative_return": 861.1382582355624
+    },
+    {
+      "value": 9526918.595030725,
+      "daily_return": -0.8787912311383428,
+      "cumulative_return": 852.6918595030726
+    },
+    {
+      "value": 9060480.66061802,
+      "daily_return": -4.896000000000001,
+      "cumulative_return": 806.048066061802
+    },
+    {
+      "value": 9296874.658828482,
+      "daily_return": 2.609066859310949,
+      "cumulative_return": 829.6874658828482
+    },
+    {
+      "value": 9409883.547997931,
+      "daily_return": 1.2155578440775638,
+      "cumulative_return": 840.988354799793
+    },
+    {
+      "value": 9460704.159295918,
+      "daily_return": 0.5400769418533402,
+      "cumulative_return": 846.0704159295918
+    },
+    {
+      "value": 9304176.808980368,
+      "daily_return": -1.654499999999992,
+      "cumulative_return": 830.4176808980369
+    },
+    {
+      "value": 9274896.616120413,
+      "daily_return": -0.3146994458627872,
+      "cumulative_return": 827.4896616120413
+    },
+    {
+      "value": 9159228.485264288,
+      "daily_return": -1.2471096513904545,
+      "cumulative_return": 815.9228485264288
+    },
+    {
+      "value": 8990829.10262582,
+      "daily_return": -1.8385760646695837,
+      "cumulative_return": 799.082910262582
+    },
+    {
+      "value": 9000934.899415173,
+      "daily_return": 0.11240116649977594,
+      "cumulative_return": 800.0934899415173
+    },
+    {
+      "value": 9759308.669365397,
+      "daily_return": 8.425499999999975,
+      "cumulative_return": 875.9308669365396
+    },
+    {
+      "value": 10036126.361807505,
+      "daily_return": 2.83644776305767,
+      "cumulative_return": 903.6126361807504
+    },
+    {
+      "value": 10097790.456462737,
+      "daily_return": 0.614421266056353,
+      "cumulative_return": 909.7790456462737
+    },
+    {
+      "value": 10497783.085544167,
+      "daily_return": 3.9611896365449706,
+      "cumulative_return": 949.7783085544168
+    },
+    {
+      "value": 10895859.020148002,
+      "daily_return": 3.7919999999999954,
+      "cumulative_return": 989.5859020148002
+    },
+    {
+      "value": 10717390.238635717,
+      "daily_return": -1.637950538661248,
+      "cumulative_return": 971.7390238635718
+    },
+    {
+      "value": 10774460.341656452,
+      "daily_return": 0.5325000000000024,
+      "cumulative_return": 977.4460341656452
+    },
+    {
+      "value": 10770771.697404392,
+      "daily_return": -0.034235071967347874,
+      "cumulative_return": 977.0771697404392
+    },
+    {
+      "value": 10783377.173361817,
+      "daily_return": 0.11703410221259869,
+      "cumulative_return": 978.3377173361818
+    },
+    {
+      "value": 10931713.233771432,
+      "daily_return": 1.3755992953306873,
+      "cumulative_return": 993.1713233771433
+    },
+    {
+      "value": 11144041.273143835,
+      "daily_return": 1.9423125619180803,
+      "cumulative_return": 1014.4041273143836
+    },
+    {
+      "value": 11934543.840854295,
+      "daily_return": 7.093500000000019,
+      "cumulative_return": 1093.4543840854294
+    },
+    {
+      "value": 11858811.279602759,
+      "daily_return": -0.6345660316927071,
+      "cumulative_return": 1085.8811279602758
+    },
+    {
+      "value": 11777075.673832374,
+      "daily_return": -0.6892394510988664,
+      "cumulative_return": 1077.7075673832373
+    },
+    {
+      "value": 11620248.098129833,
+      "daily_return": -1.3316342702203832,
+      "cumulative_return": 1062.0248098129832
+    },
+    {
+      "value": 11888551.014422534,
+      "daily_return": 2.3089258854626538,
+      "cumulative_return": 1088.8551014422535
+    },
+    {
+      "value": 13044296.50128962,
+      "daily_return": 9.721499999999983,
+      "cumulative_return": 1204.4296501289618
+    },
+    {
+      "value": 13099169.081805853,
+      "daily_return": 0.42066339500033134,
+      "cumulative_return": 1209.9169081805853
+    },
+    {
+      "value": 13028433.568764102,
+      "daily_return": -0.539999999999996,
+      "cumulative_return": 1202.8433568764103
+    },
+    {
+      "value": 12927038.118922582,
+      "daily_return": -0.7782627842891077,
+      "cumulative_return": 1192.7038118922583
+    },
+    {
+      "value": 13077661.77207067,
+      "daily_return": 1.1651830199804758,
+      "cumulative_return": 1207.7661772070671
+    },
+    {
+      "value": 13201729.96661316,
+      "daily_return": 0.9487031910204058,
+      "cumulative_return": 1220.172996661316
+    },
+    {
+      "value": 13604172.251262212,
+      "daily_return": 3.0484056685511574,
+      "cumulative_return": 1260.4172251262212
+    },
+    {
+      "value": 14620403.9184315,
+      "daily_return": 7.469999999999999,
+      "cumulative_return": 1362.04039184315
+    },
+    {
+      "value": 14849295.745495602,
+      "daily_return": 1.5655643191604618,
+      "cumulative_return": 1384.9295745495604
+    },
+    {
+      "value": 14721809.502638007,
+      "daily_return": -0.8585339334780784,
+      "cumulative_return": 1372.1809502638007
+    },
+    {
+      "value": 14753508.730154017,
+      "daily_return": 0.21532154393337777,
+      "cumulative_return": 1375.3508730154017
+    },
+    {
+      "value": 15101874.572799193,
+      "daily_return": 2.36124063107217,
+      "cumulative_return": 1410.1874572799193
+    },
+    {
+      "value": 16577931.793544587,
+      "daily_return": 9.774000000000015,
+      "cumulative_return": 1557.7931793544585
+    },
+    {
+      "value": 16795262.505471773,
+      "daily_return": 1.3109639648283267,
+      "cumulative_return": 1579.5262505471771
+    },
+    {
+      "value": 17604206.324047823,
+      "daily_return": 4.816500000000001,
+      "cumulative_return": 1660.4206324047823
+    },
+    {
+      "value": 17310933.801504448,
+      "daily_return": -1.6659230024062888,
+      "cumulative_return": 1631.0933801504448
+    },
+    {
+      "value": 17477822.77326077,
+      "daily_return": 0.9640668358503968,
+      "cumulative_return": 1647.7822773260768
+    },
+    {
+      "value": 17429096.500355784,
+      "daily_return": -0.27878914632050167,
+      "cumulative_return": 1642.9096500355784
+    },
+    {
+      "value": 17239142.438602,
+      "daily_return": -1.0898675198103724,
+      "cumulative_return": 1623.9142438602003
+    },
+    {
+      "value": 17126367.202622972,
+      "daily_return": -0.6541812412112824,
+      "cumulative_return": 1612.6367202622973
+    },
+    {
+      "value": 17178112.7965298,
+      "daily_return": 0.30213993017096374,
+      "cumulative_return": 1617.81127965298
+    },
+    {
+      "value": 18314702.629712194,
+      "daily_return": 6.616500000000003,
+      "cumulative_return": 1731.4702629712194
+    },
+    {
+      "value": 18571673.55080633,
+      "daily_return": 1.4030854133402437,
+      "cumulative_return": 1757.1673550806327
+    },
+    {
+      "value": 19198188.958042778,
+      "daily_return": 3.373499999999985,
+      "cumulative_return": 1819.8188958042779
+    },
+    {
+      "value": 19045695.744254094,
+      "daily_return": -0.7943104118933064,
+      "cumulative_return": 1804.5695744254094
+    },
+    {
+      "value": 18524891.194127467,
+      "daily_return": -2.7344999999999953,
+      "cumulative_return": 1752.4891194127467
+    },
+    {
+      "value": 18794831.07649919,
+      "daily_return": 1.4571739155871288,
+      "cumulative_return": 1779.483107649919
+    },
+    {
+      "value": 18697142.96277961,
+      "daily_return": -0.5197605305520825,
+      "cumulative_return": 1769.7142962779612
+    },
+    {
+      "value": 18532269.145882554,
+      "daily_return": -0.8818128910137335,
+      "cumulative_return": 1753.2269145882556
+    },
+    {
+      "value": 18387961.32106513,
+      "daily_return": -0.7786840547234553,
+      "cumulative_return": 1738.7961321065131
+    },
+    {
+      "value": 18540990.716879908,
+      "daily_return": 0.8322260045188656,
+      "cumulative_return": 1754.0990716879908
+    },
+    {
+      "value": 18888350.75541311,
+      "daily_return": 1.873470753733586,
+      "cumulative_return": 1788.835075541311
+    },
+    {
+      "value": 18744917.949166954,
+      "daily_return": -0.7593717847761416,
+      "cumulative_return": 1774.4917949166954
+    },
+    {
+      "value": 20346202.564974543,
+      "daily_return": 8.542500000000008,
+      "cumulative_return": 1934.6202564974544
+    },
+    {
+      "value": 20776017.45070457,
+      "daily_return": 2.1125066673126636,
+      "cumulative_return": 1977.6017450704571
+    },
+    {
+      "value": 20604667.373023663,
+      "daily_return": -0.8247493923581484,
+      "cumulative_return": 1960.4667373023663
+    },
+    {
+      "value": 21045710.278143235,
+      "daily_return": 2.140500000000012,
+      "cumulative_return": 2004.5710278143235
+    },
+    {
+      "value": 21156045.17197148,
+      "daily_return": 0.5242631033595124,
+      "cumulative_return": 2015.6045171971482
+    },
+    {
+      "value": 21152871.765195686,
+      "daily_return": -0.014999999999998348,
+      "cumulative_return": 2015.2871765195687
+    },
+    {
+      "value": 21097441.522658445,
+      "daily_return": -0.2620459441750378,
+      "cumulative_return": 2009.7441522658446
+    },
+    {
+      "value": 21083457.660420354,
+      "daily_return": -0.06628226566274265,
+      "cumulative_return": 2008.3457660420354
+    },
+    {
+      "value": 20898772.698388435,
+      "daily_return": -0.8759709389538406,
+      "cumulative_return": 1989.8772698388434
+    },
+    {
+      "value": 20833083.052624002,
+      "daily_return": -0.31432298304052697,
+      "cumulative_return": 1983.3083052624002
+    },
+    {
+      "value": 20985165.907423023,
+      "daily_return": 0.7300064729491185,
+      "cumulative_return": 1998.5165907423025
+    },
+    {
+      "value": 21470239.9775427,
+      "daily_return": 2.3115093407390708,
+      "cumulative_return": 2047.0239977542697
+    },
+    {
+      "value": 23157800.839777555,
+      "daily_return": 7.86,
+      "cumulative_return": 2215.7800839777556
+    },
+    {
+      "value": 23287196.777813103,
+      "daily_return": 0.55875745253533,
+      "cumulative_return": 2228.7196777813106
+    },
+    {
+      "value": 24739619.240845308,
+      "daily_return": 6.237000000000004,
+      "cumulative_return": 2373.961924084531
+    },
+    {
+      "value": 24535386.992039006,
+      "daily_return": -0.8255270496205225,
+      "cumulative_return": 2353.5386992039003
+    },
+    {
+      "value": 24553788.532283038,
+      "daily_return": 0.07500000000000284,
+      "cumulative_return": 2355.378853228304
+    },
+    {
+      "value": 24515960.13074475,
+      "daily_return": -0.15406340039358923,
+      "cumulative_return": 2351.596013074475
+    },
+    {
+      "value": 24557651.61986017,
+      "daily_return": 0.17005856141498743,
+      "cumulative_return": 2355.765161986017
+    },
+    {
+      "value": 23862249.81488479,
+      "daily_return": -2.8317113368160896,
+      "cumulative_return": 2286.224981488479
+    },
+    {
+      "value": 23561447.658866215,
+      "daily_return": -1.2605775161692367,
+      "cumulative_return": 2256.1447658866214
+    },
+    {
+      "value": 23409066.75574031,
+      "daily_return": -0.646738287613513,
+      "cumulative_return": 2240.9066755740314
+    },
+    {
+      "value": 23609825.53402174,
+      "daily_return": 0.8576111998663816,
+      "cumulative_return": 2260.982553402174
+    },
+    {
+      "value": 23219200.970561348,
+      "daily_return": -1.6545000000000032,
+      "cumulative_return": 2221.920097056135
+    },
+    {
+      "value": 22890858.517138805,
+      "daily_return": -1.4140988479269145,
+      "cumulative_return": 2189.0858517138804
+    },
+    {
+      "value": 23953566.623796973,
+      "daily_return": 4.642499999999994,
+      "cumulative_return": 2295.3566623796974
+    },
+    {
+      "value": 23886516.537982706,
+      "daily_return": -0.2799169195440654,
+      "cumulative_return": 2288.6516537982707
+    },
+    {
+      "value": 25818816.293322816,
+      "daily_return": 8.089499999999994,
+      "cumulative_return": 2481.8816293322816
+    },
+    {
+      "value": 25949505.94971983,
+      "daily_return": 0.5061798918752691,
+      "cumulative_return": 2494.9505949719833
+    },
+    {
+      "value": 25827727.355845496,
+      "daily_return": -0.469290606573769,
+      "cumulative_return": 2482.7727355845495
+    },
+    {
+      "value": 26135783.245426994,
+      "daily_return": 1.1927332410521796,
+      "cumulative_return": 2513.578324542699
+    },
+    {
+      "value": 26360436.01754867,
+      "daily_return": 0.859560128778547,
+      "cumulative_return": 2536.043601754867
+    },
+    {
+      "value": 26026759.17571478,
+      "daily_return": -1.2658244408846442,
+      "cumulative_return": 2502.675917571478
+    },
+    {
+      "value": 26534072.08821792,
+      "daily_return": 1.949197397486624,
+      "cumulative_return": 2553.407208821792
+    },
+    {
+      "value": 26108996.253364667,
+      "daily_return": -1.6020000000000145,
+      "cumulative_return": 2510.8996253364667
+    },
+    {
+      "value": 25999001.762077354,
+      "daily_return": -0.42128962071124043,
+      "cumulative_return": 2499.900176207735
+    },
+    {
+      "value": 27765243.94678408,
+      "daily_return": 6.793500000000008,
+      "cumulative_return": 2676.524394678408
+    },
+    {
+      "value": 27269852.187569436,
+      "daily_return": -1.7842154031282087,
+      "cumulative_return": 2626.9852187569436
+    },
+    {
+      "value": 26497015.269029308,
+      "daily_return": -2.834034131260943,
+      "cumulative_return": 2549.7015269029307
+    },
+    {
+      "value": 27028930.526072286,
+      "daily_return": 2.0074534872789984,
+      "cumulative_return": 2602.8930526072286
+    },
+    {
+      "value": 26750143.637986194,
+      "daily_return": -1.0314388422330345,
+      "cumulative_return": 2575.0143637986193
+    },
+    {
+      "value": 26472407.383648656,
+      "daily_return": -1.0382607962640678,
+      "cumulative_return": 2547.2407383648656
+    },
+    {
+      "value": 27077963.70254962,
+      "daily_return": 2.287499999999998,
+      "cumulative_return": 2607.796370254962
+    },
+    {
+      "value": 26899618.630315855,
+      "daily_return": -0.6586354653284832,
+      "cumulative_return": 2589.961863031586
+    },
+    {
+      "value": 26627421.240440473,
+      "daily_return": -1.0119005537447157,
+      "cumulative_return": 2562.742124044047
+    },
+    {
+      "value": 26194591.24529296,
+      "daily_return": -1.6255047427955582,
+      "cumulative_return": 2519.4591245292963
+    },
+    {
+      "value": 26072476.29487243,
+      "daily_return": -0.46618383649134065,
+      "cumulative_return": 2507.247629487243
+    },
+    {
+      "value": 28202336.88340056,
+      "daily_return": 8.169000000000004,
+      "cumulative_return": 2720.233688340056
+    },
+    {
+      "value": 28053293.574079618,
+      "daily_return": -0.528478579406888,
+      "cumulative_return": 2705.3293574079617
+    },
+    {
+      "value": 28245730.690449145,
+      "daily_return": 0.6859697805584375,
+      "cumulative_return": 2724.5730690449145
+    },
+    {
+      "value": 28755634.060488652,
+      "daily_return": 1.8052405003348815,
+      "cumulative_return": 2775.563406048865
+    },
+    {
+      "value": 28256131.06934816,
+      "daily_return": -1.7370613010645797,
+      "cumulative_return": 2725.613106934816
+    },
+    {
+      "value": 28972847.833922178,
+      "daily_return": 2.536500000000008,
+      "cumulative_return": 2797.284783392218
+    },
+    {
+      "value": 29320239.08976737,
+      "daily_return": 1.199023505857988,
+      "cumulative_return": 2832.023908976737
+    }
+  ],
+  "trades": [
+    {
+      "date": "2023-01-01 00:00:00",
+      "symbol": "CASH",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 980.9636799141922,
+      "entry_price": 1010.6893357663689,
+      "exit_price": 980.9636799141922,
+      "value": 1000000.0,
+      "pnl": -1000.0,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-01-01 01:00:00",
+      "symbol": "9984",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 996.4337273740261,
+      "entry_price": 996.4337273740261,
+      "exit_price": 996.4337273740261,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.1292044035389477
+    },
+    {
+      "date": "2023-01-02 00:00:00",
+      "symbol": "9984",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1072.2830061933096,
+      "entry_price": 1027.9051123276154,
+      "exit_price": 1072.2830061933096,
+      "value": 968629.5538386793,
+      "pnl": 30378.181534993906,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-01-02 01:00:00",
+      "symbol": "7741",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1004.0788118835302,
+      "entry_price": 1004.0788118835302,
+      "exit_price": 1004.0788118835302,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.7537666443507547
+    },
+    {
+      "date": "2023-01-04 00:00:00",
+      "symbol": "7741",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1006.6996899772429,
+      "entry_price": 1005.6954950489139,
+      "exit_price": 1006.6996899772429,
+      "value": 991233.8604302229,
+      "pnl": 7743.849240940137,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-01-04 01:00:00",
+      "symbol": "6861",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1019.1958840341712,
+      "entry_price": 1019.1958840341712,
+      "exit_price": 1019.1958840341712,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.6526605685775637
+    },
+    {
+      "date": "2023-01-09 00:00:00",
+      "symbol": "6861",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1035.5173882489128,
+      "entry_price": 1047.716221564992,
+      "exit_price": 1035.5173882489128,
+      "value": 1024623.7341032891,
+      "pnl": -25664.466736564147,
+      "holding_period_hours": 120.0
+    },
+    {
+      "date": "2023-01-09 01:00:00",
+      "symbol": "6758",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1029.829801626191,
+      "entry_price": 1029.829801626191,
+      "exit_price": 1029.829801626191,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.636826872011466
+    },
+    {
+      "date": "2023-01-12 00:00:00",
+      "symbol": "6758",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1000.506014045954,
+      "entry_price": 1052.7590448021945,
+      "exit_price": 1000.506014045954,
+      "value": 990982.2790624833,
+      "pnl": 8036.467299049138,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-01-12 01:00:00",
+      "symbol": "8058",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1036.2572389350184,
+      "entry_price": 1036.2572389350184,
+      "exit_price": 1036.2572389350184,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.9762098467764406
+    },
+    {
+      "date": "2023-01-13 00:00:00",
+      "symbol": "8058",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1007.4441473643685,
+      "entry_price": 1038.6480839146957,
+      "exit_price": 1007.4441473643685,
+      "value": 1047159.4306646326,
+      "pnl": -48127.29994456344,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-01-13 01:00:00",
+      "symbol": "4063",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1040.2934746385092,
+      "entry_price": 1040.2934746385092,
+      "exit_price": 1040.2934746385092,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.751794037744162
+    },
+    {
+      "date": "2023-01-22 00:00:00",
+      "symbol": "4063",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1002.9300040896945,
+      "entry_price": 1049.9304363164863,
+      "exit_price": 1002.9300040896945,
+      "value": 998966.789957402,
+      "pnl": 85.31092094845837,
+      "holding_period_hours": 216.0
+    },
+    {
+      "date": "2023-01-22 01:00:00",
+      "symbol": "9432",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1054.296761383195,
+      "entry_price": 1054.296761383195,
+      "exit_price": 1054.296761383195,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.306698834926443
+    },
+    {
+      "date": "2023-01-25 00:00:00",
+      "symbol": "9432",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1083.2063505148255,
+      "entry_price": 1085.0437369744723,
+      "exit_price": 1083.2063505148255,
+      "value": 987933.272807517,
+      "pnl": 11126.584832336268,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-01-25 01:00:00",
+      "symbol": "7741",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1068.203912346746,
+      "entry_price": 1068.203912346746,
+      "exit_price": 1068.203912346746,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.922487927256236
+    },
+    {
+      "date": "2023-01-27 00:00:00",
+      "symbol": "7741",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1036.691395879447,
+      "entry_price": 1067.0643932942046,
+      "exit_price": 1036.691395879447,
+      "value": 1002388.8321915843,
+      "pnl": -3334.904346667212,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-01-27 01:00:00",
+      "symbol": "9020",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1075.5043310239862,
+      "entry_price": 1075.5043310239862,
+      "exit_price": 1075.5043310239862,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.1046506139838055
+    },
+    {
+      "date": "2023-01-30 00:00:00",
+      "symbol": "9020",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1129.3051859919094,
+      "entry_price": 1084.7403400817025,
+      "exit_price": 1129.3051859919094,
+      "value": 941636.7710600185,
+      "pnl": 57466.64350423406,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-01-30 01:00:00",
+      "symbol": "7741",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1092.514582925703,
+      "entry_price": 1092.514582925703,
+      "exit_price": 1092.514582925703,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.9418129201429228
+    },
+    {
+      "date": "2023-02-02 00:00:00",
+      "symbol": "7741",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1068.582071682665,
+      "entry_price": 1119.1140749611336,
+      "exit_price": 1068.582071682665,
+      "value": 959156.3002807664,
+      "pnl": 39879.039829785455,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-02-02 01:00:00",
+      "symbol": "8306",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1093.626075913841,
+      "entry_price": 1093.626075913841,
+      "exit_price": 1093.626075913841,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.4806101178561564
+    },
+    {
+      "date": "2023-02-05 00:00:00",
+      "symbol": "8306",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1063.7851879977454,
+      "entry_price": 1115.130536469777,
+      "exit_price": 1063.7851879977454,
+      "value": 996949.4150898875,
+      "pnl": 2042.1270885877182,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-02-05 01:00:00",
+      "symbol": "6861",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1107.8474604255382,
+      "entry_price": 1107.8474604255382,
+      "exit_price": 1107.8474604255382,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.7720388769080544
+    },
+    {
+      "date": "2023-02-07 00:00:00",
+      "symbol": "6861",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1144.467808838647,
+      "entry_price": 1128.8735604788724,
+      "exit_price": 1144.467808838647,
+      "value": 935311.9235025528,
+      "pnl": 63695.242846960726,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-02-07 01:00:00",
+      "symbol": "9020",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1115.9806162256848,
+      "entry_price": 1115.9806162256848,
+      "exit_price": 1115.9806162256848,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 0.8273204325926833
+    },
+    {
+      "date": "2023-02-10 00:00:00",
+      "symbol": "9020",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1084.8770414981316,
+      "entry_price": 1126.7054825781538,
+      "exit_price": 1084.8770414981316,
+      "value": 969839.7395181947,
+      "pnl": 29125.78061619714,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-02-10 01:00:00",
+      "symbol": "4063",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1140.116294682567,
+      "entry_price": 1140.116294682567,
+      "exit_price": 1140.116294682567,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.163098031079199
+    },
+    {
+      "date": "2023-02-13 00:00:00",
+      "symbol": "4063",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1161.8037717644502,
+      "entry_price": 1131.667018350673,
+      "exit_price": 1161.8037717644502,
+      "value": 973030.550828354,
+      "pnl": 25878.893200289516,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-02-13 01:00:00",
+      "symbol": "8306",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1139.9532279108755,
+      "entry_price": 1139.9532279108755,
+      "exit_price": 1139.9532279108755,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.5851190840435752
+    },
+    {
+      "date": "2023-02-15 00:00:00",
+      "symbol": "8306",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1207.09989580235,
+      "entry_price": 1164.3505161499768,
+      "exit_price": 1207.09989580235,
+      "value": 980069.9043789676,
+      "pnl": 18840.721714444106,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-02-15 01:00:00",
+      "symbol": "6758",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1153.9791878246397,
+      "entry_price": 1153.9791878246397,
+      "exit_price": 1153.9791878246397,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 0.6643754784268355
+    },
+    {
+      "date": "2023-02-19 00:00:00",
+      "symbol": "6758",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1193.700617324213,
+      "entry_price": 1163.077381639727,
+      "exit_price": 1193.700617324213,
+      "value": 946270.1701733256,
+      "pnl": 52623.481019371284,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-02-19 01:00:00",
+      "symbol": "8306",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1151.566869880339,
+      "entry_price": 1151.566869880339,
+      "exit_price": 1151.566869880339,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.3003476298461116
+    },
+    {
+      "date": "2023-02-21 00:00:00",
+      "symbol": "8306",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1130.8959932614741,
+      "entry_price": 1187.9007709171888,
+      "exit_price": 1130.8959932614741,
+      "value": 1027801.6372201958,
+      "pnl": -28989.487560729794,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-02-21 01:00:00",
+      "symbol": "9020",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1175.9138150251279,
+      "entry_price": 1175.9138150251279,
+      "exit_price": 1175.9138150251279,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.15820652380048
+    },
+    {
+      "date": "2023-02-23 00:00:00",
+      "symbol": "9020",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1119.4488715365117,
+      "entry_price": 1177.4876458972294,
+      "exit_price": 1119.4488715365117,
+      "value": 1017042.353575083,
+      "pnl": -18194.253107024975,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-02-23 01:00:00",
+      "symbol": "7203",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1187.5377982508094,
+      "entry_price": 1187.5377982508094,
+      "exit_price": 1187.5377982508094,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.7593871522279827
+    },
+    {
+      "date": "2023-02-27 00:00:00",
+      "symbol": "7203",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1213.0736299300338,
+      "entry_price": 1191.9404440499059,
+      "exit_price": 1213.0736299300338,
+      "value": 974556.0155078832,
+      "pnl": 24345.12962309864,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-02-27 01:00:00",
+      "symbol": "6861",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1194.8225839192226,
+      "entry_price": 1194.8225839192226,
+      "exit_price": 1194.8225839192226,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.845930205891253
+    },
+    {
+      "date": "2023-03-04 00:00:00",
+      "symbol": "6861",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1189.45557850629,
+      "entry_price": 1201.5043177553573,
+      "exit_price": 1189.45557850629,
+      "value": 1001144.8209834434,
+      "pnl": -2245.610390600523,
+      "holding_period_hours": 120.0
+    },
+    {
+      "date": "2023-03-04 01:00:00",
+      "symbol": "9020",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1210.888887035801,
+      "entry_price": 1210.888887035801,
+      "exit_price": 1210.888887035801,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.7473858225893237
+    },
+    {
+      "date": "2023-03-07 00:00:00",
+      "symbol": "9020",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1155.3975775430963,
+      "entry_price": 1200.2304772437853,
+      "exit_price": 1155.3975775430963,
+      "value": 976379.3630295821,
+      "pnl": 22522.258129663795,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-03-07 01:00:00",
+      "symbol": "6861",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1218.2898189354576,
+      "entry_price": 1218.2898189354576,
+      "exit_price": 1218.2898189354576,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.7676356097795305
+    },
+    {
+      "date": "2023-03-11 00:00:00",
+      "symbol": "6861",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1224.2476721296862,
+      "entry_price": 1227.8309224025843,
+      "exit_price": 1224.2476721296862,
+      "value": 907259.9200320656,
+      "pnl": 91638.52301380757,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-03-11 01:00:00",
+      "symbol": "9020",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1212.6538866269989,
+      "entry_price": 1212.6538866269989,
+      "exit_price": 1212.6538866269989,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.605903130171628
+    },
+    {
+      "date": "2023-03-14 00:00:00",
+      "symbol": "9020",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1197.914034569472,
+      "entry_price": 1208.3856069923736,
+      "exit_price": 1197.914034569472,
+      "value": 922918.17829192,
+      "pnl": 75865.73238555764,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-03-14 01:00:00",
+      "symbol": "6758",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1231.1467275157263,
+      "entry_price": 1231.1467275157263,
+      "exit_price": 1231.1467275157263,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.026164409415027
+    },
+    {
+      "date": "2023-03-15 00:00:00",
+      "symbol": "6758",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1293.4013014824268,
+      "entry_price": 1252.3341398924492,
+      "exit_price": 1293.4013014824268,
+      "value": 895033.2236248415,
+      "pnl": 103677.49582028328,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-03-15 01:00:00",
+      "symbol": "6861",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1246.7268282360228,
+      "entry_price": 1246.7268282360228,
+      "exit_price": 1246.7268282360228,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 0.6358453173413074
+    },
+    {
+      "date": "2023-03-19 00:00:00",
+      "symbol": "6861",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1239.2263912609235,
+      "entry_price": 1234.7064385222986,
+      "exit_price": 1239.2263912609235,
+      "value": 916906.166763016,
+      "pnl": 81743.59220290881,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-03-19 01:00:00",
+      "symbol": "9984",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1260.8705510110951,
+      "entry_price": 1260.8705510110951,
+      "exit_price": 1260.8705510110951,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.422348712682409
+    },
+    {
+      "date": "2023-03-22 00:00:00",
+      "symbol": "9984",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1252.128235392275,
+      "entry_price": 1277.2637392209308,
+      "exit_price": 1252.128235392275,
+      "value": 904558.3600792376,
+      "pnl": 94029.46799029321,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-03-22 01:00:00",
+      "symbol": "6861",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1258.2220870063834,
+      "entry_price": 1258.2220870063834,
+      "exit_price": 1258.2220870063834,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.147470815605781
+    },
+    {
+      "date": "2023-03-26 00:00:00",
+      "symbol": "6861",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1193.856329446201,
+      "entry_price": 1252.5944764341755,
+      "exit_price": 1193.856329446201,
+      "value": 868653.9030049164,
+      "pnl": 129851.7446770327,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-03-26 01:00:00",
+      "symbol": "9020",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1281.3513336462972,
+      "entry_price": 1281.3513336462972,
+      "exit_price": 1281.3513336462972,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.3424940498222735
+    },
+    {
+      "date": "2023-03-28 00:00:00",
+      "symbol": "9020",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1213.9126175501026,
+      "entry_price": 1266.68538387065,
+      "exit_price": 1213.9126175501026,
+      "value": 893941.7286954946,
+      "pnl": 104508.27830042057,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-03-28 01:00:00",
+      "symbol": "6861",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1290.9697984497607,
+      "entry_price": 1290.9697984497607,
+      "exit_price": 1290.9697984497607,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.529079902289202
+    },
+    {
+      "date": "2023-03-31 00:00:00",
+      "symbol": "6861",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1352.0672625947254,
+      "entry_price": 1298.6191018276681,
+      "exit_price": 1352.0672625947254,
+      "value": 976769.9003484214,
+      "pnl": 21587.235461226483,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-03-31 01:00:00",
+      "symbol": "6758",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1286.0170003576404,
+      "entry_price": 1286.0170003576404,
+      "exit_price": 1286.0170003576404,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.675275588983294
+    },
+    {
+      "date": "2023-04-03 00:00:00",
+      "symbol": "6758",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1236.0491958559721,
+      "entry_price": 1276.017571645902,
+      "exit_price": 1236.0491958559721,
+      "value": 849359.1942171194,
+      "pnl": 148960.4844690727,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-04-03 01:00:00",
+      "symbol": "9020",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1308.6123909323385,
+      "entry_price": 1308.6123909323385,
+      "exit_price": 1308.6123909323385,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.183689247184175
+    },
+    {
+      "date": "2023-04-05 00:00:00",
+      "symbol": "9020",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1286.1322812520984,
+      "entry_price": 1302.1736770323546,
+      "exit_price": 1286.1322812520984,
+      "value": 888845.1345084175,
+      "pnl": 109337.57021664451,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-04-05 01:00:00",
+      "symbol": "7203",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1310.8791261591039,
+      "entry_price": 1310.8791261591039,
+      "exit_price": 1310.8791261591039,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 0.500843516397971
+    },
+    {
+      "date": "2023-04-12 00:00:00",
+      "symbol": "7203",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1268.2229221077093,
+      "entry_price": 1306.337700942808,
+      "exit_price": 1268.2229221077093,
+      "value": 955661.6440270571,
+      "pnl": 42411.02035142827,
+      "holding_period_hours": 168.0
+    },
+    {
+      "date": "2023-04-12 01:00:00",
+      "symbol": "8306",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1313.4127497941938,
+      "entry_price": 1313.4127497941938,
+      "exit_price": 1313.4127497941938,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.3206704488670447
+    },
+    {
+      "date": "2023-04-15 00:00:00",
+      "symbol": "8306",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1277.6125636817765,
+      "entry_price": 1318.278649168271,
+      "exit_price": 1277.6125636817765,
+      "value": 973104.6300438195,
+      "pnl": 24802.345056866834,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-04-15 01:00:00",
+      "symbol": "9432",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1330.1134080570946,
+      "entry_price": 1330.1134080570946,
+      "exit_price": 1330.1134080570946,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.5297576273045617
+    },
+    {
+      "date": "2023-04-18 00:00:00",
+      "symbol": "9432",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1270.2445035092667,
+      "entry_price": 1326.1363441256901,
+      "exit_price": 1270.2445035092667,
+      "value": 807440.9188935038,
+      "pnl": 190367.92178575767,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-04-18 01:00:00",
+      "symbol": "9020",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1336.1516469207709,
+      "entry_price": 1336.1516469207709,
+      "exit_price": 1336.1516469207709,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.1167813859774225
+    },
+    {
+      "date": "2023-04-20 00:00:00",
+      "symbol": "9020",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1395.5911098197366,
+      "entry_price": 1352.7372894135187,
+      "exit_price": 1395.5911098197366,
+      "value": 1099719.998774371,
+      "pnl": -102139.79976380004,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-04-20 01:00:00",
+      "symbol": "8306",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1362.4089879854494,
+      "entry_price": 1362.4089879854494,
+      "exit_price": 1362.4089879854494,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.27431866863066
+    },
+    {
+      "date": "2023-04-23 00:00:00",
+      "symbol": "8306",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1364.7375835339117,
+      "entry_price": 1365.6468874891004,
+      "exit_price": 1364.7375835339117,
+      "value": 867166.3205919517,
+      "pnl": 130448.44544489421,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-04-23 01:00:00",
+      "symbol": "6861",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1347.4898791486728,
+      "entry_price": 1347.4898791486728,
+      "exit_price": 1347.4898791486728,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.9451269258491446
+    },
+    {
+      "date": "2023-04-26 00:00:00",
+      "symbol": "6861",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1316.1920912637904,
+      "entry_price": 1363.6147655171123,
+      "exit_price": 1316.1920912637904,
+      "value": 948631.5732974688,
+      "pnl": 48994.654673763594,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-04-26 01:00:00",
+      "symbol": "9020",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1374.567822637863,
+      "entry_price": 1374.567822637863,
+      "exit_price": 1374.567822637863,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.4950090118341077
+    },
+    {
+      "date": "2023-04-28 00:00:00",
+      "symbol": "9020",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1396.7500161000594,
+      "entry_price": 1384.7349605553939,
+      "exit_price": 1396.7500161000594,
+      "value": 943959.6166699813,
+      "pnl": 53578.69286966207,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-04-28 01:00:00",
+      "symbol": "8058",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1378.502143056919,
+      "entry_price": 1378.502143056919,
+      "exit_price": 1378.502143056919,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.4264151544076493
+    },
+    {
+      "date": "2023-05-01 00:00:00",
+      "symbol": "8058",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1369.8592249204517,
+      "entry_price": 1376.9321686224825,
+      "exit_price": 1369.8592249204517,
+      "value": 838055.2678283841,
+      "pnl": 159413.75253308163,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-05-01 01:00:00",
+      "symbol": "6758",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1391.047841174829,
+      "entry_price": 1391.047841174829,
+      "exit_price": 1391.047841174829,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.8226865226855486
+    },
+    {
+      "date": "2023-05-05 00:00:00",
+      "symbol": "6758",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1401.0081613162404,
+      "entry_price": 1415.9024236283128,
+      "exit_price": 1401.0081613162404,
+      "value": 994349.985403503,
+      "pnl": 2953.1102544936953,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-05-05 01:00:00",
+      "symbol": "6861",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1404.0893144347049,
+      "entry_price": 1404.0893144347049,
+      "exit_price": 1404.0893144347049,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.027138335739817
+    },
+    {
+      "date": "2023-05-07 00:00:00",
+      "symbol": "6861",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1417.6272922429941,
+      "entry_price": 1434.4013528705957,
+      "exit_price": 1417.6272922429941,
+      "value": 844268.1175589347,
+      "pnl": 153058.6031956603,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-05-07 01:00:00",
+      "symbol": "4063",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1416.4725040997357,
+      "entry_price": 1416.4725040997357,
+      "exit_price": 1416.4725040997357,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 0.5711937865876218
+    },
+    {
+      "date": "2023-05-09 00:00:00",
+      "symbol": "4063",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1401.4419817687829,
+      "entry_price": 1403.2546297169931,
+      "exit_price": 1401.4419817687829,
+      "value": 1007838.466209625,
+      "pnl": -10720.255257281233,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-05-09 01:00:00",
+      "symbol": "7203",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1430.7423700835986,
+      "entry_price": 1430.7423700835986,
+      "exit_price": 1430.7423700835986,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.34539302482737
+    },
+    {
+      "date": "2023-05-13 00:00:00",
+      "symbol": "7203",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1452.2317066493126,
+      "entry_price": 1454.58859158721,
+      "exit_price": 1452.2317066493126,
+      "value": 1069443.3327697024,
+      "pnl": -72450.83960251763,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-05-13 01:00:00",
+      "symbol": "4063",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1429.726844166648,
+      "entry_price": 1429.726844166648,
+      "exit_price": 1429.726844166648,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 0.9191137597518616
+    },
+    {
+      "date": "2023-05-18 00:00:00",
+      "symbol": "4063",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1420.5549038705017,
+      "entry_price": 1457.432999663168,
+      "exit_price": 1420.5549038705017,
+      "value": 1036358.0911570487,
+      "pnl": -39468.27859563285,
+      "holding_period_hours": 120.0
+    },
+    {
+      "date": "2023-05-18 01:00:00",
+      "symbol": "8306",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1451.5088396939227,
+      "entry_price": 1451.5088396939227,
+      "exit_price": 1451.5088396939227,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.6878847711563862
+    },
+    {
+      "date": "2023-05-19 00:00:00",
+      "symbol": "8306",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1478.6974240148968,
+      "entry_price": 1475.7119864887009,
+      "exit_price": 1478.6974240148968,
+      "value": 855345.1219944949,
+      "pnl": 141644.68389447598,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-05-19 01:00:00",
+      "symbol": "7203",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1455.1357197587256,
+      "entry_price": 1455.1357197587256,
+      "exit_price": 1455.1357197587256,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.2248055802158224
+    },
+    {
+      "date": "2023-05-24 00:00:00",
+      "symbol": "7203",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1452.9734541009004,
+      "entry_price": 1438.451253729187,
+      "exit_price": 1452.9734541009004,
+      "value": 1031035.5485239077,
+      "pnl": -34217.05016654302,
+      "holding_period_hours": 120.0
+    },
+    {
+      "date": "2023-05-24 01:00:00",
+      "symbol": "8306",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1446.4014987180567,
+      "entry_price": 1446.4014987180567,
+      "exit_price": 1446.4014987180567,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.2414812918605405
+    },
+    {
+      "date": "2023-05-27 00:00:00",
+      "symbol": "8306",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1403.7379356545525,
+      "entry_price": 1449.7047496792695,
+      "exit_price": 1403.7379356545525,
+      "value": 767187.9241421908,
+      "pnl": 229756.59878112687,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-05-27 01:00:00",
+      "symbol": "7203",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1466.0323984607624,
+      "entry_price": 1466.0323984607624,
+      "exit_price": 1466.0323984607624,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.0135300835077605
+    },
+    {
+      "date": "2023-05-28 00:00:00",
+      "symbol": "7203",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1423.9968948548092,
+      "entry_price": 1487.2918075323055,
+      "exit_price": 1423.9968948548092,
+      "value": 747794.6193475137,
+      "pnl": 248884.26686986216,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-05-28 01:00:00",
+      "symbol": "6861",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1480.1092761326283,
+      "entry_price": 1480.1092761326283,
+      "exit_price": 1480.1092761326283,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.139187955885854
+    },
+    {
+      "date": "2023-06-03 00:00:00",
+      "symbol": "6861",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1514.9427882590514,
+      "entry_price": 1494.4089204318918,
+      "exit_price": 1514.9427882590514,
+      "value": 753274.6448778942,
+      "pnl": 243130.60965518508,
+      "holding_period_hours": 144.0
+    },
+    {
+      "date": "2023-06-03 01:00:00",
+      "symbol": "9020",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1491.6899358452752,
+      "entry_price": 1491.6899358452752,
+      "exit_price": 1491.6899358452752,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.084034286674077
+    },
+    {
+      "date": "2023-06-04 00:00:00",
+      "symbol": "9020",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1529.641056961692,
+      "entry_price": 1490.1365546544541,
+      "exit_price": 1529.641056961692,
+      "value": 818510.6594044684,
+      "pnl": 177669.71856889728,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-06-04 01:00:00",
+      "symbol": "9432",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1497.983012451246,
+      "entry_price": 1497.983012451246,
+      "exit_price": 1497.983012451246,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.1946457441290885
+    },
+    {
+      "date": "2023-06-05 00:00:00",
+      "symbol": "9432",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1445.7866382970924,
+      "entry_price": 1518.945368486569,
+      "exit_price": 1445.7866382970924,
+      "value": 686833.3980218562,
+      "pnl": 309238.2702925173,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-06-05 01:00:00",
+      "symbol": "7203",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1514.6506254868916,
+      "entry_price": 1514.6506254868916,
+      "exit_price": 1514.6506254868916,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.665048021752404
+    },
+    {
+      "date": "2023-06-12 00:00:00",
+      "symbol": "7203",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1445.9583114621023,
+      "entry_price": 1508.4387046985994,
+      "exit_price": 1445.9583114621023,
+      "value": 1102624.1707466342,
+      "pnl": -106950.65349311968,
+      "holding_period_hours": 168.0
+    },
+    {
+      "date": "2023-06-12 01:00:00",
+      "symbol": "9432",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1507.5644376773564,
+      "entry_price": 1507.5644376773564,
+      "exit_price": 1507.5644376773564,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.7312831144483
+    },
+    {
+      "date": "2023-06-13 00:00:00",
+      "symbol": "9432",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1484.0986339693322,
+      "entry_price": 1541.5838944590214,
+      "exit_price": 1484.0986339693322,
+      "value": 1173765.4170009221,
+      "pnl": -177945.48476615956,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-06-13 01:00:00",
+      "symbol": "7203",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1525.6157289808525,
+      "entry_price": 1525.6157289808525,
+      "exit_price": 1525.6157289808525,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.5736904786555876
+    },
+    {
+      "date": "2023-06-14 00:00:00",
+      "symbol": "7203",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1489.4516916570394,
+      "entry_price": 1560.6712170335838,
+      "exit_price": 1489.4516916570394,
+      "value": 681894.3783132809,
+      "pnl": 314046.59882482403,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-06-14 01:00:00",
+      "symbol": "8306",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1531.8883004492764,
+      "entry_price": 1531.8883004492764,
+      "exit_price": 1531.8883004492764,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.61412146603383
+    },
+    {
+      "date": "2023-06-20 00:00:00",
+      "symbol": "8306",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1474.1938194084369,
+      "entry_price": 1519.5682641113967,
+      "exit_price": 1474.1938194084369,
+      "value": 659186.4967698704,
+      "pnl": 336192.3031863312,
+      "holding_period_hours": 144.0
+    },
+    {
+      "date": "2023-06-20 01:00:00",
+      "symbol": "7741",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1564.229749455162,
+      "entry_price": 1564.229749455162,
+      "exit_price": 1564.229749455162,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.646906462827599
+    },
+    {
+      "date": "2023-06-25 00:00:00",
+      "symbol": "7741",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1478.2228621491406,
+      "entry_price": 1545.1282932781803,
+      "exit_price": 1478.2228621491406,
+      "value": 892031.8290674682,
+      "pnl": 102996.11608875879,
+      "holding_period_hours": 120.0
+    },
+    {
+      "date": "2023-06-25 01:00:00",
+      "symbol": "7203",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1545.2795698219531,
+      "entry_price": 1545.2795698219531,
+      "exit_price": 1545.2795698219531,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.3566077787292454
+    },
+    {
+      "date": "2023-06-26 00:00:00",
+      "symbol": "7203",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1580.5543049342714,
+      "entry_price": 1593.9573094701836,
+      "exit_price": 1580.5543049342714,
+      "value": 966025.994431245,
+      "pnl": 28970.470138894172,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-06-26 01:00:00",
+      "symbol": "4063",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1576.9184677918122,
+      "entry_price": 1576.9184677918122,
+      "exit_price": 1576.9184677918122,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.713997623829852
+    },
+    {
+      "date": "2023-06-28 00:00:00",
+      "symbol": "4063",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1525.5894065368645,
+      "entry_price": 1574.1881571732981,
+      "exit_price": 1525.5894065368645,
+      "value": 620253.7762013718,
+      "pnl": 375012.1189080388,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-06-28 01:00:00",
+      "symbol": "6758",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1580.540926615079,
+      "entry_price": 1580.540926615079,
+      "exit_price": 1580.540926615079,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.6782929047094903
+    },
+    {
+      "date": "2023-07-04 00:00:00",
+      "symbol": "6758",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1539.484682008182,
+      "entry_price": 1609.3582127391576,
+      "exit_price": 1539.484682008182,
+      "value": 925183.6334907049,
+      "pnl": 70028.11905270015,
+      "holding_period_hours": 144.0
+    },
+    {
+      "date": "2023-07-04 01:00:00",
+      "symbol": "7203",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1596.1238150424672,
+      "entry_price": 1596.1238150424672,
+      "exit_price": 1596.1238150424672,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.501641328606338
+    },
+    {
+      "date": "2023-07-07 00:00:00",
+      "symbol": "7203",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1564.6901904876906,
+      "entry_price": 1626.077643286171,
+      "exit_price": 1564.6901904876906,
+      "value": 667294.7437378822,
+      "pnl": 327770.4408325402,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-07-07 01:00:00",
+      "symbol": "8306",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1601.0891556225492,
+      "entry_price": 1601.0891556225492,
+      "exit_price": 1601.0891556225492,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.578119427291623
+    },
+    {
+      "date": "2023-07-08 00:00:00",
+      "symbol": "8306",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1601.3171466087042,
+      "entry_price": 1604.2055318661683,
+      "exit_price": 1601.3171466087042,
+      "value": 693828.9479935525,
+      "pnl": 300959.62984463555,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-07-08 01:00:00",
+      "symbol": "4063",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1596.1688338208762,
+      "entry_price": 1596.1688338208762,
+      "exit_price": 1596.1688338208762,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.4735027415711879
+    },
+    {
+      "date": "2023-07-15 00:00:00",
+      "symbol": "4063",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1680.2316756880284,
+      "entry_price": 1608.6280308661478,
+      "exit_price": 1680.2316756880284,
+      "value": 988730.7206624552,
+      "pnl": 5384.5381691140965,
+      "holding_period_hours": 168.0
+    },
+    {
+      "date": "2023-07-15 01:00:00",
+      "symbol": "6861",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1612.9584224815337,
+      "entry_price": 1612.9584224815337,
+      "exit_price": 1612.9584224815337,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.113040573443782
+    },
+    {
+      "date": "2023-07-16 00:00:00",
+      "symbol": "6861",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1585.7276290919312,
+      "entry_price": 1641.169048416391,
+      "exit_price": 1585.7276290919312,
+      "value": 486320.34335387935,
+      "pnl": 507771.89751275524,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-07-16 01:00:00",
+      "symbol": "8306",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1629.558021820825,
+      "entry_price": 1629.558021820825,
+      "exit_price": 1629.558021820825,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.0848866381656768
+    },
+    {
+      "date": "2023-07-17 00:00:00",
+      "symbol": "8306",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1685.0760748267687,
+      "entry_price": 1664.0657019745756,
+      "exit_price": 1685.0760748267687,
+      "value": 1092551.3434461043,
+      "pnl": -99037.07178850814,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-07-17 01:00:00",
+      "symbol": "6861",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1645.5449553023961,
+      "entry_price": 1645.5449553023961,
+      "exit_price": 1645.5449553023961,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 0.9419921540459913
+    },
+    {
+      "date": "2023-07-24 00:00:00",
+      "symbol": "6861",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1617.7149586543378,
+      "entry_price": 1679.4212488182588,
+      "exit_price": 1617.7149586543378,
+      "value": 1248296.606765161,
+      "pnl": -254655.03459525478,
+      "holding_period_hours": 168.0
+    },
+    {
+      "date": "2023-07-24 01:00:00",
+      "symbol": "7203",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1659.0642069269993,
+      "entry_price": 1659.0642069269993,
+      "exit_price": 1659.0642069269993,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.4268571262241159
+    },
+    {
+      "date": "2023-07-31 00:00:00",
+      "symbol": "7203",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1725.9371446528942,
+      "entry_price": 1688.790584741763,
+      "exit_price": 1725.9371446528942,
+      "value": 1260122.5249881253,
+      "pnl": -266083.1694653968,
+      "holding_period_hours": 168.0
+    },
+    {
+      "date": "2023-07-31 01:00:00",
+      "symbol": "6861",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1668.4266152708817,
+      "entry_price": 1668.4266152708817,
+      "exit_price": 1668.4266152708817,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.2667071057095916
+    },
+    {
+      "date": "2023-08-02 00:00:00",
+      "symbol": "6861",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1685.8250468449655,
+      "entry_price": 1666.1950704392289,
+      "exit_price": 1685.8250468449655,
+      "value": 1178917.669885199,
+      "pnl": -184735.18475709617,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-08-02 01:00:00",
+      "symbol": "7741",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1679.0171188481004,
+      "entry_price": 1679.0171188481004,
+      "exit_price": 1679.0171188481004,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 0.8638578156933635
+    },
+    {
+      "date": "2023-08-04 00:00:00",
+      "symbol": "7741",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1777.8404745846342,
+      "entry_price": 1711.0709492657443,
+      "exit_price": 1777.8404745846342,
+      "value": 1029609.8294730154,
+      "pnl": -35103.30432886234,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-08-04 01:00:00",
+      "symbol": "6861",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1672.2837126406516,
+      "entry_price": 1672.2837126406516,
+      "exit_price": 1672.2837126406516,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.379660850613162
+    },
+    {
+      "date": "2023-08-08 00:00:00",
+      "symbol": "6861",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1684.7792615610483,
+      "entry_price": 1691.2386971974922,
+      "exit_price": 1684.7792615610483,
+      "value": 1169618.363895567,
+      "pnl": -175067.07458928885,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-08-08 01:00:00",
+      "symbol": "7741",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1683.7278727764256,
+      "entry_price": 1683.7278727764256,
+      "exit_price": 1683.7278727764256,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.5333900532105735
+    },
+    {
+      "date": "2023-08-12 00:00:00",
+      "symbol": "7741",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1700.3518200674305,
+      "entry_price": 1715.6324600038445,
+      "exit_price": 1700.3518200674305,
+      "value": 519443.24996447784,
+      "pnl": 475036.5989811827,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-08-12 01:00:00",
+      "symbol": "7203",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1704.393452562282,
+      "entry_price": 1704.393452562282,
+      "exit_price": 1704.393452562282,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.947595224043563
+    },
+    {
+      "date": "2023-08-15 00:00:00",
+      "symbol": "7203",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1647.17994130118,
+      "entry_price": 1724.4407322838456,
+      "exit_price": 1647.17994130118,
+      "value": 568433.1552379609,
+      "pnl": 425357.6965746851,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-08-15 01:00:00",
+      "symbol": "6861",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1722.303374954429,
+      "entry_price": 1722.303374954429,
+      "exit_price": 1722.303374954429,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.103886601677668
+    },
+    {
+      "date": "2023-08-17 00:00:00",
+      "symbol": "6861",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1659.6598275962926,
+      "entry_price": 1703.6542264206996,
+      "exit_price": 1659.6598275962926,
+      "value": 645731.8489846179,
+      "pnl": 347439.54363266466,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-08-17 01:00:00",
+      "symbol": "4063",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1719.4156854818318,
+      "entry_price": 1719.4156854818318,
+      "exit_price": 1719.4156854818318,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.6039103881413572
+    },
+    {
+      "date": "2023-08-21 00:00:00",
+      "symbol": "4063",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1764.5739790381867,
+      "entry_price": 1721.5816526524393,
+      "exit_price": 1764.5739790381867,
+      "value": 563357.279860659,
+      "pnl": 429740.9147154993,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-08-21 01:00:00",
+      "symbol": "8306",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1716.0499280921579,
+      "entry_price": 1716.0499280921579,
+      "exit_price": 1716.0499280921579,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.1661984575287163
+    },
+    {
+      "date": "2023-08-23 00:00:00",
+      "symbol": "8306",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1822.2030078727207,
+      "entry_price": 1774.2213553713343,
+      "exit_price": 1822.2030078727207,
+      "value": 601084.603490064,
+      "pnl": 391598.5330376334,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-08-23 01:00:00",
+      "symbol": "6861",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1729.9263913977334,
+      "entry_price": 1729.9263913977334,
+      "exit_price": 1729.9263913977334,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.2550451579426873
+    },
+    {
+      "date": "2023-08-26 00:00:00",
+      "symbol": "6861",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1715.69553083197,
+      "entry_price": 1731.3537334553998,
+      "exit_price": 1715.69553083197,
+      "value": 857325.2715525185,
+      "pnl": 134746.15226257007,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-08-26 01:00:00",
+      "symbol": "9432",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1759.8029408307236,
+      "entry_price": 1759.8029408307236,
+      "exit_price": 1759.8029408307236,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.199286853516413
+    },
+    {
+      "date": "2023-08-29 00:00:00",
+      "symbol": "9432",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1814.3613619806274,
+      "entry_price": 1740.8582666043278,
+      "exit_price": 1814.3613619806274,
+      "value": 661541.2543678777,
+      "pnl": 330373.25242543046,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-08-29 01:00:00",
+      "symbol": "8058",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1763.258400033322,
+      "entry_price": 1763.258400033322,
+      "exit_price": 1763.258400033322,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.8297350183670509
+    },
+    {
+      "date": "2023-09-02 00:00:00",
+      "symbol": "8058",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1788.736090864969,
+      "entry_price": 1770.137039119285,
+      "exit_price": 1788.736090864969,
+      "value": 883186.5133717562,
+      "pnl": 108345.67317204639,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-09-02 01:00:00",
+      "symbol": "8306",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1772.1201248273408,
+      "entry_price": 1772.1201248273408,
+      "exit_price": 1772.1201248273408,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.202417624376624
+    },
+    {
+      "date": "2023-09-08 00:00:00",
+      "symbol": "8306",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1722.7411707871704,
+      "entry_price": 1780.3512156511654,
+      "exit_price": 1722.7411707871704,
+      "value": 428927.08344928175,
+      "pnl": 562895.4565872226,
+      "holding_period_hours": 144.0
+    },
+    {
+      "date": "2023-09-08 01:00:00",
+      "symbol": "9984",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1791.1332913932465,
+      "entry_price": 1791.1332913932465,
+      "exit_price": 1791.1332913932465,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.396161119793554
+    },
+    {
+      "date": "2023-09-09 00:00:00",
+      "symbol": "9984",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1810.5243937639486,
+      "entry_price": 1763.5853180980566,
+      "exit_price": 1810.5243937639486,
+      "value": 1259189.038459268,
+      "pnl": -268126.59150958754,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-09-09 01:00:00",
+      "symbol": "8306",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1805.4814944259092,
+      "entry_price": 1805.4814944259092,
+      "exit_price": 1805.4814944259092,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.815574147329367
+    },
+    {
+      "date": "2023-09-12 00:00:00",
+      "symbol": "8306",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1725.3060479246121,
+      "entry_price": 1790.5692767336045,
+      "exit_price": 1725.3060479246121,
+      "value": 1260503.3585197835,
+      "pnl": -269313.0764271146,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-09-12 01:00:00",
+      "symbol": "4063",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1800.6623865587906,
+      "entry_price": 1800.6623865587906,
+      "exit_price": 1800.6623865587906,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 0.8941323027222724
+    },
+    {
+      "date": "2023-09-18 00:00:00",
+      "symbol": "4063",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1783.1543870362068,
+      "entry_price": 1841.4206891003134,
+      "exit_price": 1783.1543870362068,
+      "value": 1266498.880808257,
+      "pnl": -274511.47493959375,
+      "holding_period_hours": 144.0
+    },
+    {
+      "date": "2023-09-18 01:00:00",
+      "symbol": "9432",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1801.0501241302322,
+      "entry_price": 1801.0501241302322,
+      "exit_price": 1801.0501241302322,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.9232278440973964
+    },
+    {
+      "date": "2023-09-19 00:00:00",
+      "symbol": "9432",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1864.8723904713397,
+      "entry_price": 1811.4943733111045,
+      "exit_price": 1864.8723904713397,
+      "value": 689458.4034434777,
+      "pnl": 302599.3562353836,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-09-19 01:00:00",
+      "symbol": "7741",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1818.409932268055,
+      "entry_price": 1818.409932268055,
+      "exit_price": 1818.409932268055,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.0976889100116791
+    },
+    {
+      "date": "2023-09-20 00:00:00",
+      "symbol": "7741",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1814.6119844157804,
+      "entry_price": 1812.9597643495806,
+      "exit_price": 1814.6119844157804,
+      "value": 1005816.0178760744,
+      "pnl": -14184.38892078575,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-09-20 01:00:00",
+      "symbol": "9432",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1817.0968133777967,
+      "entry_price": 1817.0968133777967,
+      "exit_price": 1817.0968133777967,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.640794864761049
+    },
+    {
+      "date": "2023-09-26 00:00:00",
+      "symbol": "9432",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1884.4481224652313,
+      "entry_price": 1844.8390017621643,
+      "exit_price": 1884.4481224652313,
+      "value": 680063.5683848434,
+      "pnl": 311600.4120316454,
+      "holding_period_hours": 144.0
+    },
+    {
+      "date": "2023-09-26 01:00:00",
+      "symbol": "8058",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1856.1075298459607,
+      "entry_price": 1856.1075298459607,
+      "exit_price": 1856.1075298459607,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.692890963854045
+    },
+    {
+      "date": "2023-09-27 00:00:00",
+      "symbol": "8058",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1834.9392976924548,
+      "entry_price": 1883.0095957370934,
+      "exit_price": 1834.9392976924548,
+      "value": 1278958.985152098,
+      "pnl": -287539.69832195644,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-09-27 01:00:00",
+      "symbol": "8306",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1836.367916345656,
+      "entry_price": 1836.367916345656,
+      "exit_price": 1836.367916345656,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.5579684517375698
+    },
+    {
+      "date": "2023-09-30 00:00:00",
+      "symbol": "8306",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1978.5838530183921,
+      "entry_price": 1889.3943368538137,
+      "exit_price": 1978.5838530183921,
+      "value": 651419.9400243203,
+      "pnl": 340631.5920706363,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-09-30 01:00:00",
+      "symbol": "9984",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1873.3668881798217,
+      "entry_price": 1873.3668881798217,
+      "exit_price": 1873.3668881798217,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 0.8850620239464027
+    },
+    {
+      "date": "2023-10-04 00:00:00",
+      "symbol": "9984",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1888.8790629718337,
+      "entry_price": 1903.4676142548724,
+      "exit_price": 1888.8790629718337,
+      "value": 846199.6245180927,
+      "pnl": 145595.5008229631,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-10-04 01:00:00",
+      "symbol": "8306",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1851.648204874512,
+      "entry_price": 1851.648204874512,
+      "exit_price": 1851.648204874512,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.0483780926186776
+    },
+    {
+      "date": "2023-10-05 00:00:00",
+      "symbol": "8306",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1853.9636708281696,
+      "entry_price": 1845.864401559595,
+      "exit_price": 1853.9636708281696,
+      "value": 291299.72902584285,
+      "pnl": 700128.147950581,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-10-05 01:00:00",
+      "symbol": "6861",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1873.929631431633,
+      "entry_price": 1873.929631431633,
+      "exit_price": 1873.929631431633,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.157022267579171
+    },
+    {
+      "date": "2023-10-09 00:00:00",
+      "symbol": "6861",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1968.5746207708523,
+      "entry_price": 1898.5556792721795,
+      "exit_price": 1968.5746207708523,
+      "value": 1456911.0158176736,
+      "pnl": -466437.9344127043,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-10-09 01:00:00",
+      "symbol": "6758",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1896.1198795906387,
+      "entry_price": 1896.1198795906387,
+      "exit_price": 1896.1198795906387,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.0191710396736324
+    },
+    {
+      "date": "2023-10-12 00:00:00",
+      "symbol": "6758",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 2002.3217351787025,
+      "entry_price": 1924.2765168789479,
+      "exit_price": 2002.3217351787025,
+      "value": 1147066.6461562552,
+      "pnl": -156527.35031555098,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-10-12 01:00:00",
+      "symbol": "8306",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1885.5508787244235,
+      "entry_price": 1885.5508787244235,
+      "exit_price": 1885.5508787244235,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.36176542143477
+    },
+    {
+      "date": "2023-10-16 00:00:00",
+      "symbol": "8306",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1807.7710886352909,
+      "entry_price": 1893.5367137243227,
+      "exit_price": 1807.7710886352909,
+      "value": 232625.29515035963,
+      "pnl": 758373.7699502253,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-10-16 01:00:00",
+      "symbol": "6861",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1916.4384837533541,
+      "entry_price": 1916.4384837533541,
+      "exit_price": 1916.4384837533541,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.5196977211072897
+    },
+    {
+      "date": "2023-10-19 00:00:00",
+      "symbol": "6861",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1953.2855360308333,
+      "entry_price": 1894.110923863864,
+      "exit_price": 1953.2855360308333,
+      "value": 591426.2823106211,
+      "pnl": 398075.93460383476,
+      "holding_period_hours": 72.0
+    },
+    {
+      "date": "2023-10-19 01:00:00",
+      "symbol": "8058",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1933.5703961678187,
+      "entry_price": 1933.5703961678187,
+      "exit_price": 1933.5703961678187,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.7001915493326925
+    },
+    {
+      "date": "2023-10-20 00:00:00",
+      "symbol": "8058",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1989.110987863575,
+      "entry_price": 1911.8800088774433,
+      "exit_price": 1989.110987863575,
+      "value": 932212.5067406291,
+      "pnl": 57070.103020735165,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-10-20 01:00:00",
+      "symbol": "6861",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1923.0775823328263,
+      "entry_price": 1923.0775823328263,
+      "exit_price": 1923.0775823328263,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.4331830470942597
+    },
+    {
+      "date": "2023-10-24 00:00:00",
+      "symbol": "6861",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1818.2232819352787,
+      "entry_price": 1905.1193797365852,
+      "exit_price": 1818.2232819352787,
+      "value": 198353.39101639832,
+      "pnl": 790502.5677104578,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-10-24 01:00:00",
+      "symbol": "8306",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1948.5504806540096,
+      "entry_price": 1948.5504806540096,
+      "exit_price": 1948.5504806540096,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.055679922922269
+    },
+    {
+      "date": "2023-10-28 00:00:00",
+      "symbol": "8306",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1871.2099360173681,
+      "entry_price": 1930.990805278799,
+      "exit_price": 1871.2099360173681,
+      "value": -167634.03788150894,
+      "pnl": 1155745.4868670865,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-10-28 01:00:00",
+      "symbol": "7741",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1956.6281861435095,
+      "entry_price": 1956.6281861435095,
+      "exit_price": 1956.6281861435095,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 0.5014054040886895
+    },
+    {
+      "date": "2023-10-29 00:00:00",
+      "symbol": "7741",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1900.5057524399192,
+      "entry_price": 1983.9818676650334,
+      "exit_price": 1900.5057524399192,
+      "value": 1057636.343959946,
+      "pnl": -70735.5130417517,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-10-29 01:00:00",
+      "symbol": "6861",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1947.9063929043982,
+      "entry_price": 1947.9063929043982,
+      "exit_price": 1947.9063929043982,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.8518273835468135
+    },
+    {
+      "date": "2023-11-02 00:00:00",
+      "symbol": "6861",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1940.2582074917234,
+      "entry_price": 1968.806868689629,
+      "exit_price": 1940.2582074917234,
+      "value": -29835.839420549106,
+      "pnl": 1016231.6671692869,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-11-02 01:00:00",
+      "symbol": "4063",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1962.9360593003812,
+      "entry_price": 1962.9360593003812,
+      "exit_price": 1962.9360593003812,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.8737060422561598
+    },
+    {
+      "date": "2023-11-06 00:00:00",
+      "symbol": "4063",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1896.3184560118796,
+      "entry_price": 1991.2131107544767,
+      "exit_price": 1896.3184560118796,
+      "value": -491159.0953181924,
+      "pnl": 1476057.220745393,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-11-06 01:00:00",
+      "symbol": "6758",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1977.2349659743948,
+      "entry_price": 1977.2349659743948,
+      "exit_price": 1977.2349659743948,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.5625304491038956
+    },
+    {
+      "date": "2023-11-07 00:00:00",
+      "symbol": "6758",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1894.153391751245,
+      "entry_price": 1974.195912438289,
+      "exit_price": 1894.153391751245,
+      "value": 174260.91891848028,
+      "pnl": 808943.8185760479,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-11-07 01:00:00",
+      "symbol": "9020",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2000.2837139092785,
+      "entry_price": 2000.2837139092785,
+      "exit_price": 2000.2837139092785,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.6210484117762842
+    },
+    {
+      "date": "2023-11-13 00:00:00",
+      "symbol": "9020",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1916.0891993344296,
+      "entry_price": 2005.6250006261203,
+      "exit_price": 1916.0891993344296,
+      "value": -153767.9459789237,
+      "pnl": 1136589.8331823938,
+      "holding_period_hours": 144.0
+    },
+    {
+      "date": "2023-11-13 01:00:00",
+      "symbol": "7203",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1985.6199603918208,
+      "entry_price": 1985.6199603918208,
+      "exit_price": 1985.6199603918208,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.678922886745898
+    },
+    {
+      "date": "2023-11-14 00:00:00",
+      "symbol": "7203",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1987.3175618733862,
+      "entry_price": 1986.5090368532906,
+      "exit_price": 1987.3175618733862,
+      "value": 354912.91921274236,
+      "pnl": 626515.4072364513,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-11-14 01:00:00",
+      "symbol": "9432",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2011.8042437783818,
+      "entry_price": 2011.8042437783818,
+      "exit_price": 2011.8042437783818,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.4922751659482878
+    },
+    {
+      "date": "2023-11-15 00:00:00",
+      "symbol": "9432",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 2126.6513438731704,
+      "entry_price": 2056.232752567753,
+      "exit_price": 2126.6513438731704,
+      "value": 1501758.854382374,
+      "pnl": -520804.55012662825,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-11-15 01:00:00",
+      "symbol": "9984",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2028.983889708365,
+      "entry_price": 2028.983889708365,
+      "exit_price": 2028.983889708365,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 0.7729785324329318
+    },
+    {
+      "date": "2023-11-22 00:00:00",
+      "symbol": "9984",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1996.5754576531365,
+      "entry_price": 1998.0177575678924,
+      "exit_price": 1996.5754576531365,
+      "value": -620029.5337567537,
+      "pnl": 1601284.6158075868,
+      "holding_period_hours": 168.0
+    },
+    {
+      "date": "2023-11-22 01:00:00",
+      "symbol": "9432",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2016.2249619771542,
+      "entry_price": 2016.2249619771542,
+      "exit_price": 2016.2249619771542,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.9239291223531594
+    },
+    {
+      "date": "2023-11-24 00:00:00",
+      "symbol": "9432",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 2009.6136100930885,
+      "entry_price": 2012.1352510966365,
+      "exit_price": 2009.6136100930885,
+      "value": 538352.4275074049,
+      "pnl": 441042.9051195714,
+      "holding_period_hours": 48.0
+    },
+    {
+      "date": "2023-11-24 01:00:00",
+      "symbol": "8306",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2034.4561391191335,
+      "entry_price": 2034.4561391191335,
+      "exit_price": 2034.4561391191335,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.7378524750893427
+    },
+    {
+      "date": "2023-11-25 00:00:00",
+      "symbol": "8306",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 2005.5078238360004,
+      "entry_price": 2019.5809855289328,
+      "exit_price": 2005.5078238360004,
+      "value": 982017.3616038243,
+      "pnl": -3173.406775795793,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-11-25 01:00:00",
+      "symbol": "6758",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2040.762906345093,
+      "entry_price": 2040.762906345093,
+      "exit_price": 2040.762906345093,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.607130336350908
+    },
+    {
+      "date": "2023-12-01 00:00:00",
+      "symbol": "6758",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 2105.805930511708,
+      "entry_price": 2022.1442626798987,
+      "exit_price": 2105.805930511708,
+      "value": -709031.1022123985,
+      "pnl": 1687560.8622348558,
+      "holding_period_hours": 144.0
+    },
+    {
+      "date": "2023-12-01 01:00:00",
+      "symbol": "9984",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2073.7193585083837,
+      "entry_price": 2073.7193585083837,
+      "exit_price": 2073.7193585083837,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.541497507542854
+    },
+    {
+      "date": "2023-12-02 00:00:00",
+      "symbol": "9984",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1995.7915765590287,
+      "entry_price": 2093.9532662072643,
+      "exit_price": 1995.7915765590287,
+      "value": -475709.65981001616,
+      "pnl": 1452422.463032203,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-12-02 01:00:00",
+      "symbol": "9020",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2089.3282337821465,
+      "entry_price": 2089.3282337821465,
+      "exit_price": 2089.3282337821465,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.3430822990642626
+    },
+    {
+      "date": "2023-12-03 00:00:00",
+      "symbol": "9020",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 2035.2751999003103,
+      "entry_price": 2063.6329813686452,
+      "exit_price": 2035.2751999003103,
+      "value": 957063.0727639318,
+      "pnl": 18401.540244029122,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-12-03 01:00:00",
+      "symbol": "4063",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2061.9624627039566,
+      "entry_price": 2061.9624627039566,
+      "exit_price": 2061.9624627039566,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.9627232991471373
+    },
+    {
+      "date": "2023-12-09 00:00:00",
+      "symbol": "4063",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 2083.2637675720184,
+      "entry_price": 2051.484806614598,
+      "exit_price": 2083.2637675720184,
+      "value": 1367014.7379263681,
+      "pnl": -390624.56346038973,
+      "holding_period_hours": 144.0
+    },
+    {
+      "date": "2023-12-09 01:00:00",
+      "symbol": "7741",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2087.60636177813,
+      "entry_price": 2087.60636177813,
+      "exit_price": 2087.60636177813,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.821206763660503
+    },
+    {
+      "date": "2023-12-10 00:00:00",
+      "symbol": "7741",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 2085.333750695204,
+      "entry_price": 2078.6639781857707,
+      "exit_price": 2085.333750695204,
+      "value": -85598.96517530782,
+      "pnl": 1062708.106658169,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-12-10 01:00:00",
+      "symbol": "9984",
+      "strategy": "RSIStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2099.2589607604755,
+      "entry_price": 2099.2589607604755,
+      "exit_price": 2099.2589607604755,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.9600325541753545
+    },
+    {
+      "date": "2023-12-11 00:00:00",
+      "symbol": "9984",
+      "strategy": "RSIStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 2010.0460128968566,
+      "entry_price": 2073.540063576784,
+      "exit_price": 2010.0460128968566,
+      "value": -956186.2718780932,
+      "pnl": 1932299.7553401105,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-12-11 01:00:00",
+      "symbol": "6861",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2097.9546354079184,
+      "entry_price": 2097.9546354079184,
+      "exit_price": 2097.9546354079184,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.083527641945914
+    },
+    {
+      "date": "2023-12-17 00:00:00",
+      "symbol": "6861",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 2109.0254834712796,
+      "entry_price": 2093.6389614485074,
+      "exit_price": 2109.0254834712796,
+      "value": 1398541.7627650334,
+      "pnl": -425075.8348532513,
+      "holding_period_hours": 144.0
+    },
+    {
+      "date": "2023-12-17 01:00:00",
+      "symbol": "6758",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2107.9263379892404,
+      "entry_price": 2107.9263379892404,
+      "exit_price": 2107.9263379892404,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.5156873252939245
+    },
+    {
+      "date": "2023-12-18 00:00:00",
+      "symbol": "6758",
+      "strategy": "MeanReversionStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 2171.682875190208,
+      "entry_price": 2167.6742007225175,
+      "exit_price": 2171.682875190208,
+      "value": -792241.1864688024,
+      "pnl": 1766242.184706725,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-12-18 01:00:00",
+      "symbol": "9984",
+      "strategy": "TrendFollowingStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2123.708358467311,
+      "entry_price": 2123.708358467311,
+      "exit_price": 2123.708358467311,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.319202212561247
+    },
+    {
+      "date": "2023-12-23 00:00:00",
+      "symbol": "9984",
+      "strategy": "TrendFollowingStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 2052.8124417191225,
+      "entry_price": 2101.4612537303724,
+      "exit_price": 2052.8124417191225,
+      "value": 367971.2737153885,
+      "pnl": 605556.3189009628,
+      "holding_period_hours": 120.0
+    },
+    {
+      "date": "2023-12-23 01:00:00",
+      "symbol": "9432",
+      "strategy": "MomentumStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2146.60129138166,
+      "entry_price": 2146.60129138166,
+      "exit_price": 2146.60129138166,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.367659259582238
+    },
+    {
+      "date": "2023-12-27 00:00:00",
+      "symbol": "9432",
+      "strategy": "MomentumStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 2165.491069646105,
+      "entry_price": 2188.1875499321595,
+      "exit_price": 2165.491069646105,
+      "value": -1155933.0648230012,
+      "pnl": 2129860.588528129,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-12-27 01:00:00",
+      "symbol": "6758",
+      "strategy": "ContrarianStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2158.336123720121,
+      "entry_price": 2158.336123720121,
+      "exit_price": 2158.336123720121,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.212629616162925
+    },
+    {
+      "date": "2023-12-31 00:00:00",
+      "symbol": "6758",
+      "strategy": "ContrarianStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 2110.900603714407,
+      "entry_price": 2161.0865850558516,
+      "exit_price": 2110.900603714407,
+      "value": 255027.10435663583,
+      "pnl": 716716.764574016,
+      "holding_period_hours": 96.0
+    },
+    {
+      "date": "2023-12-31 01:00:00",
+      "symbol": "7741",
+      "strategy": "VolatilityBreakoutStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 2158.053873559574,
+      "entry_price": 2158.053873559574,
+      "exit_price": 2158.053873559574,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 2.1477474895444755
+    }
+  ],
+  "switches": [
+    {
+      "date": "2023-01-01 00:00:00",
+      "from_symbol": "CASH",
+      "to_symbol": "9984",
+      "reason": "ランキング更新: 9984が上位に",
+      "cost": 1000.0,
+      "profit_loss": 0.0,
+      "net_gain": -1000.0,
+      "success": false
+    },
+    {
+      "date": "2023-01-04 00:00:00",
+      "from_symbol": "9984",
+      "to_symbol": "7741",
+      "reason": "ランキング更新: 7741が上位に",
+      "cost": 992.2646263267648,
+      "profit_loss": 31370.44616132067,
+      "net_gain": 30378.181534993906,
+      "success": true
+    },
+    {
+      "date": "2023-01-07 00:00:00",
+      "from_symbol": "7741",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 1022.2903288369818,
+      "profit_loss": 8766.139569777119,
+      "net_gain": 7743.849240940137,
+      "success": true
+    },
+    {
+      "date": "2023-01-10 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "6758",
+      "reason": "ランキング更新: 6758が上位に",
+      "cost": 1040.7326332751072,
+      "profit_loss": -24623.73410328904,
+      "net_gain": -25664.466736564147,
+      "success": false
+    },
+    {
+      "date": "2023-01-13 00:00:00",
+      "from_symbol": "6758",
+      "to_symbol": "8058",
+      "reason": "ランキング更新: 8058が上位に",
+      "cost": 981.2536384675385,
+      "profit_loss": 9017.720937516677,
+      "net_gain": 8036.467299049138,
+      "success": true
+    },
+    {
+      "date": "2023-01-16 00:00:00",
+      "from_symbol": "8058",
+      "to_symbol": "4063",
+      "reason": "ランキング更新: 4063が上位に",
+      "cost": 967.8692799308885,
+      "profit_loss": -47159.43066463255,
+      "net_gain": -48127.29994456344,
+      "success": false
+    },
+    {
+      "date": "2023-01-19 00:00:00",
+      "from_symbol": "4063",
+      "to_symbol": "9432",
+      "reason": "ランキング更新: 9432が上位に",
+      "cost": 947.8991216495302,
+      "profit_loss": 1033.2100425979886,
+      "net_gain": 85.31092094845837,
+      "success": true
+    },
+    {
+      "date": "2023-01-22 00:00:00",
+      "from_symbol": "9432",
+      "to_symbol": "7741",
+      "reason": "ランキング更新: 7741が上位に",
+      "cost": 940.1423601467063,
+      "profit_loss": 12066.727192482975,
+      "net_gain": 11126.584832336268,
+      "success": true
+    },
+    {
+      "date": "2023-01-25 00:00:00",
+      "from_symbol": "7741",
+      "to_symbol": "9020",
+      "reason": "ランキング更新: 9020が上位に",
+      "cost": 946.0721550828953,
+      "profit_loss": -2388.8321915843167,
+      "net_gain": -3334.904346667212,
+      "success": false
+    },
+    {
+      "date": "2023-01-28 00:00:00",
+      "from_symbol": "9020",
+      "to_symbol": "7741",
+      "reason": "ランキング更新: 7741が上位に",
+      "cost": 896.5854357474697,
+      "profit_loss": 58363.22893998153,
+      "net_gain": 57466.64350423406,
+      "success": true
+    },
+    {
+      "date": "2023-01-31 00:00:00",
+      "from_symbol": "7741",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 964.6598894481241,
+      "profit_loss": 40843.69971923358,
+      "net_gain": 39879.039829785455,
+      "success": true
+    },
+    {
+      "date": "2023-02-03 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 1008.4578215248027,
+      "profit_loss": 3050.584910112521,
+      "net_gain": 2042.1270885877182,
+      "success": true
+    },
+    {
+      "date": "2023-02-06 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "9020",
+      "reason": "ランキング更新: 9020が上位に",
+      "cost": 992.8336504864894,
+      "profit_loss": 64688.07649744722,
+      "net_gain": 63695.242846960726,
+      "success": true
+    },
+    {
+      "date": "2023-02-09 00:00:00",
+      "from_symbol": "9020",
+      "to_symbol": "4063",
+      "reason": "ランキング更新: 4063が上位に",
+      "cost": 1034.4798656081389,
+      "profit_loss": 30160.26048180528,
+      "net_gain": 29125.78061619714,
+      "success": true
+    },
+    {
+      "date": "2023-02-12 00:00:00",
+      "from_symbol": "4063",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 1090.5559713564908,
+      "profit_loss": 26969.449171646007,
+      "net_gain": 25878.893200289516,
+      "success": true
+    },
+    {
+      "date": "2023-02-15 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "6758",
+      "reason": "ランキング更新: 6758が上位に",
+      "cost": 1089.3739065882692,
+      "profit_loss": 19930.095621032375,
+      "net_gain": 18840.721714444106,
+      "success": true
+    },
+    {
+      "date": "2023-02-18 00:00:00",
+      "from_symbol": "6758",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 1106.3488073030862,
+      "profit_loss": 53729.82982667437,
+      "net_gain": 52623.481019371284,
+      "success": true
+    },
+    {
+      "date": "2023-02-21 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "9020",
+      "reason": "ランキング更新: 9020が上位に",
+      "cost": 1187.8503405338984,
+      "profit_loss": -27801.637220195895,
+      "net_gain": -28989.487560729794,
+      "success": false
+    },
+    {
+      "date": "2023-02-24 00:00:00",
+      "from_symbol": "9020",
+      "to_symbol": "7203",
+      "reason": "ランキング更新: 7203が上位に",
+      "cost": 1151.8995319420687,
+      "profit_loss": -17042.353575082907,
+      "net_gain": -18194.253107024975,
+      "success": false
+    },
+    {
+      "date": "2023-02-27 00:00:00",
+      "from_symbol": "7203",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 1098.8548690182192,
+      "profit_loss": 25443.98449211686,
+      "net_gain": 24345.12962309864,
+      "success": true
+    },
+    {
+      "date": "2023-03-02 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "9020",
+      "reason": "ランキング更新: 9020が上位に",
+      "cost": 1100.7894071571195,
+      "profit_loss": -1144.8209834434035,
+      "net_gain": -2245.610390600523,
+      "success": false
+    },
+    {
+      "date": "2023-03-05 00:00:00",
+      "from_symbol": "9020",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 1098.3788407541476,
+      "profit_loss": 23620.63697041794,
+      "net_gain": 22522.258129663795,
+      "success": true
+    },
+    {
+      "date": "2023-03-08 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "9020",
+      "reason": "ランキング更新: 9020が上位に",
+      "cost": 1101.5569541267892,
+      "profit_loss": 92740.07996793436,
+      "net_gain": 91638.52301380757,
+      "success": true
+    },
+    {
+      "date": "2023-03-11 00:00:00",
+      "from_symbol": "9020",
+      "to_symbol": "6758",
+      "reason": "ランキング更新: 6758が上位に",
+      "cost": 1216.0893225223635,
+      "profit_loss": 77081.82170808001,
+      "net_gain": 75865.73238555764,
+      "success": true
+    },
+    {
+      "date": "2023-03-14 00:00:00",
+      "from_symbol": "6758",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 1289.2805548751262,
+      "profit_loss": 104966.7763751584,
+      "net_gain": 103677.49582028328,
+      "success": true
+    },
+    {
+      "date": "2023-03-17 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "9984",
+      "reason": "ランキング更新: 9984が上位に",
+      "cost": 1350.2410340751373,
+      "profit_loss": 83093.83323698395,
+      "net_gain": 81743.59220290881,
+      "success": true
+    },
+    {
+      "date": "2023-03-20 00:00:00",
+      "from_symbol": "9984",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 1412.171930469223,
+      "profit_loss": 95441.63992076243,
+      "net_gain": 94029.46799029321,
+      "success": true
+    },
+    {
+      "date": "2023-03-23 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "9020",
+      "reason": "ランキング更新: 9020が上位に",
+      "cost": 1494.3523180508973,
+      "profit_loss": 131346.0969950836,
+      "net_gain": 129851.7446770327,
+      "success": true
+    },
+    {
+      "date": "2023-03-26 00:00:00",
+      "from_symbol": "9020",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 1549.9930040848437,
+      "profit_loss": 106058.27130450541,
+      "net_gain": 104508.27830042057,
+      "success": true
+    },
+    {
+      "date": "2023-03-29 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "6758",
+      "reason": "ランキング更新: 6758が上位に",
+      "cost": 1642.8641903520934,
+      "profit_loss": 23230.099651578577,
+      "net_gain": 21587.235461226483,
+      "success": true
+    },
+    {
+      "date": "2023-04-01 00:00:00",
+      "from_symbol": "6758",
+      "to_symbol": "9020",
+      "reason": "ランキング更新: 9020が上位に",
+      "cost": 1680.3213138079266,
+      "profit_loss": 150640.8057828806,
+      "net_gain": 148960.4844690727,
+      "success": true
+    },
+    {
+      "date": "2023-04-04 00:00:00",
+      "from_symbol": "9020",
+      "to_symbol": "7203",
+      "reason": "ランキング更新: 7203が上位に",
+      "cost": 1817.2952749379958,
+      "profit_loss": 111154.8654915825,
+      "net_gain": 109337.57021664451,
+      "success": true
+    },
+    {
+      "date": "2023-04-07 00:00:00",
+      "from_symbol": "7203",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 1927.3356215145773,
+      "profit_loss": 44338.355972942845,
+      "net_gain": 42411.02035142827,
+      "success": true
+    },
+    {
+      "date": "2023-04-10 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "9432",
+      "reason": "ランキング更新: 9432が上位に",
+      "cost": 2093.0248993136593,
+      "profit_loss": 26895.369956180493,
+      "net_gain": 24802.345056866834,
+      "success": true
+    },
+    {
+      "date": "2023-04-13 00:00:00",
+      "from_symbol": "9432",
+      "to_symbol": "9020",
+      "reason": "ランキング更新: 9020が上位に",
+      "cost": 2191.159320738463,
+      "profit_loss": 192559.08110649613,
+      "net_gain": 190367.92178575767,
+      "success": true
+    },
+    {
+      "date": "2023-04-16 00:00:00",
+      "from_symbol": "9020",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 2419.800989429046,
+      "profit_loss": -99719.998774371,
+      "net_gain": -102139.79976380004,
+      "success": false
+    },
+    {
+      "date": "2023-04-19 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 2385.2339631540362,
+      "profit_loss": 132833.67940804825,
+      "net_gain": 130448.44544489421,
+      "success": true
+    },
+    {
+      "date": "2023-04-22 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "9020",
+      "reason": "ランキング更新: 9020が上位に",
+      "cost": 2373.772028767617,
+      "profit_loss": 51368.426702531215,
+      "net_gain": 48994.654673763594,
+      "success": true
+    },
+    {
+      "date": "2023-04-25 00:00:00",
+      "from_symbol": "9020",
+      "to_symbol": "8058",
+      "reason": "ランキング更新: 8058が上位に",
+      "cost": 2461.6904603566313,
+      "profit_loss": 56040.383330018696,
+      "net_gain": 53578.69286966207,
+      "success": true
+    },
+    {
+      "date": "2023-04-28 00:00:00",
+      "from_symbol": "8058",
+      "to_symbol": "6758",
+      "reason": "ランキング更新: 6758が上位に",
+      "cost": 2530.97963853428,
+      "profit_loss": 161944.7321716159,
+      "net_gain": 159413.75253308163,
+      "success": true
+    },
+    {
+      "date": "2023-05-01 00:00:00",
+      "from_symbol": "6758",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 2696.9043420033927,
+      "profit_loss": 5650.014596497088,
+      "net_gain": 2953.1102544936953,
+      "success": true
+    },
+    {
+      "date": "2023-05-04 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "4063",
+      "reason": "ランキング更新: 4063が上位に",
+      "cost": 2673.279245404948,
+      "profit_loss": 155731.88244106525,
+      "net_gain": 153058.6031956603,
+      "success": true
+    },
+    {
+      "date": "2023-05-07 00:00:00",
+      "from_symbol": "4063",
+      "to_symbol": "7203",
+      "reason": "ランキング更新: 7203が上位に",
+      "cost": 2881.78904765624,
+      "profit_loss": -7838.466209624993,
+      "net_gain": -10720.255257281233,
+      "success": false
+    },
+    {
+      "date": "2023-05-10 00:00:00",
+      "from_symbol": "7203",
+      "to_symbol": "4063",
+      "reason": "ランキング更新: 4063が上位に",
+      "cost": 3007.5068328151774,
+      "profit_loss": -69443.33276970245,
+      "net_gain": -72450.83960251763,
+      "success": false
+    },
+    {
+      "date": "2023-05-13 00:00:00",
+      "from_symbol": "4063",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 3110.1874385841493,
+      "profit_loss": -36358.0911570487,
+      "net_gain": -39468.27859563285,
+      "success": false
+    },
+    {
+      "date": "2023-05-16 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "7203",
+      "reason": "ランキング更新: 7203が上位に",
+      "cost": 3010.194111029136,
+      "profit_loss": 144654.8780055051,
+      "net_gain": 141644.68389447598,
+      "success": true
+    },
+    {
+      "date": "2023-05-19 00:00:00",
+      "from_symbol": "7203",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 3181.5016426353327,
+      "profit_loss": -31035.548523907688,
+      "net_gain": -34217.05016654302,
+      "success": false
+    },
+    {
+      "date": "2023-05-22 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "7203",
+      "reason": "ランキング更新: 7203が上位に",
+      "cost": 3055.4770766823176,
+      "profit_loss": 232812.0758578092,
+      "net_gain": 229756.59878112687,
+      "success": true
+    },
+    {
+      "date": "2023-05-25 00:00:00",
+      "from_symbol": "7203",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 3321.1137826242616,
+      "profit_loss": 252205.3806524864,
+      "net_gain": 248884.26686986216,
+      "success": true
+    },
+    {
+      "date": "2023-05-28 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "9020",
+      "reason": "ランキング更新: 9020が上位に",
+      "cost": 3594.7454669207523,
+      "profit_loss": 246725.35512210583,
+      "net_gain": 243130.60965518508,
+      "success": true
+    },
+    {
+      "date": "2023-05-31 00:00:00",
+      "from_symbol": "9020",
+      "to_symbol": "9432",
+      "reason": "ランキング更新: 9432が上位に",
+      "cost": 3819.6220266343607,
+      "profit_loss": 181489.34059553166,
+      "net_gain": 177669.71856889728,
+      "success": true
+    },
+    {
+      "date": "2023-06-03 00:00:00",
+      "from_symbol": "9432",
+      "to_symbol": "7203",
+      "reason": "ランキング更新: 7203が上位に",
+      "cost": 3928.3316856264905,
+      "profit_loss": 313166.6019781438,
+      "net_gain": 309238.2702925173,
+      "success": true
+    },
+    {
+      "date": "2023-06-06 00:00:00",
+      "from_symbol": "7203",
+      "to_symbol": "9432",
+      "reason": "ランキング更新: 9432が上位に",
+      "cost": 4326.482746485423,
+      "profit_loss": -102624.17074663426,
+      "net_gain": -106950.65349311968,
+      "success": false
+    },
+    {
+      "date": "2023-06-09 00:00:00",
+      "from_symbol": "9432",
+      "to_symbol": "7203",
+      "reason": "ランキング更新: 7203が上位に",
+      "cost": 4180.067765237481,
+      "profit_loss": -173765.41700092208,
+      "net_gain": -177945.48476615956,
+      "success": false
+    },
+    {
+      "date": "2023-06-12 00:00:00",
+      "from_symbol": "7203",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 4059.022861895103,
+      "profit_loss": 318105.6216867191,
+      "net_gain": 314046.59882482403,
+      "success": true
+    },
+    {
+      "date": "2023-06-15 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "7741",
+      "reason": "ランキング更新: 7741が上位に",
+      "cost": 4621.200043798368,
+      "profit_loss": 340813.50323012954,
+      "net_gain": 336192.3031863312,
+      "success": true
+    },
+    {
+      "date": "2023-06-18 00:00:00",
+      "from_symbol": "7741",
+      "to_symbol": "7203",
+      "reason": "ランキング更新: 7203が上位に",
+      "cost": 4972.054843773053,
+      "profit_loss": 107968.17093253184,
+      "net_gain": 102996.11608875879,
+      "success": true
+    },
+    {
+      "date": "2023-06-21 00:00:00",
+      "from_symbol": "7203",
+      "to_symbol": "4063",
+      "reason": "ランキング更新: 4063が上位に",
+      "cost": 5003.535429860833,
+      "profit_loss": 33974.005568755005,
+      "net_gain": 28970.470138894172,
+      "success": true
+    },
+    {
+      "date": "2023-06-24 00:00:00",
+      "from_symbol": "4063",
+      "to_symbol": "6758",
+      "reason": "ランキング更新: 6758が上位に",
+      "cost": 4734.104890589394,
+      "profit_loss": 379746.2237986282,
+      "net_gain": 375012.1189080388,
+      "success": true
+    },
+    {
+      "date": "2023-06-27 00:00:00",
+      "from_symbol": "6758",
+      "to_symbol": "7203",
+      "reason": "ランキング更新: 7203が上位に",
+      "cost": 4788.247456594881,
+      "profit_loss": 74816.36650929503,
+      "net_gain": 70028.11905270015,
+      "success": true
+    },
+    {
+      "date": "2023-06-30 00:00:00",
+      "from_symbol": "7203",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 4934.81542957754,
+      "profit_loss": 332705.25626211776,
+      "net_gain": 327770.4408325402,
+      "success": true
+    },
+    {
+      "date": "2023-07-03 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "4063",
+      "reason": "ランキング更新: 4063が上位に",
+      "cost": 5211.422161811871,
+      "profit_loss": 306171.0520064474,
+      "net_gain": 300959.62984463555,
+      "success": true
+    },
+    {
+      "date": "2023-07-06 00:00:00",
+      "from_symbol": "4063",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 5884.741168430705,
+      "profit_loss": 11269.279337544802,
+      "net_gain": 5384.5381691140965,
+      "success": true
+    },
+    {
+      "date": "2023-07-09 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 5907.759133365391,
+      "profit_loss": 513679.65664612065,
+      "net_gain": 507771.89751275524,
+      "success": true
+    },
+    {
+      "date": "2023-07-12 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 6485.728342403936,
+      "profit_loss": -92551.3434461042,
+      "net_gain": -99037.07178850814,
+      "success": false
+    },
+    {
+      "date": "2023-07-15 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "7203",
+      "reason": "ランキング更新: 7203が上位に",
+      "cost": 6358.427830093753,
+      "profit_loss": -248296.60676516104,
+      "net_gain": -254655.03459525478,
+      "success": false
+    },
+    {
+      "date": "2023-07-18 00:00:00",
+      "from_symbol": "7203",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 5960.644477271432,
+      "profit_loss": -260122.52498812534,
+      "net_gain": -266083.1694653968,
+      "success": false
+    },
+    {
+      "date": "2023-07-21 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "7741",
+      "reason": "ランキング更新: 7741が上位に",
+      "cost": 5817.514871897218,
+      "profit_loss": -178917.66988519896,
+      "net_gain": -184735.18475709617,
+      "success": false
+    },
+    {
+      "date": "2023-07-24 00:00:00",
+      "from_symbol": "7741",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 5493.474855846996,
+      "profit_loss": -29609.829473015343,
+      "net_gain": -35103.30432886234,
+      "success": false
+    },
+    {
+      "date": "2023-07-27 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "7741",
+      "reason": "ランキング更新: 7741が上位に",
+      "cost": 5448.710693722031,
+      "profit_loss": -169618.3638955668,
+      "net_gain": -175067.07458928885,
+      "success": false
+    },
+    {
+      "date": "2023-07-30 00:00:00",
+      "from_symbol": "7741",
+      "to_symbol": "7203",
+      "reason": "ランキング更新: 7203が上位に",
+      "cost": 5520.151054339467,
+      "profit_loss": 480556.75003552216,
+      "net_gain": 475036.5989811827,
+      "success": true
+    },
+    {
+      "date": "2023-08-02 00:00:00",
+      "from_symbol": "7203",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 6209.148187353992,
+      "profit_loss": 431566.8447620391,
+      "net_gain": 425357.6965746851,
+      "success": true
+    },
+    {
+      "date": "2023-08-05 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "4063",
+      "reason": "ランキング更新: 4063が上位に",
+      "cost": 6828.607382717467,
+      "profit_loss": 354268.15101538214,
+      "net_gain": 347439.54363266466,
+      "success": true
+    },
+    {
+      "date": "2023-08-08 00:00:00",
+      "from_symbol": "4063",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 6901.805423841635,
+      "profit_loss": 436642.72013934096,
+      "net_gain": 429740.9147154993,
+      "success": true
+    },
+    {
+      "date": "2023-08-11 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 7316.863472302569,
+      "profit_loss": 398915.39650993596,
+      "net_gain": 391598.5330376334,
+      "success": true
+    },
+    {
+      "date": "2023-08-14 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "9432",
+      "reason": "ランキング更新: 9432が上位に",
+      "cost": 7928.576184911451,
+      "profit_loss": 142674.72844748152,
+      "net_gain": 134746.15226257007,
+      "success": true
+    },
+    {
+      "date": "2023-08-17 00:00:00",
+      "from_symbol": "9432",
+      "to_symbol": "8058",
+      "reason": "ランキング更新: 8058が上位に",
+      "cost": 8085.493206691885,
+      "profit_loss": 338458.7456321223,
+      "net_gain": 330373.25242543046,
+      "success": true
+    },
+    {
+      "date": "2023-08-20 00:00:00",
+      "from_symbol": "8058",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 8467.81345619745,
+      "profit_loss": 116813.48662824383,
+      "net_gain": 108345.67317204639,
+      "success": true
+    },
+    {
+      "date": "2023-08-23 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "9984",
+      "reason": "ランキング更新: 9984が上位に",
+      "cost": 8177.459963495644,
+      "profit_loss": 571072.9165507182,
+      "net_gain": 562895.4565872226,
+      "success": true
+    },
+    {
+      "date": "2023-08-26 00:00:00",
+      "from_symbol": "9984",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 8937.553050319584,
+      "profit_loss": -259189.03845926796,
+      "net_gain": -268126.59150958754,
+      "success": false
+    },
+    {
+      "date": "2023-08-29 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "4063",
+      "reason": "ランキング更新: 4063が上位に",
+      "cost": 8809.717907331193,
+      "profit_loss": -260503.35851978342,
+      "net_gain": -269313.0764271146,
+      "success": false
+    },
+    {
+      "date": "2023-09-01 00:00:00",
+      "from_symbol": "4063",
+      "to_symbol": "9432",
+      "reason": "ランキング更新: 9432が上位に",
+      "cost": 8012.594131336654,
+      "profit_loss": -266498.8808082571,
+      "net_gain": -274511.47493959375,
+      "success": false
+    },
+    {
+      "date": "2023-09-04 00:00:00",
+      "from_symbol": "9432",
+      "to_symbol": "7741",
+      "reason": "ランキング更新: 7741が上位に",
+      "cost": 7942.240321138679,
+      "profit_loss": 310541.5965565223,
+      "net_gain": 302599.3562353836,
+      "success": true
+    },
+    {
+      "date": "2023-09-07 00:00:00",
+      "from_symbol": "7741",
+      "to_symbol": "9432",
+      "reason": "ランキング更新: 9432が上位に",
+      "cost": 8368.371044711317,
+      "profit_loss": -5816.017876074433,
+      "net_gain": -14184.38892078575,
+      "success": false
+    },
+    {
+      "date": "2023-09-10 00:00:00",
+      "from_symbol": "9432",
+      "to_symbol": "8058",
+      "reason": "ランキング更新: 8058が上位に",
+      "cost": 8336.019583511117,
+      "profit_loss": 319936.4316151565,
+      "net_gain": 311600.4120316454,
+      "success": true
+    },
+    {
+      "date": "2023-09-13 00:00:00",
+      "from_symbol": "8058",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 8580.713169858444,
+      "profit_loss": -278958.985152098,
+      "net_gain": -287539.69832195644,
+      "success": false
+    },
+    {
+      "date": "2023-09-16 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "9984",
+      "reason": "ランキング更新: 9984が上位に",
+      "cost": 7948.4679050434315,
+      "profit_loss": 348580.05997567973,
+      "net_gain": 340631.5920706363,
+      "success": true
+    },
+    {
+      "date": "2023-09-19 00:00:00",
+      "from_symbol": "9984",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 8204.874658944105,
+      "profit_loss": 153800.37548190722,
+      "net_gain": 145595.5008229631,
+      "success": true
+    },
+    {
+      "date": "2023-09-22 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 8572.12302357614,
+      "profit_loss": 708700.2709741571,
+      "net_gain": 700128.147950581,
+      "success": true
+    },
+    {
+      "date": "2023-09-25 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "6758",
+      "reason": "ランキング更新: 6758が上位に",
+      "cost": 9526.918595030726,
+      "profit_loss": -456911.0158176736,
+      "net_gain": -466437.9344127043,
+      "success": false
+    },
+    {
+      "date": "2023-09-28 00:00:00",
+      "from_symbol": "6758",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 9460.70415929592,
+      "profit_loss": -147066.64615625507,
+      "net_gain": -156527.35031555098,
+      "success": false
+    },
+    {
+      "date": "2023-10-01 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 9000.934899415173,
+      "profit_loss": 767374.7048496404,
+      "net_gain": 758373.7699502253,
+      "success": true
+    },
+    {
+      "date": "2023-10-04 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "8058",
+      "reason": "ランキング更新: 8058が上位に",
+      "cost": 10497.783085544168,
+      "profit_loss": 408573.71768937894,
+      "net_gain": 398075.93460383476,
+      "success": true
+    },
+    {
+      "date": "2023-10-07 00:00:00",
+      "from_symbol": "8058",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 10717.390238635717,
+      "profit_loss": 67787.49325937088,
+      "net_gain": 57070.103020735165,
+      "success": true
+    },
+    {
+      "date": "2023-10-10 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 11144.041273143835,
+      "profit_loss": 801646.6089836017,
+      "net_gain": 790502.5677104578,
+      "success": true
+    },
+    {
+      "date": "2023-10-13 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "7741",
+      "reason": "ランキング更新: 7741が上位に",
+      "cost": 11888.551014422534,
+      "profit_loss": 1167634.037881509,
+      "net_gain": 1155745.4868670865,
+      "success": true
+    },
+    {
+      "date": "2023-10-16 00:00:00",
+      "from_symbol": "7741",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 13099.169081805854,
+      "profit_loss": -57636.34395994586,
+      "net_gain": -70735.5130417517,
+      "success": false
+    },
+    {
+      "date": "2023-10-19 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "4063",
+      "reason": "ランキング更新: 4063が上位に",
+      "cost": 13604.172251262213,
+      "profit_loss": 1029835.8394205491,
+      "net_gain": 1016231.6671692869,
+      "success": true
+    },
+    {
+      "date": "2023-10-22 00:00:00",
+      "from_symbol": "4063",
+      "to_symbol": "6758",
+      "reason": "ランキング更新: 6758が上位に",
+      "cost": 15101.874572799194,
+      "profit_loss": 1491159.0953181924,
+      "net_gain": 1476057.220745393,
+      "success": true
+    },
+    {
+      "date": "2023-10-25 00:00:00",
+      "from_symbol": "6758",
+      "to_symbol": "9020",
+      "reason": "ランキング更新: 9020が上位に",
+      "cost": 16795.262505471776,
+      "profit_loss": 825739.0810815197,
+      "net_gain": 808943.8185760479,
+      "success": true
+    },
+    {
+      "date": "2023-10-28 00:00:00",
+      "from_symbol": "9020",
+      "to_symbol": "7203",
+      "reason": "ランキング更新: 7203が上位に",
+      "cost": 17178.1127965298,
+      "profit_loss": 1153767.9459789237,
+      "net_gain": 1136589.8331823938,
+      "success": true
+    },
+    {
+      "date": "2023-10-31 00:00:00",
+      "from_symbol": "7203",
+      "to_symbol": "9432",
+      "reason": "ランキング更新: 9432が上位に",
+      "cost": 18571.67355080633,
+      "profit_loss": 645087.0807872576,
+      "net_gain": 626515.4072364513,
+      "success": true
+    },
+    {
+      "date": "2023-11-03 00:00:00",
+      "from_symbol": "9432",
+      "to_symbol": "9984",
+      "reason": "ランキング更新: 9984が上位に",
+      "cost": 19045.695744254095,
+      "profit_loss": -501758.85438237415,
+      "net_gain": -520804.55012662825,
+      "success": false
+    },
+    {
+      "date": "2023-11-06 00:00:00",
+      "from_symbol": "9984",
+      "to_symbol": "9432",
+      "reason": "ランキング更新: 9432が上位に",
+      "cost": 18744.917949166953,
+      "profit_loss": 1620029.5337567537,
+      "net_gain": 1601284.6158075868,
+      "success": true
+    },
+    {
+      "date": "2023-11-09 00:00:00",
+      "from_symbol": "9432",
+      "to_symbol": "8306",
+      "reason": "ランキング更新: 8306が上位に",
+      "cost": 20604.66737302366,
+      "profit_loss": 461647.57249259506,
+      "net_gain": 441042.9051195714,
+      "success": true
+    },
+    {
+      "date": "2023-11-12 00:00:00",
+      "from_symbol": "8306",
+      "to_symbol": "6758",
+      "reason": "ランキング更新: 6758が上位に",
+      "cost": 21156.04517197148,
+      "profit_loss": 17982.638396175687,
+      "net_gain": -3173.406775795793,
+      "success": false
+    },
+    {
+      "date": "2023-11-15 00:00:00",
+      "from_symbol": "6758",
+      "to_symbol": "9984",
+      "reason": "ランキング更新: 9984が上位に",
+      "cost": 21470.2399775427,
+      "profit_loss": 1709031.1022123985,
+      "net_gain": 1687560.8622348558,
+      "success": true
+    },
+    {
+      "date": "2023-11-18 00:00:00",
+      "from_symbol": "9984",
+      "to_symbol": "9020",
+      "reason": "ランキング更新: 9020が上位に",
+      "cost": 23287.196777813104,
+      "profit_loss": 1475709.6598100162,
+      "net_gain": 1452422.463032203,
+      "success": true
+    },
+    {
+      "date": "2023-11-21 00:00:00",
+      "from_symbol": "9020",
+      "to_symbol": "4063",
+      "reason": "ランキング更新: 4063が上位に",
+      "cost": 24535.386992039006,
+      "profit_loss": 42936.92723606813,
+      "net_gain": 18401.540244029122,
+      "success": true
+    },
+    {
+      "date": "2023-11-24 00:00:00",
+      "from_symbol": "4063",
+      "to_symbol": "7741",
+      "reason": "ランキング更新: 7741が上位に",
+      "cost": 23609.82553402174,
+      "profit_loss": -367014.737926368,
+      "net_gain": -390624.56346038973,
+      "success": false
+    },
+    {
+      "date": "2023-11-27 00:00:00",
+      "from_symbol": "7741",
+      "to_symbol": "9984",
+      "reason": "ランキング更新: 9984が上位に",
+      "cost": 22890.858517138804,
+      "profit_loss": 1085598.9651753078,
+      "net_gain": 1062708.106658169,
+      "success": true
+    },
+    {
+      "date": "2023-11-30 00:00:00",
+      "from_symbol": "9984",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 23886.516537982705,
+      "profit_loss": 1956186.2718780932,
+      "net_gain": 1932299.7553401105,
+      "success": true
+    },
+    {
+      "date": "2023-12-03 00:00:00",
+      "from_symbol": "6861",
+      "to_symbol": "6758",
+      "reason": "ランキング更新: 6758が上位に",
+      "cost": 26534.072088217923,
+      "profit_loss": -398541.76276503335,
+      "net_gain": -425075.8348532513,
+      "success": false
+    },
+    {
+      "date": "2023-12-06 00:00:00",
+      "from_symbol": "6758",
+      "to_symbol": "9984",
+      "reason": "ランキング更新: 9984が上位に",
+      "cost": 25999.001762077354,
+      "profit_loss": 1792241.1864688024,
+      "net_gain": 1766242.184706725,
+      "success": true
+    },
+    {
+      "date": "2023-12-09 00:00:00",
+      "from_symbol": "9984",
+      "to_symbol": "9432",
+      "reason": "ランキング更新: 9432が上位に",
+      "cost": 26472.407383648657,
+      "profit_loss": 632028.7262846115,
+      "net_gain": 605556.3189009628,
+      "success": true
+    },
+    {
+      "date": "2023-12-12 00:00:00",
+      "from_symbol": "9432",
+      "to_symbol": "6758",
+      "reason": "ランキング更新: 6758が上位に",
+      "cost": 26072.47629487243,
+      "profit_loss": 2155933.064823001,
+      "net_gain": 2129860.588528129,
+      "success": true
+    },
+    {
+      "date": "2023-12-15 00:00:00",
+      "from_symbol": "6758",
+      "to_symbol": "7741",
+      "reason": "ランキング更新: 7741が上位に",
+      "cost": 28256.13106934816,
+      "profit_loss": 744972.8956433642,
+      "net_gain": 716716.764574016,
+      "success": true
+    }
+  ],
+  "performance_metrics": {
+    "total_return": 2832.023908976737,
+    "annual_return": 2832.023908976737,
+    "volatility": 38.025717599999645,
+    "sharpe_ratio": 4.213519244240526,
+    "max_drawdown": -18.688490471402254,
+    "win_rate": 0.7264957264957265
+  },
+  "strategy_statistics": {
+    "VWAPBreakoutStrategy": {
+      "trade_count": 33,
+      "win_rate": 0.7058823529411765,
+      "avg_profit": 345612.35938332515,
+      "avg_loss": -108421.85933002566,
+      "max_profit": 1476057.220745393,
+      "max_loss": -425075.8348532513,
+      "total_pnl": 3605239.0159497736,
+      "profit_factor": 7.65039142148591
+    },
+    "MeanReversionStrategy": {
+      "trade_count": 34,
+      "win_rate": 0.7647058823529411,
+      "avg_profit": 472969.9422431176,
+      "avg_loss": -115590.62851491236,
+      "max_profit": 1766242.184706725,
+      "max_loss": -287539.69832195644,
+      "total_pnl": 5686246.735100879,
+      "profit_factor": 13.298243396019117
+    },
+    "TrendFollowingStrategy": {
+      "trade_count": 34,
+      "win_rate": 0.8235294117647058,
+      "avg_profit": 358258.22059522074,
+      "avg_loss": -187416.6349001584,
+      "max_profit": 1452422.463032203,
+      "max_loss": -268126.59150958754,
+      "total_pnl": 4453365.183632616,
+      "profit_factor": 8.9206152751685
+    },
+    "MomentumStrategy": {
+      "trade_count": 34,
+      "win_rate": 0.7058823529411765,
+      "avg_profit": 388230.17674509,
+      "avg_loss": -139400.170736585,
+      "max_profit": 2129860.588528129,
+      "max_loss": -269313.0764271146,
+      "total_pnl": 3961761.267258156,
+      "profit_factor": 6.684012073047495
+    },
+    "ContrarianStrategy": {
+      "trade_count": 34,
+      "win_rate": 0.5882352941176471,
+      "avg_profit": 358560.6332736913,
+      "avg_loss": -228718.93733191935,
+      "max_profit": 1155745.4868670865,
+      "max_loss": -520804.55012662825,
+      "total_pnl": 1984573.7714134771,
+      "profit_factor": 2.239558656928877
+    },
+    "VolatilityBreakoutStrategy": {
+      "trade_count": 33,
+      "win_rate": 0.75,
+      "avg_profit": 346327.19618216745,
+      "avg_loss": -155101.01293197044,
+      "max_profit": 1601284.6158075868,
+      "max_loss": -466437.9344127043,
+      "total_pnl": 3535522.3024581275,
+      "profit_factor": 6.698741477608626
+    },
+    "RSIStrategy": {
+      "trade_count": 32,
+      "win_rate": 0.75,
+      "avg_profit": 401074.83745627524,
+      "avg_loss": -87006.10605405652,
+      "max_profit": 1932299.7553401105,
+      "max_loss": -175067.07458928885,
+      "total_pnl": 4464873.625259077,
+      "profit_factor": 13.829196213209077
+    }
+  }
+}

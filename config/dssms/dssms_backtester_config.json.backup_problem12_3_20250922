@@ -6,17 +6,16 @@
   },
   "randomness_control": {
     "scoring": {
-      "enable_noise": true,
-      "noise_level": 0.02
+      "enable_noise": false,
+      "noise_level": 0.0
     },
     "ranking": {
       "enable_shuffling": false,
       "tie_breaking": "deterministic"
     },
     "switching": {
-      "enable_probabilistic": true,
-      "switching_probability": 0.9,
-      "strict_threshold_mode": false
+      "enable_probabilistic": false,
+      "strict_threshold_mode": true
     },
     "comparison": {
       "enable_random_baseline": true,
@@ -24,7 +23,7 @@
     }
   },
   "performance_calculation": {
-    "use_fixed_execution_price": false,
+    "use_fixed_execution_price": true,
     "execution_delay_simulation": false,
     "slippage_simulation": false,
     "fixed_commission_rate": 0.001
