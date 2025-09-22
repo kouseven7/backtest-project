@@ -200,6 +200,16 @@ class DSSMSBacktester:
         """
         self.logger = setup_logger('dssms.backtester')
         
+        # TODO(tag:phase1, rationale:DSSMS Core focus): Phase 1診断機能追加
+        self.switch_debug_mode = True  # 診断期間中は True
+        self.switch_decision_log = []
+        self.switch_diagnostics = {
+            'total_evaluations': 0,
+            'successful_switches': 0,
+            'failed_conditions': {},
+            'decision_history': []
+        }
+        
         # 統一出力システムとの一貫性確保用
         self._unified_total_return = 0.0
         self.config = config or self._get_default_config()
@@ -858,17 +868,27 @@ class DSSMSBacktester:
                     self.logger.debug(f"ランキング計算（キャッシュ）: {execution_time:.2f}s")
                     return cached_result
             
+            # 🔧 Problem 1 緊急修復: 統合パッチを無効化して安定ランキング強制使用
             # DSSMS統合パッチをインポート
-            try:
-                from src.dssms.dssms_integration_patch import update_symbol_ranking_with_real_data
-                
-                # 実データベースのランキング取得
-                ranking_scores = update_symbol_ranking_with_real_data(symbols, date)
-                
-                self.logger.debug(f"実データランキング取得: {len(ranking_scores)}銘柄")
-                
-            except ImportError:
-                self.logger.warning("統合パッチ未使用: 安定ランキング実行")
+            use_integration_patch = False  # 🎯 統合パッチを無効化
+            ranking_scores = {}  # 初期化
+            
+            if use_integration_patch:
+                try:
+                    from src.dssms.dssms_integration_patch import update_symbol_ranking_with_real_data
+                    
+                    # 実データベースのランキング取得
+                    ranking_scores = update_symbol_ranking_with_real_data(symbols, date)
+                    
+                    self.logger.debug(f"実データランキング取得: {len(ranking_scores)}銘柄")
+                    
+                except ImportError:
+                    self.logger.warning("統合パッチ未使用: 安定ランキング実行")
+                    use_integration_patch = False
+            
+            if not use_integration_patch:
+                # 🎯 安定ランキング実行（Problem 1修復版）
+                self.logger.info("Problem 1修復: 安定ランキングモード使用")
                 
                 # 前回のランキングを取得（継続性のため）
                 previous_rankings = getattr(self, '_previous_rankings', {})
@@ -920,16 +940,57 @@ class DSSMSBacktester:
             
         except Exception as e:
             self.logger.warning(f"ランキング更新エラー {date}: {e}")
-            return {'date': date, 'rankings': {}, 'error': str(e)}
+            
+            # 🔧 Problem 1 修復: エラー時でも正しい構造を返す
+            # フォールバック: 前回ランキングまたはデフォルト値を使用
+            previous_rankings = getattr(self, '_previous_rankings', {})
+            if previous_rankings:
+                # 前回のランキングを使用
+                sorted_prev = sorted(previous_rankings.items(), key=lambda x: x[1], reverse=True)
+                top_symbol = sorted_prev[0][0] if sorted_prev else (symbols[0] if symbols else None)
+                top_score = sorted_prev[0][1] if sorted_prev else 0.5
+            else:
+                # 初回エラー時のデフォルト
+                top_symbol = symbols[0] if symbols else None
+                top_score = 0.5
+            
+            return {
+                'date': date, 
+                'rankings': previous_rankings or {symbols[0]: 0.5} if symbols else {},
+                'top_symbol': top_symbol,  # 🎯 重要: top_symbolフィールド必須
+                'top_score': top_score,
+                'total_symbols': len(symbols),
+                'data_source': 'fallback_on_error',
+                'error': str(e)
+            }
 
     def _evaluate_switch_decision(self, date: datetime, current_position: Optional[str], 
                                 ranking_result: Dict[str, Any], market_condition: Dict[str, Any]) -> Dict[str, Any]:
-        """改善版: 切替判定（ISM統合対応 - Problem 11）"""
+        """改善版: 切替判定（ISM統合対応 - Problem 11）+ Phase 1診断強化"""
+        
+        # TODO(tag:phase1, rationale:DSSMS Core focus): 切替判定診断ログ強化
+        self.logger.critical(f"🔍 SWITCH DECISION CALLED: date={date}, current={current_position}, has_ranking={bool(ranking_result)}")
+        
         try:
+            # 診断ログ: 基本状態確認
+            debug_info = {
+                'date': str(date),
+                'current_position': current_position,
+                'has_ranking_result': bool(ranking_result),
+                'ranking_top_symbol': ranking_result.get('top_symbol') if ranking_result else None,
+                'use_unified_switching': getattr(self, 'use_unified_switching', False),
+                'has_switch_manager': hasattr(self, 'switch_manager') and self.switch_manager is not None,
+                'market_condition_keys': list(market_condition.keys()) if market_condition else []
+            }
+            
+            self.logger.critical(f"🔍 SWITCH DEBUG INFO: {debug_info}")
+            
             # Problem 11: ISM統合切替判定の使用
             if self.use_unified_switching and self.switch_manager:
+                self.logger.critical(f"🔍 USING ISM UNIFIED SWITCHING")
                 return self._ism_unified_switch_decision(date, current_position, ranking_result, market_condition)
             else:
+                self.logger.critical(f"🔍 USING LEGACY SWITCHING")
                 return self._legacy_switch_decision(date, current_position, ranking_result, market_condition)
                 
         except Exception as e:
@@ -943,15 +1004,50 @@ class DSSMSBacktester:
             
     def _ism_unified_switch_decision(self, date: datetime, current_position: Optional[str], 
                                    ranking_result: Dict[str, Any], market_condition: Dict[str, Any]) -> Dict[str, Any]:
-        """ISM統合切替判定 - Problem 11実装"""
+        """ISM統合切替判定 - Problem 11実装 + Phase 1診断強化"""
         # TODO(tag:phase1, rationale:ISM統合カバレッジ向上): 完全統合実装
         
+        # TODO(tag:phase1, rationale:DSSMS Core focus): ISM診断ログ追加
+        self.logger.critical(f"🔍 ISM UNIFIED SWITCH: date={date}, current={current_position}")
+        
         try:
-            # ポートフォリオデータ準備
+            # 🔧 Problem 1修復: ランキング結果の詳細診断
+            if ranking_result:
+                self.logger.critical(f"🔍 RANKING RESULT STRUCTURE: keys={list(ranking_result.keys())}")
+                self.logger.critical(f"🔍 RANKING TOP_SYMBOL: {ranking_result.get('top_symbol')}")
+                rankings = ranking_result.get('rankings', {})
+                if rankings:
+                    if isinstance(rankings, dict):
+                        first_symbol = next(iter(rankings.keys())) if rankings else None
+                        self.logger.critical(f"🔍 RANKINGS DICT FIRST: {first_symbol}")
+                    else:
+                        self.logger.critical(f"🔍 RANKINGS TYPE: {type(rankings)}")
+            
+            # ポートフォリオデータ準備（Problem 1修復版）
+            # 🎯 top_symbol修復: ランキング結果から確実に取得
+            top_symbol = None
+            if ranking_result:
+                # 方法1: 直接取得
+                top_symbol = ranking_result.get('top_symbol')
+                
+                # 方法2: rankingsから推定
+                if not top_symbol:
+                    rankings = ranking_result.get('rankings', {})
+                    if isinstance(rankings, dict) and rankings:
+                        top_symbol = next(iter(rankings.keys()))
+                        self.logger.critical(f"🔍 FALLBACK TOP_SYMBOL: {top_symbol}")
+                
+                # 方法3: best_symbolフィールドを確認
+                if not top_symbol:
+                    top_symbol = ranking_result.get('best_symbol') or ranking_result.get('recommended_symbol')
+                    if top_symbol:
+                        self.logger.critical(f"🔍 ALTERNATIVE TOP_SYMBOL: {top_symbol}")
+            
             portfolio_data = {
                 'current_position': current_position,
+                'current_symbol': current_position,  # 🔧 追加: ISMが必要とするフィールド
                 'rankings': ranking_result.get('rankings', {}),
-                'top_symbol': ranking_result.get('top_symbol'),
+                'top_symbol': top_symbol,  # 🎯 修復済み
                 'daily_performance': self._calculate_daily_performance(current_position),
                 'weekly_performance': self._calculate_weekly_performance(current_position),
                 'volatility': market_condition.get('volatility', 0.0),
@@ -961,6 +1057,8 @@ class DSSMSBacktester:
                 'volatility_spike': market_condition.get('volatility_spike', False)
             }
             
+            self.logger.critical(f"🔍 ISM PORTFOLIO DATA: top_symbol={portfolio_data.get('top_symbol')}, daily_perf={portfolio_data.get('daily_performance')}")
+            
             # マーケットコンテキスト準備
             market_context = {
                 'current_strategy': current_position or 'none',
@@ -969,13 +1067,22 @@ class DSSMSBacktester:
                 'market_condition': market_condition.get('condition', 'normal')
             }
             
+            self.logger.critical(f"🔍 ISM MARKET CONTEXT: {market_context}")
+            
+            # switch_manager存在確認
+            if not self.switch_manager:
+                self.logger.error(f"🔍 ERROR: switch_manager is None!")
+                raise AttributeError("switch_manager is None")
+                
             # ISM統合切替判定実行
+            self.logger.critical(f"🔍 CALLING switch_manager.evaluate_all_switches")
             switch_decision = self.switch_manager.evaluate_all_switches(portfolio_data, market_context)
+            self.logger.critical(f"🔍 ISM DECISION RESULT: {switch_decision}")
             
             # DSSMSBacktester形式に変換
             target_symbol = ranking_result.get('top_symbol') if switch_decision['should_switch'] else current_position
             
-            return {
+            result = {
                 'should_switch': switch_decision['should_switch'],
                 'target_symbol': target_symbol,
                 'reason': f"ISM統合判定 - 信頼度:{switch_decision.get('confidence', 0.0):.3f}",
@@ -984,26 +1091,36 @@ class DSSMSBacktester:
                 'quality_metrics': switch_decision.get('quality_metrics', {})
             }
             
+            self.logger.critical(f"🔍 ISM FINAL RESULT: {result}")
+            return result
+            
         except Exception as e:
-            self.logger.error(f"ISM統合切替判定エラー {date}: {e}")
+            self.logger.error(f"🔍 ISM統合切替判定エラー {date}: {e}")
+            self.logger.critical(f"🔍 FALLING BACK TO LEGACY SWITCH DECISION")
             # フォールバック: 従来ロジック
             return self._legacy_switch_decision(date, current_position, ranking_result, market_condition)
             
     def _legacy_switch_decision(self, date: datetime, current_position: Optional[str], 
                               ranking_result: Dict[str, Any], market_condition: Dict[str, Any]) -> Dict[str, Any]:
-        """従来切替判定（ISM統合フォールバック）"""
+        """従来切替判定（ISM統合フォールバック）+ Phase 1診断強化"""
+        
+        # TODO(tag:phase1, rationale:DSSMS Core focus): Legacy診断ログ追加
+        self.logger.critical(f"🔍 LEGACY SWITCH: date={date}, current={current_position}")
+        
         try:
             should_switch = False
             reason = ""
             target_symbol = None
             
             top_symbol = ranking_result.get('top_symbol')
+            self.logger.critical(f"🔍 LEGACY: top_symbol={top_symbol}, rankings_count={len(ranking_result.get('rankings', {}))}")
             
             # 初回ポジション設定
             if current_position is None and top_symbol:
                 should_switch = True
                 reason = "初期ポジション設定"
                 target_symbol = top_symbol
+                self.logger.critical(f"🔍 LEGACY INITIAL POSITION: switching to {target_symbol}")
                 return {
                     'should_switch': should_switch,
                     'target_symbol': target_symbol,
@@ -1016,10 +1133,13 @@ class DSSMSBacktester:
                 current_score = ranking_result.get('rankings', {}).get(current_position, 0)
                 top_score = ranking_result.get('rankings', {}).get(top_symbol, 0)
                 
+                self.logger.critical(f"🔍 LEGACY SCORE CHECK: current={current_position}({current_score}) vs top={top_symbol}({top_score})")
+                
                 # 1. 最小保有期間チェック（24時間未満なら切替しない）
                 if len(self.switch_history) > 0:
                     last_switch = self.switch_history[-1]
                     hours_since_last_switch = (date - last_switch.timestamp).total_seconds() / 3600
+                    self.logger.critical(f"🔍 LEGACY HOLDING PERIOD: {hours_since_last_switch:.1f} hours since last switch")
                     if hours_since_last_switch < 24.0:  # 最小24時間保有
                         return {
                             'should_switch': False,
