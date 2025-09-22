@@ -1,0 +1,411 @@
+{
+  "summary": {
+    "total_engines": 11,
+    "passed": 0,
+    "failed": 11,
+    "errors": [
+      {
+        "engine": "data_cleaning_engine.py",
+        "error": "2項目で基準未達"
+      },
+      {
+        "engine": "engine_audit_manager.py",
+        "error": "2項目で基準未達"
+      },
+      {
+        "engine": "hybrid_ranking_engine.py",
+        "error": "3項目で基準未達"
+      },
+      {
+        "engine": "simulation_handler.py",
+        "error": "3項目で基準未達"
+      },
+      {
+        "engine": "comprehensive_scoring_engine.py",
+        "error": "3項目で基準未達"
+      },
+      {
+        "engine": "unified_output_engine.py",
+        "error": "2項目で基準未達"
+      },
+      {
+        "engine": "dssms_unified_output_engine.py",
+        "error": "1項目で基準未達"
+      },
+      {
+        "engine": "dssms_excel_exporter_v2.py",
+        "error": "3項目で基準未達"
+      },
+      {
+        "engine": "simple_excel_exporter.py",
+        "error": "3項目で基準未達"
+      },
+      {
+        "engine": "dssms_switch_engine_v2.py",
+        "error": "2項目で基準未達"
+      },
+      {
+        "engine": "quality_assurance_engine.py",
+        "error": "2項目で基準未達"
+      }
+    ],
+    "test_timestamp": "2025-09-22T12:13:23.669667"
+  },
+  "detailed_results": {
+    "data_cleaning_engine.py": {
+      "status": "FAIL",
+      "error": "2項目で基準未達",
+      "quality_scores": {
+        "output_accuracy": 85.0,
+        "code_quality": 85.0,
+        "performance": 75.0,
+        "completeness": 83.0,
+        "consistency": 90.0
+      },
+      "compliance": {
+        "compliant": false,
+        "reason": "2項目で基準未達",
+        "failed_standards": [
+          {
+            "metric": "completeness",
+            "required": 90.0,
+            "actual": 83.0,
+            "gap": 7.0
+          },
+          {
+            "metric": "consistency",
+            "required": 95.0,
+            "actual": 90.0,
+            "gap": 5.0
+          }
+        ]
+      }
+    },
+    "engine_audit_manager.py": {
+      "status": "FAIL",
+      "error": "2項目で基準未達",
+      "quality_scores": {
+        "output_accuracy": 90.0,
+        "code_quality": 85.0,
+        "performance": 75.0,
+        "completeness": 85.0,
+        "consistency": 92.0
+      },
+      "compliance": {
+        "compliant": false,
+        "reason": "2項目で基準未達",
+        "failed_standards": [
+          {
+            "metric": "completeness",
+            "required": 90.0,
+            "actual": 85.0,
+            "gap": 5.0
+          },
+          {
+            "metric": "consistency",
+            "required": 95.0,
+            "actual": 92.0,
+            "gap": 3.0
+          }
+        ]
+      }
+    },
+    "hybrid_ranking_engine.py": {
+      "status": "FAIL",
+      "error": "3項目で基準未達",
+      "quality_scores": {
+        "output_accuracy": 80.0,
+        "code_quality": 88.0,
+        "performance": 80.0,
+        "completeness": 83.0,
+        "consistency": 90.0
+      },
+      "compliance": {
+        "compliant": false,
+        "reason": "3項目で基準未達",
+        "failed_standards": [
+          {
+            "metric": "output_accuracy",
+            "required": 85.0,
+            "actual": 80.0,
+            "gap": 5.0
+          },
+          {
+            "metric": "completeness",
+            "required": 90.0,
+            "actual": 83.0,
+            "gap": 7.0
+          },
+          {
+            "metric": "consistency",
+            "required": 95.0,
+            "actual": 90.0,
+            "gap": 5.0
+          }
+        ]
+      }
+    },
+    "simulation_handler.py": {
+      "status": "FAIL",
+      "error": "3項目で基準未達",
+      "quality_scores": {
+        "output_accuracy": 80.0,
+        "code_quality": 80.0,
+        "performance": 75.0,
+        "completeness": 85.0,
+        "consistency": 90.0
+      },
+      "compliance": {
+        "compliant": false,
+        "reason": "3項目で基準未達",
+        "failed_standards": [
+          {
+            "metric": "output_accuracy",
+            "required": 85.0,
+            "actual": 80.0,
+            "gap": 5.0
+          },
+          {
+            "metric": "completeness",
+            "required": 90.0,
+            "actual": 85.0,
+            "gap": 5.0
+          },
+          {
+            "metric": "consistency",
+            "required": 95.0,
+            "actual": 90.0,
+            "gap": 5.0
+          }
+        ]
+      }
+    },
+    "comprehensive_scoring_engine.py": {
+      "status": "FAIL",
+      "error": "3項目で基準未達",
+      "quality_scores": {
+        "output_accuracy": 80.0,
+        "code_quality": 90.0,
+        "performance": 80.0,
+        "completeness": 83.0,
+        "consistency": 90.0
+      },
+      "compliance": {
+        "compliant": false,
+        "reason": "3項目で基準未達",
+        "failed_standards": [
+          {
+            "metric": "output_accuracy",
+            "required": 85.0,
+            "actual": 80.0,
+            "gap": 5.0
+          },
+          {
+            "metric": "completeness",
+            "required": 90.0,
+            "actual": 83.0,
+            "gap": 7.0
+          },
+          {
+            "metric": "consistency",
+            "required": 95.0,
+            "actual": 90.0,
+            "gap": 5.0
+          }
+        ]
+      }
+    },
+    "unified_output_engine.py": {
+      "status": "FAIL",
+      "error": "2項目で基準未達",
+      "quality_scores": {
+        "output_accuracy": 90.0,
+        "code_quality": 90.0,
+        "performance": 75.0,
+        "completeness": 85.0,
+        "consistency": 90.0
+      },
+      "compliance": {
+        "compliant": false,
+        "reason": "2項目で基準未達",
+        "failed_standards": [
+          {
+            "metric": "completeness",
+            "required": 90.0,
+            "actual": 85.0,
+            "gap": 5.0
+          },
+          {
+            "metric": "consistency",
+            "required": 95.0,
+            "actual": 90.0,
+            "gap": 5.0
+          }
+        ]
+      }
+    },
+    "dssms_unified_output_engine.py": {
+      "status": "FAIL",
+      "error": "1項目で基準未達",
+      "quality_scores": {
+        "output_accuracy": 90.0,
+        "code_quality": 90.0,
+        "performance": 75.0,
+        "completeness": 85.0,
+        "consistency": 95.0
+      },
+      "compliance": {
+        "compliant": false,
+        "reason": "1項目で基準未達",
+        "failed_standards": [
+          {
+            "metric": "completeness",
+            "required": 90.0,
+            "actual": 85.0,
+            "gap": 5.0
+          }
+        ]
+      }
+    },
+    "dssms_excel_exporter_v2.py": {
+      "status": "FAIL",
+      "error": "3項目で基準未達",
+      "quality_scores": {
+        "output_accuracy": 80.0,
+        "code_quality": 90.0,
+        "performance": 75.0,
+        "completeness": 85.0,
+        "consistency": 90.0
+      },
+      "compliance": {
+        "compliant": false,
+        "reason": "3項目で基準未達",
+        "failed_standards": [
+          {
+            "metric": "output_accuracy",
+            "required": 85.0,
+            "actual": 80.0,
+            "gap": 5.0
+          },
+          {
+            "metric": "completeness",
+            "required": 90.0,
+            "actual": 85.0,
+            "gap": 5.0
+          },
+          {
+            "metric": "consistency",
+            "required": 95.0,
+            "actual": 90.0,
+            "gap": 5.0
+          }
+        ]
+      }
+    },
+    "simple_excel_exporter.py": {
+      "status": "FAIL",
+      "error": "3項目で基準未達",
+      "quality_scores": {
+        "output_accuracy": 80.0,
+        "code_quality": 90.0,
+        "performance": 75.0,
+        "completeness": 82.0,
+        "consistency": 90.0
+      },
+      "compliance": {
+        "compliant": false,
+        "reason": "3項目で基準未達",
+        "failed_standards": [
+          {
+            "metric": "output_accuracy",
+            "required": 85.0,
+            "actual": 80.0,
+            "gap": 5.0
+          },
+          {
+            "metric": "completeness",
+            "required": 90.0,
+            "actual": 82.0,
+            "gap": 8.0
+          },
+          {
+            "metric": "consistency",
+            "required": 95.0,
+            "actual": 90.0,
+            "gap": 5.0
+          }
+        ]
+      }
+    },
+    "dssms_switch_engine_v2.py": {
+      "status": "FAIL",
+      "error": "2項目で基準未達",
+      "quality_scores": {
+        "output_accuracy": 85.0,
+        "code_quality": 88.0,
+        "performance": 75.0,
+        "completeness": 83.0,
+        "consistency": 90.0
+      },
+      "compliance": {
+        "compliant": false,
+        "reason": "2項目で基準未達",
+        "failed_standards": [
+          {
+            "metric": "completeness",
+            "required": 90.0,
+            "actual": 83.0,
+            "gap": 7.0
+          },
+          {
+            "metric": "consistency",
+            "required": 95.0,
+            "actual": 90.0,
+            "gap": 5.0
+          }
+        ]
+      }
+    },
+    "quality_assurance_engine.py": {
+      "status": "FAIL",
+      "error": "2項目で基準未達",
+      "quality_scores": {
+        "output_accuracy": 90.0,
+        "code_quality": 90.0,
+        "performance": 75.0,
+        "completeness": 85.0,
+        "consistency": 90.0
+      },
+      "compliance": {
+        "compliant": false,
+        "reason": "2項目で基準未達",
+        "failed_standards": [
+          {
+            "metric": "completeness",
+            "required": 90.0,
+            "actual": 85.0,
+            "gap": 5.0
+          },
+          {
+            "metric": "consistency",
+            "required": 95.0,
+            "actual": 90.0,
+            "gap": 5.0
+          }
+        ]
+      }
+    }
+  },
+  "quality_standards": {
+    "output_accuracy": 85.0,
+    "code_quality": 80.0,
+    "performance": 75.0,
+    "completeness": 90.0,
+    "consistency": 95.0
+  },
+  "test_metadata": {
+    "script_version": "1.0",
+    "test_date": "2025-09-22T12:13:23.748588",
+    "total_engines_tested": 11
+  }
+}

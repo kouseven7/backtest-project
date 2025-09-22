@@ -1,0 +1,424 @@
+{
+  "analysis_timestamp": "2025-09-22T12:18:50.464698",
+  "total_engines": 11,
+  "function_analysis": {
+    "data_cleaning_engine.py": {
+      "status": "ANALYZED",
+      "total_functions": 10,
+      "categorized_functions": {
+        "data_processing": [
+          "def clean_data(self, data: pd.Data",
+          "def _validate_final_data(self, data: pd.Data"
+        ],
+        "excel_export": [],
+        "scoring_calculation": [],
+        "output_generation": [],
+        "quality_assessment": []
+      },
+      "file_size_kb": 19.9697265625,
+      "quality_improved": true
+    },
+    "engine_audit_manager.py": {
+      "status": "ANALYZED",
+      "total_functions": 15,
+      "categorized_functions": {
+        "data_processing": [],
+        "excel_export": [],
+        "scoring_calculation": [],
+        "output_generation": [],
+        "quality_assessment": [
+          "def _assess_code_quality",
+          "def _evaluate_engine_quality(self, engine_path: Path) -> EngineQuality"
+        ]
+      },
+      "file_size_kb": 19.912109375,
+      "quality_improved": true
+    },
+    "hybrid_ranking_engine.py": {
+      "status": "ANALYZED",
+      "total_functions": 18,
+      "categorized_functions": {
+        "data_processing": [],
+        "excel_export": [],
+        "scoring_calculation": [],
+        "output_generation": [],
+        "quality_assessment": []
+      },
+      "file_size_kb": 22.384765625,
+      "quality_improved": true
+    },
+    "simulation_handler.py": {
+      "status": "ANALYZED",
+      "total_functions": 1,
+      "categorized_functions": {
+        "data_processing": [],
+        "excel_export": [],
+        "scoring_calculation": [],
+        "output_generation": [],
+        "quality_assessment": []
+      },
+      "file_size_kb": 4.33203125,
+      "quality_improved": true
+    },
+    "comprehensive_scoring_engine.py": {
+      "status": "ANALYZED",
+      "total_functions": 27,
+      "categorized_functions": {
+        "data_processing": [],
+        "excel_export": [],
+        "scoring_calculation": [
+          "def calculate_technical_score",
+          "def calculate_volume_score",
+          "def calculate_volatility_score",
+          "def calculate_composite_score",
+          "def calculate_batch_score",
+          "def _calculate_sma_trend_score",
+          "def _calculate_volume_ratio_score",
+          "def _calculate_liquidity_score"
+        ],
+        "output_generation": [],
+        "quality_assessment": []
+      },
+      "file_size_kb": 24.955078125,
+      "quality_improved": true
+    },
+    "unified_output_engine.py": {
+      "status": "ANALYZED",
+      "total_functions": 26,
+      "categorized_functions": {
+        "data_processing": [
+          "def _save_excel_from_processed_data(self, processed_data"
+        ],
+        "excel_export": [
+          "def _save_excel"
+        ],
+        "scoring_calculation": [],
+        "output_generation": [
+          "def generate_unified_output",
+          "def generate_unified_output",
+          "def _generate_excel_output(self, unified_model: UnifiedOutput",
+          "def _generate_json_output(self, unified_model: UnifiedOutput",
+          "def _generate_text_output(self, unified_model: UnifiedOutput",
+          "def _generate_html_output(self, unified_model: UnifiedOutput",
+          "def _generate_basic_text_report(self, unified_model: UnifiedOutput",
+          "def _generate_html_template(self, unified_model: UnifiedOutput",
+          "def _convert_unified_to_dssms_format(self, unified_model: UnifiedOutput",
+          "def _convert_unified_to_excel_format(self, unified_model: UnifiedOutput",
+          "def _convert_unified_to_text_format(self, unified_model: UnifiedOutput"
+        ],
+        "quality_assessment": []
+      },
+      "file_size_kb": 58.177734375,
+      "quality_improved": true
+    },
+    "dssms_unified_output_engine.py": {
+      "status": "ANALYZED",
+      "total_functions": 24,
+      "categorized_functions": {
+        "data_processing": [
+          "def _validate_data_source(self, data"
+        ],
+        "excel_export": [],
+        "scoring_calculation": [],
+        "output_generation": [
+          "def generate_all_outputs(self, output",
+          "def _generate_excel_output(self, output",
+          "def _generate_text_output(self, output",
+          "def _generate_json_output(self, output"
+        ],
+        "quality_assessment": []
+      },
+      "file_size_kb": 42.78515625,
+      "quality_improved": false
+    },
+    "dssms_excel_exporter_v2.py": {
+      "status": "ANALYZED",
+      "total_functions": 22,
+      "categorized_functions": {
+        "data_processing": [],
+        "excel_export": [
+          "def export_dssms_to_excel"
+        ],
+        "scoring_calculation": [],
+        "output_generation": [],
+        "quality_assessment": []
+      },
+      "file_size_kb": 37.8193359375,
+      "quality_improved": true
+    },
+    "simple_excel_exporter.py": {
+      "status": "ANALYZED",
+      "total_functions": 16,
+      "categorized_functions": {
+        "data_processing": [
+          "def process_main_data(self, stock_data: pd.Data",
+          "def _process_basic_data(self, stock_data: pd.Data",
+          "def validate_results_data"
+        ],
+        "excel_export": [],
+        "scoring_calculation": [],
+        "output_generation": [
+          "def _create_excel_output",
+          "def _create_fallback_output(results: Any, output"
+        ],
+        "quality_assessment": []
+      },
+      "file_size_kb": 26.7470703125,
+      "quality_improved": true
+    },
+    "dssms_switch_engine_v2.py": {
+      "status": "ANALYZED",
+      "total_functions": 29,
+      "categorized_functions": {
+        "data_processing": [],
+        "excel_export": [],
+        "scoring_calculation": [
+          "def _calculate_candidate_base_score",
+          "def _calculate_relative_score",
+          "def _calculate_candidate_risk_score",
+          "def _calculate_candidate_confidence(self, data: pd.DataFrame, score",
+          "def _calculate_timing_score"
+        ],
+        "output_generation": [],
+        "quality_assessment": []
+      },
+      "file_size_kb": 46.4619140625,
+      "quality_improved": true
+    },
+    "quality_assurance_engine.py": {
+      "status": "ANALYZED",
+      "total_functions": 9,
+      "categorized_functions": {
+        "data_processing": [],
+        "excel_export": [],
+        "scoring_calculation": [],
+        "output_generation": [],
+        "quality_assessment": [
+          "def _assess_overall_quality"
+        ]
+      },
+      "file_size_kb": 24.66796875,
+      "quality_improved": true
+    }
+  },
+  "duplication_metrics": {
+    "category_duplications": {
+      "data_processing": {
+        "engines_with_category": 4,
+        "total_functions": 7,
+        "potential_duplications": 6,
+        "engines": [
+          {
+            "engine": "data_cleaning_engine.py",
+            "function_count": 2,
+            "functions": [
+              "def clean_data(self, data: pd.Data",
+              "def _validate_final_data(self, data: pd.Data"
+            ]
+          },
+          {
+            "engine": "unified_output_engine.py",
+            "function_count": 1,
+            "functions": [
+              "def _save_excel_from_processed_data(self, processed_data"
+            ]
+          },
+          {
+            "engine": "dssms_unified_output_engine.py",
+            "function_count": 1,
+            "functions": [
+              "def _validate_data_source(self, data"
+            ]
+          },
+          {
+            "engine": "simple_excel_exporter.py",
+            "function_count": 3,
+            "functions": [
+              "def process_main_data(self, stock_data: pd.Data",
+              "def _process_basic_data(self, stock_data: pd.Data",
+              "def validate_results_data"
+            ]
+          }
+        ]
+      },
+      "excel_export": {
+        "engines_with_category": 2,
+        "total_functions": 2,
+        "potential_duplications": 1,
+        "engines": [
+          {
+            "engine": "unified_output_engine.py",
+            "function_count": 1,
+            "functions": [
+              "def _save_excel"
+            ]
+          },
+          {
+            "engine": "dssms_excel_exporter_v2.py",
+            "function_count": 1,
+            "functions": [
+              "def export_dssms_to_excel"
+            ]
+          }
+        ]
+      },
+      "scoring_calculation": {
+        "engines_with_category": 2,
+        "total_functions": 13,
+        "potential_duplications": 12,
+        "engines": [
+          {
+            "engine": "comprehensive_scoring_engine.py",
+            "function_count": 8,
+            "functions": [
+              "def calculate_technical_score",
+              "def calculate_volume_score",
+              "def calculate_volatility_score",
+              "def calculate_composite_score",
+              "def calculate_batch_score",
+              "def _calculate_sma_trend_score",
+              "def _calculate_volume_ratio_score",
+              "def _calculate_liquidity_score"
+            ]
+          },
+          {
+            "engine": "dssms_switch_engine_v2.py",
+            "function_count": 5,
+            "functions": [
+              "def _calculate_candidate_base_score",
+              "def _calculate_relative_score",
+              "def _calculate_candidate_risk_score",
+              "def _calculate_candidate_confidence(self, data: pd.DataFrame, score",
+              "def _calculate_timing_score"
+            ]
+          }
+        ]
+      },
+      "output_generation": {
+        "engines_with_category": 3,
+        "total_functions": 17,
+        "potential_duplications": 16,
+        "engines": [
+          {
+            "engine": "unified_output_engine.py",
+            "function_count": 11,
+            "functions": [
+              "def generate_unified_output",
+              "def generate_unified_output",
+              "def _generate_excel_output(self, unified_model: UnifiedOutput",
+              "def _generate_json_output(self, unified_model: UnifiedOutput",
+              "def _generate_text_output(self, unified_model: UnifiedOutput",
+              "def _generate_html_output(self, unified_model: UnifiedOutput",
+              "def _generate_basic_text_report(self, unified_model: UnifiedOutput",
+              "def _generate_html_template(self, unified_model: UnifiedOutput",
+              "def _convert_unified_to_dssms_format(self, unified_model: UnifiedOutput",
+              "def _convert_unified_to_excel_format(self, unified_model: UnifiedOutput",
+              "def _convert_unified_to_text_format(self, unified_model: UnifiedOutput"
+            ]
+          },
+          {
+            "engine": "dssms_unified_output_engine.py",
+            "function_count": 4,
+            "functions": [
+              "def generate_all_outputs(self, output",
+              "def _generate_excel_output(self, output",
+              "def _generate_text_output(self, output",
+              "def _generate_json_output(self, output"
+            ]
+          },
+          {
+            "engine": "simple_excel_exporter.py",
+            "function_count": 2,
+            "functions": [
+              "def _create_excel_output",
+              "def _create_fallback_output(results: Any, output"
+            ]
+          }
+        ]
+      },
+      "quality_assessment": {
+        "engines_with_category": 2,
+        "total_functions": 3,
+        "potential_duplications": 2,
+        "engines": [
+          {
+            "engine": "engine_audit_manager.py",
+            "function_count": 2,
+            "functions": [
+              "def _assess_code_quality",
+              "def _evaluate_engine_quality(self, engine_path: Path) -> EngineQuality"
+            ]
+          },
+          {
+            "engine": "quality_assurance_engine.py",
+            "function_count": 1,
+            "functions": [
+              "def _assess_overall_quality"
+            ]
+          }
+        ]
+      }
+    },
+    "total_duplicated_functions": 37,
+    "duplication_percentage": 18.781725888324875,
+    "consolidation_candidates": []
+  },
+  "consolidation_opportunities": {
+    "high_priority_consolidations": [
+      {
+        "category": "data_processing",
+        "duplicate_count": 4,
+        "potential_reduction": 6,
+        "affected_engines": [
+          "data_cleaning_engine.py",
+          "unified_output_engine.py",
+          "dssms_unified_output_engine.py",
+          "simple_excel_exporter.py"
+        ]
+      },
+      {
+        "category": "output_generation",
+        "duplicate_count": 3,
+        "potential_reduction": 16,
+        "affected_engines": [
+          "unified_output_engine.py",
+          "dssms_unified_output_engine.py",
+          "simple_excel_exporter.py"
+        ]
+      }
+    ],
+    "medium_priority_consolidations": [
+      {
+        "category": "excel_export",
+        "duplicate_count": 2,
+        "potential_reduction": 1,
+        "affected_engines": [
+          "unified_output_engine.py",
+          "dssms_excel_exporter_v2.py"
+        ]
+      },
+      {
+        "category": "scoring_calculation",
+        "duplicate_count": 2,
+        "potential_reduction": 12,
+        "affected_engines": [
+          "comprehensive_scoring_engine.py",
+          "dssms_switch_engine_v2.py"
+        ]
+      },
+      {
+        "category": "quality_assessment",
+        "duplicate_count": 2,
+        "potential_reduction": 2,
+        "affected_engines": [
+          "engine_audit_manager.py",
+          "quality_assurance_engine.py"
+        ]
+      }
+    ],
+    "low_priority_consolidations": [],
+    "estimated_consolidation_benefit": 37
+  },
+  "organization_rate": 100.0,
+  "kpi_achievement": true
+}

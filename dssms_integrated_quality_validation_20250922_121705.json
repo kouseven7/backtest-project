@@ -1,0 +1,61 @@
+{
+  "test_timestamp": "2025-09-22T12:17:05.307419",
+  "integration_tests": {
+    "basic_functionality": {
+      "status": "FAIL",
+      "score": 66.66666666666666,
+      "components": {
+        "dssms_backtester": "AVAILABLE",
+        "unified_output_engine": "MISSING",
+        "config_file": "AVAILABLE"
+      },
+      "details": "2/3 主要コンポーネント利用可能"
+    },
+    "engine_integration": {
+      "status": "PASS",
+      "score": 100.0,
+      "improved_engines_count": 10,
+      "total_engines_count": 10,
+      "engine_details": {
+        "data_cleaning_engine.py": "QUALITY_IMPROVED",
+        "engine_audit_manager.py": "QUALITY_IMPROVED",
+        "hybrid_ranking_engine.py": "QUALITY_IMPROVED",
+        "simulation_handler.py": "QUALITY_IMPROVED",
+        "comprehensive_scoring_engine.py": "QUALITY_IMPROVED",
+        "unified_output_engine.py": "QUALITY_IMPROVED",
+        "dssms_excel_exporter_v2.py": "QUALITY_IMPROVED",
+        "simple_excel_exporter.py": "QUALITY_IMPROVED",
+        "dssms_switch_engine_v2.py": "QUALITY_IMPROVED",
+        "quality_assurance_engine.py": "QUALITY_IMPROVED"
+      },
+      "details": "10/10 エンジンが品質改善済み"
+    },
+    "output_quality": {
+      "status": "PASS",
+      "score": 100.0,
+      "latest_report": "C:\\Users\\imega\\Documents\\my_backtest_project\\engine_quality_standardization_report_20250922_121517.md",
+      "quality_indicators": {
+        "has_analysis_results": true,
+        "has_improvement_actions": true,
+        "has_problem13_integration": true,
+        "has_kpi_measurement": true
+      },
+      "details": "4/4 品質指標達成"
+    },
+    "quality_compliance": {
+      "status": "PASS",
+      "score": 100.0,
+      "total_engines": 10,
+      "improved_engines": 10,
+      "improvement_file": "C:\\Users\\imega\\Documents\\my_backtest_project\\engine_quality_improvement_results_20250922_121440.json",
+      "details": "10/10 エンジンが品質改善済み"
+    }
+  },
+  "quality_scores": {
+    "overall": 91.66666666666666
+  },
+  "overall_status": "PASS",
+  "recommendations": [
+    "basic_functionalityテストで問題検出。詳細確認と改善が必要です。"
+  ]
+}

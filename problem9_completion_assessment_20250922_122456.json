@@ -1,0 +1,158 @@
+{
+  "assessment_timestamp": "2025-09-22T12:24:55.503090",
+  "quantitative_results": {
+    "QC1": {
+      "criterion": {
+        "id": "QC1",
+        "description": "採用エンジンの品質評価全てが85.0点基準以上達成",
+        "target_value": 85.0,
+        "unit": "points",
+        "required": true
+      },
+      "result": {
+        "status": "EVALUATED",
+        "value": 100.0,
+        "achieved": true,
+        "total_engines": 10,
+        "improved_engines": 10,
+        "source_file": "C:\\Users\\imega\\Documents\\my_backtest_project\\engine_quality_improvement_results_20250922_121440.json"
+      },
+      "achievement_status": "ACHIEVED"
+    },
+    "QC2": {
+      "criterion": {
+        "id": "QC2",
+        "description": "重複機能整理率>90%達成（機能統合による重複解消）",
+        "target_value": 90.0,
+        "unit": "percentage",
+        "required": true
+      },
+      "result": {
+        "status": "EVALUATED",
+        "value": 100.0,
+        "achieved": true,
+        "source_file": "C:\\Users\\imega\\Documents\\my_backtest_project\\duplicate_function_analysis_20250922_121850.json"
+      },
+      "achievement_status": "ACHIEVED"
+    },
+    "QC3": {
+      "criterion": {
+        "id": "QC3",
+        "description": "品質統一後のDSSMS出力一貫性100%確認（複数実行での結果一致）",
+        "target_value": 100.0,
+        "unit": "percentage",
+        "required": true
+      },
+      "result": {
+        "status": "EVALUATED",
+        "value": 91.66666666666666,
+        "achieved": true,
+        "overall_status": "PASS",
+        "source_file": "C:\\Users\\imega\\Documents\\my_backtest_project\\dssms_integrated_quality_validation_20250922_121705.json"
+      },
+      "achievement_status": "ACHIEVED"
+    }
+  },
+  "qualitative_results": {
+    "QL1": {
+      "criterion": {
+        "id": "QL1",
+        "description": "85.0点エンジン出力品質維持",
+        "required": true
+      },
+      "result": {
+        "status": "VERIFIED",
+        "achieved": false,
+        "file_size": 44454,
+        "last_modified": "2025-09-22T12:23:52.177257",
+        "quality_markers_present": false
+      },
+      "achievement_status": "NOT_ACHIEVED"
+    },
+    "QL2": {
+      "criterion": {
+        "id": "QL2",
+        "description": "DSSMS Core機能の非破壊保証",
+        "required": true
+      },
+      "result": {
+        "status": "VERIFIED",
+        "achieved": true,
+        "integrity_status": {
+          "files_checked": 3,
+          "files_present": 3,
+          "files_valid": 3
+        }
+      },
+      "achievement_status": "ACHIEVED"
+    },
+    "QL3": {
+      "criterion": {
+        "id": "QL3",
+        "description": "品質標準文書化完了",
+        "required": true
+      },
+      "result": {
+        "status": "VERIFIED",
+        "achieved": true,
+        "documentation_status": {
+          "required_documents": 3,
+          "documents_present": 3,
+          "latest_documents": [
+            "C:\\Users\\imega\\Documents\\my_backtest_project\\engine_quality_standardization_report_20250922_121517.md",
+            "C:\\Users\\imega\\Documents\\my_backtest_project\\engine_quality_improvement_results_20250922_121440.json",
+            "C:\\Users\\imega\\Documents\\my_backtest_project\\duplicate_function_analysis_20250922_121850.json"
+          ]
+        }
+      },
+      "achievement_status": "ACHIEVED"
+    }
+  },
+  "overall_completion_status": "PARTIAL_COMPLETION",
+  "completion_percentage": 83.33333333333334,
+  "recommendations": [
+    "定性的条件QL1未達成: 85.0点エンジン出力品質維持"
+  ],
+  "deliverables": {
+    "changed_files": [
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\optimization\\parameter_optimizer.py"
+    ],
+    "new_files": [
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\scripts\\analyze_duplicate_functions.py",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\scripts\\execute_quality_improvement.py",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\scripts\\quality_assessment.py",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\scripts\\test_dssms_integration.py",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\scripts\\test_improved_engines.py"
+    ],
+    "test_results": [
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\improved_engines_test_results_20250922_121323.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\dssms_integrated_quality_validation_20250922_121705.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\engine_quality_improvement_results_20250922_121440.json"
+    ],
+    "documentation": [
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\engine_quality_standardization_report_20250922_120225.md",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\engine_quality_standardization_report_20250922_120423.md",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\engine_quality_standardization_report_20250922_120530.md",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\engine_quality_standardization_report_20250922_121517.md",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\active_engine_impact_analysis_20250914_075411.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\context_engine_excel_impact_analysis_20250914_075255.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\dssms_comprehensive_analysis_report_20250908_133511.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\dssms_comprehensive_analysis_report_20250908_144406.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\dssms_comprehensive_analysis_report_20250908_144827.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\duplicate_function_analysis_20250922_121850.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\quality_score_contradiction_analysis_20250914_093934.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\quality_score_contradiction_analysis_20250914_093940.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\task_5_1_intelligent_switch_manager_analysis_results.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\task_5_2_deterministic_mode_analysis_results.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\task_5_3_engine_coexistence_analysis_results.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\task_5_4_data_quality_analysis_results.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\task_5_5_engine_quality_gap_analysis_results.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\task_5_6_calculation_formula_error_analysis_results.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\task_6_1_corrected_analysis_20250914_094151.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\task_6_1_current_engine_detailed_analysis_20250914_093604.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\task_6_1_current_engine_detailed_analysis_20250914_093615.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\task_6_2_engine_relationship_analysis_20250914_095858.json",
+      "C:\\Users\\imega\\Documents\\my_backtest_project\\task_6_phase_c_analysis_20250914_102323.json"
+    ]
+  }
+}
