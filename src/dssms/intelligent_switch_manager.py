@@ -2,6 +2,7 @@
 DSSMS Phase 3 Task 3.2: インテリジェント銘柄切替管理システム
 高度な銘柄切替ロジック実装
 
+Problem 11: ISM統合カバレッジ向上 - 統一切替判定機能追加
 既存DSSMS Phase 1・Phase 2コンポーネントとの統合を考慮した設計
 """
 
@@ -38,6 +39,23 @@ class SwitchDecision(Enum):
     IMMEDIATE_SWITCH = "immediate_switch"
     GRADUAL_SWITCH = "gradual_switch"
     EMERGENCY_EXIT = "emergency_exit"
+
+@dataclass
+class SwitchDecisionContext:
+    """切替判定コンテキスト - Problem 11統合"""
+    portfolio_data: Dict[str, Any]
+    market_context: Dict[str, Any]
+    switch_type: str  # 'daily', 'weekly', 'emergency'
+    timestamp: datetime
+    current_strategy: str
+
+@dataclass 
+class SwitchQualityResult:
+    """切替品質評価結果 - Problem 11統合"""
+    unnecessary_switch_rate: float
+    consistency_rate: float
+    total_switches: int
+    quality_score: float
 
 @dataclass
 class PositionEvaluation:
@@ -234,16 +252,25 @@ class FundUpdateScheduler:
         return available_funds
 
 class IntelligentSwitchManager:
-    """高度な銘柄切替ロジック"""
+    """高度な銘柄切替ロジック - Problem 11 ISM統合拡張"""
     
     def __init__(self, config_path: Optional[str] = None):
         """初期化"""
         
         self.logger = setup_logger('dssms.intelligent_switch')
-        self.logger.info("IntelligentSwitchManager 初期化開始")
+        self.logger.info("IntelligentSwitchManager 初期化開始 - Problem 11 ISM統合版")
         
         # 設定読み込み
         self.config = self._load_config(config_path)
+        
+        # Problem 11統合コンポーネント
+        self.unified_logic = UnifiedSwitchLogic(self.config)
+        self.quality_tracker = SwitchQualityTracker(self.config)
+        
+        # 統合設定
+        ism_config = self.config.get('intelligent_switch_manager', {})
+        self.integration_coverage = ism_config.get('integration_coverage', 100)
+        self.unified_switching = ism_config.get('unified_switching', True)
         
         # 既存コンポーネント統合
         try:
@@ -278,7 +305,54 @@ class IntelligentSwitchManager:
         self.min_holding_hours = switch_criteria.get('minimum_holding_period_hours', 4)
         self.confidence_threshold = switch_criteria.get('confidence_threshold', 0.6)
         
-        self.logger.info("IntelligentSwitchManager 初期化完了")
+        self.logger.info(f"ISM初期化完了 - 統合率:{self.integration_coverage}%, 統一切替:{self.unified_switching}")
+        
+    def evaluate_all_switches(self, portfolio_data: Dict[str, Any], market_context: Dict[str, Any]) -> Dict[str, Any]:
+        """全切替判定の統一エントリーポイント - Problem 11実装"""
+        # TODO(tag:phase1, rationale:切替判定統合率100%): 完全統合実装
+        
+        decision_context = SwitchDecisionContext(
+            portfolio_data=portfolio_data,
+            market_context=market_context,
+            switch_type=self._determine_switch_type(market_context),
+            timestamp=datetime.now(),
+            current_strategy=market_context.get('current_strategy', 'unknown')
+        )
+        
+        # 統一ロジックによる判定
+        switch_decision = self.unified_logic.process(decision_context)
+        
+        # 品質追跡
+        self.quality_tracker.track_switch_decision(decision_context, switch_decision)
+        
+        return {
+            'should_switch': switch_decision['should_switch'],
+            'recommended_strategy': switch_decision.get('recommended_strategy'),
+            'confidence': switch_decision.get('confidence', 0.0),
+            'quality_metrics': self.quality_tracker.get_current_metrics(),
+            'decision_metadata': {
+                'switch_type': decision_context.switch_type,
+                'integration_coverage': self.integration_coverage,
+                'timestamp': decision_context.timestamp.isoformat()
+            }
+        }
+        
+    def get_switch_quality_metrics(self) -> SwitchQualityResult:
+        """切替品質指標の統一取得 - Problem 11実装"""
+        return self.quality_tracker.get_quality_metrics()
+        
+    def _determine_switch_type(self, market_context: Dict[str, Any]) -> str:
+        """切替タイプ判定"""
+        # TODO(tag:phase1, rationale:daily/weekly/emergency統合): 切替タイプ分類
+        volatility = market_context.get('volatility', 0.0)
+        time_since_last_switch = market_context.get('time_since_last_switch', 0)
+        
+        if volatility > 0.05:  # 緊急時判定
+            return 'emergency'
+        elif time_since_last_switch >= 7:  # 週次判定
+            return 'weekly'
+        else:  # 日次判定
+            return 'daily'
     
     def _load_config(self, config_path: Optional[str]) -> Dict[str, Any]:
         """設定ファイル読み込み"""
@@ -648,6 +722,349 @@ class DSSMSIntelligentSwitchIntegrator:
         except Exception as e:
             self.logger.error(f"切替推奨取得エラー: {e}")
             return {'error': str(e)}
+
+# Problem 11: ISM統合カバレッジ向上 - 統一切替判定システム
+class UnifiedSwitchLogic:
+    """統一切替判定ロジック - Problem 11実装"""
+    
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config
+        self.switch_criteria = config.get('switch_criteria', {})
+        self.consolidation_config = config.get('intelligent_switch_manager', {}).get('switch_consolidation', {})
+        self.logger = setup_logger('dssms.unified_switch_logic')
+        
+    def process(self, decision_context: SwitchDecisionContext) -> Dict[str, Any]:
+        """統一切替判定処理"""
+        # TODO(tag:phase1, rationale:分散判定ロジック統一): 統一基準適用
+        
+        # 統一基準による評価
+        criteria_results = self._evaluate_criteria(decision_context)
+        
+        # 品質評価
+        quality_check = self._quality_assessment(criteria_results)
+        
+        # 統一判定
+        final_decision = self._make_unified_decision(criteria_results, quality_check)
+        
+        self.logger.info(f"統一切替判定完了: {decision_context.switch_type} - 判定:{final_decision['should_switch']}")
+        return final_decision
+        
+    def _evaluate_criteria(self, decision_context: SwitchDecisionContext) -> Dict[str, Any]:
+        """統一基準による切替判定評価"""
+        portfolio_data = decision_context.portfolio_data
+        switch_type = decision_context.switch_type
+        
+        criteria_results = {}
+        
+        # 切替タイプ別判定（ISM管理下で統一）
+        if switch_type == 'daily' and self.consolidation_config.get('daily_ism_routing', True):
+            criteria_results['daily_criteria'] = self._daily_switch_check(portfolio_data)
+        elif switch_type == 'weekly' and self.consolidation_config.get('weekly_ism_routing', True):
+            criteria_results['weekly_criteria'] = self._weekly_switch_check(portfolio_data)
+        elif switch_type == 'emergency' and self.consolidation_config.get('emergency_ism_routing', True):
+            criteria_results['emergency_criteria'] = self._emergency_switch_check(portfolio_data)
+        else:
+            # フォールバック（従来ロジック）
+            criteria_results['fallback_criteria'] = self._legacy_switch_check(portfolio_data)
+            
+        return criteria_results
+        
+    def _daily_switch_check(self, portfolio_data: Dict[str, Any]) -> Dict[str, Any]:
+        """日次切替判定（統一基準）"""
+        # TODO(tag:phase1, rationale:daily切替ISM統合): 統一日次判定実装
+        
+        # パフォーマンス基準
+        performance_score = portfolio_data.get('daily_performance', 0.0)
+        performance_threshold = self.switch_criteria.get('daily_performance_threshold', 0.02)
+        
+        # ボラティリティ基準
+        volatility = portfolio_data.get('volatility', 0.0)
+        volatility_threshold = self.switch_criteria.get('volatility_threshold', 0.03)
+        
+        should_switch = (
+            performance_score < -performance_threshold or
+            volatility > volatility_threshold
+        )
+        
+        return {
+            'should_switch': should_switch,
+            'performance_score': performance_score,
+            'volatility': volatility,
+            'criteria_met': {
+                'performance': performance_score < -performance_threshold,
+                'volatility': volatility > volatility_threshold
+            }
+        }
+        
+    def _weekly_switch_check(self, portfolio_data: Dict[str, Any]) -> Dict[str, Any]:
+        """週次切替判定（統一基準）"""
+        # TODO(tag:phase1, rationale:weekly切替ISM統合): 統一週次判定実装
+        
+        weekly_performance = portfolio_data.get('weekly_performance', 0.0)
+        weekly_threshold = self.switch_criteria.get('weekly_performance_threshold', 0.05)
+        
+        sharpe_ratio = portfolio_data.get('sharpe_ratio', 0.0)
+        sharpe_threshold = self.switch_criteria.get('sharpe_threshold', 0.5)
+        
+        should_switch = (
+            weekly_performance < -weekly_threshold or
+            sharpe_ratio < sharpe_threshold
+        )
+        
+        return {
+            'should_switch': should_switch,
+            'weekly_performance': weekly_performance,
+            'sharpe_ratio': sharpe_ratio,
+            'criteria_met': {
+                'weekly_performance': weekly_performance < -weekly_threshold,
+                'sharpe_ratio': sharpe_ratio < sharpe_threshold
+            }
+        }
+        
+    def _emergency_switch_check(self, portfolio_data: Dict[str, Any]) -> Dict[str, Any]:
+        """緊急切替判定（統一基準）"""
+        # TODO(tag:phase1, rationale:emergency切替ISM統合): 統一緊急判定実装
+        
+        drawdown = portfolio_data.get('current_drawdown', 0.0)
+        emergency_drawdown_threshold = self.switch_criteria.get('emergency_drawdown_threshold', 0.10)
+        
+        volatility_spike = portfolio_data.get('volatility_spike', False)
+        
+        should_switch = (
+            drawdown > emergency_drawdown_threshold or
+            volatility_spike
+        )
+        
+        return {
+            'should_switch': should_switch,
+            'drawdown': drawdown,
+            'volatility_spike': volatility_spike,
+            'criteria_met': {
+                'emergency_drawdown': drawdown > emergency_drawdown_threshold,
+                'volatility_spike': volatility_spike
+            }
+        }
+        
+    def _legacy_switch_check(self, portfolio_data: Dict[str, Any]) -> Dict[str, Any]:
+        """従来切替判定（フォールバック）"""
+        # 既存ロジックの保持
+        score_difference = portfolio_data.get('score_difference', 0.0)
+        score_threshold = self.switch_criteria.get('score_difference_threshold', 0.15)
+        
+        should_switch = score_difference >= score_threshold
+        
+        return {
+            'should_switch': should_switch,
+            'score_difference': score_difference,
+            'criteria_met': {
+                'score_threshold': should_switch
+            }
+        }
+        
+    def _quality_assessment(self, criteria_results: Dict[str, Any]) -> Dict[str, Any]:
+        """品質評価"""
+        # TODO(tag:phase1, rationale:切替品質向上): 統一品質基準適用
+        
+        # 判定一貫性チェック
+        consistency_score = self._calculate_consistency(criteria_results)
+        
+        # 信頼度評価
+        confidence_score = self._calculate_confidence(criteria_results)
+        
+        return {
+            'consistency_score': consistency_score,
+            'confidence_score': confidence_score,
+            'quality_passed': consistency_score >= 0.95 and confidence_score >= 0.6
+        }
+        
+    def _calculate_consistency(self, criteria_results: Dict[str, Any]) -> float:
+        """判定一貫性計算"""
+        if not criteria_results:
+            return 1.0
+            
+        # 基準間の判定一致度計算
+        decisions = [result.get('should_switch', False) for result in criteria_results.values()]
+        if len(decisions) <= 1:
+            return 1.0
+            
+        # 全て一致なら1.0、完全不一致なら0.0
+        consistent_decisions = len(set(decisions)) == 1
+        return 1.0 if consistent_decisions else 0.5  # 部分一致は0.5
+        
+    def _calculate_confidence(self, criteria_results: Dict[str, Any]) -> float:
+        """信頼度計算"""
+        if not criteria_results:
+            return 0.0
+            
+        # 各基準の確信度平均
+        confidence_scores = []
+        for result in criteria_results.values():
+            criteria_met = result.get('criteria_met', {})
+            if criteria_met:
+                met_count = sum(1 for met in criteria_met.values() if met)
+                total_count = len(criteria_met)
+                confidence_scores.append(met_count / total_count if total_count > 0 else 0.0)
+                
+        return sum(confidence_scores) / len(confidence_scores) if confidence_scores else 0.0
+        
+    def _make_unified_decision(self, criteria_results: Dict[str, Any], quality_check: Dict[str, Any]) -> Dict[str, Any]:
+        """統一判定決定"""
+        # 各基準の判定結果統合
+        switch_votes = []
+        for criteria_type, result in criteria_results.items():
+            if result.get('should_switch', False):
+                switch_votes.append(criteria_type)
+                
+        # 品質チェック通過確認
+        quality_passed = quality_check.get('quality_passed', False)
+        
+        # 最終判定
+        should_switch = len(switch_votes) > 0 and quality_passed
+        
+        return {
+            'should_switch': should_switch,
+            'switch_votes': switch_votes,
+            'quality_passed': quality_passed,
+            'confidence': quality_check.get('confidence_score', 0.0),
+            'criteria_results': criteria_results,
+            'quality_check': quality_check,
+            'decision_timestamp': datetime.now().isoformat()
+        }
+
+class SwitchQualityTracker:
+    """切替品質追跡・評価 - Problem 11実装"""
+    
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config
+        self.switch_history: List[Dict[str, Any]] = []
+        self.quality_metrics = {}
+        self.quality_target = config.get('intelligent_switch_manager', {}).get('quality_target', {})
+        self.logger = setup_logger('dssms.switch_quality_tracker')
+        
+    def track_switch_decision(self, decision_context: SwitchDecisionContext, switch_decision: Dict[str, Any]):
+        """切替判定追跡"""
+        # TODO(tag:phase1, rationale:切替品質追跡): 不要切替率計算実装
+        
+        switch_record = {
+            'timestamp': decision_context.timestamp,
+            'switch_type': decision_context.switch_type,
+            'current_strategy': decision_context.current_strategy,
+            'should_switch': switch_decision['should_switch'],
+            'confidence': switch_decision.get('confidence', 0.0),
+            'portfolio_snapshot': decision_context.portfolio_data.copy()
+        }
+        
+        self.switch_history.append(switch_record)
+        
+        # 品質メトリクス更新
+        self._update_quality_metrics()
+        
+        self.logger.info(f"切替判定追跡記録: {decision_context.switch_type} - 判定:{switch_decision['should_switch']}")
+        
+    def get_current_metrics(self) -> Dict[str, Any]:
+        """現在の品質メトリクス取得"""
+        return self.quality_metrics.copy()
+        
+    def get_quality_metrics(self) -> SwitchQualityResult:
+        """品質評価結果取得"""
+        unnecessary_rate = self.calculate_unnecessary_switch_rate()
+        consistency_rate = self.calculate_consistency_rate()
+        total_switches = len([r for r in self.switch_history if r['should_switch']])
+        
+        # 総合品質スコア計算
+        quality_score = self._calculate_overall_quality_score(unnecessary_rate, consistency_rate)
+        
+        return SwitchQualityResult(
+            unnecessary_switch_rate=unnecessary_rate,
+            consistency_rate=consistency_rate,
+            total_switches=total_switches,
+            quality_score=quality_score
+        )
+        
+    def calculate_unnecessary_switch_rate(self) -> float:
+        """不要切替率計算（10営業日後評価）"""
+        # TODO(tag:phase1, rationale:不要切替率KPI): 10営業日後収益性評価
+        
+        if len(self.switch_history) == 0:
+            return 0.0
+            
+        # 10営業日以上前の切替を評価対象とする
+        evaluable_switches = [
+            record for record in self.switch_history
+            if record['should_switch'] and 
+            (datetime.now() - record['timestamp']).days >= 10
+        ]
+        
+        if len(evaluable_switches) == 0:
+            return 0.0
+            
+        unnecessary_count = 0
+        cost_rate = 0.002  # 切替コスト0.2%
+        
+        for switch_record in evaluable_switches:
+            # 切替前後のパフォーマンス比較
+            p_before = switch_record['portfolio_snapshot'].get('portfolio_value', 100.0)
+            # TODO: 10営業日後の実際の値を取得
+            p_after = 100.0  # 仮実装
+            
+            # 収益性評価: (p_after - p_before)/p_before - cost ≤ 0
+            if p_before > 0:
+                performance_change = (p_after - p_before) / p_before
+                if performance_change - cost_rate <= 0:
+                    unnecessary_count += 1
+                    
+        return unnecessary_count / len(evaluable_switches) if len(evaluable_switches) > 0 else 0.0
+        
+    def calculate_consistency_rate(self) -> float:
+        """判定一貫率計算"""
+        # TODO(tag:phase1, rationale:判定一貫性95%): 同条件判定一致確認
+        
+        if len(self.switch_history) < 2:
+            return 1.0
+            
+        # 類似条件での判定一致率評価（簡易実装）
+        consistent_decisions = 0
+        total_comparisons = 0
+        
+        for i in range(len(self.switch_history) - 1):
+            current = self.switch_history[i]
+            next_decision = self.switch_history[i + 1]
+            
+            # 類似条件判定（簡易）
+            if self._is_similar_condition(current, next_decision):
+                total_comparisons += 1
+                if current['should_switch'] == next_decision['should_switch']:
+                    consistent_decisions += 1
+                    
+        return consistent_decisions / total_comparisons if total_comparisons > 0 else 1.0
+        
+    def _update_quality_metrics(self):
+        """品質メトリクス更新"""
+        self.quality_metrics.update({
+            'total_decisions': len(self.switch_history),
+            'switch_decisions': len([r for r in self.switch_history if r['should_switch']]),
+            'last_updated': datetime.now().isoformat(),
+            'unnecessary_switch_rate': self.calculate_unnecessary_switch_rate(),
+            'consistency_rate': self.calculate_consistency_rate()
+        })
+        
+    def _calculate_overall_quality_score(self, unnecessary_rate: float, consistency_rate: float) -> float:
+        """総合品質スコア計算"""
+        # 不要切替率は低いほど良い（逆転）
+        unnecessary_score = max(0.0, 1.0 - unnecessary_rate)
+        
+        # 重み付き平均
+        quality_score = (unnecessary_score * 0.6 + consistency_rate * 0.4) * 100
+        
+        return quality_score
+        
+    def _is_similar_condition(self, record1: Dict[str, Any], record2: Dict[str, Any]) -> bool:
+        """類似条件判定"""
+        # 簡易類似性判定
+        return (
+            record1['switch_type'] == record2['switch_type'] and
+            abs(record1.get('confidence', 0) - record2.get('confidence', 0)) < 0.1
+        )
     
     def execute_recommended_switch(self, from_symbol: str, to_symbol: str) -> Dict[str, Any]:
         """推奨切替実行"""

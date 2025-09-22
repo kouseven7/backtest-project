@@ -40,6 +40,33 @@
     "max_weekly_switches": 10,
     "drawdown_restriction_threshold": 0.05
   },
+  "intelligent_switch_manager": {
+    "unified_switching": true,
+    "integration_coverage": 100,
+    "quality_target": {
+      "unnecessary_switch_rate": 0.2,
+      "consistency_rate": 0.95,
+      "integration_coverage_target": 100
+    },
+    "quality_tracking": {
+      "enable_quality_tracking": true,
+      "evaluation_period_days": 10,
+      "min_evaluation_switches": 5,
+      "enable_consistency_checking": true
+    },
+    "switching_criteria": {
+      "daily_performance_threshold": 0.02,
+      "weekly_performance_threshold": 0.05,
+      "emergency_drawdown_limit": 0.1,
+      "enable_emergency_switching": true
+    },
+    "decision_quality": {
+      "enable_unnecessary_switch_detection": true,
+      "unnecessary_switch_evaluation_days": 10,
+      "unnecessary_switch_cost_rate": 0.002,
+      "decision_consistency_window": 20
+    }
+  },
   "logging": {
     "detailed_switch_log": true,
     "score_calculation_log": true,

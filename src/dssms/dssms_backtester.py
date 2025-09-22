@@ -44,7 +44,7 @@ except ImportError:
 # 既存DSSMSコンポーネントのインポート
 try:
     from src.dssms.hierarchical_ranking_system import HierarchicalRankingSystem, PriorityLevel, RankingScore, SelectionResult
-    from src.dssms.intelligent_switch_manager import IntelligentSwitchManager, SwitchDecision, PositionEvaluation
+    from src.dssms.intelligent_switch_manager import IntelligentSwitchManager, SwitchDecision, PositionEvaluation, UnifiedSwitchLogic, SwitchQualityTracker
     from src.dssms.dssms_data_manager import DSSMSDataManager
     from src.dssms.market_condition_monitor import MarketConditionMonitor
     from src.dssms.comprehensive_scoring_engine import ComprehensiveScoringEngine
@@ -229,8 +229,13 @@ class DSSMSBacktester:
                 
             if IntelligentSwitchManager:
                 self.switch_manager = IntelligentSwitchManager()
+                # Problem 11: ISM統合設定確認
+                ism_config = self.config.get('intelligent_switch_manager', {})
+                self.use_unified_switching = ism_config.get('unified_switching', False)
+                self.logger.info(f"ISM統合切替判定: {self.use_unified_switching}")
             else:
                 self.switch_manager = None
+                self.use_unified_switching = False
                 
             if DSSMSDataManager:
                 self.data_manager = DSSMSDataManager()
@@ -852,7 +857,74 @@ class DSSMSBacktester:
 
     def _evaluate_switch_decision(self, date: datetime, current_position: Optional[str], 
                                 ranking_result: Dict[str, Any], market_condition: Dict[str, Any]) -> Dict[str, Any]:
-        """改善版: 切替判定（過度な切替を抑制）"""
+        """改善版: 切替判定（ISM統合対応 - Problem 11）"""
+        try:
+            # Problem 11: ISM統合切替判定の使用
+            if self.use_unified_switching and self.switch_manager:
+                return self._ism_unified_switch_decision(date, current_position, ranking_result, market_condition)
+            else:
+                return self._legacy_switch_decision(date, current_position, ranking_result, market_condition)
+                
+        except Exception as e:
+            self.logger.error(f"切替判定エラー {date}: {e}")
+            return {
+                'should_switch': False,
+                'target_symbol': current_position,
+                'reason': f"切替判定エラー: {str(e)}",
+                'trigger': None
+            }
+            
+    def _ism_unified_switch_decision(self, date: datetime, current_position: Optional[str], 
+                                   ranking_result: Dict[str, Any], market_condition: Dict[str, Any]) -> Dict[str, Any]:
+        """ISM統合切替判定 - Problem 11実装"""
+        # TODO(tag:phase1, rationale:ISM統合カバレッジ向上): 完全統合実装
+        
+        try:
+            # ポートフォリオデータ準備
+            portfolio_data = {
+                'current_position': current_position,
+                'rankings': ranking_result.get('rankings', {}),
+                'top_symbol': ranking_result.get('top_symbol'),
+                'daily_performance': self._calculate_daily_performance(current_position),
+                'weekly_performance': self._calculate_weekly_performance(current_position),
+                'volatility': market_condition.get('volatility', 0.0),
+                'current_drawdown': self._calculate_current_drawdown(),
+                'sharpe_ratio': self._calculate_current_sharpe_ratio(current_position),
+                'portfolio_value': self.portfolio_values.get(date, 100000.0),
+                'volatility_spike': market_condition.get('volatility_spike', False)
+            }
+            
+            # マーケットコンテキスト準備
+            market_context = {
+                'current_strategy': current_position or 'none',
+                'volatility': market_condition.get('volatility', 0.0),
+                'time_since_last_switch': self._get_time_since_last_switch(date),
+                'market_condition': market_condition.get('condition', 'normal')
+            }
+            
+            # ISM統合切替判定実行
+            switch_decision = self.switch_manager.evaluate_all_switches(portfolio_data, market_context)
+            
+            # DSSMSBacktester形式に変換
+            target_symbol = ranking_result.get('top_symbol') if switch_decision['should_switch'] else current_position
+            
+            return {
+                'should_switch': switch_decision['should_switch'],
+                'target_symbol': target_symbol,
+                'reason': f"ISM統合判定 - 信頼度:{switch_decision.get('confidence', 0.0):.3f}",
+                'trigger': SwitchTrigger.DAILY_EVALUATION if switch_decision['should_switch'] else None,
+                'ism_metadata': switch_decision.get('decision_metadata', {}),
+                'quality_metrics': switch_decision.get('quality_metrics', {})
+            }
+            
+        except Exception as e:
+            self.logger.error(f"ISM統合切替判定エラー {date}: {e}")
+            # フォールバック: 従来ロジック
+            return self._legacy_switch_decision(date, current_position, ranking_result, market_condition)
+            
+    def _legacy_switch_decision(self, date: datetime, current_position: Optional[str], 
+                              ranking_result: Dict[str, Any], market_condition: Dict[str, Any]) -> Dict[str, Any]:
+        """従来切替判定（ISM統合フォールバック）"""
         try:
             should_switch = False
             reason = ""
@@ -888,47 +960,47 @@ class DSSMSBacktester:
                             'reason': f"最小保有期間未満: {hours_since_last_switch:.1f}時間",
                             'trigger': None
                         }
+                    
+                    # 2. スコア差の厳格化（20%以上の差が必要）
+                    score_threshold = 0.20  # 10% -> 20%に変更
+                    score_diff = top_score - current_score
+                    
+                    if score_diff > score_threshold:
+                        # 3. 追加条件: 連続切替回数制限
+                        recent_switches = [s for s in self.switch_history 
+                                         if (date - s.timestamp).days <= 7]  # 過去7日
+                        
+                        if len(recent_switches) >= 3:  # 週3回以上の切替を制限
+                            return {
+                                'should_switch': False,
+                                'target_symbol': current_position,
+                                'reason': f"週間切替制限: {len(recent_switches)}回",
+                                'trigger': None
+                            }
+                        
+                        # 4. 市場ボラティリティチェック（高ボラ時は切替しない）
+                        if market_condition.get('volatility_level') == 'high':
+                            return {
+                                'should_switch': False,
+                                'target_symbol': current_position,
+                                'reason': "高ボラティリティ期間",
+                                'trigger': None
+                            }
+                        
+                        # 全条件をクリアした場合のみ切替
+                        should_switch = True
+                        reason = f"スコア大幅改善: {current_score:.3f} -> {top_score:.3f} (+{score_diff:.3f})"
+                        target_symbol = top_symbol
+                    else:
+                        reason = f"スコア差不足: {score_diff:.3f} < {score_threshold}"
                 
-                # 2. スコア差の厳格化（20%以上の差が必要）
-                score_threshold = 0.20  # 10% -> 20%に変更
-                score_diff = top_score - current_score
+                return {
+                    'should_switch': should_switch,
+                    'target_symbol': target_symbol or current_position,
+                    'reason': reason,
+                    'trigger': SwitchTrigger.DAILY_EVALUATION if should_switch else None
+                }
                 
-                if score_diff > score_threshold:
-                    # 3. 追加条件: 連続切替回数制限
-                    recent_switches = [s for s in self.switch_history 
-                                     if (date - s.timestamp).days <= 7]  # 過去7日
-                    
-                    if len(recent_switches) >= 3:  # 週3回以上の切替を制限
-                        return {
-                            'should_switch': False,
-                            'target_symbol': current_position,
-                            'reason': f"週間切替制限: {len(recent_switches)}回",
-                            'trigger': None
-                        }
-                    
-                    # 4. 市場ボラティリティチェック（高ボラ時は切替しない）
-                    if market_condition.get('volatility_level') == 'high':
-                        return {
-                            'should_switch': False,
-                            'target_symbol': current_position,
-                            'reason': "高ボラティリティ期間",
-                            'trigger': None
-                        }
-                    
-                    # 全条件をクリアした場合のみ切替
-                    should_switch = True
-                    reason = f"スコア大幅改善: {current_score:.3f} -> {top_score:.3f} (+{score_diff:.3f})"
-                    target_symbol = top_symbol
-                else:
-                    reason = f"スコア差不足: {score_diff:.3f} < {score_threshold}"
-            
-            return {
-                'should_switch': should_switch,
-                'target_symbol': target_symbol or current_position,
-                'reason': reason,
-                'trigger': SwitchTrigger.DAILY_EVALUATION if should_switch else None
-            }
-            
         except Exception as e:
             self.logger.warning(f"切替判定エラー {date}: {e}")
             return {
@@ -937,6 +1009,93 @@ class DSSMSBacktester:
                 'reason': f"エラー: {e}",
                 'trigger': None
             }
+            
+    def _calculate_daily_performance(self, position: Optional[str]) -> float:
+        """日次パフォーマンス計算（ISM統合用）"""
+        # TODO(tag:phase1, rationale:ISM統合支援): 実装を必要に応じて拡張
+        if not position:
+            return 0.0
+        
+        try:
+            # performance_historyから取得
+            portfolio_values = self.performance_history.get('portfolio_value', [])
+            if len(portfolio_values) < 2:
+                return 0.0
+            
+            if len(portfolio_values) >= 2:
+                return (portfolio_values[-1] - portfolio_values[-2]) / portfolio_values[-2] if portfolio_values[-2] != 0 else 0.0
+            return 0.0
+        except Exception:
+            return 0.0
+            
+    def _calculate_weekly_performance(self, position: Optional[str]) -> float:
+        """週次パフォーマンス計算（ISM統合用）"""
+        # TODO(tag:phase1, rationale:ISM統合支援): 実装を必要に応じて拡張
+        if not position:
+            return 0.0
+            
+        try:
+            # performance_historyから取得
+            portfolio_values = self.performance_history.get('portfolio_value', [])
+            if len(portfolio_values) < 7:
+                return 0.0
+            
+            if len(portfolio_values) >= 7:
+                return (portfolio_values[-1] - portfolio_values[-7]) / portfolio_values[-7] if portfolio_values[-7] != 0 else 0.0
+            return 0.0
+        except Exception:
+            return 0.0
+            
+    def _calculate_current_drawdown(self) -> float:
+        """現在ドローダウン計算（ISM統合用）"""
+        # TODO(tag:phase1, rationale:ISM統合支援): 実装を必要に応じて拡張
+        try:
+            # performance_historyから取得
+            portfolio_values = self.performance_history.get('portfolio_value', [])
+            if len(portfolio_values) < 2:
+                return 0.0
+            
+            peak = max(portfolio_values)
+            current = portfolio_values[-1]
+            return (peak - current) / peak if peak > 0 else 0.0
+        except Exception:
+            return 0.0
+            
+    def _calculate_current_sharpe_ratio(self, position: Optional[str]) -> float:
+        """現在シャープレシオ計算（ISM統合用）"""
+        # TODO(tag:phase1, rationale:ISM統合支援): 実装を必要に応じて拡張
+        if not position:
+            return 0.0
+            
+        try:
+            # performance_historyから取得
+            portfolio_values = self.performance_history.get('portfolio_value', [])
+            if len(portfolio_values) < 10:
+                return 0.0
+                
+            returns = [portfolio_values[i]/portfolio_values[i-1] - 1 for i in range(1, len(portfolio_values)) if portfolio_values[i-1] != 0]
+            
+            if len(returns) < 2:
+                return 0.0
+                
+            mean_return = sum(returns) / len(returns)
+            std_return = (sum((r - mean_return)**2 for r in returns) / (len(returns) - 1))**0.5
+            
+            return mean_return / std_return if std_return > 0 else 0.0
+        except Exception:
+            return 0.0
+            
+    def _get_time_since_last_switch(self, current_date: datetime) -> int:
+        """最終切替からの経過時間取得（ISM統合用）"""
+        # TODO(tag:phase1, rationale:ISM統合支援): 実装を必要に応じて拡張
+        if not self.switch_history:
+            return 0
+            
+        try:
+            last_switch = self.switch_history[-1].timestamp
+            return (current_date - last_switch).days
+        except Exception:
+            return 0
 
     def _execute_switch(self, date: datetime, current_position: Optional[str], 
                        switch_decision: Dict[str, Any], portfolio_value: float) -> Dict[str, Any]:
