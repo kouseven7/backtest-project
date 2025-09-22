@@ -55,16 +55,23 @@
       "enable_consistency_checking": true
     },
     "switching_criteria": {
-      "daily_performance_threshold": 0.02,
+      "daily_performance_threshold": 0.0105,
       "weekly_performance_threshold": 0.05,
-      "emergency_drawdown_limit": 0.1,
-      "enable_emergency_switching": true
+      "volatility_threshold": 0.03025,
+      "confidence_threshold": 0.6275,
+      "emergency_drawdown_limit": 0.1
     },
     "decision_quality": {
       "enable_unnecessary_switch_detection": true,
       "unnecessary_switch_evaluation_days": 10,
       "unnecessary_switch_cost_rate": 0.002,
       "decision_consistency_window": 20
+    },
+    "optimization_metadata": {
+      "last_optimization": "2025-09-22T13:28:06.882361",
+      "optimization_version": "1.1",
+      "target_unnecessary_rate": 0.2,
+      "target_consistency_rate": 0.95
     }
   },
   "logging": {
