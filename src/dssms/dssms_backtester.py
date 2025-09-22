@@ -32,6 +32,15 @@ import warnings
 project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
+# Problem 10: 数学的エラー修正 - StatisticalCalculator統合
+# TODO(tag:phase2, rationale:DSSMS Core focus): 統計計算精度向上モジュール統合
+try:
+    from analysis.performance_metrics import StatisticalCalculator, CalculationConfig
+except ImportError:
+    # フォールバック: StatisticalCalculatorが利用できない場合
+    StatisticalCalculator = None
+    CalculationConfig = None
+
 # 既存DSSMSコンポーネントのインポート
 try:
     from src.dssms.hierarchical_ranking_system import HierarchicalRankingSystem, PriorityLevel, RankingScore, SelectionResult
@@ -193,6 +202,20 @@ class DSSMSBacktester:
         # 統一出力システムとの一貫性確保用
         self._unified_total_return = 0.0
         self.config = config or self._get_default_config()
+        
+        # Problem 10: 数学的エラー修正 - StatisticalCalculator統合
+        # TODO(tag:phase2, rationale:DSSMS Core focus): 統計計算精度向上
+        if StatisticalCalculator:
+            calculation_config = CalculationConfig(
+                precision_digits=self.config.get('calculation_precision', 6),
+                pandas_compatibility=True,
+                zero_division_policy='safe_default'
+            )
+            self.statistical_calculator = StatisticalCalculator(calculation_config)
+            self.logger.info("StatisticalCalculator統合完了 - 計算精度向上モード有効")
+        else:
+            self.statistical_calculator = None
+            self.logger.warning("StatisticalCalculator利用不可 - フォールバックモードで動作")
         
         # 決定論的モード設定
         self._setup_deterministic_mode()
@@ -1215,20 +1238,28 @@ class DSSMSBacktester:
             return []
 
     def _calculate_max_drawdown(self, portfolio_values: List[float]) -> float:
-        """最大ドローダウン計算"""
-        if len(portfolio_values) < 2:
-            return 0.0
-        
-        peak = portfolio_values[0]
-        max_drawdown = 0.0
-        
-        for value in portfolio_values[1:]:
-            if value > peak:
-                peak = value
-            drawdown = (peak - value) / peak
-            max_drawdown = max(max_drawdown, drawdown)
-        
-        return max_drawdown
+        """
+        最大ドローダウン計算（Problem 10修正版）
+        TODO(tag:phase2, rationale:DSSMS Core focus): StatisticalCalculator使用
+        """
+        if self.statistical_calculator:
+            # StatisticalCalculator使用（修正版）
+            return self.statistical_calculator.calculate_max_drawdown(portfolio_values) / 100.0  # 戻り値を0-1範囲に調整
+        else:
+            # フォールバック（既存ロジック）
+            if len(portfolio_values) < 2:
+                return 0.0
+            
+            peak = portfolio_values[0]
+            max_drawdown = 0.0
+            
+            for value in portfolio_values[1:]:
+                if value > peak:
+                    peak = value
+                drawdown = (peak - value) / peak if peak > 0 else 0.0  # ゼロ除算対策追加
+                max_drawdown = max(max_drawdown, drawdown)
+            
+            return max_drawdown
 
     def _calculate_switch_success_rate(self) -> float:
         """切替成功率計算"""
@@ -1887,16 +1918,33 @@ class DSSMSBacktester:
                         profitable_trades = [p for p in pnls if p > 0]
                         losing_trades = [p for p in pnls if p < 0]
                         
-                        strategy_stats[strategy_name] = {
-                            'trade_count': len(strategy_trades),
-                            'win_rate': len(profitable_trades) / len(pnls) if pnls else 0,
-                            'avg_profit': np.mean(profitable_trades) if profitable_trades else 0,
-                            'avg_loss': np.mean(losing_trades) if losing_trades else 0,
-                            'max_profit': max(pnls) if pnls else 0,
-                            'max_loss': min(pnls) if pnls else 0,
-                            'total_pnl': sum(pnls),
-                            'profit_factor': sum(profitable_trades) / abs(sum(losing_trades)) if losing_trades else 1.0
-                        }
+                        # Problem 10修正: StatisticalCalculator使用
+                        if self.statistical_calculator:
+                            # 取引データを統計計算用フォーマットに変換
+                            strategy_trade_data = [{'profit': t['pnl']} for t in strategy_trades if 'pnl' in t]
+                            
+                            strategy_stats[strategy_name] = {
+                                'trade_count': len(strategy_trades),
+                                'win_rate': self.statistical_calculator.calculate_win_rate(strategy_trade_data) / 100.0,  # 0-1範囲に調整
+                                'avg_profit': self.statistical_calculator.calculate_average_profit(strategy_trade_data),
+                                'avg_loss': np.mean(losing_trades) if losing_trades else 0,
+                                'max_profit': max(pnls) if pnls else 0,
+                                'max_loss': min(pnls) if pnls else 0,
+                                'total_pnl': sum(pnls),
+                                'profit_factor': self.statistical_calculator.calculate_profit_factor(strategy_trade_data)
+                            }
+                        else:
+                            # フォールバック（既存ロジック改良）
+                            strategy_stats[strategy_name] = {
+                                'trade_count': len(strategy_trades),
+                                'win_rate': len(profitable_trades) / len(pnls) if pnls else 0,
+                                'avg_profit': np.mean(profitable_trades) if profitable_trades else 0,
+                                'avg_loss': np.mean(losing_trades) if losing_trades else 0,
+                                'max_profit': max(pnls) if pnls else 0,
+                                'max_loss': min(pnls) if pnls else 0,
+                                'total_pnl': sum(pnls),
+                                'profit_factor': (sum(profitable_trades) / abs(sum(losing_trades))) if losing_trades and sum(losing_trades) != 0 else (999.999 if profitable_trades else 0)  # ゼロ除算対策
+                            }
                 
                 # フォールバックとしてDSSMSStrategy統計も生成（デバッグ用）
                 dssms_trades = [t for t in trades_data if t.get('strategy') == 'DSSMSStrategy']
@@ -2043,20 +2091,33 @@ class DSSMSBacktester:
         return np.min(drawdown)
     
     def _calculate_sharpe_ratio(self, daily_returns: List[float]) -> float:
-        """シャープレシオ計算"""
-        if not daily_returns or len(daily_returns) < 2:
-            return 0.0
-        
-        returns_array = np.array(daily_returns)
-        mean_return = np.mean(returns_array)
-        std_return = np.std(returns_array)
-        
-        if std_return == 0:
-            return 0.0
-        
-        # 年率換算
-        sharpe = (mean_return * 252) / (std_return * np.sqrt(252))
-        return sharpe
+        """
+        シャープレシオ計算（Problem 10修正版）
+        TODO(tag:phase2, rationale:DSSMS Core focus): StatisticalCalculator使用
+        """
+        if self.statistical_calculator:
+            # StatisticalCalculator使用（修正版）
+            return self.statistical_calculator.calculate_sharpe_ratio(daily_returns)
+        else:
+            # フォールバック（既存ロジック改良）
+            if not daily_returns or len(daily_returns) < 2:
+                return 0.0
+            
+            returns_array = np.array(daily_returns)
+            mean_return = np.mean(returns_array)
+            std_return = np.std(returns_array, ddof=1)  # Problem 10修正: 不偏標準偏差使用
+            
+            if std_return == 0 or np.isnan(std_return):  # NaN対策追加
+                return 0.0
+            
+            # 年率換算
+            sharpe = (mean_return * 252) / (std_return * np.sqrt(252))
+            
+            # 異常値チェック追加
+            if np.isnan(sharpe) or np.isinf(sharpe):
+                return 0.0
+                
+            return sharpe
 
     def _prepare_excel_data(self) -> pd.DataFrame:
         """
