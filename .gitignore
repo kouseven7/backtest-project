@@ -1,5 +1,6 @@
 # ログファイル
 *.log
+logs/
 
 # Excelファイル
 *.xlsx
@@ -64,6 +65,50 @@ $RECYCLE.BIN/
 
 # テンポラリファイル
 *.tmp
+*.temp
 *.bak
 *.swp
 *~
+
+# Problem 18 File Management - 追加除外パターン
+# 整理対象ファイルの自動除外
+
+# バックアップファイル
+backup_*
+*_backup*
+*_bak_*
+
+# 分析結果・出力ファイル
+*.png
+*.txt
+output_*
+results_*
+
+# Problem 18 生成ファイル
+file_baseline_analysis_*.json
+cleanup_stats_*.json
+cleanup_report_*.txt
+cleanup_log_*.log
+
+# 一時的な分析スクリプト（保持対象は除く）
+analyze_temp_*.py
+check_temp_*.py
+temp_*.py
+
+# アーカイブディレクトリ（削除済みファイル保管）
+archive/deleted_files/
+
+# キャッシュ・テストファイル
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# IDE関連
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# システム生成ファイル
+.directory
+*.stackdump

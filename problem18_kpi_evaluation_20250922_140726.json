@@ -1,0 +1,53 @@
+{
+  "timestamp": "2025-09-22T14:07:26.748958",
+  "problem": "Problem 18 - File Management Optimization",
+  "baseline_date": "2025-09-22T13:57:35.155823",
+  "current_metrics": {
+    "total_files": 22531,
+    "total_size_mb": 640.1355113983154,
+    "cleanup_candidates": 8690,
+    "protected_files": 146,
+    "directory_count": 2874
+  },
+  "improvement_metrics": {
+    "file_count_reduction": -10,
+    "file_count_reduction_percent": -0.04440300164291106,
+    "size_reduction_mb": -2.4301767349243164,
+    "size_reduction_percent": -0.38108144982150266,
+    "cleanup_efficiency": -0.0876424189307625,
+    "protection_coverage": 0.6479960942701167
+  },
+  "achievement_status": {
+    "file_reduction_target": {
+      "target": 10.0,
+      "actual": -0.04440300164291106,
+      "achieved": false,
+      "score": -0.4440300164291106
+    },
+    "size_reduction_target": {
+      "target": 100.0,
+      "actual": -2.4301767349243164,
+      "achieved": false,
+      "score": -2.4301767349243164
+    },
+    "protection_success_target": {
+      "target": 100.0,
+      "actual": 100.0,
+      "achieved": true,
+      "score": 100
+    },
+    "cleanup_efficiency_target": {
+      "target": 20.0,
+      "actual": -0.0876424189307625,
+      "achieved": false,
+      "score": -0.43821209465381245
+    },
+    "overall_score": 24.17189528849819,
+    "overall_grade": "D"
+  },
+  "recommendations": [
+    "📂 ファイル削減効果向上: 現在-0.0%、目標10.0%。慎重整理対象の積極的処理を検討。",
+    "💾 ディスク削減効果向上: 現在-2.4MB、目標100.0MB。大容量ファイルの特定・処理を実施。",
+    "🔄 継続的改善: 月次ベースライン測定とポリシー更新を実施。"
+  ]
+}
