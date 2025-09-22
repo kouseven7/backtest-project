@@ -413,8 +413,24 @@ class DSSMSBacktester:
                 'random_seed': 42
             }
 
-    def _get_default_config(self) -> Dict[str, Any]:
-        """デフォルト設定取得"""
+    def _load_config_from_file(self) -> Dict[str, Any]:
+        """設定ファイルから設定を読み込み"""
+        try:
+            config_path = Path(__file__).parent.parent.parent / "config" / "dssms" / "dssms_backtester_config.json"
+            if config_path.exists():
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    self.logger.info(f"設定ファイル読み込み完了: {config_path}")
+                    return config
+            else:
+                self.logger.warning(f"設定ファイルが見つかりません: {config_path}")
+                return self._get_fallback_config()
+        except Exception as e:
+            self.logger.error(f"設定ファイル読み込みエラー: {e}")
+            return self._get_fallback_config()
+
+    def _get_fallback_config(self) -> Dict[str, Any]:
+        """フォールバック用デフォルト設定"""
         return {
             'initial_capital': 1000000,
             'switch_cost_rate': 0.001,
@@ -426,6 +442,10 @@ class DSSMSBacktester:
             'output_excel': True,
             'output_detailed_report': True
         }
+
+    def _get_default_config(self) -> Dict[str, Any]:
+        """デフォルト設定取得（設定ファイル読み込み含む）"""
+        return self._load_config_from_file()
 
     def simulate_dynamic_selection(self, 
                                  start_date: datetime,

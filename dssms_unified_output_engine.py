@@ -306,7 +306,54 @@ class DSSMSUnifiedOutputEngine:
         return metrics
     
     def _calculate_strategy_statistics(self, data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-        """戦略別統計の計算"""
+        """戦略別統計の計算（Problem 戦略統計準拠 - 品質改善版）"""
+        stats = {}
+        
+        try:
+            # 新しいStrategyStatisticsCalculatorを使用
+            from src.dssms.strategy_statistics_calculator import StrategyStatisticsCalculator
+            
+            calculator = StrategyStatisticsCalculator(
+                risk_free_rate=0.02,  # 2%リスクフリーレート
+                trading_days=252
+            )
+            
+            trades_df = data.get('trades', pd.DataFrame())
+            daily_pnl = data.get('portfolio_values', pd.DataFrame())
+            
+            if not trades_df.empty and 'strategy' in trades_df.columns:
+                logger.info(f"📊 戦略統計計算開始: {len(trades_df['strategy'].unique())}戦略")
+                
+                for strategy in trades_df['strategy'].unique():
+                    strategy_trades = trades_df[trades_df['strategy'] == strategy]
+                    
+                    # Problem 10準拠の包括的統計計算
+                    strategy_stats = calculator.calculate_comprehensive_statistics(
+                        strategy_name=strategy,
+                        trades_df=strategy_trades,
+                        daily_pnl=daily_pnl
+                    )
+                    
+                    # エクスポート用にフォーマット
+                    stats[strategy] = calculator.format_statistics_for_export(strategy_stats)
+                    
+                    logger.info(f"✅ 戦略統計完了: {strategy} (データ品質: {strategy_stats.data_quality_score:.2f})")
+            else:
+                logger.warning("⚠️ 戦略データが不足または空です")
+                        
+        except ImportError as e:
+            logger.error(f"❌ StrategyStatisticsCalculator import失敗: {e}")
+            # フォールバック: 従来の計算方式
+            stats = self._calculate_strategy_statistics_legacy(data)
+        except Exception as e:
+            logger.error(f"❌ 戦略統計計算エラー: {e}")
+            # フォールバック処理
+            stats = self._calculate_strategy_statistics_legacy(data)
+        
+        return stats
+    
+    def _calculate_strategy_statistics_legacy(self, data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+        """戦略別統計の計算（従来版フォールバック）"""
         stats = {}
         
         try:
@@ -321,18 +368,21 @@ class DSSMSUnifiedOutputEngine:
                         loss_trades = strategy_trades[strategy_trades['pnl'] < 0]
                         
                         stats[strategy] = {
-                            'trade_count': len(strategy_trades),
-                            'win_rate': len(profit_trades) / len(strategy_trades) if len(strategy_trades) > 0 else 0,
-                            'avg_profit': profit_trades['pnl'].mean() if len(profit_trades) > 0 else 0,
-                            'avg_loss': loss_trades['pnl'].mean() if len(loss_trades) > 0 else 0,
-                            'max_profit': strategy_trades['pnl'].max() if len(strategy_trades) > 0 else 0,
-                            'max_loss': strategy_trades['pnl'].min() if len(strategy_trades) > 0 else 0,
-                            'total_pnl': strategy_trades['pnl'].sum() if len(strategy_trades) > 0 else 0,
-                            'profit_factor': abs(profit_trades['pnl'].sum() / loss_trades['pnl'].sum()) if len(loss_trades) > 0 and loss_trades['pnl'].sum() != 0 else 0
+                            '戦略名': strategy,
+                            '取引回数': len(strategy_trades),
+                            '勝率(%)': round((len(profit_trades) / len(strategy_trades) * 100) if len(strategy_trades) > 0 else 0, 2),
+                            '平均利益': round(profit_trades['pnl'].mean() if len(profit_trades) > 0 else 0, 2),
+                            '平均損失': round(loss_trades['pnl'].mean() if len(loss_trades) > 0 else 0, 2),
+                            '最大利益': round(strategy_trades['pnl'].max() if len(strategy_trades) > 0 else 0, 2),
+                            '最大損失': round(strategy_trades['pnl'].min() if len(strategy_trades) > 0 else 0, 2),
+                            '総損益': round(strategy_trades['pnl'].sum() if len(strategy_trades) > 0 else 0, 2),
+                            'プロフィットファクター': round(abs(profit_trades['pnl'].sum() / loss_trades['pnl'].sum()) if len(loss_trades) > 0 and loss_trades['pnl'].sum() != 0 else 0, 3),
+                            'データ品質': 0.7,  # レガシー版は品質スコア低め
+                            '計算手法': 'Legacy Fallback'
                         }
                         
         except Exception as e:
-            logger.error(f"❌ 戦略統計計算エラー: {e}")
+            logger.error(f"❌ レガシー戦略統計計算エラー: {e}")
         
         return stats
     
@@ -653,50 +703,114 @@ class DSSMSUnifiedOutputEngine:
         return result_df
     
     def _create_strategy_stats_sheet(self) -> pd.DataFrame:
-        """戦略別統計シートの作成"""
+        """戦略別統計シートの作成（Problem 戦略統計準拠 - フォーマット統一版）"""
         strategy_stats = self.data_source.get('strategy_statistics', {})
         
         if not strategy_stats:
-            return pd.DataFrame(columns=['戦略名', '取引回数', '勝率', '平均利益', '平均損失', 
-                                       '最大利益', '最大損失', 'プロフィットファクター', '総損益'])
+            # 空の場合は統一フォーマットの空データフレームを返す
+            columns = [
+                '戦略名', '取引回数', '勝率(%)', '平均利益', '平均損失', 
+                '最大利益', '最大損失', '総損益', 'プロフィットファクター',
+                'シャープレシオ', '最大ドローダウン(%)', 'ボラティリティ',
+                '平均保有期間(日)', '総手数料', 'ソルティノレシオ', 'カルマーレシオ',
+                'データ品質', '計算日時', '計算手法'
+            ]
+            return pd.DataFrame(columns=columns)
         
         stats_list = []
         total_pnl = 0
         total_trades = 0
+        total_fees = 0
         
-        for strategy, stats in strategy_stats.items():
-            pnl = stats.get('total_pnl', 0)
-            total_pnl += pnl
-            trade_count = stats.get('trade_count', 0)
-            total_trades += trade_count
+        logger.info(f"📊 戦略統計シート作成: {len(strategy_stats)}戦略")
+        
+        for strategy_name, stats in strategy_stats.items():
+            # 新しい統計形式か従来形式かを判別
+            if isinstance(stats, dict) and '戦略名' in stats:
+                # 新しいformat_statistics_for_export形式
+                formatted_stats = stats.copy()
+                pnl = stats.get('総損益', 0)
+                trade_count = stats.get('取引回数', 0)
+                fees = stats.get('総手数料', 0)
+            else:
+                # 従来形式（レガシー対応）
+                pnl = stats.get('total_pnl', 0)
+                trade_count = stats.get('trade_count', 0)
+                fees = 0
+                
+                # 従来形式を新形式にフォーマット
+                formatted_stats = {
+                    '戦略名': strategy_name,
+                    '取引回数': trade_count,
+                    '勝率(%)': round(stats.get('win_rate', 0) * 100, 2),
+                    '平均利益': round(stats.get('avg_profit', 0), 2),
+                    '平均損失': round(stats.get('avg_loss', 0), 2),
+                    '最大利益': round(stats.get('max_profit', 0), 2),
+                    '最大損失': round(stats.get('max_loss', 0), 2),
+                    '総損益': round(pnl, 2),
+                    'プロフィットファクター': round(stats.get('profit_factor', 0), 3),
+                    'シャープレシオ': 0.0,
+                    '最大ドローダウン(%)': 0.0,
+                    'ボラティリティ': 0.0,
+                    '平均保有期間(日)': 0.0,
+                    '総手数料': 0.0,
+                    'ソルティノレシオ': 0.0,
+                    'カルマーレシオ': 0.0,
+                    'データ品質': stats.get('データ品質', 0.7),
+                    '計算日時': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    '計算手法': stats.get('計算手法', 'Legacy Format')
+                }
             
-            stats_list.append({
-                '戦略名': strategy,
-                '取引回数': trade_count,
-                '勝率': f"{stats.get('win_rate', 0)*100:.2f}%",
-                '平均利益': f"{stats.get('avg_profit', 0):,.2f}",
-                '平均損失': f"{stats.get('avg_loss', 0):,.2f}",
-                '最大利益': f"{stats.get('max_profit', 0):,.2f}",
-                '最大損失': f"{stats.get('max_loss', 0):,.2f}",
-                'プロフィットファクター': f"{stats.get('profit_factor', 0):.3f}",
-                '総損益': f"{pnl:,.2f}"
-            })
+            total_pnl += pnl
+            total_trades += trade_count
+            total_fees += fees
+            
+            # 統計行を追加
+            stats_list.append(formatted_stats)
         
-        # 合計行を追加
+        # 合計行を追加（フォーマット統一）
         if stats_list:
-            stats_list.append({
-                '戦略名': '合計',
+            summary_stats = {
+                '戦略名': '📊 全戦略合計',
                 '取引回数': total_trades,
-                '勝率': '',
+                '勝率(%)': '',
                 '平均利益': '',
                 '平均損失': '',
                 '最大利益': '',
                 '最大損失': '',
+                '総損益': round(total_pnl, 2),
                 'プロフィットファクター': '',
-                '総損益': f"{total_pnl:,.2f}"
-            })
+                'シャープレシオ': '',
+                '最大ドローダウン(%)': '',
+                'ボラティリティ': '',
+                '平均保有期間(日)': '',
+                '総手数料': round(total_fees, 2),
+                'ソルティノレシオ': '',
+                'カルマーレシオ': '',
+                'データ品質': '',
+                '計算日時': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                '計算手法': 'Aggregated Summary'
+            }
+            stats_list.append(summary_stats)
         
-        return pd.DataFrame(stats_list)
+        # データフレーム作成と品質チェック
+        df = pd.DataFrame(stats_list)
+        
+        # 列順序の統一（フォーマット統一対応）
+        desired_columns = [
+            '戦略名', '取引回数', '勝率(%)', '平均利益', '平均損失', 
+            '最大利益', '最大損失', '総損益', 'プロフィットファクター',
+            'シャープレシオ', '最大ドローダウン(%)', 'ボラティリティ',
+            '平均保有期間(日)', '総手数料', 'ソルティノレシオ', 'カルマーレシオ',
+            'データ品質', '計算日時', '計算手法'
+        ]
+        
+        # 存在する列のみを選択
+        available_columns = [col for col in desired_columns if col in df.columns]
+        df = df[available_columns]
+        
+        logger.info(f"✅ 戦略統計シート作成完了: {len(df)}行, {len(df.columns)}列")
+        return df
     
     def _create_switch_analysis_sheet(self) -> pd.DataFrame:
         """切り替え分析シートの作成"""

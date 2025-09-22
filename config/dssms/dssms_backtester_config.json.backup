@@ -31,13 +31,13 @@
   },
   "switch_criteria": {
     "perfect_order_breakdown_threshold": 0.7,
-    "score_difference_threshold": 0.08,
-    "minimum_holding_period_hours": 2,
-    "confidence_threshold": 0.5
+    "score_difference_threshold": 0.15,
+    "minimum_holding_period_hours": 4,
+    "confidence_threshold": 0.6
   },
   "risk_control": {
-    "max_daily_switches": 5,
-    "max_weekly_switches": 20,
+    "max_daily_switches": 3,
+    "max_weekly_switches": 10,
     "drawdown_restriction_threshold": 0.05
   },
   "intelligent_switch_manager": {
