@@ -1,0 +1,158 @@
+{
+  "diagnosis_id": "20250923_203629",
+  "timestamp": "2025-09-23 20:36:29.886012",
+  "tests": {
+    "data_source_separation": {
+      "test_name": "data_source_separation",
+      "symbols": [
+        "9101.T",
+        "6758.T"
+      ],
+      "date_range": "2023-01-01 to 2023-12-31",
+      "api_direct": {
+        "9101.T": {
+          "data_points": 246,
+          "data_hash": "545acf7a486eb2a4"
+        },
+        "6758.T": {
+          "data_points": 246,
+          "data_hash": "aa385ab3950fe28d"
+        }
+      },
+      "cache_only": {
+        "9101.T": {
+          "data_points": 248,
+          "data_hash": "252877d00746bff1"
+        },
+        "6758.T": {
+          "data_points": 0,
+          "data_hash": null
+        }
+      },
+      "normal_logic": {
+        "9101.T": {
+          "data_points": 246,
+          "data_hash": "77ed7a20b20bc563"
+        },
+        "6758.T": {
+          "data_points": 246,
+          "data_hash": "a6b9f7ae51a0d2a8"
+        }
+      },
+      "comparison": {
+        "9101.T": {
+          "api_vs_cache": {
+            "identical": false,
+            "api_hash": "545acf7a486eb2a4",
+            "cache_hash": "252877d00746bff1"
+          },
+          "api_vs_normal": {
+            "identical": false,
+            "api_hash": "545acf7a486eb2a4",
+            "normal_hash": "77ed7a20b20bc563"
+          },
+          "cache_vs_normal": {
+            "identical": false,
+            "cache_hash": "252877d00746bff1",
+            "normal_hash": "77ed7a20b20bc563"
+          },
+          "consistency_score": 0.0,
+          "data_availability": {
+            "api": true,
+            "cache": true,
+            "normal": true
+          }
+        },
+        "6758.T": {
+          "api_vs_cache": {},
+          "api_vs_normal": {
+            "identical": false,
+            "api_hash": "aa385ab3950fe28d",
+            "normal_hash": "a6b9f7ae51a0d2a8"
+          },
+          "cache_vs_normal": {},
+          "consistency_score": 0.0,
+          "data_availability": {
+            "api": true,
+            "cache": false,
+            "normal": true
+          }
+        }
+      }
+    },
+    "cache_clear_experiment": {
+      "test_name": "cache_clear_experiment",
+      "cache_dir": "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache",
+      "pre_clear_cache_count": 60,
+      "post_clear_cache_count": 0,
+      "cleared_files": [
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\5803.T_2015-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\5803.T_2018-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\5803.T_2022-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\5803.T_2023-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\6758_2024-01-01_2024-06-30_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\6920.T_2018-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\6920.T_2020-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\6920.T_2022-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\7203.T_2018-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\7203.T_2020-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\7203.T_2022-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\7203.T_2023-01-01_2023-12-31_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\7203.T_2023-01-01_2024-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\7203_2024-01-01_2024-06-30_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\7272.T_2022-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\7972.T_2020-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\7972.T_2022-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\7974.T_2020-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\7974.T_2022-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\8306.T_2018-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\8306.T_2020-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\8306.T_2022-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\8306.T_2023-01-01_2024-12-31_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\8306.T_2023-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\8306.T_2024-06-01_2024-12-31_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\8306_2024-01-01_2024-06-30_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\8411.T_2025-01-01_2025-06-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\9064.T_2022-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\9101.T_2020-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\9101.T_2023-01-01_2023-12-31_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\9101.T_2023-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\9101.T_2024-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\9336.T_2022-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\9432.T_2022-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\9513.T_2022-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\MSFT_2024-01-01_2024-01-30_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^DJI_2015-01-05_2024-12-30_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^DJI_2018-01-01_2024-12-30_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^DJI_2020-01-06_2024-12-30_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^DJI_2021-01-04_2024-12-30_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^DJI_2022-01-04_2024-12-30_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^DJI_2023-01-04_2024-12-30_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^DJI_2024-01-04_2024-10-31_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^GSPC_2024-01-01_2024-01-30_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^GSPC_2024-01-01_2024-06-30_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^N225_2015-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^N225_2018-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^N225_2020-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^N225_2021-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^N225_2022-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^N225_2023-01-01_2023-12-31_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^N225_2023-01-01_2024-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^N225_2023-01-01_2024-12-31_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^N225_2023-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^N225_2024-01-01_2024-06-30_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^N225_2024-01-01_2024-11-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^N225_2024-01-01_2025-01-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^N225_2024-06-01_2024-12-31_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^N225_2025-01-01_2025-06-01_1d.csv",
+        "C:\\Users\\imega\\Documents\\my_backtest_project\\data_cache\\^VIX_2024-01-04_2024-10-31_1d.csv"
+      ]
+    }
+  },
+  "summary": {
+    "total_cache_events": 7,
+    "total_switch_events": 0,
+    "test_count": 2,
+    "diagnosis_duration_sec": 5.925972
+  }
+}

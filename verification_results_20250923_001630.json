@@ -1,0 +1,46 @@
+{
+  "pipeline_start_time": "2025-09-23T00:16:27.633037",
+  "stages": {
+    "stage1_static": {
+      "duration_seconds": 0.0,
+      "results": {
+        "Problem 1": {
+          "config_updated": true,
+          "enable_probabilistic_updated": true,
+          "threshold_updated": true,
+          "noise_enabled": true,
+          "max_switches_updated": true
+        },
+        "Problem 12": {
+          "config_updated": true,
+          "deterministic_maintained": true,
+          "random_seed_set": true,
+          "reproducible_enabled": true
+        },
+        "Problem 6": {
+          "code_implementation": true,
+          "portfolio_manager_exists": true,
+          "backtester_updated": true
+        }
+      }
+    },
+    "stage2_lightweight": {
+      "duration_seconds": 2.93,
+      "results": {
+        "switching_mechanism": {
+          "functional": false,
+          "switching_count": 0,
+          "within_expected_range": false,
+          "improvement_confirmed": false
+        },
+        "deterministic_reproducibility": {
+          "reproducible": true,
+          "run1_switches": 0,
+          "run2_switches": 0,
+          "difference_percent": 100.0
+        }
+      }
+    }
+  },
+  "pipeline_end_time": "2025-09-23T00:16:30.569444"
+}

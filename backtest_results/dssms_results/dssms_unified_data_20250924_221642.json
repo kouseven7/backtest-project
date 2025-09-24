@@ -1,0 +1,1089 @@
+{
+  "portfolio_values": [
+    {
+      "value": 999000.0,
+      "daily_return": 0.0,
+      "cumulative_return": -0.10000000000000009
+    },
+    {
+      "value": 1006742.9615828734,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 0.6742961582873352
+    },
+    {
+      "value": 1006742.9615828734,
+      "daily_return": 0.0,
+      "cumulative_return": 0.6742961582873352
+    },
+    {
+      "value": 1004957.0352907144,
+      "daily_return": -0.17739645175677277,
+      "cumulative_return": 0.4957035290714451
+    },
+    {
+      "value": 1004957.0352907144,
+      "daily_return": 0.0,
+      "cumulative_return": 0.4957035290714451
+    },
+    {
+      "value": 1015022.0096969232,
+      "daily_return": 1.0015328071510288,
+      "cumulative_return": 1.5022009696923133
+    },
+    {
+      "value": 1015022.0096969232,
+      "daily_return": 0.0,
+      "cumulative_return": 1.5022009696923133
+    },
+    {
+      "value": 1038515.1486850276,
+      "daily_return": 2.314544784612038,
+      "cumulative_return": 3.85151486850277
+    },
+    {
+      "value": 1038515.1486850276,
+      "daily_return": 0.0,
+      "cumulative_return": 3.85151486850277
+    },
+    {
+      "value": 1035179.1258281445,
+      "daily_return": -0.3212300620850095,
+      "cumulative_return": 3.517912582814442
+    },
+    {
+      "value": 1035179.1258281445,
+      "daily_return": 0.0,
+      "cumulative_return": 3.517912582814442
+    },
+    {
+      "value": 1031854.0742096122,
+      "daily_return": -0.3212054354237659,
+      "cumulative_return": 3.185407420961228
+    },
+    {
+      "value": 1031854.0742096122,
+      "daily_return": 0.0,
+      "cumulative_return": 3.185407420961228
+    },
+    {
+      "value": 1056606.3880977551,
+      "daily_return": 2.398819223261084,
+      "cumulative_return": 5.66063880977552
+    },
+    {
+      "value": 1056606.3880977551,
+      "daily_return": 0.0,
+      "cumulative_return": 5.66063880977552
+    },
+    {
+      "value": 1069086.5165732498,
+      "daily_return": 1.181152093729354,
+      "cumulative_return": 6.908651657324993
+    },
+    {
+      "value": 1069086.5165732498,
+      "daily_return": 0.0,
+      "cumulative_return": 6.908651657324993
+    },
+    {
+      "value": 1061878.6114900284,
+      "daily_return": -0.6742115789024172,
+      "cumulative_return": 6.187861149002849
+    },
+    {
+      "value": 1061878.6114900284,
+      "daily_return": 0.0,
+      "cumulative_return": 6.187861149002849
+    },
+    {
+      "value": 1070839.168659471,
+      "daily_return": 0.8438400653789424,
+      "cumulative_return": 7.083916865947093
+    },
+    {
+      "value": 1070839.168659471,
+      "daily_return": 0.0,
+      "cumulative_return": 7.083916865947093
+    },
+    {
+      "value": 1063716.733156368,
+      "daily_return": -0.6651265392187078,
+      "cumulative_return": 6.371673315636794
+    },
+    {
+      "value": 1063716.733156368,
+      "daily_return": 0.0,
+      "cumulative_return": 6.371673315636794
+    },
+    {
+      "value": 1056604.7801962926,
+      "daily_return": -0.6685946303554013,
+      "cumulative_return": 5.660478019629256
+    },
+    {
+      "value": 1056604.7801962926,
+      "daily_return": 0.0,
+      "cumulative_return": 5.660478019629256
+    },
+    {
+      "value": 1060756.639021809,
+      "daily_return": 0.39294340734905564,
+      "cumulative_return": 6.075663902180906
+    },
+    {
+      "value": 1060756.639021809,
+      "daily_return": 0.0,
+      "cumulative_return": 6.075663902180906
+    },
+    {
+      "value": 1030631.9951860651,
+      "daily_return": -2.8399203669866924,
+      "cumulative_return": 3.0631995186065186
+    },
+    {
+      "value": 1030631.9951860651,
+      "daily_return": 0.0,
+      "cumulative_return": 3.0631995186065186
+    },
+    {
+      "value": 1004274.852175797,
+      "daily_return": -2.5573767487695465,
+      "cumulative_return": 0.4274852175796928
+    },
+    {
+      "value": 1004274.852175797,
+      "daily_return": 0.0,
+      "cumulative_return": 0.4274852175796928
+    },
+    {
+      "value": 996105.7662518182,
+      "daily_return": -0.8134312938614552,
+      "cumulative_return": -0.38942337481818745
+    },
+    {
+      "value": 996105.7662518182,
+      "daily_return": 0.0,
+      "cumulative_return": -0.38942337481818745
+    },
+    {
+      "value": 981271.2941936277,
+      "daily_return": -1.4892466805016324,
+      "cumulative_return": -1.8728705806372314
+    },
+    {
+      "value": 981271.2941936277,
+      "daily_return": 0.0,
+      "cumulative_return": -1.8728705806372314
+    },
+    {
+      "value": 986191.1038831756,
+      "daily_return": 0.5013709988929138,
+      "cumulative_return": -1.3808896116824343
+    },
+    {
+      "value": 986191.1038831756,
+      "daily_return": 0.0,
+      "cumulative_return": -1.3808896116824343
+    },
+    {
+      "value": 973054.6822334791,
+      "daily_return": -1.3320361132818204,
+      "cumulative_return": -2.694531776652087
+    },
+    {
+      "value": 973054.6822334791,
+      "daily_return": 0.0,
+      "cumulative_return": -2.694531776652087
+    },
+    {
+      "value": 952732.8676983495,
+      "daily_return": -2.0884555520029324,
+      "cumulative_return": -4.726713230165047
+    },
+    {
+      "value": 952732.8676983495,
+      "daily_return": 0.0,
+      "cumulative_return": -4.726713230165047
+    },
+    {
+      "value": 973964.2638784568,
+      "daily_return": 2.2284731533823265,
+      "cumulative_return": -2.6035736121543196
+    },
+    {
+      "value": 973964.2638784568,
+      "daily_return": 0.0,
+      "cumulative_return": -2.6035736121543196
+    },
+    {
+      "value": 970957.9824330518,
+      "daily_return": -0.30866445072980087,
+      "cumulative_return": -2.904201756694824
+    },
+    {
+      "value": 970957.9824330518,
+      "daily_return": 0.0,
+      "cumulative_return": -2.904201756694824
+    },
+    {
+      "value": 972232.7755684984,
+      "daily_return": 0.13129230703188277,
+      "cumulative_return": -2.776722443150159
+    },
+    {
+      "value": 972232.7755684984,
+      "daily_return": 0.0,
+      "cumulative_return": -2.776722443150159
+    },
+    {
+      "value": 951746.6421476416,
+      "daily_return": -2.107122279320184,
+      "cumulative_return": -4.82533578523584
+    },
+    {
+      "value": 951746.6421476416,
+      "daily_return": 0.0,
+      "cumulative_return": -4.82533578523584
+    },
+    {
+      "value": 944260.4496886355,
+      "daily_return": -0.7865740867877724,
+      "cumulative_return": -5.573955031136446
+    },
+    {
+      "value": 944260.4496886355,
+      "daily_return": 0.0,
+      "cumulative_return": -5.573955031136446
+    },
+    {
+      "value": 946114.8250401431,
+      "daily_return": 0.19638388456479916,
+      "cumulative_return": -5.38851749598569
+    },
+    {
+      "value": 946114.8250401431,
+      "daily_return": 0.0,
+      "cumulative_return": -5.38851749598569
+    },
+    {
+      "value": 930064.0781807767,
+      "daily_return": -1.6964903661334518,
+      "cumulative_return": -6.993592181922336
+    },
+    {
+      "value": 930064.0781807767,
+      "daily_return": 0.0,
+      "cumulative_return": -6.993592181922336
+    },
+    {
+      "value": 935584.445870836,
+      "daily_return": 0.593547027518504,
+      "cumulative_return": -6.4415554129164
+    },
+    {
+      "value": 935584.445870836,
+      "daily_return": 0.0,
+      "cumulative_return": -6.4415554129164
+    },
+    {
+      "value": 927435.8979664532,
+      "daily_return": -0.8709580348782109,
+      "cumulative_return": -7.25641020335468
+    },
+    {
+      "value": 927435.8979664532,
+      "daily_return": 0.0,
+      "cumulative_return": -7.25641020335468
+    },
+    {
+      "value": 923656.2199142822,
+      "daily_return": -0.40754062468991714,
+      "cumulative_return": -7.634378008571774
+    },
+    {
+      "value": 923656.2199142822,
+      "daily_return": 0.0,
+      "cumulative_return": -7.634378008571774
+    },
+    {
+      "value": 915596.765956018,
+      "daily_return": -0.8725599183440957,
+      "cumulative_return": -8.440323404398198
+    },
+    {
+      "value": 915596.765956018,
+      "daily_return": 0.0,
+      "cumulative_return": -8.440323404398198
+    },
+    {
+      "value": 941310.5437166138,
+      "daily_return": 2.8084172767633975,
+      "cumulative_return": -5.868945628338618
+    },
+    {
+      "value": 941310.5437166138,
+      "daily_return": 0.0,
+      "cumulative_return": -5.868945628338618
+    },
+    {
+      "value": 941402.3606803779,
+      "daily_return": 0.009754162893105267,
+      "cumulative_return": -5.859763931962203
+    },
+    {
+      "value": 941402.3606803779,
+      "daily_return": 0.0,
+      "cumulative_return": -5.859763931962203
+    },
+    {
+      "value": 926748.8079070342,
+      "daily_return": -1.5565663934338558,
+      "cumulative_return": -7.325119209296583
+    },
+    {
+      "value": 926748.8079070342,
+      "daily_return": 0.0,
+      "cumulative_return": -7.325119209296583
+    },
+    {
+      "value": 938461.2203005305,
+      "daily_return": 1.2638173681547737,
+      "cumulative_return": -6.153877969946942
+    },
+    {
+      "value": 938461.2203005305,
+      "daily_return": 0.0,
+      "cumulative_return": -6.153877969946942
+    },
+    {
+      "value": 921557.0423434012,
+      "daily_return": -1.801265474956537,
+      "cumulative_return": -7.844295765659881
+    },
+    {
+      "value": 921557.0423434012,
+      "daily_return": 0.0,
+      "cumulative_return": -7.844295765659881
+    },
+    {
+      "value": 924720.7052090911,
+      "daily_return": 0.3432953925071258,
+      "cumulative_return": -7.527929479090889
+    },
+    {
+      "value": 924720.7052090911,
+      "daily_return": 0.0,
+      "cumulative_return": -7.527929479090889
+    },
+    {
+      "value": 897815.9083366845,
+      "daily_return": -2.9095051858196608,
+      "cumulative_return": -10.218409166331554
+    },
+    {
+      "value": 897815.9083366845,
+      "daily_return": 0.0,
+      "cumulative_return": -10.218409166331554
+    },
+    {
+      "value": 880198.2546502076,
+      "daily_return": -1.9622790733476503,
+      "cumulative_return": -11.980174534979238
+    },
+    {
+      "value": 880198.2546502076,
+      "daily_return": 0.0,
+      "cumulative_return": -11.980174534979238
+    },
+    {
+      "value": 883061.4678699068,
+      "daily_return": 0.32529185380367753,
+      "cumulative_return": -11.69385321300932
+    },
+    {
+      "value": 883061.4678699068,
+      "daily_return": 0.0,
+      "cumulative_return": -11.69385321300932
+    },
+    {
+      "value": 893108.0570418221,
+      "daily_return": 1.1376998699931251,
+      "cumulative_return": -10.689194295817783
+    },
+    {
+      "value": 893108.0570418221,
+      "daily_return": 0.0,
+      "cumulative_return": -10.689194295817783
+    },
+    {
+      "value": 895671.7453487172,
+      "daily_return": 0.28705242178495016,
+      "cumulative_return": -10.432825465128282
+    },
+    {
+      "value": 895671.7453487172,
+      "daily_return": 0.0,
+      "cumulative_return": -10.432825465128282
+    },
+    {
+      "value": 894386.703388323,
+      "daily_return": -0.14347242358235812,
+      "cumulative_return": -10.561329661167706
+    },
+    {
+      "value": 894386.703388323,
+      "daily_return": 0.0,
+      "cumulative_return": -10.561329661167706
+    },
+    {
+      "value": 890615.4722741973,
+      "daily_return": -0.4216555433839364,
+      "cumulative_return": -10.938452772580277
+    },
+    {
+      "value": 890615.4722741973,
+      "daily_return": 0.0,
+      "cumulative_return": -10.938452772580277
+    },
+    {
+      "value": 871130.7385050964,
+      "daily_return": -2.1877829855511455,
+      "cumulative_return": -12.886926149490364
+    },
+    {
+      "value": 871130.7385050964,
+      "daily_return": 0.0,
+      "cumulative_return": -12.886926149490364
+    },
+    {
+      "value": 861985.9014736355,
+      "daily_return": -1.0497663125920598,
+      "cumulative_return": -13.801409852636459
+    },
+    {
+      "value": 861985.9014736355,
+      "daily_return": 0.0,
+      "cumulative_return": -13.801409852636459
+    },
+    {
+      "value": 856288.5353504854,
+      "daily_return": -0.6609581564396838,
+      "cumulative_return": -14.371146464951467
+    },
+    {
+      "value": 856288.5353504854,
+      "daily_return": 0.0,
+      "cumulative_return": -14.371146464951467
+    },
+    {
+      "value": 870123.4465527221,
+      "daily_return": 1.6156833393283776,
+      "cumulative_return": -12.987655344727788
+    },
+    {
+      "value": 870123.4465527221,
+      "daily_return": 0.0,
+      "cumulative_return": -12.987655344727788
+    },
+    {
+      "value": 874869.3385429558,
+      "daily_return": 0.5454274343526855,
+      "cumulative_return": -12.513066145704421
+    },
+    {
+      "value": 874869.3385429558,
+      "daily_return": 0.0,
+      "cumulative_return": -12.513066145704421
+    },
+    {
+      "value": 851995.3527263157,
+      "daily_return": -2.6145602330441053,
+      "cumulative_return": -14.800464727368423
+    },
+    {
+      "value": 851995.3527263157,
+      "daily_return": 0.0,
+      "cumulative_return": -14.800464727368423
+    },
+    {
+      "value": 856392.7218693955,
+      "daily_return": 0.5161259540921836,
+      "cumulative_return": -14.360727813060459
+    },
+    {
+      "value": 856392.7218693955,
+      "daily_return": 0.0,
+      "cumulative_return": -14.360727813060459
+    },
+    {
+      "value": 851702.9147519153,
+      "daily_return": -0.5476234206244768,
+      "cumulative_return": -14.82970852480847
+    },
+    {
+      "value": 851702.9147519153,
+      "daily_return": 0.0,
+      "cumulative_return": -14.82970852480847
+    },
+    {
+      "value": 843310.3790155366,
+      "daily_return": -0.9853830004589392,
+      "cumulative_return": -15.668962098446338
+    },
+    {
+      "value": 843310.3790155366,
+      "daily_return": 0.0,
+      "cumulative_return": -15.668962098446338
+    },
+    {
+      "value": 851300.8665738995,
+      "daily_return": 0.9475144332613095,
+      "cumulative_return": -14.869913342610053
+    },
+    {
+      "value": 851300.8665738995,
+      "daily_return": 0.0,
+      "cumulative_return": -14.869913342610053
+    },
+    {
+      "value": 864721.6186379428,
+      "daily_return": 1.5764992837439262,
+      "cumulative_return": -13.527838136205716
+    },
+    {
+      "value": 864721.6186379428,
+      "daily_return": 0.0,
+      "cumulative_return": -13.527838136205716
+    },
+    {
+      "value": 877060.5059036466,
+      "daily_return": 1.4269201786742958,
+      "cumulative_return": -12.29394940963534
+    },
+    {
+      "value": 877060.5059036466,
+      "daily_return": 0.0,
+      "cumulative_return": -12.29394940963534
+    },
+    {
+      "value": 866282.9558732049,
+      "daily_return": -1.2288262848339615,
+      "cumulative_return": -13.37170441267952
+    },
+    {
+      "value": 866282.9558732049,
+      "daily_return": 0.0,
+      "cumulative_return": -13.37170441267952
+    },
+    {
+      "value": 862524.8595957924,
+      "daily_return": -0.43381856377682215,
+      "cumulative_return": -13.74751404042076
+    },
+    {
+      "value": 862524.8595957924,
+      "daily_return": 0.0,
+      "cumulative_return": -13.74751404042076
+    },
+    {
+      "value": 867069.4612235798,
+      "daily_return": 0.5268951471053551,
+      "cumulative_return": -13.293053877642013
+    },
+    {
+      "value": 867069.4612235798,
+      "daily_return": 0.0,
+      "cumulative_return": -13.293053877642013
+    },
+    {
+      "value": 880017.5628785461,
+      "daily_return": 1.4933176906835488,
+      "cumulative_return": -11.998243712145396
+    },
+    {
+      "value": 880017.5628785461,
+      "daily_return": 0.0,
+      "cumulative_return": -11.998243712145396
+    },
+    {
+      "value": 873956.3419726677,
+      "daily_return": -0.6887613567679307,
+      "cumulative_return": -12.60436580273323
+    },
+    {
+      "value": 873956.3419726677,
+      "daily_return": 0.0,
+      "cumulative_return": -12.60436580273323
+    },
+    {
+      "value": 871784.6612737671,
+      "daily_return": -0.24848846499572197,
+      "cumulative_return": -12.821533872623291
+    },
+    {
+      "value": 871784.6612737671,
+      "daily_return": 0.0,
+      "cumulative_return": -12.821533872623291
+    },
+    {
+      "value": 857578.9087636117,
+      "daily_return": -1.629502461009047,
+      "cumulative_return": -14.242109123638835
+    },
+    {
+      "value": 857578.9087636117,
+      "daily_return": 0.0,
+      "cumulative_return": -14.242109123638835
+    },
+    {
+      "value": 842448.5588662172,
+      "daily_return": -1.7643099361210113,
+      "cumulative_return": -15.755144113378282
+    },
+    {
+      "value": 842448.5588662172,
+      "daily_return": 0.0,
+      "cumulative_return": -15.755144113378282
+    },
+    {
+      "value": 852968.9615556407,
+      "daily_return": 1.2487887335912884,
+      "cumulative_return": -14.703103844435928
+    },
+    {
+      "value": 852968.9615556407,
+      "daily_return": 0.0,
+      "cumulative_return": -14.703103844435928
+    },
+    {
+      "value": 870577.3119759611,
+      "daily_return": 2.064360042856239,
+      "cumulative_return": -12.94226880240389
+    },
+    {
+      "value": 870577.3119759611,
+      "daily_return": 0.0,
+      "cumulative_return": -12.94226880240389
+    },
+    {
+      "value": 869898.1294983468,
+      "daily_return": -0.07801518237050553,
+      "cumulative_return": -13.010187050165323
+    },
+    {
+      "value": 869898.1294983468,
+      "daily_return": 0.0,
+      "cumulative_return": -13.010187050165323
+    },
+    {
+      "value": 883253.6697986912,
+      "daily_return": 1.535299346838026,
+      "cumulative_return": -11.674633020130887
+    },
+    {
+      "value": 883253.6697986912,
+      "daily_return": 0.0,
+      "cumulative_return": -11.674633020130887
+    },
+    {
+      "value": 888309.8910934518,
+      "daily_return": 0.572454037571446,
+      "cumulative_return": -11.169010890654828
+    },
+    {
+      "value": 888309.8910934518,
+      "daily_return": 0.0,
+      "cumulative_return": -11.169010890654828
+    },
+    {
+      "value": 879980.3901764471,
+      "daily_return": -0.9376796319076841,
+      "cumulative_return": -12.001960982355286
+    },
+    {
+      "value": 879980.3901764471,
+      "daily_return": 0.0,
+      "cumulative_return": -12.001960982355286
+    },
+    {
+      "value": 885014.6999826503,
+      "daily_return": 0.5720934082626306,
+      "cumulative_return": -11.498530001734963
+    },
+    {
+      "value": 885014.6999826503,
+      "daily_return": 0.0,
+      "cumulative_return": -11.498530001734963
+    },
+    {
+      "value": 905697.9789491434,
+      "daily_return": 2.3370548496989496,
+      "cumulative_return": -9.43020210508566
+    },
+    {
+      "value": 905697.9789491434,
+      "daily_return": 0.0,
+      "cumulative_return": -9.43020210508566
+    },
+    {
+      "value": 905482.9747745936,
+      "daily_return": -0.02373905866492887,
+      "cumulative_return": -9.45170252254064
+    },
+    {
+      "value": 905482.9747745936,
+      "daily_return": 0.0,
+      "cumulative_return": -9.45170252254064
+    },
+    {
+      "value": 927005.9925459559,
+      "daily_return": 2.3769654837210163,
+      "cumulative_return": -7.299400745404405
+    },
+    {
+      "value": 927005.9925459559,
+      "daily_return": 0.0,
+      "cumulative_return": -7.299400745404405
+    },
+    {
+      "value": 890856.3031872079,
+      "daily_return": -3.899617656134613,
+      "cumulative_return": -10.914369681279211
+    },
+    {
+      "value": 890856.3031872079,
+      "daily_return": 0.0,
+      "cumulative_return": -10.914369681279211
+    },
+    {
+      "value": 902106.5154775843,
+      "daily_return": 1.2628537565628317,
+      "cumulative_return": -9.789348452241564
+    },
+    {
+      "value": 902106.5154775843,
+      "daily_return": 0.0,
+      "cumulative_return": -9.789348452241564
+    },
+    {
+      "value": 903555.0333433908,
+      "daily_return": 0.16057060235725729,
+      "cumulative_return": -9.644496665660917
+    },
+    {
+      "value": 903555.0333433908,
+      "daily_return": 0.0,
+      "cumulative_return": -9.644496665660917
+    },
+    {
+      "value": 899773.5559055923,
+      "daily_return": -0.41851102569879783,
+      "cumulative_return": -10.022644409440773
+    },
+    {
+      "value": 899773.5559055923,
+      "daily_return": 0.0,
+      "cumulative_return": -10.022644409440773
+    },
+    {
+      "value": 901281.946775304,
+      "daily_return": 0.16764116480325608,
+      "cumulative_return": -9.871805322469596
+    },
+    {
+      "value": 901281.946775304,
+      "daily_return": 0.0,
+      "cumulative_return": -9.871805322469596
+    },
+    {
+      "value": 874681.9316488131,
+      "daily_return": -2.951353371901344,
+      "cumulative_return": -12.531806835118697
+    },
+    {
+      "value": 874681.9316488131,
+      "daily_return": 0.0,
+      "cumulative_return": -12.531806835118697
+    },
+    {
+      "value": 872062.1907605679,
+      "daily_return": -0.2995078317562627,
+      "cumulative_return": -12.79378092394321
+    },
+    {
+      "value": 872062.1907605679,
+      "daily_return": 0.0,
+      "cumulative_return": -12.79378092394321
+    },
+    {
+      "value": 876995.1749897061,
+      "daily_return": 0.5656688572676094,
+      "cumulative_return": -12.300482501029386
+    },
+    {
+      "value": 876995.1749897061,
+      "daily_return": 0.0,
+      "cumulative_return": -12.300482501029386
+    },
+    {
+      "value": 896699.8627379681,
+      "daily_return": 2.246841067112282,
+      "cumulative_return": -10.330013726203191
+    },
+    {
+      "value": 896699.8627379681,
+      "daily_return": 0.0,
+      "cumulative_return": -10.330013726203191
+    },
+    {
+      "value": 889997.8801929821,
+      "daily_return": -0.7474053274104664,
+      "cumulative_return": -11.00021198070178
+    },
+    {
+      "value": 889997.8801929821,
+      "daily_return": 0.0,
+      "cumulative_return": -11.00021198070178
+    },
+    {
+      "value": 879471.5156661723,
+      "daily_return": -1.1827404043397771,
+      "cumulative_return": -12.05284843338278
+    },
+    {
+      "value": 879471.5156661723,
+      "daily_return": 0.0,
+      "cumulative_return": -12.05284843338278
+    },
+    {
+      "value": 873116.1417066101,
+      "daily_return": -0.7226355653768057,
+      "cumulative_return": -12.688385829338989
+    },
+    {
+      "value": 873116.1417066101,
+      "daily_return": 0.0,
+      "cumulative_return": -12.688385829338989
+    },
+    {
+      "value": 885366.8620258936,
+      "daily_return": 1.4031031765531221,
+      "cumulative_return": -11.463313797410635
+    },
+    {
+      "value": 885366.8620258936,
+      "daily_return": 0.0,
+      "cumulative_return": -11.463313797410635
+    },
+    {
+      "value": 889998.4521597053,
+      "daily_return": 0.523126664489526,
+      "cumulative_return": -11.00015478402947
+    },
+    {
+      "value": 889998.4521597053,
+      "daily_return": 0.0,
+      "cumulative_return": -11.00015478402947
+    },
+    {
+      "value": 883193.1652748261,
+      "daily_return": -0.7646403056505657,
+      "cumulative_return": -11.680683472517384
+    },
+    {
+      "value": 883193.1652748261,
+      "daily_return": 0.0,
+      "cumulative_return": -11.680683472517384
+    },
+    {
+      "value": 890257.8375576666,
+      "daily_return": 0.7999011496700348,
+      "cumulative_return": -10.974216244233336
+    },
+    {
+      "value": 890257.8375576666,
+      "daily_return": 0.0,
+      "cumulative_return": -10.974216244233336
+    },
+    {
+      "value": 891821.2756463035,
+      "daily_return": 0.1756163240220543,
+      "cumulative_return": -10.817872435369647
+    },
+    {
+      "value": 891821.2756463035,
+      "daily_return": 0.0,
+      "cumulative_return": -10.817872435369647
+    },
+    {
+      "value": 905046.695195579,
+      "daily_return": 1.4829674857993247,
+      "cumulative_return": -9.4953304804421
+    },
+    {
+      "value": 905046.695195579,
+      "daily_return": 0.0,
+      "cumulative_return": -9.4953304804421
+    },
+    {
+      "value": 895787.3467171547,
+      "daily_return": -1.023079640816027,
+      "cumulative_return": -10.421265328284523
+    },
+    {
+      "value": 895787.3467171547,
+      "daily_return": 0.0,
+      "cumulative_return": -10.421265328284523
+    },
+    {
+      "value": 891653.348847363,
+      "daily_return": -0.46149321989664704,
+      "cumulative_return": -10.834665115263697
+    },
+    {
+      "value": 891653.348847363,
+      "daily_return": 0.0,
+      "cumulative_return": -10.834665115263697
+    },
+    {
+      "value": 886676.4766342576,
+      "daily_return": -0.5581622296982336,
+      "cumulative_return": -11.332352336574235
+    },
+    {
+      "value": 886676.4766342576,
+      "daily_return": 0.0,
+      "cumulative_return": -11.332352336574235
+    },
+    {
+      "value": 867477.5154115775,
+      "daily_return": -2.1652724221981834,
+      "cumulative_return": -13.252248458842242
+    },
+    {
+      "value": 867477.5154115775,
+      "daily_return": 0.0,
+      "cumulative_return": -13.252248458842242
+    },
+    {
+      "value": 871590.9238993655,
+      "daily_return": 0.47418041559685875,
+      "cumulative_return": -12.840907610063457
+    },
+    {
+      "value": 871590.9238993655,
+      "daily_return": 0.0,
+      "cumulative_return": -12.840907610063457
+    },
+    {
+      "value": 875265.4022645564,
+      "daily_return": 0.42158290826983524,
+      "cumulative_return": -12.47345977354436
+    },
+    {
+      "value": 875265.4022645564,
+      "daily_return": 0.0,
+      "cumulative_return": -12.47345977354436
+    },
+    {
+      "value": 875595.1163605127,
+      "daily_return": 0.03767018496370067,
+      "cumulative_return": -12.440488363948731
+    },
+    {
+      "value": 875595.1163605127,
+      "daily_return": 0.0,
+      "cumulative_return": -12.440488363948731
+    },
+    {
+      "value": 872776.7446702565,
+      "daily_return": -0.3218807000627155,
+      "cumulative_return": -12.722325532974354
+    },
+    {
+      "value": 872776.7446702565,
+      "daily_return": 0.0,
+      "cumulative_return": -12.722325532974354
+    },
+    {
+      "value": 854509.0376624333,
+      "daily_return": -2.09305611307562,
+      "cumulative_return": -14.549096233756664
+    },
+    {
+      "value": 854509.0376624333,
+      "daily_return": 0.0,
+      "cumulative_return": -14.549096233756664
+    }
+  ],
+  "trades": [
+    {
+      "date": "2023-01-01 00:00:00",
+      "symbol": "CASH",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 1034.8241640149324,
+      "entry_price": 994.8376403263106,
+      "exit_price": 1034.8241640149324,
+      "value": 1000000.0,
+      "pnl": -1000.0,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-01-01 01:00:00",
+      "symbol": "7741",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 1006.1338703938947,
+      "entry_price": 1006.1338703938947,
+      "exit_price": 1006.1338703938947,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 3.9470044096686654
+    }
+  ],
+  "switches": [
+    {
+      "date": "2023-01-01 00:00:00",
+      "from_symbol": "CASH",
+      "to_symbol": "7741",
+      "reason": "ランキング更新: 7741が上位に",
+      "cost": 1000.0,
+      "profit_loss": 0.0,
+      "net_gain": -1000.0,
+      "success": false
+    }
+  ],
+  "performance_metrics": {
+    "total_return": -14.549096233756664,
+    "annual_return": -14.549096233756664,
+    "volatility": 21.632036741873943,
+    "sharpe_ratio": -1.6920487336869152,
+    "max_drawdown": -21.328189748528196,
+    "win_rate": 0.0
+  },
+  "strategy_statistics": {
+    "VWAPBreakoutStrategy": {
+      "trade_count": 1,
+      "win_rate": 0.0,
+      "avg_profit": -1000.0,
+      "avg_loss": -1000.0,
+      "max_profit": -1000.0,
+      "max_loss": -1000.0,
+      "total_pnl": -1000.0,
+      "profit_factor": 0.0
+    },
+    "MeanReversionStrategy": {
+      "trade_count": 1,
+      "win_rate": 0.0,
+      "avg_profit": 0.0,
+      "avg_loss": 0,
+      "max_profit": 0,
+      "max_loss": 0,
+      "total_pnl": 0,
+      "profit_factor": 0.0
+    }
+  }
+}

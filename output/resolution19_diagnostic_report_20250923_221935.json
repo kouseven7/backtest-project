@@ -1,0 +1,593 @@
+{
+  "generated_at": "2025-09-23T22:19:35.326743",
+  "total_diagnostics": 5,
+  "diagnostic_summary": {
+    "success_rate": 0.76,
+    "total_diagnostics": 5,
+    "none_top_symbol_count": 5,
+    "most_common_errors": {},
+    "average_duration_ms": 767.4046039581299
+  },
+  "detailed_results": [
+    {
+      "date": "2025-09-23T22:19:31.463174",
+      "symbol_count": 10,
+      "total_duration_ms": 1041.429042816162,
+      "stage_results": [
+        {
+          "stage": "data_source_verification",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:32.496063",
+          "duration_ms": 1018.9938545227051,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "test_results": {
+              "7203.T": {
+                "data_available": true,
+                "data_length": 20,
+                "last_date": "2025-09-22"
+              },
+              "6758.T": {
+                "data_available": true,
+                "data_length": 20,
+                "last_date": "2025-09-22"
+              },
+              "9984.T": {
+                "data_available": true,
+                "data_length": 20,
+                "last_date": "2025-09-22"
+              }
+            }
+          },
+          "metadata": {
+            "total_symbols": 10,
+            "test_symbols": 3,
+            "successful_fetches": 3
+          }
+        },
+        {
+          "stage": "data_preprocessing",
+          "success": false,
+          "timestamp": "2025-09-23T22:19:32.516788",
+          "duration_ms": 20.699501037597656,
+          "error_message": null,
+          "warning_messages": [
+            "data_processorが見つかりません",
+            "前処理に十分なデータがありません"
+          ],
+          "data_sample": {
+            "data_processor_available": false,
+            "basic_preprocessing_test": false
+          },
+          "metadata": {}
+        },
+        {
+          "stage": "scoring_calculation",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:32.518292",
+          "duration_ms": 1.4808177947998047,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "scoring_engine_available": true,
+            "test_scores": {
+              "7203.T": {
+                "calculated": true,
+                "score": 0.5
+              },
+              "6758.T": {
+                "calculated": true,
+                "score": 0.5
+              },
+              "9984.T": {
+                "calculated": true,
+                "score": 0.5
+              }
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "stage": "ranking_generation",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:32.518316",
+          "duration_ms": 0.008821487426757812,
+          "error_message": null,
+          "warning_messages": [
+            "前回のランキングデータがありません"
+          ],
+          "data_sample": {
+            "ranking_method_available": true,
+            "previous_rankings_available": false,
+            "deterministic_config_available": true
+          },
+          "metadata": {}
+        },
+        {
+          "stage": "final_result_validation",
+          "success": false,
+          "timestamp": "2025-09-23T22:19:32.518322",
+          "duration_ms": 0.002384185791015625,
+          "error_message": null,
+          "warning_messages": [
+            "前回のランキングデータがありません - 初回実行または初期化失敗の可能性"
+          ],
+          "data_sample": {
+            "ranking_method_exists": true,
+            "has_previous_rankings": false,
+            "estimated_top_symbol": null
+          },
+          "metadata": {}
+        }
+      ],
+      "final_ranking_valid": false,
+      "top_symbol": null,
+      "error_summary": {}
+    },
+    {
+      "date": "2025-09-22T22:19:31.463174",
+      "symbol_count": 10,
+      "total_duration_ms": 703.2821178436279,
+      "stage_results": [
+        {
+          "stage": "data_source_verification",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:33.185922",
+          "duration_ms": 665.2989387512207,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "test_results": {
+              "7203.T": {
+                "data_available": true,
+                "data_length": 19,
+                "last_date": "2025-09-19"
+              },
+              "6758.T": {
+                "data_available": true,
+                "data_length": 19,
+                "last_date": "2025-09-19"
+              },
+              "9984.T": {
+                "data_available": true,
+                "data_length": 19,
+                "last_date": "2025-09-19"
+              }
+            }
+          },
+          "metadata": {
+            "total_symbols": 10,
+            "test_symbols": 3,
+            "successful_fetches": 3
+          }
+        },
+        {
+          "stage": "data_preprocessing",
+          "success": false,
+          "timestamp": "2025-09-23T22:19:33.221436",
+          "duration_ms": 35.482168197631836,
+          "error_message": null,
+          "warning_messages": [
+            "data_processorが見つかりません",
+            "前処理に十分なデータがありません"
+          ],
+          "data_sample": {
+            "data_processor_available": false,
+            "basic_preprocessing_test": false
+          },
+          "metadata": {}
+        },
+        {
+          "stage": "scoring_calculation",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:33.223600",
+          "duration_ms": 2.1338462829589844,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "scoring_engine_available": true,
+            "test_scores": {
+              "7203.T": {
+                "calculated": true,
+                "score": 0.5
+              },
+              "6758.T": {
+                "calculated": true,
+                "score": 0.5
+              },
+              "9984.T": {
+                "calculated": true,
+                "score": 0.5
+              }
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "stage": "ranking_generation",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:33.223635",
+          "duration_ms": 0.013828277587890625,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "ranking_method_available": true,
+            "previous_rankings_available": true,
+            "previous_rankings_count": 10,
+            "deterministic_config_available": true
+          },
+          "metadata": {}
+        },
+        {
+          "stage": "final_result_validation",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:33.223653",
+          "duration_ms": 0.011444091796875,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "ranking_method_exists": true,
+            "has_previous_rankings": true,
+            "previous_rankings_count": 10,
+            "estimated_top_symbol": "4063.T",
+            "estimated_top_symbol_valid": true
+          },
+          "metadata": {}
+        }
+      ],
+      "final_ranking_valid": true,
+      "top_symbol": null,
+      "error_summary": {}
+    },
+    {
+      "date": "2025-09-19T22:19:31.463174",
+      "symbol_count": 10,
+      "total_duration_ms": 680.5834770202637,
+      "stage_results": [
+        {
+          "stage": "data_source_verification",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:33.859131",
+          "duration_ms": 632.6298713684082,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "test_results": {
+              "7203.T": {
+                "data_available": true,
+                "data_length": 21,
+                "last_date": "2025-09-18"
+              },
+              "6758.T": {
+                "data_available": true,
+                "data_length": 21,
+                "last_date": "2025-09-18"
+              },
+              "9984.T": {
+                "data_available": true,
+                "data_length": 21,
+                "last_date": "2025-09-18"
+              }
+            }
+          },
+          "metadata": {
+            "total_symbols": 10,
+            "test_symbols": 3,
+            "successful_fetches": 3
+          }
+        },
+        {
+          "stage": "data_preprocessing",
+          "success": false,
+          "timestamp": "2025-09-23T22:19:33.903956",
+          "duration_ms": 44.76308822631836,
+          "error_message": null,
+          "warning_messages": [
+            "data_processorが見つかりません"
+          ],
+          "data_sample": {
+            "data_processor_available": false,
+            "basic_preprocessing_test": true,
+            "sample_data_length": 21
+          },
+          "metadata": {}
+        },
+        {
+          "stage": "scoring_calculation",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:33.906626",
+          "duration_ms": 2.6340484619140625,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "scoring_engine_available": true,
+            "test_scores": {
+              "7203.T": {
+                "calculated": true,
+                "score": 0.5
+              },
+              "6758.T": {
+                "calculated": true,
+                "score": 0.5
+              },
+              "9984.T": {
+                "calculated": true,
+                "score": 0.5
+              }
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "stage": "ranking_generation",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:33.906664",
+          "duration_ms": 0.015497207641601562,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "ranking_method_available": true,
+            "previous_rankings_available": true,
+            "previous_rankings_count": 10,
+            "deterministic_config_available": true
+          },
+          "metadata": {}
+        },
+        {
+          "stage": "final_result_validation",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:33.906684",
+          "duration_ms": 0.0133514404296875,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "ranking_method_exists": true,
+            "has_previous_rankings": true,
+            "previous_rankings_count": 10,
+            "estimated_top_symbol": "4063.T",
+            "estimated_top_symbol_valid": true
+          },
+          "metadata": {}
+        }
+      ],
+      "final_ranking_valid": true,
+      "top_symbol": null,
+      "error_summary": {}
+    },
+    {
+      "date": "2025-09-18T22:19:31.463174",
+      "symbol_count": 10,
+      "total_duration_ms": 710.1089954376221,
+      "stage_results": [
+        {
+          "stage": "data_source_verification",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:34.551807",
+          "duration_ms": 641.5081024169922,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "test_results": {
+              "7203.T": {
+                "data_available": true,
+                "data_length": 21,
+                "last_date": "2025-09-17"
+              },
+              "6758.T": {
+                "data_available": true,
+                "data_length": 21,
+                "last_date": "2025-09-17"
+              },
+              "9984.T": {
+                "data_available": true,
+                "data_length": 21,
+                "last_date": "2025-09-17"
+              }
+            }
+          },
+          "metadata": {
+            "total_symbols": 10,
+            "test_symbols": 3,
+            "successful_fetches": 3
+          }
+        },
+        {
+          "stage": "data_preprocessing",
+          "success": false,
+          "timestamp": "2025-09-23T22:19:34.617166",
+          "duration_ms": 65.3235912322998,
+          "error_message": null,
+          "warning_messages": [
+            "data_processorが見つかりません"
+          ],
+          "data_sample": {
+            "data_processor_available": false,
+            "basic_preprocessing_test": true,
+            "sample_data_length": 21
+          },
+          "metadata": {}
+        },
+        {
+          "stage": "scoring_calculation",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:34.619913",
+          "duration_ms": 2.709627151489258,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "scoring_engine_available": true,
+            "test_scores": {
+              "7203.T": {
+                "calculated": true,
+                "score": 0.5
+              },
+              "6758.T": {
+                "calculated": true,
+                "score": 0.5
+              },
+              "9984.T": {
+                "calculated": true,
+                "score": 0.5
+              }
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "stage": "ranking_generation",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:34.619952",
+          "duration_ms": 0.015020370483398438,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "ranking_method_available": true,
+            "previous_rankings_available": true,
+            "previous_rankings_count": 10,
+            "deterministic_config_available": true
+          },
+          "metadata": {}
+        },
+        {
+          "stage": "final_result_validation",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:34.619972",
+          "duration_ms": 0.012636184692382812,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "ranking_method_exists": true,
+            "has_previous_rankings": true,
+            "previous_rankings_count": 10,
+            "estimated_top_symbol": "4063.T",
+            "estimated_top_symbol_valid": true
+          },
+          "metadata": {}
+        }
+      ],
+      "final_ranking_valid": true,
+      "top_symbol": null,
+      "error_summary": {}
+    },
+    {
+      "date": "2025-09-17T22:19:31.463174",
+      "symbol_count": 10,
+      "total_duration_ms": 701.6193866729736,
+      "stage_results": [
+        {
+          "stage": "data_source_verification",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:35.282795",
+          "duration_ms": 659.1401100158691,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "test_results": {
+              "7203.T": {
+                "data_available": true,
+                "data_length": 21,
+                "last_date": "2025-09-16"
+              },
+              "6758.T": {
+                "data_available": true,
+                "data_length": 21,
+                "last_date": "2025-09-16"
+              },
+              "9984.T": {
+                "data_available": true,
+                "data_length": 21,
+                "last_date": "2025-09-16"
+              }
+            }
+          },
+          "metadata": {
+            "total_symbols": 10,
+            "test_symbols": 3,
+            "successful_fetches": 3
+          }
+        },
+        {
+          "stage": "data_preprocessing",
+          "success": false,
+          "timestamp": "2025-09-23T22:19:35.323205",
+          "duration_ms": 40.364742279052734,
+          "error_message": null,
+          "warning_messages": [
+            "data_processorが見つかりません"
+          ],
+          "data_sample": {
+            "data_processor_available": false,
+            "basic_preprocessing_test": true,
+            "sample_data_length": 21
+          },
+          "metadata": {}
+        },
+        {
+          "stage": "scoring_calculation",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:35.324801",
+          "duration_ms": 1.5769004821777344,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "scoring_engine_available": true,
+            "test_scores": {
+              "7203.T": {
+                "calculated": true,
+                "score": 0.5
+              },
+              "6758.T": {
+                "calculated": true,
+                "score": 0.5
+              },
+              "9984.T": {
+                "calculated": true,
+                "score": 0.5
+              }
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "stage": "ranking_generation",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:35.324818",
+          "duration_ms": 0.007152557373046875,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "ranking_method_available": true,
+            "previous_rankings_available": true,
+            "previous_rankings_count": 10,
+            "deterministic_config_available": true
+          },
+          "metadata": {}
+        },
+        {
+          "stage": "final_result_validation",
+          "success": true,
+          "timestamp": "2025-09-23T22:19:35.324828",
+          "duration_ms": 0.0059604644775390625,
+          "error_message": null,
+          "warning_messages": [],
+          "data_sample": {
+            "ranking_method_exists": true,
+            "has_previous_rankings": true,
+            "previous_rankings_count": 10,
+            "estimated_top_symbol": "4063.T",
+            "estimated_top_symbol_valid": true
+          },
+          "metadata": {}
+        }
+      ],
+      "final_ranking_valid": true,
+      "top_symbol": null,
+      "error_summary": {}
+    }
+  ],
+  "recommendations": [
+    "緊急: top_symbol=Noneが5回発生しています。ランキング生成ロジックの修復が必要です。",
+    "成功率が76.0%と低いです。データソースまたは前処理ステージの見直しが必要です。"
+  ]
+}

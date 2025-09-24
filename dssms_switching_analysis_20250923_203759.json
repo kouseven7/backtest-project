@@ -1,0 +1,48 @@
+{
+  "analysis_id": "20250923_203759",
+  "timestamp": "2025-09-23 20:37:59.295352",
+  "experiments": {
+    "post_cache_clear": {
+      "experiment_name": "post_cache_clear",
+      "cache_state": "cleared_api_direct",
+      "start_time": "2025-09-23 20:37:59.296089",
+      "switch_count": 0,
+      "execution_result": {
+        "returncode": 2,
+        "stdout": "",
+        "stderr": "python: can't open file 'C:\\\\Users\\\\imega\\\\src\\\\dssms\\\\dssms_backtester.py': [Errno 2] No such file or directory\n"
+      },
+      "error": null,
+      "end_time": "2025-09-23 20:37:59.332125",
+      "duration_sec": 0.036036
+    },
+    "second_run": {
+      "experiment_name": "second_run",
+      "cache_state": "cache_accumulated",
+      "start_time": "2025-09-23 20:38:01.335013",
+      "switch_count": 0,
+      "execution_result": {
+        "returncode": 2,
+        "stdout": "",
+        "stderr": "python: can't open file 'C:\\\\Users\\\\imega\\\\src\\\\dssms\\\\dssms_backtester.py': [Errno 2] No such file or directory\n"
+      },
+      "error": null,
+      "end_time": "2025-09-23 20:38:01.413796",
+      "duration_sec": 0.078783
+    },
+    "third_run": {
+      "experiment_name": "third_run",
+      "cache_state": "more_cache_accumulated",
+      "start_time": "2025-09-23 20:38:01.414435",
+      "switch_count": 0,
+      "execution_result": {
+        "returncode": 2,
+        "stdout": "",
+        "stderr": "python: can't open file 'C:\\\\Users\\\\imega\\\\src\\\\dssms\\\\dssms_backtester.py': [Errno 2] No such file or directory\n"
+      },
+      "error": null,
+      "end_time": "2025-09-23 20:38:01.457781",
+      "duration_sec": 0.043346
+    }
+  }
+}

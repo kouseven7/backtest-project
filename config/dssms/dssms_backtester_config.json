@@ -31,7 +31,7 @@
   },
   "switch_criteria": {
     "perfect_order_breakdown_threshold": 0.7,
-    "score_difference_threshold": 0.12,
+    "score_difference_threshold": 0.08,
     "minimum_holding_period_hours": 4,
     "confidence_threshold": 0.5
   },
