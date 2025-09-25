@@ -909,28 +909,75 @@ class UnifiedSwitchLogic:
         return 1.0 if consistent_decisions else 0.5  # 部分一致は0.5
         
     def _calculate_confidence(self, criteria_results: Dict[str, Any]) -> float:
-        """信頼度計算 - Problem 1修復版"""
+        """信頼度計算 - Phase 4B動的信頼度実装"""
+        base_confidence = 0.6  # ベース信頼度
+        
         if not criteria_results:
-            return 0.6  # 🔧 Problem 1修復: デフォルト信頼度を0.6に設定
+            return base_confidence
             
-        # 🎯 Problem 1緊急対応: 基本切替条件が満たされていれば高信頼度
+        # 🔧 Phase 4B-1: 動的信頼度計算
+        confidence_factors = []
+        
+        # 基本切替条件ファクター
         for result in criteria_results.values():
             if result.get('basic_switch_condition', False):
-                return 0.8  # 基本切替条件満足時は高信頼度
+                confidence_factors.append(0.9)  # 基本条件満足時の高信頼度
+                break
         
-        # 各基準の確信度平均
-        confidence_scores = []
+        # 各基準達成度ファクター
         for result in criteria_results.values():
             criteria_met = result.get('criteria_met', {})
             if criteria_met:
                 met_count = sum(1 for met in criteria_met.values() if met)
                 total_count = len(criteria_met)
-                confidence = met_count / total_count if total_count > 0 else 0.6  # 🔧 修復: デフォルト0.6
-                confidence_scores.append(confidence)
+                if total_count > 0:
+                    criteria_factor = met_count / total_count
+                    confidence_factors.append(criteria_factor)
+        
+        # 市場状況ファクター
+        market_factor = self._calculate_market_confidence_factor(criteria_results)
+        confidence_factors.append(market_factor)
+        
+        # 時間経過ファクター  
+        time_factor = self._calculate_time_confidence_factor(criteria_results)
+        confidence_factors.append(time_factor)
+        
+        # 🎯 Phase 4B-1: 動的信頼度統合計算
+        if confidence_factors:
+            weighted_confidence = sum(confidence_factors) / len(confidence_factors)
+            # 0.3-0.9の範囲で動的変動
+            dynamic_confidence = max(0.3, min(0.9, weighted_confidence))
+            return dynamic_confidence
+        
+        return base_confidence
+        
+    def _calculate_market_confidence_factor(self, criteria_results: Dict[str, Any]) -> float:
+        """市場状況信頼度ファクター - Phase 4C拡大版"""
+        market_factor = 0.4  # Phase 4C: ベース値を0.6→0.4に下げて変動幅拡大
+        
+        for result in criteria_results.values():
+            # ボラティリティ要因 - Phase 4C: 影響度3倍拡大
+            volatility = result.get('volatility', 0.0)
+            if volatility > 0.03:  # 高ボラティリティ時は信頼度大幅上昇
+                market_factor += 0.6  # 0.2 → 0.6 (3倍)
+            elif volatility > 0.01:  # 中程度ボラティリティ
+                market_factor += 0.3  # 0.1 → 0.3 (3倍)
                 
-        # 🔧 Problem 1修復: 最低信頼度を0.4に保証
-        avg_confidence = sum(confidence_scores) / len(confidence_scores) if confidence_scores else 0.6
-        return max(0.4, avg_confidence)  # 最低信頼度保証
+            # パフォーマンス要因 - Phase 4C: 影響度2.5倍拡大
+            performance = result.get('performance_score', 0.0)
+            if performance < -0.02:  # 低パフォーマンス時は切替信頼度大幅上昇
+                market_factor += 0.4  # 0.15 → 0.4 (2.7倍)
+            elif performance < -0.01:
+                market_factor += 0.2  # 0.08 → 0.2 (2.5倍)
+                
+        # Phase 4C: 範囲を0.2-1.0 → 0.2-1.4に拡大（後で全体調整で0.3-0.9範囲確保）
+        return max(0.2, min(1.4, market_factor))
+        
+    def _calculate_time_confidence_factor(self, criteria_results: Dict[str, Any]) -> float:
+        """時間経過信頼度ファクター - Phase 4B新規"""
+        # TODO: 実装時にportfolio_dataから時間情報取得
+        # 現在は固定値を返すが、実際は時間経過に基づく動的計算
+        return 0.65  # 時間要因による基本信頼度
         
     def _make_unified_decision(self, criteria_results: Dict[str, Any], quality_check: Dict[str, Any]) -> Dict[str, Any]:
         """統一判定決定"""
