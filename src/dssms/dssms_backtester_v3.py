@@ -1,0 +1,460 @@
+#!/usr/bin/env python3
+"""
+DSS（Dynamic Stock Selector）バックテスター V3
+
+DSS Core Project - 銘柄選択エンジンに特化したシンプルなバックテスター
+既存DSSMSコンポーネントを統合したランキング・選択システム
+
+主要機能:
+1. Yahoo Finance データ取得
+2. パーフェクトオーダー判定
+3. 階層的ランキング
+4. 最上位銘柄選択
+
+設計思想: 毎日のランキング更新 → パーフェクトオーダー1位銘柄選定 → 結果出力
+"""
+
+import sys
+import os
+import time
+import logging
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Any
+import pandas as pd
+
+# プロジェクトルートをパスに追加
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+
+# DSSMSコンポーネントインポート
+from src.dssms.perfect_order_detector import PerfectOrderDetector
+from src.dssms.hierarchical_ranking_system import HierarchicalRankingSystem
+from src.dssms.comprehensive_scoring_engine import ComprehensiveScoringEngine
+from src.dssms.intelligent_switch_manager import IntelligentSwitchManager
+from src.dssms.market_condition_monitor import MarketConditionMonitor
+
+# ログ設定
+from config.logger_config import setup_logger
+
+
+class DSSBacktesterV3:
+    """
+    DSS（Dynamic Stock Selector）バックテスター V3
+    
+    目標: 銘柄選択エンジンとしての機能に特化
+    範囲: データ取得 → パーフェクトオーダー判定 → ランキング → 1位選択
+    
+    Features:
+    - 既存DSSMSコンポーネント統合
+    - 日次銘柄選択実行
+    - パーフェクトオーダーベースランキング
+    - 最上位銘柄自動選択
+    """
+    
+    def __init__(self, config: Optional[Dict] = None):
+        """
+        DSS バックテスター V3 初期化
+        
+        Args:
+            config: 設定辞書（オプション）
+        """
+        # ログシステム初期化
+        self.logger = setup_logger(__name__)
+        self.logger.info("=== DSS Core Project V3 初期化開始 ===")
+        
+        # 基本設定
+        self.config = config or {}
+        
+        # 銘柄リスト（初期版：5銘柄で開始）
+        self.symbol_universe = [
+            '7203',  # トヨタ自動車
+            '9984',  # ソフトバンクグループ
+            '6758',  # ソニーグループ
+            '4063',  # 信越化学工業
+            '8306'   # 三菱UFJフィナンシャル・グループ
+        ]
+        
+        # 現在のポジション（将来の拡張用）
+        self.current_position = None
+        
+        # コンポーネント初期化
+        self._initialize_components()
+        
+        self.logger.info("DSS Core Project V3 初期化完了")
+    
+    def _initialize_components(self):
+        """
+        既存DSSMSコンポーネント初期化
+        
+        Raises:
+            Exception: コンポーネント初期化失敗時
+        """
+        self.logger.info("既存DSSMSコンポーネント初期化開始")
+        
+        try:
+            # 1. パーフェクトオーダー検出器
+            self.perfect_order_detector = PerfectOrderDetector()
+            self.logger.info("✓ PerfectOrderDetector 初期化成功")
+            
+            # 2. 階層的ランキングシステム（設定辞書必須）
+            ranking_config = {
+                'ranking_system': {
+                    'scoring_weights': {
+                        "fundamental": 0.40,
+                        "technical": 0.30,
+                        "volume": 0.20,
+                        "volatility": 0.10
+                    }
+                }
+            }
+            self.ranking_system = HierarchicalRankingSystem(ranking_config)
+            self.logger.info("✓ HierarchicalRankingSystem 初期化成功")
+            
+            # 3. 総合スコアリングエンジン
+            self.scoring_engine = ComprehensiveScoringEngine()
+            self.logger.info("✓ ComprehensiveScoringEngine 初期化成功")
+            
+            # 4. インテリジェント切替管理
+            self.switch_manager = IntelligentSwitchManager()
+            self.logger.info("✓ IntelligentSwitchManager 初期化成功")
+            
+            # 5. 市場状況監視
+            self.market_monitor = MarketConditionMonitor()
+            self.logger.info("✓ MarketConditionMonitor 初期化成功")
+            
+            self.logger.info("🎉 全DSSMSコンポーネント初期化完了 (5/5)")
+            
+        except Exception as e:
+            self.logger.error(f"💥 コンポーネント初期化失敗: {e}")
+            self.logger.error("Phase 1 テスト結果を確認してください")
+            raise RuntimeError(f"DSS V3 初期化失敗: {e}")
+    
+    def run_daily_selection(self, target_date: datetime) -> Dict[str, Any]:
+        """
+        日次銘柄選択実行（DSS Core メイン処理）
+        
+        Args:
+            target_date: 分析対象日
+            
+        Returns:
+            Dict containing:
+                - date: 分析日
+                - selected_symbol: 選択された銘柄コード
+                - ranking: 全銘柄ランキング結果
+                - execution_time_ms: 実行時間（ミリ秒）
+                - perfect_order_analysis: パーフェクトオーダー分析結果
+                - market_condition: 市場状況
+        """
+        self.logger.info(f"=== DSS 日次銘柄選択開始: {target_date.strftime('%Y-%m-%d')} ===")
+        start_time = time.time()
+        
+        try:
+            # Phase 3: 実際の機能実装
+            
+            # 1. データ取得
+            self.logger.info("📈 Step 1: 市場データ取得")
+            market_data = self.fetch_market_data(self.symbol_universe, target_date)
+            
+            if not market_data:
+                raise RuntimeError("市場データ取得に失敗しました")
+            
+            # 2. パーフェクトオーダースコア計算
+            self.logger.info("🎯 Step 2: パーフェクトオーダースコア計算")
+            scores = self.calculate_perfect_order_scores(market_data)
+            
+            # 3. ランキング
+            self.logger.info("🏆 Step 3: 銘柄ランキング")
+            ranking = self.rank_symbols(scores)
+            
+            # 4. 1位選択
+            self.logger.info("✨ Step 4: 最上位銘柄選択")
+            selected_symbol = self.select_top_symbol(ranking)
+            
+            execution_time = (time.time() - start_time) * 1000
+            
+            result = {
+                'date': target_date,
+                'selected_symbol': selected_symbol,
+                'ranking': ranking,
+                'execution_time_ms': execution_time,
+                'perfect_order_analysis': {},  # Phase 3 で実装
+                'market_condition': {},  # Phase 3 で実装
+                'phase': 'Phase 2 - 基本構造'
+            }
+            
+            self.logger.info(f"✓ DSS 日次選択完了: {selected_symbol} (実行時間: {execution_time:.1f}ms)")
+            return result
+            
+        except Exception as e:
+            execution_time = (time.time() - start_time) * 1000
+            
+            # エラー種別に応じた適切な処理
+            if "市場データ取得に失敗しました" in str(e):
+                self.logger.warning(f"⚠ データ取得エラー [{target_date}]: フォールバック処理を実行")
+                
+                # フォールバック: デフォルト銘柄を返す
+                fallback_symbol = self.symbol_universe[0] if self.symbol_universe else "N/A"
+                
+                return {
+                    'date': target_date,
+                    'selected_symbol': fallback_symbol,
+                    'ranking': [{'symbol': fallback_symbol, 'score': 0.0, 'rank': 1}],
+                    'execution_time_ms': execution_time,
+                    'error': 'データ取得失敗 - フォールバック実行',
+                    'error_type': 'data_fetch_failure',
+                    'phase': 'Phase 4 エラーハンドリング'
+                }
+            else:
+                self.logger.error(f"💥 日次選択処理エラー [{target_date}]: {e}")
+                
+                # 予期しないエラーの場合
+                return {
+                    'date': target_date,
+                    'selected_symbol': 'ERROR',
+                    'ranking': [],
+                    'execution_time_ms': execution_time,
+                    'error': str(e),
+                    'error_type': 'unexpected_error',
+                    'phase': 'Phase 4 エラーハンドリング'
+                }
+    
+    def fetch_market_data(self, symbols: List[str], date: datetime) -> Dict[str, pd.DataFrame]:
+        """
+        市場データ取得（yfinance 使用）
+        
+        Args:
+            symbols: 取得対象銘柄リスト
+            date: 取得日
+            
+        Returns:
+            Dict[symbol, DataFrame]: 銘柄別市場データ
+        """
+        import yfinance as yf
+        from datetime import timedelta
+        
+        self.logger.info(f"=== 市場データ取得開始: {len(symbols)}銘柄 [{date.strftime('%Y-%m-%d')}] ===")
+        
+        market_data = {}
+        
+        # データ取得期間設定（移動平均75日に必要な期間 + バッファ）
+        end_date = date
+        start_date = date - timedelta(days=150)  # 75日 + 営業日・祝日考慮バッファ
+        
+        for symbol in symbols:
+            try:
+                # 日本株式の場合、.T を付加
+                ticker_symbol = f"{symbol}.T"
+                self.logger.info(f"データ取得中: {ticker_symbol}")
+                
+                # yfinance でデータ取得
+                ticker = yf.Ticker(ticker_symbol)
+                data = ticker.history(
+                    start=start_date.strftime('%Y-%m-%d'),
+                    end=(end_date + timedelta(days=1)).strftime('%Y-%m-%d'),  # 終了日も含める
+                    interval='1d'
+                )
+                
+                if not data.empty:
+                    # yfinance のデータをそのまま使用（カラム名は既に適切）
+                    # 必要に応じてカラム名を確認
+                    self.logger.debug(f"{symbol} カラム: {list(data.columns)}")
+                    market_data[symbol] = data
+                    self.logger.info(f"✓ {symbol}: {len(data)}日分のデータ取得成功")
+                else:
+                    self.logger.warning(f"⚠ {symbol}: データが取得できませんでした")
+                    
+            except Exception as e:
+                self.logger.error(f"💥 {symbol} データ取得エラー: {e}")
+                
+        self.logger.info(f"市場データ取得完了: {len(market_data)}/{len(symbols)}銘柄成功")
+        return market_data
+    
+    def calculate_perfect_order_scores(self, market_data: Dict) -> Dict[str, float]:
+        """
+        パーフェクトオーダースコア計算
+        
+        Args:
+            market_data: 市場データ辞書 {symbol: DataFrame}
+            
+        Returns:
+            Dict[symbol, score]: 銘柄別パーフェクトオーダースコア (0.0-1.0)
+        """
+        self.logger.info(f"=== パーフェクトオーダースコア計算開始: {len(market_data)}銘柄 ===")
+        
+        scores = {}
+        
+        for symbol, data in market_data.items():
+            try:
+                self.logger.info(f"パーフェクトオーダー判定: {symbol}")
+                
+                # データ長チェック（75日移動平均に必要）
+                if len(data) < 75:
+                    self.logger.warning(f"⚠ {symbol}: データ不足 ({len(data)}日 < 75日)")
+                    scores[symbol] = 0.0
+                    continue
+                
+                # 移動平均計算
+                ma5 = data['Close'].rolling(5).mean().iloc[-1]
+                ma25 = data['Close'].rolling(25).mean().iloc[-1]
+                ma75 = data['Close'].rolling(75).mean().iloc[-1]
+                current_price = data['Close'].iloc[-1]
+                
+                # パーフェクトオーダースコア計算
+                score = 0.0
+                
+                # 条件1: 現在価格 > MA5 (25%)
+                if current_price > ma5:
+                    score += 0.25
+                    
+                # 条件2: MA5 > MA25 (25%)
+                if ma5 > ma25:
+                    score += 0.25
+                    
+                # 条件3: MA25 > MA75 (25%)
+                if ma25 > ma75:
+                    score += 0.25
+                
+                # ボーナス: 完璧なパーフェクトオーダー (25%)
+                if score == 0.75:
+                    score = 1.0
+                
+                scores[symbol] = score
+                
+                self.logger.info(f"✓ {symbol}: スコア={score:.2f} (価格:{current_price:.0f}, MA5:{ma5:.0f}, MA25:{ma25:.0f}, MA75:{ma75:.0f})")
+                
+            except Exception as e:
+                self.logger.error(f"💥 {symbol} パーフェクトオーダー計算エラー: {e}")
+                scores[symbol] = 0.0
+        
+        # 結果サマリー
+        high_scores = {k: v for k, v in scores.items() if v >= 0.75}
+        self.logger.info(f"パーフェクトオーダー計算完了: 平均スコア={sum(scores.values())/len(scores):.2f}, 高スコア銘柄={len(high_scores)}個")
+        
+        return scores
+    
+    def rank_symbols(self, scores: Dict[str, float]) -> List[Dict]:
+        """
+        銘柄ランキング（シンプルなスコア順ソート）
+        
+        Args:
+            scores: 銘柄別パーフェクトオーダースコア
+            
+        Returns:
+            List[Dict]: ランキング結果 [{'symbol': str, 'score': float, 'rank': int}, ...]
+        """
+        self.logger.info(f"=== 銘柄ランキング実行: {len(scores)}銘柄 ===")
+        
+        # スコア順でソート（降順）
+        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        
+        # ランキング結果作成
+        ranking = []
+        for rank, (symbol, score) in enumerate(sorted_scores, 1):
+            ranking_entry = {
+                'symbol': symbol,
+                'score': score,
+                'rank': rank
+            }
+            ranking.append(ranking_entry)
+            
+            # ランキング表示
+            if score >= 0.75:
+                status = "🎯 HIGH"
+            elif score >= 0.5:
+                status = "✅ MID"
+            elif score > 0.0:
+                status = "⚠ LOW"
+            else:
+                status = "❌ ZERO"
+            
+            self.logger.info(f"#{rank}: {symbol} (スコア: {score:.2f}) - {status}")
+        
+        # サマリー
+        top_symbol = ranking[0] if ranking else None
+        if top_symbol:
+            self.logger.info(f"🏆 1位: {top_symbol['symbol']} (スコア: {top_symbol['score']:.2f})")
+        
+        self.logger.info(f"銘柄ランキング完了: {len(ranking)}銘柄")
+        return ranking
+    
+    def select_top_symbol(self, ranking: List[Dict]) -> str:
+        """
+        1位銘柄選択（シンプルな最上位選択）
+        
+        Args:
+            ranking: ランキング結果
+            
+        Returns:
+            str: 選択された銘柄コード
+        """
+        self.logger.info("=== 最上位銘柄選択 ===")
+        
+        if not ranking:
+            self.logger.warning("⚠ ランキングが空です")
+            return self.symbol_universe[0]  # フォールバック
+        
+        # 1位銘柄選択
+        top_entry = ranking[0]
+        selected_symbol = top_entry['symbol']
+        selected_score = top_entry['score']
+        
+        self.logger.info(f"🎯 選択銘柄: {selected_symbol} (スコア: {selected_score:.2f})")
+        
+        # スコア品質チェック
+        if selected_score >= 0.75:
+            self.logger.info("✅ 高品質選択: パーフェクトオーダー強度 HIGH")
+        elif selected_score >= 0.5:
+            self.logger.info("⚠ 中品質選択: パーフェクトオーダー強度 MID")
+        elif selected_score > 0.0:
+            self.logger.info("⚠ 低品質選択: パーフェクトオーダー強度 LOW")
+        else:
+            self.logger.warning("❌ 注意: パーフェクトオーダー条件未達成")
+        
+        return selected_symbol
+    
+    def get_status(self) -> Dict[str, Any]:
+        """
+        現在のDSS状態取得
+        
+        Returns:
+            Dict: 状態情報
+        """
+        return {
+            'version': 'DSS Core V3',
+            'symbol_universe': self.symbol_universe,
+            'current_position': self.current_position,
+            'components_initialized': True,
+            'ready': True
+        }
+
+
+def main():
+    """
+    DSS V3 実行例（Phase 2 基本動作確認）
+    """
+    print("=== DSS Core Project V3 Demo ===")
+    
+    try:
+        # DSS V3 初期化
+        dss = DSSBacktesterV3()
+        
+        # 状態確認
+        status = dss.get_status()
+        print(f"DSS状態: {status}")
+        
+        # 単日実行（Phase 2 では基本構造のみ）
+        target_date = datetime(2023, 1, 15)
+        result = dss.run_daily_selection(target_date)
+        
+        print(f"選択銘柄: {result['selected_symbol']}")
+        print(f"実行時間: {result['execution_time_ms']:.1f}ms")
+        print(f"Phase: {result['phase']}")
+        
+        print("✅ Phase 2 基本動作確認完了")
+        
+    except Exception as e:
+        print(f"❌ エラー: {e}")
+        raise
+
+
+if __name__ == "__main__":
+    main()

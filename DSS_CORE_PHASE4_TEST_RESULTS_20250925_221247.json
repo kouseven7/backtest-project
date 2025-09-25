@@ -1,0 +1,123 @@
+{
+  "phase": "Phase 4: 統合テスト・デバッグ",
+  "test_results": {
+    "complete_flow": {
+      "checks": {
+        "dss_initialization": true,
+        "result_contains_required_keys": true,
+        "selected_symbol_valid": true,
+        "ranking_count_correct": true,
+        "execution_time_reasonable": true,
+        "ranking_structure_valid": true
+      },
+      "passed": 6,
+      "total": 6,
+      "success": true,
+      "selected_symbol": "6758",
+      "execution_time_ms": 1285.6125831604004,
+      "ranking_top3": [
+        {
+          "symbol": "6758",
+          "score": 1.0,
+          "rank": 1
+        },
+        {
+          "symbol": "8306",
+          "score": 1.0,
+          "rank": 2
+        },
+        {
+          "symbol": "9984",
+          "score": 0.5,
+          "rank": 3
+        }
+      ]
+    },
+    "error_handling": {
+      "tests": {
+        "old_date_handling": {
+          "success": false,
+          "error": "市場データ取得に失敗しました"
+        },
+        "future_date_handling": {
+          "success": false,
+          "error": "市場データ取得に失敗しました"
+        }
+      },
+      "passed": 0,
+      "total": 2,
+      "success": false
+    },
+    "performance": {
+      "execution_times": [
+        {
+          "date": "2023-01-15",
+          "actual_time_ms": 90.03782272338867,
+          "reported_time_ms": 88.92703056335449,
+          "selected_symbol": "6758"
+        },
+        {
+          "date": "2023-02-15",
+          "actual_time_ms": 809.0388774871826,
+          "reported_time_ms": 808.1188201904297,
+          "selected_symbol": "4063"
+        },
+        {
+          "date": "2023-03-15",
+          "actual_time_ms": 793.2660579681396,
+          "reported_time_ms": 792.4280166625977,
+          "selected_symbol": "4063"
+        }
+      ],
+      "avg_time_ms": 564.1142527262369,
+      "max_time_ms": 809.0388774871826,
+      "min_time_ms": 90.03782272338867,
+      "target_time_ms": 1000,
+      "performance_ok": true,
+      "success": true
+    },
+    "logging": {
+      "log_analysis": {
+        "total_messages": 50,
+        "info_messages": 28,
+        "error_messages": 1,
+        "warning_messages": 0,
+        "has_initialization_logs": true,
+        "has_data_fetch_logs": true,
+        "has_ranking_logs": true,
+        "has_selection_logs": true
+      },
+      "log_quality_score": 1.0,
+      "logging_ok": true,
+      "success": true,
+      "sample_messages": [
+        "=== DSS Core Project V3 初期化開始 ===",
+        "既存DSSMSコンポーネント初期化開始",
+        "✓ PerfectOrderDetector 初期化成功",
+        "✓ HierarchicalRankingSystem 初期化成功",
+        "✓ ComprehensiveScoringEngine 初期化成功"
+      ]
+    },
+    "configuration": {
+      "config_checks": {
+        "dss_initialization_success": true,
+        "components_loaded": true,
+        "ranking_system_loaded": true,
+        "scoring_engine_loaded": true,
+        "symbol_universe_defined": true,
+        "normal_execution_success": true
+      },
+      "passed": 6,
+      "total": 6,
+      "config_ok": true,
+      "success": true,
+      "normal_result_symbol": "6758"
+    }
+  },
+  "test_passed": 4,
+  "test_total": 5,
+  "success_rate": 80.0,
+  "target_success_rate": 95.0,
+  "phase4_completed": false,
+  "timestamp": "2025-09-25T22:12:47.334951"
+}
