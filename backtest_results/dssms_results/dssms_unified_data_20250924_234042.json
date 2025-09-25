@@ -1,0 +1,1904 @@
+{
+  "portfolio_values": [
+    {
+      "value": 999000.0,
+      "daily_return": 0.0,
+      "cumulative_return": -0.10000000000000009
+    },
+    {
+      "value": 1006742.9615828734,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 0.6742961582873352
+    },
+    {
+      "value": 1006742.9615828734,
+      "daily_return": 0.0,
+      "cumulative_return": 0.6742961582873352
+    },
+    {
+      "value": 1014545.9366332882,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 1.454593663328807
+    },
+    {
+      "value": 1014545.9366332882,
+      "daily_return": 0.0,
+      "cumulative_return": 1.454593663328807
+    },
+    {
+      "value": 1022409.390298365,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 2.2409390298365084
+    },
+    {
+      "value": 1022409.390298365,
+      "daily_return": 0.0,
+      "cumulative_return": 2.2409390298365084
+    },
+    {
+      "value": 1030333.7913304464,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 3.0333791330446447
+    },
+    {
+      "value": 1030333.7913304464,
+      "daily_return": 0.0,
+      "cumulative_return": 3.0333791330446447
+    },
+    {
+      "value": 1038319.6121150389,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 3.831961211503887
+    },
+    {
+      "value": 1038319.6121150389,
+      "daily_return": 0.0,
+      "cumulative_return": 3.831961211503887
+    },
+    {
+      "value": 1046367.3286989736,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 4.636732869897364
+    },
+    {
+      "value": 1046367.3286989736,
+      "daily_return": 0.0,
+      "cumulative_return": 4.636732869897364
+    },
+    {
+      "value": 1054477.4208187833,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 5.447742081878326
+    },
+    {
+      "value": 1054477.4208187833,
+      "daily_return": 0.0,
+      "cumulative_return": 5.447742081878326
+    },
+    {
+      "value": 1062650.3719293012,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 6.265037192930123
+    },
+    {
+      "value": 1062650.3719293012,
+      "daily_return": 0.0,
+      "cumulative_return": 6.265037192930123
+    },
+    {
+      "value": 1070886.669232479,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 7.088666923247899
+    },
+    {
+      "value": 1070886.669232479,
+      "daily_return": 0.0,
+      "cumulative_return": 7.088666923247899
+    },
+    {
+      "value": 1079186.8037064313,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 7.918680370643139
+    },
+    {
+      "value": 1079186.8037064313,
+      "daily_return": 0.0,
+      "cumulative_return": 7.918680370643139
+    },
+    {
+      "value": 1087551.2701347023,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 8.755127013470233
+    },
+    {
+      "value": 1087551.2701347023,
+      "daily_return": 0.0,
+      "cumulative_return": 8.755127013470233
+    },
+    {
+      "value": 1095980.5671357615,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 9.598056713576142
+    },
+    {
+      "value": 1095980.5671357615,
+      "daily_return": 0.0,
+      "cumulative_return": 9.598056713576142
+    },
+    {
+      "value": 1104475.1971927264,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 10.447519719272647
+    },
+    {
+      "value": 1104475.1971927264,
+      "daily_return": 0.0,
+      "cumulative_return": 10.447519719272647
+    },
+    {
+      "value": 1113035.6666833167,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 11.303566668331676
+    },
+    {
+      "value": 1113035.6666833167,
+      "daily_return": 0.0,
+      "cumulative_return": 11.303566668331676
+    },
+    {
+      "value": 1121662.48591004,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 12.166248591004013
+    },
+    {
+      "value": 1121662.48591004,
+      "daily_return": 0.0,
+      "cumulative_return": 12.166248591004013
+    },
+    {
+      "value": 1130356.1691306124,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 13.035616913061233
+    },
+    {
+      "value": 1130356.1691306124,
+      "daily_return": 0.0,
+      "cumulative_return": 13.035616913061233
+    },
+    {
+      "value": 1139117.2345886126,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 13.911723458861246
+    },
+    {
+      "value": 1139117.2345886126,
+      "daily_return": 0.0,
+      "cumulative_return": 13.911723458861246
+    },
+    {
+      "value": 1147946.2045443768,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 14.794620454437691
+    },
+    {
+      "value": 1147946.2045443768,
+      "daily_return": 0.0,
+      "cumulative_return": 14.794620454437691
+    },
+    {
+      "value": 1156843.605306131,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 15.684360530613105
+    },
+    {
+      "value": 1156843.605306131,
+      "daily_return": 0.0,
+      "cumulative_return": 15.684360530613105
+    },
+    {
+      "value": 1165809.9672613645,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 16.580996726136444
+    },
+    {
+      "value": 1165809.9672613645,
+      "daily_return": 0.0,
+      "cumulative_return": 16.580996726136444
+    },
+    {
+      "value": 1174845.8249084472,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 17.484582490844723
+    },
+    {
+      "value": 1174845.8249084472,
+      "daily_return": 0.0,
+      "cumulative_return": 17.484582490844723
+    },
+    {
+      "value": 1183951.7168884925,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 18.395171688849253
+    },
+    {
+      "value": 1183951.7168884925,
+      "daily_return": 0.0,
+      "cumulative_return": 18.395171688849253
+    },
+    {
+      "value": 1193128.186017466,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 19.312818601746606
+    },
+    {
+      "value": 1193128.186017466,
+      "daily_return": 0.0,
+      "cumulative_return": 19.312818601746606
+    },
+    {
+      "value": 1202375.7793185436,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 20.237577931854368
+    },
+    {
+      "value": 1202375.7793185436,
+      "daily_return": 0.0,
+      "cumulative_return": 20.237577931854368
+    },
+    {
+      "value": 1211695.0480547207,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 21.169504805472084
+    },
+    {
+      "value": 1211695.0480547207,
+      "daily_return": 0.0,
+      "cumulative_return": 21.169504805472084
+    },
+    {
+      "value": 1221086.5477616733,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 22.108654776167324
+    },
+    {
+      "value": 1221086.5477616733,
+      "daily_return": 0.0,
+      "cumulative_return": 22.108654776167324
+    },
+    {
+      "value": 1230550.8382808748,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 23.055083828087476
+    },
+    {
+      "value": 1230550.8382808748,
+      "daily_return": 0.0,
+      "cumulative_return": 23.055083828087476
+    },
+    {
+      "value": 1240088.4837929683,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 24.008848379296843
+    },
+    {
+      "value": 1240088.4837929683,
+      "daily_return": 0.0,
+      "cumulative_return": 24.008848379296843
+    },
+    {
+      "value": 1249700.0528513994,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 24.97000528513995
+    },
+    {
+      "value": 1249700.0528513994,
+      "daily_return": 0.0,
+      "cumulative_return": 24.97000528513995
+    },
+    {
+      "value": 1259386.1184163075,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 25.938611841630753
+    },
+    {
+      "value": 1259386.1184163075,
+      "daily_return": 0.0,
+      "cumulative_return": 25.938611841630753
+    },
+    {
+      "value": 1269147.2578886813,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 26.914725788868132
+    },
+    {
+      "value": 1269147.2578886813,
+      "daily_return": 0.0,
+      "cumulative_return": 26.914725788868132
+    },
+    {
+      "value": 1278984.0531447786,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 27.89840531447787
+    },
+    {
+      "value": 1278984.0531447786,
+      "daily_return": 0.0,
+      "cumulative_return": 27.89840531447787
+    },
+    {
+      "value": 1288897.0905708123,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 28.889709057081237
+    },
+    {
+      "value": 1288897.0905708123,
+      "daily_return": 0.0,
+      "cumulative_return": 28.889709057081237
+    },
+    {
+      "value": 1298886.9610979066,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 29.888696109790658
+    },
+    {
+      "value": 1298886.9610979066,
+      "daily_return": 0.0,
+      "cumulative_return": 29.888696109790658
+    },
+    {
+      "value": 1308954.2602373222,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 30.89542602373221
+    },
+    {
+      "value": 1308954.2602373222,
+      "daily_return": 0.0,
+      "cumulative_return": 30.89542602373221
+    },
+    {
+      "value": 1319099.5881159569,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 31.909958811595686
+    },
+    {
+      "value": 1319099.5881159569,
+      "daily_return": 0.0,
+      "cumulative_return": 31.909958811595686
+    },
+    {
+      "value": 1329323.549512119,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 32.93235495121189
+    },
+    {
+      "value": 1329323.549512119,
+      "daily_return": 0.0,
+      "cumulative_return": 32.93235495121189
+    },
+    {
+      "value": 1339626.7538915798,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 33.96267538915798
+    },
+    {
+      "value": 1339626.7538915798,
+      "daily_return": 0.0,
+      "cumulative_return": 33.96267538915798
+    },
+    {
+      "value": 1350009.815443904,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 35.0009815443904
+    },
+    {
+      "value": 1350009.815443904,
+      "daily_return": 0.0,
+      "cumulative_return": 35.0009815443904
+    },
+    {
+      "value": 1360473.3531190632,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 36.047335311906316
+    },
+    {
+      "value": 1360473.3531190632,
+      "daily_return": 0.0,
+      "cumulative_return": 36.047335311906316
+    },
+    {
+      "value": 1371017.9906643324,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 37.10179906643325
+    },
+    {
+      "value": 1371017.9906643324,
+      "daily_return": 0.0,
+      "cumulative_return": 37.10179906643325
+    },
+    {
+      "value": 1381644.3566614718,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 38.16443566614718
+    },
+    {
+      "value": 1381644.3566614718,
+      "daily_return": 0.0,
+      "cumulative_return": 38.16443566614718
+    },
+    {
+      "value": 1392353.084564198,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 39.2353084564198
+    },
+    {
+      "value": 1392353.084564198,
+      "daily_return": 0.0,
+      "cumulative_return": 39.2353084564198
+    },
+    {
+      "value": 1403144.8127359457,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 40.31448127359456
+    },
+    {
+      "value": 1403144.8127359457,
+      "daily_return": 0.0,
+      "cumulative_return": 40.31448127359456
+    },
+    {
+      "value": 1414020.1844879203,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 41.402018448792035
+    },
+    {
+      "value": 1414020.1844879203,
+      "daily_return": 0.0,
+      "cumulative_return": 41.402018448792035
+    },
+    {
+      "value": 1424979.8481174472,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 42.497984811744715
+    },
+    {
+      "value": 1424979.8481174472,
+      "daily_return": 0.0,
+      "cumulative_return": 42.497984811744715
+    },
+    {
+      "value": 1436024.4569466186,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 43.602445694661874
+    },
+    {
+      "value": 1436024.4569466186,
+      "daily_return": 0.0,
+      "cumulative_return": 43.602445694661874
+    },
+    {
+      "value": 1447154.6693612374,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 44.71546693612374
+    },
+    {
+      "value": 1447154.6693612374,
+      "daily_return": 0.0,
+      "cumulative_return": 44.71546693612374
+    },
+    {
+      "value": 1458371.1488500661,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 45.83711488500661
+    },
+    {
+      "value": 1458371.1488500661,
+      "daily_return": 0.0,
+      "cumulative_return": 45.83711488500661
+    },
+    {
+      "value": 1469674.5640443773,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 46.96745640443773
+    },
+    {
+      "value": 1469674.5640443773,
+      "daily_return": 0.0,
+      "cumulative_return": 46.96745640443773
+    },
+    {
+      "value": 1481065.5887578125,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 48.10655887578126
+    },
+    {
+      "value": 1481065.5887578125,
+      "daily_return": 0.0,
+      "cumulative_return": 48.10655887578126
+    },
+    {
+      "value": 1492544.9020265487,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 49.254490202654864
+    },
+    {
+      "value": 1492544.9020265487,
+      "daily_return": 0.0,
+      "cumulative_return": 49.254490202654864
+    },
+    {
+      "value": 1504113.188149777,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 50.41131881497769
+    },
+    {
+      "value": 1504113.188149777,
+      "daily_return": 0.0,
+      "cumulative_return": 50.41131881497769
+    },
+    {
+      "value": 1515771.1367304947,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 51.57711367304947
+    },
+    {
+      "value": 1515771.1367304947,
+      "daily_return": 0.0,
+      "cumulative_return": 51.57711367304947
+    },
+    {
+      "value": 1527519.4427166134,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 52.751944271661344
+    },
+    {
+      "value": 1527519.4427166134,
+      "daily_return": 0.0,
+      "cumulative_return": 52.751944271661344
+    },
+    {
+      "value": 1539358.806442386,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 53.9358806442386
+    },
+    {
+      "value": 1539358.806442386,
+      "daily_return": 0.0,
+      "cumulative_return": 53.9358806442386
+    },
+    {
+      "value": 1551289.933670155,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 55.12899336701551
+    },
+    {
+      "value": 1551289.933670155,
+      "daily_return": 0.0,
+      "cumulative_return": 55.12899336701551
+    },
+    {
+      "value": 1563313.5356324236,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 56.331353563242374
+    },
+    {
+      "value": 1563313.5356324236,
+      "daily_return": 0.0,
+      "cumulative_return": 56.331353563242374
+    },
+    {
+      "value": 1575430.3290742533,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 57.54303290742533
+    },
+    {
+      "value": 1575430.3290742533,
+      "daily_return": 0.0,
+      "cumulative_return": 57.54303290742533
+    },
+    {
+      "value": 1587641.0362959907,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 58.76410362959908
+    },
+    {
+      "value": 1587641.0362959907,
+      "daily_return": 0.0,
+      "cumulative_return": 58.76410362959908
+    },
+    {
+      "value": 1599946.3851963242,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 59.994638519632424
+    },
+    {
+      "value": 1599946.3851963242,
+      "daily_return": 0.0,
+      "cumulative_return": 59.994638519632424
+    },
+    {
+      "value": 1612347.109315676,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 61.234710931567584
+    },
+    {
+      "value": 1612347.109315676,
+      "daily_return": 0.0,
+      "cumulative_return": 61.234710931567584
+    },
+    {
+      "value": 1624843.9478799284,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 62.484394787992834
+    },
+    {
+      "value": 1624843.9478799284,
+      "daily_return": 0.0,
+      "cumulative_return": 62.484394787992834
+    },
+    {
+      "value": 1637437.6458444917,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 63.74376458444917
+    },
+    {
+      "value": 1637437.6458444917,
+      "daily_return": 0.0,
+      "cumulative_return": 63.74376458444917
+    },
+    {
+      "value": 1650128.9539387105,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 65.01289539387105
+    },
+    {
+      "value": 1650128.9539387105,
+      "daily_return": 0.0,
+      "cumulative_return": 65.01289539387105
+    },
+    {
+      "value": 1662918.6287106168,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 66.29186287106168
+    },
+    {
+      "value": 1662918.6287106168,
+      "daily_return": 0.0,
+      "cumulative_return": 66.29186287106168
+    },
+    {
+      "value": 1675807.432572029,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 67.58074325720291
+    },
+    {
+      "value": 1675807.432572029,
+      "daily_return": 0.0,
+      "cumulative_return": 67.58074325720291
+    },
+    {
+      "value": 1688796.1338439998,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 68.87961338439999
+    },
+    {
+      "value": 1688796.1338439998,
+      "daily_return": 0.0,
+      "cumulative_return": 68.87961338439999
+    },
+    {
+      "value": 1701885.5068026176,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 70.18855068026176
+    },
+    {
+      "value": 1701885.5068026176,
+      "daily_return": 0.0,
+      "cumulative_return": 70.18855068026176
+    },
+    {
+      "value": 1715076.3317251618,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 71.50763317251618
+    },
+    {
+      "value": 1715076.3317251618,
+      "daily_return": 0.0,
+      "cumulative_return": 71.50763317251618
+    },
+    {
+      "value": 1728369.3949366165,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 72.83693949366166
+    },
+    {
+      "value": 1728369.3949366165,
+      "daily_return": 0.0,
+      "cumulative_return": 72.83693949366166
+    },
+    {
+      "value": 1741765.4888565447,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 74.17654888565448
+    },
+    {
+      "value": 1741765.4888565447,
+      "daily_return": 0.0,
+      "cumulative_return": 74.17654888565448
+    },
+    {
+      "value": 1755265.4120463254,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 75.52654120463254
+    },
+    {
+      "value": 1755265.4120463254,
+      "daily_return": 0.0,
+      "cumulative_return": 75.52654120463254
+    },
+    {
+      "value": 1768869.9692567568,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 76.88699692567569
+    },
+    {
+      "value": 1768869.9692567568,
+      "daily_return": 0.0,
+      "cumulative_return": 76.88699692567569
+    },
+    {
+      "value": 1782579.9714760296,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 78.25799714760295
+    },
+    {
+      "value": 1782579.9714760296,
+      "daily_return": 0.0,
+      "cumulative_return": 78.25799714760295
+    },
+    {
+      "value": 1796396.2359780702,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 79.639623597807
+    },
+    {
+      "value": 1796396.2359780702,
+      "daily_return": 0.0,
+      "cumulative_return": 79.639623597807
+    },
+    {
+      "value": 1810319.58637126,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 81.031958637126
+    },
+    {
+      "value": 1810319.58637126,
+      "daily_return": 0.0,
+      "cumulative_return": 81.031958637126
+    },
+    {
+      "value": 1824350.8526475322,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 82.43508526475323
+    },
+    {
+      "value": 1824350.8526475322,
+      "daily_return": 0.0,
+      "cumulative_return": 82.43508526475323
+    },
+    {
+      "value": 1838490.8712318486,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 83.84908712318486
+    },
+    {
+      "value": 1838490.8712318486,
+      "daily_return": 0.0,
+      "cumulative_return": 83.84908712318486
+    },
+    {
+      "value": 1852740.4850320604,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 85.27404850320603
+    },
+    {
+      "value": 1852740.4850320604,
+      "daily_return": 0.0,
+      "cumulative_return": 85.27404850320603
+    },
+    {
+      "value": 1867100.543489155,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 86.7100543489155
+    },
+    {
+      "value": 1867100.543489155,
+      "daily_return": 0.0,
+      "cumulative_return": 86.7100543489155
+    },
+    {
+      "value": 1881571.902627892,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 88.15719026278921
+    },
+    {
+      "value": 1881571.902627892,
+      "daily_return": 0.0,
+      "cumulative_return": 88.15719026278921
+    },
+    {
+      "value": 1896155.4251078337,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 89.61554251078337
+    },
+    {
+      "value": 1896155.4251078337,
+      "daily_return": 0.0,
+      "cumulative_return": 89.61554251078337
+    },
+    {
+      "value": 1910851.9802747676,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 91.08519802747676
+    },
+    {
+      "value": 1910851.9802747676,
+      "daily_return": 0.0,
+      "cumulative_return": 91.08519802747676
+    },
+    {
+      "value": 1925662.4442125305,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 92.56624442125305
+    },
+    {
+      "value": 1925662.4442125305,
+      "daily_return": 0.0,
+      "cumulative_return": 92.56624442125305
+    },
+    {
+      "value": 1940587.6997952329,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 94.05876997952329
+    },
+    {
+      "value": 1940587.6997952329,
+      "daily_return": 0.0,
+      "cumulative_return": 94.05876997952329
+    },
+    {
+      "value": 1955628.6367398887,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 95.56286367398887
+    },
+    {
+      "value": 1955628.6367398887,
+      "daily_return": 0.0,
+      "cumulative_return": 95.56286367398887
+    },
+    {
+      "value": 1970786.1516594524,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 97.07861516594522
+    },
+    {
+      "value": 1970786.1516594524,
+      "daily_return": 0.0,
+      "cumulative_return": 97.07861516594522
+    },
+    {
+      "value": 1986061.1481162673,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 98.60611481162674
+    },
+    {
+      "value": 1986061.1481162673,
+      "daily_return": 0.0,
+      "cumulative_return": 98.60611481162674
+    },
+    {
+      "value": 2001454.5366759286,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 100.14545366759285
+    },
+    {
+      "value": 2001454.5366759286,
+      "daily_return": 0.0,
+      "cumulative_return": 100.14545366759285
+    },
+    {
+      "value": 2016967.2349615637,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 101.69672349615637
+    },
+    {
+      "value": 2016967.2349615637,
+      "daily_return": 0.0,
+      "cumulative_return": 101.69672349615637
+    },
+    {
+      "value": 2032600.1677085324,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 103.26001677085324
+    },
+    {
+      "value": 2032600.1677085324,
+      "daily_return": 0.0,
+      "cumulative_return": 103.26001677085324
+    },
+    {
+      "value": 2048354.2668195525,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 104.83542668195524
+    },
+    {
+      "value": 2048354.2668195525,
+      "daily_return": 0.0,
+      "cumulative_return": 104.83542668195524
+    },
+    {
+      "value": 2064230.4714202518,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 106.4230471420252
+    },
+    {
+      "value": 2064230.4714202518,
+      "daily_return": 0.0,
+      "cumulative_return": 106.4230471420252
+    },
+    {
+      "value": 2080229.7279151503,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 108.02297279151504
+    },
+    {
+      "value": 2080229.7279151503,
+      "daily_return": 0.0,
+      "cumulative_return": 108.02297279151504
+    },
+    {
+      "value": 2096352.9900440774,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 109.63529900440774
+    },
+    {
+      "value": 2096352.9900440774,
+      "daily_return": 0.0,
+      "cumulative_return": 109.63529900440774
+    },
+    {
+      "value": 2112601.2189390254,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 111.26012189390254
+    },
+    {
+      "value": 2112601.2189390254,
+      "daily_return": 0.0,
+      "cumulative_return": 111.26012189390254
+    },
+    {
+      "value": 2128975.3831814444,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 112.89753831814444
+    },
+    {
+      "value": 2128975.3831814444,
+      "daily_return": 0.0,
+      "cumulative_return": 112.89753831814444
+    },
+    {
+      "value": 2145476.45885998,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 114.54764588599802
+    },
+    {
+      "value": 2145476.45885998,
+      "daily_return": 0.0,
+      "cumulative_return": 114.54764588599802
+    },
+    {
+      "value": 2162105.429628661,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 116.2105429628661
+    },
+    {
+      "value": 2162105.429628661,
+      "daily_return": 0.0,
+      "cumulative_return": 116.2105429628661
+    },
+    {
+      "value": 2178863.2867655344,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 117.88632867655346
+    },
+    {
+      "value": 2178863.2867655344,
+      "daily_return": 0.0,
+      "cumulative_return": 117.88632867655346
+    },
+    {
+      "value": 2195751.0292317593,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 119.57510292317592
+    },
+    {
+      "value": 2195751.0292317593,
+      "daily_return": 0.0,
+      "cumulative_return": 119.57510292317592
+    },
+    {
+      "value": 2212769.663731155,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 121.27696637311551
+    },
+    {
+      "value": 2212769.663731155,
+      "daily_return": 0.0,
+      "cumulative_return": 121.27696637311551
+    },
+    {
+      "value": 2229920.204770212,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 122.99202047702123
+    },
+    {
+      "value": 2229920.204770212,
+      "daily_return": 0.0,
+      "cumulative_return": 122.99202047702123
+    },
+    {
+      "value": 2247203.6747185695,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 124.72036747185693
+    },
+    {
+      "value": 2247203.6747185695,
+      "daily_return": 0.0,
+      "cumulative_return": 124.72036747185693
+    },
+    {
+      "value": 2264621.103869959,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 126.46211038699589
+    },
+    {
+      "value": 2264621.103869959,
+      "daily_return": 0.0,
+      "cumulative_return": 126.46211038699589
+    },
+    {
+      "value": 2282173.530503622,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 128.21735305036216
+    },
+    {
+      "value": 2282173.530503622,
+      "daily_return": 0.0,
+      "cumulative_return": 128.21735305036216
+    },
+    {
+      "value": 2299862.0009462046,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 129.98620009462044
+    },
+    {
+      "value": 2299862.0009462046,
+      "daily_return": 0.0,
+      "cumulative_return": 129.98620009462044
+    },
+    {
+      "value": 2317687.5696341293,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 131.76875696341295
+    },
+    {
+      "value": 2317687.5696341293,
+      "daily_return": 0.0,
+      "cumulative_return": 131.76875696341295
+    },
+    {
+      "value": 2335651.2991764518,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 133.56512991764515
+    },
+    {
+      "value": 2335651.2991764518,
+      "daily_return": 0.0,
+      "cumulative_return": 133.56512991764515
+    },
+    {
+      "value": 2353754.260418205,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 135.3754260418205
+    },
+    {
+      "value": 2353754.260418205,
+      "daily_return": 0.0,
+      "cumulative_return": 135.3754260418205
+    },
+    {
+      "value": 2371997.532504234,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 137.19975325042338
+    },
+    {
+      "value": 2371997.532504234,
+      "daily_return": 0.0,
+      "cumulative_return": 137.19975325042338
+    },
+    {
+      "value": 2390382.202943524,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 139.0382202943524
+    },
+    {
+      "value": 2390382.202943524,
+      "daily_return": 0.0,
+      "cumulative_return": 139.0382202943524
+    },
+    {
+      "value": 2408909.3676740304,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 140.89093676740302
+    },
+    {
+      "value": 2408909.3676740304,
+      "daily_return": 0.0,
+      "cumulative_return": 140.89093676740302
+    },
+    {
+      "value": 2427580.131128008,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 142.7580131128008
+    },
+    {
+      "value": 2427580.131128008,
+      "daily_return": 0.0,
+      "cumulative_return": 142.7580131128008
+    },
+    {
+      "value": 2446395.6062978487,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 144.63956062978488
+    },
+    {
+      "value": 2446395.6062978487,
+      "daily_return": 0.0,
+      "cumulative_return": 144.63956062978488
+    },
+    {
+      "value": 2465356.914802428,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 146.5356914802428
+    },
+    {
+      "value": 2465356.914802428,
+      "daily_return": 0.0,
+      "cumulative_return": 146.5356914802428
+    },
+    {
+      "value": 2484465.186953966,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 148.44651869539663
+    },
+    {
+      "value": 2484465.186953966,
+      "daily_return": 0.0,
+      "cumulative_return": 148.44651869539663
+    },
+    {
+      "value": 2503721.5618254086,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 150.37215618254086
+    },
+    {
+      "value": 2503721.5618254086,
+      "daily_return": 0.0,
+      "cumulative_return": 150.37215618254086
+    },
+    {
+      "value": 2523127.1873183274,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 152.31271873183272
+    },
+    {
+      "value": 2523127.1873183274,
+      "daily_return": 0.0,
+      "cumulative_return": 152.31271873183272
+    },
+    {
+      "value": 2542683.2202313496,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 154.26832202313494
+    },
+    {
+      "value": 2542683.2202313496,
+      "daily_return": 0.0,
+      "cumulative_return": 154.26832202313494
+    },
+    {
+      "value": 2562390.8263291153,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 156.23908263291156
+    },
+    {
+      "value": 2562390.8263291153,
+      "daily_return": 0.0,
+      "cumulative_return": 156.23908263291156
+    },
+    {
+      "value": 2582251.1804117714,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 158.22511804117715
+    },
+    {
+      "value": 2582251.1804117714,
+      "daily_return": 0.0,
+      "cumulative_return": 158.22511804117715
+    },
+    {
+      "value": 2602265.4663850022,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 160.22654663850022
+    },
+    {
+      "value": 2602265.4663850022,
+      "daily_return": 0.0,
+      "cumulative_return": 160.22654663850022
+    },
+    {
+      "value": 2622434.877330605,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 162.24348773306048
+    },
+    {
+      "value": 2622434.877330605,
+      "daily_return": 0.0,
+      "cumulative_return": 162.24348773306048
+    },
+    {
+      "value": 2642760.61557761,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 164.276061557761
+    },
+    {
+      "value": 2642760.61557761,
+      "daily_return": 0.0,
+      "cumulative_return": 164.276061557761
+    },
+    {
+      "value": 2663243.8927739547,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 166.32438927739548
+    },
+    {
+      "value": 2663243.8927739547,
+      "daily_return": 0.0,
+      "cumulative_return": 166.32438927739548
+    },
+    {
+      "value": 2683885.9299587104,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 168.38859299587105
+    },
+    {
+      "value": 2683885.9299587104,
+      "daily_return": 0.0,
+      "cumulative_return": 168.38859299587105
+    },
+    {
+      "value": 2704687.9576348714,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 170.46879576348712
+    },
+    {
+      "value": 2704687.9576348714,
+      "daily_return": 0.0,
+      "cumulative_return": 170.46879576348712
+    },
+    {
+      "value": 2725651.215842706,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 172.5651215842706
+    },
+    {
+      "value": 2725651.215842706,
+      "daily_return": 0.0,
+      "cumulative_return": 172.5651215842706
+    },
+    {
+      "value": 2746776.9542336795,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 174.67769542336794
+    },
+    {
+      "value": 2746776.9542336795,
+      "daily_return": 0.0,
+      "cumulative_return": 174.67769542336794
+    },
+    {
+      "value": 2768066.432144944,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 176.8066432144944
+    },
+    {
+      "value": 2768066.432144944,
+      "daily_return": 0.0,
+      "cumulative_return": 176.8066432144944
+    },
+    {
+      "value": 2789520.918674413,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 178.9520918674413
+    },
+    {
+      "value": 2789520.918674413,
+      "daily_return": 0.0,
+      "cumulative_return": 178.9520918674413
+    },
+    {
+      "value": 2811141.6927564126,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 181.11416927564125
+    },
+    {
+      "value": 2811141.6927564126,
+      "daily_return": 0.0,
+      "cumulative_return": 181.11416927564125
+    },
+    {
+      "value": 2832930.0432379204,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 183.29300432379205
+    },
+    {
+      "value": 2832930.0432379204,
+      "daily_return": 0.0,
+      "cumulative_return": 183.29300432379205
+    },
+    {
+      "value": 2854887.268955397,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 185.48872689553968
+    },
+    {
+      "value": 2854887.268955397,
+      "daily_return": 0.0,
+      "cumulative_return": 185.48872689553968
+    },
+    {
+      "value": 2877014.6788122095,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 187.70146788122096
+    },
+    {
+      "value": 2877014.6788122095,
+      "daily_return": 0.0,
+      "cumulative_return": 187.70146788122096
+    },
+    {
+      "value": 2899313.59185666,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 189.931359185666
+    },
+    {
+      "value": 2899313.59185666,
+      "daily_return": 0.0,
+      "cumulative_return": 189.931359185666
+    },
+    {
+      "value": 2921785.3373606126,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 192.17853373606127
+    },
+    {
+      "value": 2921785.3373606126,
+      "daily_return": 0.0,
+      "cumulative_return": 192.17853373606127
+    },
+    {
+      "value": 2944431.2548987367,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 194.44312548987367
+    },
+    {
+      "value": 2944431.2548987367,
+      "daily_return": 0.0,
+      "cumulative_return": 194.44312548987367
+    },
+    {
+      "value": 2967252.6944283587,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 196.72526944283587
+    },
+    {
+      "value": 2967252.6944283587,
+      "daily_return": 0.0,
+      "cumulative_return": 196.72526944283587
+    },
+    {
+      "value": 2990251.0163699365,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 199.02510163699367
+    },
+    {
+      "value": 2990251.0163699365,
+      "daily_return": 0.0,
+      "cumulative_return": 199.02510163699367
+    },
+    {
+      "value": 3013427.591688155,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 201.3427591688155
+    },
+    {
+      "value": 3013427.591688155,
+      "daily_return": 0.0,
+      "cumulative_return": 201.3427591688155
+    },
+    {
+      "value": 3036783.8019736526,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 203.67838019736527
+    },
+    {
+      "value": 3036783.8019736526,
+      "daily_return": 0.0,
+      "cumulative_return": 203.67838019736527
+    },
+    {
+      "value": 3060321.0395253785,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 206.03210395253785
+    },
+    {
+      "value": 3060321.0395253785,
+      "daily_return": 0.0,
+      "cumulative_return": 206.03210395253785
+    },
+    {
+      "value": 3084040.7074335907,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 208.40407074335906
+    },
+    {
+      "value": 3084040.7074335907,
+      "daily_return": 0.0,
+      "cumulative_return": 208.40407074335906
+    },
+    {
+      "value": 3107944.2196634966,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 210.79442196634966
+    },
+    {
+      "value": 3107944.2196634966,
+      "daily_return": 0.0,
+      "cumulative_return": 210.79442196634966
+    },
+    {
+      "value": 3132033.0011395407,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 213.20330011395407
+    },
+    {
+      "value": 3132033.0011395407,
+      "daily_return": 0.0,
+      "cumulative_return": 213.20330011395407
+    },
+    {
+      "value": 3156308.4878303465,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 215.63084878303465
+    },
+    {
+      "value": 3156308.4878303465,
+      "daily_return": 0.0,
+      "cumulative_return": 215.63084878303465
+    },
+    {
+      "value": 3180772.126834318,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 218.07721268343178
+    },
+    {
+      "value": 3180772.126834318,
+      "daily_return": 0.0,
+      "cumulative_return": 218.07721268343178
+    },
+    {
+      "value": 3205425.376465902,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 220.5425376465902
+    },
+    {
+      "value": 3205425.376465902,
+      "daily_return": 0.0,
+      "cumulative_return": 220.5425376465902
+    },
+    {
+      "value": 3230269.7063425216,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 223.02697063425217
+    },
+    {
+      "value": 3230269.7063425216,
+      "daily_return": 0.0,
+      "cumulative_return": 223.02697063425217
+    },
+    {
+      "value": 3255306.597472181,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 225.53065974721812
+    },
+    {
+      "value": 3255306.597472181,
+      "daily_return": 0.0,
+      "cumulative_return": 225.53065974721812
+    },
+    {
+      "value": 3280537.542341752,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 228.0537542341752
+    },
+    {
+      "value": 3280537.542341752,
+      "daily_return": 0.0,
+      "cumulative_return": 228.0537542341752
+    },
+    {
+      "value": 3305964.045005942,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 230.59640450059425
+    },
+    {
+      "value": 3305964.045005942,
+      "daily_return": 0.0,
+      "cumulative_return": 230.59640450059425
+    },
+    {
+      "value": 3331587.621176955,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 233.15876211769546
+    },
+    {
+      "value": 3331587.621176955,
+      "daily_return": 0.0,
+      "cumulative_return": 233.15876211769546
+    },
+    {
+      "value": 3357409.7983148424,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 235.74097983148422
+    },
+    {
+      "value": 3357409.7983148424,
+      "daily_return": 0.0,
+      "cumulative_return": 235.74097983148422
+    },
+    {
+      "value": 3383432.1157185608,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 238.3432115718561
+    },
+    {
+      "value": 3383432.1157185608,
+      "daily_return": 0.0,
+      "cumulative_return": 238.3432115718561
+    },
+    {
+      "value": 3409656.124617729,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 240.9656124617729
+    },
+    {
+      "value": 3409656.124617729,
+      "daily_return": 0.0,
+      "cumulative_return": 240.9656124617729
+    },
+    {
+      "value": 3436083.3882651003,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 243.60833882651005
+    },
+    {
+      "value": 3436083.3882651003,
+      "daily_return": 0.0,
+      "cumulative_return": 243.60833882651005
+    },
+    {
+      "value": 3462715.482029751,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 246.2715482029751
+    },
+    {
+      "value": 3462715.482029751,
+      "daily_return": 0.0,
+      "cumulative_return": 246.2715482029751
+    },
+    {
+      "value": 3489553.9934909893,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 248.95539934909894
+    },
+    {
+      "value": 3489553.9934909893,
+      "daily_return": 0.0,
+      "cumulative_return": 248.95539934909894
+    },
+    {
+      "value": 3516600.5225329944,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 251.66005225329945
+    },
+    {
+      "value": 3516600.5225329944,
+      "daily_return": 0.0,
+      "cumulative_return": 251.66005225329945
+    },
+    {
+      "value": 3543856.681440187,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 254.38566814401872
+    },
+    {
+      "value": 3543856.681440187,
+      "daily_return": 0.0,
+      "cumulative_return": 254.38566814401872
+    },
+    {
+      "value": 3571324.094993341,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 257.1324094993341
+    },
+    {
+      "value": 3571324.094993341,
+      "daily_return": 0.0,
+      "cumulative_return": 257.1324094993341
+    },
+    {
+      "value": 3599004.4005664373,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 259.90044005664373
+    },
+    {
+      "value": 3599004.4005664373,
+      "daily_return": 0.0,
+      "cumulative_return": 259.90044005664373
+    },
+    {
+      "value": 3626899.2482242733,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 262.6899248224274
+    },
+    {
+      "value": 3626899.2482242733,
+      "daily_return": 0.0,
+      "cumulative_return": 262.6899248224274
+    },
+    {
+      "value": 3655010.300820823,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 265.50103008208225
+    },
+    {
+      "value": 3655010.300820823,
+      "daily_return": 0.0,
+      "cumulative_return": 265.50103008208225
+    },
+    {
+      "value": 3683339.2340983623,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 268.3339234098362
+    },
+    {
+      "value": 3683339.2340983623,
+      "daily_return": 0.0,
+      "cumulative_return": 268.3339234098362
+    },
+    {
+      "value": 3711887.7367873653,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 271.18877367873654
+    },
+    {
+      "value": 3711887.7367873653,
+      "daily_return": 0.0,
+      "cumulative_return": 271.18877367873654
+    },
+    {
+      "value": 3740657.5107071684,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 274.06575107071683
+    },
+    {
+      "value": 3740657.5107071684,
+      "daily_return": 0.0,
+      "cumulative_return": 274.06575107071683
+    },
+    {
+      "value": 3769650.270867421,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 276.9650270867421
+    },
+    {
+      "value": 3769650.270867421,
+      "daily_return": 0.0,
+      "cumulative_return": 276.9650270867421
+    },
+    {
+      "value": 3798867.7455703183,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 279.88677455703186
+    },
+    {
+      "value": 3798867.7455703183,
+      "daily_return": 0.0,
+      "cumulative_return": 279.88677455703186
+    },
+    {
+      "value": 3828311.6765136295,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 282.83116765136293
+    },
+    {
+      "value": 3828311.6765136295,
+      "daily_return": 0.0,
+      "cumulative_return": 282.83116765136293
+    },
+    {
+      "value": 3857983.818894521,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 285.7983818894521
+    },
+    {
+      "value": 3857983.818894521,
+      "daily_return": 0.0,
+      "cumulative_return": 285.7983818894521
+    },
+    {
+      "value": 3887885.941514188,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 288.78859415141875
+    },
+    {
+      "value": 3887885.941514188,
+      "daily_return": 0.0,
+      "cumulative_return": 288.78859415141875
+    },
+    {
+      "value": 3918019.826883295,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 291.8019826883295
+    },
+    {
+      "value": 3918019.826883295,
+      "daily_return": 0.0,
+      "cumulative_return": 291.8019826883295
+    },
+    {
+      "value": 3948387.2713282336,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 294.83872713282335
+    },
+    {
+      "value": 3948387.2713282336,
+      "daily_return": 0.0,
+      "cumulative_return": 294.83872713282335
+    },
+    {
+      "value": 3978990.085098204,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 297.8990085098204
+    },
+    {
+      "value": 3978990.085098204,
+      "daily_return": 0.0,
+      "cumulative_return": 297.8990085098204
+    },
+    {
+      "value": 4009830.092473129,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 300.98300924731285
+    },
+    {
+      "value": 4009830.092473129,
+      "daily_return": 0.0,
+      "cumulative_return": 300.98300924731285
+    },
+    {
+      "value": 4040909.131872397,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 304.09091318723966
+    },
+    {
+      "value": 4040909.131872397,
+      "daily_return": 0.0,
+      "cumulative_return": 304.09091318723966
+    },
+    {
+      "value": 4072229.055964459,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 307.2229055964459
+    },
+    {
+      "value": 4072229.055964459,
+      "daily_return": 0.0,
+      "cumulative_return": 307.2229055964459
+    },
+    {
+      "value": 4103791.7317772657,
+      "daily_return": 0.7750712295168549,
+      "cumulative_return": 310.37917317772656
+    }
+  ],
+  "trades": [
+    {
+      "date": "2023-01-01 00:00:00",
+      "symbol": "CASH",
+      "strategy": "VWAPBreakoutStrategy",
+      "action": "sell",
+      "quantity": 100,
+      "price": 948.9407818661183,
+      "entry_price": 981.7559977057202,
+      "exit_price": 948.9407818661183,
+      "value": 1000000.0,
+      "pnl": -1000.0,
+      "holding_period_hours": 24.0
+    },
+    {
+      "date": "2023-01-01 01:00:00",
+      "symbol": "6861",
+      "strategy": "MeanReversionStrategy",
+      "action": "buy",
+      "quantity": 100,
+      "price": 998.9108327748378,
+      "entry_price": 998.9108327748378,
+      "exit_price": 998.9108327748378,
+      "value": 1000000.0,
+      "pnl": 0.0,
+      "holding_period_hours": 1.2321491289277473
+    }
+  ],
+  "switches": [
+    {
+      "date": "2023-01-01 00:00:00",
+      "from_symbol": "CASH",
+      "to_symbol": "6861",
+      "reason": "ランキング更新: 6861が上位に",
+      "cost": 1000.0,
+      "profit_loss": 0.0,
+      "net_gain": -1000.0,
+      "success": false
+    }
+  ],
+  "performance_metrics": {
+    "total_return": 310.37917317772656,
+    "annual_return": 310.37917317772656,
+    "volatility": 0.0,
+    "sharpe_ratio": 0,
+    "max_drawdown": 0,
+    "win_rate": 0.0
+  },
+  "strategy_statistics": {
+    "VWAPBreakoutStrategy": {
+      "trade_count": 1,
+      "win_rate": 0.0,
+      "avg_profit": -1000.0,
+      "avg_loss": -1000.0,
+      "max_profit": -1000.0,
+      "max_loss": -1000.0,
+      "total_pnl": -1000.0,
+      "profit_factor": 0.0
+    },
+    "MeanReversionStrategy": {
+      "trade_count": 1,
+      "win_rate": 0.0,
+      "avg_profit": 0.0,
+      "avg_loss": 0,
+      "max_profit": 0,
+      "max_loss": 0,
+      "total_pnl": 0,
+      "profit_factor": 0.0
+    }
+  }
+}
