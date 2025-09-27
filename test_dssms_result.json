@@ -1,0 +1,203 @@
+{
+  "backtest_config": {
+    "initial_capital": 1000000,
+    "switch_cost_rate": 0.001,
+    "log_level": "INFO"
+  },
+  "final_results": {
+    "status": "success",
+    "execution_summary": {
+      "total_days": 5,
+      "success_days": 5,
+      "success_rate": 1.0,
+      "switch_count": 4,
+      "total_execution_time_ms": 0.030755996704101562,
+      "total_backtest_time_ms": 0.001430511474609375,
+      "avg_daily_execution_time_ms": 0.0061511993408203125
+    },
+    "performance_metrics": {
+      "initial_portfolio_value": 1000000,
+      "final_portfolio_value": 996005.9960009999,
+      "total_return": -0.003994003999000066,
+      "total_return_pct": -0.39940039990000664,
+      "sharpe_ratio": 0.0,
+      "max_drawdown": 0.0,
+      "win_rate": 0.0,
+      "switch_cost_total": 3994.003999,
+      "switch_cost_pct": 0.39940039990000004
+    },
+    "daily_results": [
+      {
+        "date": "2023-06-01 00:00:00",
+        "status": "success",
+        "dss_result": {
+          "selected_symbol": "6758",
+          "selection_score": 0.85,
+          "execution_time_ms": 50.0,
+          "status": "success"
+        },
+        "switch_result": {
+          "should_switch": true,
+          "reason": "initial_setup",
+          "from_symbol": null,
+          "to_symbol": "6758",
+          "switch_cost": 0.0
+        },
+        "strategy_result": {
+          "status": "success",
+          "symbol": "6758",
+          "date": "2023-06-01 00:00:00",
+          "entry_signal": 0,
+          "exit_signal": 0,
+          "strategy": "VWAPBreakoutStrategy",
+          "execution_time_ms": 25.0
+        },
+        "portfolio_value": 1000000,
+        "execution_time_ms": 0.011205673217773438
+      },
+      {
+        "date": "2023-06-02 00:00:00",
+        "status": "success",
+        "dss_result": {
+          "selected_symbol": "9984",
+          "selection_score": 0.85,
+          "execution_time_ms": 50.0,
+          "status": "success"
+        },
+        "switch_result": {
+          "should_switch": true,
+          "reason": "dss_selection_changed",
+          "from_symbol": "6758",
+          "to_symbol": "9984",
+          "switch_cost": 1000.0
+        },
+        "strategy_result": {
+          "status": "success",
+          "symbol": "9984",
+          "date": "2023-06-02 00:00:00",
+          "entry_signal": 0,
+          "exit_signal": 0,
+          "strategy": "VWAPBreakoutStrategy",
+          "execution_time_ms": 25.0
+        },
+        "portfolio_value": 999000.0,
+        "execution_time_ms": 0.008344650268554688
+      },
+      {
+        "date": "2023-06-03 00:00:00",
+        "status": "success",
+        "dss_result": {
+          "selected_symbol": "6861",
+          "selection_score": 0.85,
+          "execution_time_ms": 50.0,
+          "status": "success"
+        },
+        "switch_result": {
+          "should_switch": true,
+          "reason": "dss_selection_changed",
+          "from_symbol": "9984",
+          "to_symbol": "6861",
+          "switch_cost": 999.0
+        },
+        "strategy_result": {
+          "status": "success",
+          "symbol": "6861",
+          "date": "2023-06-03 00:00:00",
+          "entry_signal": 1,
+          "exit_signal": 0,
+          "strategy": "VWAPBreakoutStrategy",
+          "execution_time_ms": 25.0
+        },
+        "portfolio_value": 998001.0,
+        "execution_time_ms": 0.004291534423828125
+      },
+      {
+        "date": "2023-06-04 00:00:00",
+        "status": "success",
+        "dss_result": {
+          "selected_symbol": "8306",
+          "selection_score": 0.85,
+          "execution_time_ms": 50.0,
+          "status": "success"
+        },
+        "switch_result": {
+          "should_switch": true,
+          "reason": "dss_selection_changed",
+          "from_symbol": "6861",
+          "to_symbol": "8306",
+          "switch_cost": 998.001
+        },
+        "strategy_result": {
+          "status": "success",
+          "symbol": "8306",
+          "date": "2023-06-04 00:00:00",
+          "entry_signal": 0,
+          "exit_signal": 0,
+          "strategy": "VWAPBreakoutStrategy",
+          "execution_time_ms": 25.0
+        },
+        "portfolio_value": 997002.999,
+        "execution_time_ms": 0.003337860107421875
+      },
+      {
+        "date": "2023-06-05 00:00:00",
+        "status": "success",
+        "dss_result": {
+          "selected_symbol": "7203",
+          "selection_score": 0.85,
+          "execution_time_ms": 50.0,
+          "status": "success"
+        },
+        "switch_result": {
+          "should_switch": true,
+          "reason": "dss_selection_changed",
+          "from_symbol": "8306",
+          "to_symbol": "7203",
+          "switch_cost": 997.0029989999999
+        },
+        "strategy_result": {
+          "status": "success",
+          "symbol": "7203",
+          "date": "2023-06-05 00:00:00",
+          "entry_signal": 0,
+          "exit_signal": 0,
+          "strategy": "VWAPBreakoutStrategy",
+          "execution_time_ms": 25.0
+        },
+        "portfolio_value": 996005.9960009999,
+        "execution_time_ms": 0.0035762786865234375
+      }
+    ],
+    "switch_history": [
+      {
+        "should_switch": true,
+        "reason": "dss_selection_changed",
+        "from_symbol": "6758",
+        "to_symbol": "9984",
+        "switch_cost": 1000.0
+      },
+      {
+        "should_switch": true,
+        "reason": "dss_selection_changed",
+        "from_symbol": "9984",
+        "to_symbol": "6861",
+        "switch_cost": 999.0
+      },
+      {
+        "should_switch": true,
+        "reason": "dss_selection_changed",
+        "from_symbol": "6861",
+        "to_symbol": "8306",
+        "switch_cost": 998.001
+      },
+      {
+        "should_switch": true,
+        "reason": "dss_selection_changed",
+        "from_symbol": "8306",
+        "to_symbol": "7203",
+        "switch_cost": 997.0029989999999
+      }
+    ],
+    "error_log": []
+  }
+}

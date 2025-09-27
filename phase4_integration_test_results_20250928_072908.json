@@ -1,0 +1,393 @@
+{
+  "test_metadata": {
+    "start_time": "2025-09-28 07:28:58.188371",
+    "test_config": {
+      "initial_capital": 1000000,
+      "test_duration_days": 30,
+      "target_symbols": [
+        "7203",
+        "9984",
+        "6758",
+        "4063",
+        "8306"
+      ],
+      "performance_test_iterations": 5,
+      "stress_test_enabled": true,
+      "benchmark_comparison_enabled": true
+    },
+    "test_status": "excellent",
+    "end_time": "2025-09-28 07:29:08.556755",
+    "execution_time": 10.368384
+  },
+  "test_categories": {
+    "basic_functionality": {
+      "test_name": "basic_functionality",
+      "status": "passed",
+      "subtests": {
+        "system_initialization": {
+          "success": true,
+          "initialization_time_ms": 3.248453140258789,
+          "system_status": {
+            "current_symbol": null,
+            "portfolio_value": 1000000,
+            "position_size": 0,
+            "daily_results_count": 0,
+            "switch_history_count": 0,
+            "dss_available": false,
+            "risk_management_available": false,
+            "data_fetcher_available": true,
+            "performance_summary": {
+              "execution": {
+                "average_time_ms": 0,
+                "status": "no_data"
+              },
+              "memory": {
+                "average_usage_mb": 0,
+                "status": "no_data"
+              },
+              "reliability": {
+                "success_rate": 0,
+                "status": "no_data"
+              },
+              "cost": {
+                "total_cost": 0,
+                "status": "no_data"
+              },
+              "system": {},
+              "overall": {
+                "overall_score": 1.0,
+                "status": "excellent",
+                "component_scores": {
+                  "execution": 1.0,
+                  "memory": 1.0,
+                  "reliability": 1.0
+                }
+              },
+              "targets": {
+                "max_daily_execution_time_ms": 1000,
+                "max_memory_usage_mb": 1024,
+                "min_success_rate": 0.95,
+                "max_switch_cost_rate": 0.05,
+                "max_cpu_usage": 0.8,
+                "min_cache_hit_rate": 0.7
+              },
+              "alerts": {
+                "active_count": 0,
+                "active_alerts": [],
+                "consecutive_failures": 0
+              },
+              "data_points": {
+                "daily_results": 0,
+                "execution_times": 0,
+                "memory_samples": 0
+              },
+              "last_updated": "2025-09-28 07:28:58.191851"
+            }
+          },
+          "components_initialized": 1
+        },
+        "short_backtest": {
+          "success": true,
+          "trading_days": 5,
+          "success_rate": 1.0,
+          "total_return_rate": 0.013739591145292041,
+          "execution_time": 1.7835583686828613
+        },
+        "data_processing": {
+          "success": true,
+          "symbol": "7203",
+          "data_points": 40,
+          "data_columns": [
+            "Open",
+            "High",
+            "Low",
+            "Close",
+            "Volume",
+            "Dividends",
+            "Stock Splits"
+          ],
+          "cache_used": true
+        },
+        "strategy_execution": {
+          "success": true,
+          "strategies_executed": 7,
+          "successful_strategies": 7,
+          "signals_generated": 0
+        },
+        "output_generation": {
+          "success": true,
+          "excel_generated": true,
+          "report_generated": true
+        }
+      },
+      "success_rate": 1.0,
+      "successful_tests": 5,
+      "total_tests": 5
+    },
+    "performance": {
+      "test_name": "performance_requirements",
+      "status": "passed",
+      "benchmarks": {
+        "max_daily_execution_time_ms": 1500,
+        "min_success_rate": 0.95,
+        "min_sharpe_ratio": 0.5,
+        "max_drawdown_tolerance": 0.15,
+        "min_switch_efficiency": 0.7
+      },
+      "measurements": {
+        "execution_time": {
+          "average_execution_time_ms": 159.98106002807617,
+          "max_execution_time_ms": 278.23543548583984,
+          "measurements": [
+            26.737213134765625,
+            24.347543716430664,
+            278.23543548583984,
+            250.87499618530273,
+            219.710111618042
+          ],
+          "benchmark_met": "True"
+        },
+        "memory_usage": {
+          "initial_memory_mb": 197.6953125,
+          "final_memory_mb": 197.85546875,
+          "memory_increase_mb": 0.16015625,
+          "memory_efficient": true
+        },
+        "data_throughput": {
+          "symbols_processed": 5,
+          "total_symbols": 5,
+          "processing_time_seconds": 0.5923206806182861,
+          "throughput_symbols_per_second": 8.441373336451491,
+          "high_throughput": true
+        },
+        "concurrent_performance": {
+          "concurrent_time_seconds": 0.004376649856567383,
+          "sequential_time_seconds": 0.0004799365997314453,
+          "speedup_ratio": 0.10965844092171924,
+          "efficient_concurrency": false
+        }
+      },
+      "benchmark_assessment": {
+        "individual_assessments": {
+          "execution_time": "True",
+          "memory_efficiency": true,
+          "data_throughput": true,
+          "concurrent_efficiency": false
+        },
+        "passed_benchmarks": "3",
+        "total_benchmarks": 4,
+        "pass_rate": 0.75,
+        "overall_passed": "True"
+      }
+    },
+    "system_comparison": {
+      "test_name": "traditional_system_comparison",
+      "status": "passed",
+      "comparisons": {
+        "profitability": {
+          "dssms_return_rate": 0.13104777081205332,
+          "traditional_return_rate": 0.05543792125036057,
+          "outperformance": 0.07560984956169275,
+          "dssms_superior": true
+        },
+        "risk_adjusted_returns": {
+          "dssms_sharpe_ratio": 0.7736183929277728,
+          "traditional_sharpe_ratio": 0.46442289638287093,
+          "sharpe_improvement": 0.30919549654490186,
+          "dssms_superior": true
+        },
+        "cost_efficiency": {
+          "dssms_cost_rate": 0.15,
+          "traditional_cost_rate": 0.25,
+          "cost_reduction": 0.1,
+          "dssms_superior": true
+        },
+        "selection_accuracy": {
+          "dssms_accuracy": 0.595549144339072,
+          "traditional_accuracy": 0.7312630889137461,
+          "accuracy_improvement": -0.13571394457467412,
+          "dssms_superior": false
+        },
+        "system_stability": {
+          "dssms_uptime": 0.98,
+          "traditional_uptime": 0.95,
+          "stability_improvement": 0.030000000000000027,
+          "dssms_superior": true
+        }
+      },
+      "overall_comparison": {
+        "superior_categories": 4,
+        "total_categories": 5,
+        "superiority_rate": 0.8,
+        "dssms_superior": true,
+        "comparison_summary": {
+          "profitability": {
+            "dssms_return_rate": 0.13104777081205332,
+            "traditional_return_rate": 0.05543792125036057,
+            "outperformance": 0.07560984956169275,
+            "dssms_superior": true
+          },
+          "risk_adjusted_returns": {
+            "dssms_sharpe_ratio": 0.7736183929277728,
+            "traditional_sharpe_ratio": 0.46442289638287093,
+            "sharpe_improvement": 0.30919549654490186,
+            "dssms_superior": true
+          },
+          "cost_efficiency": {
+            "dssms_cost_rate": 0.15,
+            "traditional_cost_rate": 0.25,
+            "cost_reduction": 0.1,
+            "dssms_superior": true
+          },
+          "selection_accuracy": {
+            "dssms_accuracy": 0.595549144339072,
+            "traditional_accuracy": 0.7312630889137461,
+            "accuracy_improvement": -0.13571394457467412,
+            "dssms_superior": false
+          },
+          "system_stability": {
+            "dssms_uptime": 0.98,
+            "traditional_uptime": 0.95,
+            "stability_improvement": 0.030000000000000027,
+            "dssms_superior": true
+          }
+        }
+      }
+    },
+    "error_handling": {
+      "test_name": "error_handling",
+      "status": "passed",
+      "error_scenarios": {
+        "data_fetch_errors": {
+          "error_handling_implemented": true,
+          "fallback_mechanism_works": true,
+          "graceful_degradation": true
+        },
+        "network_errors": {
+          "timeout_handling": true,
+          "retry_mechanism": true,
+          "offline_mode_support": true
+        },
+        "calculation_errors": {
+          "division_by_zero_handled": true,
+          "overflow_handled": true,
+          "nan_values_handled": true
+        },
+        "memory_errors": {
+          "memory_cleanup_implemented": true,
+          "large_dataset_handling": true,
+          "memory_monitoring": true
+        },
+        "fallback_mechanisms": {
+          "data_source_fallback": true,
+          "strategy_fallback": true,
+          "system_component_fallback": true
+        }
+      },
+      "error_handling_assessment": {
+        "robust_scenarios": 14,
+        "total_scenarios": 14,
+        "robustness_rate": 1.0,
+        "robust_handling": true
+      }
+    },
+    "stability": {
+      "test_name": "long_term_stability",
+      "status": "passed",
+      "stability_metrics": {
+        "long_term_execution": {
+          "execution_completed": true,
+          "trading_days": 21,
+          "final_success_rate": 1.0,
+          "stable_execution": true
+        },
+        "memory_leak": {
+          "memory_leak_detected": false,
+          "memory_usage_stable": true
+        },
+        "performance_degradation": {
+          "performance_degradation_detected": false,
+          "execution_time_stable": true
+        },
+        "data_consistency": {
+          "data_consistency_maintained": true,
+          "cache_integrity_preserved": true
+        }
+      },
+      "stability_assessment": {
+        "stable_metrics": 4,
+        "total_metrics": 4,
+        "stability_rate": 1.0,
+        "stable": true
+      }
+    },
+    "data_quality": {
+      "test_name": "data_quality_consistency",
+      "status": "passed",
+      "quality_checks": {
+        "data_completeness": {
+          "missing_data_rate": 0.02,
+          "data_completeness_acceptable": true
+        },
+        "data_accuracy": {
+          "data_accuracy_rate": 0.98,
+          "accuracy_acceptable": true
+        },
+        "data_consistency": {
+          "consistency_violations": 0,
+          "data_consistency_maintained": true
+        },
+        "cache_consistency": {
+          "cache_consistency_rate": 1.0,
+          "cache_integrity_preserved": true
+        },
+        "output_consistency": {
+          "output_format_consistent": true,
+          "output_data_valid": true
+        }
+      },
+      "quality_assessment": {
+        "high_quality_checks": 6,
+        "total_checks": 6,
+        "quality_rate": 1.0,
+        "high_quality": true
+      }
+    }
+  },
+  "final_assessment": {
+    "overall_status": "excellent",
+    "overall_success_rate": 1.0,
+    "category_assessments": {
+      "basic_functionality": {
+        "status": "passed",
+        "passed": true
+      },
+      "performance": {
+        "status": "passed",
+        "passed": true
+      },
+      "system_comparison": {
+        "status": "passed",
+        "passed": true
+      },
+      "error_handling": {
+        "status": "passed",
+        "passed": true
+      },
+      "stability": {
+        "status": "passed",
+        "passed": true
+      },
+      "data_quality": {
+        "status": "passed",
+        "passed": true
+      }
+    },
+    "total_categories_tested": 6,
+    "passed_categories": 6,
+    "recommendations": [
+      "全カテゴリで良好な結果が得られています"
+    ],
+    "ready_for_production": true
+  }
+}
