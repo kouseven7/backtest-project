@@ -11,9 +11,9 @@
       "success_days": 5,
       "success_rate": 1.0,
       "switch_count": 4,
-      "total_execution_time_ms": 0.030755996704101562,
-      "total_backtest_time_ms": 0.001430511474609375,
-      "avg_daily_execution_time_ms": 0.0061511993408203125
+      "total_execution_time_ms": 0.018358230590820312,
+      "total_backtest_time_ms": 0.00095367431640625,
+      "avg_daily_execution_time_ms": 0.0036716461181640625
     },
     "performance_metrics": {
       "initial_portfolio_value": 1000000,
@@ -53,7 +53,7 @@
           "execution_time_ms": 25.0
         },
         "portfolio_value": 1000000,
-        "execution_time_ms": 0.011205673217773438
+        "execution_time_ms": 0.00667572021484375
       },
       {
         "date": "2023-06-02 00:00:00",
@@ -81,7 +81,7 @@
           "execution_time_ms": 25.0
         },
         "portfolio_value": 999000.0,
-        "execution_time_ms": 0.008344650268554688
+        "execution_time_ms": 0.005245208740234375
       },
       {
         "date": "2023-06-03 00:00:00",
@@ -109,7 +109,7 @@
           "execution_time_ms": 25.0
         },
         "portfolio_value": 998001.0,
-        "execution_time_ms": 0.004291534423828125
+        "execution_time_ms": 0.0026226043701171875
       },
       {
         "date": "2023-06-04 00:00:00",
@@ -137,7 +137,7 @@
           "execution_time_ms": 25.0
         },
         "portfolio_value": 997002.999,
-        "execution_time_ms": 0.003337860107421875
+        "execution_time_ms": 0.0019073486328125
       },
       {
         "date": "2023-06-05 00:00:00",
@@ -165,7 +165,7 @@
           "execution_time_ms": 25.0
         },
         "portfolio_value": 996005.9960009999,
-        "execution_time_ms": 0.0035762786865234375
+        "execution_time_ms": 0.0019073486328125
       }
     ],
     "switch_history": [

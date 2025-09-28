@@ -1025,12 +1025,12 @@ def main():
         print(f"  - データ取得: {'利用可能' if status['data_fetcher_available'] else 'モック使用'}")
         print(f"  - 初期資本: {status['portfolio_value']:,.0f}円")
         
-        # 3. 短期バックテストテスト（5日間）
-        print(f"\n📈 短期バックテストテスト:")
+        # 3. 1年間バックテストテスト
+        print(f"\n📈 1年間バックテストテスト:")
         
-        start_date = datetime(2023, 6, 1)
-        end_date = datetime(2023, 6, 7)  # 5営業日
-        target_symbols = ['7203', '9984', '6758']
+        start_date = datetime(2023, 1, 1)
+        end_date = datetime(2023, 12, 31)  # 1年間
+        target_symbols = None  # 全銘柄（日経225自動選択）
         
         results = backtester.run_dynamic_backtest(start_date, end_date, target_symbols)
         
