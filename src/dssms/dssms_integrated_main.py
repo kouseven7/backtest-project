@@ -29,6 +29,7 @@ from src.dssms.data_cache_manager import DataCacheManager
 from src.dssms.performance_tracker import PerformanceTracker
 from src.dssms.dssms_excel_exporter import DSSMSExcelExporter
 from src.dssms.dssms_report_generator import DSSMSReportGenerator
+from src.dssms.nikkei225_screener import Nikkei225Screener
 
 # 既存システムコンポーネント
 try:
@@ -114,6 +115,14 @@ class DSSMSIntegratedBacktester:
             
             report_config = self.config.get('report_settings', {})
             self.report_generator = DSSMSReportGenerator(report_config)
+            
+            # Nikkei225スクリーナー初期化
+            try:
+                self.nikkei225_screener = Nikkei225Screener()
+                self.logger.info("Nikkei225Screener初期化完了")
+            except Exception as e:
+                self.nikkei225_screener = None
+                self.logger.warning(f"Nikkei225Screener初期化失敗: {e} - デフォルト銘柄使用")
             
             # リスク管理初期化
             if RISK_MANAGEMENT_AVAILABLE:
@@ -321,19 +330,24 @@ class DSSMSIntegratedBacktester:
                     self.logger.debug(f"DSS選択結果: {selected_symbol} @ {target_date}")
                     return selected_symbol
             
-            # フォールバック: 対象銘柄からランダム選択
-            if target_symbols:
-                import random
-                selected = random.choice(target_symbols)
-                self.logger.warning(f"DSS使用不可 - フォールバック選択: {selected}")
-                return selected
+            # 統一フォールバック: Nikkei225Screener（DSS使用不可時）
+            if self.nikkei225_screener:
+                try:
+                    # 利用可能資金（ポートフォリオ価値の80%を投資に使用）
+                    available_funds = self.portfolio_value * 0.8
+                    filtered_symbols = self.nikkei225_screener.get_filtered_symbols(available_funds)
+                    
+                    if filtered_symbols:
+                        import random
+                        selected = random.choice(filtered_symbols)
+                        self.logger.info(f"フォールバック(Nikkei225): {selected} ({len(filtered_symbols)}銘柄から選択)")
+                        return selected
+                except Exception as e:
+                    self.logger.error(f"Nikkei225フォールバック失敗: {e}")
             
-            # デフォルト銘柄
-            default_symbols = ['7203', '9984', '6758', '4063', '8306']
-            import random
-            selected = random.choice(default_symbols)
-            self.logger.warning(f"デフォルト銘柄選択: {selected}")
-            return selected
+            # TODO(production): Nikkei225Screener必須 - 他フォールバック削除済み
+            self.logger.error("DSS Core V3・Nikkei225Screener共に使用不可")
+            raise RuntimeError("DSS Core V3・Nikkei225Screener共に使用不可 - システム要求不満")
             
         except Exception as e:
             self.logger.error(f"銘柄選択エラー: {e}")

@@ -64,14 +64,19 @@ class DSSBacktesterV3:
         # 基本設定
         self.config = config or {}
         
-        # 銘柄リスト（初期版：5銘柄で開始）
-        self.symbol_universe = [
-            '7203',  # トヨタ自動車
-            '9984',  # ソフトバンクグループ
-            '6758',  # ソニーグループ
-            '4063',  # 信越化学工業
-            '8306'   # 三菱UFJフィナンシャル・グループ
-        ]
+        # 銘柄リスト（Nikkei225動的選択システム - 完全統合版）
+        try:
+            from src.dssms.nikkei225_screener import Nikkei225Screener
+            self.nikkei225_screener = Nikkei225Screener()
+            # デフォルト資金で銘柄をフィルタリング（100万円想定）
+            self.symbol_universe = self.nikkei225_screener.get_filtered_symbols(1000000)
+            self.logger.info(f"✓ Nikkei225動的選択: {len(self.symbol_universe)}銘柄取得成功")
+        except Exception as e:
+            self.logger.error(f"Nikkei225Screener初期化失敗: {e}")
+            self.nikkei225_screener = None
+            self.symbol_universe = []
+            # TODO(production): Nikkei225Screener必須 - フォールバック削除済み
+            raise RuntimeError(f"Nikkei225Screener初期化必須: {e}")
         
         # 現在のポジション（将来の拡張用）
         self.current_position = None
