@@ -71,11 +71,20 @@ class DSSMSExcelExporter:
 
     def _ensure_numeric(self, value, target_type=float):
         """
-        Phase 4.5.2: 型安全な数値変換ヘルパー
-        f-string書式でdict.__format__エラーを防止
+        Phase 4.5.2: 型安全な数値変換ヘルパー（numpy型対応版）
+        f-string書式でdict.__format__エラーを防止、numpy型を正常処理
         """
         if value is None:
             return 0.0 if target_type == float else 0
+        
+        # numpy型の検出と変換
+        if hasattr(value, 'item'):  # numpy scalar type
+            try:
+                numeric_value = float(value.item())  # numpy型を標準Python型に変換
+                return target_type(numeric_value)
+            except (ValueError, TypeError):
+                self.logger.warning(f"numpy型から数値変換失敗: {value} (型: {type(value)})")
+                return 0.0 if target_type == float else 0
         
         if isinstance(value, (int, float)):
             return target_type(value)
@@ -193,17 +202,21 @@ class DSSMSExcelExporter:
         ws["A1"] = "DSSMS バックテスト結果サマリー 統合版"
         ws["A1"].font = Font(bold=True, size=16)
         
+        # パフォーマンスデータの抽出（データ構造の修正）
+        portfolio_perf = result.get('portfolio_performance', {})
+        execution_metadata = result.get('execution_metadata', {})
+        
         # 基本情報（0%生成回避の防御的実装）
         row = 3
         basic_info = [
-            ("実行日時", result.get("execution_time", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))),
-            ("バックテスト期間", result.get("backtest_period", "N/A")),
-            ("初期資本", f"{self.initial_capital:,.0f}円"),
-            ("最終ポートフォリオ価値", f"{self._ensure_numeric(result.get('final_portfolio_value', 0)):,.0f}円"),
-            ("総リターン", f"{self._ensure_numeric(result.get('total_return', 0)):.2%}"),
-            ("年率リターン", f"{self._ensure_numeric(result.get('annualized_return', 0)):.2%}"),
-            ("最大ドローダウン", f"{self._ensure_numeric(result.get('max_drawdown', 0)):.2%}"),
-            ("シャープレシオ", f"{self._ensure_numeric(result.get('sharpe_ratio', 0)):.3f}"),
+            ("実行日時", execution_metadata.get("generated_at", datetime.now()).strftime("%Y-%m-%d %H:%M:%S") if hasattr(execution_metadata.get("generated_at", datetime.now()), 'strftime') else str(execution_metadata.get("generated_at", datetime.now()))),
+            ("バックテスト期間", f"{execution_metadata.get('start_date', 'N/A')} → {execution_metadata.get('end_date', 'N/A')}" if execution_metadata.get('start_date') else "N/A"),
+            ("初期資本", f"{self._ensure_numeric(portfolio_perf.get('initial_capital', self.initial_capital)):,.0f}円"),
+            ("最終ポートフォリオ価値", f"{self._ensure_numeric(portfolio_perf.get('final_capital', 0)):,.0f}円"),
+            ("総リターン", f"{self._ensure_numeric(portfolio_perf.get('total_return_rate', 0)):.2%}"),
+            ("年率リターン", f"{self._ensure_numeric(portfolio_perf.get('total_return_rate', 0) * 1.0):.2%}"),
+            ("最大ドローダウン", f"{self._ensure_numeric(portfolio_perf.get('max_drawdown', 0)):.2%}"),
+            ("シャープレシオ", f"{self._ensure_numeric(portfolio_perf.get('sharpe_ratio', 0)):.3f}"),
         ]
         
         for label, value in basic_info:
@@ -217,11 +230,14 @@ class DSSMSExcelExporter:
         ws[f"A{row}"].font = self.header_font
         row += 1
         
+        switch_stats = result.get('switch_statistics', {})
+        # switch_statisticsの実際の構造に合わせて修正
+        switch_summary = switch_stats.get('summary', {})
         dssms_info = [
-            ("銘柄切替回数", f"{self._ensure_numeric(result.get('switch_count', 0), int):,}回"),
-            ("切替成功率", f"{self._ensure_numeric(result.get('switch_success_rate', 0)):.2%}"),
-            ("平均保有期間", f"{self._ensure_numeric(result.get('avg_holding_period_hours', 0)):.1f}時間"),
-            ("切替コスト合計", f"{self._ensure_numeric(result.get('total_switch_cost', 0)):,.0f}円"),
+            ("銘柄切替回数", f"{self._ensure_numeric(switch_summary.get('total_switches', len(result.get('switch_history', []))), int):,}回"),
+            ("切替成功率", f"{self._ensure_numeric(switch_summary.get('success_rate', 0)):.2%}"),
+            ("平均保有期間", f"{self._ensure_numeric(switch_summary.get('average_holding_days', 0) * 24):.1f}時間"),
+            ("切替コスト合計", f"{self._ensure_numeric(switch_summary.get('total_cost_incurred', 0)):,.0f}円"),
         ]
         
         for label, value in dssms_info:
@@ -270,26 +286,33 @@ class DSSMSExcelExporter:
         self.logger.info("パフォーマンス指標シート作成完了")
     
     def _calculate_performance_metrics(self, result: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-        """パフォーマンス指標計算（V2版から移植・0%生成回避）"""
+        """パフォーマンス指標計算（修正版：正しいデータソース使用）"""
         try:
-            # 基本データ取得（防御的実装）
-            final_value = result.get("final_portfolio_value", self.initial_capital)
-            total_return = (final_value - self.initial_capital) / self.initial_capital if self.initial_capital > 0 else 0
+            # 正しいポートフォリオパフォーマンスデータの取得
+            portfolio_perf = result.get('portfolio_performance', {})
             
-            # 日次リターンデータ（0%生成回避）
-            daily_returns = result.get("daily_returns", [])
+            # 基本データ取得（データ構造修正）
+            final_value = self._ensure_numeric(portfolio_perf.get('final_capital', self.initial_capital))
+            initial_value = self._ensure_numeric(portfolio_perf.get('initial_capital', self.initial_capital))
+            total_return_rate = self._ensure_numeric(portfolio_perf.get('total_return_rate', 0))
+            
+            # 日次リターンデータ生成（実際のdaily_resultsから）
+            daily_results = result.get('daily_results', [])
+            daily_returns = []
+            for daily in daily_results:
+                daily_return_rate = daily.get('daily_return_rate', 0)
+                if daily_return_rate and not np.isnan(daily_return_rate):
+                    daily_returns.append(float(daily_return_rate))
+            
             if not daily_returns:
                 daily_returns = [0.0]  # フォールバック値
             
             returns_array = np.array(daily_returns)
             
-            # 詳細指標計算（0除算回避）
-            volatility = np.std(returns_array) * np.sqrt(252) if len(returns_array) > 1 else 0
-            sharpe_ratio = (np.mean(returns_array) * 252) / (volatility + 1e-8) if volatility > 0 else 0
-            
-            # ドローダウン計算
-            portfolio_values = result.get("portfolio_values", [self.initial_capital, final_value])
-            max_drawdown = self._calculate_max_drawdown(portfolio_values)
+            # パフォーマンス指標取得（正しいソース）
+            volatility = self._ensure_numeric(portfolio_perf.get('volatility', 0))
+            sharpe_ratio = self._ensure_numeric(portfolio_perf.get('sharpe_ratio', 0))
+            max_drawdown = self._ensure_numeric(portfolio_perf.get('max_drawdown', 0))
             
             # 勝率計算（0除算回避）
             positive_returns = len([r for r in returns_array if r > 0])
@@ -297,9 +320,9 @@ class DSSMSExcelExporter:
             
             metrics = {
                 "総リターン": {
-                    "value": total_return,
+                    "value": total_return_rate,
                     "benchmark": 0.08,
-                    "evaluation": "良好" if total_return > 0.08 else "要改善"
+                    "evaluation": "良好" if total_return_rate > 0.08 else "要改善"
                 },
                 "年率ボラティリティ": {
                     "value": volatility,
