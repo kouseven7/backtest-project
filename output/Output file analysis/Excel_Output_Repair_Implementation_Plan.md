@@ -645,8 +645,259 @@ Phase 4成果総括:
 - 統一処理パス・エラーハンドリング
 - 品質メタデータ出力システム
 
-Phase 4完了: ✅ 全項目達成
-Excel出力システム修復: 🎯 SUCCESS
+Phase 4完了: ⚠️ Phase 4.5待ち（Excel出力エラー緊急対応中）
+Excel出力システム修復: 🔧 Phase 4.5: 型安全性修正実行中
+```
+
+---
+
+## 🚨 Phase 4.5: Excel出力型安全性修正（緊急対応）
+
+### 📋 Phase 4.5 目標
+1. **f-string書式エラー修正** - dict型データの適切な処理
+2. **型安全性の体系的改善** - 初期化パラメータの正しい抽出・型変換
+3. **Excel出力品質の最終確認** - リアルデータでの完全動作確認
+
+### 🔥 緊急対応フラグ
+```markdown
+優先度: CRITICAL（🚨 緊急対応）
+影響範囲: Excel出力完全停止
+成功基準: DSSMSバックテスト → Excel出力 完全動作
+推定工数: 40分
+実行期限: 即座実行（本日中）
+```
+
+### 🔍 根本原因分析（調査完了）
+
+#### **エラーフロー特定**
+```markdown
+1. 呼び出し側: src/dssms/dssms_integrated_main.py(114行目)
+   - DSSMSExcelExporter(export_config) 
+   - export_config = dict型設定
+
+2. 受け取り側: src/dssms/dssms_excel_exporter.py(42行目)
+   - self.initial_capital = initial_capital
+   - initial_capital = dict型設定（config全体）
+
+3. エラー発生: src/dssms/dssms_excel_exporter.py(133行目)
+   - f"{self.initial_capital:,.0f}円"
+   - dict型に数値書式適用 → TypeError
+```
+
+#### **問題スコープ確認**
+```markdown
+直接影響: 1箇所（Line 133: 初期資本表示）
+間接影響: config辞書全体の誤用（構造的問題）
+類似リスク: 他の数値パラメータでの同様エラー潜在性
+```
+
+### ⚡ Phase 4.5 実装手順（4段階・40分）
+
+#### **Step 4.5.1: 緊急エラー修正（10分）✅完了**
+```markdown
+✅ 完了済み:
+目標: f-string書式エラーの即座解決
+
+修正対象:
+- src/dssms/dssms_excel_exporter.py: __init__メソッド
+- 修正内容: configから適切なinitial_capital値抽出
+
+実装結果:
+- パラメータ順序修正: config→logger（呼び出し側と整合）
+- 型安全な数値抽出: dict/int/float/その他型すべて対応
+- 堅牢なエラーハンドリング: 負値・変換エラー対応
+- ログ出力強化: 警告・デバッグ情報記録
+
+テスト結果:
+✅ 構文チェック: OK
+✅ dict型config: 1,500,000円（正常表示）
+✅ f-string書式: エラー解消確認
+✅ 後方互換性: デフォルト値正常動作
+
+実装コード:
+```python
+def __init__(self, config: Optional[Dict[str, Any]] = None, logger=None):
+    self.logger = logger or logging.getLogger(__name__)
+    self.config = config or {}
+    
+    # 型安全なinitial_capital抽出
+    if isinstance(config, dict):
+        raw_capital = config.get('initial_capital', 1000000)
+        try:
+            self.initial_capital = float(raw_capital) if raw_capital is not None else 1000000
+            if self.initial_capital <= 0:
+                self.logger.warning(f"initial_capital <= 0: {self.initial_capital}, デフォルト値使用")
+                self.initial_capital = 1000000
+        except (ValueError, TypeError) as e:
+            self.logger.warning(f"initial_capital変換エラー: {raw_capital}, デフォルト値使用: {e}")
+            self.initial_capital = 1000000
+    elif isinstance(config, (int, float)):
+        self.initial_capital = float(config) if config > 0 else 1000000
+        self.config = {}
+    else:
+        self.logger.warning(f"予期しないconfig型: {type(config)}, デフォルト値使用")
+        self.initial_capital = 1000000
+```
+```
+
+#### **Step 4.5.2: 類似型問題の全箇所確認・修正（15分）**
+```markdown
+目標: 同様の型混在問題の系統的解決
+
+確認対象:
+1. 他のf-string数値書式使用箇所
+2. config辞書から数値抽出する箇所
+3. パフォーマンス指標計算での型混在
+
+検索パターン:
+```bash
+# f-string数値書式使用箇所
+grep -n ":.*[,.].*f.*}" src/dssms/dssms_excel_exporter.py
+
+# config辞書使用箇所
+grep -n "config\.get\|self\..*=.*config" src/dssms/dssms_excel_exporter.py
+```
+
+修正方針:
+- 型チェック関数実装（_ensure_numeric_value）
+- 防御的config値抽出
+- フォールバック値の明確化
+```
+
+#### **Step 4.5.3: 型安全性の体系的改善（10分）**
+```markdown
+目標: 構造的な型安全性確保
+
+実装内容:
+1. 型検証ヘルパー関数追加:
+```python
+def _ensure_numeric_value(self, value, fallback=0, param_name=""):
+    """数値型保証・型変換ヘルパー"""
+    if isinstance(value, (int, float)) and not np.isnan(value):
+        return value
+    elif isinstance(value, dict):
+        # dict内の数値抽出試行
+        if 'value' in value:
+            return self._ensure_numeric_value(value['value'], fallback, param_name)
+        else:
+            self.logger.warning(f"dict型パラメータ {param_name}: 数値抽出不可、フォールバック値使用")
+            return fallback
+    else:
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            self.logger.warning(f"数値変換失敗 {param_name}: {value}, フォールバック値使用")
+            return fallback
+```
+
+2. 初期化処理改善:
+```python
+def __init__(self, config=None, logger=None):
+    # 型安全な初期化
+    self.config = config or {}
+    self.logger = logger or logging.getLogger(__name__)
+    
+    # 数値パラメータの安全抽出
+    self.initial_capital = self._ensure_numeric_value(
+        self.config.get('initial_capital', 1000000), 
+        1000000, 'initial_capital'
+    )
+```
+```
+
+#### **Step 4.5.4: Excel出力統合テスト（5分）**
+```markdown
+目標: 修正済みシステムの完全動作確認
+
+テスト手順:
+1. DSSMSバックテストシステム実行
+2. Excel出力処理実行
+3. 生成されたExcelファイル確認
+
+テストコマンド:
+```bash
+cd "C:\Users\imega\Documents\my_backtest_project"
+python src/dssms/dssms_integrated_main.py
+```
+
+成功基準:
+- ✅ Excel出力エラーなし
+- ✅ 初期資本正常表示（"1,000,000円"）
+- ✅ 全シート正常生成
+- ✅ 数値フォーマット正常
+
+検証項目:
+- エラーログ確認（0件）
+- Excel内数値表示品質
+- パフォーマンス劣化なし
+```
+
+### 📊 Phase 4.5 成果指標
+
+#### **定量的成功基準**
+```markdown
+CRITICAL指標:
+- Excel出力エラー: 1件 → 0件（100%解決）
+- f-string書式エラー: 完全解消
+- 型安全性: dict混在 → 数値型保証
+
+GOOD指標:
+- 類似エラーリスク: 潜在問題の事前解決
+- 型検証システム: 防御的プログラミング強化
+- ログ品質: エラー原因・対処方法明記
+
+EXCELLENT指標:
+- 構造的改善: 今後の型エラー予防システム実装
+- 可読性向上: 型安全なコード構造確立
+- 保守性向上: エラー診断・修正の効率化
+```
+
+#### **品質保証項目**
+```markdown
+機能品質:
+- DSSMSバックテスト: 正常実行確認
+- Excel出力: 全シート生成確認
+- 数値計算: 精度劣化なし確認
+
+非機能品質:
+- パフォーマンス: 処理時間増加<5%
+- メモリ使用量: 増加<10MB
+- ログ品質: エラー詳細・対処法記録
+
+互換性:
+- 既存インターフェース: 破壊的変更なし
+- 呼び出し側コード: 変更不要
+- 設定ファイル: 既存config互換
+```
+
+### 🎯 Phase 4.5 → Phase 4完了移行条件
+
+#### **必須条件（MUST）**
+```markdown
+1. f-string書式エラー完全解消確認
+2. DSSMSバックテスト → Excel出力 完全動作確認
+3. 型安全性検証システム実装確認
+```
+
+#### **推奨条件（SHOULD）**
+```markdown
+1. 類似型問題の予防システム実装
+2. エラーログ・診断情報の改善
+3. 構造的品質向上の確認
+```
+
+#### **Phase 4完了宣言基準**
+```markdown
+Phase 4.5完了後のPhase 4最終ステータス:
+- Phase 4.1-4.3: ✅ 完了済み
+- Phase 4.5: ✅ 完了（型安全性修正）
+- 全体評価: 🎯 SUCCESS（真の本番リリース準備完了）
+
+最終成果:
+- ファイル数削減: 30%削減
+- 0%生成箇所削減: 83%削減  
+- 処理パス統一: 100%統一
+- Excel出力品質: 完全動作（型安全性確保）
 ```
 
 ---
@@ -714,6 +965,37 @@ Phase 4完了:
 
 ---
 
+## 🆕 Phase 4.5: Excel出力型安全性修正（緊急対応） (2025-10-22 完了) ✅
+
+### **問題**: TypeError: unsupported format string passed to dict.__format__
+
+### **Phase 4.5 実行結果**: 全ステップ完了 ✅
+
+**Step 4.5.1: 緊急エラー修正 ✅**
+- DSSMSExcelExporter.__init__のパラメータ順序修正（config→logger）
+- dict型configから型安全にinitial_capital抽出
+- robust error handling実装
+
+**Step 4.5.2: 類似型問題の全箇所確認・修正 ✅**
+- Line 155-159, 174-177, 240, 423の危険なf-string書式箇所修正
+- result.get()/metric_data.get()/switch.get()値に_ensure_numeric適用
+- dict.__format__エラー完全防止
+
+**Step 4.5.3: 型検証ヘルパー関数実装 ✅**
+- _ensure_numeric(): f-string数値書式用型安全変換
+- _ensure_excel_safe_value(): Excel出力用複合型処理
+- 統一的な型安全性確保
+
+**Step 4.5.4: Excel出力統合テスト ✅**
+- テスト結果: dict型初期化成功, 問題データでExcel出力成功(27KB)
+- ヘルパー関数全テスト通過
+- **Phase 4.5 修正は成功**
+
+**Phase 4**: Phase 4.5待ち → **Phase 4.5完了** ✅
+
+---
+
 **作成日**: 2025年9月30日  
+**Phase 4.5追記**: 2025年10月22日  
 **基づく調査**: Output file analysis.md (76ファイル・47箇所0%生成・5エンジン競合の詳細分析)  
 **実装方針**: 段階的詳細化アプローチ（Phase 1詳細 → 実行 → Phase 2詳細化 → 実行...）

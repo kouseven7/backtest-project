@@ -36,10 +36,31 @@ except ImportError:
 class DSSMSExcelExporter:
     """DSSMS統合Excel出力システム - Phase 2統合版"""
     
-    def __init__(self, initial_capital: float = 1000000.0, config: Optional[Dict[str, Any]] = None):
-        self.logger = logger
-        self.initial_capital = initial_capital
+    def __init__(self, config: Optional[Dict[str, Any]] = None, logger=None):
+        # Phase 4.5.1: 型安全な初期化実装
+        self.logger = logger or logging.getLogger(__name__)
         self.config = config or {}
+        
+        # Phase 4.5.1: configから型安全にinitial_capital抽出
+        if isinstance(config, dict):
+            # dict型から安全に数値抽出
+            raw_capital = config.get('initial_capital', 1000000)
+            try:
+                self.initial_capital = float(raw_capital) if raw_capital is not None else 1000000
+                if self.initial_capital <= 0:
+                    self.logger.warning(f"initial_capital <= 0: {self.initial_capital}, デフォルト値使用")
+                    self.initial_capital = 1000000
+            except (ValueError, TypeError) as e:
+                self.logger.warning(f"initial_capital変換エラー: {raw_capital}, デフォルト値使用: {e}")
+                self.initial_capital = 1000000
+        elif isinstance(config, (int, float)):
+            # 後方互換性: 数値が直接渡された場合
+            self.initial_capital = float(config) if config > 0 else 1000000
+            self.config = {}
+        else:
+            # None, str, その他の型
+            self.logger.warning(f"予期しないconfig型: {type(config)}, デフォルト値使用")
+            self.initial_capital = 1000000
         
         # スタイル設定（V2版から移植）
         self.header_font = Font(bold=True, size=12, color="FFFFFF")
@@ -47,6 +68,53 @@ class DSSMSExcelExporter:
         self.number_format = '#,##0.00'
         self.percentage_format = '0.00%'
         self.date_format = 'yyyy-mm-dd'
+
+    def _ensure_numeric(self, value, target_type=float):
+        """
+        Phase 4.5.2: 型安全な数値変換ヘルパー
+        f-string書式でdict.__format__エラーを防止
+        """
+        if value is None:
+            return 0.0 if target_type == float else 0
+        
+        if isinstance(value, (int, float)):
+            return target_type(value)
+        
+        if isinstance(value, str):
+            try:
+                return target_type(float(value))
+            except (ValueError, TypeError):
+                self.logger.warning(f"文字列から数値変換失敗: {value}")
+                return 0.0 if target_type == float else 0
+        
+        if isinstance(value, dict):
+            self.logger.warning(f"dict型の値をf-string書式で使用しようとしました: {value}")
+            return 0.0 if target_type == float else 0
+        
+        # その他の型（list, tuple等）
+        self.logger.warning(f"予期しない型: {type(value)}, 値: {value}")
+        return 0.0 if target_type == float else 0
+
+    def _ensure_excel_safe_value(self, value):
+        """
+        Phase 4.5.3: Excel出力安全な値変換ヘルパー
+        辞書、リスト等の複合型を文字列に変換してExcel互換性を確保
+        """
+        if value is None:
+            return ""
+        
+        if isinstance(value, (int, float, str)):
+            return value
+        
+        if isinstance(value, (dict, list, tuple)):
+            self.logger.debug(f"複合型をExcel出力用に文字列変換: {type(value)}")
+            return str(value)
+        
+        # datetime等の特殊型
+        if hasattr(value, '__str__'):
+            return str(value)
+        
+        return "N/A"
         
         # DSSMS戦略リスト
         self.dssms_strategies = [
@@ -131,11 +199,11 @@ class DSSMSExcelExporter:
             ("実行日時", result.get("execution_time", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))),
             ("バックテスト期間", result.get("backtest_period", "N/A")),
             ("初期資本", f"{self.initial_capital:,.0f}円"),
-            ("最終ポートフォリオ価値", f"{result.get('final_portfolio_value', 0):,.0f}円"),
-            ("総リターン", f"{result.get('total_return', 0):.2%}"),
-            ("年率リターン", f"{result.get('annualized_return', 0):.2%}"),
-            ("最大ドローダウン", f"{result.get('max_drawdown', 0):.2%}"),
-            ("シャープレシオ", f"{result.get('sharpe_ratio', 0):.3f}"),
+            ("最終ポートフォリオ価値", f"{self._ensure_numeric(result.get('final_portfolio_value', 0)):,.0f}円"),
+            ("総リターン", f"{self._ensure_numeric(result.get('total_return', 0)):.2%}"),
+            ("年率リターン", f"{self._ensure_numeric(result.get('annualized_return', 0)):.2%}"),
+            ("最大ドローダウン", f"{self._ensure_numeric(result.get('max_drawdown', 0)):.2%}"),
+            ("シャープレシオ", f"{self._ensure_numeric(result.get('sharpe_ratio', 0)):.3f}"),
         ]
         
         for label, value in basic_info:
@@ -150,10 +218,10 @@ class DSSMSExcelExporter:
         row += 1
         
         dssms_info = [
-            ("銘柄切替回数", f"{result.get('switch_count', 0):,}回"),
-            ("切替成功率", f"{result.get('switch_success_rate', 0):.2%}"),
-            ("平均保有期間", f"{result.get('avg_holding_period_hours', 0):.1f}時間"),
-            ("切替コスト合計", f"{result.get('total_switch_cost', 0):,.0f}円"),
+            ("銘柄切替回数", f"{self._ensure_numeric(result.get('switch_count', 0), int):,}回"),
+            ("切替成功率", f"{self._ensure_numeric(result.get('switch_success_rate', 0)):.2%}"),
+            ("平均保有期間", f"{self._ensure_numeric(result.get('avg_holding_period_hours', 0)):.1f}時間"),
+            ("切替コスト合計", f"{self._ensure_numeric(result.get('total_switch_cost', 0)):,.0f}円"),
         ]
         
         for label, value in dssms_info:
@@ -190,7 +258,7 @@ class DSSMSExcelExporter:
         
         for metric_name, metric_data in performance_data.items():
             ws[f"A{row}"] = metric_name
-            ws[f"B{row}"] = f"{metric_data.get('value', 0):.4f}" if isinstance(metric_data.get('value'), float) else str(metric_data.get('value', 'N/A'))
+            ws[f"B{row}"] = f"{self._ensure_numeric(metric_data.get('value', 0)):.4f}" if isinstance(metric_data.get('value'), (int, float)) else str(metric_data.get('value', 'N/A'))
             ws[f"C{row}"] = metric_data.get("benchmark", "N/A")
             ws[f"D{row}"] = metric_data.get("evaluation", "N/A")
             row += 1
@@ -373,7 +441,7 @@ class DSSMSExcelExporter:
                         "exit_price": switch.get("exit_price", 1010.0),
                         "pnl": pnl,
                         "cumulative_pnl": cumulative_pnl,
-                        "holding_period": f"{switch.get('holding_period_hours', 24):.1f}時間"
+                        "holding_period": f"{self._ensure_numeric(switch.get('holding_period_hours', 24)):.1f}時間"
                     }
                     
                     trade_history.extend([entry_trade, exit_trade])

@@ -401,7 +401,8 @@ class DSSMSIntegratedBacktester:
                     'switch_executed': True,
                     'switch_cost': switch_cost,
                     'reason': switch_evaluation.get('reason', 'dss_optimization'),
-                    'portfolio_value_after_switch': self.portfolio_value
+                    'portfolio_value_after_switch': self.portfolio_value,
+                    'executed_date': target_date
                 })
                 
                 # 現在銘柄更新
@@ -950,7 +951,7 @@ class DSSMSIntegratedBacktester:
             
             # 1. Excelエクスポート
             excel_path = f"output/dssms_integration/backtest_results_{timestamp}.xlsx"
-            self.excel_exporter.export_backtest_results(final_results, excel_path)
+            self.excel_exporter.export_dssms_results(final_results, excel_path)
             self.logger.info(f"Excelエクスポート完了: {excel_path}")
             
             # 2. 包括レポート生成
