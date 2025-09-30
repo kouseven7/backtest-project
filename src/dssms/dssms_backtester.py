@@ -80,7 +80,7 @@ except ImportError:
 # 既存システムインポート
 from config.logger_config import setup_logger
 from config.risk_management import RiskManagement
-from output.dssms_excel_exporter_v2 import DSSMSExcelExporterV2  # 新しいV2システム
+from src.dssms.dssms_excel_exporter import DSSMSExcelExporter  # 統合エクスポーター
 from data_fetcher import fetch_stock_data
 from trade_simulation import simulate_trades
 
@@ -2404,17 +2404,17 @@ class DSSMSBacktester:
             # バックテスト結果データを準備
             backtest_result = self._prepare_dssms_result_data()
             
-            # 新しいDSSMS Excel Exporter V2を使用
-            exporter = DSSMSExcelExporterV2(initial_capital=self.initial_capital)
+            # 統合DSSMS Excel Exporterを使用
+            exporter = DSSMSExcelExporter(initial_capital=self.initial_capital)
             output_path = exporter.export_dssms_results(backtest_result, None)
             
             if output_path:
-                self.logger.info(f"DSSMS結果をExcel V2で出力しました: {output_path}")
+                self.logger.info(f"DSSMS結果を統合Excelエクスポーターで出力しました: {output_path}")
                 self.logger.info(f"銘柄切り替え回数: {len(self.switch_history)}回")
                 self.logger.info(f"ポートフォリオ履歴: {len(self.portfolio_history)}日分")
                 return output_path
             else:
-                self.logger.error("Excel V2出力に失敗しました")
+                self.logger.error("統合Excelエクスポーター出力に失敗しました")
                 return ""
                 
         except Exception as e:

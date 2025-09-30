@@ -450,11 +450,11 @@ class DSSMSIntegrationManager:
             
             # Excel出力の試行
             try:
-                from output.dssms_excel_exporter_v2 import DSSMSExcelExporterV2
+                from src.dssms.dssms_excel_exporter import DSSMSExcelExporter
                 
-                exporter = DSSMSExcelExporterV2(self.initial_capital)
-                excel_path = exporter.export_dssms_results(result)
-                self.logger.info(f"結果をExcel形式で出力: {excel_path}")
+                exporter = DSSMSExcelExporter(initial_capital=self.initial_capital)
+                excel_path = exporter.export_dssms_results(result, None)
+                self.logger.info(f"結果を統合Excel形式で出力: {excel_path}")
                 return str(excel_path)
                 
             except ImportError:
