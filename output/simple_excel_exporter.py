@@ -33,6 +33,7 @@ Purpose:
 """
 
 import pandas as pd
+import numpy as np
 import os
 from datetime import datetime
 from typing import Dict, Any, Optional, Union, List
@@ -43,6 +44,48 @@ from .data_extraction_enhancer import MainDataExtractor, extract_and_analyze_mai
 
 # 警告を抑制
 warnings.filterwarnings('ignore')
+
+
+def _validate_numeric_value(value: Any, field_name: str = "unknown", fallback: Any = None) -> Any:
+    """
+    数値のNaN/無限大値を検証し、適切なフォールバック値を返す
+    
+    Args:
+        value: 検証対象値
+        field_name: フィールド名（ログ用）
+        fallback: フォールバック値（デフォルト: None）
+    
+    Returns:
+        Any: 有効値またはフォールバック値
+    """
+    try:
+        if value is None:
+            return fallback
+            
+        # 数値でない場合は元の値を返す
+        if not isinstance(value, (int, float, np.number)):
+            return value
+            
+        # NaN判定
+        if pd.isna(value) or np.isnan(value):
+            logger.warning(f"⚠️ NaN値検出: {field_name} = {value} → {fallback}")
+            return fallback
+            
+        # 無限大判定
+        if np.isinf(value):
+            logger.warning(f"⚠️ 無限大値検出: {field_name} = {value} → {fallback}")
+            return fallback
+            
+        # 異常に大きな値判定（1e10以上）
+        if abs(value) > 1e10:
+            logger.warning(f"⚠️ 異常値検出: {field_name} = {value} → {fallback}")
+            return fallback
+            
+        return value
+        
+    except Exception as e:
+        logger.error(f"❌ 数値検証エラー: {field_name} = {value}, エラー: {e}")
+        return fallback
 
 
 # === DSSMS 品質統一メタデータ ===
@@ -102,6 +145,72 @@ class ExcelDataProcessor:
             'raw_data': stock_data
         }
     
+    def _assess_data_quality(self, stock_data: pd.DataFrame) -> Dict[str, Any]:
+        """
+        データ品質を詳細に評価し、品質レベルを判定します。
+        
+        Parameters:
+            stock_data (pd.DataFrame): 評価対象の株価データ
+            
+        Returns:
+            Dict[str, Any]: データ品質評価結果
+        """
+        if stock_data is None or stock_data.empty:
+            return {
+                'level': 'CRITICAL',
+                'completeness': 0.0,
+                'data_points': 0,
+                'has_close': False,
+                'issues': ['空データ'],
+                'calculation_possible': False
+            }
+        
+        # 基本情報収集
+        data_points = len(stock_data)
+        has_close = 'Close' in stock_data.columns
+        issues = []
+        
+        # データ完全性評価
+        if has_close:
+            close_data = stock_data['Close']
+            non_null_count = close_data.notna().sum()
+            completeness = non_null_count / len(close_data) if len(close_data) > 0 else 0.0
+            
+            # 異常値検出
+            if (close_data <= 0).any():
+                issues.append('負値または0の価格データ')
+            if close_data.isnull().any():
+                issues.append(f'欠損値: {close_data.isnull().sum()}箇所')
+        else:
+            completeness = 0.0
+            issues.append('Close列不明')
+        
+        # 品質レベル判定
+        if not has_close or data_points == 0:
+            level = 'CRITICAL'
+            calculation_possible = False
+        elif completeness >= 0.95 and data_points >= 30:
+            level = 'HIGH'
+            calculation_possible = True
+        elif completeness >= 0.8 and data_points >= 7:
+            level = 'MEDIUM'
+            calculation_possible = True
+        elif completeness >= 0.5 and data_points >= 1:
+            level = 'LOW'
+            calculation_possible = True
+        else:
+            level = 'CRITICAL'
+            calculation_possible = False
+        
+        return {
+            'level': level,
+            'completeness': completeness,
+            'data_points': data_points,
+            'has_close': has_close,
+            'issues': issues,
+            'calculation_possible': calculation_possible
+        }
+
     def _process_basic_data(self, stock_data: pd.DataFrame, ticker: str) -> Dict[str, Any]:
         """
         Entry_Signal/Exit_Signal列がない場合の基本データ処理
@@ -113,21 +222,45 @@ class ExcelDataProcessor:
         Returns:
             Dict: 基本データ構造
         """
-        # 基本的なパフォーマンス計算
-        if not stock_data.empty and 'Close' in stock_data.columns:
-            initial_price = stock_data['Close'].iloc[0]
-            final_price = stock_data['Close'].iloc[-1]
-            total_return = (final_price - initial_price) / initial_price
-            final_value = 1000000 * (1 + total_return)  # 100万円の初期資本と仮定
+        # データ品質評価
+        quality_assessment = self._assess_data_quality(stock_data)
+        
+        # 品質レベル別計算処理
+        if quality_assessment['calculation_possible'] and quality_assessment['has_close']:
+            close_data = stock_data['Close'].dropna()
+            if len(close_data) >= 2:
+                initial_price = close_data.iloc[0]
+                final_price = close_data.iloc[-1]
+                
+                # 0除算回避 + NaN検証
+                if initial_price != 0:
+                    total_return = (final_price - initial_price) / initial_price
+                    # NaN/無限大値検証
+                    total_return = _validate_numeric_value(total_return, "total_return", None)
+                    
+                    if total_return is not None:
+                        final_value = 1000000 * (1 + total_return)
+                        final_value = _validate_numeric_value(final_value, "final_value", 1000000.0)
+                    else:
+                        final_value = 1000000.0
+                else:
+                    total_return = None  # 計算不可を明示
+                    final_value = 1000000.0
+            else:
+                total_return = None  # データ不足を明示
+                final_value = 1000000.0
         else:
-            total_return = 0.0
+            total_return = None  # 品質不足を明示
             final_value = 1000000.0
         
         return {
             'metadata': {
                 'ticker': ticker,
                 'analysis_date': datetime.now(),
-                'data_quality': 'basic',
+                'data_quality': quality_assessment['level'],
+                'data_completeness': quality_assessment['completeness'],
+                'data_issues': quality_assessment['issues'],
+                'calculation_method': 'quality_adjusted',
                 'period_start': stock_data.index[0] if not stock_data.empty else datetime.now(),
                 'period_end': stock_data.index[-1] if not stock_data.empty else datetime.now(),
                 'total_days': len(stock_data)
@@ -135,34 +268,37 @@ class ExcelDataProcessor:
             'summary': {
                 'final_portfolio_value': final_value,
                 'total_return': total_return,
-                'total_pnl': final_value - 1000000,
+                'total_pnl': final_value - 1000000 if total_return is not None else None,
                 'num_trades': 0,
-                'win_rate': 0.0,
+                'win_rate': None if quality_assessment['level'] == 'CRITICAL' else 0.0,
                 'initial_capital': 1000000.0,
-                'max_drawdown': 0.0,
-                'sharpe_ratio': 0.0
+                'max_drawdown': None if quality_assessment['level'] == 'CRITICAL' else 0.0,
+                'sharpe_ratio': None if quality_assessment['level'] == 'CRITICAL' else 0.0
             },
             'trades': [],
             'raw_data': stock_data
         }
 
     def _get_empty_data(self, ticker: str) -> Dict[str, Any]:
-        """空データの場合のデフォルト構造"""
+        """空データの場合のデフォルト構造 - 品質レベル対応改善版"""
         return {
             'metadata': {
                 'ticker': ticker,
                 'analysis_date': datetime.now(),
-                'data_quality': 'empty',
+                'data_quality': 'CRITICAL',
+                'data_completeness': 0.0,
+                'data_issues': ['データなし'],
+                'calculation_method': 'fallback_empty',
                 'period_start': datetime.now(),
                 'period_end': datetime.now(),
                 'total_days': 0
             },
             'summary': {
                 'final_portfolio_value': 1000000.0,
-                'total_return': 0.0,
-                'total_pnl': 0.0,
+                'total_return': None,  # 0.0 → None（計算不可を明示）
+                'total_pnl': None,     # 0.0 → None（計算不可を明示）
                 'num_trades': 0,
-                'win_rate': 0.0
+                'win_rate': None       # 0.0 → None（計算不可を明示）
             },
             'trades': [],
             'raw_data': pd.DataFrame()
@@ -552,26 +688,26 @@ def get_summary_from_results(results: Any) -> Dict[str, Any]:
     
     try:
         if isinstance(results, dict):
-            # 一般的なキーを探索
+            # 一般的なキーを探索（品質判定を考慮）
             summary.update({
-                'total_return': results.get('total_return', results.get('リターン', 0)),
-                'final_value': results.get('final_value', results.get('最終価値', 1000000)),
-                'switch_count': results.get('switch_count', results.get('切替回数', 0)),
-                'max_drawdown': results.get('max_drawdown', results.get('最大ドローダウン', 0))
+                'total_return': results.get('total_return', results.get('リターン', None)),
+                'final_value': results.get('final_value', results.get('最終価値', None)),
+                'switch_count': results.get('switch_count', results.get('切替回数', None)),
+                'max_drawdown': results.get('max_drawdown', results.get('最大ドローダウン', None))
             })
         
-        # デフォルト値で補完
+        # 品質考慮デフォルト値で補完
         default_summary = {
-            'initial_capital': 1000000,
-            'final_value': 1000000,
-            'total_return': 0.0,
-            'annual_return': 0.0,
-            'max_drawdown': 0.0,
-            'sharpe_ratio': 0.0,
-            'switch_count': 0,
-            'switch_success_rate': 0.0,
-            'avg_holding_period': 0.0,
-            'switch_cost': 0.0
+            'initial_capital': 1000000,  # 固定値
+            'final_value': None,  # 計算不可時はNone
+            'total_return': None,  # 計算不可時はNone
+            'annual_return': None,  # 計算不可時はNone
+            'max_drawdown': None,  # 計算不可時はNone
+            'sharpe_ratio': None,  # 計算不可時はNone
+            'switch_count': 0,  # 実数値（0は有効）
+            'switch_success_rate': None,  # 計算不可時はNone
+            'avg_holding_period': None,  # 計算不可時はNone
+            'switch_cost': None  # 計算不可時はNone
         }
         
         for key, default_value in default_summary.items():
@@ -676,31 +812,39 @@ def _calculate_summary_from_trades(trades, df):
         'total_trades': len(trades),
         'winning_trades': 0,
         'losing_trades': 0,
-        'total_pnl': 0.0,
-        'win_rate': 0.0,
-        'avg_pnl': 0.0,
-        'max_profit': 0.0,
-        'max_loss': 0.0,
-        'avg_holding_days': 0.0,
-        'total_return': 0.0,
-        'annual_return': 0.0,
-        'max_drawdown': 0.0,
-        'sharpe_ratio': 0.0
+        'total_pnl': None,  # 計算不可時はNone
+        'win_rate': None,  # 計算不可時はNone
+        'avg_pnl': None,  # 計算不可時はNone
+        'max_profit': None,  # 計算不可時はNone
+        'max_loss': None,  # 計算不可時はNone
+        'avg_holding_days': None,  # 計算不可時はNone
+        'total_return': None,  # 計算不可時はNone
+        'annual_return': None,  # 計算不可時はNone
+        'max_drawdown': None,  # 計算不可時はNone
+        'sharpe_ratio': None  # 計算不可時はNone
     }
     
     try:
-        if trades:
+        if trades and len(trades) > 0:  # データ品質チェック
             pnls = [trade.get('pnl_amount', 0) for trade in trades]
-            summary['total_pnl'] = sum(pnls)
-            summary['avg_pnl'] = summary['total_pnl'] / len(trades)
-            summary['winning_trades'] = len([pnl for pnl in pnls if pnl > 0])
-            summary['losing_trades'] = len([pnl for pnl in pnls if pnl < 0])
-            summary['win_rate'] = summary['winning_trades'] / len(trades) * 100
-            summary['max_profit'] = max(pnls) if pnls else 0
-            summary['max_loss'] = min(pnls) if pnls else 0
+            valid_pnls = [p for p in pnls if p is not None and not np.isnan(p)]
             
-            holding_days = [trade.get('holding_days', 0) for trade in trades]
-            summary['avg_holding_days'] = sum(holding_days) / len(holding_days) if holding_days else 0
+            if valid_pnls:  # 有効なPNLデータが存在する場合のみ計算
+                summary['total_pnl'] = sum(valid_pnls)
+                summary['avg_pnl'] = summary['total_pnl'] / len(valid_pnls)
+                summary['winning_trades'] = len([pnl for pnl in valid_pnls if pnl > 0])
+                summary['losing_trades'] = len([pnl for pnl in valid_pnls if pnl < 0])
+                
+                if len(trades) > 0:
+                    summary['win_rate'] = summary['winning_trades'] / len(trades) * 100
+                
+                summary['max_profit'] = max(valid_pnls)
+                summary['max_loss'] = min(valid_pnls)
+                
+                holding_days = [trade.get('holding_days', 0) for trade in trades]
+                valid_holding_days = [d for d in holding_days if d is not None and not np.isnan(d)]
+                if valid_holding_days:
+                    summary['avg_holding_days'] = sum(valid_holding_days) / len(valid_holding_days)
             
             # 初期資本を仮定してリターン計算
             initial_capital = 1000000

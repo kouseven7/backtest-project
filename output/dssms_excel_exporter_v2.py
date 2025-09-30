@@ -679,14 +679,14 @@ class DSSMSExcelExporterV2:
         """デフォルト戦略統計生成"""
         return {
             "DSSMSStrategy": {
-                "trade_count": 0,
-                "win_rate": 0.0,
-                "avg_profit": 0.0,
-                "avg_loss": 0.0,
-                "max_profit": 0.0,
-                "max_loss": 0.0,
-                "profit_factor": 0.0,
-                "total_pnl": 0.0
+                "trade_count": 0,  # 実数値（0は有効）
+                "win_rate": None,  # 計算不可時はNone
+                "avg_profit": None,  # 計算不可時はNone 
+                "avg_loss": None,  # 計算不可時はNone
+                "max_profit": None,  # 計算不可時はNone
+                "max_loss": None,  # 計算不可時はNone
+                "profit_factor": None,  # 計算不可時はNone
+                "total_pnl": None  # 計算不可時はNone
             }
         }
     
