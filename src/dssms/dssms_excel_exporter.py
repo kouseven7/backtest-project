@@ -369,13 +369,13 @@ class DSSMSExcelExporter:
             return 0.0  # フォールバック値
     
     def _create_trade_history_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
-        """取引履歴シート作成（V2版から移植）"""
+        """取引履歴シート作成（シンプル版 - 実際のデータ使用）"""
         ws = workbook.create_sheet("取引履歴")
         
-        # ヘッダー
+        # ヘッダー（シンプル化）
         headers = [
-            "日付", "戦略名", "銘柄", "売買区分", "数量", 
-            "エントリー価格", "エグジット価格", "損益", "累積損益", "保有期間"
+            "日付", "銘柄", "戦略", "ポートフォリオ開始", "ポートフォリオ終了", 
+            "日次リターン", "リターン率%", "切替実行"
         ]
         
         for col, header in enumerate(headers, 1):
@@ -383,21 +383,29 @@ class DSSMSExcelExporter:
             cell.font = self.header_font
             cell.fill = self.header_fill
         
-        # 取引履歴データ生成
-        trade_history = self._generate_trade_history(result)
+        # 実際のバックテストデータから日次履歴を取得
+        daily_results = result.get("daily_results", [])
         
-        # データ出力（0%生成回避の防御的実装）
-        for row_idx, trade in enumerate(trade_history, 2):
-            ws[f"A{row_idx}"] = trade.get("date", "")
-            ws[f"B{row_idx}"] = trade.get("strategy", "")
-            ws[f"C{row_idx}"] = trade.get("symbol", "")
-            ws[f"D{row_idx}"] = trade.get("side", "")
-            ws[f"E{row_idx}"] = trade.get("quantity", 0)
-            ws[f"F{row_idx}"] = trade.get("entry_price", 0)
-            ws[f"G{row_idx}"] = trade.get("exit_price", 0)
-            ws[f"H{row_idx}"] = trade.get("pnl", 0)
-            ws[f"I{row_idx}"] = trade.get("cumulative_pnl", 0)
-            ws[f"J{row_idx}"] = trade.get("holding_period", "")
+        # データ出力（実際のバックテストデータ使用）
+        for row_idx, daily in enumerate(daily_results, 2):
+            ws[f"A{row_idx}"] = str(daily.get("date", ""))
+            ws[f"B{row_idx}"] = daily.get("symbol", "")
+            
+            # 戦略名を実際のデータから取得
+            strategy_results = daily.get("strategy_results", {})
+            strategy_name = "不明"
+            if isinstance(strategy_results, dict):
+                for key, value in strategy_results.items():
+                    if key != "position_update" and isinstance(value, dict):
+                        strategy_name = key
+                        break
+            ws[f"C{row_idx}"] = strategy_name
+            
+            ws[f"D{row_idx}"] = daily.get("portfolio_value_start", 0)
+            ws[f"E{row_idx}"] = daily.get("portfolio_value_end", 0)
+            ws[f"F{row_idx}"] = daily.get("daily_return", 0)
+            ws[f"G{row_idx}"] = f"{daily.get('daily_return_rate', 0)*100:.2f}%"
+            ws[f"H{row_idx}"] = "Yes" if daily.get("switch_executed", False) else "No"
             
             # フォーマット設定（0%生成回避）
             try:
@@ -418,66 +426,82 @@ class DSSMSExcelExporter:
             ws.column_dimensions[col].width = width
         
         self.logger.info("取引履歴シート作成完了")
+            
     
-    def _generate_trade_history(self, result: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """取引履歴データ生成（V2版完全実装・switch_historyベース）"""
+    # 古い複雑な取引履歴生成を削除し、シンプル版に統一
+    
+    def _get_real_price_from_daily(self, daily_result: Dict[str, Any], price_type: str) -> float:
+        """日次結果から実際の価格データを取得"""
         try:
-            trade_history = []
+            strategy_results = daily_result.get("strategy_results", {})
             
-            # DSSMSの切替履歴から取引履歴を再構築（V2版ロジック移植）
-            switch_history = result.get("switch_history", [])
+            # 戦略結果から価格情報を探す
+            for strategy_name, strategy_data in strategy_results.get("strategy_results", {}).items():
+                if isinstance(strategy_data, dict) and "current_price" in strategy_data:
+                    return float(strategy_data["current_price"])
             
-            if not switch_history:
-                # サンプルデータ生成（フォールバック処理）
-                switch_history = self._generate_sample_switch_history(result)
+            # ポジション更新データから価格を探す
+            position_update = strategy_results.get("position_update", {})
+            if price_type == "entry" and "entry_price" in position_update:
+                return float(position_update["entry_price"])
+            elif price_type == "exit" and "exit_price" in position_update:
+                return float(position_update["exit_price"])
             
-            cumulative_pnl = 0
-            
-            for i, switch in enumerate(switch_history):
-                # エントリー取引生成（V2版ロジック）
-                entry_trade = {
-                    "date": switch.get("date", datetime.now() - timedelta(days=i*2)),
-                    "strategy": self._map_switch_to_strategy(switch),
-                    "symbol": switch.get("to_symbol", "SAMPLE"),
-                    "side": "買い",
-                    "quantity": switch.get("quantity", 100),
-                    "entry_price": switch.get("entry_price", 1000.0),
-                    "exit_price": None,
-                    "pnl": 0,
-                    "cumulative_pnl": cumulative_pnl,
-                    "holding_period": ""
-                }
-                
-                # エグジット取引生成（次の切替時・V2版ロジック）
-                if i < len(switch_history) - 1:
-                    next_switch = switch_history[i + 1]
-                    pnl = switch.get("profit_loss", np.random.normal(1000, 5000))
-                    cumulative_pnl += pnl
-                    
-                    exit_trade = {
-                        "date": next_switch.get("date", datetime.now() - timedelta(days=i*2-1)),
-                        "strategy": self._map_switch_to_strategy(switch),
-                        "symbol": switch.get("to_symbol", "SAMPLE"),
-                        "side": "売り",
-                        "quantity": switch.get("quantity", 100),
-                        "entry_price": switch.get("entry_price", 1000.0),
-                        "exit_price": switch.get("exit_price", 1010.0),
-                        "pnl": pnl,
-                        "cumulative_pnl": cumulative_pnl,
-                        "holding_period": f"{self._ensure_numeric(switch.get('holding_period_hours', 24)):.1f}時間"
-                    }
-                    
-                    trade_history.extend([entry_trade, exit_trade])
-                else:
-                    # 最後の取引（未決済）
-                    trade_history.append(entry_trade)
-            
-            self.logger.info(f"取引履歴データ生成完了: {len(trade_history)}件")
-            return trade_history
+            # 価格情報が見つからない場合はフォールバック値を返す
+            return 1000.0  # シンプルなフォールバック
             
         except Exception as e:
-            self.logger.error(f"取引履歴データ生成エラー: {e}")
-            return []  # フォールバック（0%生成回避）
+            self.logger.warning(f"価格データ取得エラー: {e}")
+            return 1000.0
+    
+    # _get_realistic_price_for_symbol削除 - 適当な価格生成は不要
+    
+    def _get_dominant_strategy(self, strategy_results: Dict[str, Any]) -> str:
+        """戦略結果から主要戦略を特定"""
+        try:
+            buy_signals = []
+            sell_signals = []
+            
+            for strategy_name, result in strategy_results.items():
+                if isinstance(result, dict) and result.get("success", False):
+                    signal = result.get("signal", "HOLD")
+                    if signal == "BUY":
+                        buy_signals.append(strategy_name)
+                    elif signal == "SELL":
+                        sell_signals.append(strategy_name)
+            
+            # 最も多くの戦略が推奨した方向の戦略名を返す
+            if buy_signals:
+                return buy_signals[0]  # 最初のBUY戦略
+            elif sell_signals:
+                return sell_signals[0]  # 最初のSELL戦略
+            
+            # フォールバック
+            if strategy_results:
+                return list(strategy_results.keys())[0]
+            
+            return "DSSMS統合戦略"
+            
+        except Exception as e:
+            self.logger.warning(f"主要戦略特定エラー: {e}")
+            return "DSSMS統合戦略"
+    
+    def _calculate_holding_period(self, entry_date_str: str, exit_date_str: str) -> str:
+        """保有期間を計算"""
+        try:
+            from datetime import datetime
+            
+            entry_date = datetime.strptime(entry_date_str, "%Y-%m-%d")
+            exit_date = datetime.strptime(exit_date_str, "%Y-%m-%d")
+            
+            delta = exit_date - entry_date
+            hours = delta.total_seconds() / 3600
+            
+            return f"{hours:.1f}時間"
+            
+        except Exception as e:
+            self.logger.warning(f"保有期間計算エラー: {e}")
+            return "24.0時間"
     
     def _generate_sample_switch_history(self, result: Dict[str, Any]) -> List[Dict[str, Any]]:
         """サンプル切替履歴生成（V2版から移植）"""
@@ -510,28 +534,7 @@ class DSSMSExcelExporter:
             self.logger.error(f"サンプル切替履歴生成エラー: {e}")
             return []  # フォールバック（0%生成回避）
     
-    def _map_switch_to_strategy(self, switch: Dict[str, Any]) -> str:
-        """切替データから戦略名をマッピング（V2版から移植）"""
-        try:
-            # 実際の戦略データがある場合はそれを使用
-            if "strategy" in switch:
-                return switch["strategy"]
-            
-            # confidence値に基づく戦略マッピング（フォールバック）
-            confidence = switch.get("confidence", 0.5)
-            
-            if confidence > 0.8:
-                return "DSSMS高確信度"
-            elif confidence > 0.6:
-                return "DSSMS中確信度"
-            elif confidence > 0.4:
-                return "DSSMS低確信度"
-            else:
-                return "DSSMS探索モード"
-            
-        except Exception as e:
-            self.logger.warning(f"戦略マッピングエラー: {e}")
-            return "DSSMS不明戦略"  # フォールバック（0%生成回避）
+    # _map_switch_to_strategy削除 - ランダム戦略選択は不要
     
     def _generate_sample_portfolio_values(self, result: Dict[str, Any]) -> List[float]:
         """サンプルポートフォリオ価値生成（V2版から移植）"""

@@ -17,6 +17,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 import json
+import argparse
 
 # プロジェクトルートをパスに追加
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -1085,6 +1086,12 @@ class DSSMSIntegratedBacktester:
 
 def main():
     """DSSMS統合バックテスター テスト実行"""
+    # コマンドライン引数パーサー設定
+    parser = argparse.ArgumentParser(description='DSSMS統合バックテスター')
+    parser.add_argument('--start-date', type=str, help='開始日 (YYYY-MM-DD形式)', default='2023-01-01')
+    parser.add_argument('--end-date', type=str, help='終了日 (YYYY-MM-DD形式)', default='2023-12-31')
+    args = parser.parse_args()
+    
     print("DSSMS統合バックテスター テスト実行")
     print("=" * 60)
     
@@ -1113,11 +1120,17 @@ def main():
         print(f"  - データ取得: {'利用可能' if status['data_fetcher_available'] else 'モック使用'}")
         print(f"  - 初期資本: {status['portfolio_value']:,.0f}円")
         
-        # 3. 1年間バックテストテスト
-        print(f"\n📈 1年間バックテストテスト:")
+        # 3. カスタム期間バックテストテスト
+        print(f"\n📈 カスタム期間バックテストテスト:")
         
-        start_date = datetime(2023, 1, 1)
-        end_date = datetime(2023, 12, 31)  # 1年間
+        # 期間設定（コマンドライン引数または デフォルト値）
+        try:
+            start_date = datetime.strptime(args.start_date, '%Y-%m-%d')
+            end_date = datetime.strptime(args.end_date, '%Y-%m-%d')
+        except ValueError as e:
+            print(f"❌ 日付形式エラー: {e}")
+            print("正しい形式: YYYY-MM-DD (例: 2023-01-01)")
+            return
         target_symbols = None  # 全銘柄（日経225自動選択）
         
         results = backtester.run_dynamic_backtest(start_date, end_date, target_symbols)
