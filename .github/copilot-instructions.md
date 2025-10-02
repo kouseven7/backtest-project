@@ -56,11 +56,70 @@
 - 再現性要素: seed, deterministic_mode, cache invalidation keys
 - Perfect Order 判定結果には timeframe 別 MA 値と判定フラグを保持
 
-## Error Severity Policy
-- CRITICAL: raise + 上位へ伝播
-- ERROR: ログ + フォールバック
-- WARNING: ログのみ
-- INFO/DEBUG: 状態追跡
+## Error Severity Policy (フォールバック対応版更新)
+- CRITICAL: SystemFallbackPolicy.handle_component_failure() → raise (PRODUCTION mode)
+- ERROR: SystemFallbackPolicy.handle_component_failure() → 明示的フォールバック (DEVELOPMENT mode)
+- WARNING: ログのみ、フォールバック使用記録
+- INFO/DEBUG: 状態追跡、フォールバック統計
+
+## DSSMS フォールバック・テストデータポリシー (2025年10月追加)
+
+### システムモード管理
+- PRODUCTION: フォールバック禁止、エラーで即停止
+- DEVELOPMENT: 明示的フォールバック許可、ログ必須  
+- TESTING: モック/テストデータ許可
+
+### フォールバック実装必須パターン
+```python
+# ✅ 必須: 統一フォールバック処理
+from src.config.system_modes import SystemFallbackPolicy, ComponentType, SystemMode
+
+def component_method(self):
+    try:
+        return primary_function()
+    except Exception as e:
+        return self.fallback_policy.handle_component_failure(
+            component_type=ComponentType.DSSMS_CORE,  # 適切なタイプ
+            component_name="ComponentName",
+            error=e,
+            fallback_func=explicit_fallback_function
+        )
+
+# ❌ 禁止: サイレントフォールバック
+def component_method(self):
+    try:
+        return primary_function() 
+    except:
+        return random_fallback()  # 問題を隠蔽
+```
+
+### コンポーネントタイプ分類
+- `DSSMS_CORE`: ランキング、スコアリング、銘柄選択
+- `STRATEGY_ENGINE`: 個別戦略 (VWAP, Bollinger等)
+- `DATA_FETCHER`: yfinance, データ取得
+- `RISK_MANAGER`: リスク管理、ポジション管理
+- `MULTI_STRATEGY`: 統合システム、戦略統合
+
+### TODOタグ必須規約
+- フォールバック関数: `TODO(tag:phase2, rationale:eliminate after X integration)` 
+- モック/テストデータ: `TODO(tag:mock, rationale:replace with real data)`
+- 暫定実装: `TODO(tag:temporary, rationale:improve performance)`
+
+### モック・テストデータ識別必須
+- プレフィックス必須: `MOCK_`, `TEST_`, `DEMO_`
+- ファイル名規約: `*_mock.py`, `*_test_data.py`
+- 実データとの混在禁止
+- TESTING modeでのみ使用許可
+
+### フォールバック除去計画
+1. Phase 1: 明示的フォールバックに変更 (TODO-FB-001~008)
+2. Phase 2: 段階的フォールバック除去 (TODO-DSSMS-001~005)
+3. Phase 3: Production readiness確認 (TODO-QG-001~002)
+
+### フォールバック品質ゲート
+- Production mode: フォールバック使用量 = 0 必須
+- Development mode: フォールバック使用記録・監視必須
+- Testing mode: モック/テストデータのみ許可
 
 ## KPI メタデータ出力
 - 50銘柄ランキング処理時間(ms)
