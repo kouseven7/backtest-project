@@ -38,9 +38,13 @@ sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")
 from config.logger_config import setup_logger
 from config.risk_management import RiskManagement
 from config.optimized_parameters import OptimizedParameterManager
+from src.config.system_modes import SystemFallbackPolicy, ComponentType
 
 # ロガーの設定
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\backtest.log")
+
+# SystemFallbackPolicy の初期化
+fallback_policy = SystemFallbackPolicy()
 
 # 新統合システムのインポート
 try:
@@ -49,8 +53,15 @@ try:
     integrated_system_available = True
     logger.info("統合マルチ戦略システムが利用可能です")
 except ImportError as e:
-    integrated_system_available = False
-    logger.warning(f"統合システムが利用できません: {e}。従来システムを使用します。")
+    # SystemFallbackPolicy を使用した明示的フォールバック処理
+    integrated_system_available = fallback_policy.handle_component_failure(
+        component_type=ComponentType.MULTI_STRATEGY,
+        component_name="MultiStrategyManager",
+        error=e,
+        fallback_func=lambda: False
+    )
+    if not integrated_system_available:
+        logger.warning(f"統合システムが利用できません: {e}。従来システムを使用します。")
 from indicators.unified_trend_detector import detect_unified_trend, detect_unified_trend_with_confidence
 from strategies.VWAP_Breakout import VWAPBreakoutStrategy
 from strategies.Momentum_Investing import MomentumInvestingStrategy
@@ -511,9 +522,16 @@ def main():
                     raise Exception("統合システムの初期化失敗")
                     
             except Exception as e:
+                # SystemFallbackPolicy を使用した明示的フォールバック処理
+                use_integrated_system = fallback_policy.handle_component_failure(
+                    component_type=ComponentType.MULTI_STRATEGY,
+                    component_name="MultiStrategyManager.execute_multi_strategy_flow",
+                    error=e,
+                    fallback_func=lambda: False
+                )
                 logger.error(f"統合システム実行中にエラー: {e}")
-                logger.info("従来のマルチ戦略システムにフォールバックします")
-                use_integrated_system = False
+                if not use_integrated_system:
+                    logger.info("従来のマルチ戦略システムにフォールバックします")
         
         if not use_integrated_system:
             logger.info("従来のマルチ戦略システムを使用してバックテストを実行します")
@@ -562,6 +580,16 @@ def main():
         except Exception as e:
             logger.warning(f"Excel出力エラー: {e}")
         
+        # SystemFallbackPolicy 使用統計の出力
+        fallback_stats = fallback_policy.get_usage_statistics()
+        if fallback_stats['total_failures'] > 0:
+            logger.warning(f"フォールバック使用統計: {fallback_stats}")
+            # フォールバック使用レポートを JSON として出力
+            report_path = fallback_policy.export_usage_report()
+            logger.info(f"フォールバック使用レポート出力: {report_path}")
+        else:
+            logger.info("フォールバック使用記録: なし (正常動作)")
+            
         logger.info("マルチ戦略バックテストシステムが正常に完了しました")
         
     except Exception as e:

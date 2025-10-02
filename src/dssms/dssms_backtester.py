@@ -77,6 +77,15 @@ except ImportError:
         ComprehensiveScoringEngine = None
         PerfectOrderDetector = None
 
+# SystemFallbackPolicy統合 (TODO-FB-005)
+try:
+    from src.config.system_modes import SystemFallbackPolicy, ComponentType, SystemMode, get_fallback_policy
+    FALLBACK_POLICY_AVAILABLE = True
+except ImportError:
+    FALLBACK_POLICY_AVAILABLE = False
+    import warnings
+    warnings.warn("SystemFallbackPolicy not available - using legacy fallback", UserWarning)
+
 # 既存システムインポート
 from config.logger_config import setup_logger
 from config.risk_management import RiskManagement
@@ -1319,9 +1328,41 @@ class DSSMSBacktester:
             self.logger.warning(f"出来高変化率計算エラー: {e}")
             return 0.0
 
+    def _market_score_fallback(self, symbol: str, date: datetime) -> float:
+        """
+        市場スコア計算フォールバック関数
+        
+        TODO(tag:phase2, rationale:eliminate after advanced ranking integration)
+        
+        Args:
+            symbol: 銘柄コード
+            date: 対象日付
+            
+        Returns:
+            float: 0.05-0.95範囲のフォールバックスコア
+        """
+        import random
+        # 決定論的シードで再現性確保
+        random.seed(hash(f"{symbol}_{date.strftime('%Y-%m-%d')}"))
+        
+        # 拡張範囲でのフォールバックスコア生成
+        base_score = 0.05 + random.random() * 0.90  # 0.05-0.95範囲
+        
+        # 日付ベースの調整（市場の季節性を模倣）
+        seasonal_adjustment = (date.month % 12) / 120  # 0-0.1範囲
+        final_score = max(0.05, min(0.95, base_score + seasonal_adjustment))
+        
+        self.logger.warning(
+            f"FALLBACK: 市場スコア計算フォールバック使用 {symbol} @ {date.strftime('%Y-%m-%d')}: {final_score:.3f}"
+        )
+        return final_score
+
     def _calculate_market_based_fallback_score(self, symbol: str, date: datetime) -> float:
-        """市場データベース動的フォールバックスコア計算（決定論的計算の代替）"""
-        # TODO(tag:phase1, rationale:実データ分析): 市場データベース動的スコア
+        """
+        市場データベース動的フォールバックスコア計算（決定論的計算の代替）
+        
+        TODO-FB-005: SystemFallbackPolicy統合、範囲拡張対応
+        """
         try:
             # data_fetcher を利用した実データ取得
             if hasattr(self, 'data_fetcher') and callable(self.data_fetcher):
@@ -1352,31 +1393,69 @@ class DSSMSBacktester:
                             volatility_score * 0.2
                         )
                         
-                        # 0.1-0.9範囲に正規化（決定論的0.3-0.7とは異なる）
-                        normalized_score = max(0.1, min(0.9, composite_score))
+                        # 拡張範囲に正規化（0.05-0.95: 従来0.1-0.9から更に拡張）
+                        normalized_score = max(0.05, min(0.95, composite_score))
                         
                         self.logger.debug(f"市場データスコア {symbol}: RSI={rsi_score:.3f}, Mom={momentum_score:.3f}, Vol={volume_score:.3f}, Vola={volatility_score:.3f} → {normalized_score:.3f}")
                         return normalized_score
                         
-                except Exception as e:
-                    self.logger.warning(f"実データ取得失敗 {symbol}: {e}")
+                except Exception as data_error:
+                    # SystemFallbackPolicy統合: 実データ取得失敗時
+                    if FALLBACK_POLICY_AVAILABLE:
+                        fallback_policy = get_fallback_policy()
+                        return fallback_policy.handle_component_failure(
+                            component_type=ComponentType.DATA_FETCHER,
+                            component_name="DSSMSBacktester._calculate_market_based_fallback_score",
+                            error=data_error,
+                            fallback_func=lambda: self._market_score_fallback(symbol, date),
+                            context={
+                                "symbol": symbol,
+                                "date": date.isoformat(),
+                                "data_fetcher_available": hasattr(self, 'data_fetcher')
+                            }
+                        )
+                    else:
+                        # レガシーフォールバック
+                        self.logger.warning(f"実データ取得失敗 {symbol}: {data_error}")
+                        return self._market_score_fallback(symbol, date)
             
-            # 実データ取得失敗時: 最小限の市場推定スコア（非決定論的）
-            import random
-            random.seed(hash(f"{symbol}_{date}_{datetime.now().microsecond}"))  # 非決定論的シード
-            base_score = 0.3 + random.random() * 0.4  # 0.3-0.7範囲だが非決定論的
-            
-            # 市場時刻による調整（実時間ベース）
-            time_adjustment = (datetime.now().microsecond % 100) / 1000  # 0-0.1範囲
-            final_score = max(0.1, min(0.9, base_score + time_adjustment))
-            
-            self.logger.debug(f"推定スコア {symbol}: {final_score:.3f} (実データ未取得)")
-            return final_score
+            # SystemFallbackPolicy統合: data_fetcher利用不可時
+            if FALLBACK_POLICY_AVAILABLE:
+                fallback_policy = get_fallback_policy()
+                return fallback_policy.handle_component_failure(
+                    component_type=ComponentType.DATA_FETCHER,
+                    component_name="DSSMSBacktester._calculate_market_based_fallback_score",
+                    error=RuntimeError("data_fetcher not available"),
+                    fallback_func=lambda: self._market_score_fallback(symbol, date),
+                    context={
+                        "symbol": symbol,
+                        "date": date.isoformat(),
+                        "data_fetcher_available": False
+                    }
+                )
+            else:
+                # レガシーフォールバック
+                return self._market_score_fallback(symbol, date)
             
         except Exception as e:
-            self.logger.warning(f"市場ベーススコア計算エラー {symbol}: {e}")
-            # 最終フォールバック: 現在時刻ベース（完全に非決定論的）
-            return 0.3 + (datetime.now().microsecond % 400) / 1000
+            # SystemFallbackPolicy統合: 最終フォールバック
+            if FALLBACK_POLICY_AVAILABLE:
+                fallback_policy = get_fallback_policy()
+                return fallback_policy.handle_component_failure(
+                    component_type=ComponentType.DSSMS_CORE,
+                    component_name="DSSMSBacktester._calculate_market_based_fallback_score",
+                    error=e,
+                    fallback_func=lambda: self._market_score_fallback(symbol, date),
+                    context={
+                        "symbol": symbol,
+                        "date": date.isoformat(),
+                        "error_context": "final_fallback"
+                    }
+                )
+            else:
+                # レガシー最終フォールバック
+                self.logger.warning(f"市場ベーススコア計算エラー {symbol}: {e}")
+                return self._market_score_fallback(symbol, date)
 
     def _calculate_simple_rsi_score(self, data: pd.DataFrame) -> float:
         """簡易RSIスコア計算"""

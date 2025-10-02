@@ -112,3 +112,7 @@ htmlcov/
 # システム生成ファイル
 .directory
 *.stackdump
+
+# Reports directory (temporary analysis files)
+reports/
+*.json

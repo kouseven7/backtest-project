@@ -56,6 +56,14 @@ except ImportError:
     DATA_FETCHER_AVAILABLE = False
     logging.warning("yfinance not available - using mock data")
 
+# SystemFallbackPolicy統合 (TODO-FB-004)
+try:
+    from src.config.system_modes import SystemFallbackPolicy, ComponentType, SystemMode, get_fallback_policy
+    FALLBACK_POLICY_AVAILABLE = True
+except ImportError:
+    FALLBACK_POLICY_AVAILABLE = False
+    logging.warning("SystemFallbackPolicy not available - using legacy fallback")
+
 from config.logger_config import setup_logger
 
 
@@ -309,6 +317,25 @@ class DSSMSIntegratedBacktester:
                 'daily_return_rate': 0
             }
     
+    def _nikkei225_fallback_selection(self, filtered_symbols: List[str]) -> str:
+        """
+        Nikkei225Screener用の明示的フォールバック選択
+        
+        TODO(tag:phase2, rationale:eliminate after DSSMS ranking integration)
+        
+        Args:
+            filtered_symbols: フィルタ済み銘柄リスト
+            
+        Returns:
+            str: 選択された銘柄コード
+        """
+        import random
+        selected = random.choice(filtered_symbols)
+        self.logger.warning(
+            f"FALLBACK: ランダム銘柄選択使用中 ({len(filtered_symbols)}銘柄から選択: {selected})"
+        )
+        return selected
+
     def _get_optimal_symbol(self, target_date: datetime, 
                           target_symbols: Optional[List[str]] = None) -> Optional[str]:
         """
@@ -331,7 +358,7 @@ class DSSMSIntegratedBacktester:
                     self.logger.debug(f"DSS選択結果: {selected_symbol} @ {target_date}")
                     return selected_symbol
             
-            # 統一フォールバック: Nikkei225Screener（DSS使用不可時）
+            # SystemFallbackPolicy統合フォールバック: Nikkei225Screener（DSS使用不可時）
             if self.nikkei225_screener:
                 try:
                     # 利用可能資金（ポートフォリオ価値の80%を投資に使用）
@@ -339,8 +366,24 @@ class DSSMSIntegratedBacktester:
                     filtered_symbols = self.nikkei225_screener.get_filtered_symbols(available_funds)
                     
                     if filtered_symbols:
-                        import random
-                        selected = random.choice(filtered_symbols)
+                        # SystemFallbackPolicy統合: 明示的フォールバック処理
+                        if FALLBACK_POLICY_AVAILABLE:
+                            fallback_policy = get_fallback_policy()
+                            selected = fallback_policy.handle_component_failure(
+                                component_type=ComponentType.DSSMS_CORE,
+                                component_name="DSSMSIntegratedBacktester._get_optimal_symbol",
+                                error=RuntimeError("DSS Core V3 unavailable"),
+                                fallback_func=lambda: self._nikkei225_fallback_selection(filtered_symbols),
+                                context={
+                                    "target_date": target_date.isoformat(),
+                                    "available_symbols": len(filtered_symbols),
+                                    "portfolio_value": self.portfolio_value
+                                }
+                            )
+                        else:
+                            # レガシーフォールバック（SystemFallbackPolicy使用不可時）
+                            selected = self._nikkei225_fallback_selection(filtered_symbols)
+                        
                         self.logger.info(f"フォールバック(Nikkei225): {selected} ({len(filtered_symbols)}銘柄から選択)")
                         return selected
                 except Exception as e:
