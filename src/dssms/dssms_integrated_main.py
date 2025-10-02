@@ -13,58 +13,50 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional, Tuple
 import logging
 import time
-import pandas as pd
-import numpy as np
 from pathlib import Path
 import json
 import argparse
+
+# 重いライブラリは遅延インポートに変更（TODO-PERF-001 Phase 2）
+# pandas, numpy は必要時に lazy_import で読み込み
 
 # プロジェクトルートをパスに追加
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-# DSSMS統合コンポーネント（Phase 3で実装済み）
-from src.dssms.symbol_switch_manager import SymbolSwitchManager
-from src.dssms.data_cache_manager import DataCacheManager
-from src.dssms.performance_tracker import PerformanceTracker
-from src.dssms.dssms_excel_exporter import DSSMSExcelExporter
-from src.dssms.dssms_report_generator import DSSMSReportGenerator
-from src.dssms.nikkei225_screener import Nikkei225Screener
+# 軽量直接インポート（TODO-PERF-004: lazy_loader除去）
+# lazy_loader(2759.1ms)を除去し、シンプルな直接インポートに変更
 
-# 既存システムコンポーネント
-try:
-    from dssms_backtester_v3 import DSSBacktesterV3
-    DSS_AVAILABLE = True
-except ImportError:
-    DSS_AVAILABLE = False
-    logging.warning("DSS Core V3 not available - using mock")
+# 直接ファイルインポート（__init__.pyチェーン回避）  
+import importlib.util
+import os
 
-try:
-    from config.risk_management import RiskManagement
-    from config.optimized_parameters import get_optimized_parameters
-    RISK_MANAGEMENT_AVAILABLE = True
-except ImportError:
-    RISK_MANAGEMENT_AVAILABLE = False
-    logging.warning("Risk management not available - using defaults")
+def _load_symbol_switch_manager_fast():
+    """SymbolSwitchManagerFastを直接ロード（重い__init__.py回避）"""
+    try:
+        # 相対パスから絶対パスを取得
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        fast_path = os.path.join(current_dir, "symbol_switch_manager_ultra_light.py")
+        
+        # 直接ファイルインポート
+        spec = importlib.util.spec_from_file_location("symbol_switch_manager_ultra_light", fast_path)
+        if spec and spec.loader:
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module.SymbolSwitchManagerUltraLight
+    except Exception:
+        pass
+    
+    # フォールバック: 通常版
+    try:
+        from src.dssms.symbol_switch_manager import SymbolSwitchManager
+        return SymbolSwitchManager
+    except ImportError:
+        return None
 
-# データ取得
-try:
-    import yfinance as yf
-    DATA_FETCHER_AVAILABLE = True
-except ImportError:
-    DATA_FETCHER_AVAILABLE = False
-    logging.warning("yfinance not available - using mock data")
-
-# SystemFallbackPolicy統合 (TODO-FB-004)
-try:
-    from src.config.system_modes import SystemFallbackPolicy, ComponentType, SystemMode, get_fallback_policy
-    FALLBACK_POLICY_AVAILABLE = True
-except ImportError:
-    FALLBACK_POLICY_AVAILABLE = False
-    logging.warning("SystemFallbackPolicy not available - using legacy fallback")
-
-from config.logger_config import setup_logger
+# 軽量版ロード
+SymbolSwitchManager = _load_symbol_switch_manager_fast()
 
 
 class DSSMSIntegrationError(Exception):
@@ -99,48 +91,29 @@ class DSSMSIntegratedBacktester:
         try:
             # 設定初期化
             self.config = config or self._load_default_config()
+            # 軽量な標準ロガーで初期化（遅延ロード対応）
+            self.logger = logging.getLogger(f"{self.__class__.__name__}")
+            self.logger.setLevel(logging.INFO)
             
-            # DSS Core V3初期化
-            if DSS_AVAILABLE:
-                self.dss_core = DSSBacktesterV3()
-                self.logger = setup_logger(f"{self.__class__.__name__}")
-                self.logger.info("DSS Core V3 初期化完了")
-            else:
-                self.dss_core = None
-                self.logger = setup_logger(f"{self.__class__.__name__}")
-                self.logger.warning("DSS Core V3 使用不可 - モック使用")
+            # 重いモジュールは遅延初期化フラグで管理（TODO-PERF-001対応）
+            self.dss_core = None
+            self.advanced_ranking_engine = None
+            self.risk_manager = None
+            self._dss_initialized = False
+            self._ranking_initialized = False
+            self._risk_initialized = False
             
-            # DSSMS統合コンポーネント初期化
-            switch_config = self.config.get('symbol_switch', {})
-            self.switch_manager = SymbolSwitchManager(switch_config)
+            # DSSMS統合コンポーネント初期化（遅延ロード対応）
+            self.switch_manager = None
+            self.data_cache = None  
+            self.performance_tracker = None
+            self.excel_exporter = None
+            self.report_generator = None
+            self.nikkei225_screener = None
+            self._components_initialized = False
             
-            cache_config = self.config.get('data_cache', {})
-            self.data_cache = DataCacheManager(cache_config)
-            
-            self.performance_tracker = PerformanceTracker()
-            
-            export_config = self.config.get('export_settings', {})
-            self.excel_exporter = DSSMSExcelExporter(export_config)
-            
-            report_config = self.config.get('report_settings', {})
-            self.report_generator = DSSMSReportGenerator(report_config)
-            
-            # Nikkei225スクリーナー初期化
-            try:
-                self.nikkei225_screener = Nikkei225Screener()
-                self.logger.info("Nikkei225Screener初期化完了")
-            except Exception as e:
-                self.nikkei225_screener = None
-                self.logger.warning(f"Nikkei225Screener初期化失敗: {e} - デフォルト銘柄使用")
-            
-            # リスク管理初期化
-            if RISK_MANAGEMENT_AVAILABLE:
-                initial_capital = self.config.get('initial_capital', 1000000)
-                self.risk_manager = RiskManagement(total_assets=initial_capital)
-                self.logger.info("リスク管理システム初期化完了")
-            else:
-                self.risk_manager = None
-                self.logger.warning("リスク管理システム使用不可 - デフォルト設定使用")
+            # 重いモジュールは遅延初期化のみ（TODO-PERF-001対応）
+            # 実際の初期化は必要時に行う
             
             # システム状態
             self.current_symbol = None
@@ -162,11 +135,134 @@ class DSSMSIntegratedBacktester:
                 'max_switch_cost_rate': 0.05
             }
             
-            self.logger.info("DSSMS統合バックテスター初期化完了")
+            self.logger.info("DSSMS統合バックテスター初期化完了（遅延ロード対応）")
             
         except Exception as e:
             self.logger.error(f"DSSMS統合バックテスター初期化エラー: {e}")
             raise DSSMSIntegrationError(f"初期化失敗: {e}")
+
+    # 直接初期化メソッド群（lazy_loader除去対応）
+    def _initialize_dss_core(self):
+        """DSS Core V3直接初期化"""
+        if not self._dss_initialized:
+            try:
+                from dssms_backtester_v3 import DSSBacktesterV3
+                self.dss_core = DSSBacktesterV3()
+                self.logger.info("DSS Core V3 直接初期化完了")
+            except ImportError:
+                self.dss_core = None
+                self.logger.warning("DSS Core V3 インポート失敗 - モック使用")
+            self._dss_initialized = True
+        return self.dss_core
+
+    def _initialize_advanced_ranking(self):
+        """AdvancedRankingEngine直接初期化"""
+        if not self._ranking_initialized:
+            try:
+                from src.dssms.advanced_ranking_system.advanced_ranking_engine import AdvancedRankingEngine
+                ranking_config = self.config.get('ranking_config', {})
+                self.advanced_ranking_engine = AdvancedRankingEngine(ranking_config)
+                self.logger.info("AdvancedRankingEngine 直接初期化完了")
+            except (ImportError, Exception) as e:
+                self.advanced_ranking_engine = None
+                self.logger.warning(f"AdvancedRankingEngine初期化失敗: {e} - フォールバック選択使用")
+            self._ranking_initialized = True
+        return self.advanced_ranking_engine
+
+    def _initialize_risk_management(self):
+        """RiskManagement直接初期化"""
+        if not self._risk_initialized:
+            try:
+                from config.risk_management import RiskManagement
+                initial_capital = self.config.get('initial_capital', 1000000)
+                self.risk_manager = RiskManagement(total_assets=initial_capital)
+                self.logger.info("リスク管理システム 直接初期化完了")
+            except (ImportError, Exception) as e:
+                self.risk_manager = None
+                self.logger.warning(f"リスク管理システム初期化失敗: {e} - デフォルト設定使用")
+                self.risk_manager = None
+                self.logger.warning("リスク管理システム使用不可 - デフォルト設定使用")
+            self._risk_initialized = True
+        return self.risk_manager
+
+    def ensure_dss_core(self):
+        """DSS Core確保（パブリックアクセス用）"""
+        return self._initialize_dss_core()
+
+    def ensure_advanced_ranking(self):
+        """AdvancedRanking確保（パブリックアクセス用）"""
+        return self._initialize_advanced_ranking()
+
+    def ensure_risk_management(self):
+        """RiskManagement確保（パブリックアクセス用）"""
+        return self._initialize_risk_management()
+
+    def _initialize_components(self):
+        """DSSMSコンポーネント直接初期化（TODO-PERF-004: lazy_loader除去）"""
+        if not self._components_initialized:
+            try:
+                # SymbolSwitchManager直接初期化（軽量版優先）
+                switch_config = self.config.get('symbol_switch', {})
+                self.switch_manager = SymbolSwitchManager(switch_config)
+                self.logger.info(f"✅ SymbolSwitchManager初期化完了: {type(self.switch_manager).__name__}")
+                
+                # 他のコンポーネントを個別に初期化
+                self._initialize_data_cache()
+                self._initialize_performance_tracker()
+                self._initialize_excel_exporter()
+                self._initialize_report_generator()
+                self._initialize_nikkei225_screener()
+                
+                self._components_initialized = True
+                self.logger.info("DSSMSコンポーネント遅延初期化完了")
+            except Exception as e:
+                self.logger.warning(f"コンポーネント初期化エラー: {e}")
+
+    def _initialize_data_cache(self):
+        try:
+            from src.dssms.data_cache_manager import DataCacheManager
+            cache_config = self.config.get('data_cache', {})
+            self.data_cache = DataCacheManager(cache_config)
+        except ImportError:
+            self.data_cache = None
+
+    def _initialize_performance_tracker(self):
+        try:
+            from src.dssms.performance_tracker import PerformanceTracker
+            self.performance_tracker = PerformanceTracker()
+        except ImportError:
+            self.performance_tracker = None
+
+    def _initialize_excel_exporter(self):
+        try:
+            from src.dssms.dssms_excel_exporter import DSSMSExcelExporter
+            export_config = self.config.get('export_settings', {})
+            self.excel_exporter = DSSMSExcelExporter(export_config)
+        except ImportError:
+            self.excel_exporter = None
+
+    def _initialize_report_generator(self):
+        try:
+            from src.dssms.dssms_report_generator import DSSMSReportGenerator
+            report_config = self.config.get('report_settings', {})
+            self.report_generator = DSSMSReportGenerator(report_config)
+        except ImportError:
+            self.report_generator = None
+
+    def _initialize_nikkei225_screener(self):
+        try:
+            from src.dssms.nikkei225_screener import Nikkei225Screener
+            self.nikkei225_screener = Nikkei225Screener()
+            self.logger.info("Nikkei225Screener直接初期化完了")
+        except (ImportError, Exception) as e:
+            self.nikkei225_screener = None
+            self.logger.warning(f"Nikkei225Screener初期化失敗: {e}")
+
+    def ensure_components(self):
+        """DSSMSコンポーネント確保"""
+        if not self._components_initialized:
+            self._initialize_components()
+        return self.switch_manager
     
     def run_dynamic_backtest(self, start_date: datetime, end_date: datetime,
                            target_symbols: Optional[List[str]] = None) -> Dict[str, Any]:
@@ -317,22 +413,81 @@ class DSSMSIntegratedBacktester:
                 'daily_return_rate': 0
             }
     
-    def _nikkei225_fallback_selection(self, filtered_symbols: List[str]) -> str:
+    def _advanced_ranking_selection(self, filtered_symbols: List[str], target_date: datetime) -> str:
         """
-        Nikkei225Screener用の明示的フォールバック選択
-        
-        TODO(tag:phase2, rationale:eliminate after DSSMS ranking integration)
+        AdvancedRankingEngine使用の真のランキングベース選択 (TODO-DSSMS-004.1)
         
         Args:
             filtered_symbols: フィルタ済み銘柄リスト
+            target_date: 対象日付
             
         Returns:
             str: 選択された銘柄コード
         """
+        if self.advanced_ranking_engine and len(filtered_symbols) > 0:
+            try:
+                # AdvancedRankingEngineによる複数銘柄同時ランキング分析
+                self.logger.info(f"AdvancedRankingEngine: {len(filtered_symbols)}銘柄を同時ランキング分析中...")
+                
+                # 市場データ準備
+                market_data = self._prepare_market_data_for_analysis(filtered_symbols, target_date)
+                
+                if market_data:
+                    # analyze_symbols_advanced()を同期実行
+                    ranking_results = self._run_advanced_analysis_sync(filtered_symbols, market_data)
+                    
+                    if ranking_results and len(ranking_results) > 0:
+                        # スコアベース最適銘柄選択
+                        best_symbol = self._select_best_symbol_from_ranking(ranking_results)
+                        
+                        if best_symbol:
+                            self.logger.info(
+                                f"AdvancedRanking選択: {best_symbol} (真のランキング比較, "
+                                f"{len(filtered_symbols)}銘柄中から最適選択)"
+                            )
+                            return best_symbol
+                
+                # 高度分析失敗時はシステム状態確認による暫定選択
+                system_status = self.advanced_ranking_engine.get_system_status()
+                if system_status.get('integration_status', {}).get('hierarchical_system', False):
+                    selected = filtered_symbols[0]
+                    self.logger.warning(
+                        f"AdvancedRanking暫定選択: {selected} (高度分析失敗のため第1銘柄選択)"
+                    )
+                    return selected
+                
+            except Exception as e:
+                self.logger.error(f"AdvancedRankingEngine分析失敗: {e}")
+        
+        # SystemFallbackPolicy統合フォールバック
+        if FALLBACK_POLICY_AVAILABLE:
+            fallback_policy = get_fallback_policy()
+            return fallback_policy.handle_component_failure(
+                component_type=ComponentType.DSSMS_CORE,
+                component_name="DSSMSIntegratedBacktester._advanced_ranking_selection",
+                error=RuntimeError("AdvancedRankingEngine analysis failed"),
+                fallback_func=lambda: self._legacy_random_selection(filtered_symbols),
+                context={
+                    "target_date": target_date.isoformat(),
+                    "available_symbols": len(filtered_symbols),
+                    "advanced_ranking_available": self.advanced_ranking_engine is not None
+                }
+            )
+        else:
+            # レガシーフォールバック（SystemFallbackPolicy使用不可時）
+            self.logger.warning(f"FALLBACK: ランダム選択使用 (AdvancedRanking失敗/使用不可)")
+            return self._legacy_random_selection(filtered_symbols)
+    
+    def _legacy_random_selection(self, filtered_symbols: List[str]) -> str:
+        """
+        レガシーランダム選択（段階的除去予定）
+        
+        TODO(tag:phase2, rationale:eliminate completely after ranking stability confirmed)
+        """
         import random
         selected = random.choice(filtered_symbols)
         self.logger.warning(
-            f"FALLBACK: ランダム銘柄選択使用中 ({len(filtered_symbols)}銘柄から選択: {selected})"
+            f"LEGACY FALLBACK: ランダム銘柄選択 ({len(filtered_symbols)}銘柄から選択: {selected})"
         )
         return selected
 
@@ -373,7 +528,7 @@ class DSSMSIntegratedBacktester:
                                 component_type=ComponentType.DSSMS_CORE,
                                 component_name="DSSMSIntegratedBacktester._get_optimal_symbol",
                                 error=RuntimeError("DSS Core V3 unavailable"),
-                                fallback_func=lambda: self._nikkei225_fallback_selection(filtered_symbols),
+                                fallback_func=lambda: self._advanced_ranking_selection(filtered_symbols, target_date),
                                 context={
                                     "target_date": target_date.isoformat(),
                                     "available_symbols": len(filtered_symbols),
@@ -382,7 +537,7 @@ class DSSMSIntegratedBacktester:
                             )
                         else:
                             # レガシーフォールバック（SystemFallbackPolicy使用不可時）
-                            selected = self._nikkei225_fallback_selection(filtered_symbols)
+                            selected = self._advanced_ranking_selection(filtered_symbols, target_date)
                         
                         self.logger.info(f"フォールバック(Nikkei225): {selected} ({len(filtered_symbols)}銘柄から選択)")
                         return selected
@@ -411,6 +566,7 @@ class DSSMSIntegratedBacktester:
         """
         try:
             # 切替評価
+            self.ensure_components()  # 遅延初期化
             switch_evaluation = self.switch_manager.evaluate_symbol_switch(
                 from_symbol=self.current_symbol,
                 to_symbol=selected_symbol,
@@ -553,7 +709,7 @@ class DSSMSIntegratedBacktester:
             }
     
     def _execute_single_strategy(self, strategy_name: str, symbol: str, 
-                               stock_data: pd.DataFrame, index_data: pd.DataFrame,
+                               stock_data: Any, index_data: Any,
                                target_date: datetime) -> Dict[str, Any]:
         """
         単一戦略実行（簡略実装）
@@ -642,7 +798,7 @@ class DSSMSIntegratedBacktester:
                 'signal': 'HOLD'
             }
     
-    def _get_symbol_data(self, symbol: str, target_date: datetime) -> Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]:
+    def _get_symbol_data(self, symbol: str, target_date: datetime):
         """
         銘柄データ取得（キャッシュ使用）
         
@@ -651,7 +807,7 @@ class DSSMSIntegratedBacktester:
             target_date: 対象日付
         
         Returns:
-            Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]: (株価データ, インデックスデータ)
+            Tuple[Optional[Any], Optional[Any]]: (株価データ, インデックスデータ)
         """
         try:
             # データ期間設定
@@ -666,19 +822,23 @@ class DSSMSIntegratedBacktester:
             
             # データ取得
             if DATA_FETCHER_AVAILABLE:
-                # 株価データ
-                ticker = yf.Ticker(f"{symbol}.T")
-                stock_data = ticker.history(start=start_date, end=end_date + timedelta(days=1))
-                
-                # インデックスデータ（日経225）
-                nikkei_ticker = yf.Ticker("^N225")
-                index_data = nikkei_ticker.history(start=start_date, end=end_date + timedelta(days=1))
-                
-                # キャッシュに保存
-                if not stock_data.empty and not index_data.empty:
-                    self.data_cache.store_cached_data(symbol, start_date, end_date, stock_data, index_data)
-                
-                return stock_data, index_data
+                try:
+                    import yfinance as yf
+                    # 株価データ
+                    ticker = yf.Ticker(f"{symbol}.T")
+                    stock_data = ticker.history(start=start_date, end=end_date + timedelta(days=1))
+                    
+                    # インデックスデータ（日経225）
+                    nikkei_ticker = yf.Ticker("^N225")
+                    index_data = nikkei_ticker.history(start=start_date, end=end_date + timedelta(days=1))
+                    
+                    # キャッシュに保存
+                    if self.data_cache and not stock_data.empty and not index_data.empty:
+                        self.data_cache.store_cached_data(symbol, start_date, end_date, stock_data, index_data)
+                    
+                    return stock_data, index_data
+                except ImportError:
+                    return self._generate_mock_data(symbol, start_date, end_date)
             else:
                 # モックデータ生成
                 return self._generate_mock_data(symbol, start_date, end_date)
@@ -687,10 +847,14 @@ class DSSMSIntegratedBacktester:
             self.logger.error(f"銘柄データ取得エラー ({symbol}): {e}")
             return None, None
     
-    def _generate_mock_data(self, symbol: str, start_date: datetime, end_date: datetime) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        """モックデータ生成（yfinance使用不可時）"""
-        dates = pd.date_range(start=start_date, end=end_date, freq='D')
-        dates = dates[dates.dayofweek < 5]  # 平日のみ
+    def _generate_mock_data(self, symbol: str, start_date: datetime, end_date: datetime):
+        """モックデータ生成（yfinance使用不可時、直接pandas使用）"""
+        try:
+            import pandas as pd
+            dates = pd.date_range(start=start_date, end=end_date, freq='D')
+            dates = dates[dates.dayofweek < 5]  # 平日のみ
+        except ImportError:
+            return None, None
         
         # 基準価格
         base_price = hash(symbol) % 1000 + 1000  # 銘柄に応じた基準価格
@@ -701,12 +865,12 @@ class DSSMSIntegratedBacktester:
         
         for i, date in enumerate(dates):
             # ランダムウォーク
-            change = np.random.normal(0, 0.02)  # 2%標準偏差
+            change = 0.01 if i % 3 == 0 else -0.005  # 簡単な価格変動
             current_price *= (1 + change)
             
-            high = current_price * (1 + abs(np.random.normal(0, 0.01)))
-            low = current_price * (1 - abs(np.random.normal(0, 0.01)))
-            volume = np.random.randint(100000, 1000000)
+            high = current_price * 1.01
+            low = current_price * 0.99
+            volume = 500000  # 固定ボリューム
             
             prices.append({
                 'Open': current_price,
@@ -857,11 +1021,11 @@ class DSSMSIntegratedBacktester:
                     price_change_rate = (current_price - entry_price) / entry_price
                     close_return = self.position_size * price_change_rate
                 else:
-                    # フォールバック：正規分布モック（やや保守的）
-                    close_return = self.position_size * np.random.normal(0.01, 0.02)  # 平均1%の収益
+                    # フォールバック：モック収益（固定値版）
+                    close_return = self.position_size * 0.01  # 1%の固定収益
             except Exception as e:
                 self.logger.warning(f"価格データ取得エラー、モック収益使用: {e}")
-                close_return = self.position_size * np.random.normal(0.01, 0.02)
+                close_return = self.position_size * 0.01  # 1%の固定収益
             
             # ポートフォリオ価値更新
             self.portfolio_value += close_return
@@ -1125,6 +1289,125 @@ class DSSMSIntegratedBacktester:
             }
         except Exception as e:
             return {'error': str(e)}
+    
+    def _prepare_market_data_for_analysis(self, symbols: List[str], target_date: datetime) -> Optional[Dict[str, Any]]:
+        """
+        AdvancedRankingEngine分析用市場データ準備 (TODO-DSSMS-004.1)
+        
+        Args:
+            symbols: 対象銘柄リスト
+            target_date: 対象日付
+            
+        Returns:
+            Optional[Dict[str, Any]]: 銘柄別市場データ辞書
+        """
+        try:
+            market_data = {}
+            
+            for symbol in symbols:
+                # 既存のデータ取得メソッドを使用
+                stock_data, _ = self._get_symbol_data(symbol, target_date)
+                if stock_data is not None and not stock_data.empty:
+                    market_data[symbol] = stock_data
+                    
+            if len(market_data) > 0:
+                self.logger.info(f"市場データ準備完了: {len(market_data)}/{len(symbols)}銘柄")
+                return market_data
+            else:
+                self.logger.warning("市場データ取得失敗: 利用可能なデータがありません")
+                return None
+                
+        except Exception as e:
+            self.logger.error(f"市場データ準備エラー: {e}")
+            return None
+    
+    def _run_advanced_analysis_sync(self, symbols: List[str], market_data: Dict[str, Any]) -> Optional[List[Any]]:
+        """
+        AdvancedRankingEngine分析の同期実行 (TODO-DSSMS-004.1)
+        
+        Args:
+            symbols: 対象銘柄リスト  
+            market_data: 市場データ辞書
+            
+        Returns:
+            Optional[List[Any]]: ランキング分析結果リスト
+        """
+        try:
+            import asyncio
+            
+            # 新しいイベントループを作成（必要な場合）
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            
+            # 非同期メソッドを同期実行
+            analysis_params = {
+                'analysis_depth': 'comprehensive',
+                'enable_parallel': len(symbols) > 5,
+                'timeout_seconds': 30
+            }
+            
+            ranking_results = loop.run_until_complete(
+                self.advanced_ranking_engine.analyze_symbols_advanced(
+                    symbols, market_data, analysis_params
+                )
+            )
+            
+            self.logger.info(f"高度分析完了: {len(ranking_results) if ranking_results else 0}件の結果")
+            return ranking_results
+            
+        except Exception as e:
+            self.logger.error(f"高度分析同期実行エラー: {e}")
+            return None
+    
+    def _select_best_symbol_from_ranking(self, ranking_results: List[Any]) -> Optional[str]:
+        """
+        ランキング結果から最優秀銘柄を選択 (TODO-DSSMS-004.1)
+        
+        Args:
+            ranking_results: AdvancedRankingEngineからの分析結果
+            
+        Returns:
+            Optional[str]: 最優秀銘柄コード
+        """
+        try:
+            if not ranking_results or len(ranking_results) == 0:
+                return None
+            
+            best_result = None
+            best_score = -float('inf')
+            
+            for result in ranking_results:
+                # AdvancedRankingResult型の属性アクセス
+                try:
+                    if hasattr(result, 'total_score'):
+                        score = result.total_score
+                        symbol = result.symbol
+                    else:
+                        # 辞書形式の場合
+                        score = result.get('total_score', 0.0)
+                        symbol = result.get('symbol', '')
+                    
+                    if score > best_score and symbol:
+                        best_score = score
+                        best_result = symbol
+                        
+                except Exception as e:
+                    self.logger.warning(f"結果解析エラー: {e}")
+                    continue
+            
+            if best_result:
+                self.logger.info(f"最優秀銘柄選択: {best_result} (スコア: {best_score:.4f})")
+                return best_result
+            else:
+                self.logger.warning("有効な銘柄スコアが見つかりませんでした")
+                return None
+                
+        except Exception as e:
+            self.logger.error(f"最優秀銘柄選択エラー: {e}")
+            return None
 
 
 def main():

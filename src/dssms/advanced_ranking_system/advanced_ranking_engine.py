@@ -182,7 +182,18 @@ class AdvancedRankingEngine:
         try:
             # 階層ランキングシステム
             if 'HierarchicalRankingSystem' in globals():
-                self._hierarchical_system = HierarchicalRankingSystem()
+                # デフォルトconfig構造を提供
+                default_config = {
+                    "ranking_system": {
+                        "scoring_weights": {
+                            "fundamental": 0.40,
+                            "technical": 0.30,
+                            "volume": 0.20,
+                            "volatility": 0.10
+                        }
+                    }
+                }
+                self._hierarchical_system = HierarchicalRankingSystem(default_config)
                 self.logger.info("Hierarchical ranking system integrated")
             
             # ハイブリッドエンジン

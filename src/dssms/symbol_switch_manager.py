@@ -7,18 +7,14 @@ Created: 2025-09-27
 Phase: Phase 3 Tier 2 実装
 """
 
-import sys
-import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 import logging
 
-# プロジェクトルートをパスに追加
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-if project_root not in sys.path:
-    sys.path.append(project_root)
+# 軽量化: 不要なsys.path操作を削除（TODO-PERF-001 Phase 2対応）
 
-from config.logger_config import setup_logger
+# 軽量ロガー使用（TODO-PERF-001 Phase 2対応）
+# from config.logger_config import setup_logger
 
 
 class DSSMSError(Exception):
@@ -82,8 +78,9 @@ class SymbolSwitchManager:
                 'average_holding_days': 0.0
             }
             
-            # ログ設定
-            self.logger = setup_logger(f"{self.__class__.__name__}")
+            # 軽量ログ設定（TODO-PERF-001 Phase 2対応）
+            self.logger = logging.getLogger(f"{self.__class__.__name__}")
+            self.logger.setLevel(logging.INFO)
             
             # 設定検証
             self._validate_config()
@@ -114,26 +111,7 @@ class SymbolSwitchManager:
     
     def evaluate_symbol_switch(self, from_symbol: Optional[str], to_symbol: str, 
                               target_date: datetime) -> Dict[str, Any]:
-        """
-        銘柄切替の必要性評価
-        
-        Args:
-            from_symbol: 切替前銘柄 (None可)
-            to_symbol: 切替後銘柄
-            target_date: 対象日付
-        
-        Returns:
-            Dict[str, Any]: 切替評価結果
-        
-        Example:
-            evaluation = switch_mgr.evaluate_symbol_switch(
-                from_symbol='7203',
-                to_symbol='6758', 
-                target_date=datetime(2023, 6, 15)
-            )
-            if evaluation['should_switch']:
-                print(f"切替推奨: {evaluation['reason']}")
-        """
+        """銘柄切替の必要性評価（軽量化版）"""
         try:
             self.logger.debug(f"銘柄切替評価開始: {from_symbol} → {to_symbol} @ {target_date}")
             
@@ -581,142 +559,6 @@ class SymbolSwitchManager:
             return []
 
 
-def main():
-    """SymbolSwitchManager 動作テスト"""
-    print("SymbolSwitchManager 動作テスト")
-    print("=" * 50)
-    
-    try:
-        # 1. 初期化テスト
-        config = {
-            'switch_management': {
-                'switch_cost_rate': 0.001,
-                'min_holding_days': 1,
-                'max_switches_per_month': 10,
-                'cost_threshold': 0.001
-            }
-        }
-        
-        ssm = SymbolSwitchManager(config)
-        print("✅ SymbolSwitchManager初期化成功")
-        
-        # 2. 初回銘柄選択テスト
-        test_date = datetime(2023, 6, 1)
-        
-        evaluation = ssm.evaluate_symbol_switch(
-            from_symbol=None,
-            to_symbol='7203',
-            target_date=test_date
-        )
-        
-        print(f"✅ 初回銘柄選択評価: {evaluation['should_switch']} ({evaluation['reason']})")
-        
-        if evaluation['should_switch']:
-            # 切替実行記録
-            switch_result = {
-                'from_symbol': None,
-                'to_symbol': '7203',
-                'executed_date': test_date,
-                'portfolio_value_before': 1000000,
-                'portfolio_value_after': 999000,
-                'switch_cost': 1000,
-                'status': 'executed'
-            }
-            ssm.record_switch_executed(switch_result)
-            print("✅ 初回切替記録成功")
-        
-        # 3. 同一銘柄チェックテスト
-        same_symbol_eval = ssm.evaluate_symbol_switch(
-            from_symbol='7203',
-            to_symbol='7203',
-            target_date=test_date + timedelta(days=1)
-        )
-        print(f"✅ 同一銘柄チェック: {same_symbol_eval['should_switch']} ({same_symbol_eval['reason']})")
-        
-        # 4. 最小保有期間チェックテスト
-        min_holding_eval = ssm.evaluate_symbol_switch(
-            from_symbol='7203',
-            to_symbol='6758',
-            target_date=test_date  # 同日切替（制限に引っかかるはず）
-        )
-        print(f"✅ 最小保有期間チェック: {min_holding_eval['should_switch']} ({min_holding_eval['reason']})")
-        
-        # 5. 正常切替テスト
-        normal_switch_eval = ssm.evaluate_symbol_switch(
-            from_symbol='7203',
-            to_symbol='6758',
-            target_date=test_date + timedelta(days=2)  # 2日後
-        )
-        print(f"✅ 正常切替評価: {normal_switch_eval['should_switch']} ({normal_switch_eval['reason']})")
-        
-        if normal_switch_eval['should_switch']:
-            # 正常切替実行
-            switch_result2 = {
-                'from_symbol': '7203',
-                'to_symbol': '6758',
-                'executed_date': test_date + timedelta(days=2),
-                'portfolio_value_before': 1010000,
-                'portfolio_value_after': 1009000,
-                'switch_cost': 1000,
-                'status': 'executed'
-            }
-            ssm.record_switch_executed(switch_result2)
-            print("✅ 正常切替記録成功")
-        
-        # 6. 統計情報テスト
-        stats = ssm.get_switch_statistics()
-        print(f"✅ 統計情報取得成功:")
-        print(f"  - 総切替数: {stats['summary']['total_switches']}")
-        print(f"  - 成功率: {stats['summary']['success_rate']:.1%}")
-        print(f"  - 月次切替数: {stats['current_period']['monthly_switches']}")
-        print(f"  - 現在銘柄: {stats['current_position']['current_symbol']}")
-        
-        # 7. 履歴取得テスト
-        history = ssm.get_switch_history(limit=5)
-        print(f"✅ 切替履歴取得成功: {len(history)}件")
-        
-        # 8. 月次制限テスト（複数回切替シミュレーション）
-        print(f"\n🧪 月次制限テスト:")
-        for i in range(8):  # 8回追加切替を試行
-            test_eval = ssm.evaluate_symbol_switch(
-                from_symbol='6758',
-                to_symbol=f'TEST{i}',
-                target_date=test_date + timedelta(days=3+i)
-            )
-            
-            if test_eval['should_switch']:
-                test_switch = {
-                    'from_symbol': '6758',
-                    'to_symbol': f'TEST{i}',
-                    'executed_date': test_date + timedelta(days=3+i),
-                    'portfolio_value_before': 1000000,
-                    'portfolio_value_after': 999000,
-                    'switch_cost': 1000,
-                    'status': 'executed'
-                }
-                ssm.record_switch_executed(test_switch)
-        
-        # 最終統計確認
-        final_stats = ssm.get_switch_statistics()
-        print(f"  - 最終切替数: {final_stats['summary']['total_switches']}")
-        print(f"  - 月次残り回数: {final_stats['current_period']['monthly_remaining']}")
-        
-        # 9. 制限超過テスト
-        limit_test_eval = ssm.evaluate_symbol_switch(
-            from_symbol=ssm.current_symbol,
-            to_symbol='LIMIT_TEST',
-            target_date=test_date + timedelta(days=15)
-        )
-        print(f"✅ 制限超過テスト: {limit_test_eval['should_switch']} ({limit_test_eval['reason']})")
-        
-        print(f"\n🎉 SymbolSwitchManager テスト完了！")
-        print(f"実装機能: 切替評価、制限管理、履歴記録、統計計算")
-        
-    except Exception as e:
-        print(f"❌ テスト実行エラー: {e}")
-        import traceback
-        traceback.print_exc()
-
-
-if __name__ == "__main__":
-    main()
+# main()関数を削除（TODO-PERF-001 Phase 2 軽量化対応）
+# if __name__ == "__main__":
+#     main()

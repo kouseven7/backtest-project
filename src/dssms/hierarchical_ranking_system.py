@@ -104,8 +104,11 @@ class HierarchicalRankingSystem:
         
         for symbol in symbols:
             try:
+                # マルチタイムフレームデータ取得
+                data_dict = self.data_manager.get_multi_timeframe_data(symbol)
+                
                 # パーフェクトオーダー検出
-                po_result = self.perfect_order_detector.check_multi_timeframe_perfect_order(symbol)
+                po_result = self.perfect_order_detector.check_multi_timeframe_perfect_order(symbol, data_dict)
                 
                 if po_result is None:
                     priority_groups[3].append(symbol)
@@ -273,9 +276,9 @@ class HierarchicalRankingSystem:
         if not po_result:
             return 3
         
-        daily_po = po_result.get('daily_perfect_order', False)
-        weekly_po = po_result.get('weekly_perfect_order', False)
-        monthly_po = po_result.get('monthly_perfect_order', False)
+        daily_po = po_result.daily_result.is_perfect_order if po_result.daily_result else False
+        weekly_po = po_result.weekly_result.is_perfect_order if po_result.weekly_result else False
+        monthly_po = po_result.monthly_result.is_perfect_order if po_result.monthly_result else False
         
         if daily_po and weekly_po and monthly_po:
             return 1  # 全軸パーフェクトオーダー
@@ -398,14 +401,17 @@ class HierarchicalRankingSystem:
     def _calculate_perfect_order_score(self, symbol: str) -> float:
         """パーフェクトオーダー強度スコア"""
         try:
-            po_result = self.perfect_order_detector.check_multi_timeframe_perfect_order(symbol)
+            # マルチタイムフレームデータ取得
+            data_dict = self.data_manager.get_multi_timeframe_data(symbol)
+            
+            po_result = self.perfect_order_detector.check_multi_timeframe_perfect_order(symbol, data_dict)
             if not po_result:
                 return 0.0
             
             # 各時間軸のパーフェクトオーダー強度を統合
-            daily_strength = po_result.get('daily_strength', 0.0)
-            weekly_strength = po_result.get('weekly_strength', 0.0)
-            monthly_strength = po_result.get('monthly_strength', 0.0)
+            daily_strength = po_result.daily_result.strength_score if po_result.daily_result else 0.0
+            weekly_strength = po_result.weekly_result.strength_score if po_result.weekly_result else 0.0
+            monthly_strength = po_result.monthly_result.strength_score if po_result.monthly_result else 0.0
             
             # 加重平均（長期時間軸を重視）
             weighted_score = (

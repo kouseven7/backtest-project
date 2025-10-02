@@ -129,6 +129,70 @@ class DSSMSDataManager:
         self.logger.info(f"Batch data fetch completed: {len(results)}/{len(symbols)} symbols")
         return results
     
+    def get_daily_data(self, symbol: str, days_back: int = 300) -> Optional[pd.DataFrame]:
+        """
+        単一銘柄の日足データ取得
+        
+        Args:
+            symbol: 銘柄コード
+            days_back: 取得日数
+            
+        Returns:
+            pd.DataFrame: 日足データ（OHLCV）またはNone
+        """
+        try:
+            # キャッシュから取得を試行
+            daily_data = self._get_cached_data(symbol, 'daily', days_back)
+            if daily_data is None:
+                # キャッシュにない場合は新規取得
+                daily_data = self._fetch_daily_data(symbol, days_back)
+                self._cache_data(symbol, 'daily', daily_data)
+            
+            return daily_data
+            
+        except Exception as e:
+            self.logger.error(f"Failed to get daily data for {symbol}: {e}")
+            return None
+    
+    def get_latest_price(self, symbol: str) -> Optional[Dict[str, float]]:
+        """
+        単一銘柄の最新価格取得
+        
+        Args:
+            symbol: 銘柄コード
+            
+        Returns:
+            Dict[str, float]: 最新価格情報 {"Close": float, "Open": float, ...} またはNone
+        """
+        try:
+            # 最新の日足データを取得（1日分で十分）
+            ticker = yf.Ticker(symbol + ".T")  # 東証サフィックス
+            
+            # 直近2日分取得（市場休場を考慮）
+            hist = ticker.history(period="2d", interval="1d")
+            
+            if hist.empty:
+                self.logger.warning(f"No recent data available for {symbol}")
+                return None
+            
+            # 最新の価格データを取得
+            latest = hist.iloc[-1]
+            
+            price_data = {
+                'Open': float(latest['Open']),
+                'High': float(latest['High']),
+                'Low': float(latest['Low']),
+                'Close': float(latest['Close']),
+                'Volume': float(latest['Volume'])
+            }
+            
+            self.logger.debug(f"Latest price for {symbol}: ¥{price_data['Close']:.2f}")
+            return price_data
+            
+        except Exception as e:
+            self.logger.error(f"Failed to get latest price for {symbol}: {e}")
+            return None
+    
     def _get_cached_data(self, symbol: str, timeframe: str, days_back: int) -> Optional[pd.DataFrame]:
         """キャッシュからデータ取得"""
         try:
