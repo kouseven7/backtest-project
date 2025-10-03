@@ -8,7 +8,7 @@ DSSMS Nikkei225 Screening Engine
 import sys
 from pathlib import Path
 import pandas as pd
-import yfinance as yf
+# import yfinance as yf  # Phase 3最適化: 遅延インポートに変更
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
 import json
@@ -20,6 +20,7 @@ sys.path.append(str(project_root))
 
 # 既存システムインポート
 from config.logger_config import setup_logger
+from src.utils.lazy_import_manager import get_yfinance  # Phase 3最適化: 遅延インポート
 
 class Nikkei225Screener:
     """
@@ -165,6 +166,7 @@ class Nikkei225Screener:
                     yf_logger.setLevel(logging.CRITICAL)  # yfinanceのERRORログを抑制
                     
                     try:
+                        yf = get_yfinance()  # Phase 3最適化: 遅延インポート
                         ticker = yf.Ticker(symbol + ".T")  # 東証サフィックス
                         hist = ticker.history(period="5d")
                     finally:
@@ -214,6 +216,7 @@ class Nikkei225Screener:
             
             for symbol in symbols:
                 try:
+                    yf = get_yfinance()  # Phase 3最適化: 遅延インポート
                     ticker = yf.Ticker(symbol + ".T")
                     info = ticker.info
                     
@@ -260,6 +263,7 @@ class Nikkei225Screener:
             
             for symbol in symbols:
                 try:
+                    yf = get_yfinance()  # Phase 3最適化: 遅延インポート
                     ticker = yf.Ticker(symbol + ".T")
                     hist = ticker.history(period="5d")
                     
@@ -303,6 +307,7 @@ class Nikkei225Screener:
             
             for symbol in symbols:
                 try:
+                    yf = get_yfinance()  # Phase 3最適化: 遅延インポート
                     ticker = yf.Ticker(symbol + ".T")
                     hist = ticker.history(period="30d")  # 30日平均出来高
                     
@@ -365,6 +370,7 @@ class Nikkei225Screener:
                 symbols_with_cap = []
                 for symbol in symbols:
                     try:
+                        yf = get_yfinance()  # Phase 3最適化: 遅延インポート
                         ticker = yf.Ticker(symbol + ".T")
                         info = ticker.info
                         market_cap = info.get('marketCap', 0)

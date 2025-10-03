@@ -8,7 +8,7 @@ DSSMS Data Management System
 import sys
 from pathlib import Path
 import pandas as pd
-import yfinance as yf
+# import yfinance as yf  # Phase 3最適化: 遅延インポートに変更
 from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime, timedelta
 import threading
@@ -21,6 +21,7 @@ sys.path.append(str(project_root))
 
 # 既存システムインポート
 from config.logger_config import setup_logger
+from src.utils.lazy_import_manager import get_yfinance  # Phase 3最適化: 遅延インポート
 
 class DSSMSDataManager:
     """
@@ -166,6 +167,7 @@ class DSSMSDataManager:
         """
         try:
             # 最新の日足データを取得（1日分で十分）
+            yf = get_yfinance()  # Phase 3最適化: 遅延インポート
             ticker = yf.Ticker(symbol + ".T")  # 東証サフィックス
             
             # 直近2日分取得（市場休場を考慮）
@@ -235,6 +237,7 @@ class DSSMSDataManager:
         """日足データ取得"""
         try:
             # Yahoo Finance から直接取得
+            yf = get_yfinance()  # Phase 3最適化: 遅延インポート
             ticker = yf.Ticker(symbol + ".T")  # 東証サフィックス
             
             # 期間設定
@@ -414,6 +417,7 @@ def _extend_dssms_data_manager():
                 return self._timeframe_cache[timeframe][cache_key]
             
             # Yahoo Financeから取得
+            yf = get_yfinance()  # Phase 3最適化: 遅延インポート
             ticker = yf.Ticker("^N225")
             data = ticker.history(period=period)
             

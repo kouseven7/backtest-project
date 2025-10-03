@@ -34,10 +34,10 @@ import numpy as np
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
-import openpyxl
-from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-from openpyxl.utils.dataframe import dataframe_to_rows
-from openpyxl.chart import LineChart, Reference
+# import openpyxl  # Phase 3最適化: 遅延インポートに変更
+# from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+# from openpyxl.utils.dataframe import dataframe_to_rows
+# from openpyxl.chart import LineChart, Reference
 import warnings
 import sys
 
@@ -46,6 +46,20 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
 from config.logger_config import setup_logger
+from src.utils.lazy_import_manager import get_openpyxl  # Phase 3最適化: 遅延インポート
+
+# Phase 3最適化: openpyxlヘルパー関数
+def _get_font(**kwargs):
+    """Font遅延取得"""
+    openpyxl = get_openpyxl()
+    from openpyxl.styles import Font
+    return Font(**kwargs)
+
+def _get_pattern_fill(**kwargs):
+    """PatternFill遅延取得"""
+    openpyxl = get_openpyxl()
+    from openpyxl.styles import PatternFill
+    return PatternFill(**kwargs)
 
 # 警告を抑制
 warnings.filterwarnings('ignore')
@@ -70,12 +84,24 @@ class DSSMSExcelExporterV2:
         self.logger = setup_logger(__name__)
         self.initial_capital = initial_capital
         
-        # スタイル設定
-        self.header_font = Font(bold=True, size=12, color="FFFFFF")
-        self.header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+        # スタイル設定（遅延初期化）
+        self._styles_initialized = False
         self.number_format = '#,##0.00'
         self.percentage_format = '0.00%'
         self.date_format = 'yyyy-mm-dd'
+    
+    def _init_styles(self):
+        """openpyxlスタイルの遅延初期化"""
+        if self._styles_initialized:
+            return
+        
+        # Phase 3最適化: openpyxl遅延インポート
+        openpyxl = get_openpyxl()
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        
+        self.header_font = _get_font(bold=True, size=12, color="FFFFFF")
+        self.header_fill = _get_pattern_fill(start_color="366092", end_color="366092", fill_type="solid")
+        self._styles_initialized = True
         
         # DSSMS戦略リスト
         self.dssms_strategies = [
@@ -112,12 +138,18 @@ class DSSMSExcelExporterV2:
                 output_dir.mkdir(parents=True, exist_ok=True)
                 output_path = output_dir / f"dssms_backtest_results_v2_{timestamp}.xlsx"
             
+            # Phase 3最適化: openpyxl遅延インポート
+            openpyxl = get_openpyxl()
+            
             # Excelワークブック作成
             workbook = openpyxl.Workbook()
             
             # デフォルトシートを削除
             if "Sheet" in workbook.sheetnames:
                 workbook.remove(workbook["Sheet"])
+            
+            # スタイル初期化
+            self._init_styles()
             
             # 各シート作成
             self._create_summary_sheet(workbook, backtest_result)
@@ -146,7 +178,7 @@ class DSSMSExcelExporterV2:
         
         # ヘッダー
         ws["A1"] = "DSSMS バックテスト結果サマリー V2"
-        ws["A1"].font = Font(bold=True, size=16)
+        ws["A1"].font = _get_font(bold=True, size=16)
         
         # 基本情報
         row = 3
@@ -194,7 +226,7 @@ class DSSMSExcelExporterV2:
         
         # ヘッダー
         ws["A1"] = "詳細パフォーマンス指標"
-        ws["A1"].font = Font(bold=True, size=14)
+        ws["A1"].font = _get_font(bold=True, size=14)
         
         # パフォーマンス指標データ作成
         performance_data = self._calculate_performance_metrics(result)
@@ -424,7 +456,7 @@ class DSSMSExcelExporterV2:
         
         # 簡単なチャート作成の準備
         ws["A1"] = "パフォーマンスチャート"
-        ws["A1"].font = Font(bold=True, size=14)
+        ws["A1"].font = _get_font(bold=True, size=14)
         
         ws["A3"] = "注：チャート機能は今後のバージョンで実装予定"
     

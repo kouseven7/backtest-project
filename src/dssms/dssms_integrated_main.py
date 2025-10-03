@@ -823,7 +823,9 @@ class DSSMSIntegratedBacktester:
             # データ取得
             if DATA_FETCHER_AVAILABLE:
                 try:
-                    import yfinance as yf
+                    # Phase 3最適化: yfinance遅延インポート
+                    from src.utils.lazy_import_manager import get_yfinance
+                    yf = get_yfinance()
                     # 株価データ
                     ticker = yf.Ticker(f"{symbol}.T")
                     stock_data = ticker.history(start=start_date, end=end_date + timedelta(days=1))
