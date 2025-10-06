@@ -76,7 +76,8 @@ def analyze_excel_output_bottleneck():
     # openpyxl（Excel処理）
     start = time.perf_counter()
     try:
-        import openpyxl
+        # openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
         openpyxl_time = (time.perf_counter() - start) * 1000
         print(f"   openpyxl インポート: {openpyxl_time:.1f}ms")
     except Exception as e:

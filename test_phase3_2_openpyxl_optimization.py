@@ -22,7 +22,8 @@ def test_original_openpyxl_import_performance():
     start_time = time.perf_counter()
     
     try:
-        import openpyxl
+        # openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
         from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
         from openpyxl.utils.dataframe import dataframe_to_rows
         from openpyxl.chart import LineChart, Reference

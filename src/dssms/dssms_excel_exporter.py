@@ -6,7 +6,8 @@ Phase 2.2 統合実装版 - Step 2.2b-1 HIGH優先度メソッド実装
 """
 
 import logging
-import openpyxl
+# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta

@@ -34,7 +34,8 @@ warnings.filterwarnings('ignore')
 
 # Excel処理用
 try:
-    import openpyxl
+    # openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
     from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
     from openpyxl.charts import ScatterChart, LineChart, BarChart, Reference
     EXCEL_AVAILABLE = True

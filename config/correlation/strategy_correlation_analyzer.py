@@ -1,3 +1,72 @@
+
+
+# TODO-PERF-001: Phase 2 Stage 2 - SystemFallbackPolicy Integration
+try:
+    from src.config.system_modes import SystemFallbackPolicy, ComponentType
+    _fallback_policy = SystemFallbackPolicy.get_instance()
+except ImportError:
+    # フォールバック用のダミークラス
+    class _DummyFallbackPolicy:
+        def handle_component_failure(self, **kwargs):
+            return None
+    _fallback_policy = _DummyFallbackPolicy()
+
+def _handle_lazy_import_failure(component_name: str, error: Exception, fallback_func=None):
+    """遅延インポート失敗時のフォールバック処理"""
+    try:
+        return _fallback_policy.handle_component_failure(
+            component_type=ComponentType.STRATEGY_ENGINE,
+            component_name=component_name,
+            error=error,
+            fallback_func=fallback_func
+        )
+    except:
+        # 最終フォールバック
+        if fallback_func:
+            return fallback_func()
+        return None
+
+
+# TODO-PERF-001: Phase 2 Stage 2 - Module Level Lazy Import
+def _get_pandas():
+    """pandas遅延インポート"""
+    import pandas as pd
+    return pd
+
+def _get_numpy():
+    """numpy遅延インポート"""
+    import numpy as np
+    return np
+
+def _get_scipy():
+    """scipy遅延インポート"""
+    import scipy
+    return scipy
+
+# 遅延ロード用グローバル変数
+_pandas = None
+_numpy = None
+_scipy = None
+
+def get_pandas():
+    global _pandas
+    if _pandas is None:
+        _pandas = _get_pandas()
+    return _pandas
+
+def get_numpy():
+    global _numpy
+    if _numpy is None:
+        _numpy = _get_numpy()
+    return _numpy
+
+def get_scipy():
+    global _scipy
+    if _scipy is None:
+        _scipy = _get_scipy()
+    return _scipy
+
+
 """
 戦略相関分析システム - 戦略間の相関性と共分散を計算
 
@@ -5,8 +74,8 @@
 ポートフォリオ最適化に必要な情報を提供する。
 """
 
-import numpy as np
-import pandas as pd
+# import numpy as np  # TODO-PERF-001: Optimized to lazy import
+# import pandas as pd  # TODO-PERF-001: Optimized to lazy import
 from typing import Dict, List, Tuple, Optional, Union, Any
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -44,10 +113,10 @@ class CorrelationConfig:
 @dataclass
 class CorrelationMatrix:
     """相関行列データクラス"""
-    correlation_matrix: pd.DataFrame
-    covariance_matrix: pd.DataFrame
-    p_values: pd.DataFrame
-    confidence_intervals: Dict[str, pd.DataFrame]
+    correlation_matrix: get_pandas().DataFrame
+    covariance_matrix: get_pandas().DataFrame
+    p_values: get_pandas().DataFrame
+    confidence_intervals: Dict[str, get_pandas().DataFrame]
     calculation_timestamp: datetime
     period_info: Dict[str, Union[str, int]]
     
@@ -60,8 +129,8 @@ class CorrelationMatrix:
 class StrategyPerformanceData:
     """戦略パフォーマンスデータ"""
     strategy_name: str
-    returns: pd.Series
-    cumulative_returns: pd.Series
+    returns: get_pandas().Series
+    cumulative_returns: get_pandas().Series
     volatility: float
     sharpe_ratio: float
     max_drawdown: float
@@ -87,8 +156,8 @@ class StrategyCorrelationAnalyzer:
         except Exception as e:
             self.logger.warning(f"既存システムとの統合に問題があります: {e}")
     
-    def add_strategy_data(self, strategy_name: str, price_data: pd.DataFrame, 
-                         signals: pd.Series) -> None:  # type: ignore
+    def add_strategy_data(self, strategy_name: str, price_data: get_pandas().DataFrame, 
+                         signals: get_pandas().Series) -> None:  # type: ignore
         """戦略データを追加"""
         try:
             # パフォーマンス計算
@@ -96,7 +165,7 @@ class StrategyCorrelationAnalyzer:
             cumulative_returns = (1 + returns).cumprod() - 1
             
             # 統計指標計算
-            volatility = returns.std() * np.sqrt(252)  # type: ignore
+            volatility = returns.std() * get_numpy().sqrt(252)  # type: ignore
             sharpe_ratio = self._calculate_sharpe_ratio(returns)
             max_drawdown = self._calculate_max_drawdown(cumulative_returns)
             win_rate = (returns > 0).sum() / len(returns)  # type: ignore
@@ -171,7 +240,7 @@ class StrategyCorrelationAnalyzer:
             raise
     
     def calculate_rolling_correlation(self, strategy1: str, strategy2: str, 
-                                    window: Optional[int] = None) -> pd.Series:
+                                    window: Optional[int] = None) -> get_pandas().Series:
         """ローリング相関を計算"""
         try:
             window = window or self.config.rolling_window
@@ -202,7 +271,7 @@ class StrategyCorrelationAnalyzer:
             corr_mat = correlation_matrix.correlation_matrix
             
             # 上三角行列から相関係数を取得（対角線を除く）
-            mask = np.triu(np.ones_like(corr_mat, dtype=bool), k=1)
+            mask = get_numpy().triu(get_numpy().ones_like(corr_mat, dtype=bool), k=1)
             correlations = corr_mat.where(mask).stack()
             
             # 統計サマリー
@@ -279,8 +348,8 @@ class StrategyCorrelationAnalyzer:
             self.logger.error(f"クラスター検出エラー: {e}")
             raise
     
-    def _calculate_strategy_returns(self, price_data: pd.DataFrame, 
-                                  signals: pd.Series) -> pd.Series:  # type: ignore
+    def _calculate_strategy_returns(self, price_data: get_pandas().DataFrame, 
+                                  signals: get_pandas().Series) -> get_pandas().Series:  # type: ignore
         """戦略リターンを計算"""
         try:
             # 価格変化率を計算
@@ -300,11 +369,11 @@ class StrategyCorrelationAnalyzer:
             self.logger.error(f"戦略リターン計算エラー: {e}")
             raise
     
-    def _calculate_sharpe_ratio(self, returns: pd.Series, risk_free_rate: float = 0.02) -> float:  # type: ignore
+    def _calculate_sharpe_ratio(self, returns: get_pandas().Series, risk_free_rate: float = 0.02) -> float:  # type: ignore
         """シャープレシオを計算"""
         try:
             annual_return = returns.mean() * 252  # type: ignore
-            annual_vol = returns.std() * np.sqrt(252)  # type: ignore
+            annual_vol = returns.std() * get_numpy().sqrt(252)  # type: ignore
             
             if annual_vol == 0:
                 return 0.0
@@ -315,7 +384,7 @@ class StrategyCorrelationAnalyzer:
             self.logger.error(f"シャープレシオ計算エラー: {e}")
             return 0.0
     
-    def _calculate_max_drawdown(self, cumulative_returns: pd.Series) -> float:  # type: ignore
+    def _calculate_max_drawdown(self, cumulative_returns: get_pandas().Series) -> float:  # type: ignore
         """最大ドローダウンを計算"""
         try:
             peak = cumulative_returns.expanding().max()  # type: ignore
@@ -326,7 +395,7 @@ class StrategyCorrelationAnalyzer:
             self.logger.error(f"最大ドローダウン計算エラー: {e}")
             return 0.0
     
-    def _prepare_returns_dataframe(self, strategies: List[str]) -> pd.DataFrame:
+    def _prepare_returns_dataframe(self, strategies: List[str]) -> get_pandas().DataFrame:
         """リターンデータフレームを準備"""
         try:
             returns_dict = {}
@@ -335,7 +404,7 @@ class StrategyCorrelationAnalyzer:
                 if strategy in self.strategy_data:
                     returns_dict[strategy] = self.strategy_data[strategy].returns
             
-            returns_df = pd.DataFrame(returns_dict)
+            returns_df = get_pandas().DataFrame(returns_dict)
             returns_df = returns_df.dropna()
             
             if len(returns_df) < self.config.min_periods:
@@ -351,7 +420,7 @@ class StrategyCorrelationAnalyzer:
             self.logger.error(f"リターンデータフレーム準備エラー: {e}")
             raise
     
-    def _calculate_correlation_p_values(self, returns_df: pd.DataFrame) -> pd.DataFrame:
+    def _calculate_correlation_p_values(self, returns_df: get_pandas().DataFrame) -> get_pandas().DataFrame:
         """相関の統計的有意性を検定"""
         try:
             try:
@@ -359,7 +428,7 @@ class StrategyCorrelationAnalyzer:
                 
                 strategies = returns_df.columns
                 n_strategies = len(strategies)
-                p_values = np.ones((n_strategies, n_strategies))
+                p_values = get_numpy().ones((n_strategies, n_strategies))
                 
                 for i in range(n_strategies):
                     for j in range(i+1, n_strategies):
@@ -367,36 +436,36 @@ class StrategyCorrelationAnalyzer:
                         p_values[i, j] = p_value
                         p_values[j, i] = p_value
                 
-                return pd.DataFrame(p_values, index=strategies, columns=strategies)
+                return get_pandas().DataFrame(p_values, index=strategies, columns=strategies)
                 
             except ImportError:
                 self.logger.warning("scipy.statsが利用できません。p値計算をスキップします")
-                return pd.DataFrame()
+                return get_pandas().DataFrame()
                 
         except Exception as e:
             self.logger.error(f"p値計算エラー: {e}")
-            return pd.DataFrame()
+            return get_pandas().DataFrame()
     
-    def _calculate_confidence_intervals(self, returns_df: pd.DataFrame, 
-                                      correlation_matrix: pd.DataFrame) -> Dict[str, pd.DataFrame]:
+    def _calculate_confidence_intervals(self, returns_df: get_pandas().DataFrame, 
+                                      correlation_matrix: get_pandas().DataFrame) -> Dict[str, get_pandas().DataFrame]:
         """相関係数の信頼区間を計算"""
         try:
             n = len(returns_df)
             z_score = 1.96 if self.config.confidence_level == 0.95 else 2.576  # 95%または99%
             
             # Fisher変換を使用
-            fisher_z = np.arctanh(correlation_matrix.values)
-            se = 1 / np.sqrt(n - 3)
+            fisher_z = get_numpy().arctanh(correlation_matrix.values)
+            se = 1 / get_numpy().sqrt(n - 3)
             
             # 信頼区間をFisher変換で計算後、逆変換
-            lower_bound = np.tanh(fisher_z - z_score * se)
-            upper_bound = np.tanh(fisher_z + z_score * se)
+            lower_bound = get_numpy().tanh(fisher_z - z_score * se)
+            upper_bound = get_numpy().tanh(fisher_z + z_score * se)
             
             strategies = correlation_matrix.index
             
             return {
-                "lower_bound": pd.DataFrame(lower_bound, index=strategies, columns=strategies),
-                "upper_bound": pd.DataFrame(upper_bound, index=strategies, columns=strategies)
+                "lower_bound": get_pandas().DataFrame(lower_bound, index=strategies, columns=strategies),
+                "upper_bound": get_pandas().DataFrame(upper_bound, index=strategies, columns=strategies)
             }
             
         except Exception as e:
@@ -442,11 +511,11 @@ class StrategyCorrelationAnalyzer:
                 data = json.load(f)
             
             # DataFrameに復元
-            correlation_matrix = pd.DataFrame.from_dict(data["correlation_matrix"])
-            covariance_matrix = pd.DataFrame.from_dict(data["covariance_matrix"])
-            p_values = pd.DataFrame.from_dict(data["p_values"]) if data["p_values"] else pd.DataFrame()
+            correlation_matrix = get_pandas().DataFrame.from_dict(data["correlation_matrix"])
+            covariance_matrix = get_pandas().DataFrame.from_dict(data["covariance_matrix"])
+            p_values = get_pandas().DataFrame.from_dict(data["p_values"]) if data["p_values"] else get_pandas().DataFrame()
             confidence_intervals = {
-                k: pd.DataFrame.from_dict(v) for k, v in data["confidence_intervals"].items()
+                k: get_pandas().DataFrame.from_dict(v) for k, v in data["confidence_intervals"].items()
             }
             
             return CorrelationMatrix(
@@ -469,17 +538,17 @@ if __name__ == "__main__":
     print("戦略相関分析システム - テスト実行")
     
     # テスト用のダミーデータ生成
-    np.random.seed(42)
-    dates = pd.date_range(start='2023-01-01', end='2023-12-31', freq='D')
+    get_numpy().random.seed(42)
+    dates = get_pandas().date_range(start='2023-01-01', end='2023-12-31', freq='D')
     
     # 価格データ（ランダムウォーク）
-    price_data = pd.DataFrame({
-        'close': 100 * np.cumprod(1 + np.random.normal(0, 0.01, len(dates)))
+    price_data = get_pandas().DataFrame({
+        'close': 100 * get_numpy().cumprod(1 + get_numpy().random.normal(0, 0.01, len(dates)))
     }, index=dates)
     
     # テスト戦略のシグナル
-    signals1 = pd.Series(np.random.choice([-1, 0, 1], len(dates), p=[0.3, 0.4, 0.3]), index=dates)
-    signals2 = pd.Series(np.random.choice([-1, 0, 1], len(dates), p=[0.2, 0.6, 0.2]), index=dates)
+    signals1 = get_pandas().Series(get_numpy().random.choice([-1, 0, 1], len(dates), p=[0.3, 0.4, 0.3]), index=dates)
+    signals2 = get_pandas().Series(get_numpy().random.choice([-1, 0, 1], len(dates), p=[0.2, 0.6, 0.2]), index=dates)
     
     # 分析器初期化
     analyzer = StrategyCorrelationAnalyzer()

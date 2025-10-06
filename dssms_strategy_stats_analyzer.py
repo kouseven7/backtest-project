@@ -19,7 +19,8 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-import openpyxl
+# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
 from typing import Dict, List, Any, Optional
 
 def setup_logger():

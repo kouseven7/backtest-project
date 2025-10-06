@@ -29,7 +29,8 @@ from src.config.logger_config import setup_logger
 
 # Excel操作用
 try:
-    import openpyxl
+    # openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
     from openpyxl.chart import LineChart, BarChart, ScatterChart, Reference
     from openpyxl.utils.dataframe import dataframe_to_rows

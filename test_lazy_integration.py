@@ -3,7 +3,8 @@ lazy loading統合後のSymbolSwitchManager高速化テスト
 """
 
 import time
-from src.dssms.lazy_loader import lazy_modules
+# lazy_loader除去 (TODO-PERF-001: Stage 3)
+# 直接インポートに変更: lazy_modules
 
 def test_lazy_symbol_switch_manager():
     """lazy loading経由でのSymbolSwitchManager取得テスト"""
@@ -12,7 +13,7 @@ def test_lazy_symbol_switch_manager():
     start_time = time.time()
     
     # lazy loading経由で高速版取得
-    SymbolSwitchManagerClass, available = lazy_modules.get_symbol_switch_manager()
+    SymbolSwitchManagerClass, available = # lazy_modules除去: get_symbol_switch_manager()
     
     load_time = (time.time() - start_time) * 1000
     print(f"✅ lazy loading取得: {load_time:.1f}ms")
@@ -66,7 +67,7 @@ def main():
             print("🎉 Lazy Loading版が100ms未満を達成！")
         
         # 統計表示
-        stats = lazy_modules.get_import_stats()
+        stats = # lazy_modules除去: get_import_stats()
         print(f"\n=== インポート統計 ===")
         for module, time_ms in stats.items():
             print(f"  {module}: {time_ms:.1f}ms")

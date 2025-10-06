@@ -5,7 +5,8 @@
 エントリー価格、エグジット価格、損益計算、保有期間の妥当性を検証
 """
 
-import openpyxl
+# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
 import pandas as pd
 from pathlib import Path
 from datetime import datetime, timedelta

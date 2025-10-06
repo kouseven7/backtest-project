@@ -15,7 +15,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import glob
 from typing import Dict, List, Any, Optional
-import openpyxl
+# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
 
 class DSSMSComprehensiveAnalyzer:
     def __init__(self):

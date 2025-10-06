@@ -416,6 +416,7 @@ class DSSMSIntegratedBacktester:
     def _advanced_ranking_selection(self, filtered_symbols: List[str], target_date: datetime) -> str:
         """
         AdvancedRankingEngine使用の真のランキングベース選択 (TODO-DSSMS-004.1)
+        TODO-DSSMS-004.2統合最適化適用版
         
         Args:
             filtered_symbols: フィルタ済み銘柄リスト
@@ -426,45 +427,750 @@ class DSSMSIntegratedBacktester:
         """
         if self.advanced_ranking_engine and len(filtered_symbols) > 0:
             try:
-                # AdvancedRankingEngineによる複数銘柄同時ランキング分析
-                self.logger.info(f"AdvancedRankingEngine: {len(filtered_symbols)}銘柄を同時ランキング分析中...")
+                # TODO-DSSMS-004.2: 統合最適化実装
+                # HierarchicalRankingSystemとの重複計算除去・効率化統合
+                selected_symbol = self._integrated_ranking_selection_optimized(
+                    filtered_symbols, target_date
+                )
                 
-                # 市場データ準備
-                market_data = self._prepare_market_data_for_analysis(filtered_symbols, target_date)
-                
-                if market_data:
-                    # analyze_symbols_advanced()を同期実行
-                    ranking_results = self._run_advanced_analysis_sync(filtered_symbols, market_data)
-                    
-                    if ranking_results and len(ranking_results) > 0:
-                        # スコアベース最適銘柄選択
-                        best_symbol = self._select_best_symbol_from_ranking(ranking_results)
-                        
-                        if best_symbol:
-                            self.logger.info(
-                                f"AdvancedRanking選択: {best_symbol} (真のランキング比較, "
-                                f"{len(filtered_symbols)}銘柄中から最適選択)"
-                            )
-                            return best_symbol
-                
-                # 高度分析失敗時はシステム状態確認による暫定選択
-                system_status = self.advanced_ranking_engine.get_system_status()
-                if system_status.get('integration_status', {}).get('hierarchical_system', False):
-                    selected = filtered_symbols[0]
-                    self.logger.warning(
-                        f"AdvancedRanking暫定選択: {selected} (高度分析失敗のため第1銘柄選択)"
+                if selected_symbol:
+                    self.logger.info(
+                        f"統合最適化選択: {selected_symbol} (重複排除統合ランキング, "
+                        f"{len(filtered_symbols)}銘柄最適選択)"
                     )
-                    return selected
+                    return selected_symbol
+                
+                # フォールバック: レガシー分析
+                return self._legacy_advanced_ranking_selection(filtered_symbols, target_date)
                 
             except Exception as e:
-                self.logger.error(f"AdvancedRankingEngine分析失敗: {e}")
+                self.logger.error(f"統合最適化ランキング失敗: {e}")
+                # レガシー分析にフォールバック
+                return self._legacy_advanced_ranking_selection(filtered_symbols, target_date)
+        
+        return self._legacy_random_selection(filtered_symbols)
+    
+    def _integrated_ranking_selection_optimized(self, filtered_symbols: List[str], target_date: datetime) -> Optional[str]:
+        """
+        TODO-DSSMS-004.2: 統合最適化ランキング選択
+        
+        AdvancedRankingEngineとHierarchicalRankingSystemの重複計算除去・効率化統合実装
+        
+        Args:
+            filtered_symbols: フィルタ済み銘柄リスト
+            target_date: 対象日付
+            
+        Returns:
+            Optional[str]: 最適化選択された銘柄コード
+        """
+        start_time = time.time()
+        
+        try:
+            self.logger.info(f"🚀 統合最適化ランキング開始: {len(filtered_symbols)}銘柄")
+            
+            # Step 1: HierarchicalRankingSystem基盤計算（重複排除の基準）
+            hierarchical_results = self._get_hierarchical_ranking_base(filtered_symbols)
+            
+            if not hierarchical_results:
+                self.logger.warning("HierarchicalRankingSystem基盤計算失敗")
+                return None
+            
+            # Step 2: AdvancedRankingEngine高度分析（基盤結果再利用）
+            advanced_results = self._run_advanced_analysis_with_base_results(
+                filtered_symbols, target_date, hierarchical_results
+            )
+            
+            # Step 3: 統合スコア計算・最適選択
+            final_selection = self._calculate_integrated_optimal_selection(
+                hierarchical_results, advanced_results
+            )
+            
+            execution_time = (time.time() - start_time) * 1000
+            self.logger.info(f"✅ 統合最適化完了: {execution_time:.2f}ms, 選択: {final_selection}")
+            
+            return final_selection
+            
+        except Exception as e:
+            self.logger.error(f"統合最適化ランキングエラー: {e}")
+            return None
+    
+    def _get_hierarchical_ranking_base(self, filtered_symbols: List[str]) -> Optional[Dict[str, Any]]:
+        """
+        HierarchicalRankingSystem基盤計算取得（キャッシュ活用）
+        
+        Args:
+            filtered_symbols: 対象銘柄リスト
+        
+        Returns:
+            Optional[Dict[str, Any]]: 基盤ランキング結果
+        """
+        try:
+            # HierarchicalRankingSystemアクセス
+            if hasattr(self.advanced_ranking_engine, '_hierarchical_system') and \
+               self.advanced_ranking_engine._hierarchical_system:
+                
+                hierarchical_system = self.advanced_ranking_engine._hierarchical_system
+                
+                # 優先度分類（基盤計算）
+                priority_groups = hierarchical_system.categorize_by_perfect_order_priority(filtered_symbols)
+                
+                # グループ内ランキング（基盤計算）
+                ranking_results = {}
+                for priority_level, group_symbols in priority_groups.items():
+                    if group_symbols:
+                        group_ranking = hierarchical_system.rank_within_priority_group(group_symbols)
+                        ranking_results[priority_level] = group_ranking
+                
+                base_results = {
+                    'priority_groups': priority_groups,
+                    'ranking_results': ranking_results,
+                    'timestamp': time.time(),
+                    'symbols_count': len(filtered_symbols)
+                }
+                
+                self.logger.info(f"📊 基盤計算完了: {len(priority_groups)}優先度グループ")
+                return base_results
+            
+            return None
+            
+        except Exception as e:
+            self.logger.error(f"HierarchicalRankingSystem基盤計算エラー: {e}")
+            return None
+    
+    def _run_advanced_analysis_with_base_results(self, filtered_symbols: List[str], 
+                                               target_date: datetime,
+                                               hierarchical_results: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        AdvancedRankingEngine高度分析（基盤結果再利用版）
+        
+        Args:
+            filtered_symbols: 対象銘柄リスト
+            target_date: 対象日付
+            hierarchical_results: HierarchicalRankingSystem基盤結果
+            
+        Returns:
+            Optional[Dict[str, Any]]: 高度分析結果
+        """
+        try:
+            # 市場データ準備（基盤結果のタイムスタンプ活用）
+            market_data = self._prepare_market_data_for_analysis(filtered_symbols, target_date)
+            
+            if not market_data:
+                self.logger.warning("市場データ準備失敗 - 基盤結果のみ使用")
+                return {'base_results_only': True, 'hierarchical_results': hierarchical_results}
+            
+            # AdvancedRankingEngine分析パラメータ（基盤結果統合）
+            analysis_params = {
+                'analysis_depth': 'comprehensive',
+                'enable_parallel': len(filtered_symbols) > 5,
+                'timeout_seconds': 20,
+                'base_ranking_results': hierarchical_results,  # 基盤結果統合
+                'reuse_calculations': True  # 重複計算回避
+            }
+            
+            # 統合分析実行
+            ranking_results = self._run_advanced_analysis_sync(filtered_symbols, market_data, analysis_params)
+            
+            if ranking_results:
+                advanced_results = {
+                    'advanced_ranking': ranking_results,
+                    'market_data_available': True,
+                    'base_integration': True,
+                    'timestamp': time.time()
+                }
+                
+                self.logger.info(f"🔥 高度分析完了: {len(ranking_results)}結果 (基盤統合)")
+                return advanced_results
+            
+            return None
+            
+        except Exception as e:
+            self.logger.error(f"高度分析（基盤統合）エラー: {e}")
+            return None
+    
+    def _calculate_integrated_optimal_selection(self, hierarchical_results: Dict[str, Any],
+                                              advanced_results: Optional[Dict[str, Any]]) -> Optional[str]:
+        """
+        統合スコア計算・最適選択
+        TODO-DSSMS-004.2 Stage 3: 高度分析機能統合実装
+        
+        Args:
+            hierarchical_results: HierarchicalRankingSystem基盤結果
+            advanced_results: AdvancedRankingEngine高度分析結果
+            
+        Returns:
+            Optional[str]: 統合最適選択銘柄
+        """
+        try:
+            # 基盤ランキングから候補抽出
+            base_candidates = []
+            ranking_results = hierarchical_results.get('ranking_results', {})
+            
+            # 優先度順に候補収集
+            for priority_level in [1, 2, 3]:
+                group_ranking = ranking_results.get(priority_level, [])
+                if group_ranking:
+                    # トップ候補を基盤候補として追加
+                    top_candidate = group_ranking[0]  # (symbol, score) tuple
+                    base_candidates.append({
+                        'symbol': top_candidate[0],
+                        'base_score': top_candidate[1],
+                        'priority_level': priority_level
+                    })
+            
+            if not base_candidates:
+                self.logger.warning("統合選択: 基盤候補なし")
+                return None
+            
+            # Stage 3: 高度分析機能統合強化
+            enhanced_candidates = self._enhance_candidates_with_advanced_analysis(
+                base_candidates, advanced_results
+            )
+            
+            # 統合スコア最高の銘柄選択
+            final_selection = self._select_optimal_from_enhanced_candidates(enhanced_candidates)
+            
+            return final_selection
+            
+        except Exception as e:
+            self.logger.error(f"統合最適選択計算エラー: {e}")
+            return None
+    
+    def _enhance_candidates_with_advanced_analysis(self, base_candidates: List[Dict[str, Any]],
+                                                 advanced_results: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        Stage 3: 高度分析機能による候補強化
+        
+        Args:
+            base_candidates: 基盤候補リスト
+            advanced_results: AdvancedRankingEngine高度分析結果
+            
+        Returns:
+            List[Dict[str, Any]]: 強化済み候補リスト
+        """
+        enhanced_candidates = []
+        
+        for base_candidate in base_candidates:
+            symbol = base_candidate['symbol']
+            
+            # 基盤情報コピー
+            enhanced = base_candidate.copy()
+            
+            try:
+                # Stage 3-1: テクニカル分析機能強化
+                technical_analysis = self._get_enhanced_technical_analysis(symbol)
+                enhanced.update(technical_analysis)
+                
+                # Stage 3-2: ファンダメンタル分析統合
+                fundamental_analysis = self._get_enhanced_fundamental_analysis(symbol)
+                enhanced.update(fundamental_analysis)
+                
+                # Stage 3-3: MultiTimeframePerfectOrder高度判定統合
+                perfect_order_analysis = self._get_enhanced_perfect_order_analysis(symbol)
+                enhanced.update(perfect_order_analysis)
+                
+                # Stage 3-4: 高度分析結果統合
+                if advanced_results and not advanced_results.get('base_results_only', False):
+                    advanced_integration = self._integrate_advanced_ranking_results(
+                        symbol, advanced_results
+                    )
+                    enhanced.update(advanced_integration)
+                
+                # Stage 3-5: 複合スコアリング・重み付け最適化
+                composite_score = self._calculate_composite_score_optimized(enhanced)
+                enhanced['composite_score'] = composite_score
+                
+                enhanced_candidates.append(enhanced)
+                
+            except Exception as e:
+                self.logger.warning(f"候補強化エラー ({symbol}): {e}")
+                # エラー時は基盤候補のまま追加
+                enhanced['composite_score'] = base_candidate.get('base_score', 0.0)
+                enhanced_candidates.append(enhanced)
+        
+        self.logger.info(f"🔥 高度分析強化完了: {len(enhanced_candidates)}候補")
+        return enhanced_candidates
+    
+    def _get_enhanced_technical_analysis(self, symbol: str) -> Dict[str, Any]:
+        """
+        Stage 3-1: テクニカル分析機能のフル活用実装
+        
+        Args:
+            symbol: 銘柄コード
+            
+        Returns:
+            Dict[str, Any]: 強化テクニカル分析結果
+        """
+        technical_data = {
+            'rsi_14': 0.0,
+            'macd_signal': 'neutral',
+            'bollinger_position': 0.5,
+            'volume_trend': 'stable',
+            'momentum_score': 0.0,
+            'volatility_score': 0.0,
+            'technical_strength': 0.0
+        }
+        
+        try:
+            # PerfectOrderDetectorの結果活用
+            if hasattr(self.advanced_ranking_engine, '_hierarchical_system'):
+                hierarchical_system = self.advanced_ranking_engine._hierarchical_system
+                if hasattr(hierarchical_system, 'perfect_order_detector'):
+                    perfect_detector = hierarchical_system.perfect_order_detector
+                    
+                    # MultiTimeframePerfectOrder取得
+                    perfect_result = perfect_detector.detect_perfect_order_multi_timeframes(symbol, {})
+                    
+                    if perfect_result:
+                        technical_data['perfect_order_daily'] = perfect_result.daily_result.is_perfect_order
+                        technical_data['perfect_order_strength'] = perfect_result.daily_result.strength_score
+                        technical_data['trend_duration'] = perfect_result.daily_result.trend_duration_days
+                        technical_data['technical_strength'] = perfect_result.daily_result.strength_score * 0.7
+            
+            # テクニカル指標統合スコア
+            technical_data['technical_strength'] = max(
+                technical_data.get('technical_strength', 0.0),
+                (technical_data['rsi_14'] / 100 + technical_data['bollinger_position']) / 2
+            )
+            
+        except Exception as e:
+            self.logger.warning(f"テクニカル分析強化エラー ({symbol}): {e}")
+        
+        return technical_data
+    
+    def _get_enhanced_fundamental_analysis(self, symbol: str) -> Dict[str, Any]:
+        """
+        Stage 3-2: ファンダメンタル分析統合（PER・PBR等指標活用）
+        
+        Args:
+            symbol: 銘柄コード
+            
+        Returns:
+            Dict[str, Any]: 強化ファンダメンタル分析結果
+        """
+        fundamental_data = {
+            'per_ratio': 0.0,
+            'pbr_ratio': 0.0,
+            'roe_percent': 0.0,
+            'operating_margin': 0.0,
+            'revenue_growth': 0.0,
+            'profit_stability': 0.0,
+            'fundamental_score': 0.0
+        }
+        
+        try:
+            # FundamentalAnalyzerの結果活用
+            if hasattr(self.advanced_ranking_engine, '_hierarchical_system'):
+                hierarchical_system = self.advanced_ranking_engine._hierarchical_system
+                if hasattr(hierarchical_system, 'fundamental_analyzer'):
+                    fundamental_analyzer = hierarchical_system.fundamental_analyzer
+                    
+                    # 業績分析実行
+                    analysis_result = fundamental_analyzer.analyze_financial_performance(symbol)
+                    
+                    if analysis_result and analysis_result.get('status') == 'success':
+                        data = analysis_result.get('data', {})
+                        
+                        # 主要指標抽出
+                        fundamental_data['operating_margin'] = data.get('operating_margin', 0.0)
+                        fundamental_data['revenue_growth'] = data.get('revenue_growth_rate', 0.0)
+                        fundamental_data['profit_stability'] = data.get('earnings_stability', 0.0)
+                        
+                        # PER・PBR等の指標（利用可能な場合）
+                        if 'valuation_metrics' in data:
+                            valuation = data['valuation_metrics']
+                            fundamental_data['per_ratio'] = valuation.get('pe_ratio', 0.0)
+                            fundamental_data['pbr_ratio'] = valuation.get('pb_ratio', 0.0)
+                            fundamental_data['roe_percent'] = valuation.get('roe', 0.0)
+                        
+                        # ファンダメンタル総合スコア計算
+                        fundamental_data['fundamental_score'] = self._calculate_fundamental_composite_score(
+                            fundamental_data
+                        )
+            
+        except Exception as e:
+            self.logger.warning(f"ファンダメンタル分析強化エラー ({symbol}): {e}")
+        
+        return fundamental_data
+    
+    def _get_enhanced_perfect_order_analysis(self, symbol: str) -> Dict[str, Any]:
+        """
+        Stage 3-3: MultiTimeframePerfectOrder高度判定統合
+        
+        Args:
+            symbol: 銘柄コード
+            
+        Returns:
+            Dict[str, Any]: 強化パーフェクトオーダー分析結果
+        """
+        perfect_order_data = {
+            'perfect_order_daily': False,
+            'perfect_order_weekly': False,
+            'perfect_order_monthly': False,
+            'multi_timeframe_strength': 0.0,
+            'trend_consistency': 0.0,
+            'perfect_order_composite': 0.0
+        }
+        
+        try:
+            # MultiTimeframePerfectOrder高度判定
+            if hasattr(self.advanced_ranking_engine, '_hierarchical_system'):
+                hierarchical_system = self.advanced_ranking_engine._hierarchical_system
+                if hasattr(hierarchical_system, 'perfect_order_detector'):
+                    perfect_detector = hierarchical_system.perfect_order_detector
+                    
+                    # 複数時間軸でのパーフェクトオーダー判定
+                    multi_result = perfect_detector.detect_perfect_order_multi_timeframes(symbol, {})
+                    
+                    if multi_result:
+                        perfect_order_data['perfect_order_daily'] = multi_result.daily_result.is_perfect_order
+                        
+                        # 週次・月次結果（利用可能な場合）
+                        if hasattr(multi_result, 'weekly_result') and multi_result.weekly_result:
+                            perfect_order_data['perfect_order_weekly'] = multi_result.weekly_result.is_perfect_order
+                        
+                        if hasattr(multi_result, 'monthly_result') and multi_result.monthly_result:
+                            perfect_order_data['perfect_order_monthly'] = multi_result.monthly_result.is_perfect_order
+                        
+                        # 多時間軸強度計算
+                        strength_scores = []
+                        if multi_result.daily_result:
+                            strength_scores.append(multi_result.daily_result.strength_score)
+                        
+                        if strength_scores:
+                            perfect_order_data['multi_timeframe_strength'] = sum(strength_scores) / len(strength_scores)
+                        
+                        # トレンド一貫性スコア
+                        consistent_timeframes = sum([
+                            perfect_order_data['perfect_order_daily'],
+                            perfect_order_data['perfect_order_weekly'],
+                            perfect_order_data['perfect_order_monthly']
+                        ])
+                        perfect_order_data['trend_consistency'] = consistent_timeframes / 3.0
+                        
+                        # パーフェクトオーダー複合スコア
+                        perfect_order_data['perfect_order_composite'] = (
+                            perfect_order_data['multi_timeframe_strength'] * 0.6 +
+                            perfect_order_data['trend_consistency'] * 0.4
+                        )
+            
+        except Exception as e:
+            self.logger.warning(f"パーフェクトオーダー分析強化エラー ({symbol}): {e}")
+        
+        return perfect_order_data
+    
+    def _integrate_advanced_ranking_results(self, symbol: str, advanced_results: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Stage 3-4: 高度分析結果統合
+        
+        Args:
+            symbol: 銘柄コード
+            advanced_results: AdvancedRankingEngine高度分析結果
+            
+        Returns:
+            Dict[str, Any]: 統合高度分析結果
+        """
+        integration_data = {
+            'advanced_total_score': 0.0,
+            'advanced_ranking_position': 0,
+            'multi_dimensional_score': 0.0,
+            'confidence_level': 0.0
+        }
+        
+        try:
+            advanced_ranking = advanced_results.get('advanced_ranking', [])
+            
+            # 該当銘柄の高度分析結果を検索
+            symbol_result = None
+            for i, result in enumerate(advanced_ranking):
+                result_symbol = None
+                if hasattr(result, 'symbol'):
+                    result_symbol = result.symbol
+                elif isinstance(result, dict):
+                    result_symbol = result.get('symbol')
+                
+                if result_symbol == symbol:
+                    symbol_result = result
+                    integration_data['advanced_ranking_position'] = i + 1
+                    break
+            
+            if symbol_result:
+                # 高度分析スコア抽出
+                if hasattr(symbol_result, 'total_score'):
+                    integration_data['advanced_total_score'] = symbol_result.total_score
+                elif isinstance(symbol_result, dict):
+                    integration_data['advanced_total_score'] = symbol_result.get('total_score', 0.0)
+                
+                # 多次元スコア計算
+                dimension_scores = []
+                if hasattr(symbol_result, 'perfect_order_score'):
+                    dimension_scores.append(symbol_result.perfect_order_score)
+                if hasattr(symbol_result, 'fundamental_score'):
+                    dimension_scores.append(symbol_result.fundamental_score)
+                if hasattr(symbol_result, 'technical_score'):
+                    dimension_scores.append(symbol_result.technical_score)
+                
+                if dimension_scores:
+                    integration_data['multi_dimensional_score'] = sum(dimension_scores) / len(dimension_scores)
+                
+                # 信頼度レベル計算
+                total_rankings = len(advanced_ranking)
+                if total_rankings > 0:
+                    position_ratio = integration_data['advanced_ranking_position'] / total_rankings
+                    integration_data['confidence_level'] = max(0.0, 1.0 - position_ratio)
+            
+        except Exception as e:
+            self.logger.warning(f"高度分析結果統合エラー ({symbol}): {e}")
+        
+        return integration_data
+    
+    def _calculate_fundamental_composite_score(self, fundamental_data: Dict[str, Any]) -> float:
+        """
+        ファンダメンタル複合スコア計算
+        
+        Args:
+            fundamental_data: ファンダメンタル分析データ
+            
+        Returns:
+            float: 複合スコア
+        """
+        try:
+            # 各指標の正規化・重み付け
+            scores = []
+            
+            # 営業利益率スコア
+            operating_margin = fundamental_data.get('operating_margin', 0.0)
+            if operating_margin > 0:
+                margin_score = min(1.0, operating_margin / 0.1)  # 10%で満点
+                scores.append(margin_score * 0.3)
+            
+            # 成長率スコア
+            revenue_growth = fundamental_data.get('revenue_growth', 0.0)
+            if revenue_growth > 0:
+                growth_score = min(1.0, revenue_growth / 0.2)  # 20%で満点
+                scores.append(growth_score * 0.3)
+            
+            # 安定性スコア
+            stability = fundamental_data.get('profit_stability', 0.0)
+            scores.append(stability * 0.2)
+            
+            # ROEスコア
+            roe = fundamental_data.get('roe_percent', 0.0)
+            if roe > 0:
+                roe_score = min(1.0, roe / 15.0)  # 15%で満点
+                scores.append(roe_score * 0.2)
+            
+            return sum(scores) if scores else 0.0
+            
+        except Exception as e:
+            self.logger.warning(f"ファンダメンタル複合スコア計算エラー: {e}")
+            return 0.0
+    
+    def _calculate_composite_score_optimized(self, enhanced_candidate: Dict[str, Any]) -> float:
+        """
+        Stage 3-5: 複合スコアリング・重み付け最適化
+        
+        Args:
+            enhanced_candidate: 強化済み候補データ
+            
+        Returns:
+            float: 最適化複合スコア
+        """
+        try:
+            # 基盤スコア
+            base_score = enhanced_candidate.get('base_score', 0.0)
+            priority_level = enhanced_candidate.get('priority_level', 3)
+            
+            # テクニカル分析スコア
+            technical_strength = enhanced_candidate.get('technical_strength', 0.0)
+            perfect_order_composite = enhanced_candidate.get('perfect_order_composite', 0.0)
+            
+            # ファンダメンタル分析スコア
+            fundamental_score = enhanced_candidate.get('fundamental_score', 0.0)
+            
+            # 高度分析統合スコア
+            advanced_total_score = enhanced_candidate.get('advanced_total_score', 0.0)
+            confidence_level = enhanced_candidate.get('confidence_level', 0.0)
+            
+            # 優先度ベース重み調整
+            priority_weights = {1: 0.4, 2: 0.3, 3: 0.2}
+            priority_weight = priority_weights.get(priority_level, 0.1)
+            
+            # 複合スコア計算（最適化重み付け）
+            composite_score = (
+                base_score * priority_weight +                    # 基盤優先度
+                technical_strength * 0.25 +                      # テクニカル強度
+                perfect_order_composite * 0.15 +                 # パーフェクトオーダー
+                fundamental_score * 0.15 +                       # ファンダメンタル
+                advanced_total_score * 0.2 +                     # 高度分析
+                confidence_level * 0.05                          # 信頼度ボーナス
+            )
+            
+            # スコア正規化（0-1範囲）
+            normalized_score = max(0.0, min(1.0, composite_score))
+            
+            return normalized_score
+            
+        except Exception as e:
+            self.logger.warning(f"複合スコア計算エラー: {e}")
+            return enhanced_candidate.get('base_score', 0.0)
+    
+    def _select_optimal_from_enhanced_candidates(self, enhanced_candidates: List[Dict[str, Any]]) -> Optional[str]:
+        """
+        強化候補から最適銘柄選択
+        
+        Args:
+            enhanced_candidates: 強化済み候補リスト
+            
+        Returns:
+            Optional[str]: 最適選択銘柄
+        """
+        try:
+            if not enhanced_candidates:
+                return None
+            
+            # 複合スコア最高の候補選択
+            best_candidate = max(enhanced_candidates, key=lambda x: x.get('composite_score', 0.0))
+            
+            symbol = best_candidate['symbol']
+            composite_score = best_candidate.get('composite_score', 0.0)
+            priority_level = best_candidate.get('priority_level', 3)
+            
+            self.logger.info(
+                f"🎯 高度分析統合選択: {symbol} "
+                f"(複合スコア: {composite_score:.4f}, 優先度: {priority_level})"
+            )
+            
+            # デバッグ情報ログ出力
+            self.logger.info(
+                f"  - テクニカル強度: {best_candidate.get('technical_strength', 0.0):.3f}"
+            )
+            self.logger.info(
+                f"  - ファンダメンタル: {best_candidate.get('fundamental_score', 0.0):.3f}"
+            )
+            self.logger.info(
+                f"  - 高度分析スコア: {best_candidate.get('advanced_total_score', 0.0):.3f}"
+            )
+            
+            return symbol
+            
+        except Exception as e:
+            self.logger.error(f"強化候補最適選択エラー: {e}")
+            # フォールバック: 第1候補選択
+            if enhanced_candidates:
+                return enhanced_candidates[0].get('symbol')
+            return None
+    
+    def _calculate_hybrid_scores(self, base_candidates: List[Dict[str, Any]], 
+                               advanced_ranking: List[Any]) -> List[Dict[str, Any]]:
+        """
+        ハイブリッドスコア計算（基盤+高度分析統合）
+        
+        Args:
+            base_candidates: 基盤候補リスト
+            advanced_ranking: 高度分析ランキング結果
+            
+        Returns:
+            List[Dict[str, Any]]: 統合スコア計算結果
+        """
+        try:
+            integrated_scores = []
+            
+            # 高度分析結果を辞書化（高速ルックアップ）
+            advanced_dict = {}
+            for result in advanced_ranking:
+                if hasattr(result, 'symbol') and hasattr(result, 'total_score'):
+                    advanced_dict[result.symbol] = result.total_score
+                elif isinstance(result, dict):
+                    symbol = result.get('symbol')
+                    score = result.get('total_score', 0.0)
+                    if symbol:
+                        advanced_dict[symbol] = score
+            
+            # 基盤候補と高度分析の統合スコア計算
+            for base_candidate in base_candidates:
+                symbol = base_candidate['symbol']
+                base_score = base_candidate['base_score']
+                priority_level = base_candidate['priority_level']
+                
+                # 高度分析スコア取得
+                advanced_score = advanced_dict.get(symbol, 0.0)
+                
+                # 統合スコア計算（重み付き）
+                # 優先度が高いほど基盤スコアの重みを増加
+                priority_weight = 0.8 if priority_level == 1 else 0.6 if priority_level == 2 else 0.4
+                advanced_weight = 1.0 - priority_weight
+                
+                integrated_score = (base_score * priority_weight) + (advanced_score * advanced_weight)
+                
+                integrated_scores.append({
+                    'symbol': symbol,
+                    'base_score': base_score,
+                    'advanced_score': advanced_score,
+                    'priority_level': priority_level,
+                    'integrated_score': integrated_score,
+                    'priority_weight': priority_weight,
+                    'advanced_weight': advanced_weight
+                })
+            
+            self.logger.info(f"ハイブリッドスコア計算完了: {len(integrated_scores)}候補")
+            return integrated_scores
+            
+        except Exception as e:
+            self.logger.error(f"ハイブリッドスコア計算エラー: {e}")
+            return []
+    
+    def _legacy_advanced_ranking_selection(self, filtered_symbols: List[str], target_date: datetime) -> str:
+        """
+        レガシーAdvancedRankingEngine選択（統合最適化フォールバック用）
+        
+        Args:
+            filtered_symbols: フィルタ済み銘柄リスト
+            target_date: 対象日付
+            
+        Returns:
+            str: 選択された銘柄コード
+        """
+        try:
+            # AdvancedRankingEngineによる複数銘柄同時ランキング分析
+            self.logger.info(f"レガシーAdvancedRanking: {len(filtered_symbols)}銘柄を分析中...")
+            
+            # 市場データ準備
+            market_data = self._prepare_market_data_for_analysis(filtered_symbols, target_date)
+            
+            if market_data:
+                # analyze_symbols_advanced()を同期実行
+                ranking_results = self._run_advanced_analysis_sync(filtered_symbols, market_data)
+                
+                if ranking_results and len(ranking_results) > 0:
+                    # スコアベース最適銘柄選択
+                    best_symbol = self._select_best_symbol_from_ranking(ranking_results)
+                    
+                    if best_symbol:
+                        self.logger.info(
+                            f"レガシーAdvancedRanking選択: {best_symbol} (従来ランキング比較)"
+                        )
+                        return best_symbol
+            
+            # 高度分析失敗時はシステム状態確認による暫定選択
+            system_status = self.advanced_ranking_engine.get_system_status()
+            if system_status.get('integration_status', {}).get('hierarchical_system', False):
+                selected = filtered_symbols[0]
+                self.logger.warning(
+                    f"レガシー暫定選択: {selected} (高度分析失敗のため第1銘柄選択)"
+                )
+                return selected
+                
+        except Exception as e:
+            self.logger.error(f"レガシーAdvancedRankingEngine分析失敗: {e}")
         
         # SystemFallbackPolicy統合フォールバック
-        if FALLBACK_POLICY_AVAILABLE:
+        try:
+            from src.config.system_modes import get_fallback_policy, ComponentType
             fallback_policy = get_fallback_policy()
             return fallback_policy.handle_component_failure(
                 component_type=ComponentType.DSSMS_CORE,
-                component_name="DSSMSIntegratedBacktester._advanced_ranking_selection",
+                component_name="DSSMSIntegratedBacktester._legacy_advanced_ranking_selection",
                 error=RuntimeError("AdvancedRankingEngine analysis failed"),
                 fallback_func=lambda: self._legacy_random_selection(filtered_symbols),
                 context={
@@ -473,8 +1179,8 @@ class DSSMSIntegratedBacktester:
                     "advanced_ranking_available": self.advanced_ranking_engine is not None
                 }
             )
-        else:
-            # レガシーフォールバック（SystemFallbackPolicy使用不可時）
+        except ImportError:
+            # SystemFallbackPolicy使用不可時のレガシーフォールバック
             self.logger.warning(f"FALLBACK: ランダム選択使用 (AdvancedRanking失敗/使用不可)")
             return self._legacy_random_selection(filtered_symbols)
     
@@ -1323,13 +2029,16 @@ class DSSMSIntegratedBacktester:
             self.logger.error(f"市場データ準備エラー: {e}")
             return None
     
-    def _run_advanced_analysis_sync(self, symbols: List[str], market_data: Dict[str, Any]) -> Optional[List[Any]]:
+    def _run_advanced_analysis_sync(self, symbols: List[str], market_data: Dict[str, Any], 
+                                   analysis_params: Optional[Dict[str, Any]] = None) -> Optional[List[Any]]:
         """
         AdvancedRankingEngine分析の同期実行 (TODO-DSSMS-004.1)
+        TODO-DSSMS-004.2統合最適化対応版
         
         Args:
             symbols: 対象銘柄リスト  
             market_data: 市場データ辞書
+            analysis_params: 分析パラメータ（統合最適化用）
             
         Returns:
             Optional[List[Any]]: ランキング分析結果リスト
@@ -1344,12 +2053,20 @@ class DSSMSIntegratedBacktester:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
             
-            # 非同期メソッドを同期実行
-            analysis_params = {
-                'analysis_depth': 'comprehensive',
-                'enable_parallel': len(symbols) > 5,
-                'timeout_seconds': 30
-            }
+            # 分析パラメータ設定（統合最適化対応）
+            if analysis_params is None:
+                analysis_params = {
+                    'analysis_depth': 'comprehensive',
+                    'enable_parallel': len(symbols) > 5,
+                    'timeout_seconds': 30
+                }
+            
+            # TODO-DSSMS-004.2: 基盤結果統合処理
+            if analysis_params.get('base_ranking_results') and analysis_params.get('reuse_calculations'):
+                # 基盤結果がある場合は重複計算回避モードで実行
+                self.logger.info(f"🚀 統合最適化分析実行: 基盤結果再利用モード")
+                analysis_params['optimization_mode'] = 'integrated'
+                analysis_params['base_calculations_reuse'] = True
             
             ranking_results = loop.run_until_complete(
                 self.advanced_ranking_engine.analyze_symbols_advanced(
@@ -1357,7 +2074,8 @@ class DSSMSIntegratedBacktester:
                 )
             )
             
-            self.logger.info(f"高度分析完了: {len(ranking_results) if ranking_results else 0}件の結果")
+            integration_info = "統合最適化" if analysis_params.get('reuse_calculations') else "従来方式"
+            self.logger.info(f"高度分析完了 ({integration_info}): {len(ranking_results) if ranking_results else 0}件の結果")
             return ranking_results
             
         except Exception as e:

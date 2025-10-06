@@ -1,3 +1,72 @@
+
+
+# TODO-PERF-001: Phase 2 Stage 2 - SystemFallbackPolicy Integration
+try:
+    from src.config.system_modes import SystemFallbackPolicy, ComponentType
+    _fallback_policy = SystemFallbackPolicy.get_instance()
+except ImportError:
+    # フォールバック用のダミークラス
+    class _DummyFallbackPolicy:
+        def handle_component_failure(self, **kwargs):
+            return None
+    _fallback_policy = _DummyFallbackPolicy()
+
+def _handle_lazy_import_failure(component_name: str, error: Exception, fallback_func=None):
+    """遅延インポート失敗時のフォールバック処理"""
+    try:
+        return _fallback_policy.handle_component_failure(
+            component_type=ComponentType.STRATEGY_ENGINE,
+            component_name=component_name,
+            error=error,
+            fallback_func=fallback_func
+        )
+    except:
+        # 最終フォールバック
+        if fallback_func:
+            return fallback_func()
+        return None
+
+
+# TODO-PERF-001: Phase 2 Stage 2 - Module Level Lazy Import
+def _get_pandas():
+    """pandas遅延インポート"""
+    import pandas as pd
+    return pd
+
+def _get_numpy():
+    """numpy遅延インポート"""
+    import numpy as np
+    return np
+
+def _get_scipy():
+    """scipy遅延インポート"""
+    import scipy
+    return scipy
+
+# 遅延ロード用グローバル変数
+_pandas = None
+_numpy = None
+_scipy = None
+
+def get_pandas():
+    global _pandas
+    if _pandas is None:
+        _pandas = _get_pandas()
+    return _pandas
+
+def get_numpy():
+    global _numpy
+    if _numpy is None:
+        _numpy = _get_numpy()
+    return _numpy
+
+def get_scipy():
+    global _scipy
+    if _scipy is None:
+        _scipy = _get_scipy()
+    return _scipy
+
+
 """
 Module: Portfolio Weight Calculator
 File: portfolio_weight_calculator.py
@@ -26,8 +95,8 @@ from typing import Dict, Any, List, Optional, Tuple, Union, Set, Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-import pandas as pd
-import numpy as np
+# import pandas as pd  # TODO-PERF-001: Optimized to lazy import
+# import numpy as np  # TODO-PERF-001: Optimized to lazy import
 from abc import ABC, abstractmethod
 
 # プロジェクトパスの追加
@@ -502,7 +571,7 @@ class PortfolioWeightCalculator:
 
     def calculate_portfolio_weights(self,
                                   ticker: str,
-                                  market_data: pd.DataFrame,
+                                  market_data: get_pandas().DataFrame,
                                   config: Optional[WeightAllocationConfig] = None,
                                   strategy_filter: Optional[List[str]] = None) -> AllocationResult:
         """
@@ -683,7 +752,7 @@ class PortfolioWeightCalculator:
         
         return categories
     
-    def _build_market_context(self, market_data: pd.DataFrame, ticker: str) -> Dict[str, Any]:
+    def _build_market_context(self, market_data: get_pandas().DataFrame, ticker: str) -> Dict[str, Any]:
         """市場コンテキストの構築"""
         context = {}
         
@@ -692,7 +761,7 @@ class PortfolioWeightCalculator:
                 # 基本統計の計算
                 if 'close' in market_data.columns:
                     returns = market_data['close'].pct_change().dropna()
-                    context['volatility'] = returns.std() * np.sqrt(252)  # 年率ボラティリティ
+                    context['volatility'] = returns.std() * get_numpy().sqrt(252)  # 年率ボラティリティ
                     context['mean_return'] = returns.mean() * 252  # 年率リターン
                     context['current_price'] = market_data['close'].iloc[-1]
                     

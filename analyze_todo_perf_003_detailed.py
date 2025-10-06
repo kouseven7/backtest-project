@@ -149,7 +149,8 @@ def measure_openpyxl_import():
     """openpyxlインポート時間測定"""
     try:
         start = time.perf_counter()
-        import openpyxl
+        # openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
         import_time = (time.perf_counter() - start) * 1000
         print(f"   openpyxlインポート時間: {import_time:.1f}ms")
         return import_time

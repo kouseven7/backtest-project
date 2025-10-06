@@ -53,7 +53,8 @@ def analyze_lazy_loader_bottleneck():
     print("\n3. 実際のlazy_loader全体インポート")
     start = time.perf_counter()
     try:
-        from src.dssms.lazy_loader import LazyLoader
+        # lazy_loader除去 (TODO-PERF-001: Stage 3)
+# 直接インポートに変更: LazyLoader
         lazy_loader_import_time = (time.perf_counter() - start) * 1000
         print(f"   LazyLoader import: {lazy_loader_import_time:.1f}ms")
     except Exception as e:
@@ -64,7 +65,8 @@ def analyze_lazy_loader_bottleneck():
     print("\n4. DSSMSLazyModules単体インポート")
     start = time.perf_counter()
     try:
-        from src.dssms.lazy_loader import DSSMSLazyModules
+        # lazy_loader除去 (TODO-PERF-001: Stage 3)
+# 直接インポートに変更: DSSMSLazyModules
         dssms_modules_time = (time.perf_counter() - start) * 1000
         print(f"   DSSMSLazyModules import: {dssms_modules_time:.1f}ms")
     except Exception as e:
@@ -75,7 +77,8 @@ def analyze_lazy_loader_bottleneck():
     print("\n5. デコレータ関数インポート")
     start = time.perf_counter()
     try:
-        from src.dssms.lazy_loader import lazy_import, lazy_class_import
+        # lazy_loader除去 (TODO-PERF-001: Stage 3)
+# 直接インポートに変更: lazy_import, lazy_class_import
         decorators_time = (time.perf_counter() - start) * 1000
         print(f"   デコレータ関数: {decorators_time:.1f}ms")
     except Exception as e:
@@ -86,7 +89,8 @@ def analyze_lazy_loader_bottleneck():
     print("\n6. 全体統合インポート再測定")
     start = time.perf_counter()
     try:
-        from src.dssms.lazy_loader import DSSMSLazyModules, lazy_import, lazy_class_import
+        # lazy_loader除去 (TODO-PERF-001: Stage 3)
+# 直接インポートに変更: DSSMSLazyModules, lazy_import, lazy_class_import
         full_import_time = (time.perf_counter() - start) * 1000
         print(f"   全体統合インポート: {full_import_time:.1f}ms")
     except Exception as e:
@@ -107,11 +111,12 @@ def analyze_symbol_switch_manager_call():
     print("\n7. get_symbol_switch_manager()実行時間分析")
     
     try:
-        from src.dssms.lazy_loader import lazy_modules
+        # lazy_loader除去 (TODO-PERF-001: Stage 3)
+# 直接インポートに変更: lazy_modules
         
         # 実際の呼び出し
         start = time.perf_counter()
-        SymbolSwitchManagerClass, available = lazy_modules.get_symbol_switch_manager()
+        SymbolSwitchManagerClass, available = # lazy_modules除去: get_symbol_switch_manager()
         call_time = (time.perf_counter() - start) * 1000
         
         print(f"   get_symbol_switch_manager(): {call_time:.1f}ms")

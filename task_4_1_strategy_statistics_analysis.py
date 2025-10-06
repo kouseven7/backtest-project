@@ -240,7 +240,8 @@ def analyze_strategy_statistics_data_source():
             
             # Excelファイルの戦略別統計シートを分析
             try:
-                import openpyxl
+                # openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
                 wb = openpyxl.load_workbook(latest_excel)
                 
                 excel_statistics_analysis = {

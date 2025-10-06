@@ -6,7 +6,8 @@ DSSMS Excel戦略別統計直接修正システム
 解決: 最新ExcelファイルのStrategy統計シートを直接正しい7戦略データで更新
 """
 
-import openpyxl
+# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
 import json
 from typing import Dict, List, Any
 from datetime import datetime

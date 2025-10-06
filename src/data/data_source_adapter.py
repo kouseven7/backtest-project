@@ -8,7 +8,8 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime, timedelta
 import pandas as pd
-import yfinance as yf
+# yfinance遅延インポート (TODO-PERF-001: Phase 1 Stage 2)
+import src.utils.yfinance_lazy_wrapper as yf
 import requests
 import time
 from pathlib import Path

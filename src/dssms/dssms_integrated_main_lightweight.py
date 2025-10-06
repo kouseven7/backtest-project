@@ -19,7 +19,8 @@ if project_root not in sys.path:
     sys.path.append(project_root)
 
 # 遅延ローダー
-from src.dssms.lazy_loader import DSSMSLazyModules, lazy_import, lazy_class_import
+# lazy_loader除去 (TODO-PERF-001: Stage 3)
+# 直接インポートに変更: DSSMSLazyModules, lazy_import, lazy_class_import
 
 # 既存システムコンポーネント（遅延ロード対応）
 

@@ -46,7 +46,8 @@ def measure_individual_imports():
     print("2. lazy_loader インポート時間")
     start = time.perf_counter()
     try:
-        from src.dssms.lazy_loader import DSSMSLazyModules, lazy_import, lazy_class_import
+        # lazy_loader除去 (TODO-PERF-001: Stage 3)
+# 直接インポートに変更: DSSMSLazyModules, lazy_import, lazy_class_import
         lazy_loader_time = (time.perf_counter() - start) * 1000
         print(f"   lazy_loader: {lazy_loader_time:.1f}ms")
     except Exception as e:
@@ -58,7 +59,8 @@ def measure_individual_imports():
     print("3. 重いライブラリ遅延ロード確認")
     heavy_libs = [
         ('yfinance', 'import yfinance as yf'),
-        ('openpyxl', 'import openpyxl'),
+        ('openpyxl', '# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl'),
         ('pandas', 'import pandas as pd'),
         ('numpy', 'import numpy as np')
     ]

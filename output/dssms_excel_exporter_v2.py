@@ -34,7 +34,8 @@ import numpy as np
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
-# import openpyxl  # Phase 3最適化: 遅延インポートに変更
+# # openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl  # Phase 3最適化: 遅延インポートに変更
 # from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 # from openpyxl.utils.dataframe import dataframe_to_rows
 # from openpyxl.chart import LineChart, Reference

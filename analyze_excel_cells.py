@@ -6,7 +6,8 @@ Excelファイルの詳細なセル検証スクリプト
 
 import os
 import pandas as pd
-import openpyxl
+# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
 from datetime import datetime
 import logging
 

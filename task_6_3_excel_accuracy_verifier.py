@@ -25,8 +25,10 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional, Tuple
-import openpyxl
-from openpyxl import load_workbook
+# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
+# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+from src.utils.openpyxl_lazy_wrapper import load_workbook
 import warnings
 
 # 警告を抑制

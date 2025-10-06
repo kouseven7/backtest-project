@@ -80,8 +80,9 @@ def test_phase2_optimization_fix():
     print()  
     print("3. lazy_loader統計記録確認")
     try:
-        from src.dssms.lazy_loader import lazy_modules
-        stats = lazy_modules.get_import_stats()
+        # lazy_loader除去 (TODO-PERF-001: Stage 3)
+# 直接インポートに変更: lazy_modules
+        stats = # lazy_modules除去: get_import_stats()
         
         if stats:
             print("   📈 遅延ロード統計 (使用記録):")

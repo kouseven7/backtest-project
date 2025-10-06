@@ -17,7 +17,9 @@ Dependencies:
 
 # data_fetcher.py
 import pandas as pd
-import yfinance as yf
+# yfinance遅延インポート (TODO-PERF-001: Phase 1 Stage 2)
+from src.utils.yfinance_lazy_wrapper import download as yf_download, Ticker as yf_Ticker
+import src.utils.yfinance_lazy_wrapper as yf
 from config.logger_config import setup_logger
 import pandas as pd
 import os
@@ -162,7 +164,7 @@ def flatten_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 def fetch_yahoo_data(ticker: str, start_date: str, end_date: str, interval: str = '1d') -> pd.DataFrame:
     logger.info(f"Fetching data for {ticker} from {start_date} to {end_date}")
-    data = yf.download(ticker, start=start_date, end=end_date, interval=interval)
+    data = yf_download(ticker, start=start_date, end=end_date, interval=interval)
     if data.empty:
         logger.error(f"{ticker} のデータが空です。")
         raise ValueError(f"{ticker} のデータが空です。")
@@ -197,10 +199,10 @@ def fetch_yahoo_index_data(ticker: str, start_date: str = None, end_date: str = 
     """
     if start_date and end_date:
         logger.info(f"Fetching index data for {ticker} from {start_date} to {end_date}")
-        data = yf.download(ticker, start=start_date, end=end_date, interval=interval)
+        data = yf_download(ticker, start=start_date, end=end_date, interval=interval)
     else:
         logger.info(f"Fetching index data for {ticker} with period={period}")
-        data = yf.download(ticker, period=period, interval=interval)
+        data = yf_download(ticker, period=period, interval=interval)
     
     if data.empty:
         logger.error(f"{ticker} のデータが空です。")

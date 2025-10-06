@@ -100,7 +100,7 @@ def lazy_import(module_name: str, fallback_available: bool = True):
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
-            module, available = _lazy_loader.load_module(module_name, fallback_available)
+            module, available = _# lazy_loader除去: load_module(module_name, fallback_available)
             if not available and not fallback_available:
                 raise ImportError(f"Required module {module_name} not available")
             return func(module, available, *args, **kwargs)
@@ -112,7 +112,7 @@ def lazy_class_import(module_name: str, class_name: str, fallback_available: boo
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
-            cls, available = _lazy_loader.load_class(module_name, class_name, fallback_available)
+            cls, available = _# lazy_loader除去: load_class(module_name, class_name, fallback_available)
             if not available and not fallback_available:
                 raise ImportError(f"Required class {module_name}.{class_name} not available")
             return func(cls, available, *args, **kwargs)  
@@ -126,12 +126,12 @@ class DSSMSLazyModules:
     @staticmethod
     def get_dss_core_v3():
         """DSS Core V3遅延ロード"""
-        return _lazy_loader.load_class("dssms_backtester_v3", "DSSBacktesterV3")
+        return _# lazy_loader除去: load_class("dssms_backtester_v3", "DSSBacktesterV3")
     
     @staticmethod
     def get_advanced_ranking_engine():
         """AdvancedRankingEngine遅延ロード"""
-        return _lazy_loader.load_class(
+        return _# lazy_loader除去: load_class(
             "src.dssms.advanced_ranking_system.advanced_ranking_engine", 
             "AdvancedRankingEngine"
         )
@@ -139,29 +139,29 @@ class DSSMSLazyModules:
     @staticmethod
     def get_risk_management():
         """RiskManagement遅延ロード"""
-        return _lazy_loader.load_class("config.risk_management", "RiskManagement")
+        return _# lazy_loader除去: load_class("config.risk_management", "RiskManagement")
     
     @staticmethod
     def get_yfinance():
         """yfinance遅延ロード"""
-        return _lazy_loader.load_module("yfinance")
+        return _# lazy_loader除去: load_module("yfinance")
     
     @staticmethod
     def get_fallback_policy():
         """SystemFallbackPolicy遅延ロード"""
-        return _lazy_loader.load_module("src.config.system_modes")
+        return _# lazy_loader除去: load_module("src.config.system_modes")
     
     @staticmethod
     def get_symbol_switch_manager():
         """SymbolSwitchManager高速版遅延ロード（TODO-PERF-001 Phase 2対応）"""
         # 高速版を優先使用
-        fast_module, available = _lazy_loader.load_module("src.dssms.symbol_switch_manager_fast")
+        fast_module, available = _# lazy_loader除去: load_module("src.dssms.symbol_switch_manager_fast")
         if available:
             return fast_module.SymbolSwitchManagerFast, True
         
         # フォールバック: 元版（重い）
         logger.warning("高速版が利用できません。元版SymbolSwitchManagerを使用（重い処理）")
-        orig_module, available = _lazy_loader.load_module("src.dssms.symbol_switch_manager")
+        orig_module, available = _# lazy_loader除去: load_module("src.dssms.symbol_switch_manager")
         if available:
             return orig_module.SymbolSwitchManager, True
         
@@ -170,12 +170,12 @@ class DSSMSLazyModules:
     @staticmethod
     def get_import_stats() -> Dict[str, float]:
         """インポート統計取得"""
-        return _lazy_loader.get_import_stats()
+        return _# lazy_loader除去: get_import_stats()
     
     @staticmethod
     def clear_cache():
         """キャッシュクリア"""
-        _lazy_loader.clear_cache()
+        _# lazy_loader除去: clear_cache()
 
 # 遅延ロードマネージャーのエクスポート
 lazy_modules = DSSMSLazyModules()

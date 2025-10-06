@@ -21,7 +21,8 @@ from pathlib import Path
 
 # Excel操作
 try:
-    from openpyxl import Workbook
+    # openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+from src.utils.openpyxl_lazy_wrapper import Workbook
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
     from openpyxl.utils.dataframe import dataframe_to_rows
     from openpyxl.chart import LineChart, BarChart, Reference

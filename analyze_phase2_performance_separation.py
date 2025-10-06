@@ -128,7 +128,8 @@ def test_symbol_switch_manager_fast_loading():
     # 遅延ローダー
     try:
         start_time = time.time()
-        from src.dssms.lazy_loader import get_symbol_switch_manager
+        # lazy_loader除去 (TODO-PERF-001: Stage 3)
+# 直接インポートに変更: get_symbol_switch_manager
         switch_class, available = get_symbol_switch_manager()
         lazy_time = time.time() - start_time
         print(f"遅延ローダー: {lazy_time*1000:.1f}ms (クラス: {switch_class.__name__})")

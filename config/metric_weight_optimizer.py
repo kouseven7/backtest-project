@@ -1,3 +1,72 @@
+
+
+# TODO-PERF-001: Phase 2 Stage 2 - SystemFallbackPolicy Integration
+try:
+    from src.config.system_modes import SystemFallbackPolicy, ComponentType
+    _fallback_policy = SystemFallbackPolicy.get_instance()
+except ImportError:
+    # フォールバック用のダミークラス
+    class _DummyFallbackPolicy:
+        def handle_component_failure(self, **kwargs):
+            return None
+    _fallback_policy = _DummyFallbackPolicy()
+
+def _handle_lazy_import_failure(component_name: str, error: Exception, fallback_func=None):
+    """遅延インポート失敗時のフォールバック処理"""
+    try:
+        return _fallback_policy.handle_component_failure(
+            component_type=ComponentType.STRATEGY_ENGINE,
+            component_name=component_name,
+            error=error,
+            fallback_func=fallback_func
+        )
+    except:
+        # 最終フォールバック
+        if fallback_func:
+            return fallback_func()
+        return None
+
+
+# TODO-PERF-001: Phase 2 Stage 2 - Module Level Lazy Import
+def _get_pandas():
+    """pandas遅延インポート"""
+    import pandas as pd
+    return pd
+
+def _get_numpy():
+    """numpy遅延インポート"""
+    import numpy as np
+    return np
+
+def _get_scipy():
+    """scipy遅延インポート"""
+    import scipy
+    return scipy
+
+# 遅延ロード用グローバル変数
+_pandas = None
+_numpy = None
+_scipy = None
+
+def get_pandas():
+    global _pandas
+    if _pandas is None:
+        _pandas = _get_pandas()
+    return _pandas
+
+def get_numpy():
+    global _numpy
+    if _numpy is None:
+        _numpy = _get_numpy()
+    return _numpy
+
+def get_scipy():
+    global _scipy
+    if _scipy is None:
+        _scipy = _get_scipy()
+    return _scipy
+
+
 """
 Module: Metric Weight Optimizer
 File: metric_weight_optimizer.py
@@ -22,8 +91,8 @@ Dependencies:
 import json
 import logging
 import warnings
-import pandas as pd
-import numpy as np
+# import pandas as pd  # TODO-PERF-001: Optimized to lazy import
+# import numpy as np  # TODO-PERF-001: Optimized to lazy import
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
 from pathlib import Path
@@ -295,7 +364,7 @@ class MetricWeightOptimizer:
             optimized_weights = {}
             for category in current_weights.keys():
                 if category in correlation_weights:
-                    avg_correlation = np.mean(correlation_weights[category])
+                    avg_correlation = get_numpy().mean(correlation_weights[category])
                     base_weight = current_weights[category]
                     
                     # 相関強度による調整
@@ -351,7 +420,7 @@ class MetricWeightOptimizer:
                     score = integrated_importance[metric].get("final_importance_score", 0.0)
                     scores.append(score)
             
-            return np.mean(scores) if scores else 0.0
+            return get_numpy().mean(scores) if scores else 0.0
             
         except Exception:
             return 0.0
@@ -444,7 +513,7 @@ class MetricWeightOptimizer:
                 # 重みと重要度の差の絶対値（小さいほど良い）
                 alignment_scores.append(1.0 - abs(weight - importance))
             
-            return np.mean(alignment_scores) if alignment_scores else 0.0
+            return get_numpy().mean(alignment_scores) if alignment_scores else 0.0
             
         except Exception:
             return 0.0
@@ -464,12 +533,12 @@ class MetricWeightOptimizer:
                 optimized = optimized_weights.get(category, original)
                 weight_changes.append(abs(optimized - original))
             
-            metrics["avg_weight_change"] = float(np.mean(weight_changes))
-            metrics["max_weight_change"] = float(np.max(weight_changes))
+            metrics["avg_weight_change"] = float(get_numpy().mean(weight_changes))
+            metrics["max_weight_change"] = float(get_numpy().max(weight_changes))
             
             # 重みの分散（バランス指標）
-            metrics["weight_variance_original"] = float(np.var(list(original_weights.values())))
-            metrics["weight_variance_optimized"] = float(np.var(list(optimized_weights.values())))
+            metrics["weight_variance_original"] = float(get_numpy().var(list(original_weights.values())))
+            metrics["weight_variance_optimized"] = float(get_numpy().var(list(optimized_weights.values())))
             
             # 正規化チェック
             metrics["weight_sum_original"] = float(sum(original_weights.values()))

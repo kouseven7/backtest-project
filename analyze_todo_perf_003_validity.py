@@ -101,7 +101,8 @@ def analyze_current_performance_status():
     modules_before = len(sys.modules)
     start = time.perf_counter()
     try:
-        import openpyxl
+        # openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
         openpyxl_import_time = (time.perf_counter() - start) * 1000
         modules_after = len(sys.modules)
         openpyxl_modules = modules_after - modules_before

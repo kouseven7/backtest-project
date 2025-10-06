@@ -14,8 +14,10 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
-import openpyxl
-from openpyxl import load_workbook
+# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
+# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+from src.utils.openpyxl_lazy_wrapper import load_workbook
 
 def analyze_latest_dssms_excel():
     """最新のDSSMSExcelファイルを詳細分析"""

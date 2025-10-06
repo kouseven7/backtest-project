@@ -5,7 +5,8 @@ Excel出力データ確認スクリプト
 修正後のExcel出力が正しく582.86%を表示しているか確認
 """
 
-import openpyxl
+# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
 from pathlib import Path
 from typing import List
 

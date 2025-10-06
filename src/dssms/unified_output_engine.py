@@ -970,7 +970,8 @@ class UnifiedOutputEngine:
     def _save_excel_from_processed_data(self, processed_data: Dict[str, Any], output_path: Path):
         """処理済みデータからExcelファイルを保存"""
         try:
-            from openpyxl import Workbook
+            # openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+from src.utils.openpyxl_lazy_wrapper import Workbook
             from openpyxl.styles import Font, PatternFill, Alignment
             
             wb = Workbook()

@@ -8,7 +8,8 @@
 import pandas as pd
 import json
 import logging
-import openpyxl
+# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
 from datetime import datetime
 from pathlib import Path
 

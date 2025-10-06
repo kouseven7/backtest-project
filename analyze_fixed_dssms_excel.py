@@ -12,8 +12,10 @@
 import pandas as pd
 import json
 from pathlib import Path
-import openpyxl
-from openpyxl import load_workbook
+# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
+# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+from src.utils.openpyxl_lazy_wrapper import load_workbook
 
 def analyze_fixed_dssms_excel():
     """修正後のDSSMSExcelファイルを詳細確認"""

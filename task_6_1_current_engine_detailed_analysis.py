@@ -11,7 +11,8 @@ import sys
 from pathlib import Path
 import pandas as pd
 import json
-import openpyxl
+# openpyxl遅延インポート (TODO-PERF-001: Stage 3)
+import src.utils.openpyxl_lazy_wrapper as openpyxl
 from datetime import datetime
 import ast
 import re

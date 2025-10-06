@@ -12,8 +12,8 @@ import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional, Union, Tuple
 import logging
-import pandas as pd
-import numpy as np
+# import pandas as pd  # TODO-PERF-001: Optimized to lazy import
+# import numpy as np  # TODO-PERF-001: Optimized to lazy import
 from pathlib import Path
 import json
 import statistics
@@ -1009,109 +1009,6 @@ class DSSMSReportGenerator:
             self.logger.warning(f"戦略ランキングエラー: {e}")
             return []
 
-
-def main():
-    """DSSMSReportGenerator 動作テスト"""
-    print("DSSMSReportGenerator 動作テスト")
-    print("=" * 50)
-    
-    try:
-        # 1. 初期化テスト
-        config = {
-            'output_directory': 'output/test_reports',
-            'report_settings': {
-                'include_detailed_analysis': True,
-                'include_recommendations': True,
-                'include_trend_analysis': True,
-                'include_benchmarks': True,
-                'analysis_depth': 'comprehensive',
-                'max_recommendations': 8
-            }
-        }
-        
-        generator = DSSMSReportGenerator(config)
-        print("✅ DSSMSReportGenerator初期化成功")
-        
-        # 2. サンプルデータ作成
-        print(f"\n📊 統合サンプルデータ作成:")
-        
-        all_data = {
-            'backtest_results': {
-                'start_date': '2023-01-01',
-                'end_date': '2023-12-31',
-                'total_return_rate': 0.125,
-                'initial_capital': 1000000,
-                'final_capital': 1125000,
-                'daily_results': [
-                    {'date': '2023-01-01', 'portfolio_value': 1000000, 'daily_return_rate': 0.005},
-                    {'date': '2023-01-02', 'portfolio_value': 1005000, 'daily_return_rate': -0.002},
-                    {'date': '2023-01-03', 'portfolio_value': 1003000, 'daily_return_rate': 0.008}
-                ] * 120,  # 360日分のデータ
-                'switch_history': [
-                    {'date': '2023-01-03', 'from_symbol': '7203', 'to_symbol': '9984', 'switch_effectiveness': 0.012, 'holding_days': 5},
-                    {'date': '2023-02-15', 'from_symbol': '9984', 'to_symbol': '6758', 'switch_effectiveness': 0.008, 'holding_days': 8},
-                    {'date': '2023-03-22', 'from_symbol': '6758', 'to_symbol': '7203', 'switch_effectiveness': -0.003, 'holding_days': 3}
-                ] * 10,  # 30回の切替
-                'strategy_statistics': {
-                    'VWAPBreakoutStrategy': {'execution_count': 120, 'success_rate': 0.79, 'average_return': 0.003},
-                    'MomentumInvestingStrategy': {'execution_count': 85, 'success_rate': 0.88, 'average_return': 0.004},
-                    'BreakoutStrategy': {'execution_count': 95, 'success_rate': 0.82, 'average_return': 0.0025}
-                }
-            },
-            'performance_data': {
-                'execution': {'average_time_ms': 850, 'success_rate': 0.85},
-                'memory': {'average_usage_mb': 256, 'efficiency_rating': 0.78},
-                'reliability': {'success_rate': 0.85, 'consecutive_failures': 2},
-                'system': {'cpu_usage': 0.45, 'memory_usage': 0.62}
-            },
-            'switch_data': {
-                'total_switches': 30,
-                'success_rate': 0.75,
-                'average_cost': 1200
-            }
-        }
-        
-        print(f"✅ 統合データ準備完了: {len(all_data['backtest_results']['daily_results'])}件の日次データ")
-        
-        # 3. 包括的レポート生成テスト
-        print(f"\n📋 包括的レポート生成テスト:")
-        
-        comprehensive_report = generator.generate_comprehensive_report(all_data)
-        
-        print(f"✅ 包括的レポート生成成功:")
-        print(f"  - 総合評価: {comprehensive_report['executive_summary']['overall_grade']}")
-        print(f"  - 総合スコア: {comprehensive_report['executive_summary']['overall_score']:.3f}")
-        print(f"  - 主要成果数: {len(comprehensive_report['executive_summary']['key_achievements'])}")
-        print(f"  - 推奨事項数: {len(comprehensive_report['recommendations'])}")
-        
-        # 4. 主要成果表示
-        print(f"\n🏆 主要成果:")
-        for achievement in comprehensive_report['executive_summary']['key_achievements']:
-            print(f"  - {achievement}")
-        
-        # 5. 推奨事項表示
-        print(f"\n💡 主要推奨事項:")
-        for i, rec in enumerate(comprehensive_report['recommendations'][:3]):
-            print(f"  {i+1}. {rec['title']}: {rec['description']}")
-        
-        # 6. レポート統計確認
-        print(f"\n📊 レポート統計確認:")
-        stats = generator.get_report_statistics()
-        
-        print(f"✅ レポート統計取得成功:")
-        print(f"  - 総レポート数: {stats['total_reports']}")
-        print(f"  - 分析深度: {stats['analysis_depth']}")
-        print(f"  - 最終生成: {stats['last_report']}")
-        
-        print(f"\n🎉 DSSMSReportGenerator テスト完了！")
-        print(f"実装機能: 包括分析、推奨事項生成、トレンド分析、ベンチマーク評価")
-        
-    except Exception as e:
-        print(f"❌ テスト実行エラー: {e}")
-        import traceback
-        traceback.print_exc()
-
-
     def _analyze_drawdown_risk(self, daily_results: List[Dict[str, Any]]) -> Dict[str, Any]:
         """ドローダウンリスク分析"""
         try:
@@ -1430,7 +1327,7 @@ def main():
         except Exception as e:
             self.logger.warning(f"戦略ランキングエラー: {e}")
             return []
-    
+
     def _analyze_concentration_risk(self, switch_history: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         集中リスク分析を実行
@@ -1518,7 +1415,7 @@ def main():
                 'diversity_index': 0.0,
                 'recommendations': [f'分析エラー: {str(e)}']
             }
-    
+
     def _analyze_strategy_combinations(self, backtest_results: Dict[str, Any]) -> Dict[str, Any]:
         """
         戦略組み合わせ効果分析を実行
@@ -1701,7 +1598,7 @@ def main():
                 'sustainability_index': 0.0,
                 'long_term_recommendations': [f'分析エラー: {str(e)}']
             }
-    
+
     def _calculate_advanced_performance_metrics(self, backtest_results: Dict[str, Any]) -> Dict[str, Any]:
         """
         高度なパフォーマンス指標を計算
@@ -1787,6 +1684,108 @@ def main():
             'total_return_percent': float(stats.get('total_return', 0.0)) * 100,
             'full_metrics': {}
         }
+
+
+def main():
+    """DSSMSReportGenerator 動作テスト"""
+    print("DSSMSReportGenerator 動作テスト")
+    print("=" * 50)
+    
+    try:
+        # 1. 初期化テスト
+        config = {
+            'output_directory': 'output/test_reports',
+            'report_settings': {
+                'include_detailed_analysis': True,
+                'include_recommendations': True,
+                'include_trend_analysis': True,
+                'include_benchmarks': True,
+                'analysis_depth': 'comprehensive',
+                'max_recommendations': 8
+            }
+        }
+        
+        generator = DSSMSReportGenerator(config)
+        print("✅ DSSMSReportGenerator初期化成功")
+        
+        # 2. サンプルデータ作成
+        print(f"\n📊 統合サンプルデータ作成:")
+        
+        all_data = {
+            'backtest_results': {
+                'start_date': '2023-01-01',
+                'end_date': '2023-12-31',
+                'total_return_rate': 0.125,
+                'initial_capital': 1000000,
+                'final_capital': 1125000,
+                'daily_results': [
+                    {'date': '2023-01-01', 'portfolio_value': 1000000, 'daily_return_rate': 0.005},
+                    {'date': '2023-01-02', 'portfolio_value': 1005000, 'daily_return_rate': -0.002},
+                    {'date': '2023-01-03', 'portfolio_value': 1003000, 'daily_return_rate': 0.008}
+                ] * 120,  # 360日分のデータ
+                'switch_history': [
+                    {'date': '2023-01-03', 'from_symbol': '7203', 'to_symbol': '9984', 'switch_effectiveness': 0.012, 'holding_days': 5},
+                    {'date': '2023-02-15', 'from_symbol': '9984', 'to_symbol': '6758', 'switch_effectiveness': 0.008, 'holding_days': 8},
+                    {'date': '2023-03-22', 'from_symbol': '6758', 'to_symbol': '7203', 'switch_effectiveness': -0.003, 'holding_days': 3}
+                ] * 10,  # 30回の切替
+                'strategy_statistics': {
+                    'VWAPBreakoutStrategy': {'execution_count': 120, 'success_rate': 0.79, 'average_return': 0.003},
+                    'MomentumInvestingStrategy': {'execution_count': 85, 'success_rate': 0.88, 'average_return': 0.004},
+                    'BreakoutStrategy': {'execution_count': 95, 'success_rate': 0.82, 'average_return': 0.0025}
+                }
+            },
+            'performance_data': {
+                'execution': {'average_time_ms': 850, 'success_rate': 0.85},
+                'memory': {'average_usage_mb': 256, 'efficiency_rating': 0.78},
+                'reliability': {'success_rate': 0.85, 'consecutive_failures': 2},
+                'system': {'cpu_usage': 0.45, 'memory_usage': 0.62}
+            },
+            'switch_data': {
+                'total_switches': 30,
+                'success_rate': 0.75,
+                'average_cost': 1200
+            }
+        }
+        
+        print(f"✅ 統合データ準備完了: {len(all_data['backtest_results']['daily_results'])}件の日次データ")
+        
+        # 3. 包括的レポート生成テスト
+        print(f"\n📋 包括的レポート生成テスト:")
+        
+        comprehensive_report = generator.generate_comprehensive_report(all_data)
+        
+        print(f"✅ 包括的レポート生成成功:")
+        print(f"  - 総合評価: {comprehensive_report['executive_summary']['overall_grade']}")
+        print(f"  - 総合スコア: {comprehensive_report['executive_summary']['overall_score']:.3f}")
+        print(f"  - 主要成果数: {len(comprehensive_report['executive_summary']['key_achievements'])}")
+        print(f"  - 推奨事項数: {len(comprehensive_report['recommendations'])}")
+        
+        # 4. 主要成果表示
+        print(f"\n🏆 主要成果:")
+        for achievement in comprehensive_report['executive_summary']['key_achievements']:
+            print(f"  - {achievement}")
+        
+        # 5. 推奨事項表示
+        print(f"\n💡 主要推奨事項:")
+        for i, rec in enumerate(comprehensive_report['recommendations'][:3]):
+            print(f"  {i+1}. {rec['title']}: {rec['description']}")
+        
+        # 6. レポート統計確認
+        print(f"\n📊 レポート統計確認:")
+        stats = generator.get_report_statistics()
+        
+        print(f"✅ レポート統計取得成功:")
+        print(f"  - 総レポート数: {stats['total_reports']}")
+        print(f"  - 分析深度: {stats['analysis_depth']}")
+        print(f"  - 最終生成: {stats['last_report']}")
+        
+        print(f"\n🎉 DSSMSReportGenerator テスト完了！")
+        print(f"実装機能: 包括分析、推奨事項生成、トレンド分析、ベンチマーク評価")
+        
+    except Exception as e:
+        print(f"❌ テスト実行エラー: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 if __name__ == "__main__":
