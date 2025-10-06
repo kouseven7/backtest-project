@@ -2,8 +2,8 @@
 
 # TODO-PERF-001: Phase 2 Stage 2 - SystemFallbackPolicy Integration
 try:
-    from src.config.system_modes import SystemFallbackPolicy, ComponentType
-    _fallback_policy = SystemFallbackPolicy.get_instance()
+    from src.config.system_modes import get_fallback_policy, ComponentType
+    _fallback_policy = get_fallback_policy()
 except ImportError:
     # フォールバック用のダミークラス
     class _DummyFallbackPolicy:

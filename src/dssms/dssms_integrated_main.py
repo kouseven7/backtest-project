@@ -19,6 +19,7 @@ import argparse
 
 # 重いライブラリは遅延インポートに変更（TODO-PERF-001 Phase 2）
 # pandas, numpy は必要時に lazy_import で読み込み
+import numpy as np
 
 # プロジェクトルートをパスに追加
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -1228,6 +1229,8 @@ class DSSMSIntegratedBacktester:
             Optional[str]: 選択された銘柄コード
         """
         try:
+            # コンポーネント初期化確保
+            self.ensure_components()
             if self.dss_core and dss_available:
                 # DSS Core V3による動的選択
                 dss_result = self.dss_core.run_daily_selection(target_date)
@@ -1874,7 +1877,16 @@ class DSSMSIntegratedBacktester:
                 max_drawdown = 0
             
             # 切替統計
-            switch_stats = self.switch_manager.get_switch_statistics()
+            if self.switch_manager:
+                switch_stats = self.switch_manager.get_switch_statistics()
+            else:
+                switch_stats = {
+                    'total_switches': 0,
+                    'profitable_switches': 0,
+                    'unprofitable_switches': 0,
+                    'switch_success_rate': 0.0,
+                    'average_switch_profit': 0.0
+                }
             
             # 戦略統計
             strategy_stats = self._calculate_strategy_statistics()
@@ -1902,14 +1914,39 @@ class DSSMSIntegratedBacktester:
                 'switch_history': self.switch_history,
                 'switch_statistics': switch_stats,
                 'strategy_statistics': strategy_stats,
-                'performance_summary': self.performance_tracker.get_performance_summary()
+                'performance_summary': self.performance_tracker.get_performance_summary() if self.performance_tracker else {
+                    'overall': {'status': 'トラッカー未初期化'},
+                    'execution': {'average_time_ms': 0},
+                    'reliability': {'success_rate': 0.0}
+                }
             }
             
         except Exception as e:
             self.logger.error(f"最終結果生成エラー: {e}")
+            # エラー時でも基本情報は提供
             return {
                 'error': str(e),
-                'execution_metadata': {'generated_at': datetime.now()}
+                'execution_metadata': {
+                    'start_date': self.daily_results[0]['date'] if self.daily_results else None,
+                    'end_date': self.daily_results[-1]['date'] if self.daily_results else None,
+                    'trading_days': trading_days if 'trading_days' in locals() else 0,
+                    'successful_days': successful_days if 'successful_days' in locals() else 0,
+                    'generated_at': datetime.now()
+                },
+                'portfolio_performance': {
+                    'initial_capital': self.initial_capital,
+                    'final_capital': self.portfolio_value,
+                    'total_return': self.portfolio_value - self.initial_capital,
+                    'total_return_rate': (self.portfolio_value - self.initial_capital) / self.initial_capital if self.initial_capital > 0 else 0,
+                    'success_rate': 0.0
+                },
+                'daily_results': self.daily_results,
+                'switch_history': self.switch_history,
+                'performance_summary': {
+                    'overall': {'status': 'エラー'},
+                    'execution': {'average_time_ms': 0},
+                    'reliability': {'success_rate': 0.0}
+                }
             }
     
     def _calculate_strategy_statistics(self) -> Dict[str, Any]:
@@ -1964,8 +2001,8 @@ class DSSMSIntegratedBacktester:
             # 2. 包括レポート生成
             report_data = {
                 'backtest_results': final_results,
-                'performance_data': final_results['performance_summary'],
-                'switch_data': final_results['switch_statistics']
+                'performance_data': final_results.get('performance_summary', {}),
+                'switch_data': final_results.get('switch_statistics', {})
             }
             
             report_path = f"output/dssms_integration/comprehensive_report_{timestamp}.json"
@@ -2191,7 +2228,7 @@ def main():
     
     try:
         # 1. 初期化テスト
-        print("🚀 DSSMS統合バックテスター初期化テスト:")
+        print("[START] DSSMS統合バックテスター初期化テスト:")
         
         config = {
             'initial_capital': 1000000,
@@ -2203,19 +2240,19 @@ def main():
         }
         
         backtester = DSSMSIntegratedBacktester(config)
-        print("✅ 初期化成功")
+        print("[SUCCESS] 初期化成功")
         
         # 2. システム状態確認
-        print(f"\n📊 システム状態確認:")
+        print(f"\n[STATUS] システム状態確認:")
         status = backtester.get_system_status()
-        print(f"✅ システム状態取得成功:")
+        print(f"[SUCCESS] システム状態取得成功:")
         print(f"  - DSS Core V3: {'利用可能' if status['dss_available'] else '使用不可'}")
         print(f"  - リスク管理: {'利用可能' if status['risk_management_available'] else '使用不可'}")
         print(f"  - データ取得: {'利用可能' if status['data_fetcher_available'] else 'モック使用'}")
         print(f"  - 初期資本: {status['portfolio_value']:,.0f}円")
         
         # 3. カスタム期間バックテストテスト
-        print(f"\n📈 カスタム期間バックテストテスト:")
+        print(f"\n[BACKTEST] カスタム期間バックテストテスト:")
         
         # 期間設定（コマンドライン引数または デフォルト値）
         try:
@@ -2229,27 +2266,50 @@ def main():
         
         results = backtester.run_dynamic_backtest(start_date, end_date, target_symbols)
         
-        print(f"✅ バックテスト実行成功:")
-        print(f"  - 実行期間: {results['execution_metadata']['start_date']} → {results['execution_metadata']['end_date']}")
-        print(f"  - 取引日数: {results['execution_metadata']['trading_days']}日")
-        print(f"  - 成功日数: {results['execution_metadata']['successful_days']}日")
-        print(f"  - 成功率: {results['portfolio_performance']['success_rate']:.1%}")
-        print(f"  - 最終資本: {results['portfolio_performance']['final_capital']:,.0f}円")
-        print(f"  - 総収益率: {results['portfolio_performance']['total_return_rate']:.2%}")
-        print(f"  - 銘柄切替: {len(results['switch_history'])}回")
+        # エラー結果チェック
+        if 'error' in results:
+            print(f"❌ バックテスト実行エラー: {results['error']}")
+            print(f"  - 生成時刻: {results['execution_metadata'].get('generated_at', 'N/A')}")
+            return
         
-        # 4. パフォーマンス確認
-        perf_summary = results['performance_summary']
-        print(f"\n⚡ パフォーマンス確認:")
-        print(f"  - 総合評価: {perf_summary['overall']['status']}")
-        print(f"  - 平均実行時間: {perf_summary['execution']['average_time_ms']:.0f}ms")
-        print(f"  - システム信頼性: {perf_summary['reliability']['success_rate']:.1%}")
+        print(f"[SUCCESS] バックテスト実行成功:")
         
-        print(f"\n🎉 DSSMS統合バックテスター テスト完了！")
-        print(f"💪 統合機能: DSS動的選択、マルチ戦略実行、銘柄切替、リスク管理、レポート生成")
+        # 安全なキーアクセス
+        exec_meta = results.get('execution_metadata', {})
+        portfolio_perf = results.get('portfolio_performance', {})
+        
+        print(f"  - 実行期間: {exec_meta.get('start_date', 'N/A')} → {exec_meta.get('end_date', 'N/A')}")
+        print(f"  - 取引日数: {exec_meta.get('trading_days', 0)}日")
+        print(f"  - 成功日数: {exec_meta.get('successful_days', 0)}日")
+        
+        if portfolio_perf:
+            print(f"  - 成功率: {portfolio_perf.get('success_rate', 0):.1%}")
+            print(f"  - 最終資本: {portfolio_perf.get('final_capital', 0):,.0f}円")
+            print(f"  - 総収益率: {portfolio_perf.get('total_return_rate', 0):.2%}")
+        
+        switch_history = results.get('switch_history', [])
+        print(f"  - 銘柄切替: {len(switch_history)}回")
+        
+        # 4. パフォーマンス確認（安全アクセス）
+        perf_summary = results.get('performance_summary', {})
+        print(f"\n[PERFORMANCE] パフォーマンス確認:")
+        
+        if perf_summary:
+            overall_status = perf_summary.get('overall', {}).get('status', 'データなし')
+            exec_time = perf_summary.get('execution', {}).get('average_time_ms', 0)
+            reliability = perf_summary.get('reliability', {}).get('success_rate', 0)
+            
+            print(f"  - 総合評価: {overall_status}")
+            print(f"  - 平均実行時間: {exec_time:.0f}ms")
+            print(f"  - システム信頼性: {reliability:.1%}")
+        else:
+            print(f"  - パフォーマンス詳細データなし")
+        
+        print(f"\n[COMPLETE] DSSMS統合バックテスター テスト完了！")
+        print(f"[FEATURES] 統合機能: DSS動的選択、マルチ戦略実行、銘柄切替、リスク管理、レポート生成")
         
     except Exception as e:
-        print(f"❌ テスト実行エラー: {e}")
+        print(f"[ERROR] テスト実行エラー: {e}")
         import traceback
         traceback.print_exc()
 

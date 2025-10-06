@@ -14,6 +14,11 @@ from datetime import datetime, timedelta
 import json
 import logging
 
+# TODO-PERF-007 Stage 2: 並列処理統合
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
+import time
+
 # プロジェクトルートを追加
 project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
@@ -21,6 +26,10 @@ sys.path.append(str(project_root))
 # 既存システムインポート
 from config.logger_config import setup_logger
 from src.utils.lazy_import_manager import get_yfinance  # Phase 3最適化: 遅延インポート
+
+# Stage 3-1: SmartCache統合
+from .screener_cache_integration import create_screener_cache_integration
+from .algorithm_optimization_integration import create_algorithm_optimization_integration
 
 class Nikkei225Screener:
     """
@@ -63,8 +72,11 @@ class Nikkei225Screener:
         # 設定読み込み
         self.config = self._load_config(config_path)
         
-        # データフェッチャー（削除 - 直接Yahoo Financeを使用）
-        self.data_fetcher = None
+        # Stage 3-1: SmartCache統合
+        self.cached_fetcher = create_screener_cache_integration()
+        
+        # Stage 3-2: OptimizedAlgorithmEngine統合
+        self.algorithm_optimizer = create_algorithm_optimization_integration()
         
         # 日経225構成銘柄キャッシュ
         self._nikkei225_symbols = None
@@ -159,24 +171,14 @@ class Nikkei225Screener:
             
             for symbol in symbols:  # 全銘柄を処理（開発制限削除）
                 try:
-                    # 現在価格取得（ログレベルを一時的に上げてyfinanceエラーを抑制）
-                    import logging
-                    yf_logger = logging.getLogger('yfinance')
-                    original_level = yf_logger.level
-                    yf_logger.setLevel(logging.CRITICAL)  # yfinanceのERRORログを抑制
+                    # SmartCache統合: キャッシュから価格データ取得
+                    cache_result = self.cached_fetcher.get_price_data_cached(symbol)
                     
-                    try:
-                        yf = get_yfinance()  # Phase 3最適化: 遅延インポート
-                        ticker = yf.Ticker(symbol + ".T")  # 東証サフィックス
-                        hist = ticker.history(period="5d")
-                    finally:
-                        yf_logger.setLevel(original_level)  # ログレベルを復元
-                    
-                    if hist.empty:
+                    if cache_result is None:
                         self.logger.debug(f"{symbol}: データ取得不可（上場廃止等の可能性）")
                         continue
                         
-                    current_price = hist['Close'].iloc[-1]
+                    current_price = cache_result
                     
                     if current_price >= min_price:
                         filtered_symbols.append(symbol)
@@ -201,7 +203,7 @@ class Nikkei225Screener:
     
     def apply_market_cap_filter(self, symbols: List[str], min_cap: Optional[float] = None) -> List[str]:
         """
-        時価総額フィルタ適用（仕手株除外）
+        時価総額フィルタ適用（仕手株除外）- TODO-PERF-007 Stage 2: 並列処理統合版
         
         Args:
             symbols: 銘柄リスト
@@ -212,43 +214,111 @@ class Nikkei225Screener:
         """
         try:
             min_cap = min_cap or self.config["screening"]["nikkei225_filters"]["min_market_cap"]
-            filtered_symbols = []
             
-            for symbol in symbols:
-                try:
-                    yf = get_yfinance()  # Phase 3最適化: 遅延インポート
-                    ticker = yf.Ticker(symbol + ".T")
-                    info = ticker.info
-                    
-                    market_cap = info.get('marketCap')
-                    if market_cap is None:
-                        # 代替計算: 株価 × 発行済株式数
-                        shares_outstanding = info.get('sharesOutstanding')
-                        current_price = info.get('currentPrice')
-                        
-                        if shares_outstanding and current_price:
-                            market_cap = shares_outstanding * current_price
-                    
-                    if market_cap and market_cap >= min_cap:
-                        filtered_symbols.append(symbol)
-                        self.logger.debug(f"{symbol}: market cap {market_cap:,.0f} >= {min_cap:,.0f} ✓")
-                    else:
-                        self.logger.debug(f"{symbol}: market cap {market_cap} < {min_cap:,.0f} ✗")
-                        
-                except Exception as e:
-                    self.logger.debug(f"Market cap filter failed for {symbol}: {e}")
-                    continue
-            
-            self.logger.info(f"Market cap filter: {len(symbols)} → {len(filtered_symbols)} symbols")
-            return filtered_symbols
+            # 並列処理で高速化（TODO-PERF-007 Stage 2統合）
+            if len(symbols) >= 5:  # 5銘柄以上なら並列処理
+                return self._parallel_market_cap_filter(symbols, min_cap)
+            else:
+                return self._sequential_market_cap_filter(symbols, min_cap)
             
         except Exception as e:
             self.logger.error(f"Error in market cap filter: {e}")
-            raise
+            # フォールバック：逐次処理
+            return self._sequential_market_cap_filter(symbols, min_cap)
+    
+    def _parallel_market_cap_filter(self, symbols: List[str], min_cap: float) -> List[str]:
+        """並列市場キャップフィルタ（TODO-PERF-007 Stage 2統合）"""
+        
+        self.logger.info(f"🔧 並列市場キャップフィルタ: {len(symbols)}銘柄処理開始")
+        start_time = time.perf_counter()
+        
+        try:
+            filtered_symbols = []
+            max_workers = min(6, len(symbols))  # 軽量化設定
+            
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                # 並列処理投入
+                future_to_symbol = {
+                    executor.submit(self._get_single_market_cap_data, symbol, min_cap): symbol 
+                    for symbol in symbols
+                }
+                
+                # 結果回収
+                for future in as_completed(future_to_symbol):
+                    symbol = future_to_symbol[future]
+                    try:
+                        is_valid = future.result(timeout=30)
+                        if is_valid:
+                            filtered_symbols.append(symbol)
+                    except Exception as e:
+                        self.logger.debug(f"  ⚠️ {symbol} 処理エラー: {e}")
+                        # エラー時は除外（保守的判断）
+            
+            execution_time = time.perf_counter() - start_time
+            self.logger.info(f"  ✅ 並列処理完了: {len(symbols)} → {len(filtered_symbols)}銘柄 ({execution_time:.1f}秒)")
+            
+            return filtered_symbols
+            
+        except Exception as e:
+            execution_time = time.perf_counter() - start_time
+            self.logger.warning(f"  ❌ 並列処理エラー ({execution_time:.1f}秒): {e}")
+            # フォールバック：逐次処理
+            return self._sequential_market_cap_filter(symbols, min_cap)
+    
+    def _get_single_market_cap_data(self, symbol: str, min_cap: float) -> bool:
+        """単一銘柄市場キャップ判定（Stage 3-1: SmartCache統合）"""
+        try:
+            # Stage 3-1: SmartCache統合データ取得
+            is_valid = self.cached_fetcher.get_market_cap_data_cached(symbol, min_cap)
+            
+            if is_valid:
+                self.logger.debug(f"{symbol}: market cap >= {min_cap:,.0f} ✓ (cached)")
+            else:
+                self.logger.debug(f"{symbol}: market cap < {min_cap:,.0f} ✗ (cached)")
+            
+            return is_valid
+            
+        except Exception as e:
+            self.logger.debug(f"Market cap filter failed for {symbol}: {e}")
+            return False  # エラー時は除外
+    
+    def _sequential_market_cap_filter(self, symbols: List[str], min_cap: float) -> List[str]:
+        """逐次処理フォールバック（元の処理ロジック維持）"""
+        
+        self.logger.info(f"🔄 逐次市場キャップフィルタ: {len(symbols)}銘柄処理開始")
+        filtered_symbols = []
+        
+        for symbol in symbols:
+            try:
+                yf = get_yfinance()  # Phase 3最適化: 遅延インポート
+                ticker = yf.Ticker(symbol + ".T")
+                info = ticker.info
+                
+                market_cap = info.get('marketCap')
+                if market_cap is None:
+                    # 代替計算: 株価 × 発行済株式数
+                    shares_outstanding = info.get('sharesOutstanding')
+                    current_price = info.get('currentPrice')
+                    
+                    if shares_outstanding and current_price:
+                        market_cap = shares_outstanding * current_price
+                
+                if market_cap and market_cap >= min_cap:
+                    filtered_symbols.append(symbol)
+                    self.logger.debug(f"{symbol}: market cap {market_cap:,.0f} >= {min_cap:,.0f} ✓")
+                else:
+                    self.logger.debug(f"{symbol}: market cap {market_cap} < {min_cap:,.0f} ✗")
+                    
+            except Exception as e:
+                self.logger.debug(f"Market cap filter failed for {symbol}: {e}")
+                continue
+        
+        self.logger.info(f"Market cap filter: {len(symbols)} → {len(filtered_symbols)} symbols")
+        return filtered_symbols
     
     def apply_affordability_filter(self, symbols: List[str], available_funds: float) -> List[str]:
         """
-        購入可能性フィルタ適用
+        購入可能性フィルタ適用（Stage 3-2: OptimizedAlgorithmEngine統合）
         
         Args:
             symbols: 銘柄リスト
@@ -259,32 +329,14 @@ class Nikkei225Screener:
         """
         try:
             min_shares = self.config["screening"]["nikkei225_filters"]["min_shares_affordable"]
-            filtered_symbols = []
             
-            for symbol in symbols:
-                try:
-                    yf = get_yfinance()  # Phase 3最適化: 遅延インポート
-                    ticker = yf.Ticker(symbol + ".T")
-                    hist = ticker.history(period="5d")
-                    
-                    if hist.empty:
-                        continue
-                        
-                    current_price = hist['Close'].iloc[-1]
-                    required_funds = current_price * min_shares
-                    
-                    if available_funds >= required_funds:
-                        filtered_symbols.append(symbol)
-                        self.logger.debug(f"{symbol}: required {required_funds:,.0f} <= {available_funds:,.0f} ✓")
-                    else:
-                        self.logger.debug(f"{symbol}: required {required_funds:,.0f} > {available_funds:,.0f} ✗")
-                        
-                except Exception as e:
-                    self.logger.debug(f"Affordability filter failed for {symbol}: {e}")
-                    continue
-            
-            self.logger.info(f"Affordability filter: {len(symbols)} → {len(filtered_symbols)} symbols")
-            return filtered_symbols
+            # Stage 3-2: 最適化されたaffordability filter使用
+            return self.algorithm_optimizer.optimized_affordability_filter(
+                symbols=symbols,
+                available_funds=available_funds,
+                min_shares=min_shares,
+                market_data_fetcher=self.cached_fetcher
+            )
             
         except Exception as e:
             self.logger.error(f"Error in affordability filter: {e}")
@@ -307,14 +359,12 @@ class Nikkei225Screener:
             
             for symbol in symbols:
                 try:
-                    yf = get_yfinance()  # Phase 3最適化: 遅延インポート
-                    ticker = yf.Ticker(symbol + ".T")
-                    hist = ticker.history(period="30d")  # 30日平均出来高
+                    # SmartCache統合: キャッシュから出来高データ取得
+                    avg_volume = self.cached_fetcher.get_volume_data_cached(symbol)
                     
-                    if hist.empty:
+                    if avg_volume is None:
+                        self.logger.debug(f"{symbol}: 出来高データ取得不可")
                         continue
-                    
-                    avg_volume = hist['Volume'].mean()
                     
                     if avg_volume >= min_volume:
                         filtered_symbols.append(symbol)
@@ -363,24 +413,15 @@ class Nikkei225Screener:
             # 5. 出来高フィルタ
             symbols = self.apply_volume_filter(symbols)
             
-            # 6. 最大数制限
+            # 6. Stage 3-2: OptimizedAlgorithmEngine最終選択
             max_symbols = self.config["screening"]["nikkei225_filters"]["max_symbols"]
             if len(symbols) > max_symbols:
-                # 時価総額順でソート（大型株優先）
-                symbols_with_cap = []
-                for symbol in symbols:
-                    try:
-                        yf = get_yfinance()  # Phase 3最適化: 遅延インポート
-                        ticker = yf.Ticker(symbol + ".T")
-                        info = ticker.info
-                        market_cap = info.get('marketCap', 0)
-                        symbols_with_cap.append((symbol, market_cap))
-                    except:
-                        symbols_with_cap.append((symbol, 0))
-                
-                # 時価総額降順ソート
-                symbols_with_cap.sort(key=lambda x: x[1], reverse=True)
-                symbols = [s[0] for s in symbols_with_cap[:max_symbols]]
+                # 最適化された最終選択アルゴリズム使用
+                symbols = self.algorithm_optimizer.optimized_final_selection(
+                    symbols=symbols,
+                    max_symbols=max_symbols,
+                    market_data_fetcher=self.cached_fetcher
+                )
             
             self.logger.info(f"Screening completed: {len(symbols)} symbols selected")
             return symbols
