@@ -58,7 +58,7 @@ class LazyImporter:
             
             try:
                 # openpyxl遅延インポート (TODO-PERF-001: Stage 3)
-import src.utils.openpyxl_lazy_wrapper as openpyxl
+                import src.utils.openpyxl_lazy_wrapper as openpyxl
                 self._imported_modules['openpyxl'] = openpyxl
                 
                 import_time = (time.perf_counter() - start) * 1000

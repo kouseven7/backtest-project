@@ -58,6 +58,20 @@ def _load_symbol_switch_manager_fast():
 # 軽量版ロード
 SymbolSwitchManager = _load_symbol_switch_manager_fast()
 
+# SystemFallbackPolicy利用可能性チェック（TODO-INTEGRATE-001対応）
+try:
+    from src.config.system_modes import get_fallback_policy, ComponentType
+    fallback_policy_available = True
+except ImportError:
+    fallback_policy_available = False
+
+# DSS Core V3利用可能性チェック（TODO-INTEGRATE-001対応）
+try:
+    import dssms_backtester_v3
+    dss_available = True
+except ImportError:
+    dss_available = False
+
 
 class DSSMSIntegrationError(Exception):
     """DSSMS統合システム関連エラー"""
@@ -307,7 +321,11 @@ class DSSMSIntegratedBacktester:
                     self.daily_results.append(daily_result)
                     
                     # パフォーマンス追跡
-                    self.performance_tracker.record_daily_performance(daily_result)
+                    if self.performance_tracker:
+                        self.performance_tracker.record_daily_performance(daily_result)
+                    else:
+                        # パフォーマンストラッカーが無い場合の簡易ログ
+                        self.logger.debug(f"日次結果記録: {daily_result.get('date')} - 収益率: {daily_result.get('daily_return', 0):.3f}%")
                     
                     # 成功判定
                     if daily_result.get('success', False):
@@ -1210,7 +1228,7 @@ class DSSMSIntegratedBacktester:
             Optional[str]: 選択された銘柄コード
         """
         try:
-            if self.dss_core and DSS_AVAILABLE:
+            if self.dss_core and dss_available:
                 # DSS Core V3による動的選択
                 dss_result = self.dss_core.run_daily_selection(target_date)
                 selected_symbol = dss_result.get('selected_symbol')
@@ -1228,7 +1246,7 @@ class DSSMSIntegratedBacktester:
                     
                     if filtered_symbols:
                         # SystemFallbackPolicy統合: 明示的フォールバック処理
-                        if FALLBACK_POLICY_AVAILABLE:
+                        if fallback_policy_available:
                             fallback_policy = get_fallback_policy()
                             selected = fallback_policy.handle_component_failure(
                                 component_type=ComponentType.DSSMS_CORE,
@@ -1984,19 +2002,49 @@ class DSSMSIntegratedBacktester:
     def get_system_status(self) -> Dict[str, Any]:
         """システム状態取得"""
         try:
+            # 動的にコンポーネントの可用性をチェック
+            dss_available = self._check_dss_availability()
+            risk_available = self._check_risk_management_availability()
+            data_available = self._check_data_fetcher_availability()
+            
             return {
                 'current_symbol': self.current_symbol,
                 'portfolio_value': self.portfolio_value,
                 'position_size': self.position_size,
                 'daily_results_count': len(self.daily_results),
                 'switch_history_count': len(self.switch_history),
-                'dss_available': DSS_AVAILABLE,
-                'risk_management_available': RISK_MANAGEMENT_AVAILABLE,
-                'data_fetcher_available': DATA_FETCHER_AVAILABLE,
-                'performance_summary': self.performance_tracker.get_performance_summary()
+                'dss_available': dss_available,
+                'risk_management_available': risk_available,
+                'data_fetcher_available': data_available,
+                'performance_summary': self.performance_tracker.get_performance_summary() if self.performance_tracker else {}
             }
         except Exception as e:
             return {'error': str(e)}
+            
+    def _check_dss_availability(self) -> bool:
+        """DSS Core V3可用性チェック"""
+        try:
+            dss_core = self._initialize_dss_core()
+            return dss_core is not None
+        except Exception:
+            return False
+    
+    def _check_risk_management_availability(self) -> bool:
+        """リスク管理可用性チェック"""
+        try:
+            risk_manager = self._initialize_risk_management()
+            return risk_manager is not None
+        except Exception:
+            return False
+    
+    def _check_data_fetcher_availability(self) -> bool:
+        """データ取得可用性チェック"""
+        try:
+            # yfinanceまたはデータ取得機能のチェック
+            import yfinance
+            return True
+        except ImportError:
+            return False
     
     def _prepare_market_data_for_analysis(self, symbols: List[str], target_date: datetime) -> Optional[Dict[str, Any]]:
         """

@@ -147,7 +147,7 @@ class HierarchicalRankingSystem:
         self.logger.info(f"優先度分類開始: {len(symbols)}銘柄")
         
         # TODO-PERF-001: バッチ処理最適化
-for symbol in symbols:
+        for symbol in symbols:
             try:
                 # マルチタイムフレームデータ取得
                 data_dict = self.data_manager.get_multi_timeframe_data(symbol)
@@ -188,7 +188,7 @@ for symbol in symbols:
         self.logger.info(f"グループ内ランキング開始: {len(symbols)}銘柄")
         
         # TODO-PERF-001: バッチ処理最適化
-for symbol in symbols:
+        for symbol in symbols:
             try:
                 # 各スコア計算
                 score_data = self._calculate_comprehensive_score(symbol)
