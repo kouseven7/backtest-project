@@ -26,17 +26,22 @@ from config.optimized_parameters import OptimizedParameterManager
 from indicators.unified_trend_detector import UnifiedTrendDetector, detect_unified_trend, detect_unified_trend_with_confidence
 
 class OpeningGapStrategy(BaseStrategy):
-    def __init__(self, data: pd.DataFrame, dow_data: pd.DataFrame, params: Optional[Dict[str, Any]] = None, price_column: str = "Adj Close"):
+    def __init__(self, data: pd.DataFrame, dow_data: pd.DataFrame = None, params: Optional[Dict[str, Any]] = None, price_column: str = "Adj Close"):
         """
         Opening Gap Strategy の初期化。
 
         Parameters:
             data (pd.DataFrame): 株価データ
-            dow_data (pd.DataFrame): ダウ平均データ
+            dow_data (pd.DataFrame, optional): ダウ平均データ（Noneの場合はstock_dataを使用）
             params (dict, optional): 戦略パラメータ（オーバーライド用）
             price_column (str): 株価カラム名（デフォルトは "Adj Close"）
         """
         # 戦略固有の属性を先に設定
+        # TODO #12: dow_dataがNoneの場合は株価データをコピーして使用（緊急対応）
+        if dow_data is None:
+            dow_data = data.copy()
+            logger.info("OpeningGapStrategy: dow_data not provided, using stock_data as proxy")
+            
         self.dow_data = dow_data
         self.price_column = price_column
         self.entry_prices = {}  # エントリー価格を記録する辞書

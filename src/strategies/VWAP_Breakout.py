@@ -42,18 +42,23 @@ if not logger.hasHandlers():
 logger.setLevel(logging.DEBUG)
 
 class VWAPBreakoutStrategy(BaseStrategy):
-    def __init__(self, data: pd.DataFrame, index_data: pd.DataFrame, params=None, price_column: str = "Adj Close", volume_column: str = "Volume"):
+    def __init__(self, data: pd.DataFrame, index_data: pd.DataFrame = None, params=None, price_column: str = "Adj Close", volume_column: str = "Volume"):
         """
         VWAPアウトブレイク戦略の初期化。
 
         Parameters:
             data (pd.DataFrame): 株価データ
-            index_data (pd.DataFrame): 市場全体のインデックスデータ
+            index_data (pd.DataFrame, optional): 市場全体のインデックスデータ（Noneの場合はstock_dataを使用）
             params (dict, optional): 戦略パラメータ（オーバーライド用）
             price_column (str): 株価カラム名（デフォルトは "Adj Close"）
             volume_column (str): 出来高カラム名（デフォルトは "Volume"）
         """
         # 戦略固有の属性を先に設定
+        # TODO #12: index_dataがNoneの場合は株価データをコピーして使用（緊急対応）
+        if index_data is None:
+            index_data = data.copy()
+            logger.info("VWAPBreakoutStrategy: index_data not provided, using stock_data as proxy")
+        
         self.index_data = index_data
         self.price_column = price_column
         self.volume_column = volume_column

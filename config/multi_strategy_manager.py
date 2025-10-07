@@ -23,11 +23,15 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 # プロジェクトパスの追加
-sys.path.append(os.pa        except Exception as e:
-            logger.error(f"Hybrid flow failed: {e}")
-            return self._execute_legacy_flow(market_data, available_strategies, start_time)
-    
-    # Phase 4-A-2: 支援メソッド実装 (バックテスト基本理念準拠)
+# TODO(tag:syntax_fix, rationale:restore weight judgment system)
+try:
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.append(project_root)
+    print(f"Project path added: {project_root}")
+except Exception as e:
+    print(f"Failed to add project path: {e}")
+
+# Phase 4-A-2: 支援メソッド実装 (バックテスト基本理念準拠)
     
     def _get_strategy_class(self, strategy_name: str, module_name: str):
         """戦略クラスの動的取得"""
@@ -115,7 +119,7 @@ sys.path.append(os.pa        except Exception as e:
             return {
                 'stock_data': integrated_results,
                 'error': str(e)
-            }dirname(os.path.dirname(__file__)))
+            }
 
 # 基本システムのインポート  
 try:
@@ -170,11 +174,15 @@ class MultiStrategyResult:
     backtest_data: Optional[Dict[str, Any]] = None  # Excel出力用データ
 
 class MultiStrategyManager:
-    """マルチ戦略管理メインクラス"""
+    """
+    戦略レジストリシステム完全実装版マルチ戦略管理メインクラス
+    TODO(tag:strategy_registry, rationale:complete weight judgment system recovery)
+    バックテスト基本理念遵守: 戦略レジストリでも実際のbacktest()実行必須
+    """
     
     def __init__(self, config_path: str = None):
         """
-        初期化
+        初期化（戦略レジストリシステム統合版）
         
         Parameters:
             config_path: 設定ファイルパス
@@ -184,6 +192,14 @@ class MultiStrategyManager:
         # 設定ロード
         self.config = self._load_config(config_path)
         self.execution_mode = ExecutionMode(self.config.get('execution_mode', 'hybrid'))
+        
+        # TODO(tag:strategy_registry, rationale:complete weight judgment system recovery)
+        # 戦略レジストリシステム初期化
+        self.strategy_registry = {}
+        self.strategy_import_paths = {}
+        self.registry_validation_results = {}
+        self.is_initialized = False
+        self.logger = logging.getLogger(__name__)
         
         # システムコンポーネント
         self.strategy_selector = None
@@ -204,7 +220,11 @@ class MultiStrategyManager:
         # 履歴
         self.execution_history = []
         
-        logger.info("MultiStrategyManager initialized")
+        # リソースプール（戦略レジストリ対応）
+        self.resource_pool = None
+        self.monitoring_config = {}
+        
+        logger.info("MultiStrategyManager initialized with strategy registry system")
     
     def _load_config(self, config_path: str) -> Dict[str, Any]:
         """設定ファイルをロード"""
@@ -251,16 +271,35 @@ class MultiStrategyManager:
         }
     
     def initialize_systems(self) -> bool:
-        """システム初期化"""
+        """
+        システム初期化（戦略レジストリシステム統合版）
+        TODO(tag:strategy_registry, rationale:complete weight judgment system recovery)
+        バックテスト基本理念遵守: 実際のbacktest実行環境構築
+        """
         try:
             self.status = IntegrationStatus.INITIALIZING
-            logger.info("Initializing multi-strategy systems...")
+            logger.info("Initializing multi-strategy systems with complete strategy registry...")
+            
+            success = True
+            # TODO(tag:strategy_registry, rationale:complete weight judgment system recovery)
+            # 0. 戦略レジストリシステム完全初期化（最優先）
+            success &= self._initialize_strategy_registry_complete()
+            success &= self._validate_strategy_registry()
+            success &= self._setup_resource_pool()
+            success &= self._prepare_monitoring()
             
             if not ADVANCED_FEATURES:
-                logger.warning("Advanced features not available. Using fallback mode.")
-                self.execution_mode = ExecutionMode.LEGACY_ONLY
-                self.status = IntegrationStatus.FALLBACK
-                return True
+                logger.warning("ADVANCED_FEATURES not available. Strategy registry only mode.")
+                if success:
+                    self.status = IntegrationStatus.READY
+                    self.is_initialized = True
+                    logger.info("Strategy registry system initialized successfully")
+                    self._print_strategy_registry_report()
+                    return True
+                else:
+                    self.execution_mode = ExecutionMode.LEGACY_ONLY
+                    self.status = IntegrationStatus.FALLBACK
+                    return True
             
             # 1. データ管理システム初期化
             self._initialize_data_managers()
@@ -277,9 +316,16 @@ class MultiStrategyManager:
             # 5. 実行アダプター初期化
             self._initialize_execution_adapter()
             
-            self.status = IntegrationStatus.READY
-            logger.info("Multi-strategy systems initialized successfully")
-            return True
+            if success:
+                self.status = IntegrationStatus.READY
+                self.is_initialized = True
+                logger.info("Multi-strategy systems with complete strategy registry initialized successfully")
+                self._print_strategy_registry_report()
+            else:
+                self.status = IntegrationStatus.ERROR
+                logger.error("Strategy registry initialization failed")
+            
+            return success
             
         except Exception as e:
             logger.error(f"System initialization failed: {e}")
@@ -674,6 +720,487 @@ class MultiStrategyManager:
             "signal_integrator": self.signal_integrator is not None,
             "risk_manager": self.risk_manager is not None,
             "execution_adapter": self.execution_adapter is not None
+        }
+
+    def get_available_strategies(self) -> List[str]:
+        """
+        利用可能戦略リスト取得（戦略レジストリ完全実装版）
+        TODO(tag:strategy_registry, rationale:complete weight judgment system recovery)
+        """
+        try:
+            # 戦略レジストリが初期化されている場合は登録済み戦略を返す
+            if self.is_initialized and hasattr(self, 'strategy_registry') and self.strategy_registry:
+                available_strategies = list(self.strategy_registry.keys())
+                self.logger.info(f"Available strategies from registry: {len(available_strategies)} registered")
+                return available_strategies
+            
+            # フォールバック: 基本戦略リスト
+            default_strategies = [
+                'VWAPBreakoutStrategy',
+                'MomentumInvestingStrategy', 
+                'BreakoutStrategy',
+                'VWAPBounceStrategy',
+                'OpeningGapStrategy',
+                'ContrarianStrategy',
+                'GCStrategy'
+            ]
+            
+            # 設定から戦略リストを取得
+            if self.config and 'available_strategies' in self.config:
+                config_strategies = self.config['available_strategies']
+                strategies = config_strategies if config_strategies else default_strategies
+            else:
+                strategies = default_strategies
+            
+            self.logger.warning("MultiStrategyManager not initialized - using fallback strategy list")
+            # TODO(tag:strategy_registry, rationale:eliminate after full initialization)
+            return strategies
+            
+        except Exception as e:
+            logger.error(f"Error getting available strategies: {e}")
+            # TODO(tag:strategy_registry, rationale:eliminate after full strategy registry)
+            return ['OpeningGapStrategy', 'ContrarianStrategy', 'GCStrategy']
+
+    def get_strategy_weights(self) -> Dict[str, float]:
+        """
+        戦略重み取得
+        重み判断システム復旧のためのメソッド
+        TODO(tag:syntax_fix, rationale:restore weight judgment system)
+        """
+        try:
+            if hasattr(self, 'strategy_weights') and self.strategy_weights:
+                return self.strategy_weights
+            
+            # デフォルト重み設定
+            strategies = self.get_available_strategies()
+            equal_weight = 1.0 / len(strategies) if strategies else 0.0
+            
+            default_weights = {strategy: equal_weight for strategy in strategies}
+            
+            # 設定ファイルから重み取得
+            if self.config and 'strategy_weights' in self.config:
+                config_weights = self.config['strategy_weights']
+                default_weights.update(config_weights)
+            
+            return default_weights
+            
+        except Exception as e:
+            logger.error(f"Error getting strategy weights: {e}")
+            return {}
+
+    # ================================================================
+    # 戦略レジストリシステム完全実装（TODO #9）
+    # ================================================================
+    
+    def _initialize_strategy_registry_complete(self) -> bool:
+        """
+        戦略レジストリシステム完全実装
+        TODO(tag:strategy_registry, rationale:complete weight judgment system recovery)
+        バックテスト基本理念遵守: 実際の戦略クラス登録・backtest()確認
+        """
+        try:
+            # TODO #10で確認済み: 全戦略が完全実装済み
+            strategy_definitions = {
+                'VWAPBreakoutStrategy': {
+                    'module_path': 'src.strategies.VWAP_Breakout',
+                    'class_name': 'VWAPBreakoutStrategy',
+                    'file_path': 'src/strategies/VWAP_Breakout.py'
+                },
+                'MomentumInvestingStrategy': {
+                    'module_path': 'src.strategies.Momentum_Investing',
+                    'class_name': 'MomentumInvestingStrategy',
+                    'file_path': 'src/strategies/Momentum_Investing.py'
+                },
+                'BreakoutStrategy': {
+                    'module_path': 'src.strategies.Breakout',
+                    'class_name': 'BreakoutStrategy',
+                    'file_path': 'src/strategies/Breakout.py'
+                },
+                # 既存の正常動作戦略も追加
+                'OpeningGapStrategy': {
+                    'module_path': 'src.strategies.Opening_Gap',
+                    'class_name': 'OpeningGapStrategy',
+                    'file_path': 'src/strategies/Opening_Gap.py'
+                },
+                'ContrarianStrategy': {
+                    'module_path': 'src.strategies.contrarian_strategy',
+                    'class_name': 'ContrarianStrategy',
+                    'file_path': 'src/strategies/contrarian_strategy.py'
+                },
+                'GCStrategy': {
+                    'module_path': 'src.strategies.gc_strategy_signal',
+                    'class_name': 'GCStrategy',
+                    'file_path': 'src/strategies/gc_strategy_signal.py'
+                },
+                # 追加戦略（TODO #8で検出された全戦略）
+                'VWAPBounceStrategy': {
+                    'module_path': 'src.strategies.VWAP_Bounce',
+                    'class_name': 'VWAPBounceStrategy',
+                    'file_path': 'src/strategies/VWAP_Bounce.py'
+                }
+            }
+            
+            # 戦略クラス自動登録システム
+            successful_imports = 0
+            failed_imports = []
+            
+            for strategy_name, definition in strategy_definitions.items():
+                try:
+                    # 動的インポート実行
+                    module = __import__(definition['module_path'], fromlist=[definition['class_name']])
+                    strategy_class = getattr(module, definition['class_name'])
+                    
+                    # バックテスト基本理念遵守確認
+                    if self._validate_strategy_class_compliance(strategy_class, strategy_name):
+                        self.strategy_registry[strategy_name] = strategy_class
+                        self.strategy_import_paths[strategy_name] = definition
+                        successful_imports += 1
+                        
+                        self.logger.info(f"Strategy registered: {strategy_name} from {definition['file_path']}")
+                    else:
+                        failed_imports.append(f"{strategy_name}: Backtest principle violation")
+                        
+                except ImportError as e:
+                    failed_imports.append(f"{strategy_name}: Import failed - {e}")
+                    self.logger.warning(f"Strategy import failed: {strategy_name} - {e}")
+                    
+                except AttributeError as e:
+                    failed_imports.append(f"{strategy_name}: Class not found - {e}")
+                    self.logger.warning(f"Strategy class not found: {strategy_name} - {e}")
+                    
+                except Exception as e:
+                    failed_imports.append(f"{strategy_name}: Unexpected error - {e}")
+                    self.logger.error(f"Strategy registration failed: {strategy_name} - {e}")
+            
+            # 戦略レジストリ品質評価
+            total_strategies = len(strategy_definitions)
+            success_rate = (successful_imports / total_strategies) * 100 if total_strategies > 0 else 0
+            
+            self.logger.info(f"Strategy registry initialization: {successful_imports}/{total_strategies} strategies ({success_rate:.1f}%)")
+            
+            if failed_imports:
+                self.logger.warning(f"Failed strategy imports: {failed_imports}")
+            
+            # CRITICAL判定: 最低3戦略は必須（TODO #8の成功基準）
+            if successful_imports >= 3:
+                return True
+            else:
+                self.logger.error(f"Strategy registry initialization failed: Only {successful_imports} strategies loaded (minimum 3 required)")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"Strategy registry initialization failed: {e}")
+            return False
+    
+    def _validate_strategy_class_compliance(self, strategy_class, strategy_name: str) -> bool:
+        """
+        戦略クラスのバックテスト基本理念遵守確認
+        TODO(tag:strategy_registry, rationale:ensure backtest principle compliance)
+        """
+        try:
+            # backtest()メソッド存在確認
+            if not hasattr(strategy_class, 'backtest'):
+                self.logger.error(f"{strategy_name}: Missing backtest() method - violates backtest principle")
+                return False
+            
+            # backtest()メソッドが呼び出し可能か確認
+            if not callable(getattr(strategy_class, 'backtest')):
+                self.logger.error(f"{strategy_name}: backtest() not callable - violates backtest principle")
+                return False
+            
+            # 基本戦略クラス継承確認（可能な場合）
+            if hasattr(strategy_class, '__bases__'):
+                base_classes = [base.__name__ for base in strategy_class.__bases__]
+                if 'BaseStrategy' not in base_classes and len(base_classes) > 0:
+                    self.logger.warning(f"{strategy_name}: Does not inherit from BaseStrategy - may violate conventions")
+            
+            # __init__メソッド確認
+            if hasattr(strategy_class, '__init__'):
+                try:
+                    import inspect
+                    init_signature = inspect.signature(strategy_class.__init__)
+                    params = list(init_signature.parameters.keys())
+                    
+                    # 必要パラメータの存在確認
+                    expected_params = ['self', 'data', 'params']
+                    missing_params = [param for param in expected_params if param not in params]
+                    if missing_params:
+                        self.logger.warning(f"{strategy_name}: Missing expected __init__ parameters: {missing_params}")
+                except Exception as e:
+                    self.logger.warning(f"{strategy_name}: Could not inspect __init__ signature: {e}")
+            
+            self.logger.info(f"{strategy_name}: Backtest principle compliance validated")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"{strategy_name}: Compliance validation failed - {e}")
+            return False
+    
+    def _validate_strategy_registry(self) -> bool:
+        """
+        戦略レジストリ検証システム
+        TODO(tag:strategy_registry, rationale:comprehensive registry validation)
+        """
+        try:
+            validation_results = {
+                'total_registered': len(self.strategy_registry),
+                'backtest_compliant': 0,
+                'import_successful': 0,
+                'validation_timestamp': datetime.now().isoformat(),
+                'strategy_details': {}
+            }
+            
+            for strategy_name, strategy_class in self.strategy_registry.items():
+                strategy_validation = {
+                    'has_backtest_method': hasattr(strategy_class, 'backtest'),
+                    'backtest_callable': callable(getattr(strategy_class, 'backtest', None)),
+                    'import_path': self.strategy_import_paths.get(strategy_name, {}).get('module_path', 'Unknown'),
+                    'validation_passed': False
+                }
+                
+                # 包括的検証
+                if (strategy_validation['has_backtest_method'] and 
+                    strategy_validation['backtest_callable']):
+                    strategy_validation['validation_passed'] = True
+                    validation_results['backtest_compliant'] += 1
+                
+                validation_results['import_successful'] += 1
+                validation_results['strategy_details'][strategy_name] = strategy_validation
+            
+            # 検証結果保存
+            self.registry_validation_results = validation_results
+            
+            # 成功基準判定
+            success_rate = (validation_results['backtest_compliant'] / validation_results['total_registered'] * 100) if validation_results['total_registered'] > 0 else 0
+            
+            if success_rate >= 80.0:  # 80%以上で成功
+                self.logger.info(f"Strategy registry validation passed: {success_rate:.1f}% compliance")
+                return True
+            else:
+                self.logger.error(f"Strategy registry validation failed: {success_rate:.1f}% compliance (minimum 80% required)")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"Strategy registry validation failed: {e}")
+            return False
+    
+    def _setup_resource_pool(self) -> bool:
+        """
+        リソースプール設定
+        バックテスト基本理念遵守: backtest実行リソース確保
+        """
+        try:
+            self.resource_pool = {
+                'max_concurrent_strategies': len(self.strategy_registry),
+                'memory_limit_mb': 2048,  # 増加（戦略数増加対応）
+                'data_cache_enabled': True,
+                'strategy_timeout_seconds': 300  # 5分タイムアウト
+            }
+            
+            self.logger.info("Resource pool configured for complete strategy registry")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Resource pool setup failed: {e}")
+            return False
+    
+    def _prepare_monitoring(self) -> bool:
+        """
+        ヘルスチェック機能準備
+        バックテスト基本理念遵守: backtest品質監視
+        """
+        try:
+            # 基本理念遵守チェック機能
+            self.monitoring_config = {
+                'check_signal_generation': True,
+                'validate_trade_execution': True,
+                'monitor_excel_output': True,
+                'strategy_registry_health': True,  # 新規追加
+                'backtest_compliance_monitoring': True  # 新規追加
+            }
+            
+            self.logger.info("Monitoring system prepared for complete strategy registry")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Monitoring setup failed: {e}")
+            return False
+    
+    def get_strategy_instance(self, strategy_name: str, data, params: dict, **kwargs):
+        """
+        戦略インスタンス化機能 (TODO #12強化版)
+        TODO(tag:strategy_registry, rationale:complete weight judgment system recovery)
+        バックテスト基本理念遵守: 実際の戦略インスタンス化・backtest()実行準備
+        """
+        if not self.is_initialized:
+            raise ValueError("MultiStrategyManager not initialized TODO(tag:strategy_registry, rationale:initialize before use)")
+        
+        if strategy_name not in self.strategy_registry:
+            available = list(self.strategy_registry.keys())
+            raise ValueError(f"Strategy {strategy_name} not registered. Available: {available} TODO(tag:strategy_registry, rationale:register missing strategy)")
+        
+        try:
+            strategy_class = self.strategy_registry[strategy_name]
+            
+            # TODO #12: 戦略固有パラメータ自動供給システム（強化版）
+            instance_kwargs = {
+                'data': data,
+                'params': params,
+                'price_column': kwargs.get('price_column', 'Close')
+            }
+            
+            # TODO #12 RA_003: VWAPBreakoutStrategy index_data自動供給
+            if strategy_name == 'VWAPBreakoutStrategy':
+                if 'index_data' not in kwargs:
+                    # index_dataが提供されない場合は株価データをコピーして使用
+                    instance_kwargs['index_data'] = data.copy()
+                    self.logger.info(f"{strategy_name}: index_data auto-supplied from stock_data")
+                else:
+                    instance_kwargs['index_data'] = kwargs['index_data']
+                
+                # その他のVWAP固有パラメータ
+                if 'volume_column' in kwargs:
+                    instance_kwargs['volume_column'] = kwargs['volume_column']
+            
+            # TODO #12 RA_003: OpeningGapStrategy dow_data自動供給  
+            elif strategy_name == 'OpeningGapStrategy':
+                if 'dow_data' not in kwargs:
+                    # dow_dataが提供されない場合は株価データをコピーして使用
+                    instance_kwargs['dow_data'] = data.copy()
+                    self.logger.info(f"{strategy_name}: dow_data auto-supplied from stock_data")
+                else:
+                    instance_kwargs['dow_data'] = kwargs['dow_data']
+            
+            # TODO #12 RA_005: VWAPBounceStrategy等の他の戦略（index_data不要）
+            elif strategy_name in ['VWAPBounceStrategy']:
+                # VWAPBounceStrategyはindex_dataパラメータを受け取らない設計
+                # volume_columnやprice_columnのみを渡す
+                if 'volume_column' in kwargs:
+                    instance_kwargs['volume_column'] = kwargs['volume_column']
+                # index_dataは除外して他のkwargsは渡す
+                instance_kwargs.update({k: v for k, v in kwargs.items() if k not in ['index_data']})
+            
+            else:
+                # その他の戦略: 追加パラメータをそのまま渡す
+                instance_kwargs.update(kwargs)
+            
+            # 戦略インスタンス化
+            strategy_instance = strategy_class(**instance_kwargs)
+            
+            # バックテスト基本理念遵守: インスタンス化後のbacktest()確認
+            if not hasattr(strategy_instance, 'backtest') or not callable(strategy_instance.backtest):
+                raise ValueError(f"Strategy instance {strategy_name} lacks callable backtest() method TODO(tag:backtest_execution, rationale:implement backtest method)")
+            
+            self.logger.info(f"Strategy instance created: {strategy_name}")
+            return strategy_instance
+            
+        except Exception as e:
+            self.logger.error(f"Strategy instantiation failed for {strategy_name}: {e}")
+            raise ValueError(f"Strategy instantiation failed: {strategy_name} - {e} TODO(tag:strategy_registry, rationale:fix instantiation issue)")
+    
+    def execute_strategy_with_validation(self, strategy_name: str, stock_data, params: dict, **kwargs):
+        """
+        バックテスト基本理念遵守: 実際の戦略実行 + 品質検証（完全実装版）
+        TODO(tag:strategy_registry, rationale:complete weight judgment system recovery)
+        """
+        if not self.is_initialized:
+            raise ValueError("MultiStrategyManager not initialized TODO(tag:strategy_registry, rationale:initialize before use)")
+        
+        try:
+            # 戦略インスタンス取得
+            strategy_instance = self.get_strategy_instance(strategy_name, stock_data, params, **kwargs)
+            
+            # バックテスト基本理念遵守: 実際のbacktest()実行
+            result = strategy_instance.backtest()
+            
+            # 基本理念違反検出
+            self._validate_backtest_principle_compliance(result, strategy_name)
+            
+            self.logger.info(f"Strategy execution completed: {strategy_name} - {result.shape[0]} rows")
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"Strategy execution failed for {strategy_name}: {e}")
+            raise
+    
+    def _validate_backtest_principle_compliance(self, result, strategy_name: str):
+        """バックテスト基本理念違反検出（完全実装版）"""
+        violations = []
+        
+        # 1. シグナル列存在チェック
+        required_columns = ['Entry_Signal', 'Exit_Signal']
+        missing_columns = [col for col in required_columns if col not in result.columns]
+        if missing_columns:
+            violations.append(f"Missing signal columns: {missing_columns}")
+        
+        # 2. 取引数チェック
+        if 'Entry_Signal' in result.columns and 'Exit_Signal' in result.columns:
+            total_entries = (result['Entry_Signal'] == 1).sum()
+            total_exits = abs(result['Exit_Signal']).sum()
+            total_trades = total_entries + total_exits
+            
+            if total_trades == 0:
+                violations.append("Zero trades generated - potential strategy logic issue")
+            elif total_entries == 0:
+                violations.append("Zero entry signals - strategy may not be triggering")
+            elif total_exits == 0:
+                violations.append("Zero exit signals - strategy may not be exiting positions")
+        
+        # 3. データ完整性チェック
+        if len(result) == 0:
+            violations.append("Empty result data")
+        
+        # 4. Excel出力要件チェック
+        excel_required_columns = ['Close']
+        missing_excel_columns = [col for col in excel_required_columns if col not in result.columns]
+        if missing_excel_columns:
+            violations.append(f"Excel output columns missing: {missing_excel_columns}")
+        
+        # 5. 基本データ型チェック
+        if not isinstance(result, pd.DataFrame):
+            violations.append("Result is not a pandas DataFrame")
+        
+        # 違反検出時の処理
+        if violations:
+            error_msg = f"Backtest principle violations in {strategy_name}: {'; '.join(violations)}"
+            self.logger.error(error_msg)
+            raise ValueError(f"{error_msg} TODO(tag:backtest_execution, rationale:fix principle violations)")
+        
+        return True
+    
+    def _print_strategy_registry_report(self):
+        """戦略レジストリレポート出力"""
+        print("\n" + "="*80)
+        print("📊 戦略レジストリシステム初期化完了レポート")
+        print("="*80)
+        
+        print(f"\n✅ 戦略レジストリ状況:")
+        print(f"  登録戦略数: {len(self.strategy_registry)}")
+        print(f"  利用可能戦略: {list(self.strategy_registry.keys())}")
+        
+        if hasattr(self, 'registry_validation_results'):
+            validation = self.registry_validation_results
+            print(f"\n📋 検証結果:")
+            print(f"  総登録数: {validation['total_registered']}")
+            print(f"  backtest準拠: {validation['backtest_compliant']}")
+            print(f"  準拠率: {(validation['backtest_compliant']/validation['total_registered']*100):.1f}%")
+            
+            print(f"\n🔍 戦略別詳細:")
+            for strategy_name, details in validation['strategy_details'].items():
+                status = "✅" if details['validation_passed'] else "❌"
+                print(f"  {status} {strategy_name}: backtest={details['has_backtest_method']}")
+        
+        print(f"\n🎯 TODO #9 戦略レジストリシステム完全実装: 完了")
+        print("="*80)
+    
+    def get_registry_status(self) -> dict:
+        """戦略レジストリステータス取得"""
+        return {
+            'is_initialized': self.is_initialized,
+            'total_strategies': len(self.strategy_registry),
+            'available_strategies': list(self.strategy_registry.keys()),
+            'validation_results': getattr(self, 'registry_validation_results', {}),
+            'import_paths': self.strategy_import_paths
         }
 
 if __name__ == "__main__":

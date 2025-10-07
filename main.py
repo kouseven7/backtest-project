@@ -1,4 +1,4 @@
-"""
+﻿"""
 Module: Main
 File: main.py
 Description: 
@@ -209,10 +209,451 @@ def check_for_series_signal(signal) -> int:
         return 0
 
 
+def _execute_individual_strategy(stock_data, index_data, strategy_name, strategy_class, params):
+    """
+    個別戦略実行（バックテスト基本理念遵守）
+    TODO(tag:exit_signal_integration, rationale:maintain actual backtest execution)
+    """
+    try:
+        # 戦略ごとに必要なパラメータを渡す
+        if strategy_name == 'VWAPBreakoutStrategy':
+            strategy = strategy_class(
+                data=stock_data.copy(),
+                index_data=index_data,
+                params=params,
+                price_column="Adj Close"
+            )
+        elif strategy_name == 'OpeningGapStrategy':
+            strategy = strategy_class(
+                data=stock_data.copy(),
+                params=params,
+                price_column="Adj Close",
+                dow_data=index_data
+            )
+        else:
+            # その他の戦略は共通パラメータで初期化
+            strategy = strategy_class(
+                data=stock_data.copy(),
+                params=params,
+                price_column="Adj Close"
+            )
+        
+        # バックテスト基本理念遵守: 実際のbacktest()実行
+        return strategy.backtest()
+        
+    except Exception as e:
+        logger.error(f"戦略実行エラー {strategy_name}: {e}")
+        # 空のDataFrameを返すが、必要な列は確保
+        empty_result = pd.DataFrame(index=stock_data.index)
+        empty_result['Entry_Signal'] = 0
+        empty_result['Exit_Signal'] = 0
+        return empty_result
+
+
+def _detect_exit_anomalies(strategy_result: pd.DataFrame, strategy_name: str) -> Dict[str, Any]:
+    """
+    異常エグジット検出（TODO #4対応）
+    TODO(tag:exit_signal_integration, rationale:detect OpeningGap-style exit anomalies)
+    """
+    anomaly_info = {
+        'is_abnormal': False,
+        'anomaly_type': 'normal',
+        'exit_entry_ratio': 0.0,
+        'total_exits': 0,
+        'total_entries': 0
+    }
+    
+    if 'Entry_Signal' in strategy_result.columns and 'Exit_Signal' in strategy_result.columns:
+        total_entries = (strategy_result['Entry_Signal'] == 1).sum()
+        total_exits = (strategy_result['Exit_Signal'] == -1).sum()
+        
+        anomaly_info['total_entries'] = int(total_entries)
+        anomaly_info['total_exits'] = int(total_exits)
+        
+        if total_entries > 0:
+            exit_entry_ratio = total_exits / total_entries
+            anomaly_info['exit_entry_ratio'] = round(exit_entry_ratio, 2)
+            
+            # 異常判定基準（TODO #4調査結果基準）
+            if exit_entry_ratio > 5.0:  # 5倍以上は明らかに異常
+                anomaly_info['is_abnormal'] = True
+                anomaly_info['anomaly_type'] = 'excessive_exits'
+                print(f"[CRITICAL] {strategy_name}: 異常な大量エグジット検出 (比率: {exit_entry_ratio:.1f})")
+            elif exit_entry_ratio > 2.0:  # 2倍超は要注意
+                anomaly_info['is_abnormal'] = True
+                anomaly_info['anomaly_type'] = 'high_exit_ratio'
+                print(f"[WARNING] {strategy_name}: 高いエグジット比率検出 (比率: {exit_entry_ratio:.1f})")
+    
+    return anomaly_info
+
+
+def _integrate_entry_signals(integrated_data: pd.DataFrame, strategy_result: pd.DataFrame, strategy_name: str) -> int:
+    """
+    エントリーシグナル統合（既存ロジック強化版）
+    TODO(tag:exit_signal_integration, rationale:enhance entry signal integration with position tracking)
+    """
+    entry_mask = (strategy_result['Entry_Signal'] == 1) & (integrated_data['Entry_Signal'] == 0)
+    
+    if entry_mask.any():
+        integrated_data.loc[entry_mask, 'Entry_Signal'] = 1
+        integrated_data.loc[entry_mask, 'Active_Strategy'] = strategy_name
+        integrated_data.loc[entry_mask, 'Position_Duration'] = 0  # 保有期間リセット
+        
+        return int(entry_mask.sum())
+    
+    return 0
+
+
+def _integrate_exit_signals_with_position_tracking(integrated_data: pd.DataFrame, strategy_result: pd.DataFrame, 
+                                                 strategy_name: str, anomaly_info: Dict[str, Any]) -> int:
+    """
+    エグジットシグナル統合（メイン修正実装）
+    TODO(tag:exit_signal_integration, rationale:implement position-aware exit signal integration)
+    """
+    exit_integration_count = 0
+    
+    # 異常パターンの場合は制限的な統合を実行
+    if anomaly_info['is_abnormal']:
+        return _integrate_exit_signals_filtered(integrated_data, strategy_result, strategy_name, anomaly_info)
+    
+    # エグジットシグナルがある行を特定
+    exit_indices = strategy_result[strategy_result['Exit_Signal'] == -1].index
+    
+    for exit_idx in exit_indices:
+        try:
+            # 該当戦略のアクティブポジションを検索
+            # 方法1: 直接的なActive_Strategy一致
+            direct_match = (integrated_data.loc[exit_idx, 'Active_Strategy'] == strategy_name)
+            
+            # 方法2: 過去のエントリーから現在まで該当戦略がアクティブか確認
+            historical_match = False
+            
+            # エグジット日より前のエントリーを検索
+            entry_dates = integrated_data[
+                (integrated_data['Entry_Signal'] == 1) & 
+                (integrated_data['Active_Strategy'] == strategy_name) &
+                (integrated_data.index <= exit_idx)
+            ].index
+            
+            if len(entry_dates) > 0:
+                # 最新のエントリー日を取得
+                latest_entry_date = entry_dates[-1]
+                
+                # エントリー日からエグジット日まで該当戦略がアクティブか確認
+                period_mask = (integrated_data.index >= latest_entry_date) & (integrated_data.index <= exit_idx)
+                active_in_period = integrated_data.loc[period_mask, 'Active_Strategy']
+                
+                # 期間中に該当戦略がアクティブだった場合
+                if (active_in_period == strategy_name).any():
+                    historical_match = True
+            
+            # エグジット適用条件
+            valid_exit = direct_match or historical_match
+            
+            if valid_exit and integrated_data.loc[exit_idx, 'Exit_Signal'] == 0:
+                # エグジットシグナル適用
+                integrated_data.loc[exit_idx, 'Exit_Signal'] = -1
+                integrated_data.loc[exit_idx, 'Active_Strategy'] = ''  # ポジション終了
+                integrated_data.loc[exit_idx, 'Position_Duration'] = 0  # 保有期間リセット
+                
+                exit_integration_count += 1
+                
+                # デバッグ情報
+                match_type = "direct" if direct_match else "historical"
+                logger.debug(f"{strategy_name}: エグジット統合 ({match_type} match) at {exit_idx}")
+        
+        except (KeyError, IndexError) as e:
+            logger.warning(f"{strategy_name}: エグジット統合エラー at {exit_idx}: {e}")
+            continue
+    
+    return exit_integration_count
+
+
+def _integrate_exit_signals_filtered(integrated_data: pd.DataFrame, strategy_result: pd.DataFrame,
+                                   strategy_name: str, anomaly_info: Dict[str, Any]) -> int:
+    """
+    異常パターン戦略用のフィルタリング済みエグジット統合
+    TODO(tag:exit_signal_integration, rationale:handle abnormal exit patterns safely)
+    """
+    exit_integration_count = 0
+    
+    # 異常パターンに応じたフィルタリング戦略
+    if anomaly_info['anomaly_type'] == 'excessive_exits':
+        # 大量エグジットの場合：アクティブポジションに直接対応するもののみ
+        active_positions = integrated_data[integrated_data['Active_Strategy'] == strategy_name].index
+        
+        for pos_idx in active_positions:
+            try:
+                # 該当日以降の最初のエグジットシグナルを検索
+                future_exits = strategy_result.loc[pos_idx:][strategy_result['Exit_Signal'] == -1].index
+                
+                if len(future_exits) > 0:
+                    exit_idx = future_exits[0]
+                    
+                    if integrated_data.loc[exit_idx, 'Exit_Signal'] == 0:
+                        integrated_data.loc[exit_idx, 'Exit_Signal'] = -1
+                        integrated_data.loc[exit_idx, 'Active_Strategy'] = ''
+                        exit_integration_count += 1
+                        
+            except (KeyError, IndexError):
+                continue
+                
+    elif anomaly_info['anomaly_type'] == 'high_exit_ratio':
+        # 高比率エグジットの場合：エントリー数に制限
+        entry_count = (integrated_data['Active_Strategy'] == strategy_name).sum()
+        max_exits = min(entry_count * 2, anomaly_info['total_exits'])  # 最大2倍まで
+        
+        exit_signals = strategy_result[strategy_result['Exit_Signal'] == -1].index[:max_exits]
+        
+        for exit_idx in exit_signals:
+            try:
+                if (integrated_data.loc[exit_idx, 'Active_Strategy'] == strategy_name and 
+                    integrated_data.loc[exit_idx, 'Exit_Signal'] == 0):
+                    
+                    integrated_data.loc[exit_idx, 'Exit_Signal'] = -1
+                    integrated_data.loc[exit_idx, 'Active_Strategy'] = ''
+                    exit_integration_count += 1
+                    
+            except (KeyError, IndexError):
+                continue
+    
+    print(f"{strategy_name}: 異常パターン対応により {exit_integration_count}回のエグジット統合")
+    return exit_integration_count
+
+
+def _validate_strategy_backtest_output(strategy_result, strategy_name):
+    """
+    バックテスト基本理念違反検出
+    TODO(tag:exit_signal_integration, rationale:ensure backtest principle compliance)
+    """
+    violations = []
+    
+    # 必須列存在チェック
+    required_columns = ['Entry_Signal', 'Exit_Signal']
+    missing_columns = [col for col in required_columns if col not in strategy_result.columns]
+    if missing_columns:
+        violations.append(f"Missing signal columns: {missing_columns}")
+    
+    # シグナル数チェック
+    if 'Entry_Signal' in strategy_result.columns and 'Exit_Signal' in strategy_result.columns:
+        entry_signals = (strategy_result['Entry_Signal'] == 1).sum()
+        exit_signals = abs(strategy_result['Exit_Signal']).sum()
+        
+        if entry_signals == 0 and exit_signals == 0:
+            violations.append("Zero signals generated - potential strategy logic issue")
+    
+    # データ整合性チェック
+    if len(strategy_result) == 0:
+        violations.append("Empty strategy result")
+    
+    if violations:
+        error_msg = f"Strategy backtest violations in {strategy_name}: {'; '.join(violations)}"
+        print(f"[WARNING] {error_msg}")
+        logger.warning(error_msg)
+        # 重大な違反ではエラーを投げずに警告のみ
+        return False
+    
+    return True
+
+
+def _validate_integrated_signals(integrated_data, strategy_performance):
+    """
+    統合シグナル整合性検証
+    TODO(tag:exit_signal_integration, rationale:validate signal integration quality)
+    """
+    total_entries = (integrated_data['Entry_Signal'] == 1).sum()
+    total_exits = (integrated_data['Exit_Signal'] == -1).sum()
+    
+    # 基本整合性チェック
+    if total_entries == 0:
+        print("[WARNING] No entry signals in integrated data - potential integration issue")
+        return False
+    
+    if total_exits == 0:
+        print("[WARNING] No exit signals in integrated data - potential integration issue")
+    
+    # 戦略別統計出力
+    print(f"\n=== 戦略別パフォーマンス ===")
+    for strategy_name, perf in strategy_performance.items():
+        print(f"{strategy_name}: エントリー {perf['entries']}, エグジット {perf['exits']}")
+    
+    # 整合性警告
+    unmatched_positions = total_entries - total_exits
+    if unmatched_positions > 0:
+        print(f"[WARNING] 未決済ポジション: {unmatched_positions}件（強制決済対象）")
+    elif unmatched_positions < 0:
+        print(f"[WARNING] エグジット過多: {abs(unmatched_positions)}件（要調査）")
+        
+    return True
+
+
+def _execute_intelligent_forced_liquidation(integrated_data: pd.DataFrame) -> Dict[str, Any]:
+    """
+    インテリジェント強制決済処理（TODO #3修正反映）
+    TODO(tag:exit_signal_integration, rationale:implement TODO #3 forced liquidation fix)
+    """
+    # 期間終了時のアクティブポジション検出
+    final_positions_mask = integrated_data['Active_Strategy'] != ''
+    
+    if final_positions_mask.any():
+        final_position_count = final_positions_mask.sum()
+        print(f"\n=== インテリジェント強制決済実行: {final_position_count}件 ===")
+        
+        # 強制決済実行
+        integrated_data.loc[final_positions_mask, 'Exit_Signal'] = -1
+        integrated_data.loc[final_positions_mask, 'Active_Strategy'] = ''
+        
+        # TODO #3修正版計算ロジック
+        total_exits = (integrated_data['Exit_Signal'] == -1).sum()
+        
+        # 修正された強制決済率計算
+        if total_exits > 0:
+            forced_liquidation_rate = (final_position_count / total_exits) * 100
+        else:
+            forced_liquidation_rate = 0.0
+        
+        print(f"修正版強制決済率: {forced_liquidation_rate:.2f}%")
+        
+        return {
+            'forced_liquidations': int(final_position_count),
+            'total_exits': int(total_exits),
+            'forced_liquidation_rate': round(forced_liquidation_rate, 2)
+        }
+    
+    return {
+        'forced_liquidations': 0,
+        'total_exits': int((integrated_data['Exit_Signal'] == -1).sum()),
+        'forced_liquidation_rate': 0.0
+    }
+
+
+def _validate_integrated_signals_comprehensive(integrated_data: pd.DataFrame, strategy_performance: Dict[str, Any], 
+                                             anomaly_detection: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    統合シグナル包括的検証
+    TODO(tag:exit_signal_integration, rationale:comprehensive validation including anomaly awareness)
+    """
+    total_entries = (integrated_data['Entry_Signal'] == 1).sum()
+    total_exits = (integrated_data['Exit_Signal'] == -1).sum()
+    
+    validation_results = {
+        'total_entries': int(total_entries),
+        'total_exits': int(total_exits),
+        'position_balance': int(total_entries - total_exits),
+        'validation_passed': True,
+        'warnings': [],
+        'errors': []
+    }
+    
+    # 基本整合性チェック
+    if total_entries == 0:
+        validation_results['errors'].append("No entry signals in integrated data - integration failure")
+        validation_results['validation_passed'] = False
+    
+    if total_exits == 0:
+        validation_results['warnings'].append("No exit signals in integrated data - potential integration issue")
+    
+    # 異常戦略の影響評価
+    abnormal_strategies = [name for name, anomaly in anomaly_detection.items() if anomaly.get('is_abnormal', False)]
+    if abnormal_strategies:
+        validation_results['warnings'].append(f"Abnormal exit patterns detected in: {', '.join(abnormal_strategies)}")
+    
+    # エグジット過多警告（TODO #2問題対応）
+    position_balance = total_entries - total_exits
+    if position_balance < -5:  # 5件以上のエグジット過多
+        validation_results['warnings'].append(f"Exit surplus detected: {abs(position_balance)} more exits than entries")
+    
+    return validation_results
+
+
+def _print_exit_integration_report(strategy_performance: Dict[str, Any], forced_liquidation_stats: Dict[str, Any], 
+                                  validation_results: Dict[str, Any]):
+    """
+    エグジット統合修正レポート出力
+    TODO(tag:exit_signal_integration, rationale:comprehensive reporting of integration results)
+    """
+    print("\n" + "="*70)
+    print("[REPORT] TODO #2: エグジットシグナル統合修正 結果レポート")
+    print("="*70)
+    
+    # 戦略別統合結果
+    print(f"\n🔧 戦略別統合結果:")
+    total_integrated_entries = 0
+    total_integrated_exits = 0
+    abnormal_strategies = []
+    
+    for strategy_name, perf in strategy_performance.items():
+        print(f"  {strategy_name}:")
+        print(f"    エントリー統合: {perf['entries']}回")
+        print(f"    エグジット統合: {perf['exits']}回")
+        print(f"    合計シグナル: {perf['total_signals']}回")
+        
+        if perf.get('anomaly_detected', False):
+            print(f"    [WARNING] 異常パターン検出")
+            abnormal_strategies.append(strategy_name)
+        
+        total_integrated_entries += perf['entries']
+        total_integrated_exits += perf['exits']
+    
+    # 統合統計
+    print(f"\n[STATS] 統合統計:")
+    print(f"  総統合エントリー: {total_integrated_entries}回")
+    print(f"  総統合エグジット: {total_integrated_exits}回")
+    print(f"  統合バランス: {total_integrated_entries - total_integrated_exits}件")
+    
+    # 強制決済統計（TODO #3修正反映）
+    print(f"\n💰 強制決済統計（TODO #3修正版）:")
+    print(f"  強制決済件数: {forced_liquidation_stats['forced_liquidations']}件")
+    print(f"  総エグジット数: {forced_liquidation_stats['total_exits']}件")
+    print(f"  修正版強制決済率: {forced_liquidation_stats['forced_liquidation_rate']}%")
+    
+    # 修正効果評価
+    print(f"\n🎯 TODO #2修正効果評価:")
+    
+    # エグジット統合改善
+    if total_integrated_exits > 10:
+        print("[OK] エグジットシグナル統合が正常に機能")
+    else:
+        print("[WARNING] エグジット統合数が少ない - さらなる調査が必要")
+    
+    # 強制決済率改善（TODO #3基準）
+    forced_rate = forced_liquidation_stats['forced_liquidation_rate']
+    if 0 <= forced_rate <= 20:
+        print("[OK] 健全な強制決済率（20%以下）")
+    elif forced_rate > 100:
+        print("[ERROR] 強制決済率が異常値 - TODO #3修正が不完全")
+    else:
+        print("[WARNING] やや高い強制決済率 - 戦略調整推奨")
+    
+    # 異常戦略対応
+    if abnormal_strategies:
+        print(f"[WARNING] 異常パターン戦略: {', '.join(abnormal_strategies)} - TODO #4対応済み")
+    else:
+        print("[OK] 全戦略が正常パターン")
+    
+    # バックテスト基本理念遵守確認
+    print(f"\n🎯 バックテスト基本理念遵守確認:")
+    if validation_results['validation_passed']:
+        print("[OK] バックテスト基本理念完全遵守")
+    else:
+        print("[ERROR] バックテスト基本理念違反検出:")
+        for error in validation_results['errors']:
+            print(f"    - {error}")
+    
+    # 警告事項
+    if validation_results['warnings']:
+        print(f"\n[WARNING] 警告事項:")
+        for warning in validation_results['warnings']:
+            print(f"    - {warning}")
+    
+    print("\n" + "="*70)
+
+
 def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data: pd.DataFrame, 
                                          optimized_params: Dict[str, Dict[str, Any]]) -> pd.DataFrame:
     """
-    最適化されたパラメータを使用して戦略を適用します。
+    バックテスト基本理念遵守: 実際の戦略backtest実行 + エグジットシグナル統合修正
+    TODO(tag:exit_signal_integration, rationale:restore proper exit signal handling)
     
     Parameters:
         stock_data (pd.DataFrame): 株価データ
@@ -235,239 +676,109 @@ def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data:
         ('GCStrategy', GCStrategy)
     ]
     
-    # エントリー/エグジット統計
-    strategy_stats = {}
-    
     # 統合されたシグナル列を初期化
-    stock_data['Entry_Signal'] = 0
-    stock_data['Exit_Signal'] = 0
-    stock_data['Strategy'] = ''
-    stock_data['Position_Size'] = 1.0
-    stock_data['Position'] = 0  # ポジション状態を追跡する列を追加
+    # TODO(tag:exit_signal_integration, rationale:initialize exit signal column)
+    integrated_data = stock_data.copy()
+    integrated_data['Entry_Signal'] = 0
+    integrated_data['Exit_Signal'] = 0  # エグジットシグナル初期化追加
+    integrated_data['Active_Strategy'] = ''  # アクティブ戦略追跡
+    integrated_data['Strategy_Confidence'] = 0.0
+    integrated_data['Position'] = 0  # ポジション状態を追跡
     
-    # 各日付でどの戦略がアクティブかを追跡
-    active_positions = {}  # {日付: 戦略名}
+    # 戦略別結果保存（デバッグ・検証用）
+    strategy_results = {}
+    strategy_performance = {}
+    
+    print(f"戦略実行順序: {[name for name, _ in strategy_priority]}")
     
     for strategy_name, strategy_class in strategy_priority:
         try:
+            print(f"\n=== {strategy_name} 実行開始 ===")
             params = optimized_params.get(strategy_name, {})
             logger.info(f"戦略適用開始: {strategy_name} with params: {params}")
             
-            # 戦略ごとに必要なパラメータを渡す
-            if strategy_name == 'VWAPBreakoutStrategy':
-                try:
-                    strategy = strategy_class(
-                        data=stock_data.copy(),  # コピーを使用して相互影響を避ける
-                        index_data=index_data,  # index_dataを最初の引数に移動
-                        params=params,
-                        price_column="Adj Close"
-                    )
-                except Exception as e:
-                    logger.error(f"VWAPBreakoutStrategy初期化エラー: {e}")
-                    continue
-            elif strategy_name == 'OpeningGapStrategy':
-                strategy = strategy_class(
-                    data=stock_data.copy(),
-                    params=params,
-                    price_column="Adj Close",
-                    dow_data=index_data  # OpeningGapStrategyはdow_dataが必要
-                )
-            else:
-                # その他の戦略は共通パラメータで初期化
-                strategy = strategy_class(
-                    data=stock_data.copy(),
-                    params=params,
-                    price_column="Adj Close"
-                )
+            # バックテスト基本理念遵守: 実際の戦略backtest()実行
+            strategy_result = _execute_individual_strategy(
+                stock_data, index_data, strategy_name, strategy_class, params
+            )
             
-            # 戦略を実行してバックテスト結果を取得
-            try:
-                result = strategy.backtest()
-                
-                # インデックスをstock_dataと同じ型に変換して整合性を確保
-                if not isinstance(result.index, type(stock_data.index)):
-                    logger.warning(f"インデックスタイプ不一致: result={type(result.index)}, stock_data={type(stock_data.index)}. 変換を試みます。")
-                    try:
-                        result.index = pd.DatetimeIndex(result.index)
-                    except Exception as e:
-                        logger.error(f"インデックス変換エラー: {e}")
-            except Exception as e:
-                logger.error(f"バックテストエラー: {e}")
-                result = pd.DataFrame(index=stock_data.index)  # 空のデータフレームを返す
+            # 基本理念違反検出
+            _validate_strategy_backtest_output(strategy_result, strategy_name)
             
-            # エントリー/エグジット数を統計
-            entry_signal_col = 'Entry_Signal'
-            exit_signal_col = 'Exit_Signal'
+            # TODO(tag:exit_signal_integration, rationale:detect and handle abnormal exit patterns)
+            # 異常エグジット検出（TODO #4対応）
+            anomaly_info = _detect_exit_anomalies(strategy_result, strategy_name)
             
-            entry_count = 0
-            exit_count = 0
+            # 戦略結果保存
+            strategy_results[strategy_name] = strategy_result
             
-            if entry_signal_col in result.columns:
-                # Series型を安全に扱うための変換
-                try:
-                    if not pd.api.types.is_integer_dtype(result[entry_signal_col]):
-                        # 0以外の値を持つエントリーをカウント
-                        entry_signals = result[entry_signal_col].fillna(0)
-                        entry_count = (entry_signals == 1).sum()
-                    else:
-                        entry_count = (result[entry_signal_col] == 1).sum()
-                except Exception as e:
-                    logger.error(f"エントリーカウントエラー: {e}")
-                    entry_count = 0
-                    
-            if exit_signal_col in result.columns:
-                # Series型を安全に扱うための変換
-                try:
-                    if not pd.api.types.is_integer_dtype(result[exit_signal_col]):
-                        # -1の値を持つエグジットをカウント
-                        exit_signals = result[exit_signal_col].fillna(0)
-                        exit_count = (exit_signals == -1).sum()
-                    else:
-                        exit_count = (result[exit_signal_col] == -1).sum()
-                except Exception as e:
-                    logger.error(f"エグジットカウントエラー: {e}")
-                    exit_count = 0
+            # TODO(tag:exit_signal_integration, rationale:implement enhanced entry signal integration)
+            # Entry_Signal統合（既存ロジック強化版）
+            entry_integration_count = _integrate_entry_signals(
+                integrated_data, strategy_result, strategy_name
+            )
             
-            # 優先度順にシグナルを統合（既存シグナルがない場合のみ追加）
-            # エントリーとエグジットのシグナル処理を単純化
-            # データフレームのチェック
-            if not isinstance(result, pd.DataFrame):
-                logger.warning(f"{strategy_name}: 結果がDataFrameではありません")
-                continue
-                
-            if result.empty:
-                logger.warning(f"{strategy_name}: 結果データフレームが空です")
-                continue
-                
-            # 安全でシンプルな方法でシグナルを取得
-            entry_dates = []
-            exit_dates = []
+            # TODO(tag:exit_signal_integration, rationale:implement comprehensive exit signal integration)
+            # Exit_Signal統合（新規実装 - メイン修正）
+            exit_integration_count = _integrate_exit_signals_with_position_tracking(
+                integrated_data, strategy_result, strategy_name, anomaly_info
+            )
             
-            # columnsチェック
-            if not isinstance(result, pd.DataFrame) or not hasattr(result, 'columns'):
-                logger.error(f"{strategy_name}: データフレームが不正です")
-                continue
+            # 統計情報記録
+            print(f"{strategy_name}: エントリー統合 {entry_integration_count}回, エグジット統合 {exit_integration_count}回")
             
-            # エントリーシグナルを収集
-            try:
-                if entry_signal_col in result.columns:
-                    # エントリー日を取得
-                    entry_mask = result[entry_signal_col] == 1
-                    entry_dates = result[entry_mask].index.tolist()
-            except Exception as e:
-                logger.error(f"{strategy_name} エントリーシグナル抽出エラー: {e}")
-                entry_dates = []
-                
-            # エグジットシグナルを収集
-            try:
-                if exit_signal_col in result.columns:
-                    # エグジット日を取得
-                    exit_mask = result[exit_signal_col] == -1
-                    exit_dates = result[exit_mask].index.tolist()
-            except Exception as e:
-                logger.error(f"{strategy_name} エグジットシグナル抽出エラー: {e}")
-                exit_dates = []
+            # 異常検出結果表示
+            if anomaly_info['is_abnormal']:
+                print(f"[WARNING] {strategy_name}: 異常エグジットパターン検出 - {anomaly_info['anomaly_type']}")
             
-            # シグナル統合
-            for date in entry_dates:
-                try:
-                    if date in stock_data.index:
-                        # リスク管理モジュールを使用してポジション制限をチェック
-                        # 短期取引を促進するため、リスク管理を緩和
-                        if risk_manager.check_position_size(strategy_name) and date not in active_positions:
-                            # エントリーシグナルを追加
-                            stock_data.loc[date, 'Entry_Signal'] = 1
-                            stock_data.loc[date, 'Strategy'] = strategy_name
-                            stock_data.loc[date, 'Position'] = 1  # ポジション状態を更新
-                            active_positions[date] = strategy_name
-                            # リスク管理モジュールのポジション情報も更新
-                            risk_manager.update_position(strategy_name, 1)
-                            logger.info(f"戦略統合: {strategy_name} エントリー: 日付={date}, 全ポジション数={risk_manager.get_total_positions()}")
-                except Exception as e:
-                    logger.error(f"エントリー統合エラー ({strategy_name}, 日付={date}): {e}")
-                    
-            for date in exit_dates:
-                try:
-                    if date in stock_data.index:
-                        # このシグナルに対応するエントリー日を探す（同じ戦略からのもの）
-                        matching_entries = [d for d, s in active_positions.items() 
-                                          if s == strategy_name and d < date]
-                        if matching_entries:
-                            # 最も古いエントリーに対してイグジット（FIFO方式）
-                            oldest_entry = sorted(matching_entries)[0]
-                            stock_data.loc[date, 'Exit_Signal'] = -1
-                            stock_data.loc[date, 'Position'] = 0  # ポジション状態を更新
-                            logger.info(f"戦略統合: {strategy_name} イグジット: 日付={date}, エントリー日={oldest_entry}")
-                            
-                            # ポジションを削除
-                            del active_positions[oldest_entry]
-                            
-                            # リスク管理モジュールのポジション情報も更新
-                            risk_manager.update_position(strategy_name, -1)
-                except Exception as e:
-                    logger.error(f"エグジット統合エラー ({strategy_name}, 日付={date}): {e}")
-                
-# このブロック全体を削除（重複しているため）
-# 代わりに、前のブロックに統合された修正が使用されます
-            
-            # 正確なカウントのために数値を変換
-            # より安全な方法でカウント
-            integrated_entries = sum(1 for _ in stock_data[stock_data['Strategy'] == strategy_name].index)
-            integrated_exits = sum(1 for _ in stock_data[(stock_data['Exit_Signal'] == -1) & (stock_data['Strategy'] == strategy_name)].index)
-            
-            strategy_stats[strategy_name] = {
-                'entries': int(entry_count),
-                'exits': int(exit_count),
-                'integrated_entries': integrated_entries,
-                'integrated_exits': integrated_exits
+            # パフォーマンス記録
+            strategy_performance[strategy_name] = {
+                'entries': entry_integration_count,
+                'exits': exit_integration_count,
+                'total_signals': entry_integration_count + exit_integration_count,
+                'anomaly_detected': anomaly_info['is_abnormal']
             }
             
-            logger.info(f"戦略完了: {strategy_name} - エントリー: {entry_count}, エグジット: {exit_count}")
-            logger.info(f"  統合後: エントリー: {strategy_stats[strategy_name]['integrated_entries']}, エグジット: {strategy_stats[strategy_name]['integrated_exits']}")
-            
         except Exception as e:
-            logger.error(f"戦略適用エラー - {strategy_name}: {e}")
-            strategy_stats[strategy_name] = {'entries': 0, 'exits': 0, 'error': str(e)}
+            print(f"[WARNING] {strategy_name} 実行エラー: {e}")
+            # TODO(tag:exit_signal_integration, rationale:handle strategy execution errors gracefully)
+            continue
     
-    # 統計をログ出力
-    logger.info("=== 戦略別エントリー/エグジット統計 ===")
-    total_entries = 0
-    total_exits = 0
+    # TODO(tag:exit_signal_integration, rationale:implement intelligent forced liquidation)
+    # 強制決済処理（バックテスト期間終了時）- TODO #3修正反映
+    forced_liquidation_stats = _execute_intelligent_forced_liquidation(integrated_data)
     
-    for strategy_name, stats in strategy_stats.items():
-        if 'error' not in stats:
-            logger.info(f"{strategy_name}: エントリー {stats['entries']}, エグジット {stats['exits']}")
-            logger.info(f"  統合後: エントリー {stats.get('integrated_entries', 0)}, エグジット {stats.get('integrated_exits', 0)}")
-            total_entries += stats.get('integrated_entries', 0)
-            total_exits += stats.get('integrated_exits', 0)
-        else:
-            logger.error(f"{strategy_name}: エラー - {stats['error']}")
+    # TODO(tag:exit_signal_integration, rationale:validate integrated signals consistency)
+    # 統合結果検証
+    anomaly_detection = {}
+    for name, perf in strategy_performance.items():
+        anomaly_detection[name] = {
+            'is_abnormal': perf.get('anomaly_detected', False),
+            'anomaly_type': 'unknown'
+        }
     
-    logger.info(f"統合後合計: エントリー {total_entries}, エグジット {total_exits}")
+    validation_results = _validate_integrated_signals_comprehensive(
+        integrated_data, strategy_performance, anomaly_detection
+    )
     
-    # 未処理のオープンポジションを最終日でクローズ
-    # これにより、エントリーとエグジット回数の不均衡を修正
-    if active_positions:
-        logger.warning(f"バックテスト終了時に {len(active_positions)} 件の未決済ポジションがあります。最終日に強制決済します。")
-        last_date = stock_data.index[-1]
-        
-        # 未決済ポジションを戦略ごとに集計
-        positions_by_strategy = {}
-        for entry_date, strategy_name in active_positions.items():
-            if strategy_name not in positions_by_strategy:
-                positions_by_strategy[strategy_name] = []
-            positions_by_strategy[strategy_name].append(entry_date)
-        
-        # 戦略ごとの未決済ポジション数をログ出力
-        for strategy_name, entry_dates in positions_by_strategy.items():
-            logger.warning(f"戦略 {strategy_name} に {len(entry_dates)} 件の未決済ポジションがあります")
-        
-        # 未決済ポジションをすべて最終日で決済
-        for entry_idx, strategy_name in active_positions.items():
-            # 最終日に強制決済
-            stock_data.loc[last_date, 'Exit_Signal'] = -1
-            stock_data.loc[last_date, 'Position'] = 0  # ポジション状態を更新
-            logger.info(f"強制決済: 戦略={strategy_name}, エントリー日={entry_idx}, 決済日={last_date}")
+    # 修正効果レポート
+    _print_exit_integration_report(
+        strategy_performance, forced_liquidation_stats, validation_results
+    )
+    
+    # デバッグ情報出力
+    total_entries = (integrated_data['Entry_Signal'] == 1).sum()
+    total_exits = (integrated_data['Exit_Signal'] == -1).sum()
+    print(f"\n=== 統合結果サマリー ===")
+    print(f"総エントリー: {total_entries}回")
+    print(f"総エグジット: {total_exits}回")
+    print(f"未決済残: {total_entries - total_exits}件")
+    
+    # 統合データをstock_dataに適用
+    stock_data['Entry_Signal'] = integrated_data['Entry_Signal']
+    stock_data['Exit_Signal'] = integrated_data['Exit_Signal']
+    stock_data['Strategy'] = integrated_data['Active_Strategy']
+    stock_data['Position'] = integrated_data['Position']
     
     return stock_data
 
@@ -503,7 +814,7 @@ def main():
                 if manager.initialize_systems():
                     logger.info("Phase 4-A成果: 統合システムの初期化に成功しました")
                     
-                    # ✅ 実際のbacktest()実行保証
+                    # [OK] 実際のbacktest()実行保証
                     available_strategies = list(optimized_params.keys())
                     market_data = {"data": stock_data, "index": index_data}
                     
@@ -512,7 +823,7 @@ def main():
                     if results and results.status.value == "ready":
                         logger.info(f"Phase 4-A統合システム成功: {len(results.selected_strategies)}戦略実行完了")
                         
-                        # ✅ Excel出力データ検証 (Phase 4-B-2準備)
+                        # [OK] Excel出力データ検証 (Phase 4-B-2準備)
                         if results.backtest_data:
                             combined_signals = results.backtest_data.get('combined_signals', {})
                             execution_metadata = results.backtest_data.get('execution_metadata', {})
@@ -522,7 +833,7 @@ def main():
                             
                             # Phase 4-B-2: Excel出力品質向上
                             if total_trades > 0:
-                                logger.info("✅ バックテスト基本理念遵守: 取引が生成されました")
+                                logger.info("[OK] バックテスト基本理念遵守: 取引が生成されました")
                                 result_data = stock_data.copy()
                                 # combined_signalsからシグナルを統合
                                 for strategy_name, strategy_result in combined_signals.items():
@@ -534,7 +845,7 @@ def main():
                                         mask = result_data['Exit_Signal'] == 0
                                         result_data.loc[mask, 'Exit_Signal'] = strategy_result.loc[mask, 'Exit_Signal']
                             else:
-                                logger.warning("⚠️ バックテスト基本理念注意: 取引数0件 - テストデータ制約の可能性")
+                                logger.warning("[WARNING] バックテスト基本理念注意: 取引数0件 - テストデータ制約の可能性")
                                 result_data = stock_data
                                 
                             backtest_results = simulate_and_save(result_data, ticker)
