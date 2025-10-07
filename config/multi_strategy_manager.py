@@ -199,6 +199,31 @@ class MultiStrategyManager:
             
             return False
     
+    def initialize_system(self) -> bool:
+        """
+        システム初期化 - main.py からの直接呼び出し用エイリアス
+        TODO(tag:phase2, rationale:完全初期化ロジック実装後、initialize_systems()に統合)
+        """
+        try:
+            logger.info("MultiStrategyManager基本初期化開始")
+            
+            # Phase 1: 最小限の初期化でAttributeError解消
+            self.is_initialized = True
+            
+            # 既存のinitialize_systems()メソッドを呼び出し
+            result = self.initialize_systems()
+            
+            if result:
+                logger.info("MultiStrategyManager基本初期化完了")
+            else:
+                logger.warning("MultiStrategyManager初期化に部分的失敗、フォールバックモードで継続")
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"MultiStrategyManager基本初期化失敗: {e}")
+            return False
+    
     def _initialize_data_managers(self):
         """データ管理システムの初期化"""
         try:
