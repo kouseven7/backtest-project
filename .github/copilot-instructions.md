@@ -290,3 +290,52 @@ def component_method_invalid(self):
 - kabu 実行タイミング固定しない
 - 強化学習: 現時点導入予定なし
 - **バックテスト基本理念は全てに優先：いかなる統合・最適化でも実際のbacktest実行は必須**
+
+## AI エージェント応答品質ガイド 🤖
+
+### **正確性・誠実性必須原則**
+- **存在しない機能・段階・計画への言及禁止**: 実装されていない機能やフェーズを即座に作り出して回答することは禁止
+- **ドキュメント準拠必須**: 回答は既存のドキュメント・実装・計画に基づく内容のみとし、その場での創作は行わない
+- **不明・未実装時の正直な回答**: 「存在しません」「実装されていません」「計画されていません」を明確に伝える
+
+### **回答検証必須パターン** 🔍
+```python
+# ✅ 正しい回答パターン
+def answer_about_feature(feature_name):
+    # 1. 実際のドキュメント・コード確認
+    if not exists_in_documentation(feature_name):
+        return f"{feature_name} は現在実装されていません"
+    
+    # 2. 既存情報に基づく回答
+    return get_documented_information(feature_name)
+
+# ❌ 禁止: その場での創作回答
+def answer_about_feature_invalid(feature_name):
+    # 基本方針違反: 存在しない機能を即座に創作
+    return f"{feature_name} の実装方針は..." # 実際には存在しない計画
+```
+
+### **未実装・不明時の必須対応**
+- **「存在しません」を明確に伝達**: 曖昧な表現や回避ではなく、直接的な事実確認
+- **必要に応じた提案**: 「実装が必要でしたら新たに計画いたします」等の建設的提案
+- **TODO化**: 新規要求は `TODO(tag:new_requirement, rationale:user requested feature)` でマーク
+
+### **品質保証チェックリスト**
+- [ ] 既存ドキュメントで確認済み
+- [ ] 実装コードで動作確認済み  
+- [ ] 計画書で予定確認済み
+- [ ] 未実装の場合は正直に回答済み
+- [ ] 創作・推測での回答を避けている
+
+### **違反時の対処**
+```python
+# 創作回答検出時の修正パターン
+if detected_fabricated_response():
+    logger.error("Fabricated response detected - correcting")
+    return correct_factual_response_or_admit_unknown()
+    # TODO(tag:response_quality, rationale:prevent fabricated answers)
+```
+
+---
+
+**このガイドラインにより、AI エージェントは実装されていない機能について即座に創作回答することなく、正確で誠実な対応を行います。**

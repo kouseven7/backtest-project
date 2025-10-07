@@ -48,7 +48,8 @@ fallback_policy = SystemFallbackPolicy()
 
 # 新統合システムのインポート
 try:
-    from config.multi_strategy_manager import MultiStrategyManager, ExecutionMode
+    # Phase 4-B-1: multi_strategy_manager_fixed統合
+    from config.multi_strategy_manager_fixed import MultiStrategyManager, ExecutionMode
     from config.strategy_execution_adapter import StrategyExecutionAdapter
     integrated_system_available = True
     logger.info("統合マルチ戦略システムが利用可能です")
@@ -495,27 +496,54 @@ def main():
             try:
                 logger.info("統合マルチ戦略システムを使用してバックテストを実行します")
                 
-                # MultiStrategyManager を初期化
+                # Phase 4-B-1: MultiStrategyManager_fixed を初期化
                 manager = MultiStrategyManager()
                 
-                # 戦略実行アダプターを設定（必要に応じて使用）
-                # adapter = StrategyExecutionAdapter()
-                
                 # システム初期化
-                if manager.initialize_system():
-                    logger.info("統合システムの初期化に成功しました")
+                if manager.initialize_systems():
+                    logger.info("Phase 4-A成果: 統合システムの初期化に成功しました")
                     
-                    # マルチ戦略実行
+                    # ✅ 実際のbacktest()実行保証
                     available_strategies = list(optimized_params.keys())
-                    results = manager.execute_multi_strategy_flow(stock_data, available_strategies)
+                    market_data = {"data": stock_data, "index": index_data}
                     
-                    if results:
-                        logger.info("統合システムでのバックテスト実行が完了しました")
-                        # MultiStrategyResultから結果データを取得
-                        result_data = results.combined_signals if hasattr(results, 'combined_signals') else stock_data
-                        backtest_results = simulate_and_save(result_data, ticker)
+                    results = manager.execute_multi_strategy_flow(market_data, available_strategies)
+                    
+                    if results and results.status.value == "ready":
+                        logger.info(f"Phase 4-A統合システム成功: {len(results.selected_strategies)}戦略実行完了")
+                        
+                        # ✅ Excel出力データ検証 (Phase 4-B-2準備)
+                        if results.backtest_data:
+                            combined_signals = results.backtest_data.get('combined_signals', {})
+                            execution_metadata = results.backtest_data.get('execution_metadata', {})
+                            total_trades = execution_metadata.get('total_trades', 0)
+                            
+                            logger.info(f"Phase 4-B品質チェック: 総取引数={total_trades}, 戦略数={len(combined_signals)}")
+                            
+                            # Phase 4-B-2: Excel出力品質向上
+                            if total_trades > 0:
+                                logger.info("✅ バックテスト基本理念遵守: 取引が生成されました")
+                                result_data = stock_data.copy()
+                                # combined_signalsからシグナルを統合
+                                for strategy_name, strategy_result in combined_signals.items():
+                                    if 'Entry_Signal' in strategy_result.columns:
+                                        # 既存シグナルがない場合のみ統合
+                                        mask = result_data['Entry_Signal'] == 0
+                                        result_data.loc[mask, 'Entry_Signal'] = strategy_result.loc[mask, 'Entry_Signal']
+                                    if 'Exit_Signal' in strategy_result.columns:
+                                        mask = result_data['Exit_Signal'] == 0
+                                        result_data.loc[mask, 'Exit_Signal'] = strategy_result.loc[mask, 'Exit_Signal']
+                            else:
+                                logger.warning("⚠️ バックテスト基本理念注意: 取引数0件 - テストデータ制約の可能性")
+                                result_data = stock_data
+                                
+                            backtest_results = simulate_and_save(result_data, ticker)
+                        else:
+                            logger.warning("backtest_dataが存在しません - フォールバック")
+                            result_data = stock_data
+                            backtest_results = simulate_and_save(result_data, ticker)
                     else:
-                        logger.warning("統合システムの実行結果が空でした。従来システムにフォールバックします。")
+                        logger.warning("統合システムの実行結果が不正でした。従来システムにフォールバックします。")
                         raise Exception("統合システムの実行に失敗")
                 else:
                     logger.warning("統合システムの初期化に失敗しました。従来システムにフォールバックします。")
