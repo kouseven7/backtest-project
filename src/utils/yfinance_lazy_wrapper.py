@@ -10,7 +10,7 @@ yfinanceの初回インポート時のみ遅延を発生させ、
 import importlib.util
 import sys
 import time
-from typing import Any, Optional
+from typing import Any, Optional, Dict
 
 
 # SystemFallbackPolicy統合 (TODO-PERF-001: Phase 1 Stage 2)

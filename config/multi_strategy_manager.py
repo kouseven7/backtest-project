@@ -202,7 +202,7 @@ class MultiStrategyManager:
     def initialize_system(self) -> bool:
         """
         システム初期化 - main.py からの直接呼び出し用エイリアス
-        TODO(tag:phase2, rationale:完全初期化ロジック実装後、initialize_systems()に統合)
+        TODO(tag:phase3, rationale:Production Ready・完全初期化ロジック統合完了)
         """
         try:
             logger.info("MultiStrategyManager基本初期化開始")

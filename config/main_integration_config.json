@@ -1,5 +1,6 @@
 {
   "execution_mode": "hybrid",
+  "system_mode": "production",
   "strategy_selection": {
     "enable_multi_strategy": true,
     "fallback_to_legacy": true,
