@@ -73,12 +73,12 @@ def test_production_readiness():
             print(f"   フォールバック使用率: {stats['fallback_usage_rate']:.1%}")
         
         print("\n=== Production Mode対応テスト完了 ===")
-        print("✅ 全テスト成功")
+        print("[OK] 全テスト成功")
         
         return True
         
     except Exception as e:
-        print(f"❌ テスト失敗: {e}")
+        print(f"[ERROR] テスト失敗: {e}")
         import traceback
         traceback.print_exc()
         return False

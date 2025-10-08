@@ -41,7 +41,7 @@ def phase4b3_complete_integration_system_test() -> Tuple[bool, Dict[str, Any]]:
     try:
         logger.info("Phase 4-B-3-1: Starting complete integration system verification")
         
-        # ✅ Phase 4-B-2成果検証: Excel出力品質確認
+        # [OK] Phase 4-B-2成果検証: Excel出力品質確認
         phase4b2_quality_check = verify_phase4b2_achievements()
         logger.info(f"Phase 4-B-2 quality check: {phase4b2_quality_check}")
         
@@ -49,11 +49,11 @@ def phase4b3_complete_integration_system_test() -> Tuple[bool, Dict[str, Any]]:
 # ORIGINAL: if not phase4b2_quality_check.get('excel_output_success', False):
             logger.warning("Phase 4-B-2 achievements verification failed, continuing with limitations")
         
-        # ✅ 統合システム動作確認: multi_strategy_manager_fixed連携テスト
+        # [OK] 統合システム動作確認: multi_strategy_manager_fixed連携テスト
         integration_result = test_multi_strategy_manager_integration()
         logger.info(f"Integration system test result: {integration_result}")
         
-        # ✅ バックテスト基本理念遵守確認
+        # [OK] バックテスト基本理念遵守確認
         backtest_principle_verification = {
             'actual_backtest_execution': integration_result.get('backtest_executed', False),
             'signal_generation': integration_result.get('signals_generated', 0) > 0,
@@ -62,7 +62,7 @@ def phase4b3_complete_integration_system_test() -> Tuple[bool, Dict[str, Any]]:
 # ORIGINAL: 'excel_output_capability': integration_result.get('excel_output_success', False)
         }
         
-        # ✅ 統合システム品質検証
+        # [OK] 統合システム品質検証
         integration_quality = {
             'multi_strategy_coordination': integration_result.get('strategy_coordination_success', False),
             'risk_management_integration': integration_result.get('risk_management_active', False),
@@ -70,7 +70,7 @@ def phase4b3_complete_integration_system_test() -> Tuple[bool, Dict[str, Any]]:
             'fallback_usage': integration_result.get('fallback_count', 999),  # 目標: 0
         }
         
-        # ✅ Phase 4-B-3-1成功判定
+        # [OK] Phase 4-B-3-1成功判定
         integration_success = (
             backtest_principle_verification.get('actual_backtest_execution', False) and
             backtest_principle_verification.get('signal_generation', False) and
@@ -286,7 +286,7 @@ def test_multi_strategy_manager_integration() -> Dict[str, Any]:
             'fallback_count': 0
         }
         
-        # ✅ main.py実行による統合システム動作確認
+        # [OK] main.py実行による統合システム動作確認
         main_execution_result = verify_main_py_execution()
         
         if main_execution_result.get('execution_success', False):
@@ -302,7 +302,7 @@ def test_multi_strategy_manager_integration() -> Dict[str, Any]:
                 'fallback_count': main_execution_result.get('fallback_count', 0)
             })
         
-        # ✅ 統合システム品質評価
+        # [OK] 統合システム品質評価
         integration_success = (
             integration_result['backtest_executed'] and
             integration_result['trades_count'] >= 35 and
@@ -493,31 +493,31 @@ def phase4b3_integration_test_report(integration_results: Tuple[bool, Dict[str, 
 
 ## 実行サマリー
 - **実行日時**: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-- **統合システムテスト**: {'✅ 成功' if integration_results[0] else '❌ 失敗'}
+- **統合システムテスト**: {'[OK] 成功' if integration_results[0] else '[ERROR] 失敗'}
 
 ## バックテスト基本理念遵守確認
 """
     
     backtest_principle = integration_results[1].get('backtest_principle', {})
     for key, value in backtest_principle.items():
-        status = '✅' if value else '❌'
+        status = '[OK]' if value else '[ERROR]'
         report += f"- **{key}**: {status} {value}\n"
     
     report += "\n## 統合システム品質確認\n"
     integration_quality = integration_results[1].get('integration_quality', {})
     for key, value in integration_quality.items():
         if key == 'fallback_usage':
-            status = '✅' if value <= 1 else '❌'
+            status = '[OK]' if value <= 1 else '[ERROR]'
             report += f"- **{key}**: {status} {value} (目標: ≤1)\n"
         else:
-            status = '✅' if value else '❌'
+            status = '[OK]' if value else '[ERROR]'
             report += f"- **{key}**: {status} {value}\n"
     
     report += "\n## Phase 4-B-2成果維持確認\n"
     phase4b2_maintained = integration_results[1].get('phase4b2_maintained', {})
     for key, value in phase4b2_maintained.items():
         if key not in ['verification_timestamp', 'file_path']:
-            status = '✅' if value else '❌'
+            status = '[OK]' if value else '[ERROR]'
             report += f"- **{key}**: {status} {value}\n"
     
     return report
@@ -542,29 +542,29 @@ if __name__ == "__main__":
         
         # 結果表示
         print("\n" + "="*80)
-        print("🚀 Phase 4-B-3-1: 完全統合システム動作確認 実行完了")
+        print("[ROCKET] Phase 4-B-3-1: 完全統合システム動作確認 実行完了")
         print("="*80)
-        print(f"📊 統合システムテスト結果: {'✅ 成功' if integration_success else '❌ 失敗'}")
+        print(f"[CHART] 統合システムテスト結果: {'[OK] 成功' if integration_success else '[ERROR] 失敗'}")
         
         if integration_success:
             trades_count = integration_results.get('integration_quality', {}).get('fallback_usage', 999)
             fallback_count = integration_results.get('integration_quality', {}).get('fallback_usage', 999)
-            print(f"🎯 バックテスト基本理念: ✅ 完全遵守")
-            print(f"🔗 統合システム連携: ✅ 正常動作")
-            print(f"📈 フォールバック使用: {fallback_count} (目標: ≤1)")
+            print(f"[TARGET] バックテスト基本理念: [OK] 完全遵守")
+            print(f"🔗 統合システム連携: [OK] 正常動作")
+            print(f"[UP] フォールバック使用: {fallback_count} (目標: ≤1)")
         else:
-            print(f"❌ 問題発見: {integration_results.get('error', 'Unknown error')}")
+            print(f"[ERROR] 問題発見: {integration_results.get('error', 'Unknown error')}")
         
         print(f"📄 詳細レポート: {report_file}")
         print("="*80)
         
         # 次工程への移行判定
         if integration_success:
-            print("✅ Phase 4-B-3-2 (real market data統合テスト) への移行準備完了")
+            print("[OK] Phase 4-B-3-2 (real market data統合テスト) への移行準備完了")
         else:
-            print("⚠️  統合システム問題解決後にPhase 4-B-3-2へ移行")
+            print("[WARNING]  統合システム問題解決後にPhase 4-B-3-2へ移行")
             
     except Exception as e:
         logger.error(f"Phase 4-B-3-1 execution failed: {e}")
-        print(f"❌ Phase 4-B-3-1実行エラー: {e}")
+        print(f"[ERROR] Phase 4-B-3-1実行エラー: {e}")
         # TODO(tag:phase4b3, rationale:Phase 4-B-3-1 execution success required)

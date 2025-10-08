@@ -16,13 +16,13 @@ from performance_monitor import PerformanceMonitor
 
 async def demo_performance_monitoring():
     """デモ実行（短期間隔）"""
-    print("🚀 パフォーマンス監視デモ開始")
+    print("[ROCKET] パフォーマンス監視デモ開始")
     
     # 短期間隔設定でテスト実行
     monitor = PerformanceMonitor()
     monitor.config['monitoring_settings']['update_interval_seconds'] = 30  # 30秒間隔
     
-    print("📊 設定確認:")
+    print("[CHART] 設定確認:")
     print(f"  監視間隔: {monitor.config['monitoring_settings']['update_interval_seconds']}秒")
     print(f"  出力ディレクトリ: {monitor.output_dir}")
     print(f"  アラートルール: {len(monitor.performance_alert_manager.alert_rules)}件")
@@ -36,17 +36,17 @@ async def demo_performance_monitoring():
         await asyncio.wait_for(monitor.start_monitoring(), timeout=60)
         
     except asyncio.TimeoutError:
-        print("\n✅ デモ完了（60秒経過）")
+        print("\n[OK] デモ完了（60秒経過）")
         monitor.stop_monitoring()
     except KeyboardInterrupt:
-        print("\n⚠️  ユーザーによる停止")
+        print("\n[WARNING]  ユーザーによる停止")
         monitor.stop_monitoring()
     except Exception as e:
-        print(f"\n❌ エラー発生: {e}")
+        print(f"\n[ERROR] エラー発生: {e}")
         monitor.stop_monitoring()
     
     # 結果確認
-    print("\n📋 監視結果:")
+    print("\n[LIST] 監視結果:")
     status = monitor.get_status()
     print(f"  履歴データ件数: {status['history_count']}")
     print(f"  最後の更新: {status['last_update']}")
@@ -58,7 +58,7 @@ async def demo_performance_monitoring():
         for file_path in output_files[-3:]:  # 最新3件表示
             print(f"    {file_path.name}")
     
-    print("\n🎉 デモ完了")
+    print("\n[SUCCESS] デモ完了")
 
 
 if __name__ == "__main__":

@@ -97,7 +97,7 @@ class DashboardDemo:
         
         def demo_send_notification(alert):
             # コンソールに通知内容表示
-            self.logger.warning(f"🚨 ALERT: {alert.title} ({alert.level.value.upper()})")
+            self.logger.warning(f"[ALERT] ALERT: {alert.title} ({alert.level.value.upper()})")
             self.logger.warning(f"   Message: {alert.message}")
             self.logger.warning(f"   Source: {alert.source}")
             self.logger.warning(f"   Time: {alert.timestamp.strftime('%H:%M:%S')}")
@@ -416,7 +416,7 @@ class DashboardDemo:
             # 現在のメトリクス
             current_summary = self.metrics_collector.get_all_metrics_summary(5)
             
-            print(f"\n📊 デモ状態 [{datetime.now().strftime('%H:%M:%S')}]")
+            print(f"\n[CHART] デモ状態 [{datetime.now().strftime('%H:%M:%S')}]")
             print(f"   収集メトリクス: {collection_stats['total_collected']}")
             print(f"   アクティブアラート: {alert_stats['active_count']}")
             print(f"   総アラート数: {alert_stats['total_generated']}")
@@ -438,7 +438,7 @@ class DashboardDemo:
         if metric_type == "quality" and hasattr(metric_data, 'overall_score'):
             if metric_data.overall_score < 0.7:
                 self.logger.warning(
-                    f"🔍 低品質検出: {metric_data.symbol} = {metric_data.overall_score:.2f}"
+                    f"[SEARCH] 低品質検出: {metric_data.symbol} = {metric_data.overall_score:.2f}"
                 )
                 
     def stop_demo(self):

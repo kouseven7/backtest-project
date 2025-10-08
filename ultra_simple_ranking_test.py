@@ -139,7 +139,7 @@ class UltraSimpleRanking:
 def test_ultra_simple_ranking():
     """UltraSimpleRankingの基本動作テスト"""
     
-    print("🔧 Ultra Simple Ranking Test 開始")
+    print("[TOOL] Ultra Simple Ranking Test 開始")
     print("=" * 50)
     
     # テスト用銘柄リスト（DSSMSと同じ）
@@ -152,7 +152,7 @@ def test_ultra_simple_ranking():
         initial_symbol = ranking.get_current_symbol()
         print(f"  初期銘柄: {initial_symbol}")
         assert initial_symbol is not None, "初期銘柄がNoneです！"
-        print("  ✅ 初期化成功")
+        print("  [OK] 初期化成功")
         
         # Step 2: 基本切替テスト（短期間）
         print("\nStep 2: 基本切替テスト（30日間）")
@@ -162,7 +162,7 @@ def test_ultra_simple_ranking():
         print(f"  成功: {short_results['success']}")
         assert short_results['success'], "短期間テスト失敗"
         assert short_results['switch_count'] == 3, f"期待3回、実際{short_results['switch_count']}回"
-        print("  ✅ 基本切替テスト成功")
+        print("  [OK] 基本切替テスト成功")
         
         # Step 3: 長期間テスト（DSSMS相当）
         print("\nStep 3: 長期間テスト（100日間）")
@@ -173,7 +173,7 @@ def test_ultra_simple_ranking():
         print(f"  成功: {long_results['success']}")
         assert long_results['success'], "長期間テスト失敗"
         assert long_results['switch_count'] == 10, f"期待10回、実際{long_results['switch_count']}回"
-        print("  ✅ 長期間テスト成功")
+        print("  [OK] 長期間テスト成功")
         
         # Step 4: None値検証
         print("\nStep 4: None値絶対阻止テスト")
@@ -184,7 +184,7 @@ def test_ultra_simple_ranking():
                 
         print(f"  None値検出回数: {none_count}回")
         assert none_count == 0, f"None値が{none_count}回検出されました！"
-        print("  ✅ None値阻止テスト成功")
+        print("  [OK] None値阻止テスト成功")
         
         # Step 5: 決定論的動作テスト
         print("\nStep 5: 決定論的動作テスト（再現性確認）")
@@ -203,19 +203,19 @@ def test_ultra_simple_ranking():
         print(f"  切替回数一致: {same_switch_count}")
         print(f"  銘柄パターン一致: {same_pattern}")
         assert same_switch_count and same_pattern, "決定論的動作が保証されていません"
-        print("  ✅ 決定論的動作テスト成功")
+        print("  [OK] 決定論的動作テスト成功")
         
         print("\n" + "=" * 50)
-        print("🎉 Ultra Simple Ranking Test 全テスト成功！")
+        print("[SUCCESS] Ultra Simple Ranking Test 全テスト成功！")
         print("=" * 50)
         
         # 結果サマリー
-        print(f"\n📊 テスト結果サマリー:")
-        print(f"  - 基本動作: ✅ 正常")
-        print(f"  - 切替機能: ✅ 正常（期待通り10回）")
-        print(f"  - None値阻止: ✅ 正常（0回検出）")
-        print(f"  - 決定論的動作: ✅ 正常（完全再現）")
-        print(f"  - 外部依存: ✅ なし")
+        print(f"\n[CHART] テスト結果サマリー:")
+        print(f"  - 基本動作: [OK] 正常")
+        print(f"  - 切替機能: [OK] 正常（期待通り10回）")
+        print(f"  - None値阻止: [OK] 正常（0回検出）")
+        print(f"  - 決定論的動作: [OK] 正常（完全再現）")
+        print(f"  - 外部依存: [OK] なし")
         
         return {
             'test_success': True,
@@ -226,7 +226,7 @@ def test_ultra_simple_ranking():
         }
         
     except AssertionError as e:
-        print(f"\n❌ テスト失敗: {e}")
+        print(f"\n[ERROR] テスト失敗: {e}")
         return {
             'test_success': False,
             'error': str(e)
@@ -248,13 +248,13 @@ if __name__ == "__main__":
     
     test_results = test_ultra_simple_ranking()
     
-    print(f"\n🎯 診断結果:")
+    print(f"\n[TARGET] 診断結果:")
     if test_results['test_success']:
-        print("✅ 超シンプル版は正常動作")
+        print("[OK] 超シンプル版は正常動作")
         print("➡️  問題はDSSMSの複雑性に起因する可能性が高い")
         print("➡️  局所的修正で解決可能と判断")
     else:
-        print("❌ 超シンプル版でも問題発生")
+        print("[ERROR] 超シンプル版でも問題発生")
         print("➡️  より根本的な問題が存在")
         print("➡️  環境・Python・OS レベルの調査が必要")
         

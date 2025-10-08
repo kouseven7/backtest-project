@@ -29,7 +29,7 @@ except ImportError as e:
 
 def generate_simple_test_data():
     """簡単なテスト用データを生成"""
-    print("📊 Generating test data...")
+    print("[CHART] Generating test data...")
     
     # 戦略リターンデータを生成
     np.random.seed(42)
@@ -53,7 +53,7 @@ def generate_simple_test_data():
 
 def demo_basic_risk_calculation():
     """基本的なリスク計算のデモ"""
-    print("\n🔍 Demo: Basic Risk Calculation")
+    print("\n[SEARCH] Demo: Basic Risk Calculation")
     print("=" * 50)
     
     try:
@@ -83,7 +83,7 @@ def demo_basic_risk_calculation():
             signal_integrator=signal_integrator
         )
         
-        print("✅ Portfolio Risk Manager initialized successfully")
+        print("[OK] Portfolio Risk Manager initialized successfully")
         
         # リスク評価実行
         print("🔄 Running risk assessment...")
@@ -91,14 +91,14 @@ def demo_basic_risk_calculation():
             returns_df, weights_dict
         )
         
-        print(f"\n📊 Portfolio Risk Assessment Results:")
-        print(f"  📋 Total strategies: {len(weights_dict)}")
-        print(f"  ⚠️  Needs adjustment: {needs_adjustment}")
-        print(f"  📈 Risk metrics calculated: {len(risk_metrics)}")
+        print(f"\n[CHART] Portfolio Risk Assessment Results:")
+        print(f"  [LIST] Total strategies: {len(weights_dict)}")
+        print(f"  [WARNING]  Needs adjustment: {needs_adjustment}")
+        print(f"  [UP] Risk metrics calculated: {len(risk_metrics)}")
         
         # 各リスク指標の詳細
         if risk_metrics:
-            print(f"\n📈 Risk Metrics Details:")
+            print(f"\n[UP] Risk Metrics Details:")
             for metric_name, metric in risk_metrics.items():
                 status = "🔴 BREACH" if metric.is_breached else "🟢 OK"
                 print(f"  {metric_name:20s}: {metric.current_value:.4f} / {metric.limit_value:.4f} {status}")
@@ -108,7 +108,7 @@ def demo_basic_risk_calculation():
         return risk_manager, returns_df, weights_dict, needs_adjustment
         
     except Exception as e:
-        print(f"❌ Error in basic risk calculation: {e}")
+        print(f"[ERROR] Error in basic risk calculation: {e}")
         import traceback
         traceback.print_exc()
         return None, None, None, False
@@ -121,11 +121,11 @@ def demo_risk_adjustment():
     risk_manager, returns_df, weights_dict, needs_adjustment = demo_basic_risk_calculation()
     
     if not risk_manager:
-        print("❌ Risk manager initialization failed")
+        print("[ERROR] Risk manager initialization failed")
         return None
     
     # 強制的に調整が必要な状況を作成（集中度を高める）
-    print(f"\n📊 Creating high concentration scenario...")
+    print(f"\n[CHART] Creating high concentration scenario...")
     test_weights = {
         'momentum_strategy': 0.6,     # 60%に集中
         'mean_reversion_strategy': 0.15,
@@ -133,7 +133,7 @@ def demo_risk_adjustment():
         'arbitrage_strategy': 0.10
     }
     
-    print(f"\n📊 High concentration test weights:")
+    print(f"\n[CHART] High concentration test weights:")
     for strategy, weight in test_weights.items():
         print(f"  {strategy:25s}: {weight:.3f}")
     
@@ -143,7 +143,7 @@ def demo_risk_adjustment():
         returns_df, test_weights
     )
     
-    print(f"\n⚠️  High concentration assessment:")
+    print(f"\n[WARNING]  High concentration assessment:")
     print(f"  Needs adjustment: {needs_adjustment}")
     
     if needs_adjustment:
@@ -159,19 +159,19 @@ def demo_risk_adjustment():
         print(f"  Effectiveness: {adjustment_result.effectiveness_score:.3f}")
         print(f"  Reason: {adjustment_result.adjustment_reason}")
         
-        print(f"\n📊 Weight Changes:")
+        print(f"\n[CHART] Weight Changes:")
         weight_changes = adjustment_result.get_weight_changes()
         for strategy, change in weight_changes.items():
-            direction = "📈" if change > 0 else "📉" if change < 0 else "➡️"
+            direction = "[UP]" if change > 0 else "[DOWN]" if change < 0 else "➡️"
             print(f"  {strategy:25s}: {change:+.3f} {direction}")
         
-        print(f"\n📊 Final adjusted weights:")
+        print(f"\n[CHART] Final adjusted weights:")
         for strategy, weight in adjustment_result.adjusted_weights.items():
             print(f"  {strategy:25s}: {weight:.3f}")
         
         return adjustment_result
     else:
-        print("✅ No adjustment needed")
+        print("[OK] No adjustment needed")
         return None
 
 def demo_risk_monitoring():
@@ -182,11 +182,11 @@ def demo_risk_monitoring():
     risk_manager, returns_df, weights_dict, _ = demo_basic_risk_calculation()
     
     if not risk_manager:
-        print("❌ Risk manager not available for monitoring demo")
+        print("[ERROR] Risk manager not available for monitoring demo")
         return
     
     # 複数回のリスク評価を実行（履歴を蓄積）
-    print("📈 Building risk assessment history...")
+    print("[UP] Building risk assessment history...")
     
     for i in range(3):
         # ウェイトを少しずつ変更
@@ -209,30 +209,30 @@ def demo_risk_monitoring():
                 returns_df, test_weights, risk_metrics
             )
         
-        print(f"  📊 Assessment {i+1} completed - Adjustment needed: {needs_adjustment}")
+        print(f"  [CHART] Assessment {i+1} completed - Adjustment needed: {needs_adjustment}")
     
     # サマリー取得
     print("\n🔄 Generating risk summary...")
     summary = risk_manager.get_risk_summary()
     
-    print(f"\n📊 Risk Summary:")
+    print(f"\n[CHART] Risk Summary:")
     print(f"  Status: {summary.get('status', 'unknown')}")
     print(f"  Adjustment History Count: {summary.get('adjustment_history_count', 0)}")
     
     # リスク指標サマリー
     if 'risk_metrics' in summary:
-        print(f"\n📈 Current Risk Metrics:")
+        print(f"\n[UP] Current Risk Metrics:")
         for metric_name, metric_data in summary['risk_metrics'].items():
             status = "🔴" if metric_data.get('is_breached', False) else "🟢"
             print(f"  {metric_name:20s}: {metric_data.get('current_value', 0):.4f} {status}")
     
     # 制限違反
     if summary.get('breaches'):
-        print(f"\n⚠️  Current Breaches:")
+        print(f"\n[WARNING]  Current Breaches:")
         for breach in summary['breaches']:
             print(f"  - {breach['metric']}: Severity {breach['severity']:.3f} ({breach['limit_type']})")
     else:
-        print(f"\n✅ No current risk limit breaches")
+        print(f"\n[OK] No current risk limit breaches")
     
     # 最新調整情報
     if summary.get('last_adjustment'):
@@ -248,13 +248,13 @@ def demo_risk_monitoring():
         if risk_manager.save_risk_report(report_path):
             print(f"\n💾 Risk report saved to: {report_path}")
         else:
-            print(f"\n❌ Failed to save risk report")
+            print(f"\n[ERROR] Failed to save risk report")
     except Exception as e:
-        print(f"\n⚠️  Report save error: {e}")
+        print(f"\n[WARNING]  Report save error: {e}")
 
 def main():
     """メインデモ実行"""
-    print("🎯 Portfolio Risk Management System - Simple Demo")
+    print("[TARGET] Portfolio Risk Management System - Simple Demo")
     print("=" * 60)
     print("3-3-3「ポートフォリオレベルのリスク調整機能」")
     print("=" * 60)
@@ -269,13 +269,13 @@ def main():
         # 3. リスクモニタリング
         demo_risk_monitoring()
         
-        print(f"\n🎉 All demos completed successfully!")
-        print(f"📊 Portfolio risk management system is operational")
+        print(f"\n[SUCCESS] All demos completed successfully!")
+        print(f"[CHART] Portfolio risk management system is operational")
         
     except KeyboardInterrupt:
         print(f"\n⏹️  Demo interrupted by user")
     except Exception as e:
-        print(f"\n❌ Demo failed: {e}")
+        print(f"\n[ERROR] Demo failed: {e}")
         import traceback
         traceback.print_exc()
 

@@ -57,7 +57,7 @@ class Problem18KPIEvaluator:
             'directory_count': 0
         }
         
-        print("📊 Current state measurement starting...")
+        print("[CHART] Current state measurement starting...")
         
         # ファイル走査
         for root, dirs, files in os.walk(self.project_root):
@@ -129,7 +129,7 @@ class Problem18KPIEvaluator:
     def calculate_improvements(self) -> Dict[str, Any]:
         """改善効果計算"""
         if not self.baseline_data:
-            print("⚠️  Baseline data not available")
+            print("[WARNING]  Baseline data not available")
             return {}
         
         baseline = self.baseline_data
@@ -271,7 +271,7 @@ class Problem18KPIEvaluator:
         overall_score = achievements.get('overall_score', 0)
         if overall_score >= 80:
             recommendations.append(
-                "✅ Problem 18実装成功: 高い効果を達成。"
+                "[OK] Problem 18実装成功: 高い効果を達成。"
                 "定期実行による継続的最適化を推奨。"
             )
         
@@ -297,7 +297,7 @@ class Problem18KPIEvaluator:
             f"Baseline Date: {self.kpi_results.get('baseline_date', 'N/A')}",
             "=" * 80,
             "",
-            "📊 Current State vs Baseline:",
+            "[CHART] Current State vs Baseline:",
             f"  Files: {current.get('total_files', 0):,} → {baseline.get('total_files', 0):,} "
             f"({improvements.get('file_count_reduction', 0):+,} files, "
             f"{improvements.get('file_count_reduction_percent', 0):+.1f}%)",
@@ -307,7 +307,7 @@ class Problem18KPIEvaluator:
             f"  Cleanup Candidates: {current.get('cleanup_candidates', 0):,}",
             f"  Protected Files: {current.get('protected_files', 0):,}",
             "",
-            "🎯 Achievement Status:",
+            "[TARGET] Achievement Status:",
         ]
         
         # 達成状況詳細
@@ -315,7 +315,7 @@ class Problem18KPIEvaluator:
             if metric in ['overall_score', 'overall_grade']:
                 continue
             
-            achieved_mark = "✅" if status['achieved'] else "❌"
+            achieved_mark = "[OK]" if status['achieved'] else "[ERROR]"
             report_lines.append(
                 f"  {achieved_mark} {metric}: {status['actual']:.1f} / {status['target']:.1f} "
                 f"(Score: {status['score']:.1f})"
@@ -330,7 +330,7 @@ class Problem18KPIEvaluator:
             f"  Score: {overall_score:.1f}/100",
             f"  Grade: {overall_grade}",
             "",
-            "📋 Recommendations:",
+            "[LIST] Recommendations:",
         ])
         
         # 推奨事項
@@ -340,19 +340,19 @@ class Problem18KPIEvaluator:
         # Problem 18 特有の成果
         report_lines.extend([
             "",
-            "🚀 Problem 18 Specific Achievements:",
-            "  ✅ FileCleanupManager システム実装完了",
-            "  ✅ DSSMS Core 85.0点エンジン保護システム実装",
-            "  ✅ 自動ファイル分類・整理機能実装",
-            "  ✅ アーカイブ・復元システム実装",
-            "  ✅ 包括的ファイル管理ポリシー策定",
-            "  ✅ .gitignore 最適化完了",
+            "[ROCKET] Problem 18 Specific Achievements:",
+            "  [OK] FileCleanupManager システム実装完了",
+            "  [OK] DSSMS Core 85.0点エンジン保護システム実装",
+            "  [OK] 自動ファイル分類・整理機能実装",
+            "  [OK] アーカイブ・復元システム実装",
+            "  [OK] 包括的ファイル管理ポリシー策定",
+            "  [OK] .gitignore 最適化完了",
             "",
             "🛡️  DSSMS Core Protection Verification:",
-            "  • dssms_unified_output_engine.py: PROTECTED ✅",
-            "  • Problem 8 Performance Optimizer: PROTECTED ✅",
-            "  • Core Configuration Files: PROTECTED ✅",
-            "  • Essential Execution Scripts: PROTECTED ✅"
+            "  • dssms_unified_output_engine.py: PROTECTED [OK]",
+            "  • Problem 8 Performance Optimizer: PROTECTED [OK]",
+            "  • Core Configuration Files: PROTECTED [OK]",
+            "  • Essential Execution Scripts: PROTECTED [OK]"
         ])
         
         return "\n".join(report_lines)
@@ -381,16 +381,16 @@ def main():
     
     evaluator = Problem18KPIEvaluator(project_root)
     
-    print("🎯 Problem 18 KPI Evaluation Starting...")
+    print("[TARGET] Problem 18 KPI Evaluation Starting...")
     
     # 現状測定
     current_metrics = evaluator.measure_current_state()
-    print(f"📊 Current: {current_metrics['total_files']:,} files, {current_metrics['total_size_mb']:.1f}MB")
+    print(f"[CHART] Current: {current_metrics['total_files']:,} files, {current_metrics['total_size_mb']:.1f}MB")
     
     # 改善効果計算
     improvements = evaluator.calculate_improvements()
     if improvements:
-        print(f"📈 Improvement: {improvements.get('file_count_reduction', 0):+,} files "
+        print(f"[UP] Improvement: {improvements.get('file_count_reduction', 0):+,} files "
               f"({improvements.get('file_count_reduction_percent', 0):+.1f}%), "
               f"{improvements.get('size_reduction_mb', 0):+.1f}MB")
     

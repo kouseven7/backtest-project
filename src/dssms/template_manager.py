@@ -338,7 +338,7 @@ class TemplateManager:
         <div class="content">
             <!-- パフォーマンス概要セクション -->
             <div class="section">
-                <h2 data-icon="📊">パフォーマンス概要</h2>
+                <h2 data-icon="[CHART]">パフォーマンス概要</h2>
                 <div class="metrics-grid">
                     {{performance_metrics}}
                 </div>
@@ -352,7 +352,7 @@ class TemplateManager:
             
             <!-- 取引履歴セクション -->
             <div class="section">
-                <h2 data-icon="📋">取引履歴</h2>
+                <h2 data-icon="[LIST]">取引履歴</h2>
                 <div class="table-container">
                     {{trades_table}}
                 </div>
@@ -682,7 +682,7 @@ class TemplateManager:
         
         return f"""
             <div class="section">
-                <h2 data-icon="🎯">DSSMS分析</h2>
+                <h2 data-icon="[TARGET]">DSSMS分析</h2>
                 <div class="metrics-grid">
                     {metrics_html}
                 </div>
@@ -727,7 +727,7 @@ class TemplateManager:
         
         return f"""
             <div class="section">
-                <h2 data-icon="✅">品質保証情報</h2>
+                <h2 data-icon="[OK]">品質保証情報</h2>
                 <p>品質向上処理: {'適用済み' if qa.enhancement_applied else '未適用'}</p>
                 <div class="metrics-grid">
                     {metrics_html}

@@ -128,7 +128,7 @@ class MultiStrategyManager:
             if stock_data is None:
                 raise ValueError("Stock data is required for backtest execution")
             
-            # ✅ 必須: 最適化パラメータの取得
+            # [OK] 必須: 最適化パラメータの取得
             try:
                 from config.optimized_parameters import OptimizedParameterManager
                 param_manager = OptimizedParameterManager()
@@ -137,7 +137,7 @@ class MultiStrategyManager:
                 logger.error(f"Failed to load optimized parameters: {e}")
                 optimized_params = {}
             
-            # ✅ 必須: 戦略の実際のbacktest()実行
+            # [OK] 必須: 戦略の実際のbacktest()実行
             integrated_results = stock_data.copy()
             strategy_performances = {}
             combined_signals = {}
@@ -166,7 +166,7 @@ class MultiStrategyManager:
                     continue
                     
                 try:
-                    # ✅ 基本理念遵守: 実際の戦略クラス取得・インスタンス化
+                    # [OK] 基本理念遵守: 実際の戦略クラス取得・インスタンス化
                     strategy_class = self._get_strategy_class(strategy_name, module_name)
                     params = optimized_params.get(strategy_name, {})
                     
@@ -192,11 +192,11 @@ class MultiStrategyManager:
                             price_column="Adj Close"
                         )
                     
-                    # ✅ 基本理念遵守: 実際のbacktest()実行
+                    # [OK] 基本理念遵守: 実際のbacktest()実行
                     logger.info(f"Executing backtest for strategy: {strategy_name}")
                     strategy_result = strategy_instance.backtest()
                     
-                    # ✅ 基本理念違反検出
+                    # [OK] 基本理念違反検出
                     self._validate_backtest_output(strategy_result, strategy_name)
                     
                     # シグナル統合処理

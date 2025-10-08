@@ -17,7 +17,7 @@ from src.dssms.perfect_order_detector import PerfectOrderDetector
 
 def main():
     print("=" * 60)
-    print("🚀 DSSMS Phase 1 Simple Demo")
+    print("[ROCKET] DSSMS Phase 1 Simple Demo")
     print("=" * 60)
     
     # 1. 銘柄スクリーニング
@@ -118,12 +118,12 @@ def main():
     # 推奨銘柄
     if ranking:
         top_symbol = ranking[0]
-        print(f"\n🎯 推奨銘柄: {top_symbol['symbol']}")
+        print(f"\n[TARGET] 推奨銘柄: {top_symbol['symbol']}")
         print(f"   総合スコア: {top_symbol['composite_score']:.3f}")
         print(f"   優先度レベル: {top_symbol['priority_level']}")
     
     print("\n" + "=" * 60)
-    print("✅ DSSMS Phase 1 Demo 完了")
+    print("[OK] DSSMS Phase 1 Demo 完了")
     print("=" * 60)
 
 if __name__ == "__main__":

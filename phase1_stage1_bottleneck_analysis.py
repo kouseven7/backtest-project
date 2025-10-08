@@ -45,19 +45,19 @@ print(f"{{(end - start) * 1000:.2f}}")
             
             if result.returncode == 0:
                 import_time = float(result.stdout.strip())
-                print(f"  📊 {description or module_name}: {import_time:.1f}ms")
+                print(f"  [CHART] {description or module_name}: {import_time:.1f}ms")
                 return import_time
             else:
-                print(f"  ❌ {description or module_name}: インポートエラー")
+                print(f"  [ERROR] {description or module_name}: インポートエラー")
                 return 0.0
                 
         except Exception as e:
-            print(f"  ❌ {description or module_name}: 測定エラー ({e})")
+            print(f"  [ERROR] {description or module_name}: 測定エラー ({e})")
             return 0.0
     
     def analyze_yfinance_usage(self):
         """yfinance使用箇所の詳細分析"""
-        print("🔍 yfinance使用箇所詳細分析中...")
+        print("[SEARCH] yfinance使用箇所詳細分析中...")
         
         # yfinanceインポート時間測定
         yfinance_time = self.measure_import_time('yfinance', 'yfinance基本インポート')
@@ -88,13 +88,13 @@ print(f"{{(end - start) * 1000:.2f}}")
             'lazy_import_priority': 'high' if yfinance_time > 500 else 'medium'
         }
         
-        print(f"  📊 yfinance使用ファイル: {len(yfinance_files)}個")
-        print(f"  📊 主要使用箇所: {len(key_usage_files)}個")
-        print(f"  📊 期待削減効果: {yfinance_time * 0.75:.0f}ms")
+        print(f"  [CHART] yfinance使用ファイル: {len(yfinance_files)}個")
+        print(f"  [CHART] 主要使用箇所: {len(key_usage_files)}個")
+        print(f"  [CHART] 期待削減効果: {yfinance_time * 0.75:.0f}ms")
     
     def analyze_openpyxl_usage(self):
         """openpyxl使用箇所の詳細分析"""
-        print("🔍 openpyxl使用箇所詳細分析中...")
+        print("[SEARCH] openpyxl使用箇所詳細分析中...")
         
         # openpyxlインポート時間測定
         openpyxl_time = self.measure_import_time('openpyxl', 'openpyxl基本インポート')
@@ -128,14 +128,14 @@ print(f"{{(end - start) * 1000:.2f}}")
             'lazy_import_priority': 'high' if openpyxl_time > 100 else 'medium'
         }
         
-        print(f"  📊 openpyxl使用ファイル: {len(openpyxl_files)}個")
+        print(f"  [CHART] openpyxl使用ファイル: {len(openpyxl_files)}個")
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
-# ORIGINAL: print(f"  📊 Excel出力ファイル: {len(excel_output_files)}個")
-        print(f"  📊 期待削減効果: {openpyxl_time * 0.76:.0f}ms")
+# ORIGINAL: print(f"  [CHART] Excel出力ファイル: {len(excel_output_files)}個")
+        print(f"  [CHART] 期待削減効果: {openpyxl_time * 0.76:.0f}ms")
     
     def analyze_lazy_loader_remnants(self):
         """lazy_loader残存参照の完全分析"""
-        print("🔍 lazy_loader残存参照完全分析中...")
+        print("[SEARCH] lazy_loader残存参照完全分析中...")
         
         # lazy_loader関連ファイル検索
         lazy_loader_files = []
@@ -171,13 +171,13 @@ print(f"{{(end - start) * 1000:.2f}}")
             'removal_priority': 'high' if len(lazy_loader_references) > 0 else 'low'
         }
         
-        print(f"  📊 lazy_loader参照ファイル: {len(lazy_loader_files)}個")
-        print(f"  📊 具体的参照箇所: {len(lazy_loader_references)}箇所")
-        print(f"  💡 lazy_import_manager存在: {'✅' if lazy_manager_exists else '❌'}")
+        print(f"  [CHART] lazy_loader参照ファイル: {len(lazy_loader_files)}個")
+        print(f"  [CHART] 具体的参照箇所: {len(lazy_loader_references)}箇所")
+        print(f"  [IDEA] lazy_import_manager存在: {'[OK]' if lazy_manager_exists else '[ERROR]'}")
     
     def create_integration_plan(self):
         """遅延インポート統合計画の策定"""
-        print("📋 遅延インポート統合計画策定中...")
+        print("[LIST] 遅延インポート統合計画策定中...")
         
         yf_time = self.results['yfinance_analysis']['import_time_ms']
         xl_time = self.results['openpyxl_analysis']['import_time_ms']
@@ -215,13 +215,13 @@ print(f"{{(end - start) * 1000:.2f}}")
         
         self.results['integration_plan'] = integration_plan
         
-        print(f"  🎯 yfinance削減目標: {yf_time:.0f}ms → 200ms ({yf_time-200:.0f}ms削減)")
-        print(f"  🎯 openpyxl削減目標: {xl_time:.0f}ms → 50ms ({xl_time-50:.0f}ms削減)")
-        print(f"  🎯 総削減期待値: {integration_plan['total_expected_reduction']:.0f}ms")
+        print(f"  [TARGET] yfinance削減目標: {yf_time:.0f}ms → 200ms ({yf_time-200:.0f}ms削減)")
+        print(f"  [TARGET] openpyxl削減目標: {xl_time:.0f}ms → 50ms ({xl_time-50:.0f}ms削減)")
+        print(f"  [TARGET] 総削減期待値: {integration_plan['total_expected_reduction']:.0f}ms")
     
     def assess_implementation_risks(self):
         """実装リスクの評価"""
-        print("⚠️ 実装リスク評価中...")
+        print("[WARNING] 実装リスク評価中...")
         
         risks = {
             'high_risk': [],
@@ -267,27 +267,27 @@ print(f"{{(end - start) * 1000:.2f}}")
         
         # サマリー表示
         print("\n" + "="*60)
-        print("📊 Stage 1: 現状ボトルネック実測・統合計画策定 完了")
+        print("[CHART] Stage 1: 現状ボトルネック実測・統合計画策定 完了")
         print("="*60)
         
         yf_reduction = self.results['integration_plan']['phase1_targets']['yfinance']['reduction_ms']
         xl_reduction = self.results['integration_plan']['phase1_targets']['openpyxl']['reduction_ms']
         total_reduction = self.results['integration_plan']['total_expected_reduction']
         
-        print(f"🎯 Phase 1期待効果:")
+        print(f"[TARGET] Phase 1期待効果:")
         print(f"  • yfinance最適化: {yf_reduction:.0f}ms削減")
         print(f"  • openpyxl最適化: {xl_reduction:.0f}ms削減")
         print(f"  • 総削減効果: {total_reduction:.0f}ms")
-        print(f"  • 実用性評価: {'✅ 目標800ms達成可能' if total_reduction >= 800 else '⚠️ 目標未達のリスク'}")
+        print(f"  • 実用性評価: {'[OK] 目標800ms達成可能' if total_reduction >= 800 else '[WARNING] 目標未達のリスク'}")
         
         print(f"\n📄 詳細分析結果: {report_file}")
-        print("🚀 Stage 2: yfinance遅延インポート統合実装 準備完了")
+        print("[ROCKET] Stage 2: yfinance遅延インポート統合実装 準備完了")
         
         return report_file
 
 def main():
     """Stage 1メイン実行"""
-    print("🚀 TODO-PERF-001 Phase 1 Stage 1: 現状ボトルネック実測開始")
+    print("[ROCKET] TODO-PERF-001 Phase 1 Stage 1: 現状ボトルネック実測開始")
     print("="*80)
     
     analyzer = Phase1BottleneckAnalyzer()

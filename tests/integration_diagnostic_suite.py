@@ -36,7 +36,7 @@ class MainPyIntegrationDiagnosticSuite:
         """
         try:
             print("="*80)
-            print("🧪 TODO #7: main.py統合システム動作確認テスト実行開始")
+            print("[TEST] TODO #7: main.py統合システム動作確認テスト実行開始")
             print("="*80)
             
             # Phase 1: 基本動作確認テスト
@@ -81,7 +81,7 @@ class MainPyIntegrationDiagnosticSuite:
         Phase 1: 基本動作確認テスト
         バックテスト基本理念遵守: データ取得・前処理の実際動作確認
         """
-        print("\n🔍 Phase 1: 基本動作確認テスト実行中...")
+        print("\n[SEARCH] Phase 1: 基本動作確認テスト実行中...")
         
         phase1_results = {
             'phase_name': 'Phase 1: Basic Operation',
@@ -122,15 +122,15 @@ class MainPyIntegrationDiagnosticSuite:
             # ステータス判定
             if len(phase1_results['violations']) == 0:
                 phase1_results['status'] = 'passed'
-                print("✅ Phase 1: 基本動作確認 - 正常")
+                print("[OK] Phase 1: 基本動作確認 - 正常")
             else:
                 phase1_results['status'] = 'failed'
-                print("❌ Phase 1: 基本動作確認 - 異常検出")
+                print("[ERROR] Phase 1: 基本動作確認 - 異常検出")
             
         except Exception as e:
             phase1_results['status'] = 'error'
             phase1_results['error'] = str(e)
-            print(f"❌ Phase 1: エラー発生 - {e}")
+            print(f"[ERROR] Phase 1: エラー発生 - {e}")
         
         return phase1_results
     
@@ -139,7 +139,7 @@ class MainPyIntegrationDiagnosticSuite:
         Phase 2: 個別戦略動作確認テスト
         バックテスト基本理念遵守: 実際の戦略backtest()実行確認
         """
-        print("\n🔍 Phase 2: 個別戦略動作確認テスト実行中...")
+        print("\n[SEARCH] Phase 2: 個別戦略動作確認テスト実行中...")
         
         phase2_results = {
             'phase_name': 'Phase 2: Individual Strategy',
@@ -188,7 +188,7 @@ class MainPyIntegrationDiagnosticSuite:
                             [f"{strategy_name}: {v}" for v in compliance_check['violations']]
                         )
                     
-                    print(f"✅ {strategy_name}: エントリー {phase2_results['strategy_results'][strategy_name]['entries']}回, エグジット {phase2_results['strategy_results'][strategy_name]['exits']}回")
+                    print(f"[OK] {strategy_name}: エントリー {phase2_results['strategy_results'][strategy_name]['entries']}回, エグジット {phase2_results['strategy_results'][strategy_name]['exits']}回")
                     
                 except Exception as e:
                     phase2_results['strategy_results'][strategy_name] = {
@@ -196,20 +196,20 @@ class MainPyIntegrationDiagnosticSuite:
                         'compliance': False
                     }
                     phase2_results['violations'].append(f"{strategy_name}: Execution failed - {e}")
-                    print(f"❌ {strategy_name}: 実行エラー - {e}")
+                    print(f"[ERROR] {strategy_name}: 実行エラー - {e}")
             
             # ステータス判定
             if phase2_results['backtest_principle_compliance'] and len(phase2_results['violations']) == 0:
                 phase2_results['status'] = 'passed'
-                print("✅ Phase 2: 個別戦略動作確認 - 正常")
+                print("[OK] Phase 2: 個別戦略動作確認 - 正常")
             else:
                 phase2_results['status'] = 'failed'
-                print("❌ Phase 2: 個別戦略動作確認 - 基本理念違反検出")
+                print("[ERROR] Phase 2: 個別戦略動作確認 - 基本理念違反検出")
             
         except Exception as e:
             phase2_results['status'] = 'error'
             phase2_results['error'] = str(e)
-            print(f"❌ Phase 2: エラー発生 - {e}")
+            print(f"[ERROR] Phase 2: エラー発生 - {e}")
         
         return phase2_results
     
@@ -218,7 +218,7 @@ class MainPyIntegrationDiagnosticSuite:
         Phase 3: 統合システム動作確認テスト（メインテスト）
         バックテスト基本理念遵守: 統合でも実際のbacktest実行確認
         """
-        print("\n🔍 Phase 3: 統合システム動作確認テスト実行中...")
+        print("\n[SEARCH] Phase 3: 統合システム動作確認テスト実行中...")
         
         phase3_results = {
             'phase_name': 'Phase 3: Integration System',
@@ -284,15 +284,15 @@ class MainPyIntegrationDiagnosticSuite:
                 exit_integration_quality['assessment'] in ['excellent', 'good'] and
                 forced_liquidation_stats['health_status'] in ['healthy', 'acceptable']):
                 phase3_results['status'] = 'passed'
-                print("✅ Phase 3: 統合システム動作確認 - 正常（TODO #2, #3修正効果確認）")
+                print("[OK] Phase 3: 統合システム動作確認 - 正常（TODO #2, #3修正効果確認）")
             else:
                 phase3_results['status'] = 'failed'
-                print("❌ Phase 3: 統合システム動作確認 - 問題検出")
+                print("[ERROR] Phase 3: 統合システム動作確認 - 問題検出")
             
         except Exception as e:
             phase3_results['status'] = 'error'
             phase3_results['error'] = str(e)
-            print(f"❌ Phase 3: エラー発生 - {e}")
+            print(f"[ERROR] Phase 3: エラー発生 - {e}")
         
         return phase3_results
     
@@ -301,7 +301,7 @@ class MainPyIntegrationDiagnosticSuite:
         Phase 4: 重み判断システム確認テスト
         バックテスト基本理念遵守: TODO #1修正効果確認
         """
-        print("\n🔍 Phase 4: 重み判断システム確認テスト実行中...")
+        print("\n[SEARCH] Phase 4: 重み判断システム確認テスト実行中...")
         
         phase4_results = {
             'phase_name': 'Phase 4: Weight Judgment System',
@@ -334,7 +334,7 @@ class MainPyIntegrationDiagnosticSuite:
                     'system_functionality': 'restored'
                 }
                 
-                print("✅ MultiStrategyManager: インポート・初期化成功")
+                print("[OK] MultiStrategyManager: インポート・初期化成功")
                 
             except SyntaxError as e:
                 phase4_results['multi_strategy_manager'] = {
@@ -346,7 +346,7 @@ class MainPyIntegrationDiagnosticSuite:
                     'remaining_syntax_issues': str(e)
                 }
                 phase4_results['violations'].append(f"TODO #1 not fully resolved: {e}")
-                print(f"❌ MultiStrategyManager: シンタックスエラー未解決 - {e}")
+                print(f"[ERROR] MultiStrategyManager: シンタックスエラー未解決 - {e}")
             
             except ImportError as e:
                 phase4_results['multi_strategy_manager'] = {
@@ -354,21 +354,21 @@ class MainPyIntegrationDiagnosticSuite:
                     'import_error': str(e)
                 }
                 phase4_results['violations'].append(f"Import error: {e}")
-                print(f"❌ MultiStrategyManager: インポートエラー - {e}")
+                print(f"[ERROR] MultiStrategyManager: インポートエラー - {e}")
             
             # ステータス判定
             if (phase4_results['multi_strategy_manager'].get('import_successful', False) and
                 phase4_results['multi_strategy_manager'].get('initialization_successful', False)):
                 phase4_results['status'] = 'passed'
-                print("✅ Phase 4: 重み判断システム確認 - 正常（TODO #1修正効果確認）")
+                print("[OK] Phase 4: 重み判断システム確認 - 正常（TODO #1修正効果確認）")
             else:
                 phase4_results['status'] = 'failed'
-                print("❌ Phase 4: 重み判断システム確認 - TODO #1修正不完全")
+                print("[ERROR] Phase 4: 重み判断システム確認 - TODO #1修正不完全")
             
         except Exception as e:
             phase4_results['status'] = 'error'
             phase4_results['error'] = str(e)
-            print(f"❌ Phase 4: エラー発生 - {e}")
+            print(f"[ERROR] Phase 4: エラー発生 - {e}")
         
         return phase4_results
     
@@ -509,21 +509,21 @@ class MainPyIntegrationDiagnosticSuite:
         TODO(tag:integration_test, rationale:detailed diagnostic reporting)
         """
         print("\n" + "="*80)
-        print("📊 TODO #7: main.py統合システム動作確認テスト 結果レポート")
+        print("[CHART] TODO #7: main.py統合システム動作確認テスト 結果レポート")
         print("="*80)
         
         # 全体成功率
         success_rate = results['overall_success_rate']
         improvement = results['improvement_assessment']
         
-        success_icon = "✅" if success_rate >= 95.0 else "⚠️" if success_rate >= 80.0 else "❌"
+        success_icon = "[OK]" if success_rate >= 95.0 else "[WARNING]" if success_rate >= 80.0 else "[ERROR]"
         print(f"\n{success_icon} 全体成功率: {success_rate}% (目標: 95%以上)")
-        print(f"📈 改善状況: {improvement['baseline_success_rate']}% → {success_rate}% ({success_rate - improvement['baseline_success_rate']:+.1f}%)")
+        print(f"[UP] 改善状況: {improvement['baseline_success_rate']}% → {success_rate}% ({success_rate - improvement['baseline_success_rate']:+.1f}%)")
         
         # Phase別結果
-        print(f"\n📋 Phase別結果:")
+        print(f"\n[LIST] Phase別結果:")
         for phase_name, phase_data in results['phase_results'].items():
-            status_icon = "✅" if phase_data['status'] == 'passed' else "⚠️" if phase_data['status'] == 'error' else "❌"
+            status_icon = "[OK]" if phase_data['status'] == 'passed' else "[WARNING]" if phase_data['status'] == 'error' else "[ERROR]"
             print(f"  {status_icon} {phase_data['phase_name']}: {phase_data['status']}")
             
             if phase_data['status'] == 'failed' and 'violations' in phase_data:
@@ -531,16 +531,16 @@ class MainPyIntegrationDiagnosticSuite:
                     print(f"    - {violation}")
         
         # TODO修正効果
-        print(f"\n🔧 TODO修正効果:")
+        print(f"\n[TOOL] TODO修正効果:")
         todo_improvements = results['todo_improvements']
         for todo_name, improvement_data in todo_improvements.items():
-            improvement_icon = "✅" if improvement_data.get('improvement_confirmed', False) else "❌"
+            improvement_icon = "[OK]" if improvement_data.get('improvement_confirmed', False) else "[ERROR]"
             print(f"  {improvement_icon} {todo_name}: {improvement_data.get('status', 'unknown')}")
         
         # バックテスト基本理念遵守
         compliance = results['backtest_principle_compliance']
-        compliance_icon = "✅" if compliance['overall_compliance'] else "❌"
-        print(f"\n🎯 バックテスト基本理念遵守: {compliance_icon}")
+        compliance_icon = "[OK]" if compliance['overall_compliance'] else "[ERROR]"
+        print(f"\n[TARGET] バックテスト基本理念遵守: {compliance_icon}")
         if not compliance['overall_compliance']:
             print(f"  違反事項:")
             for violation in compliance['violations'][:3]:
@@ -548,24 +548,24 @@ class MainPyIntegrationDiagnosticSuite:
         
         # 重大問題
         if results['critical_issues']:
-            print(f"\n❌ 重大問題:")
+            print(f"\n[ERROR] 重大問題:")
             for issue in results['critical_issues'][:5]:
                 print(f"  - {issue}")
         
         # 推奨事項
         if results['recommendations']:
-            print(f"\n💡 推奨事項:")
+            print(f"\n[IDEA] 推奨事項:")
             for rec in results['recommendations']:
                 print(f"  - {rec}")
         
         # 目標達成確認
         target_achieved = improvement['target_achieved']
-        print(f"\n🎯 目標達成状況:")
+        print(f"\n[TARGET] 目標達成状況:")
         if target_achieved:
-            print("✅ main.py 60%→95%+ 改善目標達成！")
+            print("[OK] main.py 60%→95%+ 改善目標達成！")
         else:
             remaining = 95.0 - success_rate
-            print(f"⚠️ 目標未達成: あと{remaining:.1f}%の改善が必要")
+            print(f"[WARNING] 目標未達成: あと{remaining:.1f}%の改善が必要")
         
         print("\n" + "="*80)
     

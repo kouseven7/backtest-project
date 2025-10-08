@@ -27,7 +27,7 @@ def setup_logger():
 def fix_return_calculation_consistency():
     """リターン計算の一貫性を修正"""
     logger = setup_logger()
-    logger.info("🔧 DSSMS リターン計算修正開始")
+    logger.info("[TOOL] DSSMS リターン計算修正開始")
     
     # DSSMSバックテスターファイル
     dssms_file = Path("src/dssms/dssms_backtester.py")
@@ -45,7 +45,7 @@ def fix_return_calculation_consistency():
         modifications = []
         
         # 1. _convert_to_unified_format内のtotal_returnを正確に取得
-        logger.info("📊 修正1: 統一出力システムでの total_return 取得方法を修正")
+        logger.info("[CHART] 修正1: 統一出力システムでの total_return 取得方法を修正")
         
         # 統一出力システム内でのリターン計算を正確に実行するようにパッチ
         unified_format_pattern = r'def _convert_to_unified_format\(self\) -> Dict\[str, Any\]:(.*?)(?=def\s+\w+|class\s+\w+|\Z)'
@@ -71,7 +71,7 @@ def fix_return_calculation_consistency():
         content = re.sub(unified_format_pattern, fix_unified_format_method, content, flags=re.DOTALL)
         
         # 2. calculate_performance_metrics内でのtotal_return計算を修正
-        logger.info("📈 修正2: パフォーマンス指標計算での total_return を統一")
+        logger.info("[UP] 修正2: パフォーマンス指標計算での total_return を統一")
         
         performance_pattern = r'(performance_metrics = DSSMSPerformanceMetrics\(\s*total_return=float\(total_return\),)'
         
@@ -87,7 +87,7 @@ def fix_return_calculation_consistency():
         content = re.sub(performance_pattern, fix_performance_metrics, content)
         
         # 3. 初期化時に _unified_total_return 属性を追加
-        logger.info("🔧 修正3: 初期化時の属性追加")
+        logger.info("[TOOL] 修正3: 初期化時の属性追加")
         
         init_pattern = r'(self\.logger = setup_logger\(\'dssms\.backtester\'\))'
         
@@ -102,7 +102,7 @@ def fix_return_calculation_consistency():
         content = re.sub(init_pattern, add_unified_return_attribute, content)
         
         # 4. デモ実行部分での最終表示を修正
-        logger.info("📋 修正4: 最終ログ表示の修正")
+        logger.info("[LIST] 修正4: 最終ログ表示の修正")
         
         demo_pattern = r'logger\.info\(f"総リターン: \{performance_metrics\.total_return:.2%\}"\)'
         
@@ -125,12 +125,12 @@ def fix_return_calculation_consistency():
         with open(dssms_file, 'w', encoding='utf-8') as f:
             f.write(content)
         
-        logger.info("✅ 修正完了:")
+        logger.info("[OK] 修正完了:")
         for i, mod in enumerate(modifications, 1):
             logger.info(f"  {i}. {mod}")
         
         logger.info(f"📁 バックアップ: {backup_file}")
-        logger.info("🚀 修正版DSSMS準備完了")
+        logger.info("[ROCKET] 修正版DSSMS準備完了")
         
         return True
         
@@ -144,20 +144,20 @@ def main():
     """メイン実行"""
     logger = setup_logger()
     
-    print("🔧 DSSMS リターン計算修正ツール")
+    print("[TOOL] DSSMS リターン計算修正ツール")
     print("=" * 60)
     print("問題: ログ表示と実際の計算値の不整合")
     print("対象: src/dssms/dssms_backtester.py")
     print("=" * 60)
     
     if fix_return_calculation_consistency():
-        print("\n✅ 修正完了！")
+        print("\n[OK] 修正完了！")
         print("次のステップ:")
         print("1. python src/dssms/dssms_backtester.py  # 修正版実行")
         print("2. 総リターンの一貫性を確認")
         print("3. Excel/テキスト出力とログ表示の一致を確認")
     else:
-        print("\n❌ 修正失敗")
+        print("\n[ERROR] 修正失敗")
         print("手動修正が必要です")
 
 if __name__ == "__main__":

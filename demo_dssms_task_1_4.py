@@ -50,13 +50,13 @@ class DSSMSTask14Demo:
         self.output_dir = project_root / "output" / "task_14_demo"
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
-        print("🚀 DSSMS Task 1.4 銘柄切替メカニズム復旧デモ開始")
+        print("[ROCKET] DSSMS Task 1.4 銘柄切替メカニズム復旧デモ開始")
         print("="*60)
     
     def run_full_demonstration(self):
         """完全デモンストレーション実行"""
         try:
-            print("📋 デモスケジュール:")
+            print("[LIST] デモスケジュール:")
             print("   1. システム初期化デモ")
             print("   2. 切替コーディネーター動作デモ")
             print("   3. 診断システム活用デモ")
@@ -84,19 +84,19 @@ class DSSMSTask14Demo:
             
         except Exception as e:
             self.logger.error(f"デモ実行失敗: {e}")
-            print(f"❌ デモ実行中にエラーが発生しました: {e}")
+            print(f"[ERROR] デモ実行中にエラーが発生しました: {e}")
     
     def demo_1_system_initialization(self):
         """デモ1: システム初期化"""
-        print("\n🔧 デモ1: システム初期化")
+        print("\n[TOOL] デモ1: システム初期化")
         print("-" * 40)
         
         # Switch Coordinator V2初期化
         try:
             from src.dssms.mock_switch_coordinator_v2 import MockDSSMSSwitchCoordinatorV2
             self.coordinator = MockDSSMSSwitchCoordinatorV2()
-            self.components_status["coordinator"] = "✅ 利用可能"
-            print("✅ Switch Coordinator V2: 初期化成功")
+            self.components_status["coordinator"] = "[OK] 利用可能"
+            print("[OK] Switch Coordinator V2: 初期化成功")
             
             # 設定確認
             status = self.coordinator.get_status_report()
@@ -105,52 +105,52 @@ class DSSMSTask14Demo:
             
         except ImportError:
             self.coordinator = None
-            self.components_status["coordinator"] = "❌ インポート不可"
-            print("❌ Switch Coordinator V2: インポート失敗（予想される動作）")
+            self.components_status["coordinator"] = "[ERROR] インポート不可"
+            print("[ERROR] Switch Coordinator V2: インポート失敗（予想される動作）")
         except Exception as e:
             self.coordinator = None
-            self.components_status["coordinator"] = f"❌ エラー: {e}"
-            print(f"❌ Switch Coordinator V2: 初期化失敗 - {e}")
+            self.components_status["coordinator"] = f"[ERROR] エラー: {e}"
+            print(f"[ERROR] Switch Coordinator V2: 初期化失敗 - {e}")
         
         # Switch Diagnostics初期化
         try:
             from src.dssms.switch_diagnostics import SwitchDiagnostics
             diagnostics_db = self.output_dir / "demo_diagnostics.db"
             self.diagnostics = SwitchDiagnostics(str(diagnostics_db))
-            self.components_status["diagnostics"] = "✅ 利用可能"
-            print("✅ Switch Diagnostics: 初期化成功")
+            self.components_status["diagnostics"] = "[OK] 利用可能"
+            print("[OK] Switch Diagnostics: 初期化成功")
             print(f"   - データベース: {diagnostics_db}")
             
         except ImportError:
             self.diagnostics = None
-            self.components_status["diagnostics"] = "❌ インポート不可"
-            print("❌ Switch Diagnostics: インポート失敗（予想される動作）")
+            self.components_status["diagnostics"] = "[ERROR] インポート不可"
+            print("[ERROR] Switch Diagnostics: インポート失敗（予想される動作）")
         except Exception as e:
             self.diagnostics = None
-            self.components_status["diagnostics"] = f"❌ エラー: {e}"
-            print(f"❌ Switch Diagnostics: 初期化失敗 - {e}")
+            self.components_status["diagnostics"] = f"[ERROR] エラー: {e}"
+            print(f"[ERROR] Switch Diagnostics: 初期化失敗 - {e}")
         
         # Backtester V2 Updated初期化
         try:
             from src.dssms.mock_backtester_v2_updated import MockDSSMSBacktesterV2Updated
             self.backtester = MockDSSMSBacktesterV2Updated()
-            self.components_status["backtester"] = "✅ 利用可能"
-            print("✅ Backtester V2 Updated: 初期化成功")
+            self.components_status["backtester"] = "[OK] 利用可能"
+            print("[OK] Backtester V2 Updated: 初期化成功")
             
         except ImportError:
             self.backtester = None
-            self.components_status["backtester"] = "❌ インポート不可"
-            print("❌ Backtester V2 Updated: インポート失敗（予想される動作）")
+            self.components_status["backtester"] = "[ERROR] インポート不可"
+            print("[ERROR] Backtester V2 Updated: インポート失敗（予想される動作）")
         except Exception as e:
             self.backtester = None
-            self.components_status["backtester"] = f"❌ エラー: {e}"
-            print(f"❌ Backtester V2 Updated: 初期化失敗 - {e}")
+            self.components_status["backtester"] = f"[ERROR] エラー: {e}"
+            print(f"[ERROR] Backtester V2 Updated: 初期化失敗 - {e}")
         
         # 初期化結果サマリー
-        available_components = sum(1 for status in self.components_status.values() if "✅" in status)
+        available_components = sum(1 for status in self.components_status.values() if "[OK]" in status)
         total_components = len(self.components_status)
         
-        print(f"\n📊 初期化結果: {available_components}/{total_components} コンポーネント利用可能")
+        print(f"\n[CHART] 初期化結果: {available_components}/{total_components} コンポーネント利用可能")
         
         self.demo_results["demo_1"] = {
             "components_status": self.components_status.copy(),
@@ -165,18 +165,18 @@ class DSSMSTask14Demo:
         print("-" * 40)
         
         if not self.coordinator:
-            print("❌ Switch Coordinatorが利用できません（スキップ）")
+            print("[ERROR] Switch Coordinatorが利用できません（スキップ）")
             self.demo_results["demo_2"] = {"success": False, "reason": "coordinator_unavailable"}
             return
         
         # テスト用市場データ生成
-        print("📊 テスト用市場データ生成中...")
+        print("[CHART] テスト用市場データ生成中...")
         market_data = self._generate_demo_market_data()
-        print(f"✅ 市場データ生成完了: {len(market_data)} レコード")
+        print(f"[OK] 市場データ生成完了: {len(market_data)} レコード")
         
         # 切替実行テスト
         test_positions = ["7203", "6758", "9984"]
-        print(f"🎯 初期ポジション: {test_positions}")
+        print(f"[TARGET] 初期ポジション: {test_positions}")
         
         execution_results = []
         print("\n🔄 切替決定実行テスト:")
@@ -202,7 +202,7 @@ class DSSMSTask14Demo:
         successful_executions = [r for r in execution_results if r and r.success]
         success_rate = len(successful_executions) / len(execution_results) * 100
         
-        print(f"\n📈 実行結果分析:")
+        print(f"\n[UP] 実行結果分析:")
         print(f"   - 総実行回数: {len(execution_results)}")
         print(f"   - 成功回数: {len(successful_executions)}")
         print(f"   - 成功率: {success_rate:.1f}% (目標: 30%)")
@@ -234,11 +234,11 @@ class DSSMSTask14Demo:
     
     def demo_3_diagnostics_usage(self):
         """デモ3: 診断システム活用"""
-        print("\n🔍 デモ3: 診断システム活用")
+        print("\n[SEARCH] デモ3: 診断システム活用")
         print("-" * 40)
         
         if not self.diagnostics:
-            print("❌ Switch Diagnosticsが利用できません（スキップ）")
+            print("[ERROR] Switch Diagnosticsが利用できません（スキップ）")
             self.demo_results["demo_3"] = {"success": False, "reason": "diagnostics_unavailable"}
             return
         
@@ -271,57 +271,57 @@ class DSSMSTask14Demo:
             except Exception as e:
                 print(f"   記録 {i+1} 失敗: {e}")
         
-        print(f"✅ {len(record_ids)} 件の診断記録作成完了")
+        print(f"[OK] {len(record_ids)} 件の診断記録作成完了")
         
         # 成功率分析実行
-        print("\n📊 成功率分析実行中...")
+        print("\n[CHART] 成功率分析実行中...")
         try:
             analysis = self.diagnostics.analyze_success_rate(period_days=1)
             
             overall_metrics = analysis.get("overall_metrics", {})
             engine_performance = analysis.get("engine_performance", {})
             
-            print("✅ 成功率分析完了:")
+            print("[OK] 成功率分析完了:")
             print(f"   - 総記録数: {overall_metrics.get('total_records', 0)}")
             print(f"   - 成功記録数: {overall_metrics.get('successful_records', 0)}")
             print(f"   - 全体成功率: {overall_metrics.get('success_rate', 0):.1%}")
-            print(f"   - 目標達成: {'✅' if overall_metrics.get('target_achieved', False) else '❌'}")
+            print(f"   - 目標達成: {'[OK]' if overall_metrics.get('target_achieved', False) else '[ERROR]'}")
             
-            print("\n🔧 エンジン別パフォーマンス:")
+            print("\n[TOOL] エンジン別パフォーマンス:")
             for engine, stats in engine_performance.items():
                 print(f"   - {engine}: 成功率={stats.get('success_rate', 0):.1%}, "
                       f"試行数={stats.get('total', 0)}")
             
         except Exception as e:
-            print(f"❌ 成功率分析失敗: {e}")
+            print(f"[ERROR] 成功率分析失敗: {e}")
             analysis = {}
         
         # 診断レポート生成
-        print("\n📋 診断レポート生成中...")
+        print("\n[LIST] 診断レポート生成中...")
         try:
             diagnostic_report = self.diagnostics.generate_diagnostic_report(
                 analysis_days=1, include_details=True
             )
             
             executive_summary = diagnostic_report.get("executive_summary", {})
-            print("✅ 診断レポート生成完了:")
+            print("[OK] 診断レポート生成完了:")
             print(f"   - 全体成功率: {executive_summary.get('overall_success_rate', 0):.1%}")
-            print(f"   - 目標達成: {'✅' if executive_summary.get('target_achievement', False) else '❌'}")
+            print(f"   - 目標達成: {'[OK]' if executive_summary.get('target_achievement', False) else '[ERROR]'}")
             print(f"   - 分析決定数: {executive_summary.get('total_decisions_analyzed', 0)}")
             print(f"   - 検出された問題数: {executive_summary.get('critical_issues_count', 0)}")
             print(f"   - 改善提案数: {executive_summary.get('recommendations_count', 0)}")
             
         except Exception as e:
-            print(f"❌ 診断レポート生成失敗: {e}")
+            print(f"[ERROR] 診断レポート生成失敗: {e}")
             diagnostic_report = {}
         
         # データエクスポート
         print("\n💾 データエクスポート実行中...")
         try:
             export_file = self.diagnostics.export_data("json", period_days=1)
-            print(f"✅ データエクスポート完了: {export_file}")
+            print(f"[OK] データエクスポート完了: {export_file}")
         except Exception as e:
-            print(f"❌ データエクスポート失敗: {e}")
+            print(f"[ERROR] データエクスポート失敗: {e}")
             export_file = None
         
         self.demo_results["demo_3"] = {
@@ -335,11 +335,11 @@ class DSSMSTask14Demo:
     
     def demo_4_backtest_execution(self):
         """デモ4: バックテスト実行"""
-        print("\n📈 デモ4: バックテスト実行")
+        print("\n[UP] デモ4: バックテスト実行")
         print("-" * 40)
         
         if not self.backtester:
-            print("❌ Backtesterが利用できません（スキップ）")
+            print("[ERROR] Backtesterが利用できません（スキップ）")
             self.demo_results["demo_4"] = {"success": False, "reason": "backtester_unavailable"}
             return
         
@@ -350,7 +350,7 @@ class DSSMSTask14Demo:
         print(f"🗓️ バックテスト期間: {start_date.strftime('%Y-%m-%d')} ～ {end_date.strftime('%Y-%m-%d')}")
         
         # バックテスト実行
-        print("🚀 包括的バックテスト実行中...")
+        print("[ROCKET] 包括的バックテスト実行中...")
         try:
             backtest_start = time.time()
             
@@ -362,7 +362,7 @@ class DSSMSTask14Demo:
             
             backtest_duration = time.time() - backtest_start
             
-            print(f"✅ バックテスト完了: {backtest_duration:.2f}秒")
+            print(f"[OK] バックテスト完了: {backtest_duration:.2f}秒")
             
             # 結果分析
             metadata = results.get("backtest_metadata", {})
@@ -370,7 +370,7 @@ class DSSMSTask14Demo:
             engine_perf = results.get("engine_performance", {})
             target_achievement = results.get("target_achievement", {})
             
-            print("\n📊 バックテスト結果:")
+            print("\n[CHART] バックテスト結果:")
             print(f"   - 実行日数: {metadata.get('total_days', 0)}")
             print(f"   - 切替試行数: {overall_perf.get('total_switch_attempts', 0)}")
             print(f"   - 成功切替数: {overall_perf.get('successful_switches', 0)}")
@@ -378,14 +378,14 @@ class DSSMSTask14Demo:
             print(f"   - 平均日次切替数: {overall_perf.get('avg_switches_per_day', 0):.1f}")
             print(f"   - 平均実行時間: {overall_perf.get('avg_execution_time_ms', 0):.1f}ms")
             
-            print("\n🎯 目標達成状況:")
+            print("\n[TARGET] 目標達成状況:")
             print(f"   - 成功率目標: {target_achievement.get('success_rate_target', 0):.1%}")
-            print(f"   - 成功率達成: {'✅' if target_achievement.get('success_rate_achieved', False) else '❌'}")
+            print(f"   - 成功率達成: {'[OK]' if target_achievement.get('success_rate_achieved', False) else '[ERROR]'}")
             print(f"   - 日次切替目標: {target_achievement.get('daily_switch_target', 0)}回")
-            print(f"   - 日次切替達成: {'✅' if target_achievement.get('daily_switch_achieved', False) else '❌'}")
+            print(f"   - 日次切替達成: {'[OK]' if target_achievement.get('daily_switch_achieved', False) else '[ERROR]'}")
             
             if engine_perf:
-                print("\n🔧 エンジン別パフォーマンス:")
+                print("\n[TOOL] エンジン別パフォーマンス:")
                 for engine, stats in engine_perf.items():
                     print(f"   - {engine}: 成功率={stats.get('success_rate', 0):.1%}, "
                           f"試行数={stats.get('attempts', 0)}")
@@ -396,7 +396,7 @@ class DSSMSTask14Demo:
                 print(f"📄 レポート保存: {report_file}")
             
         except Exception as e:
-            print(f"❌ バックテスト実行失敗: {e}")
+            print(f"[ERROR] バックテスト実行失敗: {e}")
             results = {}
             backtest_duration = 0
         
@@ -410,7 +410,7 @@ class DSSMSTask14Demo:
     
     def demo_5_final_report(self):
         """デモ5: 最終レポート生成"""
-        print("\n📋 デモ5: 最終レポート生成")
+        print("\n[LIST] デモ5: 最終レポート生成")
         print("-" * 40)
         
         # 全デモ結果統合
@@ -430,25 +430,25 @@ class DSSMSTask14Demo:
         try:
             with open(report_file, 'w', encoding='utf-8') as f:
                 json.dump(demo_summary, f, ensure_ascii=False, indent=2, default=str)
-            print(f"✅ 詳細レポート保存: {report_file}")
+            print(f"[OK] 詳細レポート保存: {report_file}")
         except Exception as e:
-            print(f"❌ レポート保存失敗: {e}")
+            print(f"[ERROR] レポート保存失敗: {e}")
         
         # テキスト形式サマリー生成
         summary_file = self.output_dir / f"task_14_demo_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         try:
             with open(summary_file, 'w', encoding='utf-8') as f:
                 f.write(self._generate_text_summary(demo_summary))
-            print(f"✅ サマリーレポート保存: {summary_file}")
+            print(f"[OK] サマリーレポート保存: {summary_file}")
         except Exception as e:
-            print(f"❌ サマリー保存失敗: {e}")
+            print(f"[ERROR] サマリー保存失敗: {e}")
         
-        print("\n📊 デモ結果統合完了")
+        print("\n[CHART] デモ結果統合完了")
     
     def finalize_demo(self):
         """デモ終了処理"""
         print("\n" + "="*60)
-        print("🎯 DSSMS Task 1.4 デモ完了サマリー")
+        print("[TARGET] DSSMS Task 1.4 デモ完了サマリー")
         print("="*60)
         
         # 基本統計
@@ -457,16 +457,16 @@ class DSSMSTask14Demo:
         total_demos = len(self.demo_results)
         
         print(f"⏱️ 総実行時間: {total_duration:.2f}秒")
-        print(f"📈 成功デモ数: {successful_demos}/{total_demos}")
-        print(f"📊 成功率: {successful_demos/total_demos:.1%}")
+        print(f"[UP] 成功デモ数: {successful_demos}/{total_demos}")
+        print(f"[CHART] 成功率: {successful_demos/total_demos:.1%}")
         
         # コンポーネント状況
-        print(f"\n🔧 コンポーネント状況:")
+        print(f"\n[TOOL] コンポーネント状況:")
         for component, status in self.components_status.items():
             print(f"   - {component}: {status}")
         
         # デモ別結果
-        print(f"\n📋 デモ別結果:")
+        print(f"\n[LIST] デモ別結果:")
         demo_names = [
             "システム初期化",
             "切替コーディネーター",
@@ -477,25 +477,25 @@ class DSSMSTask14Demo:
         
         for i, (demo_key, demo_name) in enumerate(zip(self.demo_results.keys(), demo_names), 1):
             result = self.demo_results[demo_key]
-            status = "✅" if result.get("success", False) else "❌"
+            status = "[OK]" if result.get("success", False) else "[ERROR]"
             print(f"   {i}. {demo_name}: {status}")
         
         # 総合評価
         overall_success = self._assess_overall_success()
-        print(f"\n🎯 総合評価: {overall_success['status']}")
+        print(f"\n[TARGET] 総合評価: {overall_success['status']}")
         print(f"📝 評価理由: {overall_success['reason']}")
         
         # Task 1.4達成状況
         if overall_success["success_level"] >= 3:
-            print(f"\n🎉 Task 1.4: 実装成功 - 銘柄切替メカニズム復旧完了")
-            print(f"   ✅ 30%成功率目標達成可能")
-            print(f"   ✅ 日次切替機能動作")
-            print(f"   ✅ 診断システム稼働")
+            print(f"\n[SUCCESS] Task 1.4: 実装成功 - 銘柄切替メカニズム復旧完了")
+            print(f"   [OK] 30%成功率目標達成可能")
+            print(f"   [OK] 日次切替機能動作")
+            print(f"   [OK] 診断システム稼働")
         elif overall_success["success_level"] >= 2:
-            print(f"\n⚠️ Task 1.4: 部分的成功 - 基本機能動作確認")
-            print(f"   ⚠️ 一部コンポーネント制限あり")
+            print(f"\n[WARNING] Task 1.4: 部分的成功 - 基本機能動作確認")
+            print(f"   [WARNING] 一部コンポーネント制限あり")
         else:
-            print(f"\n❌ Task 1.4: 要修正 - 重要な問題検出")
+            print(f"\n[ERROR] Task 1.4: 要修正 - 重要な問題検出")
         
         print("="*60)
         print(f"📁 出力ファイル保存先: {self.output_dir}")
@@ -534,7 +534,7 @@ class DSSMSTask14Demo:
         total_demos = len(self.demo_results)
         success_rate = successful_demos / total_demos if total_demos > 0 else 0
         
-        available_components = sum(1 for status in self.components_status.values() if "✅" in status)
+        available_components = sum(1 for status in self.components_status.values() if "[OK]" in status)
         total_components = len(self.components_status)
         
         # 成功レベル判定

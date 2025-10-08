@@ -32,12 +32,12 @@ def run_powershell_command(command: str, description: str = "") -> bool:
         )
         
         if result.returncode == 0:
-            logger.info("✅ 成功")
+            logger.info("[OK] 成功")
             if result.stdout.strip():
                 logger.info(f"出力: {result.stdout.strip()}")
             return True
         else:
-            logger.error("❌ 失敗")
+            logger.error("[ERROR] 失敗")
             if result.stderr.strip():
                 logger.error(f"エラー: {result.stderr.strip()}")
             return False
@@ -133,10 +133,10 @@ def main():
             )
             
             if commit_result:
-                logger.info("🎉 4-3-2システム実装&コミット完了!")
+                logger.info("[SUCCESS] 4-3-2システム実装&コミット完了!")
                 return True
     
-    logger.error("❌ テストまたはコミットに失敗しました")
+    logger.error("[ERROR] テストまたはコミットに失敗しました")
     return False
 
 if __name__ == "__main__":
@@ -144,13 +144,13 @@ if __name__ == "__main__":
     
     if success:
         print("\n" + "="*60)
-        print("🎉 4-3-2「戦略比率とパフォーマンスのリアルタイム表示」")
+        print("[SUCCESS] 4-3-2「戦略比率とパフォーマンスのリアルタイム表示」")
         print("   システム実装完了!")
         print("="*60)
         sys.exit(0)
     else:
         print("\n" + "="*60)
-        print("❌ 4-3-2 システム実装に問題があります")
+        print("[ERROR] 4-3-2 システム実装に問題があります")
         print("   ログを確認してください")
         print("="*60)
         sys.exit(1)

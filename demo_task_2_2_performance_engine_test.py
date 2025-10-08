@@ -65,7 +65,7 @@ class PerformanceCalculationTestSuite:
         print("=" * 65)
         
         if not TASK_2_2_AVAILABLE:
-            print(f"❌ Task 2.2 システムが利用できません: {IMPORT_ERROR}")
+            print(f"[ERROR] Task 2.2 システムが利用できません: {IMPORT_ERROR}")
             return False
         
         # テストシナリオの定義
@@ -82,7 +82,7 @@ class PerformanceCalculationTestSuite:
             ("test_data_quality_validation", "データ品質検証テスト")
         ]
         
-        print(f"\n🧪 実行予定テスト: {len(test_scenarios)}件")
+        print(f"\n[TEST] 実行予定テスト: {len(test_scenarios)}件")
         print("-" * 50)
         
         # 各テストの実行
@@ -98,9 +98,9 @@ class PerformanceCalculationTestSuite:
                 scenario.passed = result
                 
                 if result:
-                    print(f"✅ {description}: 成功 ({scenario.execution_time:.2f}s)")
+                    print(f"[OK] {description}: 成功 ({scenario.execution_time:.2f}s)")
                 else:
-                    print(f"❌ {description}: 失敗 ({scenario.execution_time:.2f}s)")
+                    print(f"[ERROR] {description}: 失敗 ({scenario.execution_time:.2f}s)")
                     
             except Exception as e:
                 scenario.execution_time = (datetime.now() - start_time).total_seconds()
@@ -486,7 +486,7 @@ class PerformanceCalculationTestSuite:
     def _print_test_summary(self):
         """テストサマリーの表示"""
         print(f"\n" + "=" * 65)
-        print("📋 テスト結果サマリー")
+        print("[LIST] テスト結果サマリー")
         print("=" * 65)
         
         passed_count = sum(1 for test in self.test_results if test.passed)
@@ -500,7 +500,7 @@ class PerformanceCalculationTestSuite:
         # 失敗したテストの詳細
         failed_tests = [test for test in self.test_results if not test.passed]
         if failed_tests:
-            print(f"\n❌ 失敗したテスト:")
+            print(f"\n[ERROR] 失敗したテスト:")
             for test in failed_tests:
                 print(f"  • {test.description}")
                 if test.error_message:
@@ -516,11 +516,11 @@ class PerformanceCalculationTestSuite:
         
         # 最終判定
         if passed_count == total_count:
-            print(f"\n🎉 すべてのテストが成功しました！")
-            print(f"✅ Task 2.2 パフォーマンス計算エンジン修正: 完了")
+            print(f"\n[SUCCESS] すべてのテストが成功しました！")
+            print(f"[OK] Task 2.2 パフォーマンス計算エンジン修正: 完了")
         else:
-            print(f"\n⚠️  {total_count - passed_count}件のテストが失敗しました")
-            print(f"🔧 Task 2.2 パフォーマンス計算エンジン修正: 要調整")
+            print(f"\n[WARNING]  {total_count - passed_count}件のテストが失敗しました")
+            print(f"[TOOL] Task 2.2 パフォーマンス計算エンジン修正: 要調整")
 
 def main():
     """メイン実行関数"""
@@ -531,14 +531,14 @@ def main():
         print(f"\n" + "=" * 65)
         if success:
             print("🏆 Task 2.2 パフォーマンス計算エンジン修正: 全テスト成功")
-            print("📊 重要問題の修正が確認されました:")
-            print("  ✅ 総リターン-100%問題: 修正済み")
-            print("  ✅ ポートフォリオ価値0.01円問題: 修正済み")
-            print("  ✅ 異常値検出・修正機能: 動作確認済み")
-            print("  ✅ 統合システム: 正常動作確認済み")
+            print("[CHART] 重要問題の修正が確認されました:")
+            print("  [OK] 総リターン-100%問題: 修正済み")
+            print("  [OK] ポートフォリオ価値0.01円問題: 修正済み")
+            print("  [OK] 異常値検出・修正機能: 動作確認済み")
+            print("  [OK] 統合システム: 正常動作確認済み")
         else:
-            print("⚠️  Task 2.2 パフォーマンス計算エンジン修正: 一部テスト失敗")
-            print("🔧 追加の調整が必要です")
+            print("[WARNING]  Task 2.2 パフォーマンス計算エンジン修正: 一部テスト失敗")
+            print("[TOOL] 追加の調整が必要です")
         
         return success
         

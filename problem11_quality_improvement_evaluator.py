@@ -60,7 +60,7 @@ class RealDataSwitchQualityEvaluator:
             return switch_events
             
         except Exception as e:
-            print(f"❌ 実データ収集エラー: {e}")
+            print(f"[ERROR] 実データ収集エラー: {e}")
             # フォールバック: 現実的な模擬データ生成
             return self._generate_realistic_fallback_data(days_back)
     
@@ -164,7 +164,7 @@ class RealDataSwitchQualityEvaluator:
     
     def evaluate_real_unnecessary_switches(self, switch_events):
         """実データベース不要切替率評価"""
-        print("\n📊 実データベース不要切替率分析")
+        print("\n[CHART] 実データベース不要切替率分析")
         print("-" * 50)
         
         unnecessary_count = 0
@@ -197,7 +197,7 @@ class RealDataSwitchQualityEvaluator:
         print(f"評価対象切替: {total_evaluable}件")
         print(f"不要切替: {unnecessary_count}件")
         print(f"不要切替率: {unnecessary_rate:.1%}")
-        print(f"目標達成: {'✓' if unnecessary_rate < 0.20 else '❌'} (<20%)")
+        print(f"目標達成: {'✓' if unnecessary_rate < 0.20 else '[ERROR]'} (<20%)")
         
         # 詳細分析
         self._print_detailed_analysis(analysis_details)
@@ -217,7 +217,7 @@ class RealDataSwitchQualityEvaluator:
     
     def _print_detailed_analysis(self, analysis_details):
         """詳細分析結果出力"""
-        print("\n📋 不要切替詳細分析")
+        print("\n[LIST] 不要切替詳細分析")
         print("-" * 70)
         
         unnecessary_switches = [a for a in analysis_details if a['unnecessary']]
@@ -251,7 +251,7 @@ class MultiDimensionalConsistencyEvaluator:
         
     def evaluate_decision_consistency(self, switch_events):
         """高精度一貫性評価"""
-        print("\n🎯 多次元一貫性評価")
+        print("\n[TARGET] 多次元一貫性評価")
         print("-" * 50)
         
         consistency_pairs = []
@@ -288,7 +288,7 @@ class MultiDimensionalConsistencyEvaluator:
         print(f"類似条件ペア: {len(consistency_pairs)}組")
         print(f"一貫判定: {consistent_decisions}組")
         print(f"一貫性率: {consistency_rate:.1%}")
-        print(f"目標達成: {'✓' if consistency_rate >= 0.95 else '❌'} (≥95%)")
+        print(f"目標達成: {'✓' if consistency_rate >= 0.95 else '[ERROR]'} (≥95%)")
         
         return {
             'consistency_rate': consistency_rate,
@@ -350,7 +350,7 @@ def main():
         switch_events = evaluator.collect_real_switch_data(days_back=30)
         
         if not switch_events:
-            print("❌ 切替データ収集失敗")
+            print("[ERROR] 切替データ収集失敗")
             return
         
         # Phase 2: 不要切替率評価
@@ -362,7 +362,7 @@ def main():
         
         # 総合評価
         print("\n" + "=" * 70)
-        print("📊 Problem 11 品質改善評価結果")
+        print("[CHART] Problem 11 品質改善評価結果")
         print("=" * 70)
         
         # 改善前後比較
@@ -375,8 +375,8 @@ def main():
         consistency_target = consistency_result['consistency_rate'] >= 0.95
         
         print("\n目標達成状況:")
-        print(f"  不要切替率<20%: {'✓ 達成' if unnecessary_target else '❌ 未達成'}")
-        print(f"  一貫性率≥95%:   {'✓ 達成' if consistency_target else '❌ 未達成'}")
+        print(f"  不要切替率<20%: {'✓ 達成' if unnecessary_target else '[ERROR] 未達成'}")
+        print(f"  一貫性率≥95%:   {'✓ 達成' if consistency_target else '[ERROR] 未達成'}")
         
         overall_success = unnecessary_target and consistency_target
         print(f"\n総合評価: {'✓ SUCCESS' if overall_success else '⚠ PARTIAL'}")
@@ -415,7 +415,7 @@ def main():
         return overall_success
         
     except Exception as e:
-        print(f"❌ 品質評価エラー: {e}")
+        print(f"[ERROR] 品質評価エラー: {e}")
         traceback.print_exc()
         return False
 

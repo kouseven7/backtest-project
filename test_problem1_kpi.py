@@ -15,13 +15,13 @@ sys.path.append(str(Path(__file__).parent))
 
 try:
     from src.dssms.dssms_backtester import DSSMSBacktester
-    print("🧪 Problem 1: KPI測定テスト開始")
+    print("[TEST] Problem 1: KPI測定テスト開始")
     print("="*50)
     
     # 1. DSSMSBacktester初期化
     print("1. DSSMSBacktester初期化中...")
     backtester = DSSMSBacktester()
-    print("✅ DSSMSBacktester初期化成功")
+    print("[OK] DSSMSBacktester初期化成功")
     
     # 2. テスト用データ設定
     print("\n2. テスト用パラメータ設定...")
@@ -100,16 +100,16 @@ try:
     
     if theoretical_max >= target_min:
         if theoretical_max <= target_max:
-            status = "✅ 目標範囲内"
+            status = "[OK] 目標範囲内"
             grade = "合格"
         else:
-            status = "⚠️ 目標上限超過（問題なし）"
+            status = "[WARNING] 目標上限超過（問題なし）"
             grade = "合格"
     else:
-        status = "❌ 目標下限未達"
+        status = "[ERROR] 目標下限未達"
         grade = "要改善"
     
-    print(f"📊 切替頻度KPI評価:")
+    print(f"[CHART] 切替頻度KPI評価:")
     print(f"   目標範囲: {target_min}-{target_max}回")
     print(f"   理論的最大: {theoretical_max}回")
     print(f"   評価: {status}")
@@ -142,23 +142,23 @@ try:
     passed = sum(1 for _, result in success_criteria if result)
     total = len(success_criteria)
     
-    print("📋 実装チェックリスト:")
+    print("[LIST] 実装チェックリスト:")
     for criteria, result in success_criteria:
-        mark = "✅" if result else "❌"
+        mark = "[OK]" if result else "[ERROR]"
         print(f"   {mark} {criteria}")
     
     print(f"\n🏆 Problem 1総合評価: {passed}/{total} 項目通過")
     
     if passed == total:
-        print("🎉 Problem 1: 切替判定ロジック劣化 - 実装成功！")
+        print("[SUCCESS] Problem 1: 切替判定ロジック劣化 - 実装成功！")
         print("   切替頻度が目標範囲に回復しました")
     else:
-        print("⚠️ Problem 1: 一部項目で課題があります")
+        print("[WARNING] Problem 1: 一部項目で課題があります")
         
 except Exception as e:
-    print(f"❌ テストエラー: {e}")
+    print(f"[ERROR] テストエラー: {e}")
     import traceback
     traceback.print_exc()
 
 print("="*50)
-print("🧪 Problem 1 KPI測定テスト完了")
+print("[TEST] Problem 1 KPI測定テスト完了")

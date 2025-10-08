@@ -18,7 +18,7 @@ class DSSMSOutputInvestigator:
         
     def investigate_complete_flow(self):
         """完全なデータフロー調査"""
-        print("🔍 DSSMS出力システム完全調査開始")
+        print("[SEARCH] DSSMS出力システム完全調査開始")
         print("=" * 60)
         
         # 1. 既存出力ファイルの分析
@@ -70,7 +70,7 @@ class DSSMSOutputInvestigator:
                             found_files[f'text_{text_file}'] = file_path
                             
                 except Exception as e:
-                    print(f"   ⚠️ ディレクトリ読み込みエラー {output_dir}: {e}")
+                    print(f"   [WARNING] ディレクトリ読み込みエラー {output_dir}: {e}")
         
         print(f"   📄 発見ファイル: {len(found_files)}個")
         for file_type, file_path in found_files.items():
@@ -86,7 +86,7 @@ class DSSMSOutputInvestigator:
         
     def _analyze_excel_content(self, excel_path):
         """Excelファイルの内容分析"""
-        print(f"\n   📊 Excel内容分析: {os.path.basename(excel_path)}")
+        print(f"\n   [CHART] Excel内容分析: {os.path.basename(excel_path)}")
         
         try:
             xl_file = pd.ExcelFile(excel_path)
@@ -117,13 +117,13 @@ class DSSMSOutputInvestigator:
                     print(f"       {sheet_name}: {len(df)}行 x {len(df.columns)}列")
                     
                 except Exception as e:
-                    print(f"       ❌ {sheet_name}読み込みエラー: {e}")
+                    print(f"       [ERROR] {sheet_name}読み込みエラー: {e}")
                     excel_analysis[sheet_name] = {'error': str(e)}
             
             self.results['excel_analysis'] = excel_analysis
             
         except Exception as e:
-            print(f"     ❌ Excel分析エラー: {e}")
+            print(f"     [ERROR] Excel分析エラー: {e}")
             self.results['excel_error'] = str(e)
         
     def _run_backtester_and_capture_data(self):
@@ -137,11 +137,11 @@ class DSSMSOutputInvestigator:
             
             from src.dssms.dssms_backtester import DSSMSBacktester
             
-            print("   🚀 DSSMSバックテスター初期化中...")
+            print("   [ROCKET] DSSMSバックテスター初期化中...")
             backtester = DSSMSBacktester()
             
             # バックテスター設定の確認
-            print("   📋 バックテスター設定:")
+            print("   [LIST] バックテスター設定:")
             print(f"     - クラス: {type(backtester).__name__}")
             print(f"     - 属性数: {len(dir(backtester))}")
             
@@ -156,11 +156,11 @@ class DSSMSOutputInvestigator:
                 print("   🔄 run_backtest()実行中...")
                 results = backtester.run_backtest()
                 self.results['backtester_raw'] = self._serialize_results(results)
-                print(f"   ✅ バックテスト完了: {type(results)}")
+                print(f"   [OK] バックテスト完了: {type(results)}")
                 
                 # 結果の詳細分析
                 if isinstance(results, dict):
-                    print("   📊 結果データ構造:")
+                    print("   [CHART] 結果データ構造:")
                     for key, value in results.items():
                         if isinstance(value, pd.DataFrame):
                             print(f"     - {key}: DataFrame ({value.shape})")
@@ -185,17 +185,17 @@ class DSSMSOutputInvestigator:
                     end_date=datetime(2023, 12, 31)
                 )
                 self.results['backtester_raw'] = self._serialize_results(results)
-                print(f"   ✅ シミュレーション完了: {type(results)}")
+                print(f"   [OK] シミュレーション完了: {type(results)}")
                 
             else:
-                print("   ⚠️ 既知の実行メソッドが見つかりません")
+                print("   [WARNING] 既知の実行メソッドが見つかりません")
                 self.results['backtester_error'] = "実行メソッド未発見"
                 
         except ImportError as e:
-            print(f"   ❌ インポートエラー: {e}")
+            print(f"   [ERROR] インポートエラー: {e}")
             self.results['import_error'] = str(e)
         except Exception as e:
-            print(f"   ❌ バックテスター実行エラー: {e}")
+            print(f"   [ERROR] バックテスター実行エラー: {e}")
             self.results['backtester_error'] = str(e)
     
     def _serialize_results(self, results):
@@ -237,7 +237,7 @@ class DSSMSOutputInvestigator:
         source_analysis = {}
         
         for system_name, file_path in output_systems.items():
-            print(f"\n   🔍 {system_name} 分析:")
+            print(f"\n   [SEARCH] {system_name} 分析:")
             
             if os.path.exists(file_path):
                 try:
@@ -276,15 +276,15 @@ class DSSMSOutputInvestigator:
                     
                     source_analysis[system_name] = analysis
                     
-                    print(f"     ファイル存在: ✅ ({analysis['line_count']}行)")
+                    print(f"     ファイル存在: [OK] ({analysis['line_count']}行)")
                     print(f"     データソース候補: {len(analysis['data_sources'])}個")
                     print(f"     計算メソッド: {len(analysis['calculation_methods'])}個")
                     
                 except Exception as e:
-                    print(f"     ❌ ファイル分析エラー: {e}")
+                    print(f"     [ERROR] ファイル分析エラー: {e}")
                     source_analysis[system_name] = {'error': str(e)}
             else:
-                print(f"     ❌ ファイル未存在: {file_path}")
+                print(f"     [ERROR] ファイル未存在: {file_path}")
                 source_analysis[system_name] = {'file_exists': False}
         
         self.results['source_analysis'] = source_analysis
@@ -324,7 +324,7 @@ class DSSMSOutputInvestigator:
         # バックテスター結果との比較
         if 'backtester_raw' in self.results:
             bt_data = self.results['backtester_raw']
-            print("   📊 バックテスター結果概要:")
+            print("   [CHART] バックテスター結果概要:")
             for key, value in bt_data.items():
                 if isinstance(value, dict) and value.get('type') == 'DataFrame':
                     print(f"     - {key}: {value['shape']}")
@@ -332,7 +332,7 @@ class DSSMSOutputInvestigator:
                         sample_keys = list(value['sample'][0].keys()) if value['sample'] else []
                         print(f"       列例: {sample_keys[:5]}")
         
-        print(f"   🚨 検出された不整合: {len(inconsistencies)}件")
+        print(f"   [ALERT] 検出された不整合: {len(inconsistencies)}件")
         for i, issue in enumerate(inconsistencies, 1):
             print(f"     {i}. {issue['type']} @ {issue['location']}: {issue['issue']}")
         
@@ -434,9 +434,9 @@ def main():
     report_path = investigator.generate_report()
     
     print("\n" + "="*60)
-    print("🎯 調査完了！次のステップの準備ができました。")
-    print("📋 詳細レポート:", report_path)
-    print("🚀 次: 統一出力エンジンの実装")
+    print("[TARGET] 調査完了！次のステップの準備ができました。")
+    print("[LIST] 詳細レポート:", report_path)
+    print("[ROCKET] 次: 統一出力エンジンの実装")
     print("="*60)
 
 if __name__ == "__main__":

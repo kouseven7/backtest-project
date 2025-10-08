@@ -80,9 +80,9 @@ def analyze_phase3_results(results):
     print("="*50)
     
     # 基準評価
-    switch_check = "✅" if 3 <= switch_count <= 5 else "❌"
-    structure_check = "✅"  # Phase 3構造統一により仮定
-    error_check = "✅" if results.get('error_count', 0) == 0 else "❌"
+    switch_check = "[OK]" if 3 <= switch_count <= 5 else "[ERROR]"
+    structure_check = "[OK]"  # Phase 3構造統一により仮定
+    error_check = "[OK]" if results.get('error_count', 0) == 0 else "[ERROR]"
     
     print(f"{switch_check} 切替回数: {switch_count}回 (目標: 3-5回)")
     print(f"{structure_check} 構造一致性: Phase 3修正により改善想定")
@@ -96,7 +96,7 @@ def analyze_phase3_results(results):
     ])
     
     overall_success = success_count >= 2
-    overall_status = "✅ 成功" if overall_success else "❌ 要改善"
+    overall_status = "[OK] 成功" if overall_success else "[ERROR] 要改善"
     
     print(f"\n⚡ Phase 3修正効果: {overall_status}")
     if overall_success:

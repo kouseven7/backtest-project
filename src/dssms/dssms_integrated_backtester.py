@@ -656,11 +656,11 @@ if __name__ == "__main__":
         
         # バックテスター作成
         backtester = DSSMSIntegratedBacktester(test_config)
-        print(f"✅ バックテスター初期化成功")
+        print(f"[OK] バックテスター初期化成功")
         
         # 状態確認
         status = backtester.get_current_status()
-        print(f"✅ 状態取得成功: {status['current_symbol']}")
+        print(f"[OK] 状態取得成功: {status['current_symbol']}")
         
         # 短期間テスト実行
         test_start = datetime(2023, 6, 1)
@@ -669,7 +669,7 @@ if __name__ == "__main__":
         print(f"テストバックテスト実行: {test_start.date()} → {test_end.date()}")
         result = backtester.run_dynamic_backtest(test_start, test_end)
         
-        print(f"✅ テスト実行成功")
+        print(f"[OK] テスト実行成功")
         print(f"  - 実行日数: {result['execution_summary']['total_days']}")
         print(f"  - 成功率: {result['execution_summary']['success_rate']:.1%}")
         print(f"  - 銘柄切替回数: {result['execution_summary']['switch_count']}")
@@ -678,10 +678,10 @@ if __name__ == "__main__":
         # エクスポートテスト
         output_path = "test_dssms_result.json"
         if backtester.export_results(output_path, 'json'):
-            print(f"✅ エクスポート成功: {output_path}")
+            print(f"[OK] エクスポート成功: {output_path}")
         
-        print("\n🎉 DSSMSIntegratedBacktester 実装完了！")
+        print("\n[SUCCESS] DSSMSIntegratedBacktester 実装完了！")
         
     except Exception as e:
-        print(f"❌ テストエラー: {e}")
+        print(f"[ERROR] テストエラー: {e}")
         sys.exit(1)

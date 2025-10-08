@@ -16,7 +16,7 @@ def test_lazy_symbol_switch_manager():
     SymbolSwitchManagerClass, available = # lazy_modules除去: get_symbol_switch_manager()
     
     load_time = (time.time() - start_time) * 1000
-    print(f"✅ lazy loading取得: {load_time:.1f}ms")
+    print(f"[OK] lazy loading取得: {load_time:.1f}ms")
     
     if available:
         print(f"取得したクラス: {SymbolSwitchManagerClass.__name__}")
@@ -33,11 +33,11 @@ def test_lazy_symbol_switch_manager():
         
         ssm = SymbolSwitchManagerClass(config)
         evaluation = ssm.evaluate_symbol_switch(None, '7203', None)
-        print(f"✅ 動作確認: {evaluation['should_switch']} ({evaluation['reason']})")
+        print(f"[OK] 動作確認: {evaluation['should_switch']} ({evaluation['reason']})")
         
         return load_time
     else:
-        print("❌ SymbolSwitchManagerが取得できません")
+        print("[ERROR] SymbolSwitchManagerが取得できません")
         return None
 
 def test_direct_import_comparison():
@@ -47,7 +47,7 @@ def test_direct_import_comparison():
     start_time = time.time()
     from src.dssms.symbol_switch_manager_fast import SymbolSwitchManagerFast
     direct_time = (time.time() - start_time) * 1000
-    print(f"✅ 直接インポート: {direct_time:.1f}ms")
+    print(f"[OK] 直接インポート: {direct_time:.1f}ms")
     
     return direct_time
 
@@ -64,7 +64,7 @@ def main():
         print(f"直接インポート: {direct_time:.1f}ms")
         
         if lazy_time < 100:
-            print("🎉 Lazy Loading版が100ms未満を達成！")
+            print("[SUCCESS] Lazy Loading版が100ms未満を達成！")
         
         # 統計表示
         stats = # lazy_modules除去: get_import_stats()

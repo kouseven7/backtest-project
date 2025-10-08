@@ -31,7 +31,7 @@ class CustomJSONEncoder(json.JSONEncoder):
 
 def analyze_data_quality():
     """データ品質分析実行"""
-    print("🔍 Task 5.4: データ品質調査開始")
+    print("[SEARCH] Task 5.4: データ品質調査開始")
     
     analysis_results = {
         "analysis_timestamp": datetime.now().isoformat(),
@@ -50,27 +50,27 @@ def analyze_data_quality():
     }
     
     # 1. データソース検出と分析
-    print("\n📊 Step 1: データソース検出")
+    print("\n[CHART] Step 1: データソース検出")
     data_sources = detect_data_sources()
     analysis_results["data_sources_analyzed"] = data_sources
     
     # 2. Delisting警告分析
-    print("\n⚠️ Step 2: Delisting警告分析")
+    print("\n[WARNING] Step 2: Delisting警告分析")
     delisting_analysis = analyze_delisting_warnings()
     analysis_results["delisting_warnings"] = delisting_analysis
     
     # 3. データ完全性分析
-    print("\n📈 Step 3: データ完全性分析")
+    print("\n[UP] Step 3: データ完全性分析")
     completeness_analysis = analyze_data_completeness()
     analysis_results["data_completeness"] = completeness_analysis
     
     # 4. データ品質統計
-    print("\n📊 Step 4: データ品質統計")
+    print("\n[CHART] Step 4: データ品質統計")
     quality_stats = analyze_quality_statistics()
     analysis_results["quality_statistics"] = quality_stats
     
     # 5. エラーパターン分析
-    print("\n🔍 Step 5: エラーパターン分析")
+    print("\n[SEARCH] Step 5: エラーパターン分析")
     error_patterns = analyze_error_patterns()
     analysis_results["error_patterns"] = error_patterns
     
@@ -90,12 +90,12 @@ def analyze_data_quality():
     analysis_results["data_preprocessing_issues"] = preprocessing_analysis
     
     # 9. 影響評価
-    print("\n📊 Step 9: 影響評価")
+    print("\n[CHART] Step 9: 影響評価")
     impact_assessment = assess_impact_on_switching(analysis_results)
     analysis_results["impact_assessment"] = impact_assessment
     
     # 10. 総合分析
-    print("\n📋 Step 10: 総合分析")
+    print("\n[LIST] Step 10: 総合分析")
     summary = generate_summary_analysis(analysis_results)
     analysis_results["summary_findings"] = summary
     
@@ -104,9 +104,9 @@ def analyze_data_quality():
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(analysis_results, f, ensure_ascii=False, indent=2, cls=CustomJSONEncoder)
     
-    print(f"\n✅ Task 5.4 完了: {output_file}")
-    print(f"📊 データソース数: {len(data_sources)}")
-    print(f"⚠️ Delisting警告: {len(delisting_analysis)}")
+    print(f"\n[OK] Task 5.4 完了: {output_file}")
+    print(f"[CHART] データソース数: {len(data_sources)}")
+    print(f"[WARNING] Delisting警告: {len(delisting_analysis)}")
     print(f"💥 破損問題: {len(corruption_issues)}")
     print(f"📅 データギャップ: {len(gap_analysis)}")
     
@@ -166,7 +166,7 @@ def analyze_csv_data_source(file_path: str) -> Optional[Dict[str, Any]]:
             "memory_usage": int(sample_df.memory_usage(deep=True).sum())
         }
     except Exception as e:
-        print(f"⚠️ CSV分析エラー {file_path}: {e}")
+        print(f"[WARNING] CSV分析エラー {file_path}: {e}")
         return None
 
 def analyze_fetcher_source(file_path: str) -> Optional[Dict[str, Any]]:
@@ -207,7 +207,7 @@ def analyze_fetcher_source(file_path: str) -> Optional[Dict[str, Any]]:
             "has_retry_logic": "retry" in content.lower()
         }
     except Exception as e:
-        print(f"⚠️ Fetcher分析エラー {file_path}: {e}")
+        print(f"[WARNING] Fetcher分析エラー {file_path}: {e}")
         return None
 
 def analyze_processor_source(file_path: str) -> Optional[Dict[str, Any]]:
@@ -233,7 +233,7 @@ def analyze_processor_source(file_path: str) -> Optional[Dict[str, Any]]:
             "total_operations": sum(processing_operations.values())
         }
     except Exception as e:
-        print(f"⚠️ Processor分析エラー {file_path}: {e}")
+        print(f"[WARNING] Processor分析エラー {file_path}: {e}")
         return None
 
 def analyze_delisting_warnings() -> List[Dict[str, Any]]:
@@ -268,7 +268,7 @@ def analyze_delisting_warnings() -> List[Dict[str, Any]]:
                         "severity": determine_delisting_severity(match)
                     })
         except Exception as e:
-            print(f"⚠️ ログ分析エラー {log_file}: {e}")
+            print(f"[WARNING] ログ分析エラー {log_file}: {e}")
     
     # コードファイルからdelisting関連処理を検索
     code_files = find_files_by_pattern("**/*.py")
@@ -368,7 +368,7 @@ def analyze_data_completeness() -> Dict[str, Any]:
             analyzed_files += 1
             
         except Exception as e:
-            print(f"⚠️ 完全性分析エラー {csv_file}: {e}")
+            print(f"[WARNING] 完全性分析エラー {csv_file}: {e}")
     
     if analyzed_files > 0:
         completeness["overall_completeness_score"] = total_completeness / analyzed_files
@@ -396,7 +396,7 @@ def find_date_gaps(date_series: pd.Series) -> List[Dict[str, Any]]:
                     "gap_days": gap_days
                 })
     except Exception as e:
-        print(f"⚠️ 日付ギャップ検出エラー: {e}")
+        print(f"[WARNING] 日付ギャップ検出エラー: {e}")
     
     return gaps
 
@@ -648,7 +648,7 @@ def detect_business_day_gaps(date_series: pd.Series) -> List[Dict[str, Any]]:
                     "calendar_days": actual_gap
                 })
     except Exception as e:
-        print(f"⚠️ 営業日ギャップ検出エラー: {e}")
+        print(f"[WARNING] 営業日ギャップ検出エラー: {e}")
     
     return gaps
 
@@ -971,7 +971,7 @@ if __name__ == "__main__":
         
         # 結果サマリー表示
         summary = results["summary_findings"]
-        print(f"\n📊 データ品質分析サマリー:")
+        print(f"\n[CHART] データ品質分析サマリー:")
         print(f"データソース数: {summary['total_data_sources']}")
         print(f"Delisting警告: {summary['delisting_warnings_count']}")
         print(f"データ破損ファイル: {summary['data_corruption_files']}")
@@ -981,11 +981,11 @@ if __name__ == "__main__":
         print(f"データ健全性: {summary['data_health_status']}")
         
         if summary["primary_concerns"]:
-            print(f"\n⚠️ 主要懸念事項:")
+            print(f"\n[WARNING] 主要懸念事項:")
             for concern in summary["primary_concerns"]:
                 print(f"  - {concern}")
         
     except Exception as e:
-        print(f"❌ Task 5.4 エラー: {e}")
+        print(f"[ERROR] Task 5.4 エラー: {e}")
         import traceback
         traceback.print_exc()

@@ -94,22 +94,22 @@ class DuplicateFunctionAnalyzer:
         
         try:
             # 1. 各エンジンの機能分析
-            logger.info("🔍 エンジン機能分析実行")
+            logger.info("[SEARCH] エンジン機能分析実行")
             engine_functions = self._analyze_engine_functions()
             analysis_summary['function_analysis'] = engine_functions
             
             # 2. 重複機能検出
-            logger.info("🔍 重複機能検出実行")
+            logger.info("[SEARCH] 重複機能検出実行")
             duplication_analysis = self._detect_function_duplications(engine_functions)
             analysis_summary['duplication_metrics'] = duplication_analysis
             
             # 3. 統合機会分析
-            logger.info("🔍 統合機会分析実行")
+            logger.info("[SEARCH] 統合機会分析実行")
             consolidation_analysis = self._analyze_consolidation_opportunities(duplication_analysis)
             analysis_summary['consolidation_opportunities'] = consolidation_analysis
             
             # 4. 整理率計算
-            logger.info("🔍 整理率計算実行")
+            logger.info("[SEARCH] 整理率計算実行")
             organization_rate = self._calculate_organization_rate(duplication_analysis, consolidation_analysis)
             analysis_summary['organization_rate'] = organization_rate
             
@@ -121,17 +121,17 @@ class DuplicateFunctionAnalyzer:
             
             # 結果報告
             logger.info("=== 重複機能整理率測定完了 ===")
-            logger.info(f"📊 整理率: {organization_rate:.1f}%")
+            logger.info(f"[CHART] 整理率: {organization_rate:.1f}%")
             
             if analysis_summary['kpi_achievement']:
-                logger.info("🎯 KPI達成: >90%整理率達成")
+                logger.info("[TARGET] KPI達成: >90%整理率達成")
             else:
-                logger.warning(f"⚠️ KPI未達: 整理率{organization_rate:.1f}% (目標90%)")
+                logger.warning(f"[WARNING] KPI未達: 整理率{organization_rate:.1f}% (目標90%)")
             
             return analysis_summary
             
         except Exception as e:
-            logger.error(f"❌ 重複機能分析エラー: {str(e)}")
+            logger.error(f"[ERROR] 重複機能分析エラー: {str(e)}")
             analysis_summary['error'] = str(e)
             return analysis_summary
     
@@ -350,33 +350,33 @@ def main():
         organization_rate = results.get('organization_rate', 0.0)
         kpi_achievement = results.get('kpi_achievement', False)
         
-        print(f"\n📊 重複機能整理率測定結果")
-        print(f"🎯 整理率: {organization_rate:.1f}%")
-        print(f"📋 KPI達成: {'✅ 達成' if kpi_achievement else '❌ 未達成'} (目標90%)")
+        print(f"\n[CHART] 重複機能整理率測定結果")
+        print(f"[TARGET] 整理率: {organization_rate:.1f}%")
+        print(f"[LIST] KPI達成: {'[OK] 達成' if kpi_achievement else '[ERROR] 未達成'} (目標90%)")
         
         # 統合機会情報
         consolidation_ops = results.get('consolidation_opportunities', {})
         high_priority = len(consolidation_ops.get('high_priority_consolidations', []))
         medium_priority = len(consolidation_ops.get('medium_priority_consolidations', []))
         
-        print(f"🔧 統合機会: 高優先度{high_priority}項目, 中優先度{medium_priority}項目")
+        print(f"[TOOL] 統合機会: 高優先度{high_priority}項目, 中優先度{medium_priority}項目")
         
         if kpi_achievement:
-            print(f"\n🎉 重複機能整理率>90%達成！")
+            print(f"\n[SUCCESS] 重複機能整理率>90%達成！")
         else:
-            print(f"\n⚠️ 追加の機能統合が必要です")
+            print(f"\n[WARNING] 追加の機能統合が必要です")
         
         return results
         
     except Exception as e:
-        logger.error(f"❌ 重複機能分析エラー: {str(e)}")
+        logger.error(f"[ERROR] 重複機能分析エラー: {str(e)}")
         return None
 
 if __name__ == "__main__":
     result = main()
     if result and result.get('kpi_achievement'):
-        print("\n✅ 重複機能整理率KPI達成確認完了")
+        print("\n[OK] 重複機能整理率KPI達成確認完了")
         sys.exit(0)
     else:
-        print("\n❌ 重複機能整理率KPI未達成")
+        print("\n[ERROR] 重複機能整理率KPI未達成")
         sys.exit(1)

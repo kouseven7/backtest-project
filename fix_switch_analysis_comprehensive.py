@@ -312,9 +312,9 @@ def test_switch_analysis_fix():
 if __name__ == "__main__":
     success = test_switch_analysis_fix()
     if success:
-        print("✅ 切替分析修正の検証に成功しました")
+        print("[OK] 切替分析修正の検証に成功しました")
     else:
-        print("❌ 切替分析修正の検証に失敗しました")
+        print("[ERROR] 切替分析修正の検証に失敗しました")
         sys.exit(1)
 '''
     
@@ -342,7 +342,7 @@ def main():
     
     # 結果レポート
     logger.info("=== 修正完了レポート ===")
-    logger.info(f"Excel エクスポーター修正: {'✅ 成功' if excel_success else '❌ 失敗'}")
+    logger.info(f"Excel エクスポーター修正: {'[OK] 成功' if excel_success else '[ERROR] 失敗'}")
     
     if excel_success:
         logger.info("修正内容:")

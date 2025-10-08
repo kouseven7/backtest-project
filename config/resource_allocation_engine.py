@@ -563,12 +563,12 @@ if __name__ == "__main__":
         # デモ戦略リスト
         demo_strategies = ["VWAPBounceStrategy", "GCStrategy", "BreakoutStrategy", "OpeningGapStrategy"]
         
-        print(f"\n🎯 Testing resource allocation for strategies: {demo_strategies}")
+        print(f"\n[TARGET] Testing resource allocation for strategies: {demo_strategies}")
         
         # リソース配分実行
         allocations = engine.allocate_resources(demo_strategies)
         
-        print(f"\n📊 Resource Allocation Results:")
+        print(f"\n[CHART] Resource Allocation Results:")
         print("-" * 50)
         for allocation in allocations:
             print(f"Strategy: {allocation.strategy_name}")
@@ -588,20 +588,20 @@ if __name__ == "__main__":
         print("🔄 Running load balancing optimization...")
         optimization = engine.optimize_load_balancing(demo_stats)
         
-        print(f"\n📈 Optimization Results:")
+        print(f"\n[UP] Optimization Results:")
         print(f"  Total CPU Usage: {optimization.total_cpu_usage:.2f}")
         print(f"  Total Memory Usage: {optimization.total_memory_usage}MB")
         print(f"  Est. Completion Time: {optimization.estimated_completion_time:.1f}s")
         print(f"  Optimization Score: {optimization.optimization_score:.2f}")
         
         if optimization.recommendations:
-            print(f"\n💡 Recommendations:")
+            print(f"\n[IDEA] Recommendations:")
             for i, rec in enumerate(optimization.recommendations, 1):
                 print(f"  {i}. {rec}")
         
         # リソース使用統計
         stats = engine.get_resource_usage_stats()
-        print(f"\n📊 Resource Usage Statistics:")
+        print(f"\n[CHART] Resource Usage Statistics:")
         if stats['current_load']:
             load = stats['current_load']
             print(f"  Current CPU: {load['cpu_percent']:.1f}%")
@@ -609,10 +609,10 @@ if __name__ == "__main__":
         
         print(f"  Allocation History: {stats['allocation_count']} entries")
         
-        print("\n✅ Resource Allocation Engine demo completed successfully!")
+        print("\n[OK] Resource Allocation Engine demo completed successfully!")
         
     except Exception as e:
-        print(f"\n❌ Demo failed: {e}")
+        print(f"\n[ERROR] Demo failed: {e}")
         import traceback
         traceback.print_exc()
         

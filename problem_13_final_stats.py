@@ -23,7 +23,7 @@ def generate_final_statistics():
     print()
     print('=== KPI結果 ===')
     print(f'85.0点品質基準達成率: {len(classification["adopted"])/total_engines*100:.1f}%')
-    print(f'エンジン競合解決済み: ✅ COMPLETED')
+    print(f'エンジン競合解決済み: [OK] COMPLETED')
     print(f'品質向上効果: 高品質エンジンのみ維持')
     print()
     print('=== アーカイブ済みファイル ===')
@@ -32,7 +32,7 @@ def generate_final_statistics():
         for file in os.listdir(archive_path):
             print(f'  📁 {file}')
     print()
-    print('🎉 Problem 13 "エンジン競合解決" 実装完了!')
+    print('[SUCCESS] Problem 13 "エンジン競合解決" 実装完了!')
     
     return {
         'total_engines': total_engines,

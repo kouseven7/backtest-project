@@ -48,10 +48,10 @@ def verify_production_ready_prerequisites():
             
             system_mode = config.get('system_mode', 'development').lower()
             prerequisites_status['system_mode'] = system_mode == 'production'
-            print(f"✅ システムモード確認: {system_mode}")
+            print(f"[OK] システムモード確認: {system_mode}")
         else:
             prerequisites_status['system_mode'] = False
-            print("❌ 設定ファイルが見つかりません")
+            print("[ERROR] 設定ファイルが見つかりません")
         
         # 2. フォールバック使用量確認
         fallback_files = [
@@ -69,7 +69,7 @@ def verify_production_ready_prerequisites():
                 total_fallback_calls += count
         
         prerequisites_status['fallback_usage'] = total_fallback_calls == 0
-        print(f"✅ フォールバック使用量: {total_fallback_calls}件")
+        print(f"[OK] フォールバック使用量: {total_fallback_calls}件")
         
         # 3. エラーハンドリング確認
         try:
@@ -81,10 +81,10 @@ def verify_production_ready_prerequisites():
             error_handler = EnhancedErrorHandler(fallback_policy)
             
             prerequisites_status['error_handling'] = True
-            print("✅ 直接エラーハンドリング確認: 正常初期化")
+            print("[OK] 直接エラーハンドリング確認: 正常初期化")
         except Exception as e:
             prerequisites_status['error_handling'] = False
-            print(f"❌ 直接エラーハンドリング確認: {e}")
+            print(f"[ERROR] 直接エラーハンドリング確認: {e}")
         
         # 4. Mock data確認 (テストデータとの分離)
         mock_patterns = ['MOCK_', 'TEST_', 'DEMO_']
@@ -108,7 +108,7 @@ def verify_production_ready_prerequisites():
         ]
         
         prerequisites_status['mock_data'] = len(problematic_mock_files) == 0
-        print(f"✅ Mock dataチェック: {len(problematic_mock_files)}件問題ファイル")
+        print(f"[OK] Mock dataチェック: {len(problematic_mock_files)}件問題ファイル")
         
         # 5. TODO(tag:phase2)解決確認
         todo_files = ['src/config/enhanced_error_handling.py', 'config/multi_strategy_manager.py']
@@ -123,25 +123,25 @@ def verify_production_ready_prerequisites():
                 total_todo_phase2 += count
         
         prerequisites_status['todo_resolution'] = total_todo_phase2 == 0
-        print(f"✅ TODO(tag:phase2)解決確認: {total_todo_phase2}件残存")
+        print(f"[OK] TODO(tag:phase2)解決確認: {total_todo_phase2}件残存")
         
         # 総合判定
         all_passed = all(prerequisites_status.values())
         
         print(f"\n--- 本番環境テスト前提条件確認結果 ---")
         for key, status in prerequisites_status.items():
-            result = "✅ PASS" if status else "❌ FAIL"
+            result = "[OK] PASS" if status else "[ERROR] FAIL"
             print(f"{key:20} : {result}")
         
         if all_passed:
-            print("🎉 本番環境テスト前提条件: 全て満足")
+            print("[SUCCESS] 本番環境テスト前提条件: 全て満足")
             return True
         else:
-            print("⚠️ 本番環境テスト前提条件: 未満足項目あり")
+            print("[WARNING] 本番環境テスト前提条件: 未満足項目あり")
             return False
         
     except Exception as e:
-        print(f"❌ 前提条件確認エラー: {e}")
+        print(f"[ERROR] 前提条件確認エラー: {e}")
         return False
 
 
@@ -178,9 +178,9 @@ def execute_production_7_strategy_integration_test():
             integration_results['multi_strategy_manager_init'] = init_result
             integration_results['performance_metrics']['init_time_ms'] = round(init_time * 1000, 2)
             
-            print(f"✅ MultiStrategyManager初期化: {init_result} ({init_time:.3f}s)")
+            print(f"[OK] MultiStrategyManager初期化: {init_result} ({init_time:.3f}s)")
         else:
-            print("❌ initialize_systemメソッドが見つかりません")
+            print("[ERROR] initialize_systemメソッドが見つかりません")
         
         # 2. 戦略レジストリ確認
         print("2. 7戦略レジストリ確認...")
@@ -192,7 +192,7 @@ def execute_production_7_strategy_integration_test():
             integration_results['strategy_registry'] = strategy_count >= 7
             integration_results['performance_metrics']['strategy_count'] = strategy_count
             
-            print(f"✅ 戦略レジストリ: {strategy_count}戦略登録確認")
+            print(f"[OK] 戦略レジストリ: {strategy_count}戦略登録確認")
             
             # 戦略詳細確認
             if strategies:
@@ -203,7 +203,7 @@ def execute_production_7_strategy_integration_test():
                 if strategy_count > 5:
                     print(f"   ... and {strategy_count - 5} more strategies")
         else:
-            print("⚠️ get_available_strategiesメソッドが見つかりません")
+            print("[WARNING] get_available_strategiesメソッドが見つかりません")
         
         # 3. データ統合テスト
         print("3. データ統合システムテスト...")
@@ -225,9 +225,9 @@ def execute_production_7_strategy_integration_test():
             integration_results['data_integration'] = len(test_data) > 0
             integration_results['performance_metrics']['data_points'] = len(test_data)
             
-            print(f"✅ データ統合: {len(test_data)}データポイント生成")
+            print(f"[OK] データ統合: {len(test_data)}データポイント生成")
         except Exception as e:
-            print(f"⚠️ データ統合テスト: {e}")
+            print(f"[WARNING] データ統合テスト: {e}")
         
         # 4. バックテスト実行シミュレーション
         print("4. バックテスト実行シミュレーション...")
@@ -250,7 +250,7 @@ def execute_production_7_strategy_integration_test():
         integration_results['performance_metrics']['backtest_time_ms'] = round(backtest_time * 1000, 2)
         integration_results['performance_metrics'].update(simulated_results)
         
-        print(f"✅ バックテスト実行: {simulated_results['total_trades']}取引・勝率{simulated_results['win_rate']:.1%}")
+        print(f"[OK] バックテスト実行: {simulated_results['total_trades']}取引・勝率{simulated_results['win_rate']:.1%}")
         
         # 5. Production制約確認
         print("5. Production制約強制確認...")
@@ -263,7 +263,7 @@ def execute_production_7_strategy_integration_test():
             
             integration_results['production_constraints'] = is_production_mode and fallback_usage == 0
             
-            print(f"✅ Production制約: モード={readiness.get('system_mode', 'unknown')}, フォールバック={fallback_usage}件")
+            print(f"[OK] Production制約: モード={readiness.get('system_mode', 'unknown')}, フォールバック={fallback_usage}件")
         
         # 6. エラーハンドリング確認
         print("6. Production エラーハンドリング確認...")
@@ -286,15 +286,15 @@ def execute_production_7_strategy_integration_test():
             )
             
             integration_results['error_handling'] = True
-            print("✅ Production エラーハンドリング: WARNING継続動作確認")
+            print("[OK] Production エラーハンドリング: WARNING継続動作確認")
             
         except Exception as e:
-            print(f"⚠️ Production エラーハンドリング: {e}")
+            print(f"[WARNING] Production エラーハンドリング: {e}")
         
         return integration_results
         
     except Exception as e:
-        print(f"❌ 7戦略統合テストエラー: {e}")
+        print(f"[ERROR] 7戦略統合テストエラー: {e}")
         return integration_results
 
 
@@ -340,7 +340,7 @@ def execute_production_performance_validation():
         current_memory = process.memory_info().rss / 1024 / 1024  # MB
         performance_results['memory_usage_mb'] = round(current_memory - baseline_memory, 2)
         
-        print(f"✅ 初期化時間: {init_time:.2f}ms, メモリ使用量: {performance_results['memory_usage_mb']:.2f}MB")
+        print(f"[OK] 初期化時間: {init_time:.2f}ms, メモリ使用量: {performance_results['memory_usage_mb']:.2f}MB")
         
         # 2. 戦略実行パフォーマンス
         print("2. 戦略実行パフォーマンステスト...")
@@ -354,7 +354,7 @@ def execute_production_performance_validation():
         strategy_time = (time.time() - strategy_start) * 1000
         performance_results['strategy_execution_time_ms'] = round(strategy_time, 2)
         
-        print(f"✅ 7戦略実行時間: {strategy_time:.2f}ms")
+        print(f"[OK] 7戦略実行時間: {strategy_time:.2f}ms")
         
         # 3. データ処理パフォーマンス
         print("3. データ処理パフォーマンステスト...")
@@ -375,13 +375,13 @@ def execute_production_performance_validation():
         data_time = (time.time() - data_start) * 1000
         performance_results['data_processing_time_ms'] = round(data_time, 2)
         
-        print(f"✅ データ処理時間: {data_time:.2f}ms (10,000データポイント)")
+        print(f"[OK] データ処理時間: {data_time:.2f}ms (10,000データポイント)")
         
         # 4. CPU使用率確認
         cpu_usage = psutil.cpu_percent(interval=1)
         performance_results['cpu_usage_percent'] = round(cpu_usage, 2)
         
-        print(f"✅ CPU使用率: {cpu_usage:.2f}%")
+        print(f"[OK] CPU使用率: {cpu_usage:.2f}%")
         
         # 5. 総合パフォーマンススコア計算
         # スコア計算: 初期化時間、メモリ使用量、実行時間を重み付け評価
@@ -392,12 +392,12 @@ def execute_production_performance_validation():
         overall_score = (init_score + memory_score + execution_score) / 3
         performance_results['overall_performance_score'] = round(overall_score, 1)
         
-        print(f"✅ 総合パフォーマンススコア: {overall_score:.1f}/100")
+        print(f"[OK] 総合パフォーマンススコア: {overall_score:.1f}/100")
         
         return performance_results
         
     except Exception as e:
-        print(f"❌ パフォーマンス検証エラー: {e}")
+        print(f"[ERROR] パフォーマンス検証エラー: {e}")
         return performance_results
 
 
@@ -442,7 +442,7 @@ def execute_production_stress_test():
         avg_execution_time = sum(execution_times) / len(execution_times)
         stress_results['high_load_test'] = avg_execution_time < 0.1  # 100ms以下
         
-        print(f"✅ 高負荷テスト: 平均実行時間 {avg_execution_time:.4f}s")
+        print(f"[OK] 高負荷テスト: 平均実行時間 {avg_execution_time:.4f}s")
         
         # 2. エラー回復テスト
         print("2. エラー回復テスト...")
@@ -475,10 +475,10 @@ def execute_production_stress_test():
                     pass  # Production mode expected behavior
             
             stress_results['error_recovery_test'] = successful_recoveries >= 2
-            print(f"✅ エラー回復テスト: {successful_recoveries}/{len(error_scenarios)} 成功")
+            print(f"[OK] エラー回復テスト: {successful_recoveries}/{len(error_scenarios)} 成功")
             
         except Exception as e:
-            print(f"⚠️ エラー回復テスト: {e}")
+            print(f"[WARNING] エラー回復テスト: {e}")
         
         # 3. リソース制限テスト
         print("3. リソース制限テスト...")
@@ -502,10 +502,10 @@ def execute_production_stress_test():
             memory_increase = final_memory - initial_memory
             
             stress_results['resource_limit_test'] = memory_increase < 150  # 150MB以下
-            print(f"✅ リソース制限テスト: メモリ増加 {memory_increase:.2f}MB")
+            print(f"[OK] リソース制限テスト: メモリ増加 {memory_increase:.2f}MB")
             
         except Exception as e:
-            print(f"⚠️ リソース制限テスト: {e}")
+            print(f"[WARNING] リソース制限テスト: {e}")
         
         # 4. 同時実行テスト
         print("4. 同時実行テスト...")
@@ -534,7 +534,7 @@ def execute_production_stress_test():
                     successful_tasks += 1
         
         stress_results['concurrent_execution_test'] = successful_tasks >= 3
-        print(f"✅ 同時実行テスト: {successful_tasks}/5 タスク成功")
+        print(f"[OK] 同時実行テスト: {successful_tasks}/5 タスク成功")
         
         # 5. 安定性スコア計算
         passed_tests = sum([
@@ -546,12 +546,12 @@ def execute_production_stress_test():
         
         stress_results['stability_score'] = (passed_tests / 4) * 100
         
-        print(f"✅ 安定性スコア: {stress_results['stability_score']:.1f}/100")
+        print(f"[OK] 安定性スコア: {stress_results['stability_score']:.1f}/100")
         
         return stress_results
         
     except Exception as e:
-        print(f"❌ ストレステストエラー: {e}")
+        print(f"[ERROR] ストレステストエラー: {e}")
         return stress_results
 
 
@@ -566,7 +566,7 @@ def generate_production_test_report(
     TODO(tag:phase3, rationale:Production制約下テスト結果・総合評価レポート)
     """
     print("\n" + "=" * 60)
-    print("📊 本番環境テスト完了レポート")
+    print("[CHART] 本番環境テスト完了レポート")
     print("=" * 60)
     
     # 総合評価計算
@@ -587,39 +587,39 @@ def generate_production_test_report(
     overall_score = sum(overall_scores.values()) / len(overall_scores)
     
     # レポート出力
-    print(f"🎯 総合評価スコア: {overall_score:.1f}/100")
+    print(f"[TARGET] 総合評価スコア: {overall_score:.1f}/100")
     print(f"   前提条件: {overall_scores['prerequisites']:.1f}/100")
     print(f"   統合テスト: {overall_scores['integration']:.1f}/100")
     print(f"   パフォーマンス: {overall_scores['performance']:.1f}/100")
     print(f"   安定性: {overall_scores['stability']:.1f}/100")
     
-    print(f"\n📈 パフォーマンス指標")
+    print(f"\n[UP] パフォーマンス指標")
     print(f"   初期化時間: {performance_results.get('initialization_time_ms', 0):.2f}ms")
     print(f"   メモリ使用量: {performance_results.get('memory_usage_mb', 0):.2f}MB")
     print(f"   7戦略実行時間: {performance_results.get('strategy_execution_time_ms', 0):.2f}ms")
     print(f"   データ処理時間: {performance_results.get('data_processing_time_ms', 0):.2f}ms")
     
     print(f"\n🔒 Production制約確認")
-    print(f"   フォールバック使用量: 0件 ✅")
-    print(f"   システムMode: Production ✅")
-    print(f"   エラーハンドリング: Direct ✅")
-    print(f"   Mock data: Eliminated ✅")
+    print(f"   フォールバック使用量: 0件 [OK]")
+    print(f"   システムMode: Production [OK]")
+    print(f"   エラーハンドリング: Direct [OK]")
+    print(f"   Mock data: Eliminated [OK]")
     
     # 総合判定
     if overall_score >= 90:
-        print(f"\n🎉 本番環境テスト: 優秀 (スコア: {overall_score:.1f}/100)")
+        print(f"\n[SUCCESS] 本番環境テスト: 優秀 (スコア: {overall_score:.1f}/100)")
         print("   → Production環境展開準備完了")
         final_result = "EXCELLENT"
     elif overall_score >= 80:
-        print(f"\n✅ 本番環境テスト: 良好 (スコア: {overall_score:.1f}/100)")
+        print(f"\n[OK] 本番環境テスト: 良好 (スコア: {overall_score:.1f}/100)")
         print("   → Production環境展開可能")
         final_result = "GOOD"
     elif overall_score >= 70:
-        print(f"\n⚠️ 本番環境テスト: 合格 (スコア: {overall_score:.1f}/100)")
+        print(f"\n[WARNING] 本番環境テスト: 合格 (スコア: {overall_score:.1f}/100)")
         print("   → 軽微な改善後Production展開推奨")
         final_result = "ACCEPTABLE"
     else:
-        print(f"\n❌ 本番環境テスト: 要改善 (スコア: {overall_score:.1f}/100)")
+        print(f"\n[ERROR] 本番環境テスト: 要改善 (スコア: {overall_score:.1f}/100)")
         print("   → 改善作業後再テスト必要")
         final_result = "NEEDS_IMPROVEMENT"
     
@@ -650,14 +650,14 @@ def execute_production_environment_complete_test():
     本番環境テスト完了統合実行
     TODO(tag:phase3, rationale:Production制約下完全テスト統合実行)
     """
-    print("🚀 Phase 3: 本番環境テスト完了開始")
+    print("[ROCKET] Phase 3: 本番環境テスト完了開始")
     print("=" * 60)
     
     # 1. 前提条件確認
     prerequisites_ok = verify_production_ready_prerequisites()
     
     if not prerequisites_ok:
-        print("❌ 前提条件未満足のため、テスト中断")
+        print("[ERROR] 前提条件未満足のため、テスト中断")
         return False
     
     # 2. 7戦略統合テスト実行

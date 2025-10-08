@@ -45,14 +45,14 @@ def final_verification_test():
             total_return = result.get('total_return', 0)
             final_value = result.get('final_value', 0)
             
-            print(f"\n📊 1年間修正後の結果:")
+            print(f"\n[CHART] 1年間修正後の結果:")
             print(f"切替回数: {switch_count}回/年")
             print(f"平均保有期間: {avg_holding:.1f}時間")
             print(f"総リターン: {total_return:.2%}")
             print(f"最終価値: {final_value:,.0f}円")
             
             # 改善効果の総合判定
-            print(f"\n✅ 改善効果判定:")
+            print(f"\n[OK] 改善効果判定:")
             
             if switch_count <= 50:
                 print(f"🟢 切替頻度: 優秀 ({switch_count}回 ≤ 50回)")
@@ -74,26 +74,26 @@ def final_verification_test():
                 print(f"🔴 総リターン: 損失 ({total_return:.2%})")
             
             # 原本との比較
-            print(f"\n📈 改善前との比較:")
+            print(f"\n[UP] 改善前との比較:")
             print(f"切替回数: 212回 → {switch_count}回 ({((212-switch_count)/212*100):.1f}%削減)")
             print(f"保有期間: 24時間 → {avg_holding:.1f}時間")
             
             return True
         else:
-            print(f"❌ テスト失敗: {result.get('error')}")
+            print(f"[ERROR] テスト失敗: {result.get('error')}")
             return False
             
     except Exception as e:
-        print(f"❌ テストエラー: {e}")
+        print(f"[ERROR] テストエラー: {e}")
         return False
 
 if __name__ == "__main__":
     success = final_verification_test()
     if success:
-        print("\n🎉 DSSMS修正完了! 切替過多問題は解決されました")
-        print("\n📋 次の手順:")
+        print("\n[SUCCESS] DSSMS修正完了! 切替過多問題は解決されました")
+        print("\n[LIST] 次の手順:")
         print("1. 本格運用前のさらなるパラメータ調整")
         print("2. 実データでの検証")
         print("3. リスク管理機能の強化")
     else:
-        print("\n❌ さらなる修正が必要です")
+        print("\n[ERROR] さらなる修正が必要です")

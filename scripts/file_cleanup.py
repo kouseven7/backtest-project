@@ -134,7 +134,7 @@ class FileCleanupManager:
             'unknown': []
         }
         
-        self.logger.info("🔍 Cleanup candidate identification starting...")
+        self.logger.info("[SEARCH] Cleanup candidate identification starting...")
         
         for root, dirs, files in os.walk(self.project_root):
             # .git等のスキップ
@@ -189,7 +189,7 @@ class FileCleanupManager:
         for category, file_list in candidates.items():
             self.cleanup_stats['categories'][category] = len(file_list)
         
-        self.logger.info(f"📋 Candidates identified: "
+        self.logger.info(f"[LIST] Candidates identified: "
                         f"Aggressive={len(candidates['aggressive'])}, "
                         f"Careful={len(candidates['careful'])}, "
                         f"Unknown={len(candidates['unknown'])}")
@@ -201,13 +201,13 @@ class FileCleanupManager:
         try:
             # 保護再確認
             if self.is_protected_file(file_path):
-                self.logger.warning(f"🚨 PROTECTION VIOLATION PREVENTED: {file_path}")
+                self.logger.warning(f"[ALERT] PROTECTION VIOLATION PREVENTED: {file_path}")
                 return False
             
             file_size = file_path.stat().st_size
             
             if self.dry_run:
-                self.logger.info(f"🔍 DRY-RUN DELETE: {file_path} ({file_size/1024:.1f} KB)")
+                self.logger.info(f"[SEARCH] DRY-RUN DELETE: {file_path} ({file_size/1024:.1f} KB)")
                 self.cleanup_stats['files_deleted'] += 1
                 self.cleanup_stats['space_freed_mb'] += file_size / (1024 * 1024)
                 return True
@@ -243,7 +243,7 @@ class FileCleanupManager:
                        max_files: Optional[int] = None) -> Dict[str, Any]:
         """ファイル整理実行"""
         
-        self.logger.info(f"🚀 Problem 18 File Cleanup Execution Starting...")
+        self.logger.info(f"[ROCKET] Problem 18 File Cleanup Execution Starting...")
         self.logger.info(f"   Mode: {'DRY-RUN' if self.dry_run else 'LIVE'}")
         self.logger.info(f"   Aggressive: {include_aggressive}, Careful: {include_careful}")
         
@@ -259,7 +259,7 @@ class FileCleanupManager:
         
         if include_careful:
             delete_queue.extend(candidates['careful'])
-            self.logger.info(f"⚠️  Added {len(candidates['careful'])} careful cleanup files")
+            self.logger.info(f"[WARNING]  Added {len(candidates['careful'])} careful cleanup files")
         
         # ファイル数制限
         if max_files and len(delete_queue) > max_files:
@@ -281,7 +281,7 @@ class FileCleanupManager:
             'success_rate': success_count / len(delete_queue) * 100 if delete_queue else 0
         }
         
-        self.logger.info(f"✅ Cleanup completed: {success_count}/{len(delete_queue)} files processed")
+        self.logger.info(f"[OK] Cleanup completed: {success_count}/{len(delete_queue)} files processed")
         self.logger.info(f"💾 Space freed: {self.cleanup_stats['space_freed_mb']:.2f} MB")
         
         return self.cleanup_stats
@@ -295,7 +295,7 @@ class FileCleanupManager:
             f"Mode: {'DRY-RUN SIMULATION' if self.dry_run else 'LIVE EXECUTION'}",
             "=" * 80,
             "",
-            "📊 Cleanup Results:",
+            "[CHART] Cleanup Results:",
             f"  - Files Processed: {self.cleanup_stats.get('files_deleted', 0):,}",
             f"  - Files Archived: {self.cleanup_stats.get('files_archived', 0):,}",
             f"  - Space Freed: {self.cleanup_stats.get('space_freed_mb', 0):.2f} MB",
@@ -312,7 +312,7 @@ class FileCleanupManager:
         if 'execution_summary' in self.cleanup_stats:
             summary = self.cleanup_stats['execution_summary']
             report_lines.extend([
-                "📈 Execution Summary:",
+                "[UP] Execution Summary:",
                 f"  - Candidates Found: {summary.get('candidates_found', 0):,}",
                 f"  - Files Processed: {summary.get('files_processed', 0):,}",
                 f"  - Success Rate: {summary.get('success_rate', 0):.1f}%",
@@ -331,7 +331,7 @@ class FileCleanupManager:
         # エラー情報
         if self.cleanup_stats.get('errors'):
             report_lines.extend([
-                "⚠️  Errors Encountered:",
+                "[WARNING]  Errors Encountered:",
             ])
             for error in self.cleanup_stats['errors'][:5]:
                 report_lines.append(f"  - {error}")
@@ -344,11 +344,11 @@ class FileCleanupManager:
         files_deleted = self.cleanup_stats.get('files_deleted', 0)
         
         report_lines.extend([
-            "🎯 Problem 18 KPI Achievement:",
+            "[TARGET] Problem 18 KPI Achievement:",
             f"  - Space Reduction: {freed_mb:.2f} MB freed",
             f"  - File Count Reduction: {files_deleted:,} files",
             f"  - Protection Success: {self.cleanup_stats.get('protected_accessed', 0)} access attempts blocked",
-            f"  - DSSMS Core Integrity: MAINTAINED ✅",
+            f"  - DSSMS Core Integrity: MAINTAINED [OK]",
         ])
         
         return "\n".join(report_lines)
@@ -412,7 +412,7 @@ def main():
     print(f"\n💾 Report saved: {report_file}")
     
     # KPI要約
-    print(f"\n🎯 Problem 18 KPI Summary:")
+    print(f"\n[TARGET] Problem 18 KPI Summary:")
     print(f"   - Files: {results.get('files_deleted', 0):,} deleted")
     print(f"   - Space: {results.get('space_freed_mb', 0):.2f} MB freed")
     print(f"   - Protection: {results.get('protected_accessed', 0)} access attempts blocked")

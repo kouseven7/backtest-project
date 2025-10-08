@@ -381,14 +381,14 @@ def main():
     print(f"総合結果: {success_count}/{total_tests} 成功")
     
     if success_count == total_tests:
-        print("🎉 全てのデモンストレーションが成功しました！")
+        print("[SUCCESS] 全てのデモンストレーションが成功しました！")
         print("次のステップ:")
         print("1. 実際の市場データでのテスト")
         print("2. 既存システムとの統合テスト")
         print("3. リアルタイム監視システムの構築")
         return 0
     else:
-        print("⚠️ 一部のデモンストレーションが失敗しました。")
+        print("[WARNING] 一部のデモンストレーションが失敗しました。")
         print("ログを確認して問題を解決してください。")
         return 1
 

@@ -41,20 +41,20 @@ def measure_performance_kpis() -> Dict[str, Any]:
         }
     }
     
-    print("📊 システム情報")
+    print("[CHART] システム情報")
     print(f"CPU数: {kpi_results['process_info']['cpu_count']}")
     print(f"総メモリ: {kpi_results['process_info']['memory_total_gb']:.1f}GB")
     print()
     
     # 1. メモリベースライン測定
-    print("🔍 Phase 1: メモリベースライン測定")
+    print("[SEARCH] Phase 1: メモリベースライン測定")
     memory_before = measure_memory_usage()
     kpi_results['memory_baseline'] = memory_before
     print(f"ベースラインメモリ使用量: {memory_before['memory_usage_mb']:.1f}MB")
     print()
     
     # 2. DSSMSBacktester初期化パフォーマンス測定
-    print("🔍 Phase 2: DSSMSBacktester初期化測定")
+    print("[SEARCH] Phase 2: DSSMSBacktester初期化測定")
     init_results = measure_backtester_initialization()
     kpi_results['initialization'] = init_results
     
@@ -62,21 +62,21 @@ def measure_performance_kpis() -> Dict[str, Any]:
         print(f"✓ 初期化成功: {init_results['execution_time']:.2f}s")
         print(f"✓ パフォーマンス最適化: {'有効' if init_results['optimization_enabled'] else '無効'}")
     else:
-        print(f"❌ 初期化失敗: {init_results['error']}")
+        print(f"[ERROR] 初期化失敗: {init_results['error']}")
         kpi_results['overall_success'] = False
         return kpi_results
     print()
     
     # 3. 50銘柄ランキング処理時間測定
-    print("🔍 Phase 3: 50銘柄ランキング処理時間測定")
+    print("[SEARCH] Phase 3: 50銘柄ランキング処理時間測定")
     ranking_results = measure_ranking_performance(init_results['backtester'])
     kpi_results['ranking_performance'] = ranking_results
     print(f"平均処理時間: {ranking_results['average_time']:.2f}s")
-    print(f"KPI達成(<30s): {'✓' if ranking_results['kpi_achieved'] else '❌'}")
+    print(f"KPI達成(<30s): {'✓' if ranking_results['kpi_achieved'] else '[ERROR]'}")
     print()
     
     # 4. メモリ使用量測定
-    print("🔍 Phase 4: メモリ使用量測定")
+    print("[SEARCH] Phase 4: メモリ使用量測定")
     memory_after = measure_memory_usage()
     memory_delta = memory_after['memory_usage_mb'] - memory_before['memory_usage_mb']
     kpi_results['memory_usage'] = {
@@ -89,24 +89,24 @@ def measure_performance_kpis() -> Dict[str, Any]:
     print()
     
     # 5. 85.0点エンジン品質確認
-    print("🔍 Phase 5: 85.0点エンジン品質確認")
+    print("[SEARCH] Phase 5: 85.0点エンジン品質確認")
     engine_quality = verify_85point_engine_quality()
     kpi_results['engine_quality'] = engine_quality
-    print(f"85.0点エンジン品質: {'✓ 維持' if engine_quality['maintained'] else '❌ 劣化'}")
+    print(f"85.0点エンジン品質: {'✓ 維持' if engine_quality['maintained'] else '[ERROR] 劣化'}")
     print()
     
     # 6. KPI総合評価
-    print("📊 KPI総合評価")
+    print("[CHART] KPI総合評価")
     kpi_achievement = evaluate_kpi_achievement(kpi_results)
     kpi_results['kpi_achievement'] = kpi_achievement
     
     for kpi, achieved in kpi_achievement.items():
-        status = "✓" if achieved else "❌"
+        status = "✓" if achieved else "[ERROR]"
         print(f"{status} {kpi}")
     
     kpi_results['overall_success'] = all(kpi_achievement.values())
     overall_status = "SUCCESS" if kpi_results['overall_success'] else "PARTIAL"
-    print(f"\n🎯 総合評価: {overall_status}")
+    print(f"\n[TARGET] 総合評価: {overall_status}")
     
     # 結果保存
     output_file = f"problem8_kpi_measurement_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"

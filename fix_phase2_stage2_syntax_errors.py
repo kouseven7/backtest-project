@@ -11,11 +11,11 @@ from pathlib import Path
 
 def fix_config_init_syntax():
     """config/__init__.py 構文エラー修正"""
-    print("🔧 config/__init__.py 構文エラー修正中...")
+    print("[TOOL] config/__init__.py 構文エラー修正中...")
     
     config_init = Path("config/__init__.py")
     if not config_init.exists():
-        print("  ❌ ファイルが存在しません")
+        print("  [ERROR] ファイルが存在しません")
         return False
     
     try:
@@ -37,20 +37,20 @@ def fix_config_init_syntax():
         with open(config_init, 'w', encoding='utf-8') as f:
             f.write(fixed_content)
         
-        print("  ✅ config/__init__.py 修正完了")
+        print("  [OK] config/__init__.py 修正完了")
         return True
         
     except Exception as e:
-        print(f"  ❌ 修正エラー: {e}")
+        print(f"  [ERROR] 修正エラー: {e}")
         return False
 
 def fix_correlation_init_syntax():
     """config/correlation/__init__.py 構文エラー修正"""
-    print("🔧 config/correlation/__init__.py 構文エラー修正中...")
+    print("[TOOL] config/correlation/__init__.py 構文エラー修正中...")
     
     correlation_init = Path("config/correlation/__init__.py")
     if not correlation_init.exists():
-        print("  ❌ ファイルが存在しません")
+        print("  [ERROR] ファイルが存在しません")
         return False
     
     try:
@@ -71,16 +71,16 @@ def fix_correlation_init_syntax():
         with open(correlation_init, 'w', encoding='utf-8') as f:
             f.write(fixed_content)
         
-        print("  ✅ config/correlation/__init__.py 修正完了")
+        print("  [OK] config/correlation/__init__.py 修正完了")
         return True
         
     except Exception as e:
-        print(f"  ❌ 修正エラー: {e}")
+        print(f"  [ERROR] 修正エラー: {e}")
         return False
 
 def validate_syntax():
     """構文検証"""
-    print("🔍 構文検証中...")
+    print("[SEARCH] 構文検証中...")
     
     import ast
     
@@ -98,23 +98,23 @@ def validate_syntax():
                     content = f.read()
                 
                 ast.parse(content)
-                print(f"  ✅ {file_path}: 構文OK")
+                print(f"  [OK] {file_path}: 構文OK")
                 
             except SyntaxError as e:
-                print(f"  ❌ {file_path}: 構文エラー - {e}")
+                print(f"  [ERROR] {file_path}: 構文エラー - {e}")
                 all_valid = False
             except Exception as e:
-                print(f"  ⚠️ {file_path}: 検証エラー - {e}")
+                print(f"  [WARNING] {file_path}: 検証エラー - {e}")
                 all_valid = False
         else:
-            print(f"  ❌ {file_path}: ファイル未存在")
+            print(f"  [ERROR] {file_path}: ファイル未存在")
             all_valid = False
     
     return all_valid
 
 def main():
     """メイン実行"""
-    print("🚀 TODO-PERF-001 Phase 2 Stage 2 構文エラー緊急修正開始")
+    print("[ROCKET] TODO-PERF-001 Phase 2 Stage 2 構文エラー緊急修正開始")
     print("="*60)
     
     success = True
@@ -128,17 +128,17 @@ def main():
         success = False
     
     # 3. 構文検証
-    print("\n🔍 修正結果検証")
+    print("\n[SEARCH] 修正結果検証")
     if validate_syntax():
-        print("✅ 全ファイル構文OK")
+        print("[OK] 全ファイル構文OK")
     else:
-        print("⚠️ 一部ファイルに構文問題あり")
+        print("[WARNING] 一部ファイルに構文問題あり")
         success = False
     
     if success:
-        print("\n🎉 構文エラー修正完了 - Stage 3進行可能")
+        print("\n[SUCCESS] 構文エラー修正完了 - Stage 3進行可能")
     else:
-        print("\n⚠️ 構文エラー修正に問題あり")
+        print("\n[WARNING] 構文エラー修正に問題あり")
     
     return success
 

@@ -42,11 +42,11 @@ class LazyLoader:
             self._loaded_modules[module_name] = module
             self._import_times[module_name] = load_time
             
-            logger.debug(f"✅ Lazy loaded: {module_name} ({load_time:.1f}ms)")
+            logger.debug(f"[OK] Lazy loaded: {module_name} ({load_time:.1f}ms)")
             return module, True
             
         except ImportError as e:
-            logger.warning(f"⚠️ Failed to load: {module_name} - {e}")
+            logger.warning(f"[WARNING] Failed to load: {module_name} - {e}")
             self._loaded_modules[module_name] = None
             return None, False
     
@@ -75,11 +75,11 @@ class LazyLoader:
         try:
             cls = getattr(module, class_name)
             self._loaded_modules[cache_key] = cls
-            logger.debug(f"✅ Lazy loaded class: {cache_key}")
+            logger.debug(f"[OK] Lazy loaded class: {cache_key}")
             return cls, True
             
         except AttributeError as e:
-            logger.warning(f"⚠️ Class not found: {cache_key} - {e}")
+            logger.warning(f"[WARNING] Class not found: {cache_key} - {e}")
             self._loaded_modules[cache_key] = None
             return None, False
     

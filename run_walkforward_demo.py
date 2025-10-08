@@ -151,11 +151,11 @@ def main():
         
         # 最終まとめ
         logger.info("\n" + "="*60)
-        logger.info("🎉 ウォークフォワードテストシステム実装完了 🎉")
+        logger.info("[SUCCESS] ウォークフォワードテストシステム実装完了 [SUCCESS]")
         logger.info("="*60)
-        logger.info("✅ Phase 2: パフォーマンス検証システム実装完了")
-        logger.info("✅ 全機能が正常に動作することを確認")
-        logger.info(f"✅ 出力ファイル: {excel_path}")
+        logger.info("[OK] Phase 2: パフォーマンス検証システム実装完了")
+        logger.info("[OK] 全機能が正常に動作することを確認")
+        logger.info(f"[OK] 出力ファイル: {excel_path}")
         logger.info("="*60)
         
         return True
@@ -216,9 +216,9 @@ def create_simulated_walkforward_results():
 if __name__ == "__main__":
     success = main()
     if success:
-        print("\n✅ デモ実行完了！")
+        print("\n[OK] デモ実行完了！")
         print("詳細はログファイルを確認してください。")
     else:
-        print("\n❌ デモ実行中にエラーが発生しました。")
+        print("\n[ERROR] デモ実行中にエラーが発生しました。")
         print("ログファイルでエラー詳細を確認してください。")
         sys.exit(1)

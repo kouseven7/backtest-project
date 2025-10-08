@@ -77,7 +77,7 @@ class WeightJudgmentSystemVerificationSuite:
         MultiStrategyManager基本動作確認
         TODO #1修正効果の実証確認
         """
-        print("\n🔍 Step 1: MultiStrategyManager基本動作確認実行中...")
+        print("\n[SEARCH] Step 1: MultiStrategyManager基本動作確認実行中...")
         
         functionality_results = {
             'step_name': 'MultiStrategyManager Basic Functionality',
@@ -93,7 +93,7 @@ class WeightJudgmentSystemVerificationSuite:
             from config.multi_strategy_manager import MultiStrategyManager
             functionality_results['import_success'] = True
             functionality_results['syntax_error_resolved'] = True
-            print("✅ MultiStrategyManager: インポート成功（TODO #1修正効果確認）")
+            print("[OK] MultiStrategyManager: インポート成功（TODO #1修正効果確認）")
             
             # 初期化テスト
             manager = MultiStrategyManager()
@@ -101,10 +101,10 @@ class WeightJudgmentSystemVerificationSuite:
             functionality_results['initialization_success'] = init_result
             
             if init_result:
-                print("✅ MultiStrategyManager: 初期化成功")
+                print("[OK] MultiStrategyManager: 初期化成功")
                 functionality_results['status'] = 'passed'
             else:
-                print("❌ MultiStrategyManager: 初期化失敗")
+                print("[ERROR] MultiStrategyManager: 初期化失敗")
                 functionality_results['status'] = 'failed'
                 functionality_results['violations'].append("Initialization failed despite successful import")
             
@@ -112,17 +112,17 @@ class WeightJudgmentSystemVerificationSuite:
             functionality_results['syntax_error_resolved'] = False
             functionality_results['violations'].append(f"TODO #1 not fully resolved: {e}")
             functionality_results['status'] = 'failed'
-            print(f"❌ MultiStrategyManager: シンタックスエラー未解決 - {e}")
+            print(f"[ERROR] MultiStrategyManager: シンタックスエラー未解決 - {e}")
             
         except ImportError as e:
             functionality_results['violations'].append(f"Import error: {e}")
             functionality_results['status'] = 'failed'
-            print(f"❌ MultiStrategyManager: インポートエラー - {e}")
+            print(f"[ERROR] MultiStrategyManager: インポートエラー - {e}")
             
         except Exception as e:
             functionality_results['violations'].append(f"Unexpected error: {e}")
             functionality_results['status'] = 'error'
-            print(f"❌ MultiStrategyManager: 予期しないエラー - {e}")
+            print(f"[ERROR] MultiStrategyManager: 予期しないエラー - {e}")
         
         return functionality_results
     
@@ -131,7 +131,7 @@ class WeightJudgmentSystemVerificationSuite:
         戦略レジストリシステム初期化確認
         バックテスト基本理念遵守: 実際の戦略クラス登録確認
         """
-        print("\n🔍 Step 2: 戦略レジストリ・初期化確認実行中...")
+        print("\n[SEARCH] Step 2: 戦略レジストリ・初期化確認実行中...")
         
         registry_results = {
             'step_name': 'Strategy Registry Initialization',
@@ -198,15 +198,15 @@ class WeightJudgmentSystemVerificationSuite:
                 registry_results['registry_quality']['backtest_compliant_strategies'] >= 3 and
                 len(registry_results['violations']) == 0):
                 registry_results['status'] = 'passed'
-                print(f"✅ 戦略レジストリ: {len(available_strategies)}戦略登録済み、backtest対応確認")
+                print(f"[OK] 戦略レジストリ: {len(available_strategies)}戦略登録済み、backtest対応確認")
             else:
                 registry_results['status'] = 'failed'
-                print(f"❌ 戦略レジストリ: 問題検出 - {len(registry_results['violations'])}件の違反")
+                print(f"[ERROR] 戦略レジストリ: 問題検出 - {len(registry_results['violations'])}件の違反")
             
         except Exception as e:
             registry_results['status'] = 'error'
             registry_results['error'] = str(e)
-            print(f"❌ 戦略レジストリ確認: エラー発生 - {e}")
+            print(f"[ERROR] 戦略レジストリ確認: エラー発生 - {e}")
         
         return registry_results
     
@@ -215,7 +215,7 @@ class WeightJudgmentSystemVerificationSuite:
         重み配分計算機能確認
         バックテスト基本理念遵守: 重み配分でも実際の戦略実行に基づく計算
         """
-        print("\n🔍 Step 3: 重み配分計算機能確認実行中...")
+        print("\n[SEARCH] Step 3: 重み配分計算機能確認実行中...")
         
         weight_calc_results = {
             'step_name': 'Weight Calculation Functionality',
@@ -260,15 +260,15 @@ class WeightJudgmentSystemVerificationSuite:
                         'balanced_distribution': max(weight_distribution.values()) / min(weight_distribution.values()) if weight_distribution else 0
                     }
                     
-                    print(f"✅ 重み配分計算: 機能確認済み - {len(weight_distribution)}戦略")
+                    print(f"[OK] 重み配分計算: 機能確認済み - {len(weight_distribution)}戦略")
                     
                 except Exception as e:
                     weight_calc_results['violations'].append(f"Weight calculation execution failed: {e}")
-                    print(f"❌ 重み配分計算: 実行エラー - {e}")
+                    print(f"[ERROR] 重み配分計算: 実行エラー - {e}")
             
             else:
                 # フォールバック: 等重み配分での基本動作確認
-                print("⚠️ 重み配分計算: 専用メソッド未実装 - 等重み配分で基本動作確認")
+                print("[WARNING] 重み配分計算: 専用メソッド未実装 - 等重み配分で基本動作確認")
                 
                 equal_weights = {strategy: 1.0 / len(available_strategies) for strategy in available_strategies}
                 weight_calc_results['sample_weight_distribution'] = equal_weights
@@ -287,15 +287,15 @@ class WeightJudgmentSystemVerificationSuite:
                 weight_calc_results['calculation_quality_metrics'].get('weight_normalization', False) and
                 len(weight_calc_results['violations']) == 0):
                 weight_calc_results['status'] = 'passed'
-                print("✅ 重み配分計算: 正常動作確認")
+                print("[OK] 重み配分計算: 正常動作確認")
             else:
                 weight_calc_results['status'] = 'failed'
-                print("❌ 重み配分計算: 問題検出")
+                print("[ERROR] 重み配分計算: 問題検出")
             
         except Exception as e:
             weight_calc_results['status'] = 'error'
             weight_calc_results['error'] = str(e)
-            print(f"❌ 重み配分計算確認: エラー発生 - {e}")
+            print(f"[ERROR] 重み配分計算確認: エラー発生 - {e}")
         
         return weight_calc_results
     
@@ -304,7 +304,7 @@ class WeightJudgmentSystemVerificationSuite:
         統合マルチ戦略フロー確認
         バックテスト基本理念遵守: 統合フローでも実際のbacktest実行確認
         """
-        print("\n🔍 Step 4: 統合マルチ戦略フロー確認実行中...")
+        print("\n[SEARCH] Step 4: 統合マルチ戦略フロー確認実行中...")
         
         integrated_flow_results = {
             'step_name': 'Integrated Multi-Strategy Flow',
@@ -363,14 +363,14 @@ class WeightJudgmentSystemVerificationSuite:
                         total_entries += entries
                         total_exits += exits
                         
-                        print(f"✅ {strategy_name}: エントリー {entries}回, エグジット {exits}回")
+                        print(f"[OK] {strategy_name}: エントリー {entries}回, エグジット {exits}回")
                     else:
                         strategy_results[strategy_name] = {
                             'backtest_compliant': False,
                             'error': 'Missing Entry_Signal or Exit_Signal columns'
                         }
                         integrated_flow_results['violations'].append(f"{strategy_name}: Missing signal columns")
-                        print(f"❌ {strategy_name}: シグナル列欠損")
+                        print(f"[ERROR] {strategy_name}: シグナル列欠損")
                         
                 except Exception as e:
                     strategy_results[strategy_name] = {
@@ -378,7 +378,7 @@ class WeightJudgmentSystemVerificationSuite:
                         'error': str(e)
                     }
                     integrated_flow_results['violations'].append(f"{strategy_name}: Execution failed - {e}")
-                    print(f"❌ {strategy_name}: 実行エラー - {e}")
+                    print(f"[ERROR] {strategy_name}: 実行エラー - {e}")
             
             # 統合品質評価
             successful_strategies = sum(1 for result in strategy_results.values() 
@@ -401,15 +401,15 @@ class WeightJudgmentSystemVerificationSuite:
                 integrated_flow_results['backtest_execution_confirmed'] and
                 len(integrated_flow_results['violations']) == 0):
                 integrated_flow_results['status'] = 'passed'
-                print("✅ 統合マルチ戦略フロー: 正常動作確認")
+                print("[OK] 統合マルチ戦略フロー: 正常動作確認")
             else:
                 integrated_flow_results['status'] = 'failed'
-                print("❌ 統合マルチ戦略フロー: 問題検出")
+                print("[ERROR] 統合マルチ戦略フロー: 問題検出")
             
         except Exception as e:
             integrated_flow_results['status'] = 'error'
             integrated_flow_results['error'] = str(e)
-            print(f"❌ 統合マルチ戦略フロー確認: エラー発生 - {e}")
+            print(f"[ERROR] 統合マルチ戦略フロー確認: エラー発生 - {e}")
         
         return integrated_flow_results
     
@@ -510,26 +510,26 @@ class WeightJudgmentSystemVerificationSuite:
         TODO(tag:weight_system_verification, rationale:detailed verification reporting)
         """
         print("\n" + "="*80)
-        print("📊 TODO #8: 重み判断システム復旧確認テスト 結果レポート")
+        print("[CHART] TODO #8: 重み判断システム復旧確認テスト 結果レポート")
         print("="*80)
         
         # 全体成功率
         success_rate = results['overall_success_rate']
         assessment = results['weight_system_assessment']
         
-        success_icon = "✅" if success_rate >= 75.0 else "⚠️" if success_rate >= 50.0 else "❌"
+        success_icon = "[OK]" if success_rate >= 75.0 else "[WARNING]" if success_rate >= 50.0 else "[ERROR]"
         print(f"\n{success_icon} 全体成功率: {success_rate}% (目標: 75%以上)")
         
         # TODO #1修正効果確認
-        todo1_icon = "✅" if assessment['todo1_fix_effectiveness'] else "❌"
+        todo1_icon = "[OK]" if assessment['todo1_fix_effectiveness'] else "[ERROR]"
         print(f"\n{todo1_icon} TODO #1修正効果確認:")
         print(f"  シンタックスエラー解決: {assessment['syntax_error_resolved']}")
         print(f"  MultiStrategyManager復旧: {assessment['todo1_fix_effectiveness']}")
         
         # Step別結果
-        print(f"\n📋 検証Step別結果:")
+        print(f"\n[LIST] 検証Step別結果:")
         for step_name, step_data in results['verification_steps'].items():
-            status_icon = "✅" if step_data['status'] == 'passed' else "⚠️" if step_data['status'] == 'error' else "❌"
+            status_icon = "[OK]" if step_data['status'] == 'passed' else "[WARNING]" if step_data['status'] == 'error' else "[ERROR]"
             print(f"  {status_icon} {step_data['step_name']}: {step_data['status']}")
             
             if step_data['status'] == 'failed' and 'violations' in step_data:
@@ -538,15 +538,15 @@ class WeightJudgmentSystemVerificationSuite:
         
         # 重み判断システム復旧状況
         print(f"\n⚖️ 重み判断システム復旧状況:")
-        recovery_icon = "✅" if assessment['system_fully_recovered'] else "⚠️"
+        recovery_icon = "[OK]" if assessment['system_fully_recovered'] else "[WARNING]"
         print(f"  {recovery_icon} システム復旧: {'完了' if assessment['system_fully_recovered'] else '部分的'}")
         print(f"  重み配分機能: {'動作確認済み' if assessment['weight_judgment_restored'] else '要修正'}")
         print(f"  統合フロー: {'正常動作' if assessment['multi_strategy_flow_functional'] else '要調整'}")
         
         # バックテスト基本理念遵守
         compliance = results['backtest_principle_compliance']
-        compliance_icon = "✅" if compliance['overall_compliance'] else "❌"
-        print(f"\n🎯 バックテスト基本理念遵守: {compliance_icon}")
+        compliance_icon = "[OK]" if compliance['overall_compliance'] else "[ERROR]"
+        print(f"\n[TARGET] バックテスト基本理念遵守: {compliance_icon}")
         if not compliance['overall_compliance']:
             print(f"  違反事項:")
             for violation in compliance['violations'][:2]:
@@ -554,23 +554,23 @@ class WeightJudgmentSystemVerificationSuite:
         
         # 重大問題
         if results['critical_issues']:
-            print(f"\n❌ 重大問題:")
+            print(f"\n[ERROR] 重大問題:")
             for issue in results['critical_issues'][:3]:
                 print(f"  - {issue}")
         
         # 推奨事項
         if results['recommendations']:
-            print(f"\n💡 推奨事項:")
+            print(f"\n[IDEA] 推奨事項:")
             for rec in results['recommendations']:
                 print(f"  - {rec}")
         
         # 最終判定
-        print(f"\n🎯 重み判断システム復旧判定:")
+        print(f"\n[TARGET] 重み判断システム復旧判定:")
         if assessment['system_fully_recovered']:
-            print("✅ 重み判断システム完全復旧完了！")
+            print("[OK] 重み判断システム完全復旧完了！")
         else:
             remaining = 75.0 - success_rate
-            print(f"⚠️ 復旧未完了: あと{remaining:.1f}%の改善が必要")
+            print(f"[WARNING] 復旧未完了: あと{remaining:.1f}%の改善が必要")
         
         print("\n" + "="*80)
     

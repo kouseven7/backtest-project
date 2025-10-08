@@ -84,7 +84,7 @@ class TriggerSystemIntegrationDemo:
         self.demo_start_time = datetime.now()
         
         print("=" * 80)
-        print("🚀 Score Update Trigger System Integration Demo")
+        print("[ROCKET] Score Update Trigger System Integration Demo")
         print("=" * 80)
         print(f"Started at: {self.demo_start_time}")
         print()
@@ -113,16 +113,16 @@ class TriggerSystemIntegrationDemo:
             
         except Exception as e:
             logger.error(f"Demo execution failed: {e}")
-            print(f"❌ Demo failed: {e}")
+            print(f"[ERROR] Demo failed: {e}")
         
         finally:
             await self._cleanup_systems()
         
-        print("\n✅ Demo completed!")
+        print("\n[OK] Demo completed!")
     
     async def _setup_systems(self):
         """システム初期化"""
-        print("📋 1. Setting up systems...")
+        print("[LIST] 1. Setting up systems...")
         
         try:
             # 拡張スコア履歴管理システム
@@ -165,12 +165,12 @@ class TriggerSystemIntegrationDemo:
             self.demo_results["setup_error"] = str(e)
             raise
         
-        print("   ✅ All systems ready!")
+        print("   [OK] All systems ready!")
         print()
     
     async def _demo_basic_triggers(self):
         """基本トリガー動作確認"""
-        print("🎯 2. Basic trigger operations...")
+        print("[TARGET] 2. Basic trigger operations...")
         
         results = {}
         
@@ -224,12 +224,12 @@ class TriggerSystemIntegrationDemo:
             logger.error(f"Basic triggers demo failed: {e}")
         
         self.demo_results["basic_triggers"] = results
-        print("   ✅ Basic trigger operations completed!")
+        print("   [OK] Basic trigger operations completed!")
         print()
     
     async def _demo_threshold_triggers(self):
         """閾値ベーストリガー確認"""
-        print("📊 3. Threshold-based triggers...")
+        print("[CHART] 3. Threshold-based triggers...")
         
         results = {}
         
@@ -322,7 +322,7 @@ class TriggerSystemIntegrationDemo:
             logger.error(f"Threshold triggers demo failed: {e}")
         
         self.demo_results["threshold_triggers"] = results
-        print("   ✅ Threshold-based triggers completed!")
+        print("   [OK] Threshold-based triggers completed!")
         print()
     
     async def _demo_batch_processing(self):
@@ -380,7 +380,7 @@ class TriggerSystemIntegrationDemo:
                 
                 current_status = self.realtime_engine.get_engine_status()
                 
-                print(f"   📊 Queue: {current_status['queue_size']}, "
+                print(f"   [CHART] Queue: {current_status['queue_size']}, "
                       f"Completed: {current_status['successful_updates']}, "
                       f"Failed: {current_status['failed_updates']}")
                 
@@ -402,7 +402,7 @@ class TriggerSystemIntegrationDemo:
             logger.error(f"Batch processing demo failed: {e}")
         
         self.demo_results["batch_processing"] = results
-        print("   ✅ Batch processing completed!")
+        print("   [OK] Batch processing completed!")
         print()
     
     async def _demo_performance_test(self):
@@ -467,7 +467,7 @@ class TriggerSystemIntegrationDemo:
                 if completed_delta >= total_requests:
                     performance_completed = True
                 
-                print(f"   📈 Processed: {completed_delta}/{total_requests}, "
+                print(f"   [UP] Processed: {completed_delta}/{total_requests}, "
                       f"Queue: {current_stats['queue_size']}, "
                       f"Avg time: {current_stats['average_processing_time']:.4f}s")
             
@@ -502,7 +502,7 @@ class TriggerSystemIntegrationDemo:
             logger.error(f"Performance test failed: {e}")
         
         self.demo_results["performance_test"] = results
-        print("   ✅ Performance testing completed!")
+        print("   [OK] Performance testing completed!")
         print()
     
     async def _demo_error_handling(self):
@@ -608,12 +608,12 @@ class TriggerSystemIntegrationDemo:
             logger.error(f"Error handling demo failed: {e}")
         
         self.demo_results["error_handling"] = results
-        print("   ✅ Error handling testing completed!")
+        print("   [OK] Error handling testing completed!")
         print()
     
     async def _display_demo_summary(self):
         """結果サマリー表示"""
-        print("📋 7. Demo Summary")
+        print("[LIST] 7. Demo Summary")
         print("=" * 50)
         
         # 実行時間
@@ -623,11 +623,11 @@ class TriggerSystemIntegrationDemo:
         
         # 各段階の結果
         for stage, results in self.demo_results.items():
-            print(f"🔍 {stage.replace('_', ' ').title()}:")
+            print(f"[SEARCH] {stage.replace('_', ' ').title()}:")
             
             if isinstance(results, dict):
                 if "error" in results:
-                    print(f"   ❌ Failed: {results['error']}")
+                    print(f"   [ERROR] Failed: {results['error']}")
                 else:
                     # 主要メトリクスを表示
                     key_metrics = self._extract_key_metrics(stage, results)
@@ -638,14 +638,14 @@ class TriggerSystemIntegrationDemo:
         
         # 最終システム状態
         if self.trigger_system and self.realtime_engine:
-            print("🎯 Final System Status:")
+            print("[TARGET] Final System Status:")
             
             trigger_stats = self.trigger_system.get_trigger_statistics()
             engine_status = self.realtime_engine.get_engine_status()
             
-            print(f"   📊 Total triggers fired: {trigger_stats['total_triggers']}")
+            print(f"   [CHART] Total triggers fired: {trigger_stats['total_triggers']}")
             print(f"   ⚡ Total updates processed: {engine_status['total_requests']}")
-            print(f"   ✅ Success rate: {(engine_status['successful_updates'] / max(engine_status['total_requests'], 1) * 100):.1f}%")
+            print(f"   [OK] Success rate: {(engine_status['successful_updates'] / max(engine_status['total_requests'], 1) * 100):.1f}%")
             print(f"   ⏱️  Average processing time: {engine_status['average_processing_time']:.4f}s")
             print(f"   🔄 Queue size: {engine_status['queue_size']}")
             print()
@@ -664,7 +664,7 @@ class TriggerSystemIntegrationDemo:
         except Exception as e:
             logger.warning(f"Failed to save demo results: {e}")
         
-        print("✅ Demo summary completed!")
+        print("[OK] Demo summary completed!")
     
     def _extract_key_metrics(self, stage: str, results: Dict[str, Any]) -> Dict[str, Any]:
         """段階別主要メトリクス抽出"""
@@ -718,7 +718,7 @@ class TriggerSystemIntegrationDemo:
         except Exception as e:
             logger.error(f"Cleanup error: {e}")
         
-        print("   ✅ Cleanup completed!")
+        print("   [OK] Cleanup completed!")
 
 
 # =============================================================================

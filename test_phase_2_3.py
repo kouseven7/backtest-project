@@ -51,7 +51,7 @@ def test_data_extraction():
     # エンハンサーでデータ抽出
     result = extract_and_analyze_main_data(test_data, "TEST")
     
-    print(f"\n📊 解析結果:")
+    print(f"\n[CHART] 解析結果:")
     print(f"  銘柄: {result['ticker']}")
     print(f"  データ品質: {result['data_quality']}")
     print(f"  取引数: {len(result['trades'])}件")
@@ -62,7 +62,7 @@ def test_data_extraction():
             print(f"    取引{i+1}: エントリー{trade['entry_price']:.2f}円 → エグジット{trade['exit_price']:.2f}円")
             print(f"            損益: {trade['pnl']:.2f}円 ({trade['return_pct']*100:.2f}%)")
     
-    print(f"\n💰 パフォーマンス:")
+    print(f"\n[MONEY] パフォーマンス:")
     perf = result['performance']
     print(f"  最終ポートフォリオ価値: {perf['final_portfolio_value']:,.0f}円")
     print(f"  総損益: {perf['total_pnl']:,.0f}円")
@@ -77,10 +77,10 @@ def test_data_extraction():
         zero_issues.append('total_pnl')
     
     if zero_issues:
-        print(f"\n⚠️  ゼロ値問題検出: {zero_issues}")
+        print(f"\n[WARNING]  ゼロ値問題検出: {zero_issues}")
         print("   → これはExcel出力で修正すべき問題です")
     else:
-        print(f"\n✅ ゼロ値問題なし - 正常なデータ抽出")
+        print(f"\n[OK] ゼロ値問題なし - 正常なデータ抽出")
     
     return result
 
@@ -106,17 +106,17 @@ if __name__ == "__main__":
         # 空データテスト
         result2 = test_empty_data()
         
-        print(f"\n🎯 テスト完了")
+        print(f"\n[TARGET] テスト完了")
         print(f"   通常データ: 最終価値={result1['performance']['final_portfolio_value']:,.0f}円")
         print(f"   空データ: 最終価値={result2['performance']['final_portfolio_value']:,.0f}円")
         
         # 成功判定
         if result1['performance']['final_portfolio_value'] > 0:
-            print(f"✅ Phase 2.3 データ抽出エンハンサー: 正常動作確認")
+            print(f"[OK] Phase 2.3 データ抽出エンハンサー: 正常動作確認")
         else:
-            print(f"⚠️  Phase 2.3 データ抽出エンハンサー: 要調整")
+            print(f"[WARNING]  Phase 2.3 データ抽出エンハンサー: 要調整")
             
     except Exception as e:
-        print(f"❌ テストエラー: {e}")
+        print(f"[ERROR] テストエラー: {e}")
         import traceback
         traceback.print_exc()

@@ -20,10 +20,10 @@ def test_imports():
     
     try:
         from visualization.chart_config import ChartConfigManager
-        print("✅ ChartConfigManager インポート成功")
+        print("[OK] ChartConfigManager インポート成功")
         
         config = ChartConfigManager()
-        print("✅ ChartConfigManager 初期化成功")
+        print("[OK] ChartConfigManager 初期化成功")
         print(f"  図サイズ: {config.figure_config['figsize']}")
         
         # 色設定テスト
@@ -31,37 +31,37 @@ def test_imports():
         print(f"  上昇トレンド色: {uptrend_color}")
         
     except Exception as e:
-        print(f"❌ ChartConfigManager エラー: {e}")
+        print(f"[ERROR] ChartConfigManager エラー: {e}")
         import traceback
         traceback.print_exc()
     
     try:
         from visualization.data_aggregator import VisualizationDataAggregator
-        print("✅ VisualizationDataAggregator インポート成功")
+        print("[OK] VisualizationDataAggregator インポート成功")
         
         aggregator = VisualizationDataAggregator(symbol="USDJPY", period_days=30)
-        print("✅ VisualizationDataAggregator 初期化成功")
+        print("[OK] VisualizationDataAggregator 初期化成功")
         print(f"  シンボル: {aggregator.symbol}")
         print(f"  期間: {aggregator.period_days}日")
         
     except Exception as e:
-        print(f"❌ VisualizationDataAggregator エラー: {e}")
+        print(f"[ERROR] VisualizationDataAggregator エラー: {e}")
         import traceback
         traceback.print_exc()
     
     try:
         from visualization.trend_strategy_time_series import TrendStrategyTimeSeriesVisualizer
-        print("✅ TrendStrategyTimeSeriesVisualizer インポート成功")
+        print("[OK] TrendStrategyTimeSeriesVisualizer インポート成功")
         
         visualizer = TrendStrategyTimeSeriesVisualizer(
             symbol="USDJPY",
             period_days=30,
             output_dir="test_outputs"
         )
-        print("✅ TrendStrategyTimeSeriesVisualizer 初期化成功")
+        print("[OK] TrendStrategyTimeSeriesVisualizer 初期化成功")
         
     except Exception as e:
-        print(f"❌ TrendStrategyTimeSeriesVisualizer エラー: {e}")
+        print(f"[ERROR] TrendStrategyTimeSeriesVisualizer エラー: {e}")
         import traceback
         traceback.print_exc()
 
@@ -79,31 +79,31 @@ def test_synthetic_data_generation():
         price_data = aggregator._generate_synthetic_price_data()
         
         if not price_data.empty:
-            print(f"✅ 合成価格データ生成成功: {len(price_data)} レコード")
+            print(f"[OK] 合成価格データ生成成功: {len(price_data)} レコード")
             print(f"  カラム: {list(price_data.columns)}")
             print(f"  期間: {price_data.index.min().strftime('%Y-%m-%d')} - {price_data.index.max().strftime('%Y-%m-%d')}")
             print(f"  価格範囲: {price_data['Close'].min():.2f} - {price_data['Close'].max():.2f}")
         else:
-            print("❌ 合成価格データ生成失敗")
+            print("[ERROR] 合成価格データ生成失敗")
             
         # 合成トレンドデータテスト
         print("合成トレンドデータ生成テスト...")
         trend_data = aggregator._generate_synthetic_trend_data()
         
         if not trend_data.empty:
-            print(f"✅ 合成トレンドデータ生成成功: {len(trend_data)} レコード")
+            print(f"[OK] 合成トレンドデータ生成成功: {len(trend_data)} レコード")
             print(f"  カラム: {list(trend_data.columns)}")
             trend_counts = trend_data['trend_type'].value_counts()
             print(f"  トレンド分布: {dict(trend_counts)}")
         else:
-            print("❌ 合成トレンドデータ生成失敗")
+            print("[ERROR] 合成トレンドデータ生成失敗")
             
         # 完全合成データテスト
         print("完全合成データ生成テスト...")
         complete_data = aggregator._generate_complete_synthetic_data()
         
         if not complete_data.empty:
-            print(f"✅ 完全合成データ生成成功: {len(complete_data)} レコード")
+            print(f"[OK] 完全合成データ生成成功: {len(complete_data)} レコード")
             print(f"  カラム数: {len(complete_data.columns)}")
             print(f"  カラム: {list(complete_data.columns)}")
             
@@ -113,10 +113,10 @@ def test_synthetic_data_generation():
             print(f"  データ品質スコア: {summary.get('data_quality_score', 'N/A')}")
             
         else:
-            print("❌ 完全合成データ生成失敗")
+            print("[ERROR] 完全合成データ生成失敗")
             
     except Exception as e:
-        print(f"❌ 合成データ生成テストエラー: {e}")
+        print(f"[ERROR] 合成データ生成テストエラー: {e}")
         import traceback
         traceback.print_exc()
 
@@ -145,7 +145,7 @@ def test_chart_generation():
         
         if output_path and os.path.exists(output_path):
             file_size = os.path.getsize(output_path)
-            print(f"✅ チャート生成成功!")
+            print(f"[OK] チャート生成成功!")
             print(f"  保存先: {output_path}")
             print(f"  ファイルサイズ: {file_size:,} bytes")
             
@@ -158,18 +158,18 @@ def test_chart_generation():
                 
             # 画像ファイルの拡張子確認
             if output_path.endswith('.png'):
-                print("  ✅ PNG形式で正常に保存")
+                print("  [OK] PNG形式で正常に保存")
             else:
-                print(f"  ⚠️ 予期しないファイル形式: {Path(output_path).suffix}")
+                print(f"  [WARNING] 予期しないファイル形式: {Path(output_path).suffix}")
                 
         else:
-            print("❌ チャート生成失敗")
+            print("[ERROR] チャート生成失敗")
             if output_path:
                 print(f"  出力パス: {output_path}")
                 print(f"  ファイル存在: {os.path.exists(output_path)}")
         
     except Exception as e:
-        print(f"❌ チャート生成テストエラー: {e}")
+        print(f"[ERROR] チャート生成テストエラー: {e}")
         import traceback
         traceback.print_exc()
 
@@ -207,10 +207,10 @@ def test_chart_config():
         for level, color in confidence_map.items():
             print(f"  {level}: {color}")
         
-        print("✅ チャート設定テスト成功")
+        print("[OK] チャート設定テスト成功")
         
     except Exception as e:
-        print(f"❌ チャート設定テストエラー: {e}")
+        print(f"[ERROR] チャート設定テストエラー: {e}")
         import traceback
         traceback.print_exc()
 
@@ -255,12 +255,12 @@ def test_performance():
                 if processing_time > 0:
                     print(f"処理速度: {total_data_points / processing_time:.0f} データポイント/秒")
                 
-            print("✅ パフォーマンステスト完了")
+            print("[OK] パフォーマンステスト完了")
         else:
-            print("❌ パフォーマンステスト失敗")
+            print("[ERROR] パフォーマンステスト失敗")
             
     except Exception as e:
-        print(f"❌ パフォーマンステストエラー: {e}")
+        print(f"[ERROR] パフォーマンステストエラー: {e}")
 
 def main():
     """メインテスト実行"""
@@ -272,7 +272,7 @@ def main():
         test_performance()
         
         print("\n" + "="*60)
-        print("🎉 4-3-1 包括テスト完了!")
+        print("[SUCCESS] 4-3-1 包括テスト完了!")
         
         # 生成されたファイル一覧
         output_dir = Path("test_outputs")
@@ -287,7 +287,7 @@ def main():
     except KeyboardInterrupt:
         print("\n⏹️ ユーザーによりテストが中断されました")
     except Exception as e:
-        print(f"\n❌ テスト実行エラー: {e}")
+        print(f"\n[ERROR] テスト実行エラー: {e}")
         import traceback
         traceback.print_exc()
     

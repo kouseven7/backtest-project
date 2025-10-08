@@ -40,7 +40,7 @@ class DSSMSHoldingPeriodFixer:
     
     def fix_excel_holding_periods(self, excel_path: str) -> bool:
         """Excelファイルの保有期間を修正"""
-        self.logger.info(f"🔧 Excel保有期間修正開始: {excel_path}")
+        self.logger.info(f"[TOOL] Excel保有期間修正開始: {excel_path}")
         
         try:
             # Excelファイルを読み込み
@@ -68,16 +68,16 @@ class DSSMSHoldingPeriodFixer:
             
             # 保存
             workbook.save(excel_path)
-            self.logger.info(f"✅ Excel保有期間修正完了: {len(realistic_holding_periods)}件更新")
+            self.logger.info(f"[OK] Excel保有期間修正完了: {len(realistic_holding_periods)}件更新")
             
             # 修正結果をログ出力
             avg_holding = np.mean(realistic_holding_periods)
-            self.logger.info(f"📊 修正後平均保有期間: {avg_holding:.1f}時間")
+            self.logger.info(f"[CHART] 修正後平均保有期間: {avg_holding:.1f}時間")
             
             return True
             
         except Exception as e:
-            self.logger.error(f"❌ Excel修正エラー: {e}")
+            self.logger.error(f"[ERROR] Excel修正エラー: {e}")
             return False
     
     def _generate_realistic_holding_periods(self, count: int) -> list:
@@ -102,7 +102,7 @@ class DSSMSHoldingPeriodFixer:
     
     def fix_dssms_backtester_holding_calculation(self, file_path: str = "src/dssms/dssms_backtester.py"):
         """DSSMSバックテスターの保有期間計算を修正"""
-        self.logger.info(f"🔧 DSSMS保有期間計算修正: {file_path}")
+        self.logger.info(f"[TOOL] DSSMS保有期間計算修正: {file_path}")
         
         try:
             # ファイルを読み込み
@@ -116,7 +116,7 @@ class DSSMSHoldingPeriodFixer:
             
             if old_holding_calculation in content:
                 content = content.replace(old_holding_calculation, new_holding_calculation)
-                self.logger.info("✅ 保有期間計算ロジックを修正しました")
+                self.logger.info("[OK] 保有期間計算ロジックを修正しました")
             
             # デフォルト取引データの保有期間も修正
             old_default_holding = """                        'holding_period_hours': float(holding_hours)"""
@@ -127,16 +127,16 @@ class DSSMSHoldingPeriodFixer:
             with open(file_path, 'w', encoding='utf-8') as f:
                 f.write(content)
             
-            self.logger.info(f"🎉 DSSMS保有期間計算修正完了: {file_path}")
+            self.logger.info(f"[SUCCESS] DSSMS保有期間計算修正完了: {file_path}")
             return True
             
         except Exception as e:
-            self.logger.error(f"❌ 修正中にエラー: {e}")
+            self.logger.error(f"[ERROR] 修正中にエラー: {e}")
             return False
     
     def update_unified_output_engine_holding_periods(self, file_path: str = "src/dssms/unified_output_engine.py"):
         """統一出力エンジンの保有期間処理を修正"""
-        self.logger.info(f"🔧 統一出力エンジン保有期間修正: {file_path}")
+        self.logger.info(f"[TOOL] 統一出力エンジン保有期間修正: {file_path}")
         
         try:
             # ファイルを読み込み
@@ -182,7 +182,7 @@ class DSSMSHoldingPeriodFixer:
                         class_end = len(content)
                     
                     content = content[:class_end] + holding_period_enhancement + content[class_end:]
-                    self.logger.info("✅ 保有期間修正メソッドを追加しました")
+                    self.logger.info("[OK] 保有期間修正メソッドを追加しました")
             
             # ファイルに書き戻し
             with open(file_path, 'w', encoding='utf-8') as f:
@@ -191,12 +191,12 @@ class DSSMSHoldingPeriodFixer:
             return True
             
         except Exception as e:
-            self.logger.error(f"❌ 統一出力エンジン修正エラー: {e}")
+            self.logger.error(f"[ERROR] 統一出力エンジン修正エラー: {e}")
             return False
     
     def create_holding_period_test_report(self, excel_path: str) -> str:
         """保有期間テストレポート生成"""
-        self.logger.info(f"📊 保有期間テストレポート生成: {excel_path}")
+        self.logger.info(f"[CHART] 保有期間テストレポート生成: {excel_path}")
         
         try:
             # Excelファイルを読み込み
@@ -237,7 +237,7 @@ class DSSMSHoldingPeriodFixer:
 実行日時: {datetime.now().strftime('%Y年%m月%d日 %H:%M:%S')}
 対象ファイル: {excel_path}
 
-📊 統計サマリー:
+[CHART] 統計サマリー:
 ----------------------------------------
 総取引数: {len(holding_periods)}
 平均保有期間: {avg_holding:.1f}時間
@@ -247,13 +247,13 @@ class DSSMSHoldingPeriodFixer:
 標準偏差: {std_holding:.1f}時間
 ユニーク値数: {unique_periods}
 
-📈 分析結果:
+[UP] 分析結果:
 ----------------------------------------
-{'✅ 多様性あり' if unique_periods > 10 else '❌ 固定値または低多様性'}: {unique_periods}種類の保有期間
-{'✅ 現実的範囲' if 24 <= avg_holding <= 96 else '⚠️ 非現実的範囲'}: 平均{avg_holding:.1f}時間
-{'✅ 適切な分散' if 10 <= std_holding <= 50 else '⚠️ 分散が不適切'}: 標準偏差{std_holding:.1f}
+{'[OK] 多様性あり' if unique_periods > 10 else '[ERROR] 固定値または低多様性'}: {unique_periods}種類の保有期間
+{'[OK] 現実的範囲' if 24 <= avg_holding <= 96 else '[WARNING] 非現実的範囲'}: 平均{avg_holding:.1f}時間
+{'[OK] 適切な分散' if 10 <= std_holding <= 50 else '[WARNING] 分散が不適切'}: 標準偏差{std_holding:.1f}
 
-🔍 詳細分析:
+[SEARCH] 詳細分析:
 ----------------------------------------
 保有期間分布:
 - 短期 (1-12時間): {len([h for h in holding_periods if h <= 12])}件
@@ -261,7 +261,7 @@ class DSSMSHoldingPeriodFixer:
 - 長期 (48-168時間): {len([h for h in holding_periods if 48 < h <= 168])}件
 - 超長期 (168時間+): {len([h for h in holding_periods if h > 168])}件
 
-💡 推奨事項:
+[IDEA] 推奨事項:
 ----------------------------------------
 {'問題なし' if unique_periods > 10 and 24 <= avg_holding <= 96 else '要改善'}: 
 {('保有期間の多様性と現実性が確保されています' if unique_periods > 10 and 24 <= avg_holding <= 96 else 
@@ -271,12 +271,12 @@ class DSSMSHoldingPeriodFixer:
             return report
             
         except Exception as e:
-            self.logger.error(f"❌ レポート生成エラー: {e}")
+            self.logger.error(f"[ERROR] レポート生成エラー: {e}")
             return f"レポート生成中にエラーが発生: {e}"
     
     def run_comprehensive_fix(self, excel_path: str = None):
         """包括的保有期間修正"""
-        self.logger.info("🚀 DSSMS保有期間包括的修正開始")
+        self.logger.info("[ROCKET] DSSMS保有期間包括的修正開始")
         
         # デフォルトパス設定
         if not excel_path:
@@ -306,22 +306,22 @@ class DSSMSHoldingPeriodFixer:
             with open(report_path, 'w', encoding='utf-8') as f:
                 f.write(test_report)
             
-            self.logger.info(f"📋 テストレポート生成: {report_path}")
+            self.logger.info(f"[LIST] テストレポート生成: {report_path}")
             print(test_report)
         
         # 結果サマリー
-        self.logger.info("📋 修正結果サマリー:")
+        self.logger.info("[LIST] 修正結果サマリー:")
         for component, success in results.items():
-            status = "✅ 成功" if success else "❌ 失敗"
+            status = "[OK] 成功" if success else "[ERROR] 失敗"
             self.logger.info(f"  {component}: {status}")
         
         if all(results.values()):
-            self.logger.info("🎉 すべての保有期間修正が完了しました！")
+            self.logger.info("[SUCCESS] すべての保有期間修正が完了しました！")
             self.logger.info("📝 次のステップ:")
             self.logger.info("  1. Excelファイルの取引履歴シートで保有期間を確認")
             self.logger.info("  2. 新しいバックテスト実行で改善効果を確認")
         else:
-            self.logger.warning("⚠️  一部の修正が失敗しました。")
+            self.logger.warning("[WARNING]  一部の修正が失敗しました。")
         
         return results
 
@@ -340,7 +340,7 @@ def main():
     print("保有期間修正完了！")
     
     if all(results.values()):
-        print("\n📋 確認推奨:")
+        print("\n[LIST] 確認推奨:")
         print("1. Excelファイルの取引履歴シートを開いて保有期間列を確認")
         print("2. 多様な保有期間が表示されていることを確認")
         print("3. 平均保有期間が50-70時間程度になっていることを確認")

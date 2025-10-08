@@ -143,7 +143,7 @@ def main():
     success = fix_unified_output_switch_processing()
     
     logger.info("=== 修正完了レポート ===")
-    logger.info(f"統一出力エンジン修正: {'✅ 成功' if success else '❌ 失敗'}")
+    logger.info(f"統一出力エンジン修正: {'[OK] 成功' if success else '[ERROR] 失敗'}")
     
     if success:
         logger.info("修正内容:")

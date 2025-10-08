@@ -46,7 +46,7 @@ class Phase3IntegrationValidator:
     
     async def measure_comprehensive_performance(self) -> Dict[str, Any]:
         """包括的性能測定"""
-        print("🚀 Phase 3包括的性能測定実行中...")
+        print("[ROCKET] Phase 3包括的性能測定実行中...")
         
         performance_results = {
             'phase3_standalone_performance': {},
@@ -57,17 +57,17 @@ class Phase3IntegrationValidator:
         
         try:
             # 1. Phase 3単体性能測定
-            print("  📊 Phase 3単体性能測定...")
+            print("  [CHART] Phase 3単体性能測定...")
             phase3_standalone = await self._measure_phase3_standalone()
             performance_results['phase3_standalone_performance'] = phase3_standalone
             
             # 2. Phase 3統合性能測定
-            print("  📊 Phase 3統合性能測定...")
+            print("  [CHART] Phase 3統合性能測定...")
             phase3_integrated = await self._measure_phase3_integrated()
             performance_results['phase3_integrated_performance'] = phase3_integrated
             
             # 3. 累積性能分析
-            print("  📊 累積性能分析...")
+            print("  [CHART] 累積性能分析...")
             cumulative_analysis = self._analyze_cumulative_performance(
                 phase3_standalone, 
                 phase3_integrated
@@ -75,15 +75,15 @@ class Phase3IntegrationValidator:
             performance_results['cumulative_performance_analysis'] = cumulative_analysis
             
             # 4. 目標達成分析
-            print("  📊 目標達成分析...")
+            print("  [CHART] 目標達成分析...")
             target_analysis = self._analyze_target_achievement(cumulative_analysis)
             performance_results['target_achievement_analysis'] = target_analysis
             
-            print(f"  ✅ 包括的性能測定完了")
+            print(f"  [OK] 包括的性能測定完了")
             return performance_results
             
         except Exception as e:
-            print(f"  ❌ 包括的性能測定エラー: {e}")
+            print(f"  [ERROR] 包括的性能測定エラー: {e}")
             performance_results['error'] = str(e)
             return performance_results
     
@@ -97,7 +97,7 @@ class Phase3IntegrationValidator:
         
         try:
             # FastRankingCore性能測定
-            print("    🔧 FastRankingCore性能測定...")
+            print("    [TOOL] FastRankingCore性能測定...")
             try:
                 from src.dssms.fast_ranking_core import FastRankingCore
                 
@@ -119,13 +119,13 @@ class Phase3IntegrationValidator:
                     'items_per_second': len(test_data) / max(execution_time, 0.001)
                 }
                 
-                print(f"    ✅ FastRankingCore: {execution_time * 1000:.2f}ms")
+                print(f"    [OK] FastRankingCore: {execution_time * 1000:.2f}ms")
                 
             except ImportError:
                 standalone_results['fast_ranking_core_performance'] = {'error': 'FastRankingCore not available'}
             
             # 非同期システム性能測定
-            print("    🔧 非同期システム性能測定...")
+            print("    [TOOL] 非同期システム性能測定...")
             try:
                 from src.dssms.async_ranking_system import AsyncRankingSystem
                 
@@ -147,7 +147,7 @@ class Phase3IntegrationValidator:
                     'system_stats': await async_system.get_system_stats()
                 }
                 
-                print(f"    ✅ 非同期システム: {execution_time * 1000:.2f}ms")
+                print(f"    [OK] 非同期システム: {execution_time * 1000:.2f}ms")
                 
             except ImportError:
                 standalone_results['async_system_performance'] = {'error': 'AsyncRankingSystem not available'}
@@ -168,7 +168,7 @@ class Phase3IntegrationValidator:
         
         try:
             # 全システム統合テスト
-            print("    🔧 全システム統合テスト...")
+            print("    [TOOL] 全システム統合テスト...")
             integration_start = time.perf_counter()
             
             # 複数コンポーネント同時実行
@@ -216,7 +216,7 @@ class Phase3IntegrationValidator:
                     'status': 'success'
                 }
                 
-                print(f"    ✅ 統合テスト: {integration_time * 1000:.2f}ms")
+                print(f"    [OK] 統合テスト: {integration_time * 1000:.2f}ms")
                 
             except Exception as integration_error:
                 integrated_results['full_system_integration_test'] = {
@@ -225,7 +225,7 @@ class Phase3IntegrationValidator:
                 }
             
             # 負荷テスト
-            print("    🔧 負荷テスト実行...")
+            print("    [TOOL] 負荷テスト実行...")
             load_test_results = await self._execute_load_test()
             integrated_results['load_test_results'] = load_test_results
             
@@ -242,7 +242,7 @@ class Phase3IntegrationValidator:
         
         for size in load_test_sizes:
             try:
-                print(f"      📈 負荷テスト: {size}件...")
+                print(f"      [UP] 負荷テスト: {size}件...")
                 
                 # 大量データ処理テスト
                 large_data = self._generate_performance_test_data(size)
@@ -436,26 +436,26 @@ class Phase3IntegrationValidator:
         
         if success_level in ['outstanding', 'excellent']:
             recommendations.extend([
-                "🎉 優秀な性能改善達成 - 現在の最適化を継続維持",
-                "📈 更なる最適化機会の探索・プロファイリング継続",
+                "[SUCCESS] 優秀な性能改善達成 - 現在の最適化を継続維持",
+                "[UP] 更なる最適化機会の探索・プロファイリング継続",
                 "🔄 定期的な性能監視・ベンチマーク実施"
             ])
         elif success_level == 'good':
             recommendations.extend([
-                "✅ 良好な改善達成 - 追加最適化の検討",
-                "🔧 ボトルネック特定・重点最適化実施",
-                "📊 継続的な性能測定・改善計画策定"
+                "[OK] 良好な改善達成 - 追加最適化の検討",
+                "[TOOL] ボトルネック特定・重点最適化実施",
+                "[CHART] 継続的な性能測定・改善計画策定"
             ])
         else:
             recommendations.extend([
-                "⚠️ 改善効果の詳細分析・原因調査実施",
-                "🔍 アーキテクチャ見直し・最適化戦略再検討",
-                "🎯 段階的改善計画の再策定・実行"
+                "[WARNING] 改善効果の詳細分析・原因調査実施",
+                "[SEARCH] アーキテクチャ見直し・最適化戦略再検討",
+                "[TARGET] 段階的改善計画の再策定・実行"
             ])
         
         # Phase 3特有の推奨事項
         if phase3_rate >= 100:
-            recommendations.append("🚀 Phase 3目標達成 - 非同期・並列処理の更なる活用検討")
+            recommendations.append("[ROCKET] Phase 3目標達成 - 非同期・並列処理の更なる活用検討")
         elif phase3_rate >= 70:
             recommendations.append("⚡ Phase 3部分達成 - 非同期処理効率の追加改善")
         else:
@@ -465,7 +465,7 @@ class Phase3IntegrationValidator:
         if cumulative_rate >= 100:
             recommendations.append("🏆 全Phase目標達成 - 次世代アーキテクチャ設計検討")
         else:
-            recommendations.append("📋 Phase間統合効果の最適化・シナジー強化")
+            recommendations.append("[LIST] Phase間統合効果の最適化・シナジー強化")
         
         return recommendations
     
@@ -489,7 +489,7 @@ class Phase3IntegrationValidator:
     
     async def validate_functional_compatibility(self) -> Dict[str, Any]:
         """機能完全性・API互換性確認"""
-        print("🔍 機能完全性・API互換性確認中...")
+        print("[SEARCH] 機能完全性・API互換性確認中...")
         
         compatibility_results = {
             'api_compatibility_test': {},
@@ -499,25 +499,25 @@ class Phase3IntegrationValidator:
         
         try:
             # API互換性テスト
-            print("  📋 API互換性テスト...")
+            print("  [LIST] API互換性テスト...")
             api_results = await self._test_api_compatibility()
             compatibility_results['api_compatibility_test'] = api_results
             
             # 機能回帰テスト  
-            print("  📋 機能回帰テスト...")
+            print("  [LIST] 機能回帰テスト...")
             regression_results = await self._test_functional_regression()
             compatibility_results['functional_regression_test'] = regression_results
             
             # 統合互換性テスト
-            print("  📋 統合互換性テスト...")
+            print("  [LIST] 統合互換性テスト...")
             integration_results = await self._test_integration_compatibility()
             compatibility_results['integration_compatibility_test'] = integration_results
             
-            print(f"  ✅ 機能完全性・API互換性確認完了")
+            print(f"  [OK] 機能完全性・API互換性確認完了")
             return compatibility_results
             
         except Exception as e:
-            print(f"  ❌ 機能互換性確認エラー: {e}")
+            print(f"  [ERROR] 機能互換性確認エラー: {e}")
             compatibility_results['error'] = str(e)
             return compatibility_results
     
@@ -642,7 +642,7 @@ class Phase3IntegrationValidator:
         
         try:
             # Phase統合テスト
-            print("    🔧 Phase統合互換性テスト...")
+            print("    [TOOL] Phase統合互換性テスト...")
             
             # 複数システム同時動作テスト
             start_time = time.perf_counter()
@@ -704,7 +704,7 @@ class Phase3IntegrationValidator:
         
         try:
             # SystemFallbackPolicy可用性確認
-            print("  🔧 SystemFallbackPolicy可用性確認...")
+            print("  [TOOL] SystemFallbackPolicy可用性確認...")
             try:
                 from src.config.system_modes import SystemFallbackPolicy, ComponentType
                 
@@ -716,25 +716,25 @@ class Phase3IntegrationValidator:
                     'mode': getattr(fallback_policy, 'mode', 'unknown') if hasattr(fallback_policy, 'mode') else 'unknown'
                 }
                 
-                print("    ✅ SystemFallbackPolicy利用可能")
+                print("    [OK] SystemFallbackPolicy利用可能")
                 
             except ImportError:
                 fallback_results['fallback_policy_availability'] = {
                     'available': False,
                     'error': 'SystemFallbackPolicy not importable'
                 }
-                print("    ⚠️ SystemFallbackPolicy利用不可")
+                print("    [WARNING] SystemFallbackPolicy利用不可")
             
             # フォールバック動作テスト
-            print("  🔧 フォールバック動作テスト...")
+            print("  [TOOL] フォールバック動作テスト...")
             fallback_behavior = await self._test_fallback_behavior()
             fallback_results['fallback_behavior_test'] = fallback_behavior
             
-            print(f"  ✅ SystemFallbackPolicy統合動作確認完了")
+            print(f"  [OK] SystemFallbackPolicy統合動作確認完了")
             return fallback_results
             
         except Exception as e:
-            print(f"  ❌ SystemFallbackPolicy確認エラー: {e}")
+            print(f"  [ERROR] SystemFallbackPolicy確認エラー: {e}")
             fallback_results['error'] = str(e)
             return fallback_results
     
@@ -980,7 +980,7 @@ class Phase3IntegrationValidator:
     
     async def run_comprehensive_validation(self) -> bool:
         """包括的検証実行"""
-        print("🚀 TODO-PERF-001 Phase 3 Stage 4: 統合効果検証・超高性能レベル達成確認開始")
+        print("[ROCKET] TODO-PERF-001 Phase 3 Stage 4: 統合効果検証・超高性能レベル達成確認開始")
         print("="*80)
         
         stage4_start_time = time.time()
@@ -1029,7 +1029,7 @@ class Phase3IntegrationValidator:
             print("🏆 TODO-PERF-001 Phase 3 Stage 4完了サマリー")
             print("="*80)
             print(f"⏱️ 実行時間: {execution_time:.1f}秒")
-            print(f"📊 成功ステップ: {success_steps}/{total_steps} ({success_rate:.1f}%)")
+            print(f"[CHART] 成功ステップ: {success_steps}/{total_steps} ({success_rate:.1f}%)")
             
             # パフォーマンス成果
             performance_summary = comprehensive_report.get('performance_achievement_summary', {})
@@ -1038,9 +1038,9 @@ class Phase3IntegrationValidator:
             cumulative_achievement = performance_summary.get('cumulative_target_achievement_rate', 0)
             success_level = performance_summary.get('overall_success_level', 'unknown')
             
-            print(f"🚀 Phase 3改善効果: {phase3_improvement:.0f}ms")
-            print(f"🎯 累積改善効果: {total_improvement:.0f}ms")
-            print(f"📈 目標達成率: {cumulative_achievement:.1f}%")
+            print(f"[ROCKET] Phase 3改善効果: {phase3_improvement:.0f}ms")
+            print(f"[TARGET] 累積改善効果: {total_improvement:.0f}ms")
+            print(f"[UP] 目標達成率: {cumulative_achievement:.1f}%")
             print(f"🏆 成功レベル: {success_level}")
             
             # 機能品質結果
@@ -1049,15 +1049,15 @@ class Phase3IntegrationValidator:
             total_apis = functional_summary.get('total_api_tests', 0)
             functional_quality = functional_summary.get('overall_functional_quality', 'unknown')
             
-            print(f"🔧 API互換性: {api_compatibility}/{total_apis}")
-            print(f"📋 機能品質: {functional_quality}")
+            print(f"[TOOL] API互換性: {api_compatibility}/{total_apis}")
+            print(f"[LIST] 機能品質: {functional_quality}")
             
             # 統合結果
             integration_summary = comprehensive_report.get('integration_success_summary', {})
             fallback_integrated = integration_summary.get('system_fallback_policy_integrated', False)
             integration_stability = integration_summary.get('phase_integration_stability', 'unknown')
             
-            print(f"🛡️ SystemFallbackPolicy: {'✅' if fallback_integrated else '⚠️'}")
+            print(f"🛡️ SystemFallbackPolicy: {'[OK]' if fallback_integrated else '[WARNING]'}")
             print(f"🔗 統合安定性: {integration_stability}")
             
             # プロジェクト評価
@@ -1065,7 +1065,7 @@ class Phase3IntegrationValidator:
             project_grade = project_assessment.get('project_grade', 'unknown')
             project_impact = project_assessment.get('project_impact', 'unknown')
             
-            print(f"📊 プロジェクト評価: {project_grade}")
+            print(f"[CHART] プロジェクト評価: {project_grade}")
             print(f"💫 プロジェクト影響: {project_impact}")
             
             print(f"📄 最終レポート: {report_path}")
@@ -1079,15 +1079,15 @@ class Phase3IntegrationValidator:
             )
             
             if overall_success:
-                print(f"\n🎉 Phase 3 Stage 4検証成功 - TODO-PERF-001完全達成！")
-                print(f"🚀 次世代アーキテクチャ準備完了 - Phase 4計画検討可能")
+                print(f"\n[SUCCESS] Phase 3 Stage 4検証成功 - TODO-PERF-001完全達成！")
+                print(f"[ROCKET] 次世代アーキテクチャ準備完了 - Phase 4計画検討可能")
                 return True
             else:
-                print(f"\n⚠️ Phase 3 Stage 4部分達成 - 追加改善推奨")
+                print(f"\n[WARNING] Phase 3 Stage 4部分達成 - 追加改善推奨")
                 return True  # 部分成功でも進行可能
                 
         except Exception as e:
-            print(f"❌ Stage 4検証エラー: {e}")
+            print(f"[ERROR] Stage 4検証エラー: {e}")
             traceback.print_exc()
             return False
 
@@ -1099,13 +1099,13 @@ async def main():
     success = await validator.run_comprehensive_validation()
     
     if success:
-        print("\n🎉 TODO-PERF-001: Phase 3完全達成！")
+        print("\n[SUCCESS] TODO-PERF-001: Phase 3完全達成！")
         print("🌟 革命的アーキテクチャ変革により、超高性能DSSMSシステム確立")
-        print("📈 Phase 1-2-3累積効果による圧倒的な性能向上実現")
-        print("🚀 次世代システム開発基盤構築完了")
+        print("[UP] Phase 1-2-3累積効果による圧倒的な性能向上実現")
+        print("[ROCKET] 次世代システム開発基盤構築完了")
     else:
-        print("\n⚠️ TODO-PERF-001: Phase 3課題あり")
-        print("🔧 追加最適化・改善により目標達成を推奨")
+        print("\n[WARNING] TODO-PERF-001: Phase 3課題あり")
+        print("[TOOL] 追加最適化・改善により目標達成を推奨")
     
     return success
 

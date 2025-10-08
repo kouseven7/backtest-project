@@ -44,11 +44,11 @@ def test_nikkei225_screener():
         for symbol in filtered_symbols:
             print(f"  {symbol}")
         
-        print("✅ Nikkei225 Screener test passed")
+        print("[OK] Nikkei225 Screener test passed")
         return filtered_symbols
         
     except Exception as e:
-        print(f"❌ Nikkei225 Screener test failed: {e}")
+        print(f"[ERROR] Nikkei225 Screener test failed: {e}")
         import traceback
         traceback.print_exc()
         return []
@@ -87,11 +87,11 @@ def test_data_manager(test_symbols):
         for timeframe, stats in cache_stats.items():
             print(f"  {timeframe}: {stats['active_entries']}/{stats['total_entries']} active")
         
-        print("✅ Data Manager test passed")
+        print("[OK] Data Manager test passed")
         return batch_data
         
     except Exception as e:
-        print(f"❌ Data Manager test failed: {e}")
+        print(f"[ERROR] Data Manager test failed: {e}")
         import traceback
         traceback.print_exc()
         return {}
@@ -129,11 +129,11 @@ def test_fundamental_analyzer(test_symbols):
         print(f"  Consensus beat: {summary['consensus_beat']}")
         print(f"  Average score: {summary['avg_fundamental_score']:.3f}")
         
-        print("✅ Fundamental Analyzer test passed")
+        print("[OK] Fundamental Analyzer test passed")
         return batch_results
         
     except Exception as e:
-        print(f"❌ Fundamental Analyzer test failed: {e}")
+        print(f"[ERROR] Fundamental Analyzer test failed: {e}")
         import traceback
         traceback.print_exc()
         return {}
@@ -187,11 +187,11 @@ def test_perfect_order_detector(test_symbols, batch_data):
         print(f"\n4.3 Cache Statistics:")
         print(f"  Active entries: {cache_stats['active_entries']}/{cache_stats['total_entries']}")
         
-        print("✅ Perfect Order Detector test passed")
+        print("[OK] Perfect Order Detector test passed")
         return True
         
     except Exception as e:
-        print(f"❌ Perfect Order Detector test failed: {e}")
+        print(f"[ERROR] Perfect Order Detector test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -247,18 +247,18 @@ def test_integration():
                 print(f"    Perfect Order Priority: {perfect_order.priority_level}")
                 print(f"    Perfect Order Score: {perfect_order.composite_score:.3f}")
         
-        print("✅ Integration test passed")
+        print("[OK] Integration test passed")
         return True
         
     except Exception as e:
-        print(f"❌ Integration test failed: {e}")
+        print(f"[ERROR] Integration test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
 
 def main():
     """メインテスト実行"""
-    print("🚀 DSSMS Phase 1 Task 1.3 統合テスト開始")
+    print("[ROCKET] DSSMS Phase 1 Task 1.3 統合テスト開始")
     print(f"テスト開始時刻: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
     
@@ -273,7 +273,7 @@ def main():
         perfect_order_results = test_perfect_order_detector(test_symbols, batch_data)
         integration_success = test_integration()
     else:
-        print("⚠️ スクリーナーテストが失敗したため、後続テストをスキップします")
+        print("[WARNING] スクリーナーテストが失敗したため、後続テストをスキップします")
         integration_success = False
     
     # 結果サマリー
@@ -281,14 +281,14 @@ def main():
     elapsed_time = end_time - start_time
     
     print("\n" + "=" * 60)
-    print("📊 テスト結果サマリー")
+    print("[CHART] テスト結果サマリー")
     print(f"実行時間: {elapsed_time:.2f}秒")
     print(f"テスト終了時刻: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     if integration_success:
-        print("🎉 DSSMS Phase 1 Task 1.3 実装テスト: 成功")
+        print("[SUCCESS] DSSMS Phase 1 Task 1.3 実装テスト: 成功")
     else:
-        print("❌ DSSMS Phase 1 Task 1.3 実装テスト: 一部失敗")
+        print("[ERROR] DSSMS Phase 1 Task 1.3 実装テスト: 一部失敗")
     
     return integration_success
 

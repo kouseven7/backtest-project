@@ -38,7 +38,7 @@ def analyze_engine_quality_gap_root_cause():
     
     analysis_results = {}
     
-    print(f"📊 品質格差の概要:")
+    print(f"[CHART] 品質格差の概要:")
     print(f"最高点: v1 = {quality_scores['v1']}点")
     print(f"最低点: v3 = {quality_scores['v3']}点")
     print(f"格差: {quality_scores['v1'] - quality_scores['v3']}点")
@@ -50,7 +50,7 @@ def analyze_engine_quality_gap_root_cause():
     analysis_results['v1_success_factors'] = v1_analysis
     
     # 2. v2,v3,v4エンジンの実装不備の具体的原因特定
-    print("\n❌ 2. 低品質エンジンの実装不備原因特定")
+    print("\n[ERROR] 2. 低品質エンジンの実装不備原因特定")
     failure_analysis = {}
     for version in ['v2', 'v3', 'v4']:
         if quality_scores[version] < 70.0:  # 70点未満を低品質とする
@@ -61,17 +61,17 @@ def analyze_engine_quality_gap_root_cause():
     analysis_results['failure_analysis'] = failure_analysis
     
     # 3. 計算式実装エラーのパターン分析
-    print("\n🔍 3. 計算式実装エラーパターン分析")
+    print("\n[SEARCH] 3. 計算式実装エラーパターン分析")
     error_patterns = analyze_calculation_error_patterns(engine_paths)
     analysis_results['error_patterns'] = error_patterns
     
     # 4. エンジン品質統一のための実装ガイドライン策定
-    print("\n📋 4. エンジン品質統一ガイドライン策定")
+    print("\n[LIST] 4. エンジン品質統一ガイドライン策定")
     guidelines = create_quality_guidelines(v1_analysis, failure_analysis, error_patterns)
     analysis_results['quality_guidelines'] = guidelines
     
     # 5. 品質向上優先順位とコスト効率分析
-    print("\n📈 5. 品質向上優先順位とコスト効率分析")
+    print("\n[UP] 5. 品質向上優先順位とコスト効率分析")
     priority_analysis = analyze_improvement_priority(quality_scores, failure_analysis)
     analysis_results['priority_analysis'] = priority_analysis
     
@@ -83,13 +83,13 @@ def analyze_engine_quality_gap_root_cause():
     print(f"🏆 最優秀エンジン: v1 ({quality_scores['v1']}点)")
     print(f"   成功要因: {len(v1_analysis.get('success_factors', []))}個特定")
     
-    print(f"❌ 最低品質エンジン: v3 ({quality_scores['v3']}点)")
+    print(f"[ERROR] 最低品質エンジン: v3 ({quality_scores['v3']}点)")
     if 'v3' in failure_analysis:
         print(f"   主要問題: {len(failure_analysis['v3'].get('critical_issues', []))}個特定")
     
-    print(f"📊 実装エラーパターン: {len(error_patterns.get('patterns', []))}種類特定")
-    print(f"📋 品質ガイドライン: {len(guidelines.get('rules', []))}項目策定")
-    print(f"🎯 改善優先順位: {len(priority_analysis.get('priorities', []))}段階設定")
+    print(f"[CHART] 実装エラーパターン: {len(error_patterns.get('patterns', []))}種類特定")
+    print(f"[LIST] 品質ガイドライン: {len(guidelines.get('rules', []))}項目策定")
+    print(f"[TARGET] 改善優先順位: {len(priority_analysis.get('priorities', []))}段階設定")
     
     return analysis_results
 
@@ -104,14 +104,14 @@ def analyze_v1_success_factors(engine_path: str) -> Dict[str, Any]:
     }
     
     if not os.path.exists(engine_path):
-        print(f"❌ {engine_path} が見つかりません")
+        print(f"[ERROR] {engine_path} が見つかりません")
         return success_factors
     
     try:
         with open(engine_path, 'r', encoding='utf-8') as f:
             content = f.read()
     except Exception as e:
-        print(f"❌ {engine_path} 読み込みエラー: {e}")
+        print(f"[ERROR] {engine_path} 読み込みエラー: {e}")
         return success_factors
     
     # ファイル構造分析
@@ -201,7 +201,7 @@ def analyze_implementation_failures(engine_path: str, version: str, score: float
     
     if not os.path.exists(engine_path):
         failure_analysis['critical_issues'].append(f"ファイル未存在: {engine_path}")
-        print(f"   ❌ ファイルが存在しません: {engine_path}")
+        print(f"   [ERROR] ファイルが存在しません: {engine_path}")
         return failure_analysis
     
     try:
@@ -209,7 +209,7 @@ def analyze_implementation_failures(engine_path: str, version: str, score: float
             content = f.read()
     except Exception as e:
         failure_analysis['critical_issues'].append(f"ファイル読み込みエラー: {e}")
-        print(f"   ❌ ファイル読み込みエラー: {e}")
+        print(f"   [ERROR] ファイル読み込みエラー: {e}")
         return failure_analysis
     
     file_size = len(content)
@@ -289,15 +289,15 @@ def analyze_implementation_failures(engine_path: str, version: str, score: float
     failure_analysis['quality_problems'] = quality_issues
     
     # 結果出力
-    print(f"   ❌ 重大問題: {len(failure_analysis['critical_issues'])}個")
+    print(f"   [ERROR] 重大問題: {len(failure_analysis['critical_issues'])}個")
     for issue in failure_analysis['critical_issues']:
         print(f"     - {issue}")
     
-    print(f"   📋 実装ギャップ:")
+    print(f"   [LIST] 実装ギャップ:")
     print(f"     - 欠如メソッド: {len(missing_methods)}個")
     print(f"     - 欠如計算式: {len(missing_calculations)}個")
     
-    print(f"   ⚠️ 品質問題: {len(quality_issues)}個")
+    print(f"   [WARNING] 品質問題: {len(quality_issues)}個")
     for issue in quality_issues:
         print(f"     - {issue}")
     
@@ -322,7 +322,7 @@ def analyze_calculation_error_patterns(engine_paths: Dict[str, str]) -> Dict[str
         'max_drawdown': 'max(cumulative_losses)'
     }
     
-    print("📊 正しい計算式定義:")
+    print("[CHART] 正しい計算式定義:")
     for name, formula in correct_formulas.items():
         print(f"   {name}: {formula}")
     
@@ -398,7 +398,7 @@ def analyze_calculation_error_patterns(engine_paths: Dict[str, str]) -> Dict[str
     
     error_patterns['patterns'] = patterns_found
     
-    print(f"\n📊 特定されたエラーパターン: {len(patterns_found)}種類")
+    print(f"\n[CHART] 特定されたエラーパターン: {len(patterns_found)}種類")
     for pattern in patterns_found:
         print(f"   - {pattern}")
     
@@ -481,7 +481,7 @@ def create_quality_guidelines(v1_analysis: Dict, failure_analysis: Dict, error_p
     
     guidelines['implementation_standards'] = implementation_standards
     
-    print(f"📋 策定されたガイドライン:")
+    print(f"[LIST] 策定されたガイドライン:")
     print(f"   品質ルール: {len(rules)}項目")
     print(f"   ベストプラクティス: {len(best_practices)}項目")
     print(f"   品質メトリクス: {len(quality_metrics)}指標")
@@ -587,12 +587,12 @@ def analyze_improvement_priority(quality_scores: Dict[str, float], failure_analy
     
     priority_analysis['improvement_roadmap'] = roadmap
     
-    print(f"🎯 改善優先順位（効率順）:")
+    print(f"[TARGET] 改善優先順位（効率順）:")
     for priority in priorities:
         print(f"   {priority['rank']}. {priority['version']} - {priority['priority_level']}")
         print(f"      スコア差: {priority['gap']:.1f}点, コスト: {priority['estimated_cost']}, 効率: {priority['efficiency']:.3f}")
     
-    print(f"\n📈 全体効率: {overall_efficiency:.3f} (ギャップ/コスト比)")
+    print(f"\n[UP] 全体効率: {overall_efficiency:.3f} (ギャップ/コスト比)")
     print(f"推奨改善順序: {' → '.join(priority_analysis['cost_efficiency']['recommended_order'])}")
     
     return priority_analysis
@@ -606,9 +606,9 @@ if __name__ == "__main__":
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(results, f, ensure_ascii=False, indent=2)
         
-        print(f"\n✅ 分析結果を {output_file} に保存しました")
+        print(f"\n[OK] 分析結果を {output_file} に保存しました")
         
     except Exception as e:
-        print(f"❌ エラーが発生しました: {e}")
+        print(f"[ERROR] エラーが発生しました: {e}")
         import traceback
         traceback.print_exc()

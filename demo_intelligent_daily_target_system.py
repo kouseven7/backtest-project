@@ -221,14 +221,14 @@ def main():
         test_success = test_intelligent_target_calculation()
         
         if test_success:
-            logger.info("✅ デモ実行成功")
+            logger.info("[OK] デモ実行成功")
             logger.info("")
             logger.info("次のステップ:")
             logger.info("1. 設定ファイル (config/switch_optimization_config.json) で参数を調整")
             logger.info("2. 実際の市場データでテスト")
             logger.info("3. パフォーマンス履歴の蓄積と改善")
         else:
-            logger.error("❌ デモ実行失敗")
+            logger.error("[ERROR] デモ実行失敗")
             logger.error("エラーログを確認して問題を解決してください")
         
         return test_success

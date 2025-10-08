@@ -94,10 +94,10 @@ def measure_dssms_with_lightweight_logger():
         log_output_time = (time.perf_counter() - start) * 1000
         print(f"     ログ出力時間: {log_output_time:.1f}ms")
         
-        print("     ✅ 軽量Logger統合成功")
+        print("     [OK] 軽量Logger統合成功")
         
     except Exception as e:
-        print(f"     ❌ 軽量Logger統合エラー: {e}")
+        print(f"     [ERROR] 軽量Logger統合エラー: {e}")
         lightweight_setup_time = float('inf')
     
     # 4. Phase 3遅延インポートとの統合効果測定
@@ -135,11 +135,11 @@ def measure_dssms_with_lightweight_logger():
         print(f"   削減時間: {original_import_time - lightweight_setup_time:.1f}ms")
         
         if logger_improvement > 90:
-            print("   ✅ 実用レベルの大幅改善達成")
+            print("   [OK] 実用レベルの大幅改善達成")
         elif logger_improvement > 50:
-            print("   ⚠️ 中程度の改善、さらなる最適化推奨")
+            print("   [WARNING] 中程度の改善、さらなる最適化推奨")
         else:
-            print("   ❌ 改善効果不十分、他の対策必要")
+            print("   [ERROR] 改善効果不十分、他の対策必要")
     
     # 6. 成功判定基準チェック
     print("\\n6. 成功判定基準チェック:")
@@ -154,11 +154,11 @@ def measure_dssms_with_lightweight_logger():
     }
     
     all_success = all(success_criteria.values())
-    print(f"   ✅ Logger設定時間100ms以下: {success_criteria['logger_under_100ms']}")
-    print(f"   ✅ 90%以上の大幅改善: {success_criteria['major_improvement']}")
-    print(f"   ✅ 機能維持: {success_criteria['functionality_maintained']}")
-    print(f"   ✅ 統合成功: {success_criteria['integration_success']}")
-    print(f"\\n   🎯 総合判定: {'✅ 成功' if all_success else '❌ 部分成功'}")
+    print(f"   [OK] Logger設定時間100ms以下: {success_criteria['logger_under_100ms']}")
+    print(f"   [OK] 90%以上の大幅改善: {success_criteria['major_improvement']}")
+    print(f"   [OK] 機能維持: {success_criteria['functionality_maintained']}")
+    print(f"   [OK] 統合成功: {success_criteria['integration_success']}")
+    print(f"\\n   [TARGET] 総合判定: {'[OK] 成功' if all_success else '[ERROR] 部分成功'}")
     
     return {
         'original_import_time': original_import_time,

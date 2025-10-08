@@ -3,26 +3,26 @@
 
 def main():
     try:
-        print("🚀 4-1-3 Basic System Test")
+        print("[ROCKET] 4-1-3 Basic System Test")
         
         # 1. インターフェースインポート
         print("1. Testing interface import...")
         from multi_strategy_coordination_interface import MultiStrategyCoordinationInterface
-        print("✅ Interface import successful")
+        print("[OK] Interface import successful")
         
         # 2. インターフェース初期化  
         print("2. Testing interface initialization...")
         interface = MultiStrategyCoordinationInterface()
-        print("✅ Interface initialization successful")
+        print("[OK] Interface initialization successful")
         
         # 3. システムステータス確認
         print("3. Testing system status...")
         try:
             status = interface.get_system_status()
-            print("✅ System status retrieved")
+            print("[OK] System status retrieved")
             print(f"   Coordination state: {status.get('coordination', {}).get('state', 'unknown')}")
         except Exception as e:
-            print(f"⚠️ System status error (continuing): {e}")
+            print(f"[WARNING] System status error (continuing): {e}")
         
         # 4. 基本機能テスト
         print("4. Testing basic coordination...")
@@ -32,25 +32,25 @@ def main():
             # インターフェース経由での調整テスト
             result = interface.execute_strategy_coordination(test_strategies)
             if result.get('success'):
-                print("✅ Basic coordination test successful")
+                print("[OK] Basic coordination test successful")
             else:
-                print(f"⚠️ Coordination test returned: {result.get('error', 'No error message')}")
+                print(f"[WARNING] Coordination test returned: {result.get('error', 'No error message')}")
         except Exception as e:
-            print(f"⚠️ Coordination test error: {e}")
+            print(f"[WARNING] Coordination test error: {e}")
         
         # 5. クリーンアップ
         print("5. Cleanup...")
         try:
             interface.shutdown()
-            print("✅ Interface shutdown successful")
+            print("[OK] Interface shutdown successful")
         except Exception as e:
-            print(f"⚠️ Shutdown error: {e}")
+            print(f"[WARNING] Shutdown error: {e}")
         
-        print("\n🎉 Basic system test completed successfully!")
+        print("\n[SUCCESS] Basic system test completed successfully!")
         return True
         
     except Exception as e:
-        print(f"\n❌ Basic system test failed: {e}")
+        print(f"\n[ERROR] Basic system test failed: {e}")
         import traceback
         traceback.print_exc()
         return False

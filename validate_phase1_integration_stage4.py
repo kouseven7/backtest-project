@@ -29,7 +29,7 @@ class Phase1IntegrationValidator:
         
     def fix_unicode_issues(self) -> bool:
         """Unicode文字エラー修正"""
-        print("🔧 Unicode文字エラー修正中...")
+        print("[TOOL] Unicode文字エラー修正中...")
         
         # yfinance wrapper修正
         yf_wrapper_path = self.project_root / "src" / "utils" / "yfinance_lazy_wrapper.py"
@@ -45,12 +45,12 @@ class Phase1IntegrationValidator:
                     
                     # Unicode文字を通常文字に置換
                     unicode_fixes = [
-                        ("📊", "[INFO]"),
-                        ("❌", "[ERROR]"),
-                        ("⚠️", "[WARNING]"),
-                        ("✅", "[SUCCESS]"),
-                        ("🔧", "[FIX]"),
-                        ("🎯", "[TARGET]"),
+                        ("[CHART]", "[INFO]"),
+                        ("[ERROR]", "[ERROR]"),
+                        ("[WARNING]", "[WARNING]"),
+                        ("[OK]", "[SUCCESS]"),
+                        ("[TOOL]", "[FIX]"),
+                        ("[TARGET]", "[TARGET]"),
                         ("🏆", "[RESULT]"),
                     ]
                     
@@ -62,16 +62,16 @@ class Phase1IntegrationValidator:
                     with open(wrapper_path, 'w', encoding='utf-8') as f:
                         f.write(content)
                     
-                    print(f"  ✅ {wrapper_path.name}: {fixes_applied}箇所修正")
+                    print(f"  [OK] {wrapper_path.name}: {fixes_applied}箇所修正")
                     
                 except Exception as e:
-                    print(f"  ❌ {wrapper_path.name}: 修正エラー - {e}")
+                    print(f"  [ERROR] {wrapper_path.name}: 修正エラー - {e}")
         
         return fixes_applied > 0
     
     def measure_phase1_comprehensive_performance(self) -> Dict[str, Any]:
         """Phase 1統合パフォーマンス測定"""
-        print("📊 Phase 1統合パフォーマンス測定実行中...")
+        print("[CHART] Phase 1統合パフォーマンス測定実行中...")
         
         measurements = {
             'baseline': {},
@@ -82,7 +82,7 @@ class Phase1IntegrationValidator:
         
         try:
             # 1. ベースライン測定（直接インポート）
-            print("  📈 ベースライン測定中...")
+            print("  [UP] ベースライン測定中...")
             baseline_script = '''
 import time
 import sys
@@ -119,7 +119,7 @@ print(f"TOTAL_BASELINE: {total_time:.1f}")
                         measurements['baseline']['total_ms'] = float(line.split(':')[1].strip())
             
             # 2. Phase 1最適化後測定
-            print("  📈 Phase 1最適化後測定中...")
+            print("  [UP] Phase 1最適化後測定中...")
             optimized_script = '''
 import time
 import sys
@@ -170,20 +170,20 @@ print(f"TOTAL_LAZY: {total_lazy_time:.1f}")
                     'openpyxl_reduction_ms': measurements['baseline'].get('openpyxl_ms', 0) - measurements['phase1_optimized'].get('openpyxl_ms', 0)
                 }
                 
-                print(f"  📊 ベースライン合計: {baseline_total:.1f}ms")
-                print(f"  📊 最適化後合計: {optimized_total:.1f}ms")
+                print(f"  [CHART] ベースライン合計: {baseline_total:.1f}ms")
+                print(f"  [CHART] 最適化後合計: {optimized_total:.1f}ms")
                 print(f"  🏆 改善効果: {improvement_ms:.1f}ms ({improvement_percent:.1f}%)")
             
             self.performance_measurements = measurements
             return measurements
             
         except Exception as e:
-            print(f"  ❌ パフォーマンス測定エラー: {e}")
+            print(f"  [ERROR] パフォーマンス測定エラー: {e}")
             return measurements
     
     def run_dssms_functionality_tests(self) -> Dict[str, Any]:
         """DSSMS機能完全性テスト"""
-        print("🧪 DSSMS機能完全性テスト実行中...")
+        print("[TEST] DSSMS機能完全性テスト実行中...")
         
         functionality_tests = {
             'import_tests': {},
@@ -195,7 +195,7 @@ print(f"TOTAL_LAZY: {total_lazy_time:.1f}")
         }
         
         # 1. インポートテスト
-        print("  📋 インポートテスト実行中...")
+        print("  [LIST] インポートテスト実行中...")
         import_test_script = '''
 import sys
 import os
@@ -268,7 +268,7 @@ print(f"IMPORT_TEST_RESULT: {tests_passed}/{total_tests}")
             functionality_tests['import_tests']['error'] = str(e)
         
         # 2. データ取得テスト
-        print("  📋 データ取得テスト実行中...")
+        print("  [LIST] データ取得テスト実行中...")
         data_test_script = '''
 import sys
 import os
@@ -334,7 +334,7 @@ print(f"DATA_TEST_RESULT: {tests_passed}/{total_tests}")
             functionality_tests['data_fetcher_tests']['error'] = str(e)
         
         # 3. Excel出力テスト
-        print("  📋 Excel出力テスト実行中...")
+        print("  [LIST] Excel出力テスト実行中...")
         excel_test_script = '''
 import sys
 import os
@@ -422,7 +422,7 @@ print(f"EXCEL_TEST_RESULT: {tests_passed}/{total_tests}")
     
     def assess_practical_usability(self) -> Dict[str, Any]:
         """実用性評価"""
-        print("🎯 実用性評価実行中...")
+        print("[TARGET] 実用性評価実行中...")
         
         usability_assessment = {
             'performance_criteria': {},
@@ -447,7 +447,7 @@ print(f"EXCEL_TEST_RESULT: {tests_passed}/{total_tests}")
                 'score': performance_score
             }
             
-            print(f"  📊 パフォーマンス: {absolute_ms:.1f}ms削減 ({percentage:.1f}%) - {performance_score}")
+            print(f"  [CHART] パフォーマンス: {absolute_ms:.1f}ms削減 ({percentage:.1f}%) - {performance_score}")
         
         # 2. 機能基準評価
         if self.functionality_tests.get('overall_success_rate') is not None:
@@ -461,7 +461,7 @@ print(f"EXCEL_TEST_RESULT: {tests_passed}/{total_tests}")
                 'score': functionality_score
             }
             
-            print(f"  🧪 機能完全性: {success_rate*100:.1f}% - {functionality_score}")
+            print(f"  [TEST] 機能完全性: {success_rate*100:.1f}% - {functionality_score}")
         
         # 3. 安定性基準評価（lazy_loader除去効果）
         lazy_loader_removal_success = True  # Stage 3で9/13ファイル成功
@@ -477,7 +477,7 @@ print(f"EXCEL_TEST_RESULT: {tests_passed}/{total_tests}")
             'score': stability_score
         }
         
-        print(f"  🔧 安定性: {stability_score}")
+        print(f"  [TOOL] 安定性: {stability_score}")
         
         # 4. 総合実用性判定
         performance_good = usability_assessment['performance_criteria'].get('score') in ['excellent', 'good']
@@ -501,7 +501,7 @@ print(f"EXCEL_TEST_RESULT: {tests_passed}/{total_tests}")
     
     def generate_phase1_final_report(self) -> Dict[str, Any]:
         """Phase 1最終完了レポート生成"""
-        print("📋 Phase 1最終完了レポート生成中...")
+        print("[LIST] Phase 1最終完了レポート生成中...")
         
         final_report = {
             'phase': 'Phase 1: 即効性対策実装 - 重いライブラリ遅延化最適化',
@@ -565,7 +565,7 @@ print(f"EXCEL_TEST_RESULT: {tests_passed}/{total_tests}")
     
     def run_stage4_validation(self) -> bool:
         """Stage 4完全検証実行"""
-        print("🚀 TODO-PERF-001 Phase 1 Stage 4: 統合効果検証・実用性確認開始")
+        print("[ROCKET] TODO-PERF-001 Phase 1 Stage 4: 統合効果検証・実用性確認開始")
         print("=" * 80)
         
         start_time = time.time()
@@ -576,34 +576,34 @@ print(f"EXCEL_TEST_RESULT: {tests_passed}/{total_tests}")
             # Task 1: Unicode文字エラー修正
             if self.fix_unicode_issues():
                 success_count += 1
-                print("  ✅ Task 1完了")
+                print("  [OK] Task 1完了")
             else:
-                print("  ⚠️ Task 1部分完了")
+                print("  [WARNING] Task 1部分完了")
                 success_count += 0.5
             
             # Task 2: Phase 1統合パフォーマンス測定
             measurements = self.measure_phase1_comprehensive_performance()
             if measurements.get('improvement'):
                 success_count += 1
-                print("  ✅ Task 2完了")
+                print("  [OK] Task 2完了")
             
             # Task 3: DSSMS機能完全性テスト
             functionality_tests = self.run_dssms_functionality_tests()
             if functionality_tests.get('overall_success_rate', 0) >= 0.75:
                 success_count += 1
-                print("  ✅ Task 3完了")
+                print("  [OK] Task 3完了")
             
             # Task 4: 実用性評価
             usability = self.assess_practical_usability()
             if usability.get('overall_usability') in ['excellent', 'good', 'acceptable']:
                 success_count += 1
-                print("  ✅ Task 4完了")
+                print("  [OK] Task 4完了")
             
             # Task 5: 最終レポート生成
             final_report = self.generate_phase1_final_report()
             if final_report:
                 success_count += 1
-                print("  ✅ Task 5完了")
+                print("  [OK] Task 5完了")
             
             # Task 6: レポート保存・サマリー出力
             try:
@@ -612,29 +612,29 @@ print(f"EXCEL_TEST_RESULT: {tests_passed}/{total_tests}")
                     json.dump(final_report, f, indent=2, ensure_ascii=False)
                 
                 success_count += 1
-                print("  ✅ Task 6完了")
+                print("  [OK] Task 6完了")
                 
             except Exception as e:
-                print(f"  ❌ Task 6エラー: {e}")
+                print(f"  [ERROR] Task 6エラー: {e}")
             
             # 最終結果サマリー
             print("\n" + "="*80)
             print("🏆 TODO-PERF-001 Phase 1完了サマリー")
             print("="*80)
-            print(f"📊 Stage 4タスク成功率: {success_count}/{total_tasks} ({success_count/total_tasks*100:.1f}%)")
+            print(f"[CHART] Stage 4タスク成功率: {success_count}/{total_tasks} ({success_count/total_tasks*100:.1f}%)")
             print(f"⏱️ Stage 4実行時間: {time.time() - start_time:.1f}秒")
             
             # パフォーマンス成果
             if measurements.get('improvement'):
                 improvement = measurements['improvement']
-                print(f"🎯 Phase 1パフォーマンス削減: {improvement.get('absolute_ms', 0):.1f}ms ({improvement.get('percentage', 0):.1f}%)")
-                print(f"📈 目標800ms達成: {'✅' if improvement.get('absolute_ms', 0) >= 800 else '❌'}")
+                print(f"[TARGET] Phase 1パフォーマンス削減: {improvement.get('absolute_ms', 0):.1f}ms ({improvement.get('percentage', 0):.1f}%)")
+                print(f"[UP] 目標800ms達成: {'[OK]' if improvement.get('absolute_ms', 0) >= 800 else '[ERROR]'}")
             
             # 機能性成果
             if functionality_tests.get('overall_success_rate') is not None:
                 success_rate = functionality_tests['overall_success_rate']
-                print(f"🧪 DSSMS機能完全性: {success_rate*100:.1f}%")
-                print(f"📈 目標90%達成: {'✅' if success_rate >= 0.90 else '❌'}")
+                print(f"[TEST] DSSMS機能完全性: {success_rate*100:.1f}%")
+                print(f"[UP] 目標90%達成: {'[OK]' if success_rate >= 0.90 else '[ERROR]'}")
             
             # 実用性成果
             overall_usability = usability.get('overall_usability', 'unknown')
@@ -651,14 +651,14 @@ print(f"EXCEL_TEST_RESULT: {tests_passed}/{total_tests}")
             )
             
             if phase1_success:
-                print("✅ Phase 1合格: 即効性対策実装成功 - 実用レベル達成")
+                print("[OK] Phase 1合格: 即効性対策実装成功 - 実用レベル達成")
                 return True
             else:
-                print("⚠️ Phase 1部分成功: 一部目標未達成だが基盤確立")
+                print("[WARNING] Phase 1部分成功: 一部目標未達成だが基盤確立")
                 return True  # 部分成功も進行可能とする
                 
         except Exception as e:
-            print(f"❌ Stage 4実行エラー: {e}")
+            print(f"[ERROR] Stage 4実行エラー: {e}")
             traceback.print_exc()
             return False
 
@@ -670,12 +670,12 @@ def main():
     success = validator.run_stage4_validation()
     
     if success:
-        print("\n🎉 TODO-PERF-001 Phase 1完全成功！")
-        print("📋 次段階: Phase 2実装準備完了")
-        print("🎯 実用レベルDSSMSシステム基盤完成")
+        print("\n[SUCCESS] TODO-PERF-001 Phase 1完全成功！")
+        print("[LIST] 次段階: Phase 2実装準備完了")
+        print("[TARGET] 実用レベルDSSMSシステム基盤完成")
     else:
-        print("\n⚠️ Phase 1部分成功 - 重要な進歩達成")
-        print("📋 次段階: 残存課題解決後にPhase 2推奨")
+        print("\n[WARNING] Phase 1部分成功 - 重要な進歩達成")
+        print("[LIST] 次段階: 残存課題解決後にPhase 2推奨")
     
     return success
 

@@ -1,6 +1,6 @@
 # DSSMS Excel Exporter 統合アーキテクチャ設計
 
-## 📊 V2版機能分析結果
+## [CHART] V2版機能分析結果
 
 ### **ファイル基本情報**
 - **V2版**: 37.8KB、886行 - 高機能な完全実装
@@ -39,7 +39,7 @@ from openpyxl.chart import LineChart, Reference
 from config.logger_config import setup_logger
 ```
 
-## 🎯 統合方針
+## [TARGET] 統合方針
 
 ### **統合戦略**
 1. **完全置換方式**: src版をV2版で完全置換
@@ -60,16 +60,16 @@ src/dssms/dssms_excel_exporter.py（統合版）
 ### **メソッド統合計画**
 | src版プレースホルダー | V2版実装 | 統合後 |
 |---------------------|----------|--------|
-| `export_data()` | `export_dssms_results()` | ✅ 統合 |
-| `export_rankings()` | N/A | ✅ 新規実装 |
-| `export_switch_analysis()` | `_create_switch_analysis_sheet()` | ✅ 統合 |
-| `initialize()` | `__init__()` | ✅ 統合 |
+| `export_data()` | `export_dssms_results()` | [OK] 統合 |
+| `export_rankings()` | N/A | [OK] 新規実装 |
+| `export_switch_analysis()` | `_create_switch_analysis_sheet()` | [OK] 統合 |
+| `initialize()` | `__init__()` | [OK] 統合 |
 
 ### **クラス名統一**
 - `DSSMSExcelExporterV2` → `DSSMSExcelExporter`
 - 既存の`get_excel_exporter()`シングルトン関数は維持
 
-## ⚠️ リスク分析
+## [WARNING] リスク分析
 
 ### **統合リスク**
 1. **HIGH**: V2版の886行コードの移植 - 構文エラーリスク
@@ -81,7 +81,7 @@ src/dssms/dssms_excel_exporter.py（統合版）
 - バックアップ確保：既存プレースホルダーをバックアップ
 - 統合テスト：各メソッド個別 → 全体統合テスト
 
-## 📋 実装手順
+## [LIST] 実装手順
 
 ### **Step 2.2 実装計画（45分）**
 1. **基盤移植（15分）**: クラス定義・__init__・基本インポート
@@ -97,4 +97,4 @@ src/dssms/dssms_excel_exporter.py（統合版）
 ---
 
 **作成日**: 2025年9月30日
-**Phase 2 Step 2.1 完了準備**: ✅ 統合設計完了、Step 2.2実装準備完了
+**Phase 2 Step 2.1 完了準備**: [OK] 統合設計完了、Step 2.2実装準備完了

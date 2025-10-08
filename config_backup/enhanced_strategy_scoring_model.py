@@ -668,7 +668,7 @@ if __name__ == "__main__":
         )
         
         print(f"✓ Enhanced scores calculated for {len(scores)} strategies")
-        print("✅ 2-2-1「信頼度スコアとパフォーマンススコアの統合ロジック」実装完了")
+        print("[OK] 2-2-1「信頼度スコアとパフォーマンススコアの統合ロジック」実装完了")
         
     except Exception as e:
         print(f"✗ Test failed: {e}")

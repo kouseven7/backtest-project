@@ -61,7 +61,7 @@ class ExcelEliminationScanner:
     def scan_project_for_excel_outputs(self) -> Dict[str, List[Dict[str, Any]]]:
         """プロジェクト全体のExcel出力スキャン"""
         
-        logger.info("🔍 Excel出力スキャン開始...")
+        logger.info("[SEARCH] Excel出力スキャン開始...")
         
         scan_results: Dict[str, List[Dict[str, Any]]] = {
             'violations': [],
@@ -90,7 +90,7 @@ class ExcelEliminationScanner:
             if violations:
                 scan_results['suspicious'].extend(violations)
         
-        logger.info(f"📊 スキャン完了: 違反{len(scan_results['violations'])}件, "
+        logger.info(f"[CHART] スキャン完了: 違反{len(scan_results['violations'])}件, "
                    f"疑わしい{len(scan_results['suspicious'])}件, "
                    f"保護対象{len(scan_results['protected'])}件")
         
@@ -195,7 +195,7 @@ class ExcelEliminationScanner:
                 logger.error(f"ファイル処理エラー {file_path}: {e}")
                 elimination_stats['errors'] += 1
         
-        logger.info(f"✅ Excel出力削除完了: {elimination_stats}")
+        logger.info(f"[OK] Excel出力削除完了: {elimination_stats}")
         return elimination_stats
     
     def _eliminate_file_excel_outputs(self, file_path: Path, violations: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -316,7 +316,7 @@ class ExcelEliminationScanner:
         medium_impact_count = sum(1 for v in violations if v.get('backtest_impact') == 'MEDIUM')
         
         if high_impact_count > 0:
-            logger.warning(f"⚠️ バックテスト基本理念への高影響違反: {high_impact_count}件")
+            logger.warning(f"[WARNING] バックテスト基本理念への高影響違反: {high_impact_count}件")
         
         if medium_impact_count > 0:
             logger.info(f"ℹ️ バックテスト基本理念への中影響違反: {medium_impact_count}件")
@@ -338,12 +338,12 @@ Excel出力完全撲滅報告書
 実行日時: {timestamp}
 ==========================================
 
-📊 撲滅統計:
+[CHART] 撲滅統計:
 - 処理ファイル数: {total_files}
 - 削除コード行数: {total_lines}
 - アーカイブファイル数: {len(list(self.archive_dir.glob('*.backup.*')))}
 
-⚠️ バックテスト基本理念への影響:
+[WARNING] バックテスト基本理念への影響:
 - 高影響(Entry_Signal/Exit_Signal関連): {backtest_high_impact}件
 - 中影響(取引データ関連): {backtest_medium_impact}件
 - 低影響・なし: {total_lines - backtest_high_impact - backtest_medium_impact}件
@@ -373,12 +373,12 @@ Excel出力完全撲滅報告書
         
         report += f"""
 
-✅ 次回フェーズ:
+[OK] 次回フェーズ:
 1. 新形式出力テスト実行
 2. CSV+JSON+TXT+YAML動作確認
 3. バックテスト基本理念遵守確認
 
-🔧 バックテスト基本理念対応:
+[TOOL] バックテスト基本理念対応:
 - 高影響違反は統一出力エンジンで代替実装推奨
 - Entry_Signal/Exit_Signal出力の完整性確保必須
 - 取引履歴データの新形式移行必須
@@ -397,29 +397,29 @@ Excel出力完全廃棄完了 ✨
 def execute_excel_elimination_phase():
     """Phase 2.5: Excel出力完全撲滅の実行"""
     
-    print("🚀 Phase 2.5: Excel出力完全撲滅開始")
+    print("[ROCKET] Phase 2.5: Excel出力完全撲滅開始")
     print("=" * 50)
     
     try:
         scanner = ExcelEliminationScanner()
         
         # 1. スキャン実行
-        print("🔍 プロジェクト全体スキャン中...")
+        print("[SEARCH] プロジェクト全体スキャン中...")
         scan_results = scanner.scan_project_for_excel_outputs()
         
-        print(f"\n📋 検出結果:")
+        print(f"\n[LIST] 検出結果:")
         print(f"  - Excel出力違反: {len(scan_results['violations'])}件")
         print(f"  - 疑わしい設定: {len(scan_results['suspicious'])}件")
         print(f"  - 保護対象: {len(scan_results['protected'])}件")
         
         if not scan_results['violations'] and not scan_results['suspicious']:
-            print("\n✅ Excel出力違反なし - 撲滅完了済み")
+            print("\n[OK] Excel出力違反なし - 撲滅完了済み")
             return
         
         # 2. 検出内容の詳細表示
         all_violations = scan_results['violations'] + scan_results['suspicious']
         
-        print(f"\n🔍 検出されたExcel出力 (上位{min(10, len(all_violations))}件):")
+        print(f"\n[SEARCH] 検出されたExcel出力 (上位{min(10, len(all_violations))}件):")
         for i, violation in enumerate(all_violations[:10], 1):
             file_name = Path(violation['file']).name
             impact = violation.get('backtest_impact', 'UNKNOWN')
@@ -429,7 +429,7 @@ def execute_excel_elimination_phase():
             print(f"  ... 他 {len(all_violations) - 10} 件")
         
         # 3. 削除実行の確認
-        print(f"\n⚠️ 重要: {len(all_violations)}件のExcel出力を検出しました")
+        print(f"\n[WARNING] 重要: {len(all_violations)}件のExcel出力を検出しました")
         print("以下の操作が実行されます:")
         print("  1. 違反コードのコメントアウト")
         print("  2. 元ファイルの自動バックアップ")
@@ -438,7 +438,7 @@ def execute_excel_elimination_phase():
         
         confirm = input(f"\n続行しますか？ (y/N): ")
         if confirm.lower() != 'y':
-            print("❌ 処理をキャンセルしました")
+            print("[ERROR] 処理をキャンセルしました")
             return
         
         # 4. 一括削除実行
@@ -458,9 +458,9 @@ def execute_excel_elimination_phase():
             f.write(report)
         
         # 結果表示
-        print(f"\n✅ Excel出力完全撲滅完了!")
+        print(f"\n[OK] Excel出力完全撲滅完了!")
         print("=" * 50)
-        print(f"📊 処理結果:")
+        print(f"[CHART] 処理結果:")
         print(f"  - 処理ファイル数: {elimination_stats['files_processed']}")
         print(f"  - 削除行数: {elimination_stats['lines_commented']}")
         print(f"  - アーカイブファイル数: {elimination_stats['files_archived']}")
@@ -470,14 +470,14 @@ def execute_excel_elimination_phase():
         print(f"📦 アーカイブ場所: {scanner.archive_dir}")
         
         # 次のステップガイド
-        print(f"\n🚀 次のステップ:")
+        print(f"\n[ROCKET] 次のステップ:")
         print("  1. 新形式出力エンジンでの代替実装")
         print("  2. バックテスト基本理念遵守確認")
         print("  3. CSV+JSON+TXT+YAML形式での動作テスト")
         
     except Exception as e:
         logger.error(f"Excel撲滅処理エラー: {e}")
-        print(f"❌ エラーが発生しました: {e}")
+        print(f"[ERROR] エラーが発生しました: {e}")
         print("詳細はログを確認してください")
         raise
 

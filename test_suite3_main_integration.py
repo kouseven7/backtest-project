@@ -52,7 +52,7 @@ class TestSuite3_MainIntegration:
                 
                 # 正常終了かチェック
                 if process.returncode == 0:
-                    logger.info("✅ main.py基本実行テスト成功")
+                    logger.info("[OK] main.py基本実行テスト成功")
                     return True
                 else:
                     logger.warning(f"main.py実行エラー (終了コード: {process.returncode})")
@@ -64,11 +64,11 @@ class TestSuite3_MainIntegration:
                 process.wait()
                 
                 # タイムアウトは正常動作 (バックテスト処理は時間がかかるため)
-                logger.info("✅ main.py基本実行テスト成功 (タイムアウト)")
+                logger.info("[OK] main.py基本実行テスト成功 (タイムアウト)")
                 return True
         
         except Exception as e:
-            logger.error(f"❌ main.py基本実行テスト失敗: {e}")
+            logger.error(f"[ERROR] main.py基本実行テスト失敗: {e}")
             return False
     
     def test_02_integration_system_fallback_switch(self) -> bool:
@@ -98,11 +98,11 @@ class TestSuite3_MainIntegration:
             else:
                 logger.warning("⚠ SystemFallbackPolicyが見つかりません")
             
-            logger.info("✅ 統合システム vs フォールバック切り替えテスト成功")
+            logger.info("[OK] 統合システム vs フォールバック切り替えテスト成功")
             return True
             
         except Exception as e:
-            logger.error(f"❌ 統合システム切り替えテスト失敗: {e}")
+            logger.error(f"[ERROR] 統合システム切り替えテスト失敗: {e}")
             return False
     
     def test_03_strategy_integration_verification(self) -> bool:
@@ -134,14 +134,14 @@ class TestSuite3_MainIntegration:
                     logger.warning(f"⚠ {strategy} のインポートが見つかりません")
             
             if len(imported_strategies) >= 5:
-                logger.info(f"✅ 7戦略統合実行テスト成功 ({len(imported_strategies)}/7戦略確認)")
+                logger.info(f"[OK] 7戦略統合実行テスト成功 ({len(imported_strategies)}/7戦略確認)")
                 return True
             else:
                 logger.warning(f"⚠ 戦略インポート不足 ({len(imported_strategies)}/7戦略)")
                 return False
                 
         except Exception as e:
-            logger.error(f"❌ 7戦略統合実行テスト失敗: {e}")
+            logger.error(f"[ERROR] 7戦略統合実行テスト失敗: {e}")
             return False
     
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
@@ -171,14 +171,14 @@ class TestSuite3_MainIntegration:
                     logger.info(f"✓ Excel出力機能 '{indicator}' が確認されました")
             
             if len(found_indicators) >= 2:
-                logger.info("✅ Excel出力・レポート生成確認テスト成功")
+                logger.info("[OK] Excel出力・レポート生成確認テスト成功")
                 return True
             else:
                 logger.warning("⚠ Excel出力機能が十分に確認できませんでした")
                 return False
                 
         except Exception as e:
-            logger.error(f"❌ Excel出力・レポート生成確認テスト失敗: {e}")
+            logger.error(f"[ERROR] Excel出力・レポート生成確認テスト失敗: {e}")
             return False
     
     def test_05_fallback_usage_zero_verification(self) -> bool:
@@ -203,7 +203,7 @@ class TestSuite3_MainIntegration:
                         total_failures = fallback_stats.get('total_failures', 0)
                         
                         if total_failures == 0:
-                            logger.info("✅ フォールバック使用量=0維持確認テスト成功")
+                            logger.info("[OK] フォールバック使用量=0維持確認テスト成功")
                             return True
                         else:
                             logger.warning(f"⚠ フォールバック使用量: {total_failures}")
@@ -217,11 +217,11 @@ class TestSuite3_MainIntegration:
                     # エラーでも初期化成功していれば良しとする
                     return True
             else:
-                logger.error("❌ MultiStrategyManager初期化失敗")
+                logger.error("[ERROR] MultiStrategyManager初期化失敗")
                 return False
                 
         except Exception as e:
-            logger.error(f"❌ フォールバック使用量確認テスト失敗: {e}")
+            logger.error(f"[ERROR] フォールバック使用量確認テスト失敗: {e}")
             return False
     
     def run_all_tests(self) -> Dict[str, bool]:
@@ -246,18 +246,18 @@ class TestSuite3_MainIntegration:
                 results[test_name] = result
                 if result:
                     success_count += 1
-                    logger.info(f"✅ {test_name}: 成功")
+                    logger.info(f"[OK] {test_name}: 成功")
                 else:
                     logger.warning(f"⚠ {test_name}: 失敗")
             except Exception as e:
-                logger.error(f"❌ {test_name}: エラー - {e}")
+                logger.error(f"[ERROR] {test_name}: エラー - {e}")
                 results[test_name] = False
         
         overall_success = success_count >= 4  # 5つ中4つ以上成功で合格
         
         logger.info(f"====== Test Suite 3完了: {success_count}/5 テスト成功 ======")
         if overall_success:
-            logger.info("🎉 Test Suite 3: 全体的に成功")
+            logger.info("[SUCCESS] Test Suite 3: 全体的に成功")
         else:
             logger.warning("⚠ Test Suite 3: 改善が必要")
         
@@ -266,7 +266,7 @@ class TestSuite3_MainIntegration:
 
 def main():
     """Test Suite 3メイン実行"""
-    logger.info("🚀 Test Suite 3: main.py統合動作テスト実行開始")
+    logger.info("[ROCKET] Test Suite 3: main.py統合動作テスト実行開始")
     
     try:
         test_suite = TestSuite3_MainIntegration()
@@ -276,7 +276,7 @@ def main():
         logger.info("=" * 50)
         logger.info("Test Suite 3 結果サマリー:")
         for test_name, result in results.items():
-            status = "✅ 成功" if result else "❌ 失敗"
+            status = "[OK] 成功" if result else "[ERROR] 失敗"
             logger.info(f"  {test_name}: {status}")
         
         logger.info("=" * 50)

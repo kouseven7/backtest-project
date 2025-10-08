@@ -31,7 +31,7 @@ def analyze_lazy_loader_bottleneck():
         basic_time = (time.perf_counter() - start) * 1000
         print(f"   基本LazyLoaderクラス: {basic_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ 基本クラスエラー: {e}")
+        print(f"   [ERROR] 基本クラスエラー: {e}")
         basic_time = 0
     
     # 2. DSSMSLazyModulesクラス単体
@@ -46,7 +46,7 @@ def analyze_lazy_loader_bottleneck():
         dssms_class_time = (time.perf_counter() - start) * 1000
         print(f"   DSSMSLazyModulesクラス: {dssms_class_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ DSSMSLazyModulesエラー: {e}")
+        print(f"   [ERROR] DSSMSLazyModulesエラー: {e}")
         dssms_class_time = 0
     
     # 3. 実際のlazy_loader全体
@@ -58,7 +58,7 @@ def analyze_lazy_loader_bottleneck():
         lazy_loader_import_time = (time.perf_counter() - start) * 1000
         print(f"   LazyLoader import: {lazy_loader_import_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ LazyLoader importエラー: {e}")
+        print(f"   [ERROR] LazyLoader importエラー: {e}")
         lazy_loader_import_time = 0
     
     # 4. DSSMSLazyModules単体
@@ -70,7 +70,7 @@ def analyze_lazy_loader_bottleneck():
         dssms_modules_time = (time.perf_counter() - start) * 1000
         print(f"   DSSMSLazyModules import: {dssms_modules_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ DSSMSLazyModulesエラー: {e}")
+        print(f"   [ERROR] DSSMSLazyModulesエラー: {e}")
         dssms_modules_time = 0
     
     # 5. lazy_import, lazy_class_import
@@ -82,7 +82,7 @@ def analyze_lazy_loader_bottleneck():
         decorators_time = (time.perf_counter() - start) * 1000
         print(f"   デコレータ関数: {decorators_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ デコレータエラー: {e}")
+        print(f"   [ERROR] デコレータエラー: {e}")
         decorators_time = 0
     
     # 6. 全体再測定
@@ -94,7 +94,7 @@ def analyze_lazy_loader_bottleneck():
         full_import_time = (time.perf_counter() - start) * 1000
         print(f"   全体統合インポート: {full_import_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ 全体エラー: {e}")
+        print(f"   [ERROR] 全体エラー: {e}")
         full_import_time = 0
     
     return {
@@ -126,7 +126,7 @@ def analyze_symbol_switch_manager_call():
         return call_time
         
     except Exception as e:
-        print(f"   ❌ get_symbol_switch_manager()エラー: {e}")
+        print(f"   [ERROR] get_symbol_switch_manager()エラー: {e}")
         return 0
 
 def generate_optimization_recommendations(results):
@@ -134,13 +134,13 @@ def generate_optimization_recommendations(results):
     print("\n=== 最適化推奨案 ===")
     
     total_measured = sum(results.values())
-    print(f"📊 分析合計時間: {total_measured:.1f}ms")
+    print(f"[CHART] 分析合計時間: {total_measured:.1f}ms")
     
     # 主要ボトルネック特定
     bottleneck = max(results.items(), key=lambda x: x[1])
     print(f"🔴 最大ボトルネック: {bottleneck[0]} ({bottleneck[1]:.1f}ms)")
     
-    print("\n🎯 推奨最適化策:")
+    print("\n[TARGET] 推奨最適化策:")
     
     if results['full_import_time'] > 1000:
         print("1. 【最優先】lazy_loader全体の簡素化")
@@ -164,7 +164,7 @@ def main():
         call_time = analyze_symbol_switch_manager_call()
         generate_optimization_recommendations(results)
         
-        print(f"\n📋 重要発見:")
+        print(f"\n[LIST] 重要発見:")
         print(f"lazy_loaderは最適化のつもりが、実際は{results['full_import_time']:.1f}msの重い処理")
         print(f"シンプルな直接インポートの方が高速の可能性あり")
         

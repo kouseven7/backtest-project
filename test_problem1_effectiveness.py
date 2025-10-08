@@ -111,11 +111,11 @@ try:
     daily_switch_rate = total_switches / daily_checks
     
     print(f"\\nProblem 1効果測定結果:")
-    print(f"   📊 測定期間: {daily_checks}日間")
+    print(f"   [CHART] 測定期間: {daily_checks}日間")
     print(f"   🔄 総切替回数: {total_switches}回")
-    print(f"   📈 日次切替率: {daily_switch_rate:.3f}回/日")
-    print(f"   📊 月間換算: {total_switches * (30/daily_checks):.1f}回/月")
-    print(f"   📊 年間換算: {total_switches * (365/daily_checks):.1f}回/年")
+    print(f"   [UP] 日次切替率: {daily_switch_rate:.3f}回/日")
+    print(f"   [CHART] 月間換算: {total_switches * (30/daily_checks):.1f}回/月")
+    print(f"   [CHART] 年間換算: {total_switches * (365/daily_checks):.1f}回/年")
     
     # Problem 1目標検証
     annual_projection = total_switches * (365 / daily_checks)
@@ -124,7 +124,7 @@ try:
     print(f"\\nProblem 1目標達成判定:")
     print(f"   目標範囲: 90-120回/年 (従来: 3回/年)")
     print(f"   実測推定: {annual_projection:.1f}回/年")
-    print(f"   達成状況: {'✅ 達成' if is_problem1_solved else '❌ 未達成'}")
+    print(f"   達成状況: {'[OK] 達成' if is_problem1_solved else '[ERROR] 未達成'}")
     
     if is_problem1_solved:
         improvement_factor = annual_projection / 3  # 従来3回からの改善倍率

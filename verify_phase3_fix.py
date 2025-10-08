@@ -20,19 +20,19 @@ def verify_dssms_fix():
     excel_files = list(results_dir.glob("dssms_backtest_results_*.xlsx"))
     
     if not excel_files:
-        print("❌ Excelファイルが見つかりません")
+        print("[ERROR] Excelファイルが見つかりません")
         return False
     
     # 最新ファイルを取得
     latest_file = max(excel_files, key=lambda x: x.stat().st_mtime)
-    print(f"🔍 検証対象: {latest_file.name}")
+    print(f"[SEARCH] 検証対象: {latest_file.name}")
     
     try:
         # 取引履歴シートを読み込み
         df_trades = pd.read_excel(latest_file, sheet_name='取引履歴')
         
         # 列名を確認
-        print(f"📋 利用可能な列: {list(df_trades.columns)}")
+        print(f"[LIST] 利用可能な列: {list(df_trades.columns)}")
         
         # 損益列を特定（複数の可能性に対応）
         pnl_col = None
@@ -42,7 +42,7 @@ def verify_dssms_fix():
                 break
         
         if pnl_col is None:
-            print("❌ 損益列が見つかりません")
+            print("[ERROR] 損益列が見つかりません")
             return False
         
         # 基本統計
@@ -51,7 +51,7 @@ def verify_dssms_fix():
         loss_trades = len(df_trades[df_trades[pnl_col] < 0])
         total_pnl = df_trades[pnl_col].sum()
         
-        print(f"\n📊 取引分析結果:")
+        print(f"\n[CHART] 取引分析結果:")
         print(f"   総取引数: {total_trades}件")
         print(f"   利益取引: {profit_trades}件")
         print(f"   損失取引: {loss_trades}件")
@@ -62,15 +62,15 @@ def verify_dssms_fix():
         
         # 1. 個別取引への分離確認
         if total_trades > 50:  # 期待値：100件以上
-            success_criteria.append("✅ 個別取引分離成功")
+            success_criteria.append("[OK] 個別取引分離成功")
         else:
-            success_criteria.append("❌ 個別取引分離不十分")
+            success_criteria.append("[ERROR] 個別取引分離不十分")
         
         # 2. 現実的な損益確認
         if abs(total_pnl) < 10_000_000:  # 1000万円未満
-            success_criteria.append("✅ 現実的な損益計算")
+            success_criteria.append("[OK] 現実的な損益計算")
         else:
-            success_criteria.append("❌ 非現実的な損益")
+            success_criteria.append("[ERROR] 非現実的な損益")
         
         # 3. データ完整性確認
         symbol_col = None
@@ -80,15 +80,15 @@ def verify_dssms_fix():
                 break
                 
         if symbol_col and df_trades[symbol_col].notna().all():
-            success_criteria.append("✅ データ完整性良好")
+            success_criteria.append("[OK] データ完整性良好")
         else:
-            success_criteria.append("❌ データ欠損あり")
+            success_criteria.append("[ERROR] データ欠損あり")
         
         # 4. 損益詳細分析
         avg_profit = df_trades[df_trades[pnl_col] > 0][pnl_col].mean() if profit_trades > 0 else 0
         avg_loss = df_trades[df_trades[pnl_col] < 0][pnl_col].mean() if loss_trades > 0 else 0
         
-        print(f"\n📈 損益詳細:")
+        print(f"\n[UP] 損益詳細:")
         print(f"   平均利益: {avg_profit:,.0f}円")
         print(f"   平均損失: {avg_loss:,.0f}円")
         print(f"   勝率: {profit_trades/total_trades*100:.1f}%")
@@ -99,16 +99,16 @@ def verify_dssms_fix():
             print(f"   {criterion}")
         
         # 総合判定
-        success_count = sum(1 for c in success_criteria if c.startswith("✅"))
+        success_count = sum(1 for c in success_criteria if c.startswith("[OK]"))
         if success_count >= 3:
-            print(f"\n🎉 Phase 3修正完全成功！({success_count}/4)")
+            print(f"\n[SUCCESS] Phase 3修正完全成功！({success_count}/4)")
             return True
         else:
-            print(f"\n⚠️ Phase 3修正部分成功 ({success_count}/4)")
+            print(f"\n[WARNING] Phase 3修正部分成功 ({success_count}/4)")
             return False
             
     except Exception as e:
-        print(f"❌ 検証エラー: {e}")
+        print(f"[ERROR] 検証エラー: {e}")
         return False
 
 if __name__ == "__main__":

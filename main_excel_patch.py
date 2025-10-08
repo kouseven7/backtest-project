@@ -65,7 +65,7 @@ from output.simple_excel_exporter import save_backtest_results_simple
         
         if output_path and os.path.exists(output_path):
             file_size = os.path.getsize(output_path)
-            logger.info(f"✅ 新Excel出力完了: {output_path}")
+            logger.info(f"[OK] 新Excel出力完了: {output_path}")
             logger.info(f"ファイルサイズ: {file_size:,} bytes")
             
             # 出力内容の要約
@@ -73,7 +73,7 @@ from output.simple_excel_exporter import save_backtest_results_simple
             
             return output_path
         else:
-            logger.error("❌ 新Excel出力に失敗しました")
+            logger.error("[ERROR] 新Excel出力に失敗しました")
             return ""
             
     except Exception as e:
@@ -98,19 +98,19 @@ def summarize_output(output_path: str, ticker: str):
                 if sheet_name == '取引履歴' and not df.empty:
                     total_trades = len(df)
                     total_profit = df['取引結果'].sum() if '取引結果' in df.columns else 0
-                    logger.info(f"  📊 取引履歴: {total_trades} 件, 総損益: {total_profit:,.0f}円")
+                    logger.info(f"  [CHART] 取引履歴: {total_trades} 件, 総損益: {total_profit:,.0f}円")
                     
                 elif sheet_name == 'パフォーマンス指標' and not df.empty:
                     if '指標' in df.columns and '値' in df.columns:
                         win_rate_row = df[df['指標'] == '勝率']
                         if not win_rate_row.empty:
                             win_rate = win_rate_row['値'].iloc[0]
-                            logger.info(f"  📈 勝率: {win_rate}")
+                            logger.info(f"  [UP] 勝率: {win_rate}")
                             
                 elif sheet_name == '損益推移' and not df.empty:
                     if '累積損益' in df.columns:
                         final_pnl = df['累積損益'].iloc[-1]
-                        logger.info(f"  💰 最終累積損益: {final_pnl:,.0f}円")
+                        logger.info(f"  [MONEY] 最終累積損益: {final_pnl:,.0f}円")
                         
                 else:
                     logger.info(f"  📄 {sheet_name}: {len(df)} 行")
@@ -178,7 +178,7 @@ except Exception as e:
         with open(main_module_path, 'w', encoding='utf-8') as f:
             f.write(patched_content)
         
-        logger.info("✅ main.pyへの新Excel出力パッチ適用完了")
+        logger.info("[OK] main.pyへの新Excel出力パッチ適用完了")
         return True
         
     except Exception as e:
@@ -202,9 +202,9 @@ def demo_patch_application():
 # ORIGINAL: output_path = apply_new_excel_output(sample_data, ticker)
     
     if output_path:
-        print(f"\n✅ パッチデモ成功: {output_path}")
+        print(f"\n[OK] パッチデモ成功: {output_path}")
     else:
-        print("\n❌ パッチデモ失敗")
+        print("\n[ERROR] パッチデモ失敗")
     
     print("\n" + "=" * 60)
 

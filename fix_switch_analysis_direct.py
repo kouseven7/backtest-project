@@ -164,7 +164,7 @@ def main():
     success = fix_excel_exporter_directly()
     
     logger.info("=== 修正完了レポート ===")
-    logger.info(f"Excel エクスポーター修正: {'✅ 成功' if success else '❌ 失敗'}")
+    logger.info(f"Excel エクスポーター修正: {'[OK] 成功' if success else '[ERROR] 失敗'}")
     
     if success:
         logger.info("修正内容:")

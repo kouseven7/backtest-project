@@ -29,10 +29,10 @@ sys.path.append(str(project_root))
 try:
     from src.config.system_modes import SystemFallbackPolicy, ComponentType, SystemMode, get_fallback_policy, set_system_mode
     from src.dssms.dssms_integrated_main import DSSMSIntegratedBacktester
-    print("✅ Import successful: SystemFallbackPolicy & DSSMSIntegratedBacktester")
+    print("[OK] Import successful: SystemFallbackPolicy & DSSMSIntegratedBacktester")
     IMPORTS_AVAILABLE = True
 except ImportError as e:
-    print(f"❌ Import failed: {e}")
+    print(f"[ERROR] Import failed: {e}")
     IMPORTS_AVAILABLE = False
 
 def test_system_fallback_policy_integration():
@@ -40,7 +40,7 @@ def test_system_fallback_policy_integration():
     if not IMPORTS_AVAILABLE:
         return {"status": "skipped", "reason": "import_failed"}
     
-    print("\n🧪 SystemFallbackPolicy統合テスト開始")
+    print("\n[TEST] SystemFallbackPolicy統合テスト開始")
     
     # Development modeで初期化
     set_system_mode(SystemMode.DEVELOPMENT)
@@ -64,11 +64,11 @@ def test_system_fallback_policy_integration():
             }
         )
         
-        print(f"✅ フォールバック結果: {result}")
+        print(f"[OK] フォールバック結果: {result}")
         
         # 使用統計確認
         stats = policy.get_usage_statistics()
-        print(f"✅ フォールバック使用統計:")
+        print(f"[OK] フォールバック使用統計:")
         print(f"   - 総失敗数: {stats['total_failures']}")
         print(f"   - 成功フォールバック: {stats['successful_fallbacks']}")
         print(f"   - 使用率: {stats['fallback_usage_rate']:.1%}")
@@ -82,7 +82,7 @@ def test_system_fallback_policy_integration():
         return {"status": "success", "result": result, "stats": stats}
         
     except Exception as e:
-        print(f"❌ テスト失敗: {e}")
+        print(f"[ERROR] テスト失敗: {e}")
         return {"status": "failed", "error": str(e)}
 
 def test_production_mode_behavior():
@@ -90,7 +90,7 @@ def test_production_mode_behavior():
     if not IMPORTS_AVAILABLE:
         return {"status": "skipped", "reason": "import_failed"}
     
-    print("\n🧪 Production mode フォールバック禁止テスト")
+    print("\n[TEST] Production mode フォールバック禁止テスト")
     
     # Production modeに変更
     set_system_mode(SystemMode.PRODUCTION)
@@ -108,16 +108,16 @@ def test_production_mode_behavior():
             fallback_func=test_fallback,
             context={"test": "production_mode"}
         )
-        print(f"❌ Production modeでフォールバックが実行された: {result}")
+        print(f"[ERROR] Production modeでフォールバックが実行された: {result}")
         return {"status": "failed", "reason": "fallback_executed_in_production"}
         
     except RuntimeError as e:
-        print(f"✅ Production mode正常動作: フォールバック禁止 - {e}")
+        print(f"[OK] Production mode正常動作: フォールバック禁止 - {e}")
         
         # 記録確認
         stats = policy.get_usage_statistics()
         production_records = [r for r in stats['records'] if r['fallback_used'] == False]
-        print(f"✅ Production失敗記録: {len(production_records)}件")
+        print(f"[OK] Production失敗記録: {len(production_records)}件")
         
         return {"status": "success", "records_count": len(production_records)}
 
@@ -126,7 +126,7 @@ def test_dssms_integrated_main_mock():
     if not IMPORTS_AVAILABLE:
         return {"status": "skipped", "reason": "import_failed"}
     
-    print("\n🧪 DSSMSIntegratedBacktester修正内容テスト")
+    print("\n[TEST] DSSMSIntegratedBacktester修正内容テスト")
     
     # Development modeで実行
     set_system_mode(SystemMode.DEVELOPMENT)
@@ -140,32 +140,32 @@ def test_dssms_integrated_main_mock():
         }
         
         backtester = DSSMSIntegratedBacktester(config)
-        print("✅ DSSMSIntegratedBacktester初期化成功")
+        print("[OK] DSSMSIntegratedBacktester初期化成功")
         
         # _nikkei225_fallback_selectionメソッドの存在確認
         if hasattr(backtester, '_nikkei225_fallback_selection'):
-            print("✅ _nikkei225_fallback_selection メソッド存在確認")
+            print("[OK] _nikkei225_fallback_selection メソッド存在確認")
             
             # モックテスト
             test_symbols = ['7203', '6758', '6702', '4519', '8058']
             try:
                 selected = backtester._nikkei225_fallback_selection(test_symbols)
-                print(f"✅ フォールバック選択結果: {selected}")
+                print(f"[OK] フォールバック選択結果: {selected}")
                 return {"status": "success", "selected_symbol": selected}
             except Exception as e:
-                print(f"❌ フォールバック選択失敗: {e}")
+                print(f"[ERROR] フォールバック選択失敗: {e}")
                 return {"status": "failed", "error": str(e)}
         else:
-            print("❌ _nikkei225_fallback_selection メソッドが見つからない")
+            print("[ERROR] _nikkei225_fallback_selection メソッドが見つからない")
             return {"status": "failed", "reason": "method_not_found"}
             
     except Exception as e:
-        print(f"❌ DSSMSIntegratedBacktester初期化失敗: {e}")
+        print(f"[ERROR] DSSMSIntegratedBacktester初期化失敗: {e}")
         return {"status": "failed", "error": str(e)}
 
 def generate_test_report():
     """テスト結果レポート生成"""
-    print("\n📊 TODO-FB-004 Mini-Task 3 テストレポート")
+    print("\n[CHART] TODO-FB-004 Mini-Task 3 テストレポート")
     print("=" * 60)
     
     results = {}
@@ -186,7 +186,7 @@ def generate_test_report():
     successful_tests = sum(1 for test in results.values() if test.get('status') == 'success')
     total_tests = len(results)
     
-    print(f"\n📈 テスト結果サマリ:")
+    print(f"\n[UP] テスト結果サマリ:")
     print(f"   - 成功: {successful_tests}/{total_tests}")
     print(f"   - 成功率: {successful_tests/total_tests:.1%}")
     
@@ -219,13 +219,13 @@ if __name__ == "__main__":
         if IMPORTS_AVAILABLE:
             policy = get_fallback_policy()
             final_stats = policy.get_usage_statistics()
-            print(f"\n📊 最終フォールバック統計:")
+            print(f"\n[CHART] 最終フォールバック統計:")
             print(f"   - 総記録数: {len(final_stats['records'])}")
             print(f"   - 成功フォールバック: {final_stats['successful_fallbacks']}")
         
-        print("\n🎯 TODO-FB-004 Mini-Task 3 完了")
+        print("\n[TARGET] TODO-FB-004 Mini-Task 3 完了")
         
     except Exception as e:
-        print(f"❌ テスト実行エラー: {e}")
+        print(f"[ERROR] テスト実行エラー: {e}")
         import traceback
         traceback.print_exc()

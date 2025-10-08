@@ -155,9 +155,9 @@ def run_phase2_simple_test():
         overall_success = walkforward_success and aggregation_success and report_success
         
         if overall_success:
-            logger.info("🎉 フェーズ2統合テスト: 全体的に成功")
+            logger.info("[SUCCESS] フェーズ2統合テスト: 全体的に成功")
         else:
-            logger.warning("⚠️ フェーズ2統合テスト: 一部失敗があります")
+            logger.warning("[WARNING] フェーズ2統合テスト: 一部失敗があります")
         
         logger.info("=== フェーズ2簡易統合テスト完了 ===")
         return overall_success
@@ -180,28 +180,28 @@ def test_individual_modules():
     try:
         from src.analysis.simple_walkforward import ProcessingMode, TestConfiguration
         test_results['simple_walkforward'] = '成功'
-        logger.info("✅ simple_walkforward モジュールインポート成功")
+        logger.info("[OK] simple_walkforward モジュールインポート成功")
     except Exception as e:
         test_results['simple_walkforward'] = f'失敗: {e}'
-        logger.error(f"❌ simple_walkforward モジュールインポート失敗: {e}")
+        logger.error(f"[ERROR] simple_walkforward モジュールインポート失敗: {e}")
     
     # 2. パフォーマンス集約モジュール
     try:
         from src.analysis.performance_aggregator import AggregationConfig, PerformanceMetrics
         test_results['performance_aggregator'] = '成功'
-        logger.info("✅ performance_aggregator モジュールインポート成功")
+        logger.info("[OK] performance_aggregator モジュールインポート成功")
     except Exception as e:
         test_results['performance_aggregator'] = f'失敗: {e}'
-        logger.error(f"❌ performance_aggregator モジュールインポート失敗: {e}")
+        logger.error(f"[ERROR] performance_aggregator モジュールインポート失敗: {e}")
     
     # 3. レポート生成モジュール
     try:
         from src.reports.strategy_comparison import ReportConfig, ReportSection
         test_results['strategy_comparison'] = '成功'
-        logger.info("✅ strategy_comparison モジュールインポート成功")
+        logger.info("[OK] strategy_comparison モジュールインポート成功")
     except Exception as e:
         test_results['strategy_comparison'] = f'失敗: {e}'
-        logger.error(f"❌ strategy_comparison モジュールインポート失敗: {e}")
+        logger.error(f"[ERROR] strategy_comparison モジュールインポート失敗: {e}")
     
     # 結果サマリー
     logger.info("=== 個別テスト結果 ===")

@@ -49,7 +49,7 @@ try:
     
     assert abs(unified_value - test_value) < 1e-6, f"統一マネージャー値不一致: {unified_value} != {test_value}"
     assert abs(legacy_value - test_value) < 1e-6, f"レガシー値不一致: {legacy_value} != {test_value}"
-    print("   ✅ _sync_portfolio_values()統合成功")
+    print("   [OK] _sync_portfolio_values()統合成功")
     
     # 3. 複数データ保存テスト
     print(f"\\n複数データ保存テスト:")
@@ -84,7 +84,7 @@ try:
     
     print(f"   統一アクセス値: {unified_access_value} (期待値: {expected_value})")
     assert abs(unified_access_value - expected_value) < 1e-6, f"統一アクセス値不一致: {unified_access_value} != {expected_value}"
-    print("   ✅ 統一アクセス成功")
+    print("   [OK] 統一アクセス成功")
     
     # 6. キャッシュ統計
     cache_stats = backtester.unified_portfolio_manager.get_cache_stats()

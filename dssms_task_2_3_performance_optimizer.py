@@ -437,9 +437,9 @@ if __name__ == "__main__":
     # ベンチマーク実行
     results = optimizer.run_performance_benchmark()
     
-    print("🚀 DSSMS Task 2.3: パフォーマンス最適化と検証")
+    print("[ROCKET] DSSMS Task 2.3: パフォーマンス最適化と検証")
     print("=" * 60)
-    print("✅ システム最適化 - 完了")
-    print("✅ パフォーマンスベンチマーク - 完了")
-    print("✅ 並列処理実装 - 完了")
+    print("[OK] システム最適化 - 完了")
+    print("[OK] パフォーマンスベンチマーク - 完了")
+    print("[OK] 並列処理実装 - 完了")
     print("=" * 60)

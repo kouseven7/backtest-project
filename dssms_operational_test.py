@@ -36,7 +36,7 @@ def run_dssms_operational_test():
     logger = setup_logger(__name__)
     
     print("\n" + "="*80)
-    print("🚀 DSSMS 実運用テスト実行")
+    print("[ROCKET] DSSMS 実運用テスト実行")
     print("="*80)
     
     test_results = {}
@@ -60,7 +60,7 @@ def run_dssms_operational_test():
         print(f"   DSSMSバックテスター初期化...")
         backtester = DSSMSBacktester(config)
         
-        print(f"   ✅ バックテスター初期化成功")
+        print(f"   [OK] バックテスター初期化成功")
         
         # テスト期間: 3ヶ月間
         end_date = datetime.now() - timedelta(days=1)
@@ -85,7 +85,7 @@ def run_dssms_operational_test():
         execution_time = time.time() - start_time
         
         if result.get('success', False):
-            print(f"   ✅ シミュレーション成功 ({execution_time:.2f}秒)")
+            print(f"   [OK] シミュレーション成功 ({execution_time:.2f}秒)")
             
             # 結果詳細表示
             final_value = result.get('final_value', 0)
@@ -94,7 +94,7 @@ def run_dssms_operational_test():
             switch_count = result.get('switch_count', 0)
             transaction_costs = result.get('transaction_costs', 0)
             
-            print(f"   📊 実行結果:")
+            print(f"   [CHART] 実行結果:")
             print(f"     初期資本: {initial_capital:,.0f}円")
             print(f"     最終価値: {final_value:,.0f}円")
             print(f"     総リターン: {total_return:.2%}")
@@ -107,7 +107,7 @@ def run_dssms_operational_test():
             annual_switches = switch_count * (365 / test_days)
             annual_costs = transaction_costs * (365 / test_days)
             
-            print(f"   📊 年間換算:")
+            print(f"   [CHART] 年間換算:")
             print(f"     年間切替回数: {annual_switches:.0f}回")
             print(f"     年間取引コスト: {annual_costs:,.0f}円")
             
@@ -119,13 +119,13 @@ def run_dssms_operational_test():
             test_results['annual_costs'] = annual_costs
             
         else:
-            print(f"   ❌ シミュレーション失敗")
+            print(f"   [ERROR] シミュレーション失敗")
             print(f"   エラー: {result.get('error', 'Unknown error')}")
             test_results['backtest_success'] = False
             test_results['error'] = result.get('error', 'Unknown error')
             
     except Exception as e:
-        print(f"   ❌ バックテスター例外: {e}")
+        print(f"   [ERROR] バックテスター例外: {e}")
         test_results['backtest_success'] = False
         test_results['error'] = str(e)
         print(f"   詳細: {traceback.format_exc()}")
@@ -152,7 +152,7 @@ def run_dssms_operational_test():
         cost_reduction = (before_metrics['annual_transaction_costs'] - actual_annual_costs) / before_metrics['annual_transaction_costs']
         speed_improvement = (before_metrics['execution_time_per_test'] - actual_execution_time) / before_metrics['execution_time_per_test']
         
-        print(f"   📊 改善効果実測値:")
+        print(f"   [CHART] 改善効果実測値:")
         print(f"     切替回数削減: {switch_reduction:.1%} (目標: 88%)")
         print(f"     取引コスト削減: {cost_reduction:.1%} (目標: 79%)")
         print(f"     実行時間短縮: {speed_improvement:.1%} (目標: 75%)")
@@ -164,9 +164,9 @@ def run_dssms_operational_test():
             'speed_improvement': speed_improvement / 0.75
         }
         
-        print(f"   📊 目標達成率:")
+        print(f"   [CHART] 目標達成率:")
         for metric, achievement in target_achievement.items():
-            status = "✅" if achievement >= 0.8 else "⚠️" if achievement >= 0.5 else "❌"
+            status = "[OK]" if achievement >= 0.8 else "[WARNING]" if achievement >= 0.5 else "[ERROR]"
             metric_name = {
                 'switch_reduction': '切替回数削減',
                 'cost_reduction': 'コスト削減',
@@ -185,10 +185,10 @@ def run_dssms_operational_test():
         avg_achievement = sum(target_achievement.values()) / len(target_achievement)
         test_results['overall_improvement_achievement'] = avg_achievement
         
-        print(f"   📊 総合改善達成率: {avg_achievement:.1%}")
+        print(f"   [CHART] 総合改善達成率: {avg_achievement:.1%}")
         
     else:
-        print(f"   ⚠️ バックテスト失敗のため改善効果測定をスキップ")
+        print(f"   [WARNING] バックテスト失敗のため改善効果測定をスキップ")
     
     # 3. レポート生成テスト
     print("\n3️⃣ レポート生成テスト")
@@ -200,7 +200,7 @@ def run_dssms_operational_test():
         print(f"   レポートエンジン初期化...")
         report_engine = ComprehensiveReportEngine()
         
-        print(f"   ✅ レポートエンジン初期化成功")
+        print(f"   [OK] レポートエンジン初期化成功")
         
         # テストレポート生成
         if test_results.get('backtest_success', False):
@@ -231,7 +231,7 @@ def run_dssms_operational_test():
                 )
                 
                 if html_report and len(html_report) > 1000:
-                    print(f"   ✅ レポート生成成功 ({len(html_report)}文字)")
+                    print(f"   [OK] レポート生成成功 ({len(html_report)}文字)")
                     
                     # レポートファイル保存
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -245,18 +245,18 @@ def run_dssms_operational_test():
                     test_results['report_filename'] = report_filename
                     
                 else:
-                    print(f"   ❌ レポート生成失敗（サイズ不足）")
+                    print(f"   [ERROR] レポート生成失敗（サイズ不足）")
                     test_results['report_generation_success'] = False
                     
             except Exception as e:
-                print(f"   ❌ レポート生成エラー: {e}")
+                print(f"   [ERROR] レポート生成エラー: {e}")
                 test_results['report_generation_success'] = False
         else:
-            print(f"   ⚠️ バックテスト失敗のためレポート生成をスキップ")
+            print(f"   [WARNING] バックテスト失敗のためレポート生成をスキップ")
             test_results['report_generation_success'] = False
     
     except Exception as e:
-        print(f"   ❌ レポートシステムエラー: {e}")
+        print(f"   [ERROR] レポートシステムエラー: {e}")
         test_results['report_generation_success'] = False
     
     # 4. 最終評価
@@ -275,23 +275,23 @@ def run_dssms_operational_test():
     
     overall_success = success_count >= 2  # 3つ中2つ以上成功
     
-    print(f"   📊 テスト結果サマリー:")
-    print(f"     バックテスト実行: {'✅' if test_results.get('backtest_success', False) else '❌'}")
-    print(f"     改善効果達成: {'✅' if test_results.get('overall_improvement_achievement', 0) >= 0.5 else '❌'}")
-    print(f"     レポート生成: {'✅' if test_results.get('report_generation_success', False) else '❌'}")
+    print(f"   [CHART] テスト結果サマリー:")
+    print(f"     バックテスト実行: {'[OK]' if test_results.get('backtest_success', False) else '[ERROR]'}")
+    print(f"     改善効果達成: {'[OK]' if test_results.get('overall_improvement_achievement', 0) >= 0.5 else '[ERROR]'}")
+    print(f"     レポート生成: {'[OK]' if test_results.get('report_generation_success', False) else '[ERROR]'}")
     
-    print(f"   📊 総合評価: {success_count}/{total_components} ({'✅ 成功' if overall_success else '❌ 失敗'})")
+    print(f"   [CHART] 総合評価: {success_count}/{total_components} ({'[OK] 成功' if overall_success else '[ERROR] 失敗'})")
     
     if overall_success:
-        print(f"   🎉 DSSMS実運用テスト成功！")
+        print(f"   [SUCCESS] DSSMS実運用テスト成功！")
         if test_results.get('backtest_success', False):
-            print(f"   📈 年間切替回数: {test_results.get('annual_switches', 0):.0f}回")
-            print(f"   💰 年間取引コスト: {test_results.get('annual_costs', 0):,.0f}円")
+            print(f"   [UP] 年間切替回数: {test_results.get('annual_switches', 0):.0f}回")
+            print(f"   [MONEY] 年間取引コスト: {test_results.get('annual_costs', 0):,.0f}円")
             print(f"   ⚡ 実行時間: {test_results.get('execution_time', 0):.2f}秒")
-        print(f"   📋 DSSMSは本番運用準備完了です")
+        print(f"   [LIST] DSSMSは本番運用準備完了です")
     else:
-        print(f"   ⚠️ DSSMS実運用テストで課題が発見されました")
-        print(f"   🔧 問題のある箇所の修正が推奨されます")
+        print(f"   [WARNING] DSSMS実運用テストで課題が発見されました")
+        print(f"   [TOOL] 問題のある箇所の修正が推奨されます")
     
     # 結果保存
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -317,16 +317,16 @@ def main():
         success = run_dssms_operational_test()
         
         if success:
-            print("\n🎉 DSSMS実運用テスト 【成功】")
+            print("\n[SUCCESS] DSSMS実運用テスト 【成功】")
             print("システムは実運用準備完了です！")
             return 0
         else:
-            print("\n⚠️ DSSMS実運用テスト 【課題あり】")
+            print("\n[WARNING] DSSMS実運用テスト 【課題あり】")
             print("一部修正が必要ですが、基本機能は動作しています。")
             return 1
             
     except Exception as e:
-        print(f"\n❌ 実運用テスト実行エラー: {e}")
+        print(f"\n[ERROR] 実運用テスト実行エラー: {e}")
         return 1
 
 if __name__ == "__main__":

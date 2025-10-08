@@ -33,7 +33,7 @@ def test_pure_symbol_switch_manager_fast():
         
         # ファイル存在確認
         if not os.path.exists(fast_path):
-            print(f"   ❌ ファイルが存在しません: {fast_path}")
+            print(f"   [ERROR] ファイルが存在しません: {fast_path}")
             return
         
         # 直接ファイルインポート
@@ -59,11 +59,11 @@ def test_pure_symbol_switch_manager_fast():
             print(f"   初期化時間: {init_time:.1f}ms")
             
         else:
-            print(f"   ❌ specまたはloaderが無効")
+            print(f"   [ERROR] specまたはloaderが無効")
             
     except Exception as e:
         direct_import_time = 0
-        print(f"   ❌ 直接インポートエラー: {e}")
+        print(f"   [ERROR] 直接インポートエラー: {e}")
         import traceback
         traceback.print_exc()
     
@@ -88,37 +88,37 @@ def test_pure_symbol_switch_manager_fast():
         
     except Exception as e:
         normal_import_time = 0
-        print(f"   ❌ 通常インポートエラー: {e}")
+        print(f"   [ERROR] 通常インポートエラー: {e}")
     
     # 3. 結果比較
     print(f"\n=== 結果比較 ===")
     if direct_import_time > 0 and normal_import_time > 0:
         improvement = normal_import_time - direct_import_time
         improvement_rate = (improvement / normal_import_time) * 100
-        print(f"📊 直接インポート: {direct_import_time:.1f}ms")
-        print(f"📊 通常インポート: {normal_import_time:.1f}ms")
-        print(f"🎯 改善効果: {improvement:.1f}ms削減 ({improvement_rate:.1f}%改善)")
+        print(f"[CHART] 直接インポート: {direct_import_time:.1f}ms")
+        print(f"[CHART] 通常インポート: {normal_import_time:.1f}ms")
+        print(f"[TARGET] 改善効果: {improvement:.1f}ms削減 ({improvement_rate:.1f}%改善)")
         
         if direct_import_time < 10:
-            print("✅ 直接インポートで大幅最適化成功")
+            print("[OK] 直接インポートで大幅最適化成功")
         elif direct_import_time < 100:
-            print("⚠️ 直接インポートで中程度改善、追加最適化推奨")
+            print("[WARNING] 直接インポートで中程度改善、追加最適化推奨")
         else:
-            print("❌ 直接インポートでも重い、根本的問題あり")
+            print("[ERROR] 直接インポートでも重い、根本的問題あり")
     else:
-        print("❌ 測定失敗 - エラーの詳細確認が必要")
+        print("[ERROR] 測定失敗 - エラーの詳細確認が必要")
 
 def analyze_remaining_bottleneck():
     """残りボトルネック要因分析"""
     print("\n=== 残りボトルネック要因分析 ===")
     
-    print("🔍 考えられる原因:")
+    print("[SEARCH] 考えられる原因:")
     print("1. SymbolSwitchManagerFast内の重い依存ライブラリ")
     print("2. クラス定義・メソッド定義の処理時間")
     print("3. モジュール実行時の初期化処理")
     print("4. Python自体のインポート機構のオーバーヘッド")
     
-    print("\n💡 次の最適化候補:")
+    print("\n[IDEA] 次の最適化候補:")
     print("1. SymbolSwitchManagerFast内部の軽量化")
     print("2. 最小限機能のみの超軽量版作成")
     print("3. 遅延初期化・lazy loading導入")
@@ -131,9 +131,9 @@ def main():
         analyze_remaining_bottleneck()
         
         print("\n=== TODO-PERF-005 Phase 2分析完了 ===")
-        print("✅ 直接パスインポート効果測定完了")
-        print("🔍 残りボトルネック要因特定")
-        print("🎯 次Phase最適化方針決定")
+        print("[OK] 直接パスインポート効果測定完了")
+        print("[SEARCH] 残りボトルネック要因特定")
+        print("[TARGET] 次Phase最適化方針決定")
         
     except Exception as e:
         print(f"分析エラー: {e}")

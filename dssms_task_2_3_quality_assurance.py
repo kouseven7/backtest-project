@@ -578,12 +578,12 @@ class DSSMSQualityAssuranceSystem:
         report = self.run_comprehensive_quality_assurance()
         
         summary = f"""
-🔍 DSSMS 品質保証レポート
+[SEARCH] DSSMS 品質保証レポート
 ========================
 
-📊 総合品質スコア: {report.overall_score:.1f}/100
+[CHART] 総合品質スコア: {report.overall_score:.1f}/100
 
-📈 コードメトリクス:
+[UP] コードメトリクス:
   • 総行数: {report.code_metrics.lines_of_code:,}
   • 複雑度: {report.code_metrics.complexity_score:.1f}
   • ドキュメント化率: {report.code_metrics.documentation_coverage:.1%}
@@ -591,11 +591,11 @@ class DSSMSQualityAssuranceSystem:
   • バグリスク: {report.code_metrics.bug_risk_score:.1f}
   • 保守性: {report.code_metrics.maintainability_index:.1f}
 
-🔧 改善提案: {len(report.recommendations)} 件
+[TOOL] 改善提案: {len(report.recommendations)} 件
 📝 修正済み課題: {len(report.fixed_issues)} 件
 📚 ドキュメント更新: {len(report.documentation_updates)} 件
 
-⚠️  コードスメル: {len(report.code_metrics.code_smells)} 件
+[WARNING]  コードスメル: {len(report.code_metrics.code_smells)} 件
 
 生成日時: {report.timestamp}
         """
@@ -608,5 +608,5 @@ if __name__ == "__main__":
     summary = qa_system.generate_quality_summary()
     
     print(summary)
-    print("\n✅ DSSMS Task 2.3: 品質保証システム - 完了")
+    print("\n[OK] DSSMS Task 2.3: 品質保証システム - 完了")
     print("=" * 60)

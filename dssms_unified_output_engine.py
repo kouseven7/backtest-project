@@ -42,7 +42,7 @@ class DSSMSUnifiedOutputEngine:
     
     def run_dssms_backtester_and_capture(self) -> bool:
         """DSSMSバックテスターを実行してデータを取得"""
-        logger.info("🚀 DSSMS バックテスター実行開始")
+        logger.info("[ROCKET] DSSMS バックテスター実行開始")
         
         try:
             # DSSMSバックテスターをインポート
@@ -69,20 +69,20 @@ class DSSMSUnifiedOutputEngine:
                 end_date=datetime(2023, 12, 31)
             )
             
-            logger.info(f"✅ バックテスト完了: {type(results)}")
+            logger.info(f"[OK] バックテスト完了: {type(results)}")
             
             # 結果データの変換と検証
             converted_data = self._convert_backtester_results(results, backtester)
             
             if self.set_data_source(converted_data):
-                logger.info("✅ データソース設定完了")
+                logger.info("[OK] データソース設定完了")
                 return True
             else:
-                logger.error("❌ データソース設定失敗")
+                logger.error("[ERROR] データソース設定失敗")
                 return False
             
         except Exception as e:
-            logger.error(f"❌ バックテスター実行エラー: {e}")
+            logger.error(f"[ERROR] バックテスター実行エラー: {e}")
             import traceback
             logger.error(f"詳細エラー: {traceback.format_exc()}")
             return False
@@ -173,7 +173,7 @@ class DSSMSUnifiedOutputEngine:
             converted_data['strategy_statistics'] = self._calculate_strategy_statistics(converted_data)
             
         except Exception as e:
-            logger.error(f"❌ データ変換エラー: {e}")
+            logger.error(f"[ERROR] データ変換エラー: {e}")
             # 最小限のダミーデータを作成
             converted_data = self._create_dummy_data()
         
@@ -181,7 +181,7 @@ class DSSMSUnifiedOutputEngine:
     
     def _create_dummy_data(self) -> Dict[str, Any]:
         """最小限のダミーデータ作成（エラー時のフォールバック）"""
-        logger.warning("⚠️ ダミーデータを作成中...")
+        logger.warning("[WARNING] ダミーデータを作成中...")
         
         # 2023年の日付範囲
         date_range = pd.date_range('2023-01-01', '2023-12-31', freq='D')
@@ -301,7 +301,7 @@ class DSSMSUnifiedOutputEngine:
                     metrics['win_rate'] = profitable_trades / total_trades
                     
         except Exception as e:
-            logger.error(f"❌ パフォーマンス計算エラー: {e}")
+            logger.error(f"[ERROR] パフォーマンス計算エラー: {e}")
         
         return metrics
     
@@ -322,7 +322,7 @@ class DSSMSUnifiedOutputEngine:
             daily_pnl = data.get('portfolio_values', pd.DataFrame())
             
             if not trades_df.empty and 'strategy' in trades_df.columns:
-                logger.info(f"📊 戦略統計計算開始: {len(trades_df['strategy'].unique())}戦略")
+                logger.info(f"[CHART] 戦略統計計算開始: {len(trades_df['strategy'].unique())}戦略")
                 
                 for strategy in trades_df['strategy'].unique():
                     strategy_trades = trades_df[trades_df['strategy'] == strategy]
@@ -337,16 +337,16 @@ class DSSMSUnifiedOutputEngine:
                     # エクスポート用にフォーマット
                     stats[strategy] = calculator.format_statistics_for_export(strategy_stats)
                     
-                    logger.info(f"✅ 戦略統計完了: {strategy} (データ品質: {strategy_stats.data_quality_score:.2f})")
+                    logger.info(f"[OK] 戦略統計完了: {strategy} (データ品質: {strategy_stats.data_quality_score:.2f})")
             else:
-                logger.warning("⚠️ 戦略データが不足または空です")
+                logger.warning("[WARNING] 戦略データが不足または空です")
                         
         except ImportError as e:
-            logger.error(f"❌ StrategyStatisticsCalculator import失敗: {e}")
+            logger.error(f"[ERROR] StrategyStatisticsCalculator import失敗: {e}")
             # フォールバック: 従来の計算方式
             stats = self._calculate_strategy_statistics_legacy(data)
         except Exception as e:
-            logger.error(f"❌ 戦略統計計算エラー: {e}")
+            logger.error(f"[ERROR] 戦略統計計算エラー: {e}")
             # フォールバック処理
             stats = self._calculate_strategy_statistics_legacy(data)
         
@@ -382,24 +382,24 @@ class DSSMSUnifiedOutputEngine:
                         }
                         
         except Exception as e:
-            logger.error(f"❌ レガシー戦略統計計算エラー: {e}")
+            logger.error(f"[ERROR] レガシー戦略統計計算エラー: {e}")
         
         return stats
     
     def set_data_source(self, backtest_results: Dict[str, Any]) -> bool:
         """データソースの設定と検証"""
-        logger.info("🔧 データソース設定中...")
+        logger.info("[TOOL] データソース設定中...")
         
         # データ検証
         if not self._validate_data_source(backtest_results):
-            logger.error("❌ データソース検証失敗")
+            logger.error("[ERROR] データソース検証失敗")
             return False
         
         # 日付修正
         self._fix_date_inconsistencies(backtest_results)
         
         self.data_source = backtest_results
-        logger.info("✅ データソース設定完了")
+        logger.info("[OK] データソース設定完了")
         return True
     
     def _fix_date_inconsistencies(self, data: Dict[str, Any]):
@@ -468,13 +468,13 @@ class DSSMSUnifiedOutputEngine:
             has_trades = 'trades' in data and not data['trades'].empty
             
             if not (has_portfolio or has_trades):
-                logger.warning("⚠️ 最小限のデータ不足：ダミーデータで補完します")
+                logger.warning("[WARNING] 最小限のデータ不足：ダミーデータで補完します")
                 return True  # ダミーデータで対応
             
             return True
             
         except Exception as e:
-            logger.error(f"❌ データ検証エラー: {e}")
+            logger.error(f"[ERROR] データ検証エラー: {e}")
             return False
     
     def generate_all_outputs(self, output_dir: str = "backtest_results/dssms_results") -> Dict[str, str]:
@@ -501,11 +501,11 @@ class DSSMSUnifiedOutputEngine:
             json_path = self._generate_json_output(output_dir)
             output_files['json'] = json_path
             
-            logger.info(f"✅ 全出力生成完了: {len(output_files)}ファイル")
+            logger.info(f"[OK] 全出力生成完了: {len(output_files)}ファイル")
             return output_files
             
         except Exception as e:
-            logger.error(f"❌ 出力生成エラー: {e}")
+            logger.error(f"[ERROR] 出力生成エラー: {e}")
             raise
     
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
@@ -547,11 +547,11 @@ class DSSMSUnifiedOutputEngine:
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: switch_analysis.to_excel(writer, sheet_name='切替分析', index=False)
             
-            logger.info(f"📊 Excel出力完了: {excel_path}")
+            logger.info(f"[CHART] Excel出力完了: {excel_path}")
             return str(excel_path)
             
         except Exception as e:
-            logger.error(f"❌ Excel生成エラー: {e}")
+            logger.error(f"[ERROR] Excel生成エラー: {e}")
             raise
     
     def _create_summary_sheet(self) -> pd.DataFrame:
@@ -732,7 +732,7 @@ class DSSMSUnifiedOutputEngine:
         total_trades = 0
         total_fees = 0
         
-        logger.info(f"📊 戦略統計シート作成: {len(strategy_stats)}戦略")
+        logger.info(f"[CHART] 戦略統計シート作成: {len(strategy_stats)}戦略")
         
         for strategy_name, stats in strategy_stats.items():
             # 新しい統計形式か従来形式かを判別
@@ -781,7 +781,7 @@ class DSSMSUnifiedOutputEngine:
         # 合計行を追加（フォーマット統一）
         if stats_list:
             summary_stats = {
-                '戦略名': '📊 全戦略合計',
+                '戦略名': '[CHART] 全戦略合計',
                 '取引回数': total_trades,
                 '勝率(%)': '',
                 '平均利益': '',
@@ -819,7 +819,7 @@ class DSSMSUnifiedOutputEngine:
         available_columns = [col for col in desired_columns if col in df.columns]
         df = df[available_columns]
         
-        logger.info(f"✅ 戦略統計シート作成完了: {len(df)}行, {len(df.columns)}列")
+        logger.info(f"[OK] 戦略統計シート作成完了: {len(df)}行, {len(df.columns)}列")
         return df
     
     def _create_switch_analysis_sheet(self) -> pd.DataFrame:
@@ -948,7 +948,7 @@ class DSSMSUnifiedOutputEngine:
             return str(text_path)
             
         except Exception as e:
-            logger.error(f"❌ テキスト生成エラー: {e}")
+            logger.error(f"[ERROR] テキスト生成エラー: {e}")
             raise
     
     def _generate_json_output(self, output_dir: str) -> str:
@@ -978,12 +978,12 @@ class DSSMSUnifiedOutputEngine:
             return str(json_path)
             
         except Exception as e:
-            logger.error(f"❌ JSON生成エラー: {e}")
+            logger.error(f"[ERROR] JSON生成エラー: {e}")
             raise
 
 def main():
     """メイン実行関数"""
-    print("🚀 DSSMS統一出力システム開始")
+    print("[ROCKET] DSSMS統一出力システム開始")
     print("=" * 60)
     
     # 統一出力エンジンの初期化
@@ -996,17 +996,17 @@ def main():
             output_files = engine.generate_all_outputs()
             
             print("\n" + "=" * 60)
-            print("✅ 統一出力完了:")
+            print("[OK] 統一出力完了:")
             for format_type, file_path in output_files.items():
                 print(f"   📁 {format_type.upper()}: {file_path}")
             
-            print("\n🎯 解決された問題:")
-            print("   ✅ 日付不整合修正（2023年期間に統一）")
-            print("   ✅ データソース統一（単一ソースから全出力）")
-            print("   ✅ ゼロ値問題解決（実際のバックテスト結果反映）")
-            print("   ✅ 出力形式間の整合性確保")
+            print("\n[TARGET] 解決された問題:")
+            print("   [OK] 日付不整合修正（2023年期間に統一）")
+            print("   [OK] データソース統一（単一ソースから全出力）")
+            print("   [OK] ゼロ値問題解決（実際のバックテスト結果反映）")
+            print("   [OK] 出力形式間の整合性確保")
             
-            print("\n📋 次のステップ:")
+            print("\n[LIST] 次のステップ:")
             print("   1. 生成されたファイルの内容確認")
             print("   2. 従来ファイルとの比較検証")
             print("   3. DSSMS銘柄切り替え機能の詳細調査")
@@ -1014,10 +1014,10 @@ def main():
             
             return output_files
         except Exception as e:
-            logger.error(f"❌ 出力生成失敗: {e}")
+            logger.error(f"[ERROR] 出力生成失敗: {e}")
             return None
     else:
-        logger.error("❌ バックテストデータ取得失敗")
+        logger.error("[ERROR] バックテストデータ取得失敗")
         return None
 
 if __name__ == "__main__":

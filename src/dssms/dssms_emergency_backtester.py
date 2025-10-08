@@ -112,14 +112,14 @@ class DSSMSEmergencyBacktester:
             lines.append(f"レポート種別: 緊急修正版バックテスト")
             lines.append("")
             
-            lines.append("📊 シミュレーション概要")
+            lines.append("[CHART] シミュレーション概要")
             lines.append("-" * 40)
             lines.append(f"期間: {simulation_result['start_date']} ～ {simulation_result['end_date']}")
             lines.append(f"銘柄数: {len(simulation_result['symbol_universe'])}")
             lines.append(f"シミュレーション日数: {simulation_result['simulation_days']}日")
             lines.append("")
             
-            lines.append("💰 パフォーマンス結果")
+            lines.append("[MONEY] パフォーマンス結果")
             lines.append("-" * 40)
             lines.append(f"初期資本: {simulation_result['initial_capital']:,.0f}円")
             lines.append(f"最終価値: {simulation_result['final_value']:,.0f}円")
@@ -130,7 +130,7 @@ class DSSMSEmergencyBacktester:
             # 日次パフォーマンス（最初と最後の5日）
             portfolio_values = simulation_result['portfolio_values']
             if len(portfolio_values) > 10:
-                lines.append("📈 日次ポートフォリオ価値（抜粋）")
+                lines.append("[UP] 日次ポートフォリオ価値（抜粋）")
                 lines.append("-" * 40)
                 for i in range(min(5, len(portfolio_values))):
                     lines.append(f"Day {i+1}: {portfolio_values[i]:,.0f}円")
@@ -139,14 +139,14 @@ class DSSMSEmergencyBacktester:
                     lines.append(f"Day {i+1}: {portfolio_values[i]:,.0f}円")
                 lines.append("")
             
-            lines.append("🔧 緊急修正版について")
+            lines.append("[TOOL] 緊急修正版について")
             lines.append("-" * 40)
             lines.append("このレポートは緊急修正パッチにより生成されました。")
             lines.append("Task 1.3の実装問題を修正し、基本的な動作を確保しています。")
             lines.append("実際の市場データではなく、統計的モデルを使用しています。")
             lines.append("")
             
-            lines.append("💡 次のステップ")
+            lines.append("[IDEA] 次のステップ")
             lines.append("-" * 40)
             lines.append("1. Task 1.3の構文エラーを完全修正")
             lines.append("2. 実際の市場データ統合の復旧")
@@ -186,18 +186,18 @@ def demo_emergency_backtester():
         result = backtester.simulate_dynamic_selection()
         
         if result['success']:
-            print("✅ 緊急修正版シミュレーション成功")
+            print("[OK] 緊急修正版シミュレーション成功")
             print(f"   最終価値: {result['final_value']:,.0f}円")
             print(f"   総リターン: {result['total_return']:.2%}")
             if 'report_path' in result:
                 print(f"   レポート: {result['report_path']}")
         else:
-            print(f"❌ 緊急修正版シミュレーション失敗: {result.get('error', 'Unknown error')}")
+            print(f"[ERROR] 緊急修正版シミュレーション失敗: {result.get('error', 'Unknown error')}")
         
         return result['success']
         
     except Exception as e:
-        print(f"❌ 緊急修正版バックテスターエラー: {e}")
+        print(f"[ERROR] 緊急修正版バックテスターエラー: {e}")
         return False
 
 if __name__ == "__main__":

@@ -29,6 +29,7 @@ import sys
 import os
 import logging
 import pandas as pd
+import numpy as np
 from datetime import datetime
 from typing import Dict, Any, List
 
@@ -209,6 +210,114 @@ def check_for_series_signal(signal) -> int:
         return 0
 
 
+def calculate_performance_metrics(stock_data, trades):
+    """
+    パフォーマンス指標を包括的に計算する関数（修正版）
+    異常値問題を修正: 適切なリターン計算とポートフォリオ価値算出
+    """
+    try:
+        if len(trades) == 0:
+            return {
+                'total_return': 0.0,
+                'win_rate': 0.0,
+                'sharpe_ratio': 0.0,
+                'max_drawdown': 0.0,
+                'total_trades': 0,
+                'profitable_trades': 0,
+                'losing_trades': 0,
+                'average_return': 0.0,
+                'volatility': 0.0,
+                'calmar_ratio': 0.0
+            }
+        
+        # 基本価格データ取得
+        initial_price = float(stock_data['Close'].iloc[0])
+        final_price = float(stock_data['Close'].iloc[-1])
+        
+        # Buy & Hold リターン（修正版）
+        total_return = (final_price - initial_price) / initial_price
+        
+        # 日次リターンの計算（修正版）
+        daily_returns = stock_data['Close'].pct_change().dropna()
+        
+        # 取引統計の計算
+        entry_trades = [t for t in trades if t.get('type') == 'entry']
+        exit_trades = [t for t in trades if t.get('type') == 'exit']
+        
+        # 勝率計算（修正版）
+        if len(daily_returns) > 0:
+            profitable_days = (daily_returns > 0).sum()
+            losing_days = (daily_returns < 0).sum()
+            win_rate = profitable_days / len(daily_returns) if len(daily_returns) > 0 else 0.0
+        else:
+            profitable_days = 0
+            losing_days = 0
+            win_rate = 0.0
+        
+        # ボラティリティ計算（修正版）
+        if len(daily_returns) > 1:
+            volatility = daily_returns.std() * np.sqrt(252)  # 年率換算
+        else:
+            volatility = 0.0
+        
+        # シャープレシオ計算（修正版）
+        if len(daily_returns) > 1 and volatility > 0:
+            annual_return = total_return  # 年間リターン近似
+            sharpe_ratio = annual_return / volatility
+        else:
+            sharpe_ratio = 0.0
+        
+        # 最大ドローダウン計算（修正版）
+        if 'Portfolio_Value' in stock_data.columns:
+            portfolio_values = stock_data['Portfolio_Value']
+        else:
+            # 正規化されたポートフォリオ価値
+            portfolio_values = stock_data['Close'] / initial_price
+        
+        if len(portfolio_values) > 1:
+            cumulative_max = portfolio_values.expanding().max()
+            drawdown = (portfolio_values - cumulative_max) / cumulative_max
+            max_drawdown = drawdown.min()
+        else:
+            max_drawdown = 0.0
+        
+        # 平均リターン計算（修正版）
+        average_return = daily_returns.mean() if len(daily_returns) > 0 else 0.0
+        
+        # Calmar比率計算（修正版）
+        if abs(max_drawdown) > 0.001:  # 0除算回避
+            calmar_ratio = total_return / abs(max_drawdown)
+        else:
+            calmar_ratio = 0.0
+        
+        return {
+            'total_return': float(total_return),
+            'win_rate': float(win_rate), 
+            'sharpe_ratio': float(sharpe_ratio),
+            'max_drawdown': float(max_drawdown),
+            'total_trades': len(trades),
+            'profitable_trades': int(profitable_days),
+            'losing_trades': int(losing_days),
+            'average_return': float(average_return),
+            'volatility': float(volatility),
+            'calmar_ratio': float(calmar_ratio)
+        }
+    
+    except Exception as e:
+        logger.error(f"パフォーマンス計算エラー: {e}")
+        return {
+            'total_return': 0.0,
+            'win_rate': 0.0,
+            'sharpe_ratio': 0.0,
+            'max_drawdown': 0.0,
+            'total_trades': len(trades),
+            'profitable_trades': 0,
+            'losing_trades': 0,
+            'average_return': 0.0,
+            'volatility': 0.0,
+            'calmar_ratio': 0.0
+        }
+
 def _execute_individual_strategy(stock_data, index_data, strategy_name, strategy_class, params):
     """
     個別戦略実行（バックテスト基本理念遵守）
@@ -265,7 +374,7 @@ def _detect_exit_anomalies(strategy_result: pd.DataFrame, strategy_name: str) ->
     
     if 'Entry_Signal' in strategy_result.columns and 'Exit_Signal' in strategy_result.columns:
         total_entries = (strategy_result['Entry_Signal'] == 1).sum()
-        total_exits = (strategy_result['Exit_Signal'] == -1).sum()
+        total_exits = (strategy_result['Exit_Signal'] == 1).sum()  # Exit_Signalも1で統一
         
         anomaly_info['total_entries'] = int(total_entries)
         anomaly_info['total_exits'] = int(total_exits)
@@ -317,7 +426,7 @@ def _integrate_exit_signals_with_position_tracking(integrated_data: pd.DataFrame
         return _integrate_exit_signals_filtered(integrated_data, strategy_result, strategy_name, anomaly_info)
     
     # エグジットシグナルがある行を特定
-    exit_indices = strategy_result[strategy_result['Exit_Signal'] == -1].index
+    exit_indices = strategy_result[strategy_result['Exit_Signal'] == 1].index
     
     for exit_idx in exit_indices:
         try:
@@ -352,7 +461,7 @@ def _integrate_exit_signals_with_position_tracking(integrated_data: pd.DataFrame
             
             if valid_exit and integrated_data.loc[exit_idx, 'Exit_Signal'] == 0:
                 # エグジットシグナル適用
-                integrated_data.loc[exit_idx, 'Exit_Signal'] = -1
+                integrated_data.loc[exit_idx, 'Exit_Signal'] = 1
                 integrated_data.loc[exit_idx, 'Active_Strategy'] = ''  # ポジション終了
                 integrated_data.loc[exit_idx, 'Position_Duration'] = 0  # 保有期間リセット
                 
@@ -385,13 +494,13 @@ def _integrate_exit_signals_filtered(integrated_data: pd.DataFrame, strategy_res
         for pos_idx in active_positions:
             try:
                 # 該当日以降の最初のエグジットシグナルを検索
-                future_exits = strategy_result.loc[pos_idx:][strategy_result['Exit_Signal'] == -1].index
+                future_exits = strategy_result.loc[pos_idx:][strategy_result['Exit_Signal'] == 1].index
                 
                 if len(future_exits) > 0:
                     exit_idx = future_exits[0]
                     
                     if integrated_data.loc[exit_idx, 'Exit_Signal'] == 0:
-                        integrated_data.loc[exit_idx, 'Exit_Signal'] = -1
+                        integrated_data.loc[exit_idx, 'Exit_Signal'] = 1
                         integrated_data.loc[exit_idx, 'Active_Strategy'] = ''
                         exit_integration_count += 1
                         
@@ -403,14 +512,14 @@ def _integrate_exit_signals_filtered(integrated_data: pd.DataFrame, strategy_res
         entry_count = (integrated_data['Active_Strategy'] == strategy_name).sum()
         max_exits = min(entry_count * 2, anomaly_info['total_exits'])  # 最大2倍まで
         
-        exit_signals = strategy_result[strategy_result['Exit_Signal'] == -1].index[:max_exits]
+        exit_signals = strategy_result[strategy_result['Exit_Signal'] == 1].index[:max_exits]
         
         for exit_idx in exit_signals:
             try:
                 if (integrated_data.loc[exit_idx, 'Active_Strategy'] == strategy_name and 
                     integrated_data.loc[exit_idx, 'Exit_Signal'] == 0):
                     
-                    integrated_data.loc[exit_idx, 'Exit_Signal'] = -1
+                    integrated_data.loc[exit_idx, 'Exit_Signal'] = 1
                     integrated_data.loc[exit_idx, 'Active_Strategy'] = ''
                     exit_integration_count += 1
                     
@@ -462,7 +571,7 @@ def _validate_integrated_signals(integrated_data, strategy_performance):
     TODO(tag:exit_signal_integration, rationale:validate signal integration quality)
     """
     total_entries = (integrated_data['Entry_Signal'] == 1).sum()
-    total_exits = (integrated_data['Exit_Signal'] == -1).sum()
+    total_exits = (integrated_data['Exit_Signal'] == 1).sum()
     
     # 基本整合性チェック
     if total_entries == 0:
@@ -500,11 +609,11 @@ def _execute_intelligent_forced_liquidation(integrated_data: pd.DataFrame) -> Di
         print(f"\n=== インテリジェント強制決済実行: {final_position_count}件 ===")
         
         # 強制決済実行
-        integrated_data.loc[final_positions_mask, 'Exit_Signal'] = -1
+        integrated_data.loc[final_positions_mask, 'Exit_Signal'] = 1
         integrated_data.loc[final_positions_mask, 'Active_Strategy'] = ''
         
         # TODO #3修正版計算ロジック
-        total_exits = (integrated_data['Exit_Signal'] == -1).sum()
+        total_exits = (integrated_data['Exit_Signal'] == 1).sum()
         
         # 修正された強制決済率計算
         if total_exits > 0:
@@ -522,7 +631,7 @@ def _execute_intelligent_forced_liquidation(integrated_data: pd.DataFrame) -> Di
     
     return {
         'forced_liquidations': 0,
-        'total_exits': int((integrated_data['Exit_Signal'] == -1).sum()),
+        'total_exits': int((integrated_data['Exit_Signal'] == 1).sum()),
         'forced_liquidation_rate': 0.0
     }
 
@@ -534,7 +643,7 @@ def _validate_integrated_signals_comprehensive(integrated_data: pd.DataFrame, st
     TODO(tag:exit_signal_integration, rationale:comprehensive validation including anomaly awareness)
     """
     total_entries = (integrated_data['Entry_Signal'] == 1).sum()
-    total_exits = (integrated_data['Exit_Signal'] == -1).sum()
+    total_exits = (integrated_data['Exit_Signal'] == 1).sum()
     
     validation_results = {
         'total_entries': int(total_entries),
@@ -577,7 +686,7 @@ def _print_exit_integration_report(strategy_performance: Dict[str, Any], forced_
     print("="*70)
     
     # 戦略別統合結果
-    print(f"\n🔧 戦略別統合結果:")
+    print(f"\n[TOOL] 戦略別統合結果:")
     total_integrated_entries = 0
     total_integrated_exits = 0
     abnormal_strategies = []
@@ -602,13 +711,13 @@ def _print_exit_integration_report(strategy_performance: Dict[str, Any], forced_
     print(f"  統合バランス: {total_integrated_entries - total_integrated_exits}件")
     
     # 強制決済統計（TODO #3修正反映）
-    print(f"\n💰 強制決済統計（TODO #3修正版）:")
+    print(f"\n[MONEY] 強制決済統計（TODO #3修正版）:")
     print(f"  強制決済件数: {forced_liquidation_stats['forced_liquidations']}件")
     print(f"  総エグジット数: {forced_liquidation_stats['total_exits']}件")
     print(f"  修正版強制決済率: {forced_liquidation_stats['forced_liquidation_rate']}%")
     
     # 修正効果評価
-    print(f"\n🎯 TODO #2修正効果評価:")
+    print(f"\n[TARGET] TODO #2修正効果評価:")
     
     # エグジット統合改善
     if total_integrated_exits > 10:
@@ -632,7 +741,7 @@ def _print_exit_integration_report(strategy_performance: Dict[str, Any], forced_
         print("[OK] 全戦略が正常パターン")
     
     # バックテスト基本理念遵守確認
-    print(f"\n🎯 バックテスト基本理念遵守確認:")
+    print(f"\n[TARGET] バックテスト基本理念遵守確認:")
     if validation_results['validation_passed']:
         print("[OK] バックテスト基本理念完全遵守")
     else:
@@ -768,7 +877,7 @@ def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data:
     
     # デバッグ情報出力
     total_entries = (integrated_data['Entry_Signal'] == 1).sum()
-    total_exits = (integrated_data['Exit_Signal'] == -1).sum()
+    total_exits = (integrated_data['Exit_Signal'] == 1).sum()
     print(f"\n=== 統合結果サマリー ===")
     print(f"総エントリー: {total_entries}回")
     print(f"総エグジット: {total_exits}回")
@@ -856,7 +965,7 @@ def main():
                             trades = []
                             if 'Entry_Signal' in result_data.columns and 'Exit_Signal' in result_data.columns:
                                 entry_signals = result_data[result_data['Entry_Signal'] == 1]
-                                exit_signals = result_data[result_data['Exit_Signal'] == 1]
+                                exit_signals = result_data[result_data['Exit_Signal'].abs() == 1]
                                 
                                 for idx, row in entry_signals.iterrows():
                                     trades.append({
@@ -972,27 +1081,28 @@ def main():
                 # 取引履歴とパフォーマンス指標を生成
                 trades: List[Dict[str, Any]] = []
                 entry_signals = stock_data[stock_data['Entry_Signal'] == 1]
-                exit_signals = stock_data[stock_data['Exit_Signal'] == 1]
+                exit_signals = stock_data[stock_data['Exit_Signal'].abs() == 1]
                 
                 for idx, row in entry_signals.iterrows():
                     trades.append({
                         'timestamp': str(idx),
-                        'type': 'entry',
+                        'type': 'Entry',  # unified_exporter.pyと同じ形式
                         'price': float(row['Close']),
-                        'signal': 'Entry_Signal'
+                        'signal': 1  # 数値形式
                     })
                 
                 for idx, row in exit_signals.iterrows():
                     trades.append({
                         'timestamp': str(idx), 
-                        'type': 'exit',
+                        'type': 'Exit',  # unified_exporter.pyと同じ形式
                         'price': float(row['Close']),
-                        'signal': 'Exit_Signal'
+                        'signal': 1  # 数値形式 (統合後は1)
                     })
                 
-                # パフォーマンス指標
+                # パフォーマンス指標（包括的な計算に置換）
+                performance_metrics = calculate_performance_metrics(stock_data, trades)
                 performance: Dict[str, Any] = {
-                    'total_trades': len(trades),
+                    **performance_metrics,  # 包括的なパフォーマンス指標
                     'entry_signals': len(entry_signals),
                     'exit_signals': len(exit_signals),
                     'ticker': ticker

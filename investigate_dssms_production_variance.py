@@ -56,7 +56,7 @@ class DSSMSProductionVarianceInvestigator:
         
     def investigate_comprehensive_variance(self):
         """包括的差異調査"""
-        self.logger.info("📊 包括的差異調査実行中...")
+        self.logger.info("[CHART] 包括的差異調査実行中...")
         
         try:
             # 1. 実行環境の比較調査
@@ -87,7 +87,7 @@ class DSSMSProductionVarianceInvestigator:
     
     def _investigate_execution_environments(self):
         """実行環境比較調査"""
-        self.logger.info("🔍 実行環境比較調査...")
+        self.logger.info("[SEARCH] 実行環境比較調査...")
         
         try:
             # 短期テスト環境（制御環境）
@@ -205,7 +205,7 @@ class DSSMSProductionVarianceInvestigator:
     
     def _investigate_data_source_dependencies(self):
         """データソース依存性調査"""
-        self.logger.info("🔍 データソース依存性調査...")
+        self.logger.info("[SEARCH] データソース依存性調査...")
         
         try:
             analysis = {}
@@ -340,7 +340,7 @@ class DSSMSProductionVarianceInvestigator:
     
     def _investigate_configuration_differences(self):
         """設定ファイル差異調査"""
-        self.logger.info("🔍 設定ファイル差異調査...")
+        self.logger.info("[SEARCH] 設定ファイル差異調査...")
         
         try:
             config_analysis = {}
@@ -377,7 +377,7 @@ class DSSMSProductionVarianceInvestigator:
     
     def _investigate_timing_dependencies(self):
         """タイミング依存性調査"""
-        self.logger.info("🔍 タイミング依存性調査...")
+        self.logger.info("[SEARCH] タイミング依存性調査...")
         
         try:
             timing_analysis = {}
@@ -416,7 +416,7 @@ class DSSMSProductionVarianceInvestigator:
     
     def _investigate_network_dependencies(self):
         """ネットワーク依存性調査"""
-        self.logger.info("🔍 ネットワーク依存性調査...")
+        self.logger.info("[SEARCH] ネットワーク依存性調査...")
         
         try:
             network_analysis = {}
@@ -460,7 +460,7 @@ class DSSMSProductionVarianceInvestigator:
     
     def _reproduce_production_conditions(self):
         """本格運用条件再現テスト"""
-        self.logger.info("🔍 本格運用条件再現テスト...")
+        self.logger.info("[SEARCH] 本格運用条件再現テスト...")
         
         try:
             # 本格運用に近い条件でのDSSMS実行
@@ -538,7 +538,7 @@ class DSSMSProductionVarianceInvestigator:
     
     def _analyze_comprehensive_results(self):
         """調査結果総合分析"""
-        self.logger.info("📊 調査結果総合分析...")
+        self.logger.info("[CHART] 調査結果総合分析...")
         
         try:
             # 差異源の特定
@@ -673,13 +673,13 @@ class DSSMSProductionVarianceInvestigator:
     def _print_investigation_summary(self):
         """調査結果サマリー出力"""
         print("\n" + "="*80)
-        print("🔍 DSSMS本格運用差異調査結果サマリー")
+        print("[SEARCH] DSSMS本格運用差異調査結果サマリー")
         print("="*80)
         
         # 差異源の要約
         variance_sources = self.investigation_results.get('variance_sources', [])
         if variance_sources:
-            print(f"\n📊 特定された差異源: {len(variance_sources)}件")
+            print(f"\n[CHART] 特定された差異源: {len(variance_sources)}件")
             print("-" * 50)
             
             for i, source in enumerate(variance_sources, 1):
@@ -692,12 +692,12 @@ class DSSMSProductionVarianceInvestigator:
                     print(f"   変動係数: {source['variance_coefficient']:.4f}")
                 print()
         else:
-            print("\n✅ 顕著な差異源は特定されませんでした")
+            print("\n[OK] 顕著な差異源は特定されませんでした")
         
         # 推奨対策
         recommendations = self.investigation_results.get('recommendations', [])
         if recommendations:
-            print(f"\n💡 推奨対策: {len(recommendations)}件")
+            print(f"\n[IDEA] 推奨対策: {len(recommendations)}件")
             print("-" * 50)
             
             for i, rec in enumerate(recommendations, 1):
@@ -708,22 +708,22 @@ class DSSMSProductionVarianceInvestigator:
         # 本格運用条件での結果
         production_result = self.investigation_results.get('production_reproduction', {})
         if 'variance_coefficient' in production_result:
-            print(f"\n📈 本格運用条件テスト結果:")
+            print(f"\n[UP] 本格運用条件テスト結果:")
             print(f"   実行回数: {production_result.get('runs_executed', 0)}回")
             print(f"   最終価値範囲: {production_result.get('final_value_range', 0):,.0f}円")
             print(f"   変動係数: {production_result.get('variance_coefficient', 0):.4f}")
             
             if production_result.get('variance_coefficient', 0) > 0.01:
-                print("   ⚠️  大幅な差異が確認されました")
+                print("   [WARNING]  大幅な差異が確認されました")
             else:
-                print("   ✅ 差異は許容範囲内です")
+                print("   [OK] 差異は許容範囲内です")
         
         print("\n" + "="*80)
 
 
 def main():
     """メイン実行"""
-    print("🔍 DSSMS本格運用差異調査開始")
+    print("[SEARCH] DSSMS本格運用差異調査開始")
     print("="*60)
     
     investigator = DSSMSProductionVarianceInvestigator()
@@ -738,10 +738,10 @@ def main():
         if report_file:
             print(f"\n📄 詳細調査レポート: {report_file}")
         
-        print("\n🎉 DSSMS本格運用差異調査完了")
+        print("\n[SUCCESS] DSSMS本格運用差異調査完了")
         
     except Exception as e:
-        print(f"\n❌ 調査実行エラー: {e}")
+        print(f"\n[ERROR] 調査実行エラー: {e}")
         import traceback
         traceback.print_exc()
 

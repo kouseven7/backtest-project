@@ -35,7 +35,7 @@ class DSSMSDirectAnalyzer:
             
             # 新しいインスタンス作成
             backtester = DSSMSBacktester()
-            logger.info("✅ DSSMSBacktester初期化完了")
+            logger.info("[OK] DSSMSBacktester初期化完了")
             
             # 最小限の実行設定（10日間のみ）
             test_config = {
@@ -44,7 +44,7 @@ class DSSMSDirectAnalyzer:
                 'log_switches': True
             }
             
-            logger.info("🔧 最小限DSSMS実行開始（10日間）")
+            logger.info("[TOOL] 最小限DSSMS実行開始（10日間）")
             start_time = datetime.now()
             
             # この部分は実際のDSSMSバックテストメソッドを呼び出す
@@ -138,7 +138,7 @@ class DSSMSDirectAnalyzer:
         ultra_simple = UltraSimpleRanking(self.symbols)
         ultra_results = ultra_simple.simulate_switches(10)
         
-        logger.info(f"✅ UltraSimple (10日): {ultra_results['switch_count']}回切替")
+        logger.info(f"[OK] UltraSimple (10日): {ultra_results['switch_count']}回切替")
         
         # Step 2: DSSMS直接実行
         dssms_results = self.run_fresh_dssms_analysis()
@@ -196,7 +196,7 @@ class DSSMSDirectAnalyzer:
 def main():
     """メイン分析実行"""
     
-    print("🚀 DSSMS直接実行分析")
+    print("[ROCKET] DSSMS直接実行分析")
     print("=" * 50)
     print(f"実行時刻: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("目的: DSSMSとUltraSimpleの直接比較（10日間）")
@@ -209,17 +209,17 @@ def main():
         comparison = analyzer.compare_direct_execution()
         
         # 結果表示
-        print("📊 直接実行比較結果:")
+        print("[CHART] 直接実行比較結果:")
         print("-" * 30)
         
         # UltraSimple結果
         ultra = comparison['ultra_simple']
-        print(f"✅ Ultra Simple: {ultra['switches']}回切替 (期待: {ultra['expected']}回)")
+        print(f"[OK] Ultra Simple: {ultra['switches']}回切替 (期待: {ultra['expected']}回)")
         print(f"   Status: {ultra['status']}")
         
         # DSSMS結果
         dssms = comparison['dssms_direct']
-        print(f"\n🔍 DSSMS直接実行: {dssms['status']}")
+        print(f"\n[SEARCH] DSSMS直接実行: {dssms['status']}")
         
         if dssms['status'] == 'success':
             results = dssms['results']
@@ -250,7 +250,7 @@ def main():
         return comparison
         
     except Exception as e:
-        print(f"❌ 分析エラー: {e}")
+        print(f"[ERROR] 分析エラー: {e}")
         logger.error(f"メイン分析失敗: {e}")
         return None
 

@@ -72,19 +72,19 @@ class ImprovedEngineValidator:
                 
                 if result['status'] == 'PASS':
                     validation_summary['passed'] += 1
-                    logger.info(f"✅ {engine_name}: 検証合格")
+                    logger.info(f"[OK] {engine_name}: 検証合格")
                 else:
                     validation_summary['failed'] += 1
                     validation_summary['errors'].append({
                         'engine': engine_name,
                         'error': result.get('error', 'Unknown error')
                     })
-                    logger.error(f"❌ {engine_name}: 検証失敗 - {result.get('error', 'Unknown')}")
+                    logger.error(f"[ERROR] {engine_name}: 検証失敗 - {result.get('error', 'Unknown')}")
                     
                 self.test_results[engine_name] = result
                 
             except Exception as e:
-                logger.error(f"❌ {engine_name}: 検証エラー - {str(e)}")
+                logger.error(f"[ERROR] {engine_name}: 検証エラー - {str(e)}")
                 validation_summary['failed'] += 1
                 validation_summary['errors'].append({
                     'engine': engine_name,
@@ -98,9 +98,9 @@ class ImprovedEngineValidator:
         
         # 結果サマリー
         logger.info("=== 改善エンジン動作確認テスト完了 ===")
-        logger.info(f"✅ 合格: {validation_summary['passed']}個")
-        logger.info(f"❌ 失敗: {validation_summary['failed']}個")
-        logger.info(f"📊 成功率: {validation_summary['passed']/validation_summary['total_engines']*100:.1f}%")
+        logger.info(f"[OK] 合格: {validation_summary['passed']}個")
+        logger.info(f"[ERROR] 失敗: {validation_summary['failed']}個")
+        logger.info(f"[CHART] 成功率: {validation_summary['passed']/validation_summary['total_engines']*100:.1f}%")
         
         # 結果保存
         self._save_test_results(validation_summary)
@@ -352,24 +352,24 @@ def main():
         
         # テスト結果報告
         if summary['failed'] == 0:
-            logger.info("🎉 全改善エンジンが検証合格")
+            logger.info("[SUCCESS] 全改善エンジンが検証合格")
         else:
-            logger.warning(f"⚠️ {summary['failed']}個のエンジンで問題検出")
+            logger.warning(f"[WARNING] {summary['failed']}個のエンジンで問題検出")
             
         return summary
         
     except Exception as e:
-        logger.error(f"❌ テスト実行エラー: {str(e)}")
+        logger.error(f"[ERROR] テスト実行エラー: {str(e)}")
         logger.error(traceback.format_exc())
         return None
 
 if __name__ == "__main__":
     result = main()
     if result:
-        print(f"\n✅ 改善エンジン動作確認テスト完了")
-        print(f"📊 合格: {result['passed']}個")
-        print(f"❌ 失敗: {result['failed']}個")
-        print(f"🎯 成功率: {result['passed']/result['total_engines']*100:.1f}%")
+        print(f"\n[OK] 改善エンジン動作確認テスト完了")
+        print(f"[CHART] 合格: {result['passed']}個")
+        print(f"[ERROR] 失敗: {result['failed']}個")
+        print(f"[TARGET] 成功率: {result['passed']/result['total_engines']*100:.1f}%")
     else:
-        print("❌ テスト実行失敗")
+        print("[ERROR] テスト実行失敗")
         sys.exit(1)

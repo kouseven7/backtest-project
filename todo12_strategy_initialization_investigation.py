@@ -76,13 +76,13 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
         バックテスト基本理念遵守: 実際の戦略実行保証を目的とした調査
         """
         print("=" * 80)
-        print("🔧 TODO #12: 戦略初期化エラー包括調査・修正 開始")
+        print("[TOOL] TODO #12: 戦略初期化エラー包括調査・修正 開始")
         print("=" * 80)
         print()
         
         try:
             # Phase 1: 戦略コンストラクタ要件分析
-            print("🔍 Phase 1: 戦略コンストラクタ要件分析")
+            print("[SEARCH] Phase 1: 戦略コンストラクタ要件分析")
             constructor_analysis = self._analyze_strategy_constructor_requirements()
             
             # Phase 2: MultiStrategyManager統合問題調査  
@@ -90,7 +90,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             manager_integration_analysis = self._investigate_manager_integration_issues()
             
             # Phase 3: パラメータ供給システム調査
-            print("\n📊 Phase 3: パラメータ供給システム調査")
+            print("\n[CHART] Phase 3: パラメータ供給システム調査")
             parameter_supply_analysis = self._investigate_parameter_supply_system()
             
             # Phase 4: 重み計算プロセス復旧調査
@@ -98,7 +98,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             weight_calculation_analysis = self._investigate_weight_calculation_recovery()
             
             # Phase 5: バックテスト基本理念遵守状況調査
-            print("\n🎯 Phase 5: バックテスト基本理念遵守状況調査")
+            print("\n[TARGET] Phase 5: バックテスト基本理念遵守状況調査")
             backtest_principle_analysis = self._investigate_backtest_principle_compliance()
             
             # Phase 6: 修正戦略立案
@@ -123,7 +123,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
         constructor_analysis = {}
         
         # VWAPBreakoutStrategy調査
-        print("  🔍 VWAPBreakoutStrategy コンストラクタ調査")
+        print("  [SEARCH] VWAPBreakoutStrategy コンストラクタ調査")
         vwap_analysis = self._analyze_specific_strategy_constructor(
             'VWAPBreakoutStrategy',
             self.target_strategies['VWAPBreakoutStrategy']
@@ -131,7 +131,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
         constructor_analysis['VWAPBreakoutStrategy'] = vwap_analysis
         
         # OpeningGapStrategy調査  
-        print("  🔍 OpeningGapStrategy コンストラクタ調査")
+        print("  [SEARCH] OpeningGapStrategy コンストラクタ調査")
         opening_analysis = self._analyze_specific_strategy_constructor(
             'OpeningGapStrategy',
             self.target_strategies['OpeningGapStrategy']
@@ -139,7 +139,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
         constructor_analysis['OpeningGapStrategy'] = opening_analysis
         
         # 成功した戦略との比較分析
-        print("  📊 成功戦略との比較分析")
+        print("  [CHART] 成功戦略との比較分析")
         comparison_analysis = self._compare_with_successful_strategies()
         constructor_analysis['successful_strategies_comparison'] = comparison_analysis
         
@@ -170,13 +170,13 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             module = __import__(module_path, fromlist=[class_name])
             strategy_class = getattr(module, class_name)
             
-            print(f"    ✅ インポート成功: {strategy_class}")
+            print(f"    [OK] インポート成功: {strategy_class}")
             
             # コンストラクタシグネチャ分析
             init_signature = inspect.signature(strategy_class.__init__)
             analysis['constructor_signature'] = str(init_signature)
             
-            print(f"    🔍 コンストラクタシグネチャ: {init_signature}")
+            print(f"    [SEARCH] コンストラクタシグネチャ: {init_signature}")
             
             # パラメータ分析
             for param_name, param in init_signature.parameters.items():
@@ -192,10 +192,10 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
                 
                 if param.default == inspect.Parameter.empty:
                     analysis['required_params'].append(param_info)
-                    print(f"      ⚠️ 必須パラメータ: {param_name} ({param.annotation})")
+                    print(f"      [WARNING] 必須パラメータ: {param_name} ({param.annotation})")
                 else:
                     analysis['optional_params'].append(param_info)
-                    print(f"      ✅ オプションパラメータ: {param_name} = {param.default}")
+                    print(f"      [OK] オプションパラメータ: {param_name} = {param.default}")
             
             # 不足パラメータ確認
             missing_param = strategy_info['missing_param']
@@ -203,7 +203,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             for param in analysis['required_params']:
                 if param['name'] == missing_param:
                     missing_param_found = True
-                    print(f"    🚨 不足パラメータ確認: {missing_param} は必須パラメータです")
+                    print(f"    [ALERT] 不足パラメータ確認: {missing_param} は必須パラメータです")
                     analysis['missing_param_confirmed'] = True
                     break
             
@@ -214,11 +214,11 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             analysis['analysis_status'] = 'success'
             
         except ImportError as e:
-            print(f"    ❌ インポートエラー: {e}")
+            print(f"    [ERROR] インポートエラー: {e}")
             analysis['analysis_status'] = 'import_error'
             analysis['error_details'] = str(e)
         except Exception as e:
-            print(f"    ❌ 分析エラー: {e}")
+            print(f"    [ERROR] 分析エラー: {e}")
             analysis['analysis_status'] = 'analysis_error'
             analysis['error_details'] = str(e)
         
@@ -234,13 +234,13 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
         }
         
         try:
-            print(f"    📊 成功戦略分析: {self.successful_strategies}")
+            print(f"    [CHART] 成功戦略分析: {self.successful_strategies}")
             
             # 成功戦略のコンストラクタパターン分析例（MomentumInvestingStrategy）
             try:
                 from src.strategies.Momentum_Investing import MomentumInvestingStrategy
                 momentum_signature = inspect.signature(MomentumInvestingStrategy.__init__)
-                print(f"    ✅ MomentumInvestingStrategy: {momentum_signature}")
+                print(f"    [OK] MomentumInvestingStrategy: {momentum_signature}")
                 
                 # パラメータパターン収集
                 momentum_params = []
@@ -259,12 +259,12 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
                 })
                 
             except Exception as e:
-                print(f"    ⚠️ MomentumInvestingStrategy分析失敗: {e}")
+                print(f"    [WARNING] MomentumInvestingStrategy分析失敗: {e}")
             
             comparison['analysis_status'] = 'success'
             
         except Exception as e:
-            print(f"    ❌ 比較分析エラー: {e}")
+            print(f"    [ERROR] 比較分析エラー: {e}")
             comparison['analysis_status'] = 'error'
             comparison['error_details'] = str(e)
         
@@ -286,10 +286,10 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             print("  📁 MultiStrategyManager インポート確認")
             from config.multi_strategy_manager import MultiStrategyManager
             integration_analysis['manager_import_status'] = 'success'
-            print("    ✅ MultiStrategyManager インポート成功")
+            print("    [OK] MultiStrategyManager インポート成功")
             
             # get_strategy_instance メソッド分析
-            print("  🔍 get_strategy_instance メソッド分析")
+            print("  [SEARCH] get_strategy_instance メソッド分析")
             manager = MultiStrategyManager()
             
             if hasattr(manager, 'get_strategy_instance'):
@@ -299,10 +299,10 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
                     'signature': str(get_instance_signature),
                     'analysis': 'method_exists'
                 }
-                print(f"    ✅ get_strategy_instance メソッド存在: {get_instance_signature}")
+                print(f"    [OK] get_strategy_instance メソッド存在: {get_instance_signature}")
                 
                 # 実際の呼び出しテスト（安全な方法で）
-                print("  🧪 get_strategy_instance 呼び出しテスト")
+                print("  [TEST] get_strategy_instance 呼び出しテスト")
                 self._test_get_strategy_instance_calls(manager, integration_analysis)
                 
             else:
@@ -310,17 +310,17 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
                     'exists': False,
                     'analysis': 'method_missing'
                 }
-                print("    ❌ get_strategy_instance メソッドが存在しません")
+                print("    [ERROR] get_strategy_instance メソッドが存在しません")
             
             integration_analysis['analysis_status'] = 'success'
             
         except ImportError as e:
-            print(f"  ❌ MultiStrategyManager インポートエラー: {e}")
+            print(f"  [ERROR] MultiStrategyManager インポートエラー: {e}")
             integration_analysis['manager_import_status'] = 'import_error'
             integration_analysis['error_details'] = str(e)
             integration_analysis['analysis_status'] = 'import_error'
         except Exception as e:
-            print(f"  ❌ 統合問題調査エラー: {e}")
+            print(f"  [ERROR] 統合問題調査エラー: {e}")
             integration_analysis['analysis_status'] = 'analysis_error'
             integration_analysis['error_details'] = str(e)
         
@@ -333,7 +333,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
         
         # 問題の戦略での呼び出しテスト
         for strategy_name, strategy_info in self.target_strategies.items():
-            print(f"    🧪 {strategy_name} インスタンス化テスト")
+            print(f"    [TEST] {strategy_name} インスタンス化テスト")
             test_result = {
                 'strategy_name': strategy_name,
                 'test_status': 'unknown',
@@ -350,12 +350,12 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
                 error_msg = str(e)
                 test_result['test_status'] = 'expected_error'
                 test_result['error_message'] = error_msg
-                print(f"      ❌ 期待されたエラー: {error_msg}")
+                print(f"      [ERROR] 期待されたエラー: {error_msg}")
                 
                 # エラーメッセージから不足パラメータ特定
                 if strategy_info['missing_param'] in error_msg:
                     test_result['missing_param_confirmed'] = True
-                    print(f"      ✅ 不足パラメータ確認: {strategy_info['missing_param']}")
+                    print(f"      [OK] 不足パラメータ確認: {strategy_info['missing_param']}")
                 else:
                     test_result['missing_param_confirmed'] = False
                     print(f"      ❓ 不足パラメータ不明: 期待 {strategy_info['missing_param']}")
@@ -377,12 +377,12 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
         
         try:
             # test_market_data 分析
-            print("  📊 test_market_data 分析")
+            print("  [CHART] test_market_data 分析")
             test_data_analysis = self._analyze_test_market_data()
             parameter_analysis['test_market_data_analysis'] = test_data_analysis
             
             # インデックスデータ生成メカニズム調査
-            print("  📈 インデックスデータ生成調査")
+            print("  [UP] インデックスデータ生成調査")
             index_data_analysis = self._investigate_index_data_generation()
             parameter_analysis['data_generation_analysis'] = index_data_analysis
             
@@ -394,7 +394,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             parameter_analysis['analysis_status'] = 'success'
             
         except Exception as e:
-            print(f"  ❌ パラメータ供給システム調査エラー: {e}")
+            print(f"  [ERROR] パラメータ供給システム調査エラー: {e}")
             parameter_analysis['analysis_status'] = 'error'
             parameter_analysis['error_details'] = str(e)
         
@@ -431,26 +431,26 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             }
             analysis['available_columns'] = list(test_market_data.columns)
             
-            print(f"    📊 テストデータ構造: {test_market_data.shape}")
-            print(f"    📋 利用可能列: {list(test_market_data.columns)}")
+            print(f"    [CHART] テストデータ構造: {test_market_data.shape}")
+            print(f"    [LIST] 利用可能列: {list(test_market_data.columns)}")
             
             # index_data / dow_data の可能性調査
             if 'Close' in test_market_data.columns:
                 # index_data として Close 価格を使用する可能性
                 analysis['index_data_availability'] = True
                 analysis['index_data_candidate'] = 'Close'
-                print("    🎯 index_data候補: Close 価格データ")
+                print("    [TARGET] index_data候補: Close 価格データ")
             
             if 'Close' in test_market_data.columns:
                 # dow_data として同じデータを使用する可能性（OpeningGap戦略）
                 analysis['dow_data_availability'] = True
                 analysis['dow_data_candidate'] = 'Close'
-                print("    🎯 dow_data候補: Close 価格データ（同じソース）")
+                print("    [TARGET] dow_data候補: Close 価格データ（同じソース）")
             
             analysis['analysis_status'] = 'success'
             
         except Exception as e:
-            print(f"    ❌ test_market_data 分析エラー: {e}")
+            print(f"    [ERROR] test_market_data 分析エラー: {e}")
             analysis['analysis_status'] = 'error'
             analysis['error_details'] = str(e)
         
@@ -466,7 +466,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
         }
         
         try:
-            print("    📈 インデックスデータ生成方法調査")
+            print("    [UP] インデックスデータ生成方法調査")
             
             # 一般的なインデックスデータ生成方法
             generation_methods = [
@@ -496,7 +496,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             analysis['generation_methods'] = generation_methods
             
             for method in generation_methods:
-                print(f"      📋 {method['method']}: {method['description']}")
+                print(f"      [LIST] {method['method']}: {method['description']}")
             
             # 推奨実装方法
             analysis['recommended_method'] = 'same_as_stock_data'
@@ -506,12 +506,12 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
                 'rationale': 'TODO #12緊急対応として最も安全・簡単'
             }
             
-            print(f"    💡 推奨方法: {analysis['recommended_method']}")
+            print(f"    [IDEA] 推奨方法: {analysis['recommended_method']}")
             
             analysis['analysis_status'] = 'success'
             
         except Exception as e:
-            print(f"    ❌ インデックスデータ生成調査エラー: {e}")
+            print(f"    [ERROR] インデックスデータ生成調査エラー: {e}")
             analysis['analysis_status'] = 'error'
             analysis['error_details'] = str(e)
         
@@ -566,12 +566,12 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             analysis['flow_stages'] = flow_stages
             
             for stage in flow_stages:
-                status_emoji = {'working': '✅', 'partial_failure': '⚠️', 'failure': '❌', 'not_reached': '⏸️'}
+                status_emoji = {'working': '[OK]', 'partial_failure': '[WARNING]', 'failure': '[ERROR]', 'not_reached': '⏸️'}
                 emoji = status_emoji.get(stage['current_status'], '❓')
                 print(f"      {emoji} {stage['stage']}: {stage['description']}")
                 if stage['issues']:
                     for issue in stage['issues']:
-                        print(f"        🚨 問題: {issue}")
+                        print(f"        [ALERT] 問題: {issue}")
             
             # ボトルネック特定
             analysis['bottlenecks'] = [
@@ -586,7 +586,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             analysis['analysis_status'] = 'success'
             
         except Exception as e:
-            print(f"    ❌ パラメータフロー調査エラー: {e}")
+            print(f"    [ERROR] パラメータフロー調査エラー: {e}")
             analysis['analysis_status'] = 'error'
             analysis['error_details'] = str(e)
         
@@ -627,10 +627,10 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
                         'exists': True,
                         'signature': str(signature) if signature else 'not_callable'
                     }
-                    print(f"    ✅ {method_name}: {signature}")
+                    print(f"    [OK] {method_name}: {signature}")
                 else:
                     method_analysis[method_name] = {'exists': False}
-                    print(f"    ❌ {method_name}: 存在しません")
+                    print(f"    [ERROR] {method_name}: 存在しません")
             
             weight_analysis['weight_calculation_methods'] = method_analysis
             
@@ -644,7 +644,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             }
             weight_analysis['dependency_analysis'] = dependency_analysis
             
-            print("    🚨 現在のブロッカー: 戦略インスタンス化失敗により重み計算が実行されない")
+            print("    [ALERT] 現在のブロッカー: 戦略インスタンス化失敗により重み計算が実行されない")
             
             # 復旧要件
             recovery_requirements = [
@@ -670,15 +670,15 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             weight_analysis['recovery_requirements'] = recovery_requirements
             
             for req in recovery_requirements:
-                priority_emoji = {'critical': '🚨', 'high': '⚠️', 'medium': '📋'}
-                emoji = priority_emoji.get(req['priority'], '📋')
+                priority_emoji = {'critical': '[ALERT]', 'high': '[WARNING]', 'medium': '[LIST]'}
+                emoji = priority_emoji.get(req['priority'], '[LIST]')
                 blocking_text = '(ブロッキング)' if req['blocking'] else ''
                 print(f"    {emoji} {req['requirement']}: {req['description']} {blocking_text}")
             
             weight_analysis['analysis_status'] = 'success'
             
         except Exception as e:
-            print(f"  ❌ 重み計算復旧調査エラー: {e}")
+            print(f"  [ERROR] 重み計算復旧調査エラー: {e}")
             weight_analysis['analysis_status'] = 'error'
             weight_analysis['error_details'] = str(e)
         
@@ -698,7 +698,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
         
         try:
             # 現在の違反状況
-            print("  🎯 バックテスト基本理念違反調査")
+            print("  [TARGET] バックテスト基本理念違反調査")
             
             current_violations = [
                 {
@@ -728,14 +728,14 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             principle_analysis['current_violations'] = current_violations
             
             for violation in current_violations:
-                severity_emoji = {'critical': '🚨', 'high': '⚠️', 'medium': '📋'}
-                emoji = severity_emoji.get(violation['severity'], '📋')
+                severity_emoji = {'critical': '[ALERT]', 'high': '[WARNING]', 'medium': '[LIST]'}
+                emoji = severity_emoji.get(violation['severity'], '[LIST]')
                 print(f"    {emoji} {violation['violation']}: {violation['description']}")
-                print(f"      📊 影響: {violation['impact']}")
-                print(f"      🎯 対象: {violation['affected_strategies']}")
+                print(f"      [CHART] 影響: {violation['impact']}")
+                print(f"      [TARGET] 対象: {violation['affected_strategies']}")
             
             # コンプライアンスリスク
-            print("  🔍 コンプライアンスリスク分析")
+            print("  [SEARCH] コンプライアンスリスク分析")
             compliance_risks = [
                 {
                     'risk': 'incomplete_strategy_coverage',
@@ -754,8 +754,8 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             principle_analysis['compliance_risks'] = compliance_risks
             
             for risk in compliance_risks:
-                prob_emoji = {'high': '🚨', 'medium': '⚠️', 'low': '📋'}
-                emoji = prob_emoji.get(risk['probability'], '📋')
+                prob_emoji = {'high': '[ALERT]', 'medium': '[WARNING]', 'low': '[LIST]'}
+                emoji = prob_emoji.get(risk['probability'], '[LIST]')
                 print(f"    {emoji} {risk['risk']}: {risk['description']}")
                 print(f"      🛠️ 緩和策: {risk['mitigation']}")
             
@@ -779,15 +779,15 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             
             print("  🛠️ 緩和戦略")
             for strategy in mitigation_strategies:
-                priority_emoji = {'critical': '🚨', 'high': '⚠️', 'medium': '📋'}
-                emoji = priority_emoji.get(strategy['implementation_priority'], '📋')
+                priority_emoji = {'critical': '[ALERT]', 'high': '[WARNING]', 'medium': '[LIST]'}
+                emoji = priority_emoji.get(strategy['implementation_priority'], '[LIST]')
                 print(f"    {emoji} {strategy['strategy']}: {strategy['description']}")
-                print(f"      📈 期待効果: {strategy['impact']}")
+                print(f"      [UP] 期待効果: {strategy['impact']}")
             
             principle_analysis['analysis_status'] = 'success'
             
         except Exception as e:
-            print(f"  ❌ バックテスト基本理念調査エラー: {e}")
+            print(f"  [ERROR] バックテスト基本理念調査エラー: {e}")
             principle_analysis['analysis_status'] = 'error'
             principle_analysis['error_details'] = str(e)
         
@@ -808,7 +808,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
         
         try:
             # 短期修正（緊急対応）
-            print("  🚨 短期修正（緊急対応）立案")
+            print("  [ALERT] 短期修正（緊急対応）立案")
             short_term_fixes = [
                 {
                     'fix_id': 'STF_001',
@@ -845,15 +845,15 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             fix_strategy['short_term_fixes'] = short_term_fixes
             
             for fix in short_term_fixes:
-                priority_emoji = {'critical': '🚨', 'high': '⚠️', 'medium': '📋'}
-                emoji = priority_emoji.get(fix['priority'], '📋')
+                priority_emoji = {'critical': '[ALERT]', 'high': '[WARNING]', 'medium': '[LIST]'}
+                emoji = priority_emoji.get(fix['priority'], '[LIST]')
                 print(f"    {emoji} {fix['fix_id']}: {fix['title']}")
                 print(f"      📝 詳細: {fix['description']}")
                 print(f"      💻 実装: {fix['implementation']}")
                 print(f"      ⏱️ 工数: {fix['effort']}")
             
             # 中長期改善（品質向上）
-            print("  📈 中長期改善（品質向上）立案")
+            print("  [UP] 中長期改善（品質向上）立案")
             long_term_improvements = [
                 {
                     'improvement_id': 'LTI_001',
@@ -878,7 +878,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             fix_strategy['long_term_improvements'] = long_term_improvements
             
             for improvement in long_term_improvements:
-                print(f"    📋 {improvement['improvement_id']}: {improvement['title']}")
+                print(f"    [LIST] {improvement['improvement_id']}: {improvement['title']}")
                 print(f"      📝 詳細: {improvement['description']}")
                 print(f"      ⏱️ 工数: {improvement['effort']}")
             
@@ -903,10 +903,10 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             
             fix_strategy['implementation_plan'] = implementation_plan
             
-            print("  📋 実装計画")
+            print("  [LIST] 実装計画")
             for phase_name, phase_info in implementation_plan.items():
-                print(f"    🎯 {phase_name}: {phase_info.get('duration', 'N/A')}")
-                print(f"      ✅ 成功基準: {phase_info.get('success_criteria', 'N/A')}")
+                print(f"    [TARGET] {phase_name}: {phase_info.get('duration', 'N/A')}")
+                print(f"      [OK] 成功基準: {phase_info.get('success_criteria', 'N/A')}")
             
             # 成功指標
             success_metrics = {
@@ -929,14 +929,14 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             
             fix_strategy['success_metrics'] = success_metrics
             
-            print("  📊 成功指標")
+            print("  [CHART] 成功指標")
             for metric_name, metric_info in success_metrics.items():
-                print(f"    📈 {metric_name}: {metric_info['current']} → {metric_info['target']}")
+                print(f"    [UP] {metric_name}: {metric_info['current']} → {metric_info['target']}")
             
             fix_strategy['analysis_status'] = 'success'
             
         except Exception as e:
-            print(f"  ❌ 修正戦略立案エラー: {e}")
+            print(f"  [ERROR] 修正戦略立案エラー: {e}")
             fix_strategy['analysis_status'] = 'error'
             fix_strategy['error_details'] = str(e)
         
@@ -946,7 +946,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
     def _generate_comprehensive_investigation_report(self) -> Dict[str, Any]:
         """包括的調査結果レポート生成"""
         print("\n" + "=" * 80)
-        print("📊 TODO #12: 戦略初期化エラー包括調査 結果レポート")
+        print("[CHART] TODO #12: 戦略初期化エラー包括調査 結果レポート")
         print("=" * 80)
         
         report = {
@@ -971,8 +971,8 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             
             report['investigation_summary'] = investigation_summary
             
-            print(f"📋 調査完了: {investigation_summary['completed_phases']}/{investigation_summary['total_phases']} Phase")
-            print(f"🎯 現在成功率: {investigation_summary['success_rate_current']}")
+            print(f"[LIST] 調査完了: {investigation_summary['completed_phases']}/{investigation_summary['total_phases']} Phase")
+            print(f"[TARGET] 現在成功率: {investigation_summary['success_rate_current']}")
             print(f"🏆 目標成功率: {investigation_summary['target_success_rate']}")
             print()
             
@@ -1010,12 +1010,12 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             
             report['key_findings'] = key_findings
             
-            print("🔍 主要発見事項:")
+            print("[SEARCH] 主要発見事項:")
             for finding in key_findings:
-                severity_emoji = {'critical': '🚨', 'high': '⚠️', 'medium': '📋'}
-                emoji = severity_emoji.get(finding['severity'], '📋')
+                severity_emoji = {'critical': '[ALERT]', 'high': '[WARNING]', 'medium': '[LIST]'}
+                emoji = severity_emoji.get(finding['severity'], '[LIST]')
                 print(f"  {emoji} {finding['finding']}: {finding['description']}")
-                print(f"    📊 影響: {finding['impact']}")
+                print(f"    [CHART] 影響: {finding['impact']}")
             print()
             
             # 推奨アクション
@@ -1056,15 +1056,15 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             
             report['recommended_actions'] = recommended_actions
             
-            print("🎯 推奨アクション:")
+            print("[TARGET] 推奨アクション:")
             total_effort_minutes = 0
             for action in recommended_actions:
-                priority_emoji = {'critical': '🚨', 'high': '⚠️', 'medium': '📋'}
-                emoji = priority_emoji.get(action['priority'], '📋')
+                priority_emoji = {'critical': '[ALERT]', 'high': '[WARNING]', 'medium': '[LIST]'}
+                emoji = priority_emoji.get(action['priority'], '[LIST]')
                 effort_minutes = int(action['effort'].replace('分', ''))
                 total_effort_minutes += effort_minutes
                 print(f"  {emoji} {action['action_id']}: {action['title']} ({action['effort']})")
-                print(f"    📈 期待効果: {action['expected_impact']}")
+                print(f"    [UP] 期待効果: {action['expected_impact']}")
             print(f"  ⏱️ 総実装時間: {total_effort_minutes}分")
             print()
             
@@ -1081,9 +1081,9 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             report['implementation_roadmap'] = implementation_roadmap
             
             print("🗺️ 実装ロードマップ:")
-            print(f"  🚨 即座対応: {len(implementation_roadmap['immediate_actions'])}項目 (30分)")
+            print(f"  [ALERT] 即座対応: {len(implementation_roadmap['immediate_actions'])}項目 (30分)")
             print(f"  ⚙️ 統合強化: {len(implementation_roadmap['integration_actions'])}項目 (20分)")
-            print(f"  ✅ 効果検証: {len(implementation_roadmap['validation_actions'])}項目 (15分)")
+            print(f"  [OK] 効果検証: {len(implementation_roadmap['validation_actions'])}項目 (15分)")
             print(f"  ⏱️ 総実装時間: {implementation_roadmap['total_duration']}")
             if implementation_roadmap['parallel_execution_possible']:
                 print(f"  ⚡ 並列実行時: {implementation_roadmap['minimum_duration']}")
@@ -1111,14 +1111,14 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             
             report['success_prediction'] = success_prediction
             
-            print("📈 成功予測:")
+            print("[UP] 成功予測:")
             for metric, prediction in success_prediction.items():
                 if isinstance(prediction, dict):
                     current = prediction.get('current', 'N/A')
                     after = prediction.get('after_full_implementation', prediction.get('after_ra001_ra002', 'N/A'))
                     confidence = prediction.get('confidence', 'N/A')
-                    print(f"  📊 {metric}: {current} → {after} (信頼度: {confidence})")
-            print(f"  🎯 全体成功確率: {success_prediction['overall_success_probability']}")
+                    print(f"  [CHART] {metric}: {current} → {after} (信頼度: {confidence})")
+            print(f"  [TARGET] 全体成功確率: {success_prediction['overall_success_probability']}")
             print()
             
             # 次のステップ
@@ -1154,18 +1154,18 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
             print("⏭️ 次のステップ:")
             for step in next_steps:
                 print(f"  {step['step']}. {step['action']} ({step['duration']})")
-                print(f"     ✅ 成功基準: {step['success_criteria']}")
+                print(f"     [OK] 成功基準: {step['success_criteria']}")
             print()
             
             print("=" * 80)
-            print("🎯 TODO #12 調査完了: 実装準備完了")
+            print("[TARGET] TODO #12 調査完了: 実装準備完了")
             print("⏱️ 推定実装時間: 45-65分で7/7戦略成功・TODO #11: 75%以上復旧達成可能")
             print("=" * 80)
             
             return report
             
         except Exception as e:
-            print(f"❌ レポート生成エラー: {e}")
+            print(f"[ERROR] レポート生成エラー: {e}")
             report['status'] = 'error'
             report['error_details'] = str(e)
             return report
@@ -1173,7 +1173,7 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
 
 def main():
     """TODO #12 メイン実行"""
-    print("🔧 TODO #12: 戦略初期化エラー包括調査・修正 実行開始")
+    print("[TOOL] TODO #12: 戦略初期化エラー包括調査・修正 実行開始")
     print(f"📅 実行日時: {datetime.now().strftime('%Y年%m月%d日 %H:%M:%S')}")
     print()
     
@@ -1183,15 +1183,15 @@ def main():
         result = investigator.execute_comprehensive_strategy_initialization_investigation()
         
         if result.get('status') != 'error':
-            print("✅ TODO #12 調査正常完了")
+            print("[OK] TODO #12 調査正常完了")
             return result
         else:
-            print(f"❌ TODO #12 調査エラー: {result.get('message', 'Unknown error')}")
+            print(f"[ERROR] TODO #12 調査エラー: {result.get('message', 'Unknown error')}")
             return result
             
     except Exception as e:
         error_msg = f"TODO #12 execution failed: {str(e)}"
-        print(f"❌ {error_msg}")
+        print(f"[ERROR] {error_msg}")
         traceback.print_exc()
         return {"status": "error", "message": error_msg}
 

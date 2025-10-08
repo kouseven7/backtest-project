@@ -23,7 +23,7 @@ def test_direct_import():
         
         import chart_config
         config_manager = chart_config.ChartConfigManager()
-        print(f"✅ ChartConfigManager 作成成功")
+        print(f"[OK] ChartConfigManager 作成成功")
         print(f"  図サイズ: {config_manager.figure_config.get('figsize', 'N/A')}")
         
         # トレンド色テスト
@@ -31,7 +31,7 @@ def test_direct_import():
         print(f"  上昇トレンド色: {uptrend_color}")
         
     except Exception as e:
-        print(f"❌ chart_config エラー: {e}")
+        print(f"[ERROR] chart_config エラー: {e}")
         import traceback
         traceback.print_exc()
     
@@ -40,22 +40,22 @@ def test_direct_import():
         print("\ndata_aggregator テスト...")
         import data_aggregator
         aggregator = data_aggregator.VisualizationDataAggregator(symbol="USDJPY", period_days=10)
-        print(f"✅ VisualizationDataAggregator 作成成功")
+        print(f"[OK] VisualizationDataAggregator 作成成功")
         
         # 合成データ生成テスト
         print("合成価格データ生成テスト...")
         price_data = aggregator._generate_synthetic_price_data()
-        print(f"✅ 合成価格データ生成成功: {len(price_data)} レコード")
+        print(f"[OK] 合成価格データ生成成功: {len(price_data)} レコード")
         print(f"  カラム: {list(price_data.columns)}")
         
         # 完全合成データテスト
         print("完全合成データ生成テスト...")
         complete_data = aggregator._generate_complete_synthetic_data()
-        print(f"✅ 完全合成データ生成成功: {len(complete_data)} レコード")
+        print(f"[OK] 完全合成データ生成成功: {len(complete_data)} レコード")
         print(f"  カラム数: {len(complete_data.columns)}")
         
     except Exception as e:
-        print(f"❌ data_aggregator エラー: {e}")
+        print(f"[ERROR] data_aggregator エラー: {e}")
         import traceback
         traceback.print_exc()
 
@@ -77,7 +77,7 @@ def test_chart_creation():
             period_days=10,  # 短期間でテスト
             output_dir="direct_test_outputs"
         )
-        print(f"✅ TrendStrategyTimeSeriesVisualizer 作成成功")
+        print(f"[OK] TrendStrategyTimeSeriesVisualizer 作成成功")
         
         # チャート生成テスト
         print("チャート生成中...")
@@ -85,7 +85,7 @@ def test_chart_creation():
         
         if output_path and os.path.exists(output_path):
             file_size = os.path.getsize(output_path)
-            print(f"✅ チャート生成成功!")
+            print(f"[OK] チャート生成成功!")
             print(f"  保存先: {output_path}")
             print(f"  ファイルサイズ: {file_size:,} bytes")
             
@@ -95,13 +95,13 @@ def test_chart_creation():
             print(f"  期間: {metadata.get('period_days', 'N/A')}日")
             
         else:
-            print("❌ チャート生成失敗")
+            print("[ERROR] チャート生成失敗")
             if output_path:
                 print(f"  出力パス: {output_path}")
                 print(f"  ファイル存在: {os.path.exists(output_path)}")
         
     except Exception as e:
-        print(f"❌ チャート作成エラー: {e}")
+        print(f"[ERROR] チャート作成エラー: {e}")
         import traceback
         traceback.print_exc()
 
@@ -122,7 +122,7 @@ def test_file_output():
             print("出力ディレクトリが存在しません")
     
     except Exception as e:
-        print(f"❌ ファイル出力確認エラー: {e}")
+        print(f"[ERROR] ファイル出力確認エラー: {e}")
 
 def main():
     try:
@@ -131,10 +131,10 @@ def main():
         test_file_output()
         
         print("\n" + "="*50)
-        print("🎉 4-3-1 直接テスト完了!")
+        print("[SUCCESS] 4-3-1 直接テスト完了!")
         
     except Exception as e:
-        print(f"\n❌ 直接テスト実行エラー: {e}")
+        print(f"\n[ERROR] 直接テスト実行エラー: {e}")
         import traceback
         traceback.print_exc()
 

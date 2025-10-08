@@ -47,7 +47,7 @@ def create_dssms_fixed_strategy():
                 pd.DataFrame: Entry_Signal/Exit_Signal付きデータ
             """
             try:
-                self.logger.info(f"🚀 DSSMS Fixed Strategy backtest: {symbol} ({start_date} - {end_date})")
+                self.logger.info(f"[ROCKET] DSSMS Fixed Strategy backtest: {symbol} ({start_date} - {end_date})")
                 
                 # データ取得
                 data = fetch_stock_data(symbol, start_date, end_date)
@@ -59,7 +59,7 @@ def create_dssms_fixed_strategy():
                 entry_count = (result_data['Entry_Signal'] == 1).sum()
                 exit_count = (result_data['Exit_Signal'] == 1).sum()
                 
-                self.logger.info(f"✅ {symbol} バックテスト完了:")
+                self.logger.info(f"[OK] {symbol} バックテスト完了:")
                 self.logger.info(f"   Entry signals: {entry_count}")
                 self.logger.info(f"   Exit signals: {exit_count}")
                 self.logger.info(f"   Data points: {len(result_data)}")
@@ -67,7 +67,7 @@ def create_dssms_fixed_strategy():
                 return result_data
                 
             except Exception as e:
-                self.logger.error(f"❌ バックテストエラー {symbol}: {e}")
+                self.logger.error(f"[ERROR] バックテストエラー {symbol}: {e}")
                 import traceback
                 self.logger.error(traceback.format_exc())
                 
@@ -90,7 +90,7 @@ def run_dssms_integration_test():
     DSSMS統合テスト実行
     """
     logger.info("=" * 60)
-    logger.info("🔧 DSSMS Perfect Order検出器修正統合テスト")
+    logger.info("[TOOL] DSSMS Perfect Order検出器修正統合テスト")
     logger.info("=" * 60)
     
     # 修正版DSSMS戦略の作成
@@ -100,7 +100,7 @@ def run_dssms_integration_test():
     test_symbols = ["7203", "6758", "9984"]  # トヨタ、ソニー、ソフトバンク
     
     for symbol in test_symbols:
-        logger.info(f"\n📊 {symbol} テスト開始")
+        logger.info(f"\n[CHART] {symbol} テスト開始")
         
         # バックテスト実行
         result = strategy.backtest(symbol, "2023-01-01", "2023-12-31")
@@ -116,8 +116,8 @@ def run_dssms_integration_test():
                 final_price = result['Close'].iloc[-1]
                 buy_hold_return = (final_price / initial_price - 1) * 100
                 
-                logger.info(f"   📈 Buy & Hold return: {buy_hold_return:.2f}%")
-                logger.info(f"   📊 Trading opportunities: {entry_signals} entries, {exit_signals} exits")
+                logger.info(f"   [UP] Buy & Hold return: {buy_hold_return:.2f}%")
+                logger.info(f"   [CHART] Trading opportunities: {entry_signals} entries, {exit_signals} exits")
                 
                 # 実際の取引があった場合の簡易パフォーマンス計算
                 if entry_signals > 0:
@@ -126,26 +126,26 @@ def run_dssms_integration_test():
                     entry_price = result.loc[first_entry_idx, 'Close']
                     
                     strategy_return = (final_price / entry_price - 1) * 100
-                    logger.info(f"   🎯 Strategy return (from first entry): {strategy_return:.2f}%")
+                    logger.info(f"   [TARGET] Strategy return (from first entry): {strategy_return:.2f}%")
                     
                     if strategy_return > buy_hold_return:
-                        logger.info("   ✅ Strategy outperformed Buy & Hold")
+                        logger.info("   [OK] Strategy outperformed Buy & Hold")
                     else:
-                        logger.info("   ⚠️  Strategy underperformed Buy & Hold")
+                        logger.info("   [WARNING]  Strategy underperformed Buy & Hold")
             
-            logger.info(f"   ✅ {symbol} テスト成功")
+            logger.info(f"   [OK] {symbol} テスト成功")
         else:
-            logger.error(f"   ❌ {symbol} テスト失敗")
+            logger.error(f"   [ERROR] {symbol} テスト失敗")
     
     # 結論
     logger.info("\n" + "=" * 60)
-    logger.info("🎯 統合テスト結果")
+    logger.info("[TARGET] 統合テスト結果")
     logger.info("=" * 60)
-    logger.info("✅ DSSMS Perfect Order検出器の修正が完了しました")
-    logger.info("✅ MultiIndex列問題が解決されました")
-    logger.info("✅ シグナル生成が正常に動作しています")
+    logger.info("[OK] DSSMS Perfect Order検出器の修正が完了しました")
+    logger.info("[OK] MultiIndex列問題が解決されました")
+    logger.info("[OK] シグナル生成が正常に動作しています")
     logger.info("")
-    logger.info("📋 次のステップ:")
+    logger.info("[LIST] 次のステップ:")
     logger.info("1. main.py でDSSMSFixedStrategyを使用")
     logger.info("2. 実際のバックテスト実行")
     logger.info("3. パフォーマンス改善の確認")
@@ -165,7 +165,7 @@ def test_main_integration():
     result = strategy.backtest("7203", "2023-01-01", "2023-12-31")
     
     if not result.empty:
-        logger.info("✅ main.py統合準備完了")
+        logger.info("[OK] main.py統合準備完了")
         logger.info(f"   データサイズ: {result.shape}")
         logger.info(f"   列: {list(result.columns)}")
         logger.info(f"   Entry signals: {(result['Entry_Signal'] == 1).sum()}")
@@ -175,7 +175,7 @@ def test_main_integration():
         entry_dates = result[result['Entry_Signal'] == 1].index[:5]
         logger.info(f"   最初のEntry signals: {[d.strftime('%Y-%m-%d') for d in entry_dates]}")
     else:
-        logger.error("❌ 統合テスト失敗")
+        logger.error("[ERROR] 統合テスト失敗")
 
 if __name__ == "__main__":
     # 統合テスト実行
@@ -184,5 +184,5 @@ if __name__ == "__main__":
     # main.py統合テスト
     test_main_integration()
     
-    logger.info("\n🎉 DSSMS修正統合スクリプト完了")
+    logger.info("\n[SUCCESS] DSSMS修正統合スクリプト完了")
     logger.info("これでmain.pyを実行してDSSMS -100%問題が解決されているはずです")

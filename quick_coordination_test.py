@@ -6,26 +6,26 @@ import sys
 import json
 
 def test_basic_imports():
-    print("🔧 Testing basic imports...")
+    print("[TOOL] Testing basic imports...")
     try:
         # Standard library imports
         import json, sys, time, logging, threading
         from datetime import datetime, timedelta
-        print("✅ Standard library imports: OK")
+        print("[OK] Standard library imports: OK")
         
         # Data processing
         try:
             import pandas, numpy
-            print("✅ pandas, numpy: OK")
+            print("[OK] pandas, numpy: OK")
         except ImportError:
-            print("❌ pandas, numpy: Not available")
+            print("[ERROR] pandas, numpy: Not available")
         
         # System monitoring
         try:
             import psutil
-            print("✅ psutil: OK")
+            print("[OK] psutil: OK")
         except ImportError:
-            print("❌ psutil: Not available")
+            print("[ERROR] psutil: Not available")
         
         # Optional packages
         missing_packages = []
@@ -34,9 +34,9 @@ def test_basic_imports():
         for package in optional_packages:
             try:
                 __import__(package)
-                print(f"✅ {package}: OK")
+                print(f"[OK] {package}: OK")
             except ImportError:
-                print(f"❌ {package}: Not available")
+                print(f"[ERROR] {package}: Not available")
                 missing_packages.append(package)
         
         if missing_packages:
@@ -46,7 +46,7 @@ def test_basic_imports():
         return len(missing_packages) == 0
         
     except Exception as e:
-        print(f"❌ Basic import test failed: {e}")
+        print(f"[ERROR] Basic import test failed: {e}")
         return False
 
 def test_coordination_files():
@@ -67,15 +67,15 @@ def test_coordination_files():
             with open(file, 'r', encoding='utf-8') as f:
                 content = f.read()
                 if len(content) > 100:  # Basic size check
-                    print(f"✅ {file}: OK ({len(content)} chars)")
+                    print(f"[OK] {file}: OK ({len(content)} chars)")
                 else:
-                    print(f"❌ {file}: Too small or empty")
+                    print(f"[ERROR] {file}: Too small or empty")
                     missing_files.append(file)
         except FileNotFoundError:
-            print(f"❌ {file}: Not found")
+            print(f"[ERROR] {file}: Not found")
             missing_files.append(file)
         except Exception as e:
-            print(f"❌ {file}: Error - {e}")
+            print(f"[ERROR] {file}: Error - {e}")
             missing_files.append(file)
     
     return len(missing_files) == 0
@@ -97,21 +97,21 @@ def test_python_syntax():
             with open(file, 'r', encoding='utf-8') as f:
                 content = f.read()
             compile(content, file, 'exec')
-            print(f"✅ {file}: Syntax OK")
+            print(f"[OK] {file}: Syntax OK")
         except SyntaxError as e:
-            print(f"❌ {file}: Syntax error - {e}")
+            print(f"[ERROR] {file}: Syntax error - {e}")
             syntax_errors.append(file)
         except FileNotFoundError:
-            print(f"❌ {file}: Not found")
+            print(f"[ERROR] {file}: Not found")
             syntax_errors.append(file)
         except Exception as e:
-            print(f"❌ {file}: Error - {e}")
+            print(f"[ERROR] {file}: Error - {e}")
             syntax_errors.append(file)
     
     return len(syntax_errors) == 0
 
 def main():
-    print("🚀 4-1-3 Multi-Strategy Coordination System - Quick Test")
+    print("[ROCKET] 4-1-3 Multi-Strategy Coordination System - Quick Test")
     print("=" * 60)
     
     # Test sequence
@@ -120,20 +120,20 @@ def main():
     syntax_ok = test_python_syntax()
     
     print("\n" + "=" * 60)
-    print("📊 Test Summary")
+    print("[CHART] Test Summary")
     print("-" * 30)
-    print(f"Basic Imports: {'✅ PASS' if imports_ok else '❌ FAIL'}")
-    print(f"File Presence: {'✅ PASS' if files_ok else '❌ FAIL'}")  
-    print(f"Python Syntax: {'✅ PASS' if syntax_ok else '❌ FAIL'}")
+    print(f"Basic Imports: {'[OK] PASS' if imports_ok else '[ERROR] FAIL'}")
+    print(f"File Presence: {'[OK] PASS' if files_ok else '[ERROR] FAIL'}")  
+    print(f"Python Syntax: {'[OK] PASS' if syntax_ok else '[ERROR] FAIL'}")
     
     overall_success = imports_ok and files_ok and syntax_ok
     
     if overall_success:
-        print("\n🎉 QUICK TEST PASSED!")
+        print("\n[SUCCESS] QUICK TEST PASSED!")
         print("System appears to be properly implemented.")
         print("Next: Run full integration test")
     else:
-        print("\n⚠️ ISSUES DETECTED")
+        print("\n[WARNING] ISSUES DETECTED")
         print("Please resolve the errors above before proceeding.")
     
     return overall_success

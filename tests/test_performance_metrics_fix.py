@@ -34,27 +34,27 @@ def test_performance_metrics_fix():
         
         # 修正された関数をテスト（DataFrame入力 - 以前はエラーだった）
         win_rate_df = calculate_win_rate(test_df)
-        print(f"✅ DataFrame入力での勝率計算: {win_rate_df:.2%}")
+        print(f"[OK] DataFrame入力での勝率計算: {win_rate_df:.2%}")
         
         # Seriesでのテスト
         test_series = pd.Series([100, -50, 200, -30, 150])
         win_rate_series = calculate_win_rate(test_series)
-        print(f"✅ Series入力での勝率計算: {win_rate_series:.2%}")
+        print(f"[OK] Series入力での勝率計算: {win_rate_series:.2%}")
         
         # 空データのテスト（エラーハンドリング確認）
         empty_df = pd.DataFrame()
         win_rate_empty = calculate_win_rate(empty_df)
-        print(f"✅ 空DataFrame入力での勝率計算: {win_rate_empty:.2%}")
+        print(f"[OK] 空DataFrame入力での勝率計算: {win_rate_empty:.2%}")
         
         # None入力のテスト（エラーハンドリング確認）
         win_rate_none = calculate_win_rate(None)
-        print(f"✅ None入力での勝率計算: {win_rate_none:.2%}")
+        print(f"[OK] None入力での勝率計算: {win_rate_none:.2%}")
         
-        print("✅ Performance Metrics修正テスト - 全て成功")
+        print("[OK] Performance Metrics修正テスト - 全て成功")
         return True
         
     except Exception as e:
-        print(f"❌ Performance Metrics テストエラー: {e}")
+        print(f"[ERROR] Performance Metrics テストエラー: {e}")
         import traceback
         print(traceback.format_exc())
         return False
@@ -67,7 +67,7 @@ def test_main_execution():
         # データ取得テスト
         from data_fetcher import get_parameters_and_data
         ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data()
-        print(f"✅ データ取得成功: {ticker} ({len(stock_data)}日分)")
+        print(f"[OK] データ取得成功: {ticker} ({len(stock_data)}日分)")
         
         # シミュレーション実行テスト（修正されたperformance_metricsを使用）
         from output.simulation_handler import simulate_and_save
@@ -75,13 +75,13 @@ def test_main_execution():
         
         results = simulate_and_save(stock_data, ticker)
         
-        print("✅ バックテスト実行成功（エラーなし）")
+        print("[OK] バックテスト実行成功（エラーなし）")
         print(f"結果: {type(results)}")
         
         return True
         
     except Exception as e:
-        print(f"❌ Main.py実行エラー: {e}")
+        print(f"[ERROR] Main.py実行エラー: {e}")
         import traceback
         print(traceback.format_exc())
         return False
@@ -95,22 +95,22 @@ def main():
     start_time = datetime.now()
     
     # 1. Performance Metrics修正テスト
-    print("\n🔧 Step 1: Performance Metrics修正テスト")
+    print("\n[TOOL] Step 1: Performance Metrics修正テスト")
     if not test_performance_metrics_fix():
-        print("❌ Performance Metrics修正テスト失敗")
+        print("[ERROR] Performance Metrics修正テスト失敗")
         return False
     
     # 2. Main.py実行テスト
-    print("\n🚀 Step 2: Main.py実行テスト")
+    print("\n[ROCKET] Step 2: Main.py実行テスト")
     if not test_main_execution():
-        print("❌ Main.py実行テスト失敗")
+        print("[ERROR] Main.py実行テスト失敗")
         return False
     
     end_time = datetime.now()
     duration = end_time - start_time
     
     print("\n" + "=" * 60)
-    print("✅ 全テスト成功！")
+    print("[OK] 全テスト成功！")
     print(f"実行時間: {duration.total_seconds():.2f}秒")
     print("Main.pyのエラー修正完了 - 実行可能状態")
     print("=" * 60)
@@ -120,6 +120,6 @@ def main():
 if __name__ == "__main__":
     success = main()
     if success:
-        print("\n🎉 次は本格的にmain.pyを実行できます:")
+        print("\n[SUCCESS] 次は本格的にmain.pyを実行できます:")
         print("   python main.py")
     sys.exit(0 if success else 1)

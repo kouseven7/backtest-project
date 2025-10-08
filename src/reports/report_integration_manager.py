@@ -607,7 +607,7 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
         # データの準備
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         emergency_class = "emergency" if request.emergency_mode else ""
-        emergency_notice = "<h3>⚠️ 緊急モード有効 ⚠️</h3>" if request.emergency_mode else ""
+        emergency_notice = "<h3>[WARNING] 緊急モード有効 [WARNING]</h3>" if request.emergency_mode else ""
         
         health_score = health_report.overall_health_score if health_report else 0.0
         availability = health_report.system_availability if health_report else 0.0
@@ -669,7 +669,7 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
             return """
             <div class="section">
                 <h2>エラー診断</h2>
-                <p style="color: #28a745; font-weight: bold;">✅ エラーは検出されませんでした</p>
+                <p style="color: #28a745; font-weight: bold;">[OK] エラーは検出されませんでした</p>
             </div>
             """
             

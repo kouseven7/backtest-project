@@ -53,9 +53,9 @@ def test_partial_exit_fix():
     try:
         strategy = VWAPBreakoutStrategy(stock_data, index_data, test_params)
         result = strategy.backtest()
-        logger.info("✅ テスト成功: 修正により例外がスローされなくなりました")
+        logger.info("[OK] テスト成功: 修正により例外がスローされなくなりました")
     except KeyError as e:
-        logger.error(f"❌ テスト失敗: KeyErrorが発生しました: {e}")
+        logger.error(f"[ERROR] テスト失敗: KeyErrorが発生しました: {e}")
         raise
     
     # 正常系テスト - 部分利確機能が有効で、必要なパラメータが揃っている場合
@@ -81,7 +81,7 @@ def test_partial_exit_fix():
     logger.info("正常系テスト: パラメータが全て揃った状態...")
     strategy = VWAPBreakoutStrategy(stock_data, index_data, test_params_ok)
     result = strategy.backtest()
-    logger.info("✅ 正常系テスト成功")
+    logger.info("[OK] 正常系テスト成功")
     
     logger.info("全てのテストが完了しました")
     return result

@@ -79,12 +79,12 @@ def test_phase4a_improvements():
         performance_success = final_value > 0
         structure_success = True  # テスト完了により構造修復成功想定
         
-        print(f"{'✅' if switch_success else '❌'} 切替回数: {len(switches)}回 (目標: 3-5回)")
-        print(f"{'✅' if performance_success else '❌'} パフォーマンス: {total_return:+.2f}% (目標: >0%)")
-        print(f"{'✅' if structure_success else '❌'} 構造一貫性: Phase 4A修正により改善想定")
+        print(f"{'[OK]' if switch_success else '[ERROR]'} 切替回数: {len(switches)}回 (目標: 3-5回)")
+        print(f"{'[OK]' if performance_success else '[ERROR]'} パフォーマンス: {total_return:+.2f}% (目標: >0%)")
+        print(f"{'[OK]' if structure_success else '[ERROR]'} 構造一貫性: Phase 4A修正により改善想定")
         
         phase4a_success = switch_success and performance_success and structure_success
-        print(f"\n⚡ Phase 4A修正効果: {'✅ 成功' if phase4a_success else '❌ 未達成'}")
+        print(f"\n⚡ Phase 4A修正効果: {'[OK] 成功' if phase4a_success else '[ERROR] 未達成'}")
         
         if phase4a_success:
             print("   - キャッシュ結果構造修復成功")

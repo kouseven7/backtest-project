@@ -313,10 +313,10 @@ class SystemFallbackPolicy:
                         report_file.unlink()
                         self.logger.debug(f"🗑️ 古いフォールバックレポート削除: {report_file.name}")
                 except (OSError, FileNotFoundError) as e:
-                    self.logger.warning(f"⚠️ レポートファイル削除失敗 {report_file.name}: {e}")
+                    self.logger.warning(f"[WARNING] レポートファイル削除失敗 {report_file.name}: {e}")
                     
         except Exception as e:
-            self.logger.warning(f"⚠️ 古いレポート削除処理失敗: {e}")
+            self.logger.warning(f"[WARNING] 古いレポート削除処理失敗: {e}")
     
     def clear_usage_records(self):
         """使用記録をクリア（テスト用）"""

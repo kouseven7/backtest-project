@@ -27,9 +27,9 @@ try:
         validate_fetched_data_quality
     )
     from real_market_data_fetcher import fetch_strategy_required_data, create_real_market_data_fetcher
-    print("✅ Phase 4モジュールのインポート成功")
+    print("[OK] Phase 4モジュールのインポート成功")
 except ImportError as e:
-    print(f"❌ インポートエラー: {e}")
+    print(f"[ERROR] インポートエラー: {e}")
     sys.exit(1)
 
 def create_test_data_with_issues():
@@ -77,20 +77,20 @@ def create_good_test_data():
 
 def test_quality_validator_basic():
     """MarketDataQualityValidator基本機能テスト"""
-    print("\n🔧 MarketDataQualityValidator基本機能テスト")
+    print("\n[TOOL] MarketDataQualityValidator基本機能テスト")
     
     validator = MarketDataQualityValidator(auto_fix_enabled=True)
     
     try:
         # 問題のあるデータでテスト
-        print("📋 問題のあるテストデータで品質検証...")
+        print("[LIST] 問題のあるテストデータで品質検証...")
         test_data = create_test_data_with_issues()
         report = validator.validate_data_quality(test_data, "test_data")
         
-        print(f"✅ 品質検証完了: {report.quality_level.value} ({report.quality_score:.1f}%)")
+        print(f"[OK] 品質検証完了: {report.quality_level.value} ({report.quality_score:.1f}%)")
         print(f"   検出問題数: {len(report.issues)}")
         print(f"   修正問題数: {len(report.fixed_issues)}")
-        print(f"   バックテスト基本理念遵守: {'✅' if report.backtest_compliance else '❌'}")
+        print(f"   バックテスト基本理念遵守: {'[OK]' if report.backtest_compliance else '[ERROR]'}")
         
         # レポート表示
         report_text = validator.generate_quality_report_text(report)
@@ -102,39 +102,39 @@ def test_quality_validator_basic():
         return len(report.issues) > 0  # 問題が検出されれば成功
         
     except Exception as e:
-        print(f"❌ 品質検証テストエラー: {str(e)}")
+        print(f"[ERROR] 品質検証テストエラー: {str(e)}")
         return False
 
 def test_quality_validator_good_data():
     """良品質データでの動作テスト"""
-    print("\n🔧 良品質データでの動作テスト")
+    print("\n[TOOL] 良品質データでの動作テスト")
     
     validator = MarketDataQualityValidator(auto_fix_enabled=True)
     
     try:
         # 問題のないデータでテスト
-        print("📋 良品質テストデータで品質検証...")
+        print("[LIST] 良品質テストデータで品質検証...")
         test_data = create_good_test_data()
         report = validator.validate_data_quality(test_data, "good_test_data")
         
-        print(f"✅ 品質検証完了: {report.quality_level.value} ({report.quality_score:.1f}%)")
+        print(f"[OK] 品質検証完了: {report.quality_level.value} ({report.quality_score:.1f}%)")
         print(f"   検出問題数: {len(report.issues)}")
-        print(f"   バックテスト基本理念遵守: {'✅' if report.backtest_compliance else '❌'}")
+        print(f"   バックテスト基本理念遵守: {'[OK]' if report.backtest_compliance else '[ERROR]'}")
         
         # 良品質データは高スコアを期待
         return report.quality_score >= 95 and report.backtest_compliance
         
     except Exception as e:
-        print(f"❌ 良品質データテストエラー: {str(e)}")
+        print(f"[ERROR] 良品質データテストエラー: {str(e)}")
         return False
 
 def test_validate_fetched_data_quality():
     """validate_fetched_data_quality関数テスト"""
-    print("\n🔧 validate_fetched_data_quality関数テスト")
+    print("\n[TOOL] validate_fetched_data_quality関数テスト")
     
     try:
         # 問題のあるデータで品質検証・修正テスト
-        print("📋 問題データの品質検証・修正テスト...")
+        print("[LIST] 問題データの品質検証・修正テスト...")
         test_data = create_test_data_with_issues()
         
         validated_data, quality_report = validate_fetched_data_quality(
@@ -143,7 +143,7 @@ def test_validate_fetched_data_quality():
             auto_fix=True
         )
         
-        print(f"✅ 品質検証・修正完了: {quality_report.quality_level.value} ({quality_report.quality_score:.1f}%)")
+        print(f"[OK] 品質検証・修正完了: {quality_report.quality_level.value} ({quality_report.quality_score:.1f}%)")
         print(f"   元データ行数: {len(test_data)}")
         print(f"   修正後データ行数: {len(validated_data)}")
         print(f"   修正問題数: {len(quality_report.fixed_issues)}")
@@ -152,12 +152,12 @@ def test_validate_fetched_data_quality():
         return len(quality_report.fixed_issues) > 0
         
     except Exception as e:
-        print(f"❌ validate_fetched_data_qualityテストエラー: {str(e)}")
+        print(f"[ERROR] validate_fetched_data_qualityテストエラー: {str(e)}")
         return False
 
 def test_phase4_integration_with_fetcher():
     """Phase 4とRealMarketDataFetcher統合テスト"""
-    print("\n🔧 Phase 4 RealMarketDataFetcher統合テスト")
+    print("\n[TOOL] Phase 4 RealMarketDataFetcher統合テスト")
     
     try:
         # テスト用株価データ期間
@@ -165,7 +165,7 @@ def test_phase4_integration_with_fetcher():
         stock_data = pd.DataFrame({'Close': range(10)}, index=dates)
         
         # Phase 4品質検証有効でデータ取得
-        print("📋 Phase 4品質検証有効でのデータ取得...")
+        print("[LIST] Phase 4品質検証有効でのデータ取得...")
         strategy_data_with_validation = fetch_strategy_required_data(
             strategy_name='VWAPBreakoutStrategy',
             stock_data_period=stock_data,
@@ -173,10 +173,10 @@ def test_phase4_integration_with_fetcher():
         )
         
         if 'index_data' in strategy_data_with_validation and strategy_data_with_validation['index_data'] is not None:
-            print(f"✅ Phase 4統合成功: index_data with validation ({len(strategy_data_with_validation['index_data'])} rows)")
+            print(f"[OK] Phase 4統合成功: index_data with validation ({len(strategy_data_with_validation['index_data'])} rows)")
             
             # Phase 4品質検証無効でのデータ取得（比較用）
-            print("📋 Phase 4品質検証無効でのデータ取得（比較用）...")
+            print("[LIST] Phase 4品質検証無効でのデータ取得（比較用）...")
             strategy_data_without_validation = fetch_strategy_required_data(
                 strategy_name='VWAPBreakoutStrategy', 
                 stock_data_period=stock_data,
@@ -184,41 +184,41 @@ def test_phase4_integration_with_fetcher():
             )
             
             if 'index_data' in strategy_data_without_validation:
-                print(f"✅ 比較用データ取得成功: index_data without validation ({len(strategy_data_without_validation['index_data'])} rows)")
+                print(f"[OK] 比較用データ取得成功: index_data without validation ({len(strategy_data_without_validation['index_data'])} rows)")
                 return True
             
         return False
         
     except Exception as e:
-        print(f"❌ Phase 4統合テストエラー: {str(e)}")
+        print(f"[ERROR] Phase 4統合テストエラー: {str(e)}")
         return False
 
 def test_backtest_compliance_check():
     """バックテスト基本理念遵守チェックテスト"""
-    print("\n🔧 バックテスト基本理念遵守チェックテスト")
+    print("\n[TOOL] バックテスト基本理念遵守チェックテスト")
     
     validator = MarketDataQualityValidator()
     
     try:
         # 1. 基本理念遵守データ
-        print("📋 基本理念遵守データテスト...")
+        print("[LIST] 基本理念遵守データテスト...")
         good_data = create_good_test_data()
         report_good = validator.validate_data_quality(good_data, "compliance_test")
         
-        print(f"✅ 遵守データ: バックテスト基本理念 {'✅ 遵守' if report_good.backtest_compliance else '❌ 違反'}")
+        print(f"[OK] 遵守データ: バックテスト基本理念 {'[OK] 遵守' if report_good.backtest_compliance else '[ERROR] 違反'}")
         
         # 2. 基本理念違反データ（Closeが空）
-        print("📋 基本理念違反データテスト...")
+        print("[LIST] 基本理念違反データテスト...")
         bad_data = pd.DataFrame({'Open': [100, 101], 'Volume': [1000, 1001]})  # Closeなし
         report_bad = validator.validate_data_quality(bad_data, "violation_test")
         
-        print(f"✅ 違反データ: バックテスト基本理念 {'✅ 遵守' if report_bad.backtest_compliance else '❌ 違反'}")
+        print(f"[OK] 違反データ: バックテスト基本理念 {'[OK] 遵守' if report_bad.backtest_compliance else '[ERROR] 違反'}")
         
         # 遵守データは遵守、違反データは違反と判定されれば成功
         return report_good.backtest_compliance and not report_bad.backtest_compliance
         
     except Exception as e:
-        print(f"❌ バックテスト基本理念チェックエラー: {str(e)}")
+        print(f"[ERROR] バックテスト基本理念チェックエラー: {str(e)}")
         return False
 
 def main():
@@ -240,40 +240,40 @@ def main():
     
     # テスト実行
     for test_name, test_func in test_functions:
-        print(f"\n📋 実行中: {test_name}")
+        print(f"\n[LIST] 実行中: {test_name}")
         try:
             result = test_func()
             results.append(result)
-            status = "✅ PASS" if result else "❌ FAIL"
-            print(f"📊 結果: {test_name} - {status}")
+            status = "[OK] PASS" if result else "[ERROR] FAIL"
+            print(f"[CHART] 結果: {test_name} - {status}")
         except Exception as e:
-            print(f"❌ テスト実行エラー ({test_name}): {e}")
+            print(f"[ERROR] テスト実行エラー ({test_name}): {e}")
             results.append(False)
     
     # 結果サマリー
     print("\n" + "=" * 80)
-    print("📊 Phase 4統合テスト結果サマリー")
+    print("[CHART] Phase 4統合テスト結果サマリー")
     print("=" * 80)
     
     success_count = sum(results)
     total_tests = len(results)
     
     for i, (test_name, result) in enumerate(zip([name for name, _ in test_functions], results)):
-        status = "✅ PASS" if result else "❌ FAIL"
+        status = "[OK] PASS" if result else "[ERROR] FAIL"
         print(f"{i+1}. {test_name}: {status}")
     
     overall_success = success_count == total_tests
-    print(f"\n📊 総合結果: {success_count}/{total_tests} tests passed")
+    print(f"\n[CHART] 総合結果: {success_count}/{total_tests} tests passed")
     
     if overall_success:
-        print("🎉 Phase 4統合テスト完全成功！")
-        print("✅ MarketDataQualityValidator正常動作確認")
-        print("✅ RealMarketDataFetcher統合完了") 
-        print("✅ バックテスト基本理念遵守確認済み")
-        print("📋 次ステップ: TODO #14完全統合テスト実行準備完了")
+        print("[SUCCESS] Phase 4統合テスト完全成功！")
+        print("[OK] MarketDataQualityValidator正常動作確認")
+        print("[OK] RealMarketDataFetcher統合完了") 
+        print("[OK] バックテスト基本理念遵守確認済み")
+        print("[LIST] 次ステップ: TODO #14完全統合テスト実行準備完了")
     else:
-        print("⚠️  Phase 4統合テスト部分的失敗")
-        print("🔧 失敗したテストの詳細を確認してください")
+        print("[WARNING]  Phase 4統合テスト部分的失敗")
+        print("[TOOL] 失敗したテストの詳細を確認してください")
     
     return overall_success
 

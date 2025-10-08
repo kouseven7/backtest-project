@@ -33,7 +33,7 @@ class DSSMSProperExecution:
             from src.dssms.dssms_backtester import DSSMSBacktester
             
             backtester = DSSMSBacktester()
-            logger.info("✅ DSSMSBacktester初期化完了")
+            logger.info("[OK] DSSMSBacktester初期化完了")
             
             # 正しい引数設定
             start_date = datetime(2024, 1, 1)
@@ -48,7 +48,7 @@ class DSSMSProperExecution:
             logger.info(f"  strategies: {strategies}")
             
             # DSSMS実行
-            logger.info("🚀 DSSMS実行開始...")
+            logger.info("[ROCKET] DSSMS実行開始...")
             start_time = datetime.now()
             
             result = backtester.simulate_dynamic_selection(
@@ -59,7 +59,7 @@ class DSSMSProperExecution:
             )
             
             execution_time = (datetime.now() - start_time).total_seconds()
-            logger.info(f"✅ DSSMS実行完了: {execution_time:.2f}秒")
+            logger.info(f"[OK] DSSMS実行完了: {execution_time:.2f}秒")
             
             # 結果解析
             switch_analysis = self._analyze_dssms_result(result)
@@ -201,7 +201,7 @@ class DSSMSProperExecution:
         ultra_simple = UltraSimpleRanking(self.symbols)
         ultra_results = ultra_simple.simulate_switches(10)
         
-        logger.info(f"✅ UltraSimple: {ultra_results['switch_count']}回切替")
+        logger.info(f"[OK] UltraSimple: {ultra_results['switch_count']}回切替")
         
         # Step 2: DSSMS実行
         dssms_results = self.execute_dssms_with_proper_args()
@@ -259,7 +259,7 @@ class DSSMSProperExecution:
 def main():
     """メイン実行"""
     
-    print("🎯 DSSMS 正しい引数による実行版")
+    print("[TARGET] DSSMS 正しい引数による実行版")
     print("=" * 50)
     print(f"実行時刻: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("目的: simulate_dynamic_selectionを正しい引数で実行")
@@ -272,17 +272,17 @@ def main():
         results = executor.run_complete_comparison()
         
         # 結果表示
-        print("📊 完全比較結果:")
+        print("[CHART] 完全比較結果:")
         print("-" * 30)
         
         # UltraSimple結果
         ultra = results['ultra_simple']
-        print(f"✅ Ultra Simple: {ultra['switches']}回切替 (期待: {ultra['expected']}回)")
+        print(f"[OK] Ultra Simple: {ultra['switches']}回切替 (期待: {ultra['expected']}回)")
         print(f"   成功: {ultra['success']}")
         
         # DSSMS結果
         dssms = results['dssms']
-        print(f"\n🔍 DSSMS実行: {dssms['status']}")
+        print(f"\n[SEARCH] DSSMS実行: {dssms['status']}")
         
         if dssms['status'] == 'success':
             print(f"   実行時間: {dssms['execution_time']:.2f}秒")
@@ -315,7 +315,7 @@ def main():
         return results
         
     except Exception as e:
-        print(f"❌ 実行エラー: {e}")
+        print(f"[ERROR] 実行エラー: {e}")
         logger.error(f"メイン実行失敗: {e}")
         return None
 

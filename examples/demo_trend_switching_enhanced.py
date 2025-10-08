@@ -185,17 +185,17 @@ class EnhancedTrendSwitchingDemo:
         successful_scenarios = sum(1 for result in results.values() if not result.errors)
         success_rate = (successful_scenarios / total_scenarios) * 100 if total_scenarios > 0 else 0
         
-        print(f"📊 Test Overview:")
+        print(f"[CHART] Test Overview:")
         print(f"   Total Scenarios: {total_scenarios}")
         print(f"   Successful Tests: {successful_scenarios}")
         print(f"   Success Rate: {success_rate:.1f}%")
         print(f"   Total Execution Time: {execution_time:.2f} seconds")
         print(f"   Average Time per Test: {execution_time/total_scenarios:.2f} seconds")
         
-        print(f"\n📈 Performance Summary:")
+        print(f"\n[UP] Performance Summary:")
         
         for scenario_id, result in results.items():
-            status = "✅" if not result.errors else "❌"
+            status = "[OK]" if not result.errors else "[ERROR]"
             switches = len(result.switching_events)
             
             print(f"   {status} {scenario_id}:")
@@ -214,7 +214,7 @@ class EnhancedTrendSwitchingDemo:
                 print(f"      Confidence: {confidence:.4f}")
             
             if result.errors:
-                print(f"      ⚠️  Errors: {len(result.errors)}")
+                print(f"      [WARNING]  Errors: {len(result.errors)}")
         
         print("\n" + "="*60)
     
@@ -242,7 +242,7 @@ class EnhancedTrendSwitchingDemo:
     
     def _analyze_performance_metrics(self, results: Dict[str, TestResult]):
         """パフォーマンス指標分析"""
-        print(f"\n📊 Performance Metrics Analysis:")
+        print(f"\n[CHART] Performance Metrics Analysis:")
         
         # 全体統計
         all_returns = []
@@ -308,7 +308,7 @@ class EnhancedTrendSwitchingDemo:
     
     def _analyze_success_factors(self, results: Dict[str, TestResult]):
         """成功要因分析"""
-        print(f"\n🎯 Success Factors Analysis:")
+        print(f"\n[TARGET] Success Factors Analysis:")
         
         criteria_performance = {}
         
@@ -360,9 +360,9 @@ class EnhancedTrendSwitchingDemo:
             
             if meets_criteria:
                 compliant_scenarios += 1
-                status = "✅ PASS"
+                status = "[OK] PASS"
             else:
-                status = "❌ FAIL"
+                status = "[ERROR] FAIL"
             
             print(f"     {status} {scenario_id}")
         
@@ -419,7 +419,7 @@ class EnhancedTrendSwitchingDemo:
 def main():
     """メイン実行関数"""
     try:
-        print("🚀 Enhanced Trend Switching Test Demo Starting...")
+        print("[ROCKET] Enhanced Trend Switching Test Demo Starting...")
         
         # デモ実行
         demo = EnhancedTrendSwitchingDemo()
@@ -430,12 +430,12 @@ def main():
         # 詳細レポート保存
         demo.save_detailed_report(results)
         
-        print("\n✅ Enhanced Trend Switching Test Demo completed successfully!")
+        print("\n[OK] Enhanced Trend Switching Test Demo completed successfully!")
         print(f"📁 Results saved to: {demo.output_dir}")
         
     except Exception as e:
         logger.error(f"Demo failed: {e}")
-        print(f"\n❌ Demo failed: {e}")
+        print(f"\n[ERROR] Demo failed: {e}")
 
 if __name__ == "__main__":
     main()

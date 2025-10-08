@@ -19,12 +19,12 @@ from typing import List
     excel_files = list(excel_dir.glob("backtest_results_*.xlsx"))
     
     if not excel_files:
-        print("❌ Excelファイルが見つかりません")
+        print("[ERROR] Excelファイルが見つかりません")
         return
     
     # 最新ファイルを選択（ファイル名でソート）
     latest_file = sorted(excel_files, key=lambda x: x.name)[-1]
-    print(f"📊 確認対象: {latest_file}")
+    print(f"[CHART] 確認対象: {latest_file}")
     
     try:
         # Excelファイルを開く
@@ -49,17 +49,17 @@ from typing import List
                         
                         if isinstance(cell_value, str):
                             if "最終ポートフォリオ価値" in cell_value:
-                                print(f"✅ {cell_value}: {next_cell}")
+                                print(f"[OK] {cell_value}: {next_cell}")
                             elif "総リターン" in cell_value and "年率" not in cell_value:
-                                print(f"✅ {cell_value}: {next_cell}")
+                                print(f"[OK] {cell_value}: {next_cell}")
                             elif "年率リターン" in cell_value:
-                                print(f"✅ {cell_value}: {next_cell}")
+                                print(f"[OK] {cell_value}: {next_cell}")
                             elif "銘柄切替回数" in cell_value:
-                                print(f"✅ {cell_value}: {next_cell}")
+                                print(f"[OK] {cell_value}: {next_cell}")
                             elif "シャープレシオ" in cell_value:
-                                print(f"✅ {cell_value}: {next_cell}")
+                                print(f"[OK] {cell_value}: {next_cell}")
                             elif "最大ドローダウン" in cell_value:
-                                print(f"✅ {cell_value}: {next_cell}")
+                                print(f"[OK] {cell_value}: {next_cell}")
         
         # パフォーマンス指標シートの確認
         if "パフォーマンス指標" in workbook.sheetnames:
@@ -104,10 +104,10 @@ from typing import List
                     print(f"    {date_val}: 損益={profit_val}, 累積={cumulative_val}")
         
         workbook.close()
-        print(f"\n✅ Excel出力確認完了!")
+        print(f"\n[OK] Excel出力確認完了!")
         
     except Exception as e:
-        print(f"❌ Excel読み込みエラー: {e}")
+        print(f"[ERROR] Excel読み込みエラー: {e}")
 
 if __name__ == "__main__":
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected

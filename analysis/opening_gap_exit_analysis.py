@@ -59,7 +59,7 @@ def investigate_opening_gap_exit_anomaly():
         
     except Exception as e:
         logger.error(f"OpeningGap調査中エラー: {e}")
-        print(f"❌ 調査エラー: {e}")
+        print(f"[ERROR] 調査エラー: {e}")
         return None
 
 def analyze_exit_signals(strategy_result: pd.DataFrame, stock_data: pd.DataFrame) -> Dict:
@@ -309,7 +309,7 @@ def print_investigation_results(exit_analysis: Dict, param_analysis: Dict, holdi
     TODO(tag:strategy_analysis, rationale:comprehensive result reporting)
     """
     print("\n" + "="*60)
-    print("📊 OpeningGapStrategy大量エグジット調査結果")
+    print("[CHART] OpeningGapStrategy大量エグジット調査結果")
     print("="*60)
     
     # 基本統計
@@ -330,7 +330,7 @@ def print_investigation_results(exit_analysis: Dict, param_analysis: Dict, holdi
         
         if 'anomaly_detection' in holding_analysis:
             anomaly = holding_analysis['anomaly_detection']
-            print(f"\n⚠️ 異常検出:")
+            print(f"\n[WARNING] 異常検出:")
             print(f"  0日保有: {anomaly['zero_day_holdings']}件")
             print(f"  30日超保有: {anomaly['long_holdings_over_30days']}件")
             print(f"  未決済エントリー: {anomaly['unmatched_entries']}件")
@@ -338,7 +338,7 @@ def print_investigation_results(exit_analysis: Dict, param_analysis: Dict, holdi
     # エグジット原因分析
     exit_causes = exit_analysis.get('exit_causes', {})
     if exit_causes:
-        print(f"\n🎯 エグジット原因分析:")
+        print(f"\n[TARGET] エグジット原因分析:")
         print(f"  利益確定: {exit_causes['profit_taking']}回")
         print(f"  ストップロス: {exit_causes['stop_loss']}回")
         print(f"  最大保有期間: {exit_causes['max_holding_period']}回")
@@ -352,17 +352,17 @@ def print_investigation_results(exit_analysis: Dict, param_analysis: Dict, holdi
             print(f"  {key}: {value}")
     
     # 総合判定
-    print(f"\n🎯 総合判定:")
+    print(f"\n[TARGET] 総合判定:")
     print(f"  異常判定: {'異常' if judgment['is_abnormal'] else '正常'}")
     print(f"  重要度: {judgment['severity']}")
     
     if judgment['issues_found']:
-        print(f"\n❌ 発見された問題:")
+        print(f"\n[ERROR] 発見された問題:")
         for issue in judgment['issues_found']:
             print(f"  - {issue}")
     
     if judgment['recommendations']:
-        print(f"\n💡 推奨対応:")
+        print(f"\n[IDEA] 推奨対応:")
         for rec in judgment['recommendations']:
             print(f"  - {rec}")
     

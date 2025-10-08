@@ -17,18 +17,18 @@ def verify_excel_content():
     excel_files = list(excel_dir.glob("improved_backtest_*.xlsx"))
     
     if not excel_files:
-        print("❌ Excelファイルが見つかりません")
+        print("[ERROR] Excelファイルが見つかりません")
         return
     
     # 最新ファイルを取得
     latest_file = max(excel_files, key=lambda x: x.stat().st_mtime)
-    print(f"🔍 検証対象: {latest_file}")
+    print(f"[SEARCH] 検証対象: {latest_file}")
     
     try:
         # Excelファイル読み込み
         wb = openpyxl.load_workbook(latest_file)
-        print(f"📊 シート数: {len(wb.sheetnames)}")
-        print(f"📋 シート名: {wb.sheetnames}")
+        print(f"[CHART] シート数: {len(wb.sheetnames)}")
+        print(f"[LIST] シート名: {wb.sheetnames}")
         
         # 各シートの内容確認
         for sheet_name in wb.sheetnames:
@@ -54,7 +54,7 @@ def verify_excel_content():
             
             # 特にSummaryシートを詳細確認
             if 'Summary' in sheet_name or 'サマリー' in sheet_name:
-                print("   🎯 Summary詳細分析:")
+                print("   [TARGET] Summary詳細分析:")
                 for row in range(1, min(20, ws.max_row + 1)):
                     for col in range(1, min(3, ws.max_column + 1)):
                         cell = ws.cell(row=row, column=col)
@@ -62,7 +62,7 @@ def verify_excel_content():
                             print(f"     [{row},{col}]: {cell.value}")
     
     except Exception as e:
-        print(f"❌ Excel読み込みエラー: {e}")
+        print(f"[ERROR] Excel読み込みエラー: {e}")
         return
     
     # pandasでも確認
@@ -78,21 +78,21 @@ def verify_excel_content():
         print(f"N/A値の数: {na_count}")
         
         if na_count > 0:
-            print("⚠️  N/A値が残存しています")
+            print("[WARNING]  N/A値が残存しています")
             print(df.isna().sum())
         else:
-            print("✅ N/A値は検出されませんでした")
+            print("[OK] N/A値は検出されませんでした")
         
         # 数値列の統計確認
         numeric_cols = df.select_dtypes(include=['number']).columns
         if len(numeric_cols) > 0:
-            print(f"\n📊 数値列統計:")
+            print(f"\n[CHART] 数値列統計:")
             print(df[numeric_cols].describe())
     
     except Exception as e:
-        print(f"⚠️  pandas読み込み警告: {e}")
+        print(f"[WARNING]  pandas読み込み警告: {e}")
     
-    print(f"\n✅ Phase 4-B-2-1 Excel品質検証完了")
+    print(f"\n[OK] Phase 4-B-2-1 Excel品質検証完了")
 
 if __name__ == "__main__":
     verify_excel_content()

@@ -65,7 +65,7 @@ class StrategyStatisticsCalculator:
         """
         self.risk_free_rate = risk_free_rate
         self.trading_days = trading_days
-        logger.info(f"🔧 StrategyStatisticsCalculator初期化 - リスクフリーレート: {risk_free_rate:.3f}")
+        logger.info(f"[TOOL] StrategyStatisticsCalculator初期化 - リスクフリーレート: {risk_free_rate:.3f}")
     
     def calculate_comprehensive_statistics(self, 
                                          strategy_name: str,
@@ -83,10 +83,10 @@ class StrategyStatisticsCalculator:
             StrategyStatistics: 計算された統計
         """
         try:
-            logger.info(f"📊 戦略統計計算開始: {strategy_name}")
+            logger.info(f"[CHART] 戦略統計計算開始: {strategy_name}")
             
             if trades_df.empty:
-                logger.warning(f"⚠️ 空の取引データ: {strategy_name}")
+                logger.warning(f"[WARNING] 空の取引データ: {strategy_name}")
                 return StrategyStatistics(strategy_name=strategy_name)
             
             # 基本統計計算
@@ -113,11 +113,11 @@ class StrategyStatisticsCalculator:
                 calculation_method="Problem 10 Compliant v1.0"
             )
             
-            logger.info(f"✅ 戦略統計計算完了: {strategy_name}")
+            logger.info(f"[OK] 戦略統計計算完了: {strategy_name}")
             return statistics
             
         except Exception as e:
-            logger.error(f"❌ 戦略統計計算エラー [{strategy_name}]: {e}")
+            logger.error(f"[ERROR] 戦略統計計算エラー [{strategy_name}]: {e}")
             return StrategyStatistics(
                 strategy_name=strategy_name,
                 data_quality_score=0.0,
@@ -128,7 +128,7 @@ class StrategyStatisticsCalculator:
         """基本統計計算"""
         try:
             if 'pnl' not in trades_df.columns:
-                logger.warning("⚠️ PNL列が見つかりません")
+                logger.warning("[WARNING] PNL列が見つかりません")
                 return self._get_default_basic_stats()
             
             pnl_series = trades_df['pnl']
@@ -164,7 +164,7 @@ class StrategyStatisticsCalculator:
             }
             
         except Exception as e:
-            logger.error(f"❌ 基本統計計算エラー: {e}")
+            logger.error(f"[ERROR] 基本統計計算エラー: {e}")
             return self._get_default_basic_stats()
     
     def _calculate_risk_metrics(self, trades_df: pd.DataFrame, daily_pnl: Optional[pd.DataFrame] = None) -> Dict[str, float]:
@@ -178,7 +178,7 @@ class StrategyStatisticsCalculator:
                 returns = trades_df['pnl'] / trades_df['pnl'].abs().shift(1).fillna(1.0)
                 returns = returns.dropna()
             else:
-                logger.warning("⚠️ リターン計算用データが不足")
+                logger.warning("[WARNING] リターン計算用データが不足")
                 return self._get_default_risk_metrics()
             
             if len(returns) == 0:
@@ -214,7 +214,7 @@ class StrategyStatisticsCalculator:
             }
             
         except Exception as e:
-            logger.error(f"❌ リスク指標計算エラー: {e}")
+            logger.error(f"[ERROR] リスク指標計算エラー: {e}")
             return self._get_default_risk_metrics()
     
     def _calculate_holding_period(self, trades_df: pd.DataFrame) -> float:
@@ -234,7 +234,7 @@ class StrategyStatisticsCalculator:
             return 0.0
             
         except Exception as e:
-            logger.error(f"❌ 保有期間計算エラー: {e}")
+            logger.error(f"[ERROR] 保有期間計算エラー: {e}")
             return 0.0
     
     def _calculate_total_fees(self, trades_df: pd.DataFrame) -> float:
@@ -253,7 +253,7 @@ class StrategyStatisticsCalculator:
             return 0.0
             
         except Exception as e:
-            logger.error(f"❌ 手数料計算エラー: {e}")
+            logger.error(f"[ERROR] 手数料計算エラー: {e}")
             return 0.0
     
     def _assess_data_quality(self, trades_df: pd.DataFrame) -> float:
@@ -279,7 +279,7 @@ class StrategyStatisticsCalculator:
             return max(0.0, min(1.0, quality_score))
             
         except Exception as e:
-            logger.error(f"❌ データ品質評価エラー: {e}")
+            logger.error(f"[ERROR] データ品質評価エラー: {e}")
             return 0.5
     
     def _get_default_basic_stats(self) -> Dict[str, float]:
@@ -333,14 +333,14 @@ class StrategyStatisticsCalculator:
             return formatted
             
         except Exception as e:
-            logger.error(f"❌ 統計フォーマットエラー: {e}")
+            logger.error(f"[ERROR] 統計フォーマットエラー: {e}")
             return {'戦略名': statistics.strategy_name, 'エラー': str(e)}
 
 
 def demo_strategy_statistics_calculator():
     """戦略統計計算器デモ"""
     try:
-        print("🔧 戦略統計計算器デモ開始")
+        print("[TOOL] 戦略統計計算器デモ開始")
         
         # サンプルデータ作成
         np.random.seed(42)
@@ -363,15 +363,15 @@ def demo_strategy_statistics_calculator():
         # フォーマット出力
         formatted = calculator.format_statistics_for_export(stats)
         
-        print("\n📊 計算結果:")
+        print("\n[CHART] 計算結果:")
         for key, value in formatted.items():
             print(f"  {key}: {value}")
         
-        print("\n✅ デモ完了")
+        print("\n[OK] デモ完了")
         return True
         
     except Exception as e:
-        print(f"❌ デモエラー: {e}")
+        print(f"[ERROR] デモエラー: {e}")
         return False
 
 

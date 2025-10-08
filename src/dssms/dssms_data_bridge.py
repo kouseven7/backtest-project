@@ -251,18 +251,18 @@ def demo_data_bridge():
         test_symbols = ["7203.T", "8058.T", "9984.T"]
         
         # データ取得テスト
-        print(f"\n📊 データ取得テスト: {test_symbols}")
+        print(f"\n[CHART] データ取得テスト: {test_symbols}")
         results = bridge.get_data_with_fallback(test_symbols)
         
         for symbol, data in results.items():
-            print(f"✅ {symbol}: {len(data)}行のデータを取得")
+            print(f"[OK] {symbol}: {len(data)}行のデータを取得")
             
             # データ品質検証
             quality = bridge.validate_data_quality(symbol, data)
             print(f"   品質スコア: {quality['overall_score']:.2f}")
         
         # ポートフォリオ価値更新テスト
-        print(f"\n💰 ポートフォリオ価値更新テスト")
+        print(f"\n[MONEY] ポートフォリオ価値更新テスト")
         test_date = datetime.now()
         initial_value = 1000000
         
@@ -276,17 +276,17 @@ def demo_data_bridge():
         # 診断レポート表示
         diagnosis = bridge.get_diagnosis_report()
         if diagnosis:
-            print(f"\n📋 診断状態: {diagnosis['overall_status']}")
+            print(f"\n[LIST] 診断状態: {diagnosis['overall_status']}")
         
         return True
         
     except Exception as e:
-        print(f"❌ デモエラー: {e}")
+        print(f"[ERROR] デモエラー: {e}")
         return False
 
 if __name__ == "__main__":
     success = demo_data_bridge()
     if success:
-        print("\n✅ データブリッジデモ完了")
+        print("\n[OK] データブリッジデモ完了")
     else:
-        print("\n❌ データブリッジデモ失敗")
+        print("\n[ERROR] データブリッジデモ失敗")

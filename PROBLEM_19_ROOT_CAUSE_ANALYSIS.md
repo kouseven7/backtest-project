@@ -4,7 +4,7 @@
 **対象**: DSSMSランキングシステム (top_symbol=None 連続発生問題)
 **分析結果**: 複合的な設計・実装問題による完全故障
 
-## 🔍 **発見された根本原因**
+## [SEARCH] **発見された根本原因**
 
 ### 1. **診断システムと本番システムの完全分離**
 ```
@@ -17,7 +17,7 @@
 └─ 軽量スコアリング結果が本番に反映されない
 ```
 
-### 2. **ComprehensiveScoringEngine HTTP 404 エラー** ✅ **解決済み**
+### 2. **ComprehensiveScoringEngine HTTP 404 エラー** [OK] **解決済み**
 ```
 yfinanceアップデート後の状況 (2025-09-24更新):
 ├─ HTTP 404エラー: 完全解消
@@ -27,7 +27,7 @@ yfinanceアップデート後の状況 (2025-09-24更新):
 
 ### 3. **統合パッチの強制無効化**
 ```python
-use_integration_patch = False  # 🎯 統合パッチを無効化
+use_integration_patch = False  # [TARGET] 統合パッチを無効化
 ```
 - 設計的に本格的なランキングシステムを無効化
 - 安定ランキングは機能するが、診断結果との統合なし
@@ -41,7 +41,7 @@ self.data_fetcher = get_parameters_and_data  # 関数として保存
 backtester_instance.data_fetcher.get_data()  # メソッドとして呼び出し
 ```
 
-## 📊 **依存関係・データフロー図**
+## [CHART] **依存関係・データフロー図**
 
 ```mermaid
 graph TD
@@ -76,7 +76,7 @@ graph TD
     style O fill:#99ff99
 ```
 
-## 🚨 **問題点の詳細分析**
+## [ALERT] **問題点の詳細分析**
 
 ### **Critical Issue 1: 分離された診断と本番システム**
 - **診断**: 軽量スコアリングで正常動作
@@ -95,8 +95,8 @@ graph TD
 
 ### **Critical Issue 3: 設計レベルの統合無効化**
 ```python
-# 🔧 Problem 1 緊急修復: 統合パッチを無効化して安定ランキング強制使用
-use_integration_patch = False  # 🎯 統合パッチを無効化
+# [TOOL] Problem 1 緊急修復: 統合パッチを無効化して安定ランキング強制使用
+use_integration_patch = False  # [TARGET] 統合パッチを無効化
 ```
 
 ### **Critical Issue 4: データフェッチャー実装不整合**
@@ -126,7 +126,7 @@ backtester_instance.data_fetcher.get_data()  # AttributeError
    └─ 切替判定失敗 (117回→3回→1回)
 ```
 
-## 🎯 **問題の優先度と重要度**
+## [TARGET] **問題の優先度と重要度**
 
 ### **Priority 1 (Critical)**
 1. **診断-本番統合の完全実装**
@@ -138,10 +138,10 @@ backtester_instance.data_fetcher.get_data()  # AttributeError
    - None値の完全排除
 
 ### **Priority 2 (High)**
-3. ~~HTTP 404エラー対策~~ ✅ **yfinanceアップデートで解決済み**
+3. ~~HTTP 404エラー対策~~ [OK] **yfinanceアップデートで解決済み**
 
 4. **Unicode文字エンコーディング修正**
-   - Windows日本語環境での🔍文字出力エラー修正
+   - Windows日本語環境での[SEARCH]文字出力エラー修正
    - ログ出力の安定化
 
 5. **データフェッチャー統一化**
@@ -164,7 +164,7 @@ backtester_instance.data_fetcher.get_data()  # AttributeError
    - 設計レベルでの統合システム復活
    - 段階的な統合実装
 
-## 🔧 **次回修正のための具体的指針**
+## [TOOL] **次回修正のための具体的指針**
 
 ### **修正アプローチ1: 直接統合方式**
 ```python
@@ -191,12 +191,12 @@ if self.enable_lightweight_mode:
     return self._generate_deterministic_scores(symbols)
 ```
 
-## 📋 **結論**
+## [LIST] **結論**
 
 Problem 19は**設計レベルの複合的故障**であり、単純なバグ修正では解決できません：
 
 1. **診断システムは正常動作**するが**本番に反映されない**
-2. ~~ComprehensiveScoringEngine完全故障~~ ✅ **yfinanceアップデートで解決**
+2. ~~ComprehensiveScoringEngine完全故障~~ [OK] **yfinanceアップデートで解決**
 3. **統合パッチ強制無効化**により根本的解決を阻害
 4. **切替判定劣化（117→3→1回）**は必然的結果
 5. **新規Critical問題**: 実行環境依存性による結果変動 🆕

@@ -81,14 +81,14 @@ def create_test_trades(test_data: pd.DataFrame) -> List[Dict[str, Any]]:
 def test_unified_exporter():
     """統一出力エンジンのテスト実行"""
     
-    print("🧪 Phase 2 統一出力エンジン動作確認テスト開始")
+    print("[TEST] Phase 2 統一出力エンジン動作確認テスト開始")
     print("=" * 60)
     
     try:
         from output.unified_exporter import UnifiedExporter
         
         # 1. テストデータ生成
-        print("📊 テストデータ生成...")
+        print("[CHART] テストデータ生成...")
         test_data = create_test_backtest_data()
         test_trades = create_test_trades(test_data)
         
@@ -97,13 +97,13 @@ def test_unified_exporter():
         exit_count = (test_data['Exit_Signal'] == 1).sum()
         total_trades = len(test_trades)
         
-        print(f"✅ バックテスト基本理念遵守確認:")
+        print(f"[OK] バックテスト基本理念遵守確認:")
         print(f"   - Entry_Signal生成数: {entry_count}")
         print(f"   - Exit_Signal生成数: {exit_count}")
         print(f"   - 総取引数: {total_trades}")
         
         if total_trades == 0:
-            print("⚠️ 警告: 取引数0件 - シグナル生成ロジック要確認")
+            print("[WARNING] 警告: 取引数0件 - シグナル生成ロジック要確認")
         
         # 2. パフォーマンス指標準備
         performance_metrics = {
@@ -118,7 +118,7 @@ def test_unified_exporter():
         }
         
         # 3. 統一出力エンジンテスト実行
-        print("\n🔧 統一出力エンジン実行...")
+        print("\n[TOOL] 統一出力エンジン実行...")
         exporter = UnifiedExporter()
         
         # main.py形式出力テスト
@@ -130,7 +130,7 @@ def test_unified_exporter():
             strategy_name="phase2_test_strategy"
         )
         
-        print(f"✅ main.py統一出力成功: {export_result}")
+        print(f"[OK] main.py統一出力成功: {export_result}")
         
         # 4. 出力ファイル確認
         print("\n📁 出力ファイル確認:")
@@ -139,10 +139,10 @@ def test_unified_exporter():
                 file_size = file_path.stat().st_size
                 print(f"   - {format_type.upper()}: {file_path} ({file_size} bytes)")
             else:
-                print(f"   - {format_type.upper()}: ❌ ファイル未作成")
+                print(f"   - {format_type.upper()}: [ERROR] ファイル未作成")
         
         # 5. バックテスト基本理念違反チェック
-        print("\n🎯 バックテスト基本理念遵守最終確認:")
+        print("\n[TARGET] バックテスト基本理念遵守最終確認:")
         
         principle_violations = []
         
@@ -161,23 +161,23 @@ def test_unified_exporter():
             principle_violations.append(f"出力形式不足（期待4形式、実際{len(export_result)}形式）")
         
         if principle_violations:
-            print("❌ バックテスト基本理念違反検出:")
+            print("[ERROR] バックテスト基本理念違反検出:")
             for violation in principle_violations:
                 print(f"   - {violation}")
             print("   TODO(tag:backtest_execution, rationale:fix principle violations)")
         else:
-            print("✅ バックテスト基本理念遵守確認完了")
+            print("[OK] バックテスト基本理念遵守確認完了")
             print("   - Entry_Signal/Exit_Signal生成: OK")
             print("   - 取引実行: OK")
             print("   - 新形式出力（CSV+JSON+TXT+YAML）: OK")
         
-        print("\n🎉 Phase 2 統一出力エンジンテスト完了")
+        print("\n[SUCCESS] Phase 2 統一出力エンジンテスト完了")
         print("=" * 60)
         
         return len(principle_violations) == 0
         
     except Exception as e:
-        print(f"❌ テストエラー: {e}")
+        print(f"[ERROR] テストエラー: {e}")
         print("TODO(tag:backtest_execution, rationale:fix unified exporter test error)")
         import traceback
         traceback.print_exc()
@@ -186,6 +186,6 @@ def test_unified_exporter():
 if __name__ == "__main__":
     success = test_unified_exporter()
     if success:
-        print("✅ 統一出力エンジン Phase 2 テスト成功")
+        print("[OK] 統一出力エンジン Phase 2 テスト成功")
     else:
-        print("❌ 統一出力エンジン Phase 2 テスト失敗")
+        print("[ERROR] 統一出力エンジン Phase 2 テスト失敗")

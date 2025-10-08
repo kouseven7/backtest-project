@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
 def generate_sample_data(periods: int = 365, strategies: int = 4) -> tuple:
     """サンプルデータの生成"""
     
-    print(f"\n📊 サンプルデータ生成中... ({periods}日間, {strategies}戦略)")
+    print(f"\n[CHART] サンプルデータ生成中... ({periods}日間, {strategies}戦略)")
     
     # 日付インデックス
     dates = pd.date_range(
@@ -100,7 +100,7 @@ def generate_sample_data(periods: int = 365, strategies: int = 4) -> tuple:
     }
     
     print(f"✓ データ生成完了: {len(strategy_returns)}行 x {len(strategy_returns.columns)}列")
-    print(f"  📈 戦略: {list(strategy_returns.columns)}")
+    print(f"  [UP] 戦略: {list(strategy_returns.columns)}")
     print(f"  📅 期間: {dates[0].date()} ～ {dates[-1].date()}")
     
     return strategy_returns, initial_weights, previous_weights
@@ -109,7 +109,7 @@ def demo_basic_optimization():
     """基本最適化のデモンストレーション"""
     
     print("\n" + "="*60)
-    print("🚀 基本最適化デモ開始")
+    print("[ROCKET] 基本最適化デモ開始")
     print("="*60)
     
     # サンプルデータ生成
@@ -127,11 +127,11 @@ def demo_basic_optimization():
         rebalancing_frequency="monthly"
     )
     
-    print(f"\n📋 最適化コンテキスト:")
-    print(f"  📊 データポイント数: {len(strategy_returns)}")
+    print(f"\n[LIST] 最適化コンテキスト:")
+    print(f"  [CHART] データポイント数: {len(strategy_returns)}")
     print(f"  ⚖️ 現在の重み: {current_weights}")
-    print(f"  📈 市場ボラティリティ: {context.market_volatility:.1%}")
-    print(f"  🎯 市場レジーム: {context.market_regime}")
+    print(f"  [UP] 市場ボラティリティ: {context.market_volatility:.1%}")
+    print(f"  [TARGET] 市場レジーム: {context.market_regime}")
     
     # 基本最適化エンジン初期化
     engine = RiskAdjustedOptimizationEngine()
@@ -145,21 +145,21 @@ def demo_basic_optimization():
     execution_time = (datetime.now() - start_time).total_seconds()
     
     # 結果表示
-    print(f"\n📊 基本最適化結果:")
-    print(f"  ✅ 最適化成功: {result.optimization_success}")
-    print(f"  🎯 信頼度レベル: {result.confidence_level:.3f}")
+    print(f"\n[CHART] 基本最適化結果:")
+    print(f"  [OK] 最適化成功: {result.optimization_success}")
+    print(f"  [TARGET] 信頼度レベル: {result.confidence_level:.3f}")
     print(f"  ⏱️ 実行時間: {execution_time:.2f}秒")
     print(f"  🔄 反復回数: {result.optimization_result.iterations}")
     
-    print(f"\n💰 重み配分:")
+    print(f"\n[MONEY] 重み配分:")
     for strategy, weight in result.optimal_weights.items():
         original = current_weights[strategy]
         change = weight - original
         print(f"  {strategy}: {weight:.3f} (変化: {change:+.3f})")
     
-    print(f"\n📈 パフォーマンス指標:")
+    print(f"\n[UP] パフォーマンス指標:")
     sharpe = result.performance_report.risk_adjusted_metrics.get('sharpe_ratio', 0)
-    print(f"  📊 シャープレシオ: {sharpe:.3f}")
+    print(f"  [CHART] シャープレシオ: {sharpe:.3f}")
     
     # ドローダウン表示の改良
     try:
@@ -170,17 +170,17 @@ def demo_basic_optimization():
                 drawdown_value = abs(drawdown.value)
             else:
                 drawdown_value = abs(float(drawdown))
-            print(f"  📉 最大ドローダウン: {drawdown_value:.1%}")
+            print(f"  [DOWN] 最大ドローダウン: {drawdown_value:.1%}")
         else:
-            print(f"  📉 最大ドローダウン: データなし")
+            print(f"  [DOWN] 最大ドローダウン: データなし")
     except Exception as e:
-        print(f"  📉 最大ドローダウン: 取得エラー ({e})")
+        print(f"  [DOWN] 最大ドローダウン: 取得エラー ({e})")
     
-    print(f"\n🚨 制約チェック:")
-    print(f"  ✅ 制約満足: {result.constraint_result.is_satisfied}")
-    print(f"  ⚠️ 違反数: {len(result.constraint_result.violations)}")
+    print(f"\n[ALERT] 制約チェック:")
+    print(f"  [OK] 制約満足: {result.constraint_result.is_satisfied}")
+    print(f"  [WARNING] 違反数: {len(result.constraint_result.violations)}")
     
-    print(f"\n💡 推奨事項 (上位3件):")
+    print(f"\n[IDEA] 推奨事項 (上位3件):")
     for i, recommendation in enumerate(result.recommendations[:3], 1):
         print(f"  {i}. {recommendation}")
     
@@ -190,7 +190,7 @@ def demo_advanced_optimization():
     """高度最適化のデモンストレーション"""
     
     print("\n" + "="*60)
-    print("🎯 高度最適化デモ開始")
+    print("[TARGET] 高度最適化デモ開始")
     print("="*60)
     
     # サンプルデータ生成（より多くの戦略）
@@ -220,10 +220,10 @@ def demo_advanced_optimization():
         rebalancing_frequency="monthly"
     )
     
-    print(f"📋 リスクプロファイル: {profile.profile_name}")
+    print(f"[LIST] リスクプロファイル: {profile.profile_name}")
     print(f"  🎚️ リスク許容度: {profile.risk_tolerance}")
-    print(f"  🎯 リターン目標: {profile.return_target:.1%}")
-    print(f"  📉 最大DD許容: {profile.max_drawdown_tolerance:.1%}")
+    print(f"  [TARGET] リターン目標: {profile.return_target:.1%}")
+    print(f"  [DOWN] 最大DD許容: {profile.max_drawdown_tolerance:.1%}")
     
     # マルチ期間分析設定
     multi_period_request = MultiPeriodOptimizationRequest(
@@ -231,9 +231,9 @@ def demo_advanced_optimization():
         confidence_threshold=0.6
     )
     
-    print(f"\n🔍 マルチ期間分析設定:")
+    print(f"\n[SEARCH] マルチ期間分析設定:")
     print(f"  📅 分析期間: {multi_period_request.optimization_horizons} 日")
-    print(f"  🎯 信頼度しきい値: {multi_period_request.confidence_threshold}")
+    print(f"  [TARGET] 信頼度しきい値: {multi_period_request.confidence_threshold}")
     
     print(f"\n⚙️ 包括最適化実行中...")
     start_time = datetime.now()
@@ -246,12 +246,12 @@ def demo_advanced_optimization():
     execution_time = (datetime.now() - start_time).total_seconds()
     
     # 結果表示
-    print(f"\n📊 包括最適化結果:")
-    print(f"  ✅ プライマリ成功: {comprehensive_result.primary_result.optimization_success}")
-    print(f"  🎯 総合信頼度: {comprehensive_result.confidence_assessment['overall_confidence']:.3f}")
+    print(f"\n[CHART] 包括最適化結果:")
+    print(f"  [OK] プライマリ成功: {comprehensive_result.primary_result.optimization_success}")
+    print(f"  [TARGET] 総合信頼度: {comprehensive_result.confidence_assessment['overall_confidence']:.3f}")
     print(f"  ⏱️ 実行時間: {execution_time:.2f}秒")
     
-    print(f"\n💰 最適重み配分:")
+    print(f"\n[MONEY] 最適重み配分:")
     for strategy, weight in comprehensive_result.primary_result.optimal_weights.items():
         original = current_weights[strategy]
         change = weight - original
@@ -259,23 +259,23 @@ def demo_advanced_optimization():
     
     print(f"\n🔄 代替配分オプション ({len(comprehensive_result.alternative_allocations)}件):")
     for alt_name in list(comprehensive_result.alternative_allocations.keys())[:3]:
-        print(f"  📊 {alt_name}")
+        print(f"  [CHART] {alt_name}")
     
-    print(f"\n📈 マルチ期間分析:")
+    print(f"\n[UP] マルチ期間分析:")
     for horizon, analysis_result in comprehensive_result.multi_period_analysis.items():
         print(f"  📅 {horizon}日: 成功={analysis_result.optimization_success}, 信頼度={analysis_result.confidence_level:.3f}")
     
-    print(f"\n🎯 リスクプロファイル適合性:")
+    print(f"\n[TARGET] リスクプロファイル適合性:")
     for metric, score in comprehensive_result.risk_profile_analysis.items():
-        print(f"  📊 {metric}: {score:.3f}")
+        print(f"  [CHART] {metric}: {score:.3f}")
     
     print(f"\n🏗️ 実行プラン:")
     plan = comprehensive_result.execution_plan
-    print(f"  📋 戦略: {plan.get('execution_strategy', 'N/A')}")
+    print(f"  [LIST] 戦略: {plan.get('execution_strategy', 'N/A')}")
     print(f"  🔄 重み変更: {plan.get('total_weight_change', 0):.1%}")
     print(f"  👁️ 監視頻度: {plan.get('monitoring_frequency', 'N/A')}")
     
-    print(f"\n💡 統合推奨事項 (上位3件):")
+    print(f"\n[IDEA] 統合推奨事項 (上位3件):")
     for i, recommendation in enumerate(comprehensive_result.recommendation_summary[:3], 1):
         print(f"  {i}. {recommendation}")
     
@@ -285,11 +285,11 @@ def demo_validation():
     """結果検証のデモンストレーション"""
     
     print("\n" + "="*60)
-    print("🔍 結果検証デモ開始")
+    print("[SEARCH] 結果検証デモ開始")
     print("="*60)
     
     # 基本最適化を実行して結果を取得
-    print("📊 検証用の最適化実行中...")
+    print("[CHART] 検証用の最適化実行中...")
     strategy_returns, current_weights, previous_weights = generate_sample_data(periods=300)
     
     context = OptimizationContext(
@@ -307,7 +307,7 @@ def demo_validation():
     # 検証システム初期化
     validator = OptimizationValidator()
     
-    print(f"\n🔍 包括的検証実行中...")
+    print(f"\n[SEARCH] 包括的検証実行中...")
     start_time = datetime.now()
     
     # 検証実行
@@ -318,40 +318,40 @@ def demo_validation():
     execution_time = (datetime.now() - start_time).total_seconds()
     
     # 結果表示
-    print(f"\n📊 検証結果:")
-    print(f"  ✅ 検証成功: {validation_report.validation_success}")
-    print(f"  🎯 総合スコア: {validation_report.overall_score:.3f}")
+    print(f"\n[CHART] 検証結果:")
+    print(f"  [OK] 検証成功: {validation_report.validation_success}")
+    print(f"  [TARGET] 総合スコア: {validation_report.overall_score:.3f}")
     print(f"  ⏱️ 検証時間: {execution_time:.2f}秒")
     print(f"  📝 実行テスト数: {len(validation_report.individual_tests)}")
     
-    print(f"\n📊 カテゴリ別スコア:")
+    print(f"\n[CHART] カテゴリ別スコア:")
     for category, score in validation_report.category_scores.items():
-        status = "✅" if score > 0.6 else "⚠️" if score > 0.4 else "❌"
+        status = "[OK]" if score > 0.6 else "[WARNING]" if score > 0.4 else "[ERROR]"
         print(f"  {status} {category}: {score:.3f}")
     
-    print(f"\n🚨 重要な問題 ({len(validation_report.critical_failures)}件):")
+    print(f"\n[ALERT] 重要な問題 ({len(validation_report.critical_failures)}件):")
     for failure in validation_report.critical_failures:
-        print(f"  ❌ {failure}")
+        print(f"  [ERROR] {failure}")
     
     if not validation_report.critical_failures:
-        print("  ✅ 重要な問題は検出されませんでした")
+        print("  [OK] 重要な問題は検出されませんでした")
     
-    print(f"\n⚠️ 警告 ({len(validation_report.warnings)}件):")
+    print(f"\n[WARNING] 警告 ({len(validation_report.warnings)}件):")
     for warning in validation_report.warnings[:3]:
-        print(f"  ⚠️ {warning}")
+        print(f"  [WARNING] {warning}")
     
     if not validation_report.warnings:
-        print("  ✅ 警告は検出されませんでした")
+        print("  [OK] 警告は検出されませんでした")
     
     print(f"\n📝 個別テスト結果:")
     passed_tests = [t for t in validation_report.individual_tests if t.test_result]
     failed_tests = [t for t in validation_report.individual_tests if not t.test_result]
     
-    print(f"  ✅ 合格: {len(passed_tests)}")
-    print(f"  ❌ 不合格: {len(failed_tests)}")
-    print(f"  📊 合格率: {len(passed_tests) / len(validation_report.individual_tests):.1%}")
+    print(f"  [OK] 合格: {len(passed_tests)}")
+    print(f"  [ERROR] 不合格: {len(failed_tests)}")
+    print(f"  [CHART] 合格率: {len(passed_tests) / len(validation_report.individual_tests):.1%}")
     
-    print(f"\n💡 改善提案 (上位3件):")
+    print(f"\n[IDEA] 改善提案 (上位3件):")
     for i, suggestion in enumerate(validation_report.improvement_suggestions[:3], 1):
         print(f"  {i}. {suggestion}")
     
@@ -361,7 +361,7 @@ def demo_comprehensive_analysis():
     """総合分析のデモンストレーション"""
     
     print("\n" + "="*60)
-    print("📈 総合分析デモ開始")
+    print("[UP] 総合分析デモ開始")
     print("="*60)
     
     print("🔄 複数シナリオでの最適化実行中...")
@@ -375,7 +375,7 @@ def demo_comprehensive_analysis():
     results = {}
     
     for scenario in scenarios:
-        print(f"\n📊 シナリオ: {scenario['name']}")
+        print(f"\n[CHART] シナリオ: {scenario['name']}")
         
         # シナリオ用データ生成
         strategy_returns, current_weights, _ = generate_sample_data(periods=400)
@@ -397,21 +397,21 @@ def demo_comprehensive_analysis():
             "scenario": scenario
         }
         
-        print(f"  ✅ 成功: {result.optimization_success}")
-        print(f"  🎯 信頼度: {result.confidence_level:.3f}")
+        print(f"  [OK] 成功: {result.optimization_success}")
+        print(f"  [TARGET] 信頼度: {result.confidence_level:.3f}")
         
         if result.optimization_success:
             sharpe = result.performance_report.risk_adjusted_metrics.get('sharpe_ratio', 0)
-            print(f"  📊 シャープレシオ: {sharpe:.3f}")
+            print(f"  [CHART] シャープレシオ: {sharpe:.3f}")
     
     # 結果比較分析
-    print(f"\n📊 シナリオ比較分析:")
+    print(f"\n[CHART] シナリオ比較分析:")
     print(f"{'シナリオ':<12} {'成功':<6} {'信頼度':<8} {'シャープ':<8} {'重み分散':<8}")
     print("-" * 50)
     
     for scenario_name, scenario_data in results.items():
         result = scenario_data["result"]
-        success = "✅" if result.optimization_success else "❌"
+        success = "[OK]" if result.optimization_success else "[ERROR]"
         confidence = result.confidence_level
         sharpe = result.performance_report.risk_adjusted_metrics.get('sharpe_ratio', 0)
         
@@ -424,22 +424,22 @@ def demo_comprehensive_analysis():
     # パフォーマンス要約
     successful_optimizations = [r for r in results.values() if r["result"].optimization_success]
     
-    print(f"\n📈 総合サマリー:")
-    print(f"  🎯 成功率: {len(successful_optimizations)}/{len(results)} ({len(successful_optimizations)/len(results):.1%})")
+    print(f"\n[UP] 総合サマリー:")
+    print(f"  [TARGET] 成功率: {len(successful_optimizations)}/{len(results)} ({len(successful_optimizations)/len(results):.1%})")
     
     if successful_optimizations:
         avg_confidence = np.mean([r["result"].confidence_level for r in successful_optimizations])
         avg_sharpe = np.mean([r["result"].performance_report.risk_adjusted_metrics.get('sharpe_ratio', 0) for r in successful_optimizations])
         
-        print(f"  📊 平均信頼度: {avg_confidence:.3f}")
-        print(f"  📈 平均シャープレシオ: {avg_sharpe:.3f}")
+        print(f"  [CHART] 平均信頼度: {avg_confidence:.3f}")
+        print(f"  [UP] 平均シャープレシオ: {avg_sharpe:.3f}")
     
     return results
 
 def main():
     """メイン実行関数"""
     
-    print("🚀 5-1-3「リスク調整後リターンの最適化」システムデモ")
+    print("[ROCKET] 5-1-3「リスク調整後リターンの最適化」システムデモ")
     print("=" * 70)
     print("Author: imega")
     print("Date: 2025-07-21")
@@ -461,35 +461,35 @@ def main():
         
         # 最終サマリー
         print("\n" + "="*70)
-        print("🎉 全デモ完了サマリー")
+        print("[SUCCESS] 全デモ完了サマリー")
         print("="*70)
         
-        print(f"✅ 基本最適化: {'成功' if basic_result.optimization_success else '失敗'}")
-        print(f"✅ 高度最適化: {'成功' if advanced_result.primary_result.optimization_success else '失敗'}")
-        print(f"✅ 結果検証: {'成功' if validation_result.validation_success else '失敗'}")
-        print(f"✅ 総合分析: {len([r for r in comprehensive_analysis.values() if r['result'].optimization_success])}/{len(comprehensive_analysis)} シナリオ成功")
+        print(f"[OK] 基本最適化: {'成功' if basic_result.optimization_success else '失敗'}")
+        print(f"[OK] 高度最適化: {'成功' if advanced_result.primary_result.optimization_success else '失敗'}")
+        print(f"[OK] 結果検証: {'成功' if validation_result.validation_success else '失敗'}")
+        print(f"[OK] 総合分析: {len([r for r in comprehensive_analysis.values() if r['result'].optimization_success])}/{len(comprehensive_analysis)} シナリオ成功")
         
-        print(f"\n🎯 システム評価:")
-        print(f"  📊 平均信頼度: {basic_result.confidence_level:.3f}")
-        print(f"  🔍 検証スコア: {validation_result.overall_score:.3f}")
+        print(f"\n[TARGET] システム評価:")
+        print(f"  [CHART] 平均信頼度: {basic_result.confidence_level:.3f}")
+        print(f"  [SEARCH] 検証スコア: {validation_result.overall_score:.3f}")
         print(f"  ⚙️ システム安定性: 優秀")
         
-        print(f"\n💡 主要な機能確認:")
-        print(f"  ✅ 複合目的関数最適化")
-        print(f"  ✅ 包括的制約管理")
-        print(f"  ✅ マルチアルゴリズム最適化")
-        print(f"  ✅ 高度パフォーマンス評価")
-        print(f"  ✅ 結果検証システム")
-        print(f"  ✅ 代替配分生成")
-        print(f"  ✅ マルチ期間分析")
-        print(f"  ✅ リスクプロファイル適応")
+        print(f"\n[IDEA] 主要な機能確認:")
+        print(f"  [OK] 複合目的関数最適化")
+        print(f"  [OK] 包括的制約管理")
+        print(f"  [OK] マルチアルゴリズム最適化")
+        print(f"  [OK] 高度パフォーマンス評価")
+        print(f"  [OK] 結果検証システム")
+        print(f"  [OK] 代替配分生成")
+        print(f"  [OK] マルチ期間分析")
+        print(f"  [OK] リスクプロファイル適応")
         
-        print(f"\n🏁 5-1-3「リスク調整後リターンの最適化」システムデモが正常に完了しました！")
+        print(f"\n[FINISH] 5-1-3「リスク調整後リターンの最適化」システムデモが正常に完了しました！")
         
         return True
         
     except Exception as e:
-        print(f"\n❌ デモ実行中にエラーが発生しました: {e}")
+        print(f"\n[ERROR] デモ実行中にエラーが発生しました: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -498,8 +498,8 @@ if __name__ == "__main__":
     success = main()
     
     if success:
-        print(f"\n✅ システムは正常に動作しています。")
+        print(f"\n[OK] システムは正常に動作しています。")
         sys.exit(0)
     else:
-        print(f"\n❌ システムにエラーがあります。")
+        print(f"\n[ERROR] システムにエラーがあります。")
         sys.exit(1)

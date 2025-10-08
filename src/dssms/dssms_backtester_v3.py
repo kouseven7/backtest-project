@@ -126,7 +126,7 @@ class DSSBacktesterV3:
             self.market_monitor = MarketConditionMonitor()
             self.logger.info("✓ MarketConditionMonitor 初期化成功")
             
-            self.logger.info("🎉 全DSSMSコンポーネント初期化完了 (5/5)")
+            self.logger.info("[SUCCESS] 全DSSMSコンポーネント初期化完了 (5/5)")
             
         except Exception as e:
             self.logger.error(f"💥 コンポーネント初期化失敗: {e}")
@@ -156,14 +156,14 @@ class DSSBacktesterV3:
             # Phase 3: 実際の機能実装
             
             # 1. データ取得
-            self.logger.info("📈 Step 1: 市場データ取得")
+            self.logger.info("[UP] Step 1: 市場データ取得")
             market_data = self.fetch_market_data(self.symbol_universe, target_date)
             
             if not market_data:
                 raise RuntimeError("市場データ取得に失敗しました")
             
             # 2. パーフェクトオーダースコア計算
-            self.logger.info("🎯 Step 2: パーフェクトオーダースコア計算")
+            self.logger.info("[TARGET] Step 2: パーフェクトオーダースコア計算")
             scores = self.calculate_perfect_order_scores(market_data)
             
             # 3. ランキング
@@ -363,13 +363,13 @@ class DSSBacktesterV3:
             
             # ランキング表示
             if score >= 0.75:
-                status = "🎯 HIGH"
+                status = "[TARGET] HIGH"
             elif score >= 0.5:
-                status = "✅ MID"
+                status = "[OK] MID"
             elif score > 0.0:
                 status = "⚠ LOW"
             else:
-                status = "❌ ZERO"
+                status = "[ERROR] ZERO"
             
             self.logger.info(f"#{rank}: {symbol} (スコア: {score:.2f}) - {status}")
         
@@ -402,17 +402,17 @@ class DSSBacktesterV3:
         selected_symbol = top_entry['symbol']
         selected_score = top_entry['score']
         
-        self.logger.info(f"🎯 選択銘柄: {selected_symbol} (スコア: {selected_score:.2f})")
+        self.logger.info(f"[TARGET] 選択銘柄: {selected_symbol} (スコア: {selected_score:.2f})")
         
         # スコア品質チェック
         if selected_score >= 0.75:
-            self.logger.info("✅ 高品質選択: パーフェクトオーダー強度 HIGH")
+            self.logger.info("[OK] 高品質選択: パーフェクトオーダー強度 HIGH")
         elif selected_score >= 0.5:
             self.logger.info("⚠ 中品質選択: パーフェクトオーダー強度 MID")
         elif selected_score > 0.0:
             self.logger.info("⚠ 低品質選択: パーフェクトオーダー強度 LOW")
         else:
-            self.logger.warning("❌ 注意: パーフェクトオーダー条件未達成")
+            self.logger.warning("[ERROR] 注意: パーフェクトオーダー条件未達成")
         
         return selected_symbol
     
@@ -454,10 +454,10 @@ def main():
         print(f"実行時間: {result['execution_time_ms']:.1f}ms")
         print(f"Phase: {result['phase']}")
         
-        print("✅ Phase 2 基本動作確認完了")
+        print("[OK] Phase 2 基本動作確認完了")
         
     except Exception as e:
-        print(f"❌ エラー: {e}")
+        print(f"[ERROR] エラー: {e}")
         raise
 
 

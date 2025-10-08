@@ -358,7 +358,7 @@ class WebInterface:
                 </script>
             </head>
             <body>
-                <h1>🚀 Multi-Strategy Coordination Dashboard</h1>
+                <h1>[ROCKET] Multi-Strategy Coordination Dashboard</h1>
                 
                 <div class="card">
                     <h2>Quick Actions</h2>
@@ -771,7 +771,7 @@ if __name__ == "__main__":
         
         # システム状況取得
         status = interface.get_system_status()
-        print(f"\n📊 System Status:")
+        print(f"\n[CHART] System Status:")
         print(f"  Coordination State: {status['coordination']['state']}")
         print(f"  Integration Mode: {status['integration']['integration_config']['mode']}")
         print(f"  Integrated Systems: {len(status['integration']['integrated_systems'])}")
@@ -792,12 +792,12 @@ if __name__ == "__main__":
         # デモ戦略調整実行
         demo_strategies = ["VWAPBounceStrategy", "GCStrategy", "BreakoutStrategy"]
         
-        print(f"\n🎯 Testing strategy coordination with {len(demo_strategies)} strategies...")
+        print(f"\n[TARGET] Testing strategy coordination with {len(demo_strategies)} strategies...")
         
         # ネイティブ実行テスト
         result = interface.execute_strategy_coordination(demo_strategies)
         print(f"Native Coordination Result:")
-        print(f"  Success: {'✅' if result['success'] else '❌'}")
+        print(f"  Success: {'[OK]' if result['success'] else '[ERROR]'}")
         print(f"  Method: {result['method']}")
         if result['success']:
             print(f"  Execution ID: {result.get('execution_id', 'N/A')}")
@@ -808,7 +808,7 @@ if __name__ == "__main__":
             if integrated_systems.get(integration_mode):
                 print(f"\n🔄 Testing {system_id} integration...")
                 result = interface.execute_strategy_coordination(demo_strategies, integration_mode)
-                print(f"  Success: {'✅' if result['success'] else '❌'}")
+                print(f"  Success: {'[OK]' if result['success'] else '[ERROR]'}")
                 print(f"  Method: {result['method']}")
         
         # 設定動的更新テスト
@@ -821,7 +821,7 @@ if __name__ == "__main__":
         }
         
         update_success = interface.update_configuration(config_update)
-        print(f"Configuration Update: {'✅' if update_success else '❌'}")
+        print(f"Configuration Update: {'[OK]' if update_success else '[ERROR]'}")
         
         # Web インターフェース案内
         if status['web_interface']['enabled']:
@@ -830,7 +830,7 @@ if __name__ == "__main__":
             print(f"  Dashboard: http://localhost:{port}")
             print(f"  API Status: http://localhost:{port}/api/status")
             print(f"  Integration Info: http://localhost:{port}/api/integration")
-            print(f"\n  💡 ブラウザでダッシュボードにアクセスしてリアルタイム制御が可能です")
+            print(f"\n  [IDEA] ブラウザでダッシュボードにアクセスしてリアルタイム制御が可能です")
         
         # デモ継続（Web インターフェースのため）
         print(f"\n⏳ Demo running... (Web interface active)")
@@ -845,10 +845,10 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print("\n🛑 Demo stopped by user")
         
-        print("\n✅ Multi-Strategy Coordination Interface demo completed!")
+        print("\n[OK] Multi-Strategy Coordination Interface demo completed!")
         
     except Exception as e:
-        print(f"\n❌ Demo failed: {e}")
+        print(f"\n[ERROR] Demo failed: {e}")
         import traceback
         traceback.print_exc()
         

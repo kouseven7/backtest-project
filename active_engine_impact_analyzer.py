@@ -20,7 +20,7 @@ class ActiveEngineImpactAnalyzer:
         
     def analyze_active_engine_impact(self):
         """現在使用中エンジンの詳細影響分析"""
-        print("🚨 重要発見: 現在使用中エンジンのExcel出力問題調査")
+        print("[ALERT] 重要発見: 現在使用中エンジンのExcel出力問題調査")
         print("=" * 80)
         print(f"使用中エンジン: {self.active_engine}")
         print(f"使用元ファイル: {self.backtester_file}")
@@ -43,7 +43,7 @@ class ActiveEngineImpactAnalyzer:
     
     def _analyze_usage_context(self):
         """使用箇所の詳細分析"""
-        print("\n🔍 1. 使用箇所の詳細分析")
+        print("\n[SEARCH] 1. 使用箇所の詳細分析")
         print("-" * 40)
         
         try:
@@ -85,12 +85,12 @@ class ActiveEngineImpactAnalyzer:
                 print(f"   Line {usage['line_number']}: {usage['content']}")
                 
         except Exception as e:
-            print(f"❌ 分析エラー: {e}")
+            print(f"[ERROR] 分析エラー: {e}")
             self.results['usage_analysis'] = {'error': str(e)}
     
     def _compare_with_task42_results(self):
         """Task 4.2結果との照合"""
-        print("\n🔍 2. Task 4.2結果との照合")
+        print("\n[SEARCH] 2. Task 4.2結果との照合")
         print("-" * 40)
         
         # Task 4.2の結果ファイルから品質スコアを確認
@@ -103,10 +103,10 @@ class ActiveEngineImpactAnalyzer:
                 
                 # v1エンジンの品質スコア確認
                 v1_score = task42_data.get('engine_quality_scores', {}).get('v1', 0)
-                print(f"📊 現在使用中エンジン(v1)の品質スコア: {v1_score}点")
+                print(f"[CHART] 現在使用中エンジン(v1)の品質スコア: {v1_score}点")
                 
                 if v1_score == 85.0:
-                    print("✅ 品質スコアは最高評価（85.0点）")
+                    print("[OK] 品質スコアは最高評価（85.0点）")
                     quality_assessment = "excellent"
                 elif v1_score >= 50.0:
                     print("🟡 品質スコアは中程度")
@@ -122,16 +122,16 @@ class ActiveEngineImpactAnalyzer:
                 }
                 
             except Exception as e:
-                print(f"❌ Task 4.2結果読み込みエラー: {e}")
+                print(f"[ERROR] Task 4.2結果読み込みエラー: {e}")
                 self.results['quality_assessment'] = {'error': str(e)}
         else:
-            print("⚠️ Task 4.2結果ファイルが見つかりません")
+            print("[WARNING] Task 4.2結果ファイルが見つかりません")
             self.results['quality_assessment'] = {'status': 'not_found'}
     
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: def _evaluate_excel_output_impact(self):
         """実際のExcel出力への影響評価"""
-        print("\n🔍 3. 実際のExcel出力への影響評価")
+        print("\n[SEARCH] 3. 実際のExcel出力への影響評価")
         print("-" * 40)
         
         # 最新のExcel出力ファイルを確認
@@ -160,7 +160,7 @@ class ActiveEngineImpactAnalyzer:
                 print("🟡 ファイルサイズが大きい - 出力データが多い可能性")
             else:
                 impact_level = "normal"
-                print("✅ ファイルサイズは正常範囲")
+                print("[OK] ファイルサイズは正常範囲")
             
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: self.results['excel_output_impact'] = {
@@ -169,7 +169,7 @@ class ActiveEngineImpactAnalyzer:
                 'impact_level': impact_level
             }
         else:
-            print("❌ Excel出力ファイルが見つかりません")
+            print("[ERROR] Excel出力ファイルが見つかりません")
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: self.results['excel_output_impact'] = {
                 'status': 'no_files_found',
@@ -178,7 +178,7 @@ class ActiveEngineImpactAnalyzer:
     
     def _define_as_new_problem(self):
         """Problem 15として新問題定義"""
-        print("\n🔍 4. Problem 15として新問題定義")
+        print("\n[SEARCH] 4. Problem 15として新問題定義")
         print("-" * 40)
         
         # 調査結果に基づく問題定義
@@ -218,7 +218,7 @@ class ActiveEngineImpactAnalyzer:
         
         self.results['problem_15_definition'] = problem_definition
         
-        print(f"📋 Problem 15定義完了:")
+        print(f"[LIST] Problem 15定義完了:")
         print(f"   タイトル: {problem_definition['title']}")
         print(f"   重要度: {severity}")
         print(f"   優先度: {priority}")
@@ -231,13 +231,13 @@ class ActiveEngineImpactAnalyzer:
         recommendations = []
         
         if quality_score == 85.0:
-            recommendations.append("✅ 品質スコア最高評価のため、現状維持推奨")
-            recommendations.append("📊 定期的な品質監視の継続")
+            recommendations.append("[OK] 品質スコア最高評価のため、現状維持推奨")
+            recommendations.append("[CHART] 定期的な品質監視の継続")
         elif quality_score >= 50:
-            recommendations.append("🔧 品質改善の検討（中優先度）")
-            recommendations.append("📋 具体的改善項目の特定")
+            recommendations.append("[TOOL] 品質改善の検討（中優先度）")
+            recommendations.append("[LIST] 具体的改善項目の特定")
         else:
-            recommendations.append("🚨 緊急品質改善が必要")
+            recommendations.append("[ALERT] 緊急品質改善が必要")
             recommendations.append("🔄 代替エンジンへの切り替え検討")
         
         if impact_level == "critical":
@@ -251,11 +251,11 @@ class ActiveEngineImpactAnalyzer:
     
     def update_roadmap(self):
         """roadmap2.mdの更新"""
-        print("\n🔍 5. roadmap2.mdの更新")
+        print("\n[SEARCH] 5. roadmap2.mdの更新")
         print("-" * 40)
         
         if 'problem_15_definition' not in self.results:
-            print("❌ Problem 15定義が完了していません")
+            print("[ERROR] Problem 15定義が完了していません")
             return False
         
         problem_def = self.results['problem_15_definition']
@@ -305,12 +305,12 @@ class ActiveEngineImpactAnalyzer:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(self.results, f, ensure_ascii=False, indent=2)
         
-        print(f"\n✅ 分析結果保存: {output_file}")
+        print(f"\n[OK] 分析結果保存: {output_file}")
         return output_file
 
 def main():
     """メイン実行"""
-    print("🚨 重要発見調査: 現在使用中エンジンのExcel出力問題調査")
+    print("[ALERT] 重要発見調査: 現在使用中エンジンのExcel出力問題調査")
     print("=" * 80)
     
     analyzer = ActiveEngineImpactAnalyzer()
@@ -324,9 +324,9 @@ def main():
     # 結果保存
     output_file = analyzer.save_results()
     
-    print(f"\n✅ 重要発見調査完了: {output_file}")
+    print(f"\n[OK] 重要発見調査完了: {output_file}")
     print("=" * 80)
-    print("📋 次のアクション:")
+    print("[LIST] 次のアクション:")
     print("1. roadmap2.mdにProblem 15を追加")
     print("2. 現在使用中エンジンの詳細検証")
     print("3. Excel出力品質の実測評価")

@@ -195,6 +195,6 @@ if __name__ == "__main__":
     success2 = test_specific_calculations()
     
     if success1 and success2:
-        print("\n🎉 全てのテストが成功しました！")
+        print("\n[SUCCESS] 全てのテストが成功しました！")
     else:
-        print("\n❌ 一部のテストが失敗しました。")
+        print("\n[ERROR] 一部のテストが失敗しました。")

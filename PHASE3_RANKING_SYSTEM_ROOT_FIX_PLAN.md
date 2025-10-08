@@ -12,12 +12,12 @@ Phase 2テストログから確認された構造不整合パターン：
 
 ```
 Day 1 (2023-01-01):
-🔍 RANKING RESULT STRUCTURE: keys=['date', 'rankings', 'top_symbol', 'top_score', 'total_symbols', 'data_source', 'diagnostic_info']
-🔧 診断結果修正: top_symbol=6758 ← **修復機能動作**
+[SEARCH] RANKING RESULT STRUCTURE: keys=['date', 'rankings', 'top_symbol', 'top_score', 'total_symbols', 'data_source', 'diagnostic_info']
+[TOOL] 診断結果修正: top_symbol=6758 ← **修復機能動作**
 
 Day 2+ (2023-01-02以降):
-🔍 RANKING RESULT STRUCTURE: keys=['symbols', 'date'] 
-🔍 RANKING TOP_SYMBOL: None ← **構造不整合継続**
+[SEARCH] RANKING RESULT STRUCTURE: keys=['symbols', 'date'] 
+[SEARCH] RANKING TOP_SYMBOL: None ← **構造不整合継続**
 ```
 
 ### 根本原因

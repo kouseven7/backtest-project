@@ -157,13 +157,13 @@ def test_simple_perfect_order():
             logger.info(f"\n2023年のパーフェクトオーダー月数: {perfect_months}/12")
             
             if perfect_months == 0:
-                logger.error("❌ 2023年中にパーフェクトオーダーが一度も発生していません")
+                logger.error("[ERROR] 2023年中にパーフェクトオーダーが一度も発生していません")
                 logger.error("これは以下の可能性があります:")
                 logger.error("1. 2023年は日本株が下落基調だった")
                 logger.error("2. パーフェクトオーダーの定義が厳しすぎる")
                 logger.error("3. SMA期間設定が適切でない")
             else:
-                logger.info(f"✅ パーフェクトオーダーが{perfect_months}回発生")
+                logger.info(f"[OK] パーフェクトオーダーが{perfect_months}回発生")
         
         return True
         
@@ -175,7 +175,7 @@ def test_simple_perfect_order():
 
 def main():
     """メイン実行"""
-    logger.info("🔍 データ構造・パーフェクトオーダー確認開始")
+    logger.info("[SEARCH] データ構造・パーフェクトオーダー確認開始")
     
     # データ構造確認
     check_data_structure()

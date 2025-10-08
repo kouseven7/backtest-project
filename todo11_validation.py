@@ -37,7 +37,7 @@ class WeightJudgmentSystemRecoveryValidator:
         TODO(tag:weight_judgment_recovery, rationale:comprehensive recovery validation)
         """
         print("\n" + "="*80)
-        print("🔧 TODO #11: 重み判断システム完全復旧確認 開始")
+        print("[TOOL] TODO #11: 重み判断システム完全復旧確認 開始")
         print("="*80)
         
         try:
@@ -84,7 +84,7 @@ class WeightJudgmentSystemRecoveryValidator:
         TODO #9完了状況確認
         TODO(tag:weight_judgment_recovery, rationale:verify foundation readiness)
         """
-        print(f"\n📋 Phase 1: TODO #9完了状況確認")
+        print(f"\n[LIST] Phase 1: TODO #9完了状況確認")
         
         try:
             from config.multi_strategy_manager import MultiStrategyManager
@@ -106,9 +106,9 @@ class WeightJudgmentSystemRecoveryValidator:
             if (self.strategy_registry_status['total_strategies'] >= 7 and 
                 self.strategy_registry_status['is_initialized']):
                 self.todo9_completion_verified = True
-                print("✅ TODO #9完了確認: 7/7戦略レジストリ完全実装済み")
+                print("[OK] TODO #9完了確認: 7/7戦略レジストリ完全実装済み")
             else:
-                print(f"⚠️ TODO #9不完全: {self.strategy_registry_status['total_strategies']}/7戦略")
+                print(f"[WARNING] TODO #9不完全: {self.strategy_registry_status['total_strategies']}/7戦略")
                 
             print(f"  戦略レジストリ品質: {self.strategy_registry_status['completion_rate']:.1f}%")
             print(f"  利用可能戦略: {self.strategy_registry_status['available_strategies']}")
@@ -120,7 +120,7 @@ class WeightJudgmentSystemRecoveryValidator:
             }
             
         except Exception as e:
-            print(f"❌ TODO #9確認エラー: {e}")
+            print(f"[ERROR] TODO #9確認エラー: {e}")
             self.test_results['todo9_verification'] = {'passed': False, 'error': str(e)}
     
     def _validate_strategy_registry_complete_operation(self):
@@ -128,7 +128,7 @@ class WeightJudgmentSystemRecoveryValidator:
         戦略レジストリ完全動作確認
         TODO(tag:weight_judgment_recovery, rationale:ensure strategy registry full operation)
         """
-        print(f"\n🔍 Phase 2: 戦略レジストリ完全動作確認")
+        print(f"\n[SEARCH] Phase 2: 戦略レジストリ完全動作確認")
         
         try:
             from config.multi_strategy_manager import MultiStrategyManager
@@ -176,28 +176,28 @@ class WeightJudgmentSystemRecoveryValidator:
                         
                         if execution_results[strategy_name]['principle_compliant']:
                             successful_executions += 1
-                            print(f"  ✅ {strategy_name}: 完全実行成功 ({len(result)}行)")
+                            print(f"  [OK] {strategy_name}: 完全実行成功 ({len(result)}行)")
                         else:
-                            print(f"  ⚠️ {strategy_name}: シグナル不完全")
+                            print(f"  [WARNING] {strategy_name}: シグナル不完全")
                     else:
                         execution_results[strategy_name] = {
                             'instance_created': True,
                             'backtest_callable': False,
                             'error': 'backtest method not callable'
                         }
-                        print(f"  ❌ {strategy_name}: backtest()実行不可")
+                        print(f"  [ERROR] {strategy_name}: backtest()実行不可")
                         
                 except Exception as e:
                     execution_results[strategy_name] = {
                         'instance_created': False,
                         'error': str(e)
                     }
-                    print(f"  ❌ {strategy_name}: 実行エラー - {e}")
+                    print(f"  [ERROR] {strategy_name}: 実行エラー - {e}")
             
             # 戦略レジストリ実行品質評価
             registry_execution_rate = (successful_executions / len(available_strategies) * 100) if available_strategies else 0
             
-            print(f"\n📊 戦略レジストリ実行結果:")
+            print(f"\n[CHART] 戦略レジストリ実行結果:")
             print(f"  成功戦略: {successful_executions}/{len(available_strategies)}")
             print(f"  実行成功率: {registry_execution_rate:.1f}%")
             
@@ -209,7 +209,7 @@ class WeightJudgmentSystemRecoveryValidator:
             }
             
         except Exception as e:
-            print(f"❌ 戦略レジストリ動作確認エラー: {e}")
+            print(f"[ERROR] 戦略レジストリ動作確認エラー: {e}")
             self.test_results['strategy_registry_execution'] = {'passed': False, 'error': str(e)}
     
     def _validate_integrated_multi_strategy_flow_recovery(self):
@@ -217,7 +217,7 @@ class WeightJudgmentSystemRecoveryValidator:
         統合マルチ戦略フロー復旧確認（メイン検証）
         TODO(tag:weight_judgment_recovery, rationale:core multi-strategy integration validation)
         """
-        print(f"\n🎯 Phase 3: 統合マルチ戦略フロー復旧確認（メイン）")
+        print(f"\n[TARGET] Phase 3: 統合マルチ戦略フロー復旧確認（メイン）")
         
         try:
             from config.multi_strategy_manager import MultiStrategyManager
@@ -260,16 +260,16 @@ class WeightJudgmentSystemRecoveryValidator:
                         if (integration_details['status'] in ['ready', 'completed'] and 
                             len(integration_details['selected_strategies']) > 0):
                             integration_success = True
-                            print(f"  ✅ 統合フロー実行成功")
+                            print(f"  [OK] 統合フロー実行成功")
                             print(f"    選択戦略: {integration_details['selected_strategies']}")
                             print(f"    重み配分: {integration_details['portfolio_weights']}")
                         else:
-                            print(f"  ⚠️ 統合フロー部分成功: {integration_details['status']}")
+                            print(f"  [WARNING] 統合フロー部分成功: {integration_details['status']}")
                     else:
-                        print(f"  ❌ 統合フロー実行失敗: 結果なし")
+                        print(f"  [ERROR] 統合フロー実行失敗: 結果なし")
                 else:
                     # execute_multi_strategy_flowが存在しない場合の代替テスト
-                    print("  ⚠️ execute_multi_strategy_flowメソッドが存在しません")
+                    print("  [WARNING] execute_multi_strategy_flowメソッドが存在しません")
                     print("  代替テスト: 個別戦略実行 + 重み配分確認")
                     
                     # 個別戦略での統合テスト
@@ -281,7 +281,7 @@ class WeightJudgmentSystemRecoveryValidator:
                         'performance_metrics': {'test_mode': True}
                     }
                     
-                    print(f"  ✅ 代替統合テスト成功")
+                    print(f"  [OK] 代替統合テスト成功")
                     print(f"    利用可能戦略: {integration_details['selected_strategies']}")
                     print(f"    重み配分: {integration_details['portfolio_weights']}")
                 
@@ -292,14 +292,14 @@ class WeightJudgmentSystemRecoveryValidator:
                 }
                 
             except Exception as flow_error:
-                print(f"  ❌ 統合フロー実行エラー: {flow_error}")
+                print(f"  [ERROR] 統合フロー実行エラー: {flow_error}")
                 self.test_results['integrated_multi_strategy_flow'] = {
                     'execution_success': False,
                     'error': str(flow_error)
                 }
                 
         except Exception as e:
-            print(f"❌ 統合マルチ戦略フロー確認エラー: {e}")
+            print(f"[ERROR] 統合マルチ戦略フロー確認エラー: {e}")
             self.test_results['integrated_multi_strategy_flow'] = {'passed': False, 'error': str(e)}
     
     def _validate_weight_calculation_accuracy(self):
@@ -330,28 +330,28 @@ class WeightJudgmentSystemRecoveryValidator:
                     weight_sum = weight_validation['weight_sum']
                     
                     if 0.95 <= weight_sum <= 1.05:  # 5%誤差許容
-                        print(f"  ✅ 重み配分正常: 合計={weight_sum:.3f}")
+                        print(f"  [OK] 重み配分正常: 合計={weight_sum:.3f}")
                         weight_validation['weight_accuracy'] = 'excellent'
                     elif 0.80 <= weight_sum <= 1.20:  # 20%誤差許容
-                        print(f"  ⚠️ 重み配分やや不正確: 合計={weight_sum:.3f}")
+                        print(f"  [WARNING] 重み配分やや不正確: 合計={weight_sum:.3f}")
                         weight_validation['weight_accuracy'] = 'acceptable'
                     else:
-                        print(f"  ❌ 重み配分異常: 合計={weight_sum:.3f}")
+                        print(f"  [ERROR] 重み配分異常: 合計={weight_sum:.3f}")
                         weight_validation['weight_accuracy'] = 'poor'
                         
                     print(f"    重み詳細: {strategy_weights}")
                 else:
-                    print(f"  ❌ 重み配分取得失敗")
+                    print(f"  [ERROR] 重み配分取得失敗")
                     weight_validation['weight_accuracy'] = 'failed'
                     
                 self.test_results['weight_calculation'] = weight_validation
                 
             else:
-                print(f"  ❌ MultiStrategyManager未初期化")
+                print(f"  [ERROR] MultiStrategyManager未初期化")
                 self.test_results['weight_calculation'] = {'passed': False, 'error': 'Manager not initialized'}
                 
         except Exception as e:
-            print(f"❌ 重み配分確認エラー: {e}")
+            print(f"[ERROR] 重み配分確認エラー: {e}")
             self.test_results['weight_calculation'] = {'passed': False, 'error': str(e)}
     
     def _validate_backtest_principle_compliance_in_weights(self):
@@ -359,7 +359,7 @@ class WeightJudgmentSystemRecoveryValidator:
         重み判断システムにおけるバックテスト基本理念遵守確認
         TODO(tag:weight_judgment_recovery, rationale:ensure backtest principle compliance in weight system)
         """
-        print(f"\n🎯 Phase 5: バックテスト基本理念遵守確認（重み判断）")
+        print(f"\n[TARGET] Phase 5: バックテスト基本理念遵守確認（重み判断）")
         
         principle_compliance = {
             'actual_backtest_execution': False,
@@ -376,7 +376,7 @@ class WeightJudgmentSystemRecoveryValidator:
                 
                 if flow_results.get('execution_success', False):
                     principle_compliance['actual_backtest_execution'] = True
-                    print("  ✅ 重み判断システムで実際のbacktest()実行確認")
+                    print("  [OK] 重み判断システムで実際のbacktest()実行確認")
                     
                     # シグナル生成確認（統合システム経由）
                     integration_details = flow_results.get('integration_details', {})
@@ -384,19 +384,19 @@ class WeightJudgmentSystemRecoveryValidator:
                     
                     if len(selected_strategies) > 0:
                         principle_compliance['signal_generation_verified'] = True
-                        print(f"  ✅ シグナル生成確認: {len(selected_strategies)}戦略")
+                        print(f"  [OK] シグナル生成確認: {len(selected_strategies)}戦略")
                         
                         # 取引実行確認（パフォーマンス指標存在）
                         performance_metrics = integration_details.get('performance_metrics', {})
                         if performance_metrics:
                             principle_compliance['trade_execution_confirmed'] = True
-                            print("  ✅ 取引実行確認: パフォーマンス指標生成")
+                            print("  [OK] 取引実行確認: パフォーマンス指標生成")
                             
                             # Excel出力準備確認
                             if 'total_trades' in performance_metrics or 'portfolio_value' in performance_metrics or 'test_mode' in performance_metrics:
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: principle_compliance['excel_output_ready'] = True
-                                print("  ✅ Excel出力対応確認: 取引データ準備完了")
+                                print("  [OK] Excel出力対応確認: 取引データ準備完了")
             
             # 戦略レジストリ実行結果からの基本理念確認
             if 'strategy_registry_execution' in self.test_results:
@@ -406,17 +406,17 @@ class WeightJudgmentSystemRecoveryValidator:
                 if execution_rate >= 80:  # 80%以上の戦略で実行成功
                     if not principle_compliance['actual_backtest_execution']:
                         principle_compliance['actual_backtest_execution'] = True
-                        print("  ✅ 戦略レジストリでのbacktest()実行確認")
+                        print("  [OK] 戦略レジストリでのbacktest()実行確認")
                     
                     if not principle_compliance['signal_generation_verified']:
                         principle_compliance['signal_generation_verified'] = True
-                        print("  ✅ 個別戦略でのシグナル生成確認")
+                        print("  [OK] 個別戦略でのシグナル生成確認")
             
             # 基本理念遵守率計算
             compliance_count = sum(principle_compliance.values())
             compliance_rate = (compliance_count / len(principle_compliance)) * 100
             
-            print(f"\n📊 バックテスト基本理念遵守評価:")
+            print(f"\n[CHART] バックテスト基本理念遵守評価:")
             print(f"  遵守項目: {compliance_count}/{len(principle_compliance)}")
             print(f"  遵守率: {compliance_rate:.1f}%")
             
@@ -427,7 +427,7 @@ class WeightJudgmentSystemRecoveryValidator:
             }
             
         except Exception as e:
-            print(f"❌ バックテスト基本理念確認エラー: {e}")
+            print(f"[ERROR] バックテスト基本理念確認エラー: {e}")
             self.test_results['backtest_principle_compliance'] = {'passed': False, 'error': str(e)}
     
     def _measure_recovery_success_rate(self) -> float:
@@ -435,7 +435,7 @@ class WeightJudgmentSystemRecoveryValidator:
         重み判断システム復旧成功率測定
         TODO(tag:weight_judgment_recovery, rationale:measure comprehensive recovery success rate)
         """
-        print(f"\n📊 Phase 6: 成功率測定・評価")
+        print(f"\n[CHART] Phase 6: 成功率測定・評価")
         
         success_metrics = {
             'todo9_verification': 0.0,
@@ -448,9 +448,9 @@ class WeightJudgmentSystemRecoveryValidator:
         # TODO #9確認 (20%)
         if self.test_results.get('todo9_verification', {}).get('passed', False):
             success_metrics['todo9_verification'] = 20.0
-            print("  ✅ TODO #9確認: 20/20点")
+            print("  [OK] TODO #9確認: 20/20点")
         else:
-            print("  ❌ TODO #9確認: 0/20点")
+            print("  [ERROR] TODO #9確認: 0/20点")
         
         # 戦略レジストリ実行 (25%)
         registry_results = self.test_results.get('strategy_registry_execution', {})
@@ -458,29 +458,29 @@ class WeightJudgmentSystemRecoveryValidator:
             execution_rate = registry_results['execution_rate']
             registry_score = (execution_rate / 100) * 25
             success_metrics['strategy_registry_execution'] = registry_score
-            print(f"  ✅ 戦略レジストリ実行: {registry_score:.1f}/25点 ({execution_rate:.1f}%)")
+            print(f"  [OK] 戦略レジストリ実行: {registry_score:.1f}/25点 ({execution_rate:.1f}%)")
         else:
-            print("  ❌ 戦略レジストリ実行: 0/25点")
+            print("  [ERROR] 戦略レジストリ実行: 0/25点")
         
         # 統合マルチ戦略フロー (30%) - 最重要
         flow_results = self.test_results.get('integrated_multi_strategy_flow', {})
         if flow_results.get('execution_success', False):
             success_metrics['integrated_multi_strategy_flow'] = 30.0
-            print("  ✅ 統合マルチ戦略フロー: 30/30点")
+            print("  [OK] 統合マルチ戦略フロー: 30/30点")
         else:
-            print("  ❌ 統合マルチ戦略フロー: 0/30点")
+            print("  [ERROR] 統合マルチ戦略フロー: 0/30点")
         
         # 重み配分計算 (15%)
         weight_results = self.test_results.get('weight_calculation', {})
         weight_accuracy = weight_results.get('weight_accuracy', 'failed')
         if weight_accuracy == 'excellent':
             success_metrics['weight_calculation'] = 15.0
-            print("  ✅ 重み配分計算: 15/15点")
+            print("  [OK] 重み配分計算: 15/15点")
         elif weight_accuracy == 'acceptable':
             success_metrics['weight_calculation'] = 10.0
-            print("  ⚠️ 重み配分計算: 10/15点")
+            print("  [WARNING] 重み配分計算: 10/15点")
         else:
-            print("  ❌ 重み配分計算: 0/15点")
+            print("  [ERROR] 重み配分計算: 0/15点")
         
         # バックテスト基本理念遵守 (10%)
         compliance_results = self.test_results.get('backtest_principle_compliance', {})
@@ -488,24 +488,24 @@ class WeightJudgmentSystemRecoveryValidator:
             compliance_rate = compliance_results['compliance_rate']
             compliance_score = (compliance_rate / 100) * 10
             success_metrics['backtest_principle_compliance'] = compliance_score
-            print(f"  ✅ バックテスト基本理念遵守: {compliance_score:.1f}/10点 ({compliance_rate:.1f}%)")
+            print(f"  [OK] バックテスト基本理念遵守: {compliance_score:.1f}/10点 ({compliance_rate:.1f}%)")
         else:
-            print("  ❌ バックテスト基本理念遵守: 0/10点")
+            print("  [ERROR] バックテスト基本理念遵守: 0/10点")
         
         # 総合成功率計算
         total_success_rate = sum(success_metrics.values())
         
-        print(f"\n🎯 総合成功率: {total_success_rate:.1f}%")
+        print(f"\n[TARGET] 総合成功率: {total_success_rate:.1f}%")
         
         # 成功率評価
         if total_success_rate >= 95.0:
-            print("🎉 評価: 完全復旧 (95%以上)")
+            print("[SUCCESS] 評価: 完全復旧 (95%以上)")
         elif total_success_rate >= 75.0:
-            print("✅ 評価: 復旧成功 (75%以上)")
+            print("[OK] 評価: 復旧成功 (75%以上)")
         elif total_success_rate >= 50.0:
-            print("⚠️ 評価: 部分復旧 (50-75%)")
+            print("[WARNING] 評価: 部分復旧 (50-75%)")
         else:
-            print("❌ 評価: 復旧失敗 (50%未満)")
+            print("[ERROR] 評価: 復旧失敗 (50%未満)")
         
         self.recovery_metrics = success_metrics
         return total_success_rate
@@ -515,32 +515,32 @@ class WeightJudgmentSystemRecoveryValidator:
         包括的復旧レポート生成
         TODO(tag:weight_judgment_recovery, rationale:generate comprehensive recovery report)
         """
-        print(f"\n📋 Phase 7: 包括的復旧レポート")
+        print(f"\n[LIST] Phase 7: 包括的復旧レポート")
         print("="*80)
-        print("🎯 TODO #11: 重み判断システム完全復旧確認 結果レポート")
+        print("[TARGET] TODO #11: 重み判断システム完全復旧確認 結果レポート")
         print("="*80)
         
         # 復旧状況サマリー
-        print(f"\n📊 復旧状況サマリー:")
+        print(f"\n[CHART] 復旧状況サマリー:")
         print(f"  総合成功率: {recovery_rate:.1f}%")
-        print(f"  TODO #9基盤: {'✅ 完了' if self.todo9_completion_verified else '❌ 不完全'}")
+        print(f"  TODO #9基盤: {'[OK] 完了' if self.todo9_completion_verified else '[ERROR] 不完全'}")
         print(f"  戦略レジストリ: {self.strategy_registry_status.get('total_strategies', 0)}/7戦略")
         
         # 各Phase結果
-        print(f"\n🔍 Phase別結果:")
+        print(f"\n[SEARCH] Phase別結果:")
         for phase_name, score in self.recovery_metrics.items():
-            status = "✅" if score > 0 else "❌"
+            status = "[OK]" if score > 0 else "[ERROR]"
             print(f"  {status} {phase_name}: {score:.1f}点")
         
         # 戦略レジストリ詳細（TODO #9成果）
         if self.strategy_registry_status:
-            print(f"\n📋 戦略レジストリ詳細（TODO #9成果）:")
+            print(f"\n[LIST] 戦略レジストリ詳細（TODO #9成果）:")
             strategies = self.strategy_registry_status.get('available_strategies', [])
             for i, strategy in enumerate(strategies, 1):
                 print(f"  {i}. {strategy}")
         
         # 残存課題と推奨事項
-        print(f"\n⚠️ 残存課題と推奨事項:")
+        print(f"\n[WARNING] 残存課題と推奨事項:")
         if recovery_rate < 75.0:
             print("  - 成功率75%未満: 追加調査・修正が必要")
             if not self.test_results.get('integrated_multi_strategy_flow', {}).get('execution_success', False):
@@ -554,9 +554,9 @@ class WeightJudgmentSystemRecoveryValidator:
         # バックテスト基本理念遵守状況
         compliance_results = self.test_results.get('backtest_principle_compliance', {})
         if 'compliance_details' in compliance_results:
-            print(f"\n🎯 バックテスト基本理念遵守状況:")
+            print(f"\n[TARGET] バックテスト基本理念遵守状況:")
             for principle, status in compliance_results['compliance_details'].items():
-                status_mark = "✅" if status else "❌"
+                status_mark = "[OK]" if status else "[ERROR]"
                 print(f"  {status_mark} {principle}")
         
         print("="*80)

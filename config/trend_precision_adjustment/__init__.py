@@ -98,10 +98,10 @@ def get_package_info():
 def verify_package_installation():
     """パッケージが正しくインストールされているかチェック"""
     if not _package_initialized:
-        print("❌ パッケージの初期化に失敗しました")
+        print("[ERROR] パッケージの初期化に失敗しました")
         return False
     
-    print("✅ 5-2-2 トレンド判定精度自動補正システム パッケージ初期化完了")
+    print("[OK] 5-2-2 トレンド判定精度自動補正システム パッケージ初期化完了")
     print(f"   バージョン: {__version__}")
     print(f"   利用可能なクラス数: {len(__all__)}")
     
@@ -110,7 +110,7 @@ def verify_package_installation():
 if __name__ == "__main__":
     # パッケージテスト
     verify_package_installation()
-    print("\n📊 パッケージ情報:")
+    print("\n[CHART] パッケージ情報:")
     info = get_package_info()
     for key, value in info.items():
         print(f"   {key}: {value}")

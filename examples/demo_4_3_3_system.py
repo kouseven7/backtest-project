@@ -408,7 +408,7 @@ class Demo433System:
             
         except Exception as e:
             logger.error(f"フルデモ実行エラー: {e}")
-            print(f"❌ デモ実行中にエラーが発生しました: {e}")
+            print(f"[ERROR] デモ実行中にエラーが発生しました: {e}")
             return False
 
 def main():
@@ -419,13 +419,13 @@ def main():
         success = demo.run_full_demo()
         
         if success:
-            print("\n🎉 4-3-3システムデモが正常に完了しました！")
+            print("\n[SUCCESS] 4-3-3システムデモが正常に完了しました！")
             print("\n次のステップ:")
             print("1. 生成された視覚化とレポートを確認")
             print("2. 実際のデータでシステムをテスト")
             print("3. 既存システムとの統合を確認")
         else:
-            print("\n❌ デモ実行に失敗しました。ログを確認してください。")
+            print("\n[ERROR] デモ実行に失敗しました。ログを確認してください。")
             
     except KeyboardInterrupt:
         print("\n⏸️ ユーザーによってデモが中断されました。")

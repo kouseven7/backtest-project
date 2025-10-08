@@ -36,7 +36,7 @@ class Phase2Stage4IntegrationValidator:
         
     def measure_baseline_performance(self) -> Dict[str, Any]:
         """ベースライン性能測定"""
-        print("📊 Phase 2統合後ベースライン性能測定中...")
+        print("[CHART] Phase 2統合後ベースライン性能測定中...")
         
         baseline_result = {
             'measurement_success': False,
@@ -112,27 +112,27 @@ print("MEASUREMENT_SUCCESS")
                         except:
                             pass
                 
-                print(f"  ✅ ベースライン測定成功")
-                print(f"  📊 総インポート時間: {baseline_result['total_import_time_ms']:.1f}ms")
+                print(f"  [OK] ベースライン測定成功")
+                print(f"  [CHART] 総インポート時間: {baseline_result['total_import_time_ms']:.1f}ms")
                 
                 for module, time_ms in baseline_result['import_times'].items():
                     if time_ms > 0:
-                        print(f"  📊 {module}: {time_ms:.1f}ms")
+                        print(f"  [CHART] {module}: {time_ms:.1f}ms")
                 
             else:
                 baseline_result['error'] = f"測定失敗: {result.stderr}"
-                print(f"  ❌ ベースライン測定失敗: {result.stderr}")
+                print(f"  [ERROR] ベースライン測定失敗: {result.stderr}")
                 
         except Exception as e:
             baseline_result['error'] = str(e)
-            print(f"  ❌ ベースライン測定例外: {e}")
+            print(f"  [ERROR] ベースライン測定例外: {e}")
         
         self.performance_baseline = baseline_result
         return baseline_result
     
     def analyze_phase2_cumulative_impact(self) -> Dict[str, Any]:
         """Phase 2累積効果分析"""
-        print("🔍 Phase 2累積効果分析中...")
+        print("[SEARCH] Phase 2累積効果分析中...")
         
         cumulative_analysis = {
             'stage_contributions': {},
@@ -180,17 +180,17 @@ print("MEASUREMENT_SUCCESS")
                         
                         total_reduction += stage_reduction
                         
-                        print(f"  📊 {stage_name}: {stage_reduction}ms削減")
+                        print(f"  [CHART] {stage_name}: {stage_reduction}ms削減")
                         
                     except Exception as e:
-                        print(f"  ⚠️ {stage_name}レポート読み込みエラー: {e}")
+                        print(f"  [WARNING] {stage_name}レポート読み込みエラー: {e}")
                         cumulative_analysis['stage_contributions'][stage_name] = {
                             'estimated_reduction_ms': 0,
                             'error': str(e),
                             'status': 'error'
                         }
                 else:
-                    print(f"  ⚠️ {stage_name}: レポートファイル未発見")
+                    print(f"  [WARNING] {stage_name}: レポートファイル未発見")
                     cumulative_analysis['stage_contributions'][stage_name] = {
                         'estimated_reduction_ms': 0,
                         'status': 'no_report'
@@ -203,12 +203,12 @@ print("MEASUREMENT_SUCCESS")
                                   if s.get('status') == 'completed'])
             cumulative_analysis['implementation_success_rate'] = (completed_stages / len(stage_reports)) * 100
             
-            print(f"  📊 Phase 2総削減量: {total_reduction}ms")
-            print(f"  📊 実装成功率: {cumulative_analysis['implementation_success_rate']:.1f}%")
+            print(f"  [CHART] Phase 2総削減量: {total_reduction}ms")
+            print(f"  [CHART] 実装成功率: {cumulative_analysis['implementation_success_rate']:.1f}%")
             
         except Exception as e:
             cumulative_analysis['error'] = str(e)
-            print(f"  ❌ 累積効果分析エラー: {e}")
+            print(f"  [ERROR] 累積効果分析エラー: {e}")
         
         return cumulative_analysis
     
@@ -265,18 +265,18 @@ print("MEASUREMENT_SUCCESS")
             resolution_rate = (total_addressed / 1243) * 100
             gap_investigation['resolution_success'] = resolution_rate >= 35  # 35%以上で成功
             
-            print(f"  📊 元の隠れたギャップ: 1243ms")
-            print(f"  📊 対処済みギャップ: {total_addressed}ms ({resolution_rate:.1f}%)")
-            print(f"  📊 残存ギャップ: {gap_investigation['remaining_gap_ms']}ms")
+            print(f"  [CHART] 元の隠れたギャップ: 1243ms")
+            print(f"  [CHART] 対処済みギャップ: {total_addressed}ms ({resolution_rate:.1f}%)")
+            print(f"  [CHART] 残存ギャップ: {gap_investigation['remaining_gap_ms']}ms")
             
             if gap_investigation['resolution_success']:
-                print(f"  ✅ 隠れたギャップ解消目標達成")
+                print(f"  [OK] 隠れたギャップ解消目標達成")
             else:
-                print(f"  ⚠️ 隠れたギャップ部分解消")
+                print(f"  [WARNING] 隠れたギャップ部分解消")
             
         except Exception as e:
             gap_investigation['error'] = str(e)
-            print(f"  ❌ ギャップ調査エラー: {e}")
+            print(f"  [ERROR] ギャップ調査エラー: {e}")
         
         return gap_investigation
     
@@ -316,17 +316,17 @@ print("MEASUREMENT_SUCCESS")
                         if 'SystemFallbackPolicy' in content or '_fallback_policy' in content:
                             integration_validation['integrated_files'].append(file_path)
                             integration_count += 1
-                            print(f"  ✅ {Path(file_path).name}: 統合維持")
+                            print(f"  [OK] {Path(file_path).name}: 統合維持")
                         else:
                             integration_validation['integration_issues'].append(f"{file_path}: 統合なし")
-                            print(f"  ⚠️ {Path(file_path).name}: 統合なし")
+                            print(f"  [WARNING] {Path(file_path).name}: 統合なし")
                             
                     except Exception as e:
                         integration_validation['integration_issues'].append(f"{file_path}: 読み込みエラー - {e}")
-                        print(f"  ❌ {Path(file_path).name}: 読み込みエラー")
+                        print(f"  [ERROR] {Path(file_path).name}: 読み込みエラー")
                 else:
                     integration_validation['integration_issues'].append(f"{file_path}: ファイル未存在")
-                    print(f"  ❌ {Path(file_path).name}: ファイル未存在")
+                    print(f"  [ERROR] {Path(file_path).name}: ファイル未存在")
             
             # 統合維持判定
             integration_rate = (integration_count / len(integrated_files)) * 100
@@ -339,16 +339,16 @@ print("MEASUREMENT_SUCCESS")
             else:
                 integration_validation['fallback_functionality'] = 'unavailable'
             
-            print(f"  📊 統合維持率: {integration_rate:.1f}% ({integration_count}/{len(integrated_files)})")
+            print(f"  [CHART] 統合維持率: {integration_rate:.1f}% ({integration_count}/{len(integrated_files)})")
             
             if integration_validation['integration_maintained']:
-                print(f"  ✅ SystemFallbackPolicy統合維持成功")
+                print(f"  [OK] SystemFallbackPolicy統合維持成功")
             else:
-                print(f"  ⚠️ SystemFallbackPolicy統合部分維持")
+                print(f"  [WARNING] SystemFallbackPolicy統合部分維持")
                 
         except Exception as e:
             integration_validation['error'] = str(e)
-            print(f"  ❌ 統合確認エラー: {e}")
+            print(f"  [ERROR] 統合確認エラー: {e}")
         
         return integration_validation
     
@@ -374,7 +374,7 @@ print("MEASUREMENT_SUCCESS")
             ]
             
             # 1. 構文検証
-            print("  🔍 構文検証中...")
+            print("  [SEARCH] 構文検証中...")
             for file_path in critical_files:
                 full_path = self.project_root / file_path
                 
@@ -400,7 +400,7 @@ print("MEASUREMENT_SUCCESS")
                     quality_assurance['syntax_validation']['details'].append(f"{Path(file_path).name}: ファイル未存在")
             
             # 2. インポート検証
-            print("  🔍 インポート検証中...")
+            print("  [SEARCH] インポート検証中...")
             try:
                 import_test_result = subprocess.run([
                     sys.executable, '-c',
@@ -419,7 +419,7 @@ print("MEASUREMENT_SUCCESS")
                 quality_assurance['import_validation']['details'].append(f"config: インポート検証エラー - {e}")
             
             # 3. 機能テスト（軽量）
-            print("  🔍 機能テスト中...")
+            print("  [SEARCH] 機能テスト中...")
             try:
                 # 遅延インポート機能テスト
                 lazy_test_result = subprocess.run([
@@ -469,18 +469,18 @@ except:
             else:
                 quality_assurance['overall_stability'] = 'unstable'
             
-            print(f"  📊 品質スコア: {quality_assurance['quality_score']:.1f}%")
-            print(f"  📊 全体安定性: {quality_assurance['overall_stability']}")
+            print(f"  [CHART] 品質スコア: {quality_assurance['quality_score']:.1f}%")
+            print(f"  [CHART] 全体安定性: {quality_assurance['overall_stability']}")
             
         except Exception as e:
             quality_assurance['error'] = str(e)
-            print(f"  ❌ 品質保証エラー: {e}")
+            print(f"  [ERROR] 品質保証エラー: {e}")
         
         return quality_assurance
     
     def generate_final_phase2_report(self) -> Dict[str, Any]:
         """Phase 2最終統合レポート生成"""
-        print("📋 Phase 2最終統合レポート生成中...")
+        print("[LIST] Phase 2最終統合レポート生成中...")
         
         final_report = {
             'phase': 'Phase 2: 構造的課題解決実装 - 最終統合レポート',
@@ -605,7 +605,7 @@ except:
             
             # パフォーマンス関連推奨
             if final_metrics.get('total_estimated_reduction_ms', 0) < 2000:
-                recommendations.append("🎯 追加パフォーマンス最適化: アルゴリズムレベルの最適化を検討")
+                recommendations.append("[TARGET] 追加パフォーマンス最適化: アルゴリズムレベルの最適化を検討")
             
             # 安定性関連推奨
             if final_metrics.get('stability_score', 0) < 80:
@@ -617,19 +617,19 @@ except:
             
             # 継続的改善推奨
             recommendations.extend([
-                "📊 継続的監視: パフォーマンス監視システムの本格導入",
+                "[CHART] 継続的監視: パフォーマンス監視システムの本格導入",
                 "🔄 定期最適化: 月次パフォーマンス見直し・最適化",
                 "📚 ドキュメント整備: 最適化手法・知見の文書化"
             ])
             
         except Exception as e:
-            recommendations.append(f"⚠️ 推奨事項生成エラー: {e}")
+            recommendations.append(f"[WARNING] 推奨事項生成エラー: {e}")
         
         return recommendations
     
     def run_stage4_validation(self) -> bool:
         """Stage 4完全検証実行"""
-        print("🚀 TODO-PERF-001 Phase 2 Stage 4: 統合効果検証・隠れたギャップ解消開始")
+        print("[ROCKET] TODO-PERF-001 Phase 2 Stage 4: 統合効果検証・隠れたギャップ解消開始")
         print("="*80)
         
         start_time = time.time()
@@ -675,12 +675,12 @@ except:
             achievement_summary = final_report['achievement_summary']
             
             print(f"⏱️ Stage 4実行時間: {execution_time:.1f}秒")
-            print(f"📊 Phase 2総削減量: {final_metrics.get('total_estimated_reduction_ms', 0):.0f}ms")
-            print(f"📊 パフォーマンス改善率: {final_metrics.get('performance_improvement_rate', 0):.1f}%") 
-            print(f"📊 実装成功率: {final_metrics.get('implementation_success_rate', 0):.1f}%")
-            print(f"📊 安定性スコア: {final_metrics.get('stability_score', 0):.1f}%")
-            print(f"📊 統合維持率: {final_metrics.get('integration_maintenance_rate', 0):.1f}%")
-            print(f"🎯 全体達成率: {achievement_summary.get('success_rate', 0):.1f}%")
+            print(f"[CHART] Phase 2総削減量: {final_metrics.get('total_estimated_reduction_ms', 0):.0f}ms")
+            print(f"[CHART] パフォーマンス改善率: {final_metrics.get('performance_improvement_rate', 0):.1f}%") 
+            print(f"[CHART] 実装成功率: {final_metrics.get('implementation_success_rate', 0):.1f}%")
+            print(f"[CHART] 安定性スコア: {final_metrics.get('stability_score', 0):.1f}%")
+            print(f"[CHART] 統合維持率: {final_metrics.get('integration_maintenance_rate', 0):.1f}%")
+            print(f"[TARGET] 全体達成率: {achievement_summary.get('success_rate', 0):.1f}%")
             print(f"📄 最終レポート: {report_path}")
             
             # 成功判定
@@ -689,18 +689,18 @@ except:
             stability_score = final_metrics.get('stability_score', 0)
             
             if overall_success and total_reduction >= 1500 and stability_score >= 60:
-                print(f"\n🎉 TODO-PERF-001 Phase 2 構造的課題解決実装 ✅成功✅")
+                print(f"\n[SUCCESS] TODO-PERF-001 Phase 2 構造的課題解決実装 [OK]成功[OK]")
                 print(f"   削減目標: {total_reduction:.0f}ms (目標1500ms以上)")
                 print(f"   安定性: {stability_score:.1f}% (目標60%以上)")
                 return True
             else:
-                print(f"\n⚠️ TODO-PERF-001 Phase 2 部分成功")
+                print(f"\n[WARNING] TODO-PERF-001 Phase 2 部分成功")
                 print(f"   削減量: {total_reduction:.0f}ms (目標1500ms)")
                 print(f"   安定性: {stability_score:.1f}% (目標60%)")
                 return False
                 
         except Exception as e:
-            print(f"❌ Stage 4統合検証エラー: {e}")
+            print(f"[ERROR] Stage 4統合検証エラー: {e}")
             traceback.print_exc()
             return False
 
@@ -714,7 +714,7 @@ def main():
     if success:
         print("\n🎊 Phase 2完全成功 - パフォーマンス最適化基盤確立")
     else:
-        print("\n📈 Phase 2部分成功 - 更なる改善で完全成功可能")
+        print("\n[UP] Phase 2部分成功 - 更なる改善で完全成功可能")
     
     return success
 

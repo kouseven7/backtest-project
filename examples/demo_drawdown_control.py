@@ -26,7 +26,7 @@ try:
     )
     from config.drawdown_action_executor import DrawdownActionExecutor
 except ImportError as e:
-    print(f"❌ Import error: {e}")
+    print(f"[ERROR] Import error: {e}")
     sys.exit(1)
 
 def create_market_scenario_data():
@@ -83,13 +83,13 @@ def run_scenario_demo(controller: DrawdownController, scenario: dict, demo_name:
     initial_value = scenario['values'][0]
     controller.start_monitoring(initial_value)
     
-    print(f"💰 Initial Portfolio Value: ${initial_value:,.0f}")
+    print(f"[MONEY] Initial Portfolio Value: ${initial_value:,.0f}")
     
     # シナリオ実行
     control_events = []
     
     for i, value in enumerate(scenario['values'][1:], 1):
-        print(f"\n📊 Step {i}: Portfolio Value = ${value:,.0f}")
+        print(f"\n[CHART] Step {i}: Portfolio Value = ${value:,.0f}")
         
         # 戦略別価値もシミュレーション
         strategy_values = {
@@ -104,7 +104,7 @@ def run_scenario_demo(controller: DrawdownController, scenario: dict, demo_name:
         peak_value = controller.performance_tracker['portfolio_peak']
         current_dd = (peak_value - value) / peak_value if peak_value > 0 else 0
         
-        print(f"   📉 Drawdown: {current_dd:.2%}")
+        print(f"   [DOWN] Drawdown: {current_dd:.2%}")
         
         # 制御イベント確認
         history_count = len(controller.control_history)
@@ -112,14 +112,14 @@ def run_scenario_demo(controller: DrawdownController, scenario: dict, demo_name:
             latest_control = controller.control_history[-1]
             control_events.append(latest_control)
             
-            print(f"   🚨 CONTROL TRIGGERED:")
+            print(f"   [ALERT] CONTROL TRIGGERED:")
             print(f"      Action: {latest_control.action_taken.value}")
             print(f"      Severity: {latest_control.event.severity.value}")
             print(f"      Impact: {latest_control.expected_impact:.1%}")
         
         # パフォーマンス状況表示
         summary = controller.get_performance_summary()
-        print(f"   📈 Status: {summary.get('monitoring_status', 'unknown')}")
+        print(f"   [UP] Status: {summary.get('monitoring_status', 'unknown')}")
         
         # シミュレーション間隔
         time.sleep(1)
@@ -127,7 +127,7 @@ def run_scenario_demo(controller: DrawdownController, scenario: dict, demo_name:
     # シナリオ完了
     controller.stop_monitoring()
     
-    print(f"\n✅ {demo_name} completed!")
+    print(f"\n[OK] {demo_name} completed!")
     print(f"   Total Control Actions: {len(control_events)}")
     
     if control_events:
@@ -152,9 +152,9 @@ def demonstrate_integration_features(controller: DrawdownController):
     
     # 統合設定確認
     integration_config = controller.config.get('integration', {})
-    print(f"📋 Integration Configuration:")
+    print(f"[LIST] Integration Configuration:")
     for system, config in integration_config.items():
-        status = "✅ Enabled" if config.get('enabled', False) else "❌ Disabled"
+        status = "[OK] Enabled" if config.get('enabled', False) else "[ERROR] Disabled"
         print(f"   {system}: {status}")
     
     # 統合アクション実行器テスト
@@ -170,7 +170,7 @@ def demonstrate_integration_features(controller: DrawdownController):
         'Pairs_Trading': 0.3
     }
     
-    print(f"\n🧪 Testing Integration Actions:")
+    print(f"\n[TEST] Testing Integration Actions:")
     print(f"Original Positions: {test_positions}")
     
     # 軽度削減テスト
@@ -185,7 +185,7 @@ def demonstrate_integration_features(controller: DrawdownController):
 
 def analyze_control_effectiveness():
     """制御効果分析"""
-    print(f"\n📊 Control Effectiveness Analysis")
+    print(f"\n[CHART] Control Effectiveness Analysis")
     print("-" * 60)
     
     scenarios = create_market_scenario_data()
@@ -194,7 +194,7 @@ def analyze_control_effectiveness():
     results = {}
     
     for scenario_key, scenario in scenarios.items():
-        print(f"\n🔍 Analyzing: {scenario['name']}")
+        print(f"\n[SEARCH] Analyzing: {scenario['name']}")
         
         # コントローラーリセット
         controller = DrawdownController()
@@ -231,7 +231,7 @@ def analyze_control_effectiveness():
         print(f"   Final Recovery: ${scenario['values'][-1]:,.0f}")
     
     # 分析結果サマリー
-    print(f"\n📈 Analysis Summary:")
+    print(f"\n[UP] Analysis Summary:")
     print("   Scenario".ljust(25) + "Max DD".ljust(10) + "Controls".ljust(10) + "Final Value".ljust(15))
     print("-" * 60)
     
@@ -248,16 +248,16 @@ def analyze_control_effectiveness():
 def main():
     """メインデモ実行"""
     print("=" * 70)
-    print("🚨 Drawdown Control System - Comprehensive Demo")
+    print("[ALERT] Drawdown Control System - Comprehensive Demo")
     print("=" * 70)
     
     try:
         # 1. 基本機能デモ
-        print(f"\n🔧 1. System Initialization")
+        print(f"\n[TOOL] 1. System Initialization")
         print("-" * 40)
         
         controller = DrawdownController()
-        print(f"✅ Drawdown Controller initialized")
+        print(f"[OK] Drawdown Controller initialized")
         print(f"   Control Mode: {controller.control_mode.value}")
         print(f"   Warning Threshold: {controller.thresholds.warning_threshold:.1%}")
         print(f"   Critical Threshold: {controller.thresholds.critical_threshold:.1%}")
@@ -285,24 +285,24 @@ def main():
         executor = demonstrate_integration_features(controller)
         
         # 4. 制御効果分析
-        print(f"\n📊 4. Control Effectiveness Analysis")
+        print(f"\n[CHART] 4. Control Effectiveness Analysis")
         print("-" * 40)
         
         effectiveness_results = analyze_control_effectiveness()
         
         # 5. 最終サマリー
-        print(f"\n📋 5. Demo Summary")
+        print(f"\n[LIST] 5. Demo Summary")
         print("-" * 40)
         
         total_scenarios = len(key_scenarios)
         total_controls = len(all_control_events)
         
-        print(f"✅ Scenarios Tested: {total_scenarios}")
-        print(f"🚨 Control Actions Triggered: {total_controls}")
-        print(f"🔧 Integration Systems: 4 (Portfolio Risk, Position Size, Coordination, Weight Calculator)")
+        print(f"[OK] Scenarios Tested: {total_scenarios}")
+        print(f"[ALERT] Control Actions Triggered: {total_controls}")
+        print(f"[TOOL] Integration Systems: 4 (Portfolio Risk, Position Size, Coordination, Weight Calculator)")
         
         if all_control_events:
-            print(f"📈 Control Action Types:")
+            print(f"[UP] Control Action Types:")
             action_counts = {}
             for event in all_control_events:
                 action = event.action_taken.value
@@ -320,11 +320,11 @@ def main():
                 json.dump(default_config, f, indent=2)
             print(f"📝 Configuration file created: {config_file}")
         
-        print(f"\n🎉 Drawdown Control System Demo completed successfully!")
+        print(f"\n[SUCCESS] Drawdown Control System Demo completed successfully!")
         print(f"The system is ready for production integration.")
         
     except Exception as e:
-        print(f"\n❌ Demo failed: {e}")
+        print(f"\n[ERROR] Demo failed: {e}")
         import traceback
         traceback.print_exc()
         return False

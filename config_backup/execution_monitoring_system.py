@@ -945,12 +945,12 @@ if __name__ == "__main__":
         
         # 監視開始
         monitor.start_monitoring()
-        print("🔍 Monitoring system started")
+        print("[SEARCH] Monitoring system started")
         
         # デモ戦略実行結果を記録
         demo_strategies = ["VWAPBounceStrategy", "GCStrategy", "BreakoutStrategy"]
         
-        print(f"\n📊 Recording execution results for {len(demo_strategies)} strategies...")
+        print(f"\n[CHART] Recording execution results for {len(demo_strategies)} strategies...")
         for i, strategy in enumerate(demo_strategies):
             # 実行開始記録
             execution_id = monitor.record_execution_start(strategy, f"task_{i+1}")
@@ -960,14 +960,14 @@ if __name__ == "__main__":
             result = create_demo_execution_result(strategy, success)
             monitor.record_execution_completion(result)
             
-            status_emoji = "✅" if success else "❌"
+            status_emoji = "[OK]" if success else "[ERROR]"
             print(f"  {status_emoji} {strategy}: {result.execution_time:.1f}s")
             
             # 少し待機（監視システムが処理する時間を確保）
             time.sleep(0.5)
         
         # リアルタイムメトリクス取得
-        print(f"\n📈 Real-time Metrics:")
+        print(f"\n[UP] Real-time Metrics:")
         real_time_metrics = monitor.get_real_time_metrics()
         
         if real_time_metrics['system_metrics']:
@@ -983,7 +983,7 @@ if __name__ == "__main__":
         print(f"  Active Alerts: {real_time_metrics['active_alerts_count']}")
         
         # 戦略別パフォーマンスサマリー
-        print(f"\n🎯 Strategy Performance Summary:")
+        print(f"\n[TARGET] Strategy Performance Summary:")
         for strategy in demo_strategies:
             summary = monitor.get_strategy_performance_summary(strategy, minutes=10)
             print(f"  {strategy}:")
@@ -993,7 +993,7 @@ if __name__ == "__main__":
             print(f"    Errors: {summary['error_count']}")
         
         # 監視レポート生成
-        print(f"\n📋 Generating monitoring report...")
+        print(f"\n[LIST] Generating monitoring report...")
         time.sleep(2)  # システムが処理を完了するまで待機
         
         report = monitor.generate_monitoring_report(time_range_minutes=10)
@@ -1013,17 +1013,17 @@ if __name__ == "__main__":
         if perf['bottlenecks']:
             print("Bottlenecks Found:")
             for bottleneck in perf['bottlenecks']:
-                print(f"  ⚠️ {bottleneck}")
+                print(f"  [WARNING] {bottleneck}")
         
         if perf['recommendations']:
             print("Recommendations:")
             for rec in perf['recommendations']:
-                print(f"  💡 {rec}")
+                print(f"  [IDEA] {rec}")
         
-        print("\n✅ Execution Monitoring System demo completed successfully!")
+        print("\n[OK] Execution Monitoring System demo completed successfully!")
         
     except Exception as e:
-        print(f"\n❌ Demo failed: {e}")
+        print(f"\n[ERROR] Demo failed: {e}")
         import traceback
         traceback.print_exc()
         

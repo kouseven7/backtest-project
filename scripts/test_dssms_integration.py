@@ -50,22 +50,22 @@ class DSSMSIntegratedQualityValidator:
         
         try:
             # 1. 基本動作確認
-            logger.info("🔍 基本動作確認テスト")
+            logger.info("[SEARCH] 基本動作確認テスト")
             basic_test = self._test_basic_functionality()
             validation_summary['integration_tests']['basic_functionality'] = basic_test
             
             # 2. エンジン統合確認  
-            logger.info("🔍 エンジン統合確認テスト")
+            logger.info("[SEARCH] エンジン統合確認テスト")
             integration_test = self._test_engine_integration()
             validation_summary['integration_tests']['engine_integration'] = integration_test
             
             # 3. 出力品質確認
-            logger.info("🔍 出力品質確認テスト")
+            logger.info("[SEARCH] 出力品質確認テスト")
             output_test = self._test_output_quality()
             validation_summary['integration_tests']['output_quality'] = output_test
             
             # 4. 85.0点基準適合確認
-            logger.info("🔍 85.0点基準適合確認テスト")
+            logger.info("[SEARCH] 85.0点基準適合確認テスト")
             compliance_test = self._test_quality_compliance()
             validation_summary['integration_tests']['quality_compliance'] = compliance_test
             
@@ -78,7 +78,7 @@ class DSSMSIntegratedQualityValidator:
             validation_summary['recommendations'] = self._generate_recommendations(validation_summary)
             
         except Exception as e:
-            logger.error(f"❌ DSSMS統合品質検証エラー: {str(e)}")
+            logger.error(f"[ERROR] DSSMS統合品質検証エラー: {str(e)}")
             validation_summary['overall_status'] = 'ERROR'
             validation_summary['error'] = str(e)
             validation_summary['traceback'] = traceback.format_exc()
@@ -89,11 +89,11 @@ class DSSMSIntegratedQualityValidator:
         # 結果報告
         logger.info("=== DSSMS全体出力品質検証完了 ===")
         if validation_summary['overall_status'] == 'PASS':
-            logger.info("✅ DSSMS統合品質検証 合格")
+            logger.info("[OK] DSSMS統合品質検証 合格")
         elif validation_summary['overall_status'] == 'FAIL':
-            logger.warning("⚠️ DSSMS統合品質検証 要改善")
+            logger.warning("[WARNING] DSSMS統合品質検証 要改善")
         else:
-            logger.error("❌ DSSMS統合品質検証 エラー")
+            logger.error("[ERROR] DSSMS統合品質検証 エラー")
         
         return validation_summary
     
@@ -353,33 +353,33 @@ def main():
         overall_score = results.get('quality_scores', {}).get('overall', 0.0)
         
         if overall_status == 'PASS':
-            print(f"\n🎉 DSSMS統合品質検証 合格")
-            print(f"📊 総合スコア: {overall_score:.1f}点")
+            print(f"\n[SUCCESS] DSSMS統合品質検証 合格")
+            print(f"[CHART] 総合スコア: {overall_score:.1f}点")
         elif overall_status == 'FAIL':
-            print(f"\n⚠️ DSSMS統合品質検証 要改善")
-            print(f"📊 総合スコア: {overall_score:.1f}点")
+            print(f"\n[WARNING] DSSMS統合品質検証 要改善")
+            print(f"[CHART] 総合スコア: {overall_score:.1f}点")
         else:
-            print(f"\n❌ DSSMS統合品質検証 エラー")
+            print(f"\n[ERROR] DSSMS統合品質検証 エラー")
         
         # 推奨事項表示
         recommendations = results.get('recommendations', [])
         if recommendations:
-            print(f"\n📋 推奨事項:")
+            print(f"\n[LIST] 推奨事項:")
             for i, rec in enumerate(recommendations, 1):
                 print(f"  {i}. {rec}")
         
         return results
         
     except Exception as e:
-        logger.error(f"❌ DSSMS統合品質検証エラー: {str(e)}")
+        logger.error(f"[ERROR] DSSMS統合品質検証エラー: {str(e)}")
         logger.error(traceback.format_exc())
         return None
 
 if __name__ == "__main__":
     result = main()
     if result and result.get('overall_status') == 'PASS':
-        print("\n✅ DSSMS全体出力品質検証完了")
+        print("\n[OK] DSSMS全体出力品質検証完了")
         sys.exit(0)
     else:
-        print("\n❌ DSSMS全体出力品質検証失敗")
+        print("\n[ERROR] DSSMS全体出力品質検証失敗")
         sys.exit(1)

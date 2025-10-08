@@ -8,7 +8,7 @@
 
 ---
 
-## 🎯 **システム概要**
+## [TARGET] **システム概要**
 
 ### **DSSMS（Dynamic Stock Selection Multi-Strategy System）とは**
 - **目的**: 複数銘柄から上昇トレンド銘柄を動的に選択し、マルチ戦略システムで売買を実行
@@ -23,7 +23,7 @@
 
 ---
 
-## 🔍 **技術要件定義**
+## [SEARCH] **技術要件定義**
 
 ### **パーフェクトオーダー判定基準**
 ```python
@@ -133,7 +133,7 @@ DSSMS System Architecture
 
 ---
 
-## 📋 **実装フェーズ計画**
+## [LIST] **実装フェーズ計画**
 
 ### **Phase 1: コアエンジン開発** ⏱️ *3-4週間*
 
@@ -393,7 +393,7 @@ class DSSMSAnalyzer:
 
 ---
 
-## 🚀 **実装開始手順**
+## [ROCKET] **実装開始手順**
 
 ### **Step 1: プロジェクト構造準備**
 ```powershell
@@ -440,7 +440,7 @@ python -c "from src.utils.logger_setup import setup_logger; setup_logger('dssms'
 | Operational | 日次成功率>99% / 不要切替率<20% / Excel一致率100% |
 | Improvement Loop | 切替後10日検証→不要切替率→適応スコア補正更新 |
 
-## 📊 KPI 定義
+## [CHART] KPI 定義
 - 不要切替: 切替後10営業日累積利益率 ≤ 取引コスト(往復0.2%)  
 - 評価バッチ: 週次集計 + 月次リセット指標  
 - 再現性トリガ: 乱数種 / 決定論フラグ / キャッシュキー / バージョンID

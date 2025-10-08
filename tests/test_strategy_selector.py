@@ -36,7 +36,7 @@ try:
     )
     print("✓ StrategySelector modules imported successfully")
 except ImportError as e:
-    print(f"❌ Import error: {e}")
+    print(f"[ERROR] Import error: {e}")
     sys.exit(1)
 
 def create_test_data(days: int = 100, trend_type: str = "uptrend") -> pd.DataFrame:
@@ -97,7 +97,7 @@ def test_basic_functionality():
         return True
         
     except Exception as e:
-        print(f"❌ Basic functionality test failed: {e}")
+        print(f"[ERROR] Basic functionality test failed: {e}")
         return False
 
 def test_selection_methods():
@@ -136,7 +136,7 @@ def test_selection_methods():
                 print(f"✓ {description}: {len(selection.selected_strategies)} strategies selected")
                 
             except Exception as e:
-                print(f"❌ {description} failed: {e}")
+                print(f"[ERROR] {description} failed: {e}")
                 results[method.value] = {"error": str(e)}
         
         # 結果サマリー
@@ -150,7 +150,7 @@ def test_selection_methods():
         return True
         
     except Exception as e:
-        print(f"❌ Selection methods test failed: {e}")
+        print(f"[ERROR] Selection methods test failed: {e}")
         return False
 
 def test_trend_adaptation():
@@ -193,7 +193,7 @@ def test_trend_adaptation():
         return True
         
     except Exception as e:
-        print(f"❌ Trend adaptation test failed: {e}")
+        print(f"[ERROR] Trend adaptation test failed: {e}")
         return False
 
 def test_configuration_profiles():
@@ -246,7 +246,7 @@ def test_configuration_profiles():
         return True
         
     except Exception as e:
-        print(f"❌ Configuration profiles test failed: {e}")
+        print(f"[ERROR] Configuration profiles test failed: {e}")
         return False
 
 def test_error_handling():
@@ -287,7 +287,7 @@ def test_error_handling():
         return True
         
     except Exception as e:
-        print(f"❌ Error handling test failed: {e}")
+        print(f"[ERROR] Error handling test failed: {e}")
         return False
 
 def test_performance():
@@ -325,7 +325,7 @@ def test_performance():
         return True
         
     except Exception as e:
-        print(f"❌ Performance test failed: {e}")
+        print(f"[ERROR] Performance test failed: {e}")
         return False
 
 def test_integration_with_existing_systems():
@@ -357,7 +357,7 @@ def test_integration_with_existing_systems():
         return True
         
     except Exception as e:
-        print(f"❌ Integration test failed: {e}")
+        print(f"[ERROR] Integration test failed: {e}")
         return False
 
 def test_convenience_functions():
@@ -378,12 +378,12 @@ def test_convenience_functions():
         return True
         
     except Exception as e:
-        print(f"❌ Convenience functions test failed: {e}")
+        print(f"[ERROR] Convenience functions test failed: {e}")
         return False
 
 def run_comprehensive_test():
     """包括的テストの実行"""
-    print("🚀 StrategySelector 包括的テスト開始")
+    print("[ROCKET] StrategySelector 包括的テスト開始")
     print("=" * 60)
     
     test_functions = [
@@ -404,32 +404,32 @@ def run_comprehensive_test():
             success = test_func()
             results.append((test_name, success))
             if success:
-                print(f"✅ {test_name} テスト成功")
+                print(f"[OK] {test_name} テスト成功")
             else:
-                print(f"❌ {test_name} テスト失敗")
+                print(f"[ERROR] {test_name} テスト失敗")
         except Exception as e:
-            print(f"❌ {test_name} テスト例外: {e}")
+            print(f"[ERROR] {test_name} テスト例外: {e}")
             results.append((test_name, False))
         
         print("-" * 40)
     
     # 結果サマリー
-    print("\n📊 テスト結果サマリー")
+    print("\n[CHART] テスト結果サマリー")
     print("=" * 60)
     
     passed = sum(1 for _, success in results if success)
     total = len(results)
     
     for test_name, success in results:
-        status = "✅ PASS" if success else "❌ FAIL"
+        status = "[OK] PASS" if success else "[ERROR] FAIL"
         print(f"{status} {test_name}")
     
-    print(f"\n🎯 総合結果: {passed}/{total} テスト成功")
+    print(f"\n[TARGET] 総合結果: {passed}/{total} テスト成功")
     
     if passed == total:
-        print("🎉 全テスト成功！StrategySelector の実装が完了しました。")
+        print("[SUCCESS] 全テスト成功！StrategySelector の実装が完了しました。")
     else:
-        print(f"⚠️  {total - passed} 個のテストが失敗しました。")
+        print(f"[WARNING]  {total - passed} 個のテストが失敗しました。")
     
     return passed == total
 

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def test_trigger_system_imports():
     """トリガーシステムのインポートテスト"""
-    print("🧪 Testing Score Update Trigger System imports...")
+    print("[TEST] Testing Score Update Trigger System imports...")
     
     try:
         # 基本インポートテスト
@@ -63,13 +63,13 @@ def test_trigger_system_imports():
         return True
         
     except Exception as e:
-        print(f"   ❌ Import test failed: {e}")
+        print(f"   [ERROR] Import test failed: {e}")
         logger.error(f"Import test error: {e}")
         return False
 
 def test_basic_trigger_operations():
     """基本トリガー操作テスト"""
-    print("🔧 Testing basic trigger operations...")
+    print("[TOOL] Testing basic trigger operations...")
     
     try:
         from config.score_update_trigger_system import (
@@ -109,14 +109,14 @@ def test_basic_trigger_operations():
         return True
         
     except Exception as e:
-        print(f"   ❌ Basic operations test failed: {e}")
+        print(f"   [ERROR] Basic operations test failed: {e}")
         logger.error(f"Basic operations test error: {e}")
         return False
 
 def main():
     """メインテスト実行"""
     print("=" * 60)
-    print("🚀 Score Update Trigger System - Simple Test")
+    print("[ROCKET] Score Update Trigger System - Simple Test")
     print("=" * 60)
     print(f"Test started at: {datetime.now()}")
     print()
@@ -136,13 +136,13 @@ def main():
     print()
     
     # 結果サマリー
-    print("📋 Test Summary:")
+    print("[LIST] Test Summary:")
     for test_name, success in results.items():
-        status = "✅ PASSED" if success else "❌ FAILED"
+        status = "[OK] PASSED" if success else "[ERROR] FAILED"
         print(f"   {test_name}: {status}")
     
     overall_success = all(results.values())
-    print(f"\n🎯 Overall result: {'✅ ALL PASSED' if overall_success else '❌ SOME FAILED'}")
+    print(f"\n[TARGET] Overall result: {'[OK] ALL PASSED' if overall_success else '[ERROR] SOME FAILED'}")
     
     return overall_success
 

@@ -91,7 +91,7 @@ class ScreenerPerformanceProfiler:
     
     def analyze_screener_bottlenecks(self):
         """Screener各段階の詳細ボトルネック分析"""
-        self.logger.info("🔍 Stage 1: Screener詳細ボトルネック分析開始")
+        self.logger.info("[SEARCH] Stage 1: Screener詳細ボトルネック分析開始")
         
         try:
             # Screenerインスタンス作成
@@ -133,11 +133,11 @@ class ScreenerPerformanceProfiler:
             
             self.profile_results["bottleneck_identification"] = bottlenecks
             
-            self.logger.info(f"✅ ボトルネック分析完了: {len(symbols)}銘柄選定")
+            self.logger.info(f"[OK] ボトルネック分析完了: {len(symbols)}銘柄選定")
             return bottlenecks
             
         except Exception as e:
-            self.logger.error(f"❌ ボトルネック分析エラー: {e}")
+            self.logger.error(f"[ERROR] ボトルネック分析エラー: {e}")
             return self.fallback_policy.handle_component_failure(
                 component_type=ComponentType.DSSMS_CORE,
                 component_name="ScreenerBottleneckAnalysis",
@@ -361,7 +361,7 @@ class ScreenerPerformanceProfiler:
     
     def design_optimization_strategy(self):
         """最適化戦略設計"""
-        self.logger.info("🎯 最適化戦略設計")
+        self.logger.info("[TARGET] 最適化戦略設計")
         
         try:
             strategy = {
@@ -398,11 +398,11 @@ class ScreenerPerformanceProfiler:
             }
             
             self.profile_results["optimization_strategy"] = strategy
-            self.logger.info("✅ 最適化戦略設計完了")
+            self.logger.info("[OK] 最適化戦略設計完了")
             return strategy
             
         except Exception as e:
-            self.logger.error(f"❌ 最適化戦略設計エラー: {e}")
+            self.logger.error(f"[ERROR] 最適化戦略設計エラー: {e}")
             return self.fallback_policy.handle_component_failure(
                 component_type=ComponentType.DSSMS_CORE,
                 component_name="OptimizationStrategyDesign",
@@ -452,11 +452,11 @@ class ScreenerPerformanceProfiler:
             }
             
             self.profile_results["cache_strategy_design"] = cache_strategy
-            self.logger.info("✅ キャッシュ戦略設計完了")
+            self.logger.info("[OK] キャッシュ戦略設計完了")
             return cache_strategy
             
         except Exception as e:
-            self.logger.error(f"❌ キャッシュ戦略設計エラー: {e}")
+            self.logger.error(f"[ERROR] キャッシュ戦略設計エラー: {e}")
             return {"error": str(e)}
     
     def generate_stage1_report(self):
@@ -469,7 +469,7 @@ class ScreenerPerformanceProfiler:
             
             # 総合評価
             stage1_summary = {
-                "analysis_completion": "✅ Complete",
+                "analysis_completion": "[OK] Complete",
                 "major_bottlenecks_identified": [
                     "market_cap_filter: 52.5s (28.7% of total time)",
                     "final_selection: 45.7s (25.0% of total time)",
@@ -484,7 +484,7 @@ class ScreenerPerformanceProfiler:
                 ],
                 "technical_feasibility": "High (ThreadPoolExecutor + caching)",
                 "risk_assessment": "Low (no breaking changes to API)",
-                "next_stage_readiness": "✅ Ready for Stage 2 implementation"
+                "next_stage_readiness": "[OK] Ready for Stage 2 implementation"
             }
             
             self.profile_results["stage_1_summary"] = stage1_summary
@@ -498,32 +498,32 @@ class ScreenerPerformanceProfiler:
             
             # サマリー表示
             print("\n" + "="*80)
-            print("🎯 TODO-PERF-007 Stage 1: ボトルネック詳細分析完了")
+            print("[TARGET] TODO-PERF-007 Stage 1: ボトルネック詳細分析完了")
             print("="*80)
-            print("\n📊 主要ボトルネック:")
+            print("\n[CHART] 主要ボトルネック:")
             for bottleneck in stage1_summary["major_bottlenecks_identified"]:
                 print(f"  - {bottleneck}")
             
-            print(f"\n🚀 最適化可能性: {stage1_summary['optimization_potential']}")
-            print(f"🔧 技術的実現可能性: {stage1_summary['technical_feasibility']}")
-            print(f"⚠️ リスク評価: {stage1_summary['risk_assessment']}")
+            print(f"\n[ROCKET] 最適化可能性: {stage1_summary['optimization_potential']}")
+            print(f"[TOOL] 技術的実現可能性: {stage1_summary['technical_feasibility']}")
+            print(f"[WARNING] リスク評価: {stage1_summary['risk_assessment']}")
             
-            print("\n📋 実装優先順位:")
+            print("\n[LIST] 実装優先順位:")
             for priority in stage1_summary["implementation_priority"]:
                 print(f"  {priority}")
             
-            print(f"\n✅ 次段階準備状況: {stage1_summary['next_stage_readiness']}")
+            print(f"\n[OK] 次段階準備状況: {stage1_summary['next_stage_readiness']}")
             print(f"📄 詳細レポート: {report_file}")
             
             return self.profile_results
             
         except Exception as e:
-            self.logger.error(f"❌ Stage 1 レポート生成エラー: {e}")
+            self.logger.error(f"[ERROR] Stage 1 レポート生成エラー: {e}")
             return {"error": str(e)}
 
 def main():
     """Stage 1 メイン実行"""
-    print("🚀 TODO-PERF-007 Stage 1: Nikkei225Screener ボトルネック詳細分析開始")
+    print("[ROCKET] TODO-PERF-007 Stage 1: Nikkei225Screener ボトルネック詳細分析開始")
     print("目標: 20分で完了・最適化戦略確定")
     print("="*80)
     
@@ -532,10 +532,10 @@ def main():
         results = profiler.generate_stage1_report()
         
         if "error" not in results:
-            print("\n🎉 Stage 1 完了 - Stage 2 並列データ取得実装の準備完了")
+            print("\n[SUCCESS] Stage 1 完了 - Stage 2 並列データ取得実装の準備完了")
             return True
         else:
-            print(f"\n❌ Stage 1 失敗: {results['error']}")
+            print(f"\n[ERROR] Stage 1 失敗: {results['error']}")
             return False
             
     except Exception as e:

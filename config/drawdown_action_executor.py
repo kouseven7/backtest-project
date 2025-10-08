@@ -495,4 +495,4 @@ if __name__ == "__main__":
     print(f"  Total: {summary['total_executions']}")
     print(f"  Success Rate: {summary['success_rate']:.1%}")
     
-    print("\n✅ Drawdown Action Executor test completed")
+    print("\n[OK] Drawdown Action Executor test completed")

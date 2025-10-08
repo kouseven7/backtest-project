@@ -552,22 +552,22 @@ def main():
     """メイン実行"""
     corrector = DSSMSStrategyStatsCorrector()
     
-    print("🔧 DSSMS戦略別統計修正システム")
+    print("[TOOL] DSSMS戦略別統計修正システム")
     print("=" * 60)
     
     # 1. 統一出力エンジンを修正
     print("1. 統一出力エンジンの戦略別統計機能追加...")
     if corrector.fix_unified_output_engine():
-        print("✅ 統一出力エンジン修正完了")
+        print("[OK] 統一出力エンジン修正完了")
     else:
-        print("❌ 統一出力エンジン修正失敗")
+        print("[ERROR] 統一出力エンジン修正失敗")
     
     # 2. DSSMS Excel Exporterを修正
     print("\n2. DSSMS Excel Exporterの統計生成修正...")
     if corrector.fix_dssms_excel_exporter():
-        print("✅ DSSMS Excel Exporter修正完了")
+        print("[OK] DSSMS Excel Exporter修正完了")
     else:
-        print("❌ DSSMS Excel Exporter修正失敗")
+        print("[ERROR] DSSMS Excel Exporter修正失敗")
     
     # 3. 既存ファイルで修正をテスト
     print("\n3. 既存ファイルで修正をテスト...")
@@ -575,11 +575,11 @@ def main():
     json_path = "backtest_results/dssms_results/dssms_unified_data_20250908_150951.json"
     
     if corrector.test_fix_with_existing_files(excel_path, json_path):
-        print("✅ 既存ファイル修正完了")
+        print("[OK] 既存ファイル修正完了")
     else:
-        print("❌ 既存ファイル修正失敗")
+        print("[ERROR] 既存ファイル修正失敗")
     
-    print("\n🎯 修正内容:")
+    print("\n[TARGET] 修正内容:")
     print("- 統一出力エンジンに実際の取引データから戦略別統計を生成する機能を追加")
     print("- DSSMS Excel Exporterでランダム統計ではなく実データを使用")
     print("- 既存Excelファイルの戦略別統計シートを7つの戦略で更新")

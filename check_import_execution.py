@@ -16,10 +16,10 @@ print("2. SymbolSwitchManagerインポート開始...")
 try:
     from src.dssms.symbol_switch_manager import SymbolSwitchManager
     import_time = time.time() - start_time
-    print(f"✅ インポート成功: {import_time*1000:.1f}ms")
+    print(f"[OK] インポート成功: {import_time*1000:.1f}ms")
 except Exception as e:
     import_time = time.time() - start_time
-    print(f"❌ インポートエラー: {e}")
+    print(f"[ERROR] インポートエラー: {e}")
     print(f"   時間: {import_time*1000:.1f}ms")
 
 print("3. インポート分析完了")

@@ -49,10 +49,10 @@ try:
     from src.strategies.contrarian_strategy import ContrarianStrategy
     from src.strategies.gc_strategy_signal import GCStrategy
     STRATEGY_IMPORTS_AVAILABLE = True
-    print("✅ All strategy classes imported successfully")
+    print("[OK] All strategy classes imported successfully")
 except ImportError as e:
     STRATEGY_IMPORTS_AVAILABLE = False
-    print(f"⚠️ Some strategy imports failed: {e}")
+    print(f"[WARNING] Some strategy imports failed: {e}")
 
 # Phase 4-A-2: 支援メソッド実装 (バックテスト基本理念準拠)
     
@@ -224,7 +224,7 @@ class MultiStrategyManager:
         # 確実に戦略レジストリを初期化
         self.strategy_registry = {}
         self._initialize_strategy_registry()
-        print(f"✅ Strategy registry initialized: {len(self.strategy_registry)} strategies")
+        print(f"[OK] Strategy registry initialized: {len(self.strategy_registry)} strategies")
         
         self.strategy_import_paths = {}
         self.registry_validation_results = {}
@@ -286,10 +286,10 @@ class MultiStrategyManager:
                 'ContrarianStrategy': ContrarianStrategy,
                 'GCStrategy': GCStrategy
             }
-            self.logger.info(f"✅ Strategy registry initialized with {len(self.strategy_registry)} strategies")
+            self.logger.info(f"[OK] Strategy registry initialized with {len(self.strategy_registry)} strategies")
         else:
             self.strategy_registry = {}
-            self.logger.warning("⚠️ Strategy imports failed - empty registry initialized")
+            self.logger.warning("[WARNING] Strategy imports failed - empty registry initialized")
             
     def _load_config(self, config_path: str) -> Dict[str, Any]:
         """設定ファイルをロード"""
@@ -587,7 +587,7 @@ class MultiStrategyManager:
             if stock_data is None:
                 raise ValueError("Stock data is required for backtest execution")
             
-            # ✅ 必須: 最適化パラメータの取得
+            # [OK] 必須: 最適化パラメータの取得
             try:
                 from config.optimized_parameters import OptimizedParameterManager
                 param_manager = OptimizedParameterManager()
@@ -596,7 +596,7 @@ class MultiStrategyManager:
                 logger.error(f"Failed to load optimized parameters: {e}")
                 optimized_params = {}
             
-            # ✅ 必須: 戦略の実際のbacktest()実行
+            # [OK] 必須: 戦略の実際のbacktest()実行
             integrated_results = stock_data.copy()
             strategy_performances = {}
             combined_signals = {}
@@ -625,7 +625,7 @@ class MultiStrategyManager:
                     continue
                     
                 try:
-                    # ✅ 基本理念遵守: 実際の戦略クラス取得・インスタンス化
+                    # [OK] 基本理念遵守: 実際の戦略クラス取得・インスタンス化
                     strategy_class = self._get_strategy_class(strategy_name, module_name)
                     params = optimized_params.get(strategy_name, {})
                     
@@ -651,11 +651,11 @@ class MultiStrategyManager:
                             price_column="Adj Close"
                         )
                     
-                    # ✅ 基本理念遵守: 実際のbacktest()実行
+                    # [OK] 基本理念遵守: 実際のbacktest()実行
                     logger.info(f"Executing backtest for strategy: {strategy_name}")
                     strategy_result = strategy_instance.backtest()
                     
-                    # ✅ 基本理念違反検出
+                    # [OK] 基本理念違反検出
                     self._validate_backtest_output(strategy_result, strategy_name)
                     
                     # シグナル統合処理
@@ -1118,7 +1118,7 @@ class MultiStrategyManager:
             
             # TODO #14 Phase 3: 実データ自動供給システム統合
             # (Phase 1のエラー停止方式を Phase 3で自動供給に強化)
-            # ✅ RealMarketDataFetcher統合による実データ自動供給
+            # [OK] RealMarketDataFetcher統合による実データ自動供給
             
             if strategy_name == 'VWAPBreakoutStrategy':
                 if 'index_data' not in kwargs:
@@ -1136,9 +1136,9 @@ class MultiStrategyManager:
                                 
                         except Exception as e:
                             error_msg = (
-                                f"❌ FAILED: {strategy_name} real data auto-supply failed.\n"
-                                f"📋 Error: {str(e)}\n"
-                                f"🔧 Solutions:\n"
+                                f"[ERROR] FAILED: {strategy_name} real data auto-supply failed.\n"
+                                f"[LIST] Error: {str(e)}\n"
+                                f"[TOOL] Solutions:\n"
                                 f"  1. Check network connection for market data access\n"
                                 f"  2. Manually provide index_data: kwargs['index_data'] = your_data\n"
                                 f"  3. Verify yfinance service availability\n"
@@ -1180,9 +1180,9 @@ class MultiStrategyManager:
                                 
                         except Exception as e:
                             error_msg = (
-                                f"❌ FAILED: {strategy_name} real data auto-supply failed.\n"
-                                f"📋 Error: {str(e)}\n"
-                                f"🔧 Solutions:\n"
+                                f"[ERROR] FAILED: {strategy_name} real data auto-supply failed.\n"
+                                f"[LIST] Error: {str(e)}\n"
+                                f"[TOOL] Solutions:\n"
                                 f"  1. Check network connection for market data access\n"
                                 f"  2. Manually provide dow_data: kwargs['dow_data'] = your_data\n"
                                 f"  3. Verify yfinance service availability\n"
@@ -1304,26 +1304,26 @@ class MultiStrategyManager:
     def _print_strategy_registry_report(self):
         """戦略レジストリレポート出力"""
         print("\n" + "="*80)
-        print("📊 戦略レジストリシステム初期化完了レポート")
+        print("[CHART] 戦略レジストリシステム初期化完了レポート")
         print("="*80)
         
-        print(f"\n✅ 戦略レジストリ状況:")
+        print(f"\n[OK] 戦略レジストリ状況:")
         print(f"  登録戦略数: {len(self.strategy_registry)}")
         print(f"  利用可能戦略: {list(self.strategy_registry.keys())}")
         
         if hasattr(self, 'registry_validation_results'):
             validation = self.registry_validation_results
-            print(f"\n📋 検証結果:")
+            print(f"\n[LIST] 検証結果:")
             print(f"  総登録数: {validation['total_registered']}")
             print(f"  backtest準拠: {validation['backtest_compliant']}")
             print(f"  準拠率: {(validation['backtest_compliant']/validation['total_registered']*100):.1f}%")
             
-            print(f"\n🔍 戦略別詳細:")
+            print(f"\n[SEARCH] 戦略別詳細:")
             for strategy_name, details in validation['strategy_details'].items():
-                status = "✅" if details['validation_passed'] else "❌"
+                status = "[OK]" if details['validation_passed'] else "[ERROR]"
                 print(f"  {status} {strategy_name}: backtest={details['has_backtest_method']}")
         
-        print(f"\n🎯 TODO #9 戦略レジストリシステム完全実装: 完了")
+        print(f"\n[TARGET] TODO #9 戦略レジストリシステム完全実装: 完了")
         print("="*80)
     
     def get_registry_status(self) -> dict:

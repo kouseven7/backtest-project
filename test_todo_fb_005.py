@@ -31,10 +31,10 @@ sys.path.append(str(project_root))
 try:
     from src.config.system_modes import SystemFallbackPolicy, ComponentType, SystemMode, get_fallback_policy, set_system_mode
     from src.dssms.dssms_backtester import DSSMSBacktester
-    print("✅ Import successful: SystemFallbackPolicy & DSSMSBacktester")
+    print("[OK] Import successful: SystemFallbackPolicy & DSSMSBacktester")
     IMPORTS_AVAILABLE = True
 except ImportError as e:
-    print(f"❌ Import failed: {e}")
+    print(f"[ERROR] Import failed: {e}")
     IMPORTS_AVAILABLE = False
 
 def test_score_range_expansion():
@@ -42,7 +42,7 @@ def test_score_range_expansion():
     if not IMPORTS_AVAILABLE:
         return {"status": "skipped", "reason": "import_failed"}
     
-    print("\n🧪 スコア範囲拡張テスト開始")
+    print("\n[TEST] スコア範囲拡張テスト開始")
     
     try:
         # DSSMSBacktester初期化 (モック設定)
@@ -71,7 +71,7 @@ def test_score_range_expansion():
         max_score = max(scores)
         avg_score = sum(scores) / len(scores)
         
-        print(f"✅ スコア範囲確認:")
+        print(f"[OK] スコア範囲確認:")
         print(f"   - 最小値: {min_score:.4f}")
         print(f"   - 最大値: {max_score:.4f}")
         print(f"   - 平均値: {avg_score:.4f}")
@@ -79,7 +79,7 @@ def test_score_range_expansion():
         
         # 範囲チェック
         range_check = min_score >= 0.05 and max_score <= 0.95
-        print(f"   - 範囲適合: {'✅' if range_check else '❌'}")
+        print(f"   - 範囲適合: {'[OK]' if range_check else '[ERROR]'}")
         
         return {
             "status": "success",
@@ -91,7 +91,7 @@ def test_score_range_expansion():
         }
         
     except Exception as e:
-        print(f"❌ スコア範囲テスト失敗: {e}")
+        print(f"[ERROR] スコア範囲テスト失敗: {e}")
         return {"status": "failed", "error": str(e)}
 
 def test_fallback_policy_integration():
@@ -99,7 +99,7 @@ def test_fallback_policy_integration():
     if not IMPORTS_AVAILABLE:
         return {"status": "skipped", "reason": "import_failed"}
     
-    print("\n🧪 SystemFallbackPolicy統合テスト開始")
+    print("\n[TEST] SystemFallbackPolicy統合テスト開始")
     
     # Development modeで実行
     set_system_mode(SystemMode.DEVELOPMENT)
@@ -123,13 +123,13 @@ def test_fallback_policy_integration():
         # _calculate_market_based_fallback_score実行 (フォールバック発生予定)
         score = backtester._calculate_market_based_fallback_score(test_symbol, test_date)
         
-        print(f"✅ SystemFallbackPolicy統合スコア: {score:.4f}")
+        print(f"[OK] SystemFallbackPolicy統合スコア: {score:.4f}")
         
         # フォールバック使用統計確認
         policy = get_fallback_policy()
         stats = policy.get_usage_statistics()
         
-        print(f"✅ フォールバック使用統計:")
+        print(f"[OK] フォールバック使用統計:")
         print(f"   - 総失敗数: {stats['total_failures']}")
         print(f"   - 成功フォールバック: {stats.get('successful_fallbacks', 0)}")
         print(f"   - 使用率: {stats.get('fallback_usage_rate', 0):.1%}")
@@ -141,7 +141,7 @@ def test_fallback_policy_integration():
         }
         
     except Exception as e:
-        print(f"❌ SystemFallbackPolicy統合テスト失敗: {e}")
+        print(f"[ERROR] SystemFallbackPolicy統合テスト失敗: {e}")
         return {"status": "failed", "error": str(e)}
 
 def test_production_mode_behavior():  
@@ -149,7 +149,7 @@ def test_production_mode_behavior():
     if not IMPORTS_AVAILABLE:
         return {"status": "skipped", "reason": "import_failed"}
     
-    print("\n🧪 Production mode フォールバック動作テスト")
+    print("\n[TEST] Production mode フォールバック動作テスト")
     
     # Production modeに変更
     set_system_mode(SystemMode.PRODUCTION)
@@ -172,15 +172,15 @@ def test_production_mode_behavior():
         # Production modeではフォールバック禁止のはず
         try:
             score = backtester._calculate_market_based_fallback_score(test_symbol, test_date)
-            print(f"❌ Production modeでフォールバックが実行された: {score}")
+            print(f"[ERROR] Production modeでフォールバックが実行された: {score}")
             return {"status": "failed", "reason": "fallback_executed_in_production"}
             
         except Exception as e:
-            print(f"✅ Production mode正常動作: フォールバック禁止確認")
+            print(f"[OK] Production mode正常動作: フォールバック禁止確認")
             return {"status": "success", "production_error": str(e)}
             
     except Exception as e:
-        print(f"❌ Production modeテスト失敗: {e}")
+        print(f"[ERROR] Production modeテスト失敗: {e}")
         return {"status": "failed", "error": str(e)}
     finally:
         # Development modeに戻す
@@ -191,7 +191,7 @@ def test_warning_log_output():
     if not IMPORTS_AVAILABLE:
         return {"status": "skipped", "reason": "import_failed"}
     
-    print("\n🧪 フォールバック警告ログ出力テスト")
+    print("\n[TEST] フォールバック警告ログ出力テスト")
     
     set_system_mode(SystemMode.DEVELOPMENT)
     
@@ -210,18 +210,18 @@ def test_warning_log_output():
         # _market_score_fallback直接実行でログ確認
         score = backtester._market_score_fallback(test_symbol, test_date)
         
-        print(f"✅ フォールバック関数実行完了: {score:.4f}")
-        print(f"✅ 警告ログ出力確認 (WARNING: FALLBACK が出力されているか確認)")
+        print(f"[OK] フォールバック関数実行完了: {score:.4f}")
+        print(f"[OK] 警告ログ出力確認 (WARNING: FALLBACK が出力されているか確認)")
         
         return {"status": "success", "fallback_score": score}
         
     except Exception as e:
-        print(f"❌ ログ出力テスト失敗: {e}")
+        print(f"[ERROR] ログ出力テスト失敗: {e}")
         return {"status": "failed", "error": str(e)}
 
 def generate_test_report():
     """テスト結果レポート生成"""
-    print("\n📊 TODO-FB-005 テストレポート")
+    print("\n[CHART] TODO-FB-005 テストレポート")
     print("=" * 60)
     
     results = {}
@@ -246,7 +246,7 @@ def generate_test_report():
     successful_tests = sum(1 for test in results.values() if test.get('status') == 'success')
     total_tests = len(results)
     
-    print(f"\n📈 テスト結果サマリ:")
+    print(f"\n[UP] テスト結果サマリ:")
     print(f"   - 成功: {successful_tests}/{total_tests}")
     print(f"   - 成功率: {successful_tests/total_tests:.1%}")
     
@@ -279,14 +279,14 @@ if __name__ == "__main__":
         if IMPORTS_AVAILABLE:
             policy = get_fallback_policy()
             final_stats = policy.get_usage_statistics()
-            print(f"\n📊 最終フォールバック統計:")
+            print(f"\n[CHART] 最終フォールバック統計:")
             print(f"   - 総記録数: {len(final_stats.get('records', []))}")
             if 'successful_fallbacks' in final_stats:
                 print(f"   - 成功フォールバック: {final_stats['successful_fallbacks']}")
         
-        print("\n🎯 TODO-FB-005 テスト完了")
+        print("\n[TARGET] TODO-FB-005 テスト完了")
         
     except Exception as e:
-        print(f"❌ テスト実行エラー: {e}")
+        print(f"[ERROR] テスト実行エラー: {e}")
         import traceback
         traceback.print_exc()

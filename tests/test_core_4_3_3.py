@@ -114,9 +114,9 @@ def test_core_functionality():
                 for cluster_id, strategies in clusters.items():
                     print(f"  クラスター {cluster_id}: {strategies}")
             else:
-                print("⚠️ scikit-learn未インストールのためクラスター分析スキップ")
+                print("[WARNING] scikit-learn未インストールのためクラスター分析スキップ")
         except Exception as e:
-            print(f"⚠️ クラスター分析でエラー: {e}")
+            print(f"[WARNING] クラスター分析でエラー: {e}")
         print()
         
         # 9. データ永続化テスト
@@ -178,34 +178,34 @@ def test_core_functionality():
         print("="*60)
         print("4-3-3システム 基本機能テスト 完了")
         print("="*60)
-        print("🎉 すべての基本機能が正常に動作しました！")
+        print("[SUCCESS] すべての基本機能が正常に動作しました！")
         print()
         print("実装された機能:")
-        print("✅ 戦略パフォーマンスデータ管理")
-        print("✅ 戦略間相関行列計算")
-        print("✅ 共分散行列計算")
-        print("✅ ローリング相関分析")
-        print("✅ 相関統計サマリー")
-        print("✅ 相関クラスター分析（オプション）")
-        print("✅ データ保存・読み込み")
-        print("✅ 既存システム統合準備")
+        print("[OK] 戦略パフォーマンスデータ管理")
+        print("[OK] 戦略間相関行列計算")
+        print("[OK] 共分散行列計算")
+        print("[OK] ローリング相関分析")
+        print("[OK] 相関統計サマリー")
+        print("[OK] 相関クラスター分析（オプション）")
+        print("[OK] データ保存・読み込み")
+        print("[OK] 既存システム統合準備")
         print()
         
         # 分析結果のハイライト
         print("分析結果ハイライト:")
-        print(f"📊 分析対象戦略数: {len(analyzer.strategy_data)}")
-        print(f"📈 戦略ペア数: {summary['total_pairs']}")
+        print(f"[CHART] 分析対象戦略数: {len(analyzer.strategy_data)}")
+        print(f"[UP] 戦略ペア数: {summary['total_pairs']}")
         print(f"🔗 平均相関係数: {summary['mean_correlation']:.4f}")
-        print(f"📉 最小相関: {summary['min_correlation']:.4f}")
-        print(f"📈 最大相関: {summary['max_correlation']:.4f}")
-        print(f"🎯 高相関ペア (>0.7): {summary['high_correlation_pairs']}個")
+        print(f"[DOWN] 最小相関: {summary['min_correlation']:.4f}")
+        print(f"[UP] 最大相関: {summary['max_correlation']:.4f}")
+        print(f"[TARGET] 高相関ペア (>0.7): {summary['high_correlation_pairs']}個")
         print(f"⚖️ 中相関ペア (0.3-0.7): {summary['moderate_correlation_pairs']}個")
         print(f"🌐 低相関ペア (<0.3): {summary['low_correlation_pairs']}個")
         
         return True
         
     except Exception as e:
-        print(f"\n❌ テスト中にエラーが発生しました: {e}")
+        print(f"\n[ERROR] テスト中にエラーが発生しました: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -220,4 +220,4 @@ if __name__ == "__main__":
         print("3. 4-3-1、4-3-2システムとの統合テスト")
         print("4. ポートフォリオ最適化への応用")
     else:
-        print("\n⚠️ 問題が発生しました。エラーログを確認してください。")
+        print("\n[WARNING] 問題が発生しました。エラーログを確認してください。")

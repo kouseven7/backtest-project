@@ -26,7 +26,7 @@ def test_breakout_validator():
     result = validator.validate("breakout", params_err)
     assert not result["valid"], "異常パラメータでvalidになっている"
     assert len(result["errors"]) > 0, "エラーが検出されない"
-    print("✅ Breakoutバリデータ分割テスト合格")
+    print("[OK] Breakoutバリデータ分割テスト合格")
 
 def test_momentum_validator():
     validator = ParameterValidator()
@@ -61,7 +61,7 @@ def test_momentum_validator():
     result = validator.validate("momentum", params_err)
     assert not result["valid"], "異常パラメータでvalidになっている"
     assert len(result["errors"]) > 0, "エラーが検出されない"
-    print("✅ Momentumバリデータ分割テスト合格")
+    print("[OK] Momentumバリデータ分割テスト合格")
 
 def test_contrarian_validator():
     from validation.parameter_validator import ParameterValidator
@@ -83,13 +83,13 @@ def test_contrarian_validator():
     result = validator.validate("contrarian", params_err)
     assert not result["valid"], "異常パラメータでvalidになっている"
     assert len(result["errors"]) > 0, "エラーが検出されない"
-    print("✅ Contrarianバリデータ分割テスト合格")
+    print("[OK] Contrarianバリデータ分割テスト合格")
 
 def main():
     test_breakout_validator()
     test_momentum_validator()
     test_contrarian_validator()
-    print("✅ Phase2 バリデータ分割テスト完了")
+    print("[OK] Phase2 バリデータ分割テスト完了")
 
 if __name__ == "__main__":
     main()

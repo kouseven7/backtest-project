@@ -56,7 +56,7 @@ class PerformanceInvestigator:
     
     def measure_dssms_integrated_main_import(self) -> Dict:
         """DSSMSIntegratedBacktester インポート時間の詳細測定"""
-        print("🔍 DSSMSIntegratedBacktester インポート時間調査中...")
+        print("[SEARCH] DSSMSIntegratedBacktester インポート時間調査中...")
         
         # 段階的インポート測定
         stages = {
@@ -72,13 +72,13 @@ class PerformanceInvestigator:
         for stage_name, path in stages.items():
             stage_time = self.measure_import_time(stage_name, path)
             results[stage_name] = stage_time
-            print(f"  📊 {stage_name}: {stage_time:.1f}ms")
+            print(f"  [CHART] {stage_name}: {stage_time:.1f}ms")
         
         total_end = time.perf_counter()
         total_time = (total_end - total_start) * 1000
         results['total_dssms_import'] = total_time
         
-        print(f"  🎯 DSSMS総インポート時間: {total_time:.1f}ms")
+        print(f"  [TARGET] DSSMS総インポート時間: {total_time:.1f}ms")
         
         return results
     
@@ -92,7 +92,7 @@ class PerformanceInvestigator:
         for lib in heavy_libs:
             lib_time = self.measure_import_time(lib)
             results[lib] = lib_time
-            print(f"  📊 {lib}: {lib_time:.1f}ms")
+            print(f"  [CHART] {lib}: {lib_time:.1f}ms")
         
         return results
     
@@ -130,12 +130,12 @@ class PerformanceInvestigator:
                 'success': True
             }
             
-            print(f"  🎯 初期化時間: {initialization_time:.1f}ms")
+            print(f"  [TARGET] 初期化時間: {initialization_time:.1f}ms")
             print(f"  ⚡ 実行時間: {execution_time:.1f}ms")
-            print(f"  📊 総時間: {total_time:.1f}ms")
+            print(f"  [CHART] 総時間: {total_time:.1f}ms")
             
         except Exception as e:
-            print(f"  ❌ 実行測定エラー: {e}")
+            print(f"  [ERROR] 実行測定エラー: {e}")
             traceback.print_exc()
             results = {
                 'error': str(e),
@@ -146,7 +146,7 @@ class PerformanceInvestigator:
     
     def analyze_bottlenecks(self) -> Dict:
         """ボトルネック分析・優先度評価"""
-        print("🎯 ボトルネック分析・優先度評価...")
+        print("[TARGET] ボトルネック分析・優先度評価...")
         
         analysis = {
             'import_bottlenecks': [],
@@ -201,7 +201,7 @@ class PerformanceInvestigator:
     
     def generate_performance_report(self) -> Dict:
         """総合パフォーマンスレポート生成"""
-        print("📋 総合パフォーマンスレポート生成中...")
+        print("[LIST] 総合パフォーマンスレポート生成中...")
         
         # 全測定実行
         dssms_results = self.measure_dssms_integrated_main_import()
@@ -300,7 +300,7 @@ class PerformanceInvestigator:
 
 def main():
     """メイン実行関数"""
-    print("🚀 TODO-PERF-001 パフォーマンス最適化実態調査開始")
+    print("[ROCKET] TODO-PERF-001 パフォーマンス最適化実態調査開始")
     print("=" * 60)
     
     investigator = PerformanceInvestigator()
@@ -316,23 +316,23 @@ def main():
             json.dump(report, f, indent=2, ensure_ascii=False)
         
         print("\n" + "=" * 60)
-        print("📊 調査結果サマリー")
+        print("[CHART] 調査結果サマリー")
         print("=" * 60)
         
         conclusion = report['conclusion']
-        print(f"📋 文書精度: {conclusion['documentation_accuracy']:.1%}")
+        print(f"[LIST] 文書精度: {conclusion['documentation_accuracy']:.1%}")
         print(f"⚡ パフォーマンス状況: {conclusion['performance_status']}")
-        print(f"🎯 最適化必要性: {conclusion['optimization_necessity']}")
+        print(f"[TARGET] 最適化必要性: {conclusion['optimization_necessity']}")
         print(f"📝 推奨事項: {conclusion['recommendation']}")
-        print(f"🔍 信頼度: {conclusion['confidence_level']}")
+        print(f"[SEARCH] 信頼度: {conclusion['confidence_level']}")
         
         # 詳細結果表示
-        print("\n📊 詳細測定結果:")
+        print("\n[CHART] 詳細測定結果:")
         measurements = report['measurements']
         
         if 'dssms_import' in measurements:
             dssms = measurements['dssms_import']
-            print(f"  🎯 DSSMS総インポート: {dssms.get('total_dssms_import', 0):.1f}ms")
+            print(f"  [TARGET] DSSMS総インポート: {dssms.get('total_dssms_import', 0):.1f}ms")
         
         if 'heavy_libraries' in measurements:
             heavy = measurements['heavy_libraries']
@@ -348,15 +348,15 @@ def main():
         
         # 最終推奨
         print("\n" + "=" * 60)
-        print("🎯 最終推奨事項")
+        print("[TARGET] 最終推奨事項")
         print("=" * 60)
         
         if conclusion['optimization_necessity'] == 'unnecessary':
-            print("✅ 追加最適化は不要です")
+            print("[OK] 追加最適化は不要です")
             print("   → 現在のパフォーマンスは実用レベルに達しています")
             print("   → TODO-PERF-001 を完了状態に移行することを推奨します")
         elif conclusion['optimization_necessity'] == 'optional':
-            print("⚠️ 追加最適化は任意です")
+            print("[WARNING] 追加最適化は任意です")
             print("   → コストと効果を慎重に検討してください") 
             print("   → 他の優先度高い作業がある場合は延期も可能です")
         elif conclusion['optimization_necessity'] == 'required':
@@ -364,12 +364,12 @@ def main():
             print("   → 重大なボトルネックが残存しています")
             print("   → TODO-PERF-001 の継続実装を推奨します")
         else:
-            print("🔍 さらなる調査が必要です")
+            print("[SEARCH] さらなる調査が必要です")
             print("   → 測定精度に課題があります")
             print("   → より詳細な調査を実施してください")
         
     except Exception as e:
-        print(f"❌ 調査実行エラー: {e}")
+        print(f"[ERROR] 調査実行エラー: {e}")
         traceback.print_exc()
         return False
     

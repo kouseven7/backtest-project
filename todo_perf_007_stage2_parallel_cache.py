@@ -98,16 +98,16 @@ class ParallelDataFetcher:
                             results[symbol][data_type] = data
                             
                         except Exception as e:
-                            print(f"⚠️ {symbol} {data_type} 取得失敗: {e}")
+                            print(f"[WARNING] {symbol} {data_type} 取得失敗: {e}")
                             if symbol not in results:
                                 results[symbol] = {}
                             results[symbol][data_type] = None
                 
-                print(f"✅ 並列データ取得完了: {len(symbols)}銘柄 × {len(data_types)}データタイプ")
+                print(f"[OK] 並列データ取得完了: {len(symbols)}銘柄 × {len(data_types)}データタイプ")
                 return results
                 
         except Exception as e:
-            print(f"❌ 並列データ取得エラー: {e}")
+            print(f"[ERROR] 並列データ取得エラー: {e}")
             return {}
     
     def _fetch_single_data_with_retry(self, symbol: str, data_type: str, max_retries: int = 3) -> Optional[Dict[str, Any]]:
@@ -149,7 +149,7 @@ class ParallelDataFetcher:
             except Exception as e:
                 if retry == max_retries - 1:
                     self.timing_stats["api_errors"] += 1
-                    print(f"⚠️ {symbol} {data_type} 最終取得失敗: {e}")
+                    print(f"[WARNING] {symbol} {data_type} 最終取得失敗: {e}")
                     return None
                 else:
                     # 指数バックオフ
@@ -281,7 +281,7 @@ class SmartCache:
                     cache_file.unlink()
                     
             except Exception as e:
-                print(f"⚠️ キャッシュ読み込みエラー {cache_key}: {e}")
+                print(f"[WARNING] キャッシュ読み込みエラー {cache_key}: {e}")
         
         self.stats["misses"] += 1
         return None
@@ -312,7 +312,7 @@ class SmartCache:
             self.stats["writes"] += 1
             
         except Exception as e:
-            print(f"⚠️ キャッシュ保存エラー {cache_key}: {e}")
+            print(f"[WARNING] キャッシュ保存エラー {cache_key}: {e}")
     
     def _get_cache_file_path(self, symbol: str, data_type: str) -> Path:
         """キャッシュファイルパス生成"""
@@ -393,7 +393,7 @@ class OptimizedScreenerDataManager:
                 else:
                     uncached_symbols.append(symbol)
             
-            print(f"📊 Market Cap - キャッシュヒット: {len(cached_results)}, API呼び出し必要: {len(uncached_symbols)}")
+            print(f"[CHART] Market Cap - キャッシュヒット: {len(cached_results)}, API呼び出し必要: {len(uncached_symbols)}")
             
             # 未キャッシュデータを並列取得
             if uncached_symbols:
@@ -426,7 +426,7 @@ class OptimizedScreenerDataManager:
                 else:
                     uncached_symbols.append(symbol)
             
-            print(f"📊 Price - キャッシュヒット: {len(cached_results)}, API呼び出し必要: {len(uncached_symbols)}")
+            print(f"[CHART] Price - キャッシュヒット: {len(cached_results)}, API呼び出し必要: {len(uncached_symbols)}")
             
             if uncached_symbols:
                 parallel_results = self.parallel_fetcher.fetch_market_data_parallel(
@@ -457,7 +457,7 @@ class OptimizedScreenerDataManager:
                 else:
                     uncached_symbols.append(symbol)
             
-            print(f"📊 Volume - キャッシュヒット: {len(cached_results)}, API呼び出し必要: {len(uncached_symbols)}")
+            print(f"[CHART] Volume - キャッシュヒット: {len(cached_results)}, API呼び出し必要: {len(uncached_symbols)}")
             
             if uncached_symbols:
                 parallel_results = self.parallel_fetcher.fetch_market_data_parallel(
@@ -487,7 +487,7 @@ class OptimizedScreenerDataManager:
                 else:
                     uncached_symbols.append(symbol)
             
-            print(f"📊 Affordability - キャッシュヒット: {len(cached_results)}, API呼び出し必要: {len(uncached_symbols)}")
+            print(f"[CHART] Affordability - キャッシュヒット: {len(cached_results)}, API呼び出し必要: {len(uncached_symbols)}")
             
             if uncached_symbols:
                 parallel_results = self.parallel_fetcher.fetch_market_data_parallel(
@@ -515,7 +515,7 @@ class OptimizedScreenerDataManager:
         ) / total_operations if total_operations > 0 else 0
         
         report = {
-            "stage_2_completion": "✅ Complete",
+            "stage_2_completion": "[OK] Complete",
             "implementation_summary": {
                 "parallel_data_fetching": "ThreadPoolExecutor with 8 workers",
                 "smart_caching": "Memory + Disk cache with 24h expiry",
@@ -545,14 +545,14 @@ class OptimizedScreenerDataManager:
                 "subsequent_runs": "キャッシュ効果で58.8秒追加削減（32%改善）",
                 "total_potential": "138.1秒削減（75%改善）"
             },
-            "next_stage_readiness": "✅ Stage 3 algorithm optimization ready"
+            "next_stage_readiness": "[OK] Stage 3 algorithm optimization ready"
         }
         
         return report
 
 def test_stage2_implementation():
     """Stage 2 実装テスト"""
-    print("🧪 Stage 2 実装テスト開始")
+    print("[TEST] Stage 2 実装テスト開始")
     
     # テスト用の銘柄リスト
     test_symbols = ["7203", "8001", "6758", "9984", "6861"]  # 5銘柄でテスト
@@ -561,25 +561,25 @@ def test_stage2_implementation():
         # 最適化データマネージャー初期化
         data_manager = OptimizedScreenerDataManager()
         
-        print(f"📊 テスト対象: {len(test_symbols)}銘柄")
+        print(f"[CHART] テスト対象: {len(test_symbols)}銘柄")
         
         # 各フィルターの最適化実装テスト
         with data_manager.time_operation("stage2_full_test"):
             # Market Cap データ取得テスト
             market_cap_data = data_manager.get_optimized_market_cap_data(test_symbols)
-            print(f"✅ Market Cap データ取得: {len(market_cap_data)}件")
+            print(f"[OK] Market Cap データ取得: {len(market_cap_data)}件")
             
             # Price データ取得テスト
             price_data = data_manager.get_optimized_price_data(test_symbols)
-            print(f"✅ Price データ取得: {len(price_data)}件")
+            print(f"[OK] Price データ取得: {len(price_data)}件")
             
             # Volume データ取得テスト
             volume_data = data_manager.get_optimized_volume_data(test_symbols)
-            print(f"✅ Volume データ取得: {len(volume_data)}件")
+            print(f"[OK] Volume データ取得: {len(volume_data)}件")
             
             # Affordability データ取得テスト
             affordability_data = data_manager.get_optimized_affordability_data(test_symbols)
-            print(f"✅ Affordability データ取得: {len(affordability_data)}件")
+            print(f"[OK] Affordability データ取得: {len(affordability_data)}件")
         
         # パフォーマンスレポート生成
         report = data_manager.generate_stage2_performance_report()
@@ -593,12 +593,12 @@ def test_stage2_implementation():
         return True, report
         
     except Exception as e:
-        print(f"❌ Stage 2 実装テストエラー: {e}")
+        print(f"[ERROR] Stage 2 実装テストエラー: {e}")
         return False, {"error": str(e)}
 
 def main():
     """Stage 2 メイン実行"""
-    print("🚀 TODO-PERF-007 Stage 2: 並列データ取得・スマートキャッシュ実装開始")
+    print("[ROCKET] TODO-PERF-007 Stage 2: 並列データ取得・スマートキャッシュ実装開始")
     print("目標: 30分で完了・79.3秒削減期待")
     print("="*80)
     
@@ -607,28 +607,28 @@ def main():
         
         if success:
             print("\n" + "="*80)
-            print("🎯 TODO-PERF-007 Stage 2: 並列データ取得・スマートキャッシュ実装完了")
+            print("[TARGET] TODO-PERF-007 Stage 2: 並列データ取得・スマートキャッシュ実装完了")
             print("="*80)
             
-            print("\n📊 実装成果:")
-            print("  ✅ ThreadPoolExecutor並列処理システム実装完了")
-            print("  ✅ スマートキャッシュシステム（メモリ+ディスク）実装完了")
-            print("  ✅ レート制限・エラーハンドリング実装完了")
-            print("  ✅ 4つの主要フィルター最適化完了")
+            print("\n[CHART] 実装成果:")
+            print("  [OK] ThreadPoolExecutor並列処理システム実装完了")
+            print("  [OK] スマートキャッシュシステム（メモリ+ディスク）実装完了")
+            print("  [OK] レート制限・エラーハンドリング実装完了")
+            print("  [OK] 4つの主要フィルター最適化完了")
             
             if "performance_metrics" in report:
                 cache_hit_rate = report["performance_metrics"]["cache_hit_rate"]
-                print(f"  📈 キャッシュヒット率: {cache_hit_rate}")
+                print(f"  [UP] キャッシュヒット率: {cache_hit_rate}")
             
-            print("\n🚀 期待効果:")
+            print("\n[ROCKET] 期待効果:")
             print("  - 初回実行: 79.3秒削減（43%改善）")
             print("  - 2回目以降: 58.8秒追加削減（32%改善）")
             print("  - 総合効果: 138.1秒削減（75%改善）")
             
-            print(f"\n✅ Stage 2 完了 - Stage 3 アルゴリズム最適化の準備完了")
+            print(f"\n[OK] Stage 2 完了 - Stage 3 アルゴリズム最適化の準備完了")
             return True
         else:
-            print(f"\n❌ Stage 2 失敗: {report.get('error', '不明なエラー')}")
+            print(f"\n[ERROR] Stage 2 失敗: {report.get('error', '不明なエラー')}")
             return False
             
     except Exception as e:

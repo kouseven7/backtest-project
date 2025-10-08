@@ -83,8 +83,8 @@ class DSSMSTask23Controller:
         Returns:
             Dict[str, Any]: 実行結果のサマリー
         """
-        logger.info("🚀 Starting DSSMS Task 2.3: パフォーマンス最適化と検証")
-        print("\n🚀 DSSMS Task 2.3: パフォーマンス最適化と検証")
+        logger.info("[ROCKET] Starting DSSMS Task 2.3: パフォーマンス最適化と検証")
+        print("\n[ROCKET] DSSMS Task 2.3: パフォーマンス最適化と検証")
         print("=" * 60)
         
         execution_summary = {
@@ -103,17 +103,17 @@ class DSSMSTask23Controller:
         
         try:
             # Phase 1: システム最適化
-            print("\n📈 Phase 1: システム最適化")
+            print("\n[UP] Phase 1: システム最適化")
             print("-" * 30)
             execution_summary['components']['performance_optimization'] = self._execute_performance_optimization()
             
             # Phase 2: 統合テスト
-            print("\n🧪 Phase 2: 統合テスト")
+            print("\n[TEST] Phase 2: 統合テスト")
             print("-" * 30)
             execution_summary['components']['integration_testing'] = self._execute_integration_testing()
             
             # Phase 3: 品質保証
-            print("\n🔍 Phase 3: 品質保証")
+            print("\n[SEARCH] Phase 3: 品質保証")
             print("-" * 30)
             execution_summary['components']['quality_assurance'] = self._execute_quality_assurance()
             
@@ -178,18 +178,18 @@ class DSSMSTask23Controller:
                     'parallel_processing_enabled': True
                 }
                 result['status'] = 'completed'
-                print("  ✅ パフォーマンス最適化完了")
+                print("  [OK] パフォーマンス最適化完了")
                 
             else:
                 result['status'] = 'skipped'
                 result['results'] = {'reason': 'Performance optimizer not available'}
-                print("  ⚠️  パフォーマンス最適化器が利用できません")
+                print("  [WARNING]  パフォーマンス最適化器が利用できません")
                 
         except Exception as e:
             result['status'] = 'failed'
             result['results'] = {'error': str(e)}
             logger.error(f"Performance optimization failed: {e}")
-            print(f"  ❌ パフォーマンス最適化エラー: {e}")
+            print(f"  [ERROR] パフォーマンス最適化エラー: {e}")
         
         result['execution_time'] = time.time() - start_time
         return result
@@ -203,9 +203,9 @@ class DSSMSTask23Controller:
         
         try:
             if self.integration_test_suite:
-                print("  🔧 統合テストスイート実行...")
+                print("  [TOOL] 統合テストスイート実行...")
                 print("  🔄 エンドツーエンドテスト...")
-                print("  📊 パフォーマンステスト...")
+                print("  [CHART] パフォーマンステスト...")
                 
                 # 統合テスト実行
                 test_results = self.integration_test_suite.run_all_tests()
@@ -226,18 +226,18 @@ class DSSMSTask23Controller:
                     ]
                 }
                 result['status'] = 'completed'
-                print(f"  ✅ 統合テスト完了: {test_results['tests_passed']}/{test_results['tests_passed'] + test_results['tests_failed']} 成功")
+                print(f"  [OK] 統合テスト完了: {test_results['tests_passed']}/{test_results['tests_passed'] + test_results['tests_failed']} 成功")
                 
             else:
                 result['status'] = 'skipped'
                 result['results'] = {'reason': 'Integration test suite not available'}
-                print("  ⚠️  統合テストスイートが利用できません")
+                print("  [WARNING]  統合テストスイートが利用できません")
                 
         except Exception as e:
             result['status'] = 'failed'
             result['results'] = {'error': str(e)}
             logger.error(f"Integration testing failed: {e}")
-            print(f"  ❌ 統合テストエラー: {e}")
+            print(f"  [ERROR] 統合テストエラー: {e}")
         
         result['execution_time'] = time.time() - start_time
         return result
@@ -251,7 +251,7 @@ class DSSMSTask23Controller:
         
         try:
             if self.quality_assurance:
-                print("  🔍 自動コードレビュー...")
+                print("  [SEARCH] 自動コードレビュー...")
                 print("  🐛 バグ検出・修正...")
                 print("  📚 ドキュメント更新...")
                 
@@ -274,18 +274,18 @@ class DSSMSTask23Controller:
                     'documentation_updates_count': len(qa_report.documentation_updates)
                 }
                 result['status'] = 'completed'
-                print(f"  ✅ 品質保証完了: スコア {qa_report.overall_score:.1f}/100")
+                print(f"  [OK] 品質保証完了: スコア {qa_report.overall_score:.1f}/100")
                 
             else:
                 result['status'] = 'skipped'
                 result['results'] = {'reason': 'Quality assurance system not available'}
-                print("  ⚠️  品質保証システムが利用できません")
+                print("  [WARNING]  品質保証システムが利用できません")
                 
         except Exception as e:
             result['status'] = 'failed'
             result['results'] = {'error': str(e)}
             logger.error(f"Quality assurance failed: {e}")
-            print(f"  ❌ 品質保証エラー: {e}")
+            print(f"  [ERROR] 品質保証エラー: {e}")
         
         result['execution_time'] = time.time() - start_time
         return result
@@ -350,28 +350,28 @@ class DSSMSTask23Controller:
     
     def _display_final_report(self, execution_summary: Dict[str, Any]):
         """最終レポートの表示"""
-        print("\n📋 Task 2.3 実行結果サマリー")
+        print("\n[LIST] Task 2.3 実行結果サマリー")
         print("=" * 60)
         
         # 全体ステータス
         status_emoji = {
-            'success': '✅',
-            'partial_success': '⚠️',
-            'failed': '❌',
+            'success': '[OK]',
+            'partial_success': '[WARNING]',
+            'failed': '[ERROR]',
             'in_progress': '🔄'
         }
         
         overall_status = execution_summary['overall_status']
-        print(f"🎯 全体ステータス: {status_emoji.get(overall_status, '❓')} {overall_status.upper()}")
+        print(f"[TARGET] 全体ステータス: {status_emoji.get(overall_status, '❓')} {overall_status.upper()}")
         print(f"⏱️  総実行時間: {execution_summary['total_execution_time']:.2f} 秒")
         
         if 'evaluation' in execution_summary:
             eval_data = execution_summary['evaluation']
-            print(f"📊 成功率: {eval_data['success_rate']:.1%} ({eval_data['completed_components']}/{eval_data['total_components']})")
+            print(f"[CHART] 成功率: {eval_data['success_rate']:.1%} ({eval_data['completed_components']}/{eval_data['total_components']})")
             print(f"🎭 完了レベル: {eval_data['task_completion_level']}")
         
         # コンポーネント別結果
-        print("\n📋 コンポーネント別結果:")
+        print("\n[LIST] コンポーネント別結果:")
         
         for component_name, result in execution_summary['components'].items():
             status = result['status']
@@ -386,15 +386,15 @@ class DSSMSTask23Controller:
                 
                 elif component_name == 'integration_testing' and 'total_tests' in result['results']:
                     test_data = result['results']
-                    print(f"    🧪 テスト成功率: {test_data.get('success_rate', 0):.1%}")
+                    print(f"    [TEST] テスト成功率: {test_data.get('success_rate', 0):.1%}")
                 
                 elif component_name == 'quality_assurance' and 'overall_quality_score' in result['results']:
                     qa_data = result['results']
-                    print(f"    🔍 品質スコア: {qa_data.get('overall_quality_score', 0):.1f}/100")
+                    print(f"    [SEARCH] 品質スコア: {qa_data.get('overall_quality_score', 0):.1f}/100")
         
         # エラー情報
         if execution_summary['errors']:
-            print(f"\n⚠️  エラー ({len(execution_summary['errors'])} 件):")
+            print(f"\n[WARNING]  エラー ({len(execution_summary['errors'])} 件):")
             for error in execution_summary['errors']:
                 print(f"    • {error}")
         
@@ -407,7 +407,7 @@ class DSSMSTask23Controller:
         print("  • 実行結果サマリー")
         
         print("\n" + "=" * 60)
-        print("🎉 DSSMS Task 2.3: パフォーマンス最適化と検証 - 完了")
+        print("[SUCCESS] DSSMS Task 2.3: パフォーマンス最適化と検証 - 完了")
         print("=" * 60)
     
     def get_task_status(self) -> Dict[str, Any]:
@@ -423,9 +423,9 @@ class DSSMSTask23Controller:
 def main():
     """メイン実行関数"""
     print("\n" + "=" * 60)
-    print("🚀 DSSMS Task 2.3: パフォーマンス最適化と検証")
+    print("[ROCKET] DSSMS Task 2.3: パフォーマンス最適化と検証")
     print("=" * 60)
-    print("📋 作業内容:")
+    print("[LIST] 作業内容:")
     print("  1. システム最適化 - バックテスト実行速度最適化、メモリ削減、並列処理")
     print("  2. 統合テスト - 統合テストスイート、E2Eテスト、パフォーマンステスト")
     print("  3. 品質保証 - コードレビュー、バグ修正、ドキュメント更新")

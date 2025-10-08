@@ -96,7 +96,7 @@ def test_importance_analyzer():
                 print(f"✗ 分析エラー: {results['error']}")
                 return False
         else:
-            print("⚠️ データが見つかりません（正常な場合もあります）")
+            print("[WARNING] データが見つかりません（正常な場合もあります）")
             return True
             
     except Exception as e:
@@ -264,7 +264,7 @@ def run_comprehensive_test():
     failed = 0
     
     for test_name, result in test_results:
-        status = "✅ PASS" if result else "❌ FAIL"
+        status = "[OK] PASS" if result else "[ERROR] FAIL"
         print(f"{status} {test_name}")
         
         if result:
@@ -277,10 +277,10 @@ def run_comprehensive_test():
     print(f"失敗: {failed}")
     
     if failed == 0:
-        print("\n🎉 全テストが成功しました！")
+        print("\n[SUCCESS] 全テストが成功しました！")
         print("重要指標選定システムは正常に動作しています。")
     else:
-        print(f"\n⚠️ {failed}個のテストが失敗しました。")
+        print(f"\n[WARNING] {failed}個のテストが失敗しました。")
         print("エラーを確認して修正してください。")
     
     return failed == 0

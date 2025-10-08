@@ -15,7 +15,7 @@ def time_import_stages():
     from typing import Dict, List, Any, Optional
     import logging
     stage1_time = (time.time() - stage1_start) * 1000
-    print(f"✅ Stage 1 - 基本インポート: {stage1_time:.1f}ms")
+    print(f"[OK] Stage 1 - 基本インポート: {stage1_time:.1f}ms")
     
     # Stage 2: モジュール内容読み込み
     stage2_start = time.time()
@@ -30,7 +30,7 @@ def time_import_stages():
         lines = f.readlines()
     
     stage2_time = (time.time() - stage2_start) * 1000
-    print(f"✅ Stage 2 - ファイル読み込み: {stage2_time:.1f}ms")
+    print(f"[OK] Stage 2 - ファイル読み込み: {stage2_time:.1f}ms")
     print(f"   総行数: {len(lines)}")
     
     # Stage 3: 実際のインポート
@@ -38,18 +38,18 @@ def time_import_stages():
     try:
         from src.dssms.symbol_switch_manager import SymbolSwitchManager
         stage3_time = (time.time() - stage3_start) * 1000
-        print(f"✅ Stage 3 - クラスインポート: {stage3_time:.1f}ms")
+        print(f"[OK] Stage 3 - クラスインポート: {stage3_time:.1f}ms")
         
         # Stage 4: クラス情報取得
         stage4_start = time.time()
         methods = [method for method in dir(SymbolSwitchManager) if not method.startswith('_')]
         stage4_time = (time.time() - stage4_start) * 1000
-        print(f"✅ Stage 4 - クラス情報取得: {stage4_time:.1f}ms")
+        print(f"[OK] Stage 4 - クラス情報取得: {stage4_time:.1f}ms")
         print(f"   パブリックメソッド数: {len(methods)}")
         
     except Exception as e:
         stage3_time = (time.time() - stage3_start) * 1000
-        print(f"❌ Stage 3 - インポートエラー: {e}")
+        print(f"[ERROR] Stage 3 - インポートエラー: {e}")
         print(f"   時間: {stage3_time:.1f}ms")
     
     total_time = stage1_time + stage2_time + stage3_time

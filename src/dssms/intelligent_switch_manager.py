@@ -773,25 +773,25 @@ class UnifiedSwitchLogic:
         """日次切替判定（統一基準）- Problem 1修復版"""
         # TODO(tag:phase2, rationale:Problem 1緊急修復): 切替判定復旧実装
         
-        # 🔧 Problem 1 修復: portfolio_dataからランキング情報取得
+        # [TOOL] Problem 1 修復: portfolio_dataからランキング情報取得
         top_symbol = portfolio_data.get('top_symbol')
         current_symbol = portfolio_data.get('current_symbol')
         
-        # 🎯 基本切替条件: トップ銘柄が存在し、現在銘柄と異なる
+        # [TARGET] 基本切替条件: トップ銘柄が存在し、現在銘柄と異なる
         basic_switch_condition = (
             top_symbol is not None and
             top_symbol != current_symbol
         )
         
-        # 🔧 パフォーマンス基準（Problem 1緩和設定適用）
+        # [TOOL] パフォーマンス基準（Problem 1緩和設定適用）
         performance_score = portfolio_data.get('daily_performance', 0.0)
         performance_threshold = self.switch_criteria.get('daily_performance_threshold', 0.01)  # 緩和: 0.02→0.01
         
-        # 🔧 ボラティリティ基準（Problem 1緩和設定適用）
+        # [TOOL] ボラティリティ基準（Problem 1緩和設定適用）
         volatility = portfolio_data.get('volatility', 0.0)
         volatility_threshold = self.switch_criteria.get('volatility_threshold', 0.05)  # 緩和: 0.03→0.05
         
-        # 🎯 Problem 1修復: 切替条件を大幅緩和
+        # [TARGET] Problem 1修復: 切替条件を大幅緩和
         should_switch = (
             basic_switch_condition or
             performance_score < -performance_threshold or
@@ -887,11 +887,11 @@ class UnifiedSwitchLogic:
         # 信頼度評価
         confidence_score = self._calculate_confidence(criteria_results)
         
-        # 🔧 Problem 1緊急修復: 品質基準を大幅緩和
+        # [TOOL] Problem 1緊急修復: 品質基準を大幅緩和
         return {
             'consistency_score': consistency_score,
             'confidence_score': confidence_score,
-            'quality_passed': True  # 🎯 緊急対応: 品質チェックを常に通す
+            'quality_passed': True  # [TARGET] 緊急対応: 品質チェックを常に通す
         }
         
     def _calculate_consistency(self, criteria_results: Dict[str, Any]) -> float:
@@ -915,7 +915,7 @@ class UnifiedSwitchLogic:
         if not criteria_results:
             return base_confidence
             
-        # 🔧 Phase 4B-1: 動的信頼度計算
+        # [TOOL] Phase 4B-1: 動的信頼度計算
         confidence_factors = []
         
         # 基本切替条件ファクター
@@ -942,7 +942,7 @@ class UnifiedSwitchLogic:
         time_factor = self._calculate_time_confidence_factor(criteria_results)
         confidence_factors.append(time_factor)
         
-        # 🎯 Phase 4B-1: 動的信頼度統合計算
+        # [TARGET] Phase 4B-1: 動的信頼度統合計算
         if confidence_factors:
             weighted_confidence = sum(confidence_factors) / len(confidence_factors)
             # 0.3-0.9の範囲で動的変動
@@ -1198,9 +1198,9 @@ if __name__ == "__main__":
         available_funds = manager.update_available_funds_after_drawdown()
         print(f"✓ 利用可能資金: {available_funds:,.0f}円")
         
-        print("✅ テスト完了")
+        print("[OK] テスト完了")
         
     except Exception as e:
-        print(f"❌ テストエラー: {e}")
+        print(f"[ERROR] テストエラー: {e}")
         import traceback
         traceback.print_exc()

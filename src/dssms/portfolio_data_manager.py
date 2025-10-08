@@ -15,8 +15,8 @@ Problem 6 Phase 2 追加機能:
 - データ検証レベル設定による品質保証
 - performance_history, portfolio_values, portfolio_values_raw 3系統統一
 
-TODO(tag:phase1, rationale:data_flow_optimization): 27箇所portfolio_values参照統一 ✅ (Phase 2で対応)
-TODO(tag:phase1, rationale:date_processing_optimization): pd.to_datetime処理を3箇所以下に削減 ✅ (Phase 2で対応)
+TODO(tag:phase1, rationale:data_flow_optimization): 27箇所portfolio_values参照統一 [OK] (Phase 2で対応)
+TODO(tag:phase1, rationale:date_processing_optimization): pd.to_datetime処理を3箇所以下に削減 [OK] (Phase 2で対応)
 """
 import pandas as pd
 import numpy as np

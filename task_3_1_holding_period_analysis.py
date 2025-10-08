@@ -27,11 +27,11 @@ def analyze_holding_period_calculation():
         "recommendations": []
     }
     
-    print("🔍 Task 3.1: 保有期間計算ロジックの比較分析を開始")
+    print("[SEARCH] Task 3.1: 保有期間計算ロジックの比較分析を開始")
     print("=" * 60)
     
     # 1. 各エンジンでの保有期間計算方法比較
-    print("\n📊 Step 1: 各エンジンの保有期間計算ロジック分析")
+    print("\n[CHART] Step 1: 各エンジンの保有期間計算ロジック分析")
     
     engine_files = [
         "dssms_unified_output_engine.py",
@@ -97,8 +97,8 @@ def analyze_holding_period_calculation():
                 "has_actual_holding_calculation": "actual_holding_hours" in content
             }
             
-            print(f"   ✅ ファイルサイズ: {len(content)}文字")
-            print(f"   📍 actual_holding_hours計算: {'✅' if 'actual_holding_hours' in content else '❌'}")
+            print(f"   [OK] ファイルサイズ: {len(content)}文字")
+            print(f"   📍 actual_holding_hours計算: {'[OK]' if 'actual_holding_hours' in content else '[ERROR]'}")
             print(f"   🔢 24時間固定値使用: {len(fixed_24_hour_usage)}箇所")
             
             if calculation_methods:
@@ -110,12 +110,12 @@ def analyze_holding_period_calculation():
                 "file_exists": False,
                 "error": "ファイルが見つからない"
             }
-            print(f"❌ {engine_file}: ファイルが見つかりません")
+            print(f"[ERROR] {engine_file}: ファイルが見つかりません")
     
     results["calculation_methods"] = calculation_analysis
     
     # 2. SymbolSwitchオブジェクトのtimestamp取得分析
-    print("\n🔍 Step 2: SymbolSwitchオブジェクトの調査")
+    print("\n[SEARCH] Step 2: SymbolSwitchオブジェクトの調査")
     
     try:
         # SymbolSwitchクラスの定義を検索
@@ -152,10 +152,10 @@ def analyze_holding_period_calculation():
                 symbol_switch_analysis["timestamp_usage"][file_path] = f"読み込みエラー: {e}"
         
         results["findings"]["symbol_switch_analysis"] = symbol_switch_analysis
-        print(f"✅ SymbolSwitch関連ファイル: {len(symbol_switch_files)}件発見")
+        print(f"[OK] SymbolSwitch関連ファイル: {len(symbol_switch_files)}件発見")
         
     except Exception as e:
-        print(f"❌ SymbolSwitch分析エラー: {e}")
+        print(f"[ERROR] SymbolSwitch分析エラー: {e}")
         results["problems_identified"].append(f"SymbolSwitch分析エラー: {e}")
     
     # 3. 日付差分計算の実装比較
@@ -230,7 +230,7 @@ def analyze_holding_period_calculation():
     results["findings"]["default_value_analysis"] = default_value_analysis
     
     # 5. 問題の特定と推奨事項
-    print("\n🎯 Step 5: 問題の特定と推奨事項")
+    print("\n[TARGET] Step 5: 問題の特定と推奨事項")
     
     identified_problems = []
     
@@ -267,11 +267,11 @@ def analyze_holding_period_calculation():
     
     results["recommendations"] = recommendations
     
-    print("💡 推奨事項:")
+    print("[IDEA] 推奨事項:")
     for i, rec in enumerate(recommendations, 1):
         print(f"{i}. {rec}")
     
-    print("\n❌ 特定された問題:")
+    print("\n[ERROR] 特定された問題:")
     for problem in identified_problems:
         print(f"   {problem}")
     
@@ -282,7 +282,7 @@ def analyze_holding_period_calculation():
     
     print(f"\n💾 分析結果を保存: {output_file}")
     print("=" * 60)
-    print("🔍 Task 3.1: 保有期間計算ロジックの比較分析完了")
+    print("[SEARCH] Task 3.1: 保有期間計算ロジックの比較分析完了")
     
     return results
 
@@ -291,10 +291,10 @@ if __name__ == "__main__":
         results = analyze_holding_period_calculation()
         
         # 重要な発見事項を表示
-        print("\n🎯 重要な発見事項:")
+        print("\n[TARGET] 重要な発見事項:")
         for problem in results["problems_identified"]:
-            print(f"❌ {problem}")
+            print(f"[ERROR] {problem}")
             
     except Exception as e:
-        print(f"❌ Task 3.1実行エラー: {e}")
+        print(f"[ERROR] Task 3.1実行エラー: {e}")
         traceback.print_exc()

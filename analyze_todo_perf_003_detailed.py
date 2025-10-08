@@ -42,12 +42,12 @@ def analyze_todo_perf_003_context():
         print(f"   最適化レベル: {results['import_optimization_status']['optimization_level']}")
         
         if current_import_time < 50:
-            print("   ✅ インポート最適化完了 - Phase 3実行時間最適化への移行準備完了")
+            print("   [OK] インポート最適化完了 - Phase 3実行時間最適化への移行準備完了")
         else:
-            print("   ⚠️ インポート最適化未完了 - Phase 3移行には慎重な検討が必要")
+            print("   [WARNING] インポート最適化未完了 - Phase 3移行には慎重な検討が必要")
             
     except Exception as e:
-        print(f"   ❌ DSSMSIntegratedBacktesterインポートエラー: {e}")
+        print(f"   [ERROR] DSSMSIntegratedBacktesterインポートエラー: {e}")
         results['import_optimization_status'] = {
             'error': str(e),
             'target_achieved': False,
@@ -85,7 +85,7 @@ def analyze_todo_perf_003_context():
         'dssms_specific': dssms_exec_time,
     }
     
-    print("   📊 ドキュメント記載値 vs 実測値:")
+    print("   [CHART] ドキュメント記載値 vs 実測値:")
     for component, doc_value in documented_values.items():
         if component in actual_values:
             actual_value = actual_values[component]
@@ -184,13 +184,13 @@ def generate_phase3_analysis_report(results):
     
     # インポート最適化状況
     import_status = results['import_optimization_status']
-    print(f"📊 インポート最適化状況:")
+    print(f"[CHART] インポート最適化状況:")
     print(f"   現在レベル: {import_status.get('optimization_level', 'unknown')}")
-    print(f"   目標達成: {'✅' if import_status.get('target_achieved', False) else '❌'}")
+    print(f"   目標達成: {'[OK]' if import_status.get('target_achieved', False) else '[ERROR]'}")
     
     # 実行時間ボトルネック
     exec_bottlenecks = results['execution_time_bottlenecks']
-    print(f"\n📊 実行時間ボトルネック:")
+    print(f"\n[CHART] 実行時間ボトルネック:")
     sorted_bottlenecks = sorted(exec_bottlenecks.items(), key=lambda x: x[1], reverse=True)
     for component, time_ms in sorted_bottlenecks:
         if time_ms > 0:
@@ -198,7 +198,7 @@ def generate_phase3_analysis_report(results):
     
     # 前提条件妥当性
     premise_valid = results['premise_validation']
-    print(f"\n📊 前提条件妥当性:")
+    print(f"\n[CHART] 前提条件妥当性:")
     consistent_count = sum(1 for v in premise_valid.values() if v['consistency'] == '一致')
     total_count = len(premise_valid)
     consistency_rate = (consistent_count / total_count * 100) if total_count > 0 else 0
@@ -206,21 +206,21 @@ def generate_phase3_analysis_report(results):
     
     # Phase 3実施判定
     feasibility = results['phase3_feasibility']
-    print(f"\n🎯 Phase 3実施判定:")
+    print(f"\n[TARGET] Phase 3実施判定:")
     print(f"   推奨: {feasibility['recommendation']}")
     print(f"   優先度: {feasibility['priority']}")
     print(f"   期待効果: {feasibility['potential_improvement']:.1f}ms改善")
     
     # 最終判定
     if feasibility['recommendation'] == "Phase 3実施推奨":
-        print("\n✅ Phase 3実行時間最適化への移行を推奨")
-        print("📋 推奨アクション:")
+        print("\n[OK] Phase 3実行時間最適化への移行を推奨")
+        print("[LIST] 推奨アクション:")
         print("   1. yfinance遅延ローディング実装")
         print("   2. openpyxl遅延ローディング実装") 
         print("   3. DSSMS実行処理軽量化")
     else:
-        print("\n⚠️ インポート最適化の完了を優先")
-        print("📋 推奨アクション:")
+        print("\n[WARNING] インポート最適化の完了を優先")
+        print("[LIST] 推奨アクション:")
         print("   1. DSSMSIntegratedBacktesterインポート時間さらなる削減")
         print("   2. インポート最適化完了後にPhase 3検討")
 

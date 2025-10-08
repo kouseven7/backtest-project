@@ -132,7 +132,7 @@ def test_excel_export(processed_data):
         filename = processor.process_main_data(processed_data)
         
         if filename:
-            logger.info(f"✅ Excel出力成功: {filename}")
+            logger.info(f"[OK] Excel出力成功: {filename}")
             
             # 出力結果検証
             excel_data = pd.ExcelFile(filename)
@@ -148,7 +148,7 @@ def test_excel_export(processed_data):
             
             return filename
         else:
-            logger.error("❌ Excel出力失敗")
+            logger.error("[ERROR] Excel出力失敗")
             return None
             
     except Exception as e:
@@ -184,10 +184,10 @@ def main():
         excel_file = test_excel_export(processed_data)
         
         if excel_file:
-            logger.info("✅ 完全統合テスト成功！")
+            logger.info("[OK] 完全統合テスト成功！")
             logger.info(f"出力ファイル: {excel_file}")
         else:
-            logger.error("❌ Excel出力でエラーが発生しました")
+            logger.error("[ERROR] Excel出力でエラーが発生しました")
         
     except Exception as e:
         logger.error(f"統合テストエラー: {e}")

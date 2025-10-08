@@ -5,7 +5,7 @@ from pathlib import Path
 def diagnose_switching_logic():
     """DSSMS切り替えロジックの診断"""
     
-    print("🔍 DSSMS切り替えロジック診断")
+    print("[SEARCH] DSSMS切り替えロジック診断")
     print("=" * 50)
     
     # 1. 設定ファイルの切り替え判定基準確認
@@ -18,7 +18,7 @@ def diagnose_switching_logic():
     for name, file_path in config_files.items():
         path = Path(file_path)
         if path.exists():
-            print(f"\n📋 {name} 設定確認:")
+            print(f"\n[LIST] {name} 設定確認:")
             try:
                 with open(path, 'r', encoding='utf-8') as f:
                     config = json.load(f)
@@ -41,20 +41,20 @@ def diagnose_switching_logic():
                 
                 if found_keys:
                     for key_info in found_keys:
-                        print(f"  ✅ {key_info}")
+                        print(f"  [OK] {key_info}")
                 else:
-                    print(f"  ⚠️  切り替え基準が見つかりません")
+                    print(f"  [WARNING]  切り替え基準が見つかりません")
                     print(f"  📝 主要キー: {list(config.keys())}")
                     
             except Exception as e:
-                print(f"  ❌ 読み込みエラー: {e}")
+                print(f"  [ERROR] 読み込みエラー: {e}")
         else:
-            print(f"  ❌ {file_path} が見つかりません")
+            print(f"  [ERROR] {file_path} が見つかりません")
 
 def analyze_switching_frequency_cause():
     """286回切り替えの原因分析"""
     
-    print("\n🎯 286回切り替えの原因分析")
+    print("\n[TARGET] 286回切り替えの原因分析")
     print("-" * 30)
     
     # 基本計算
@@ -67,12 +67,12 @@ def analyze_switching_frequency_cause():
     print(f"1日平均: {avg_switches_per_day:.2f}回")
     
     if avg_switches_per_day > 0.7:
-        print("🚨 ほぼ毎日切り替えています！")
+        print("[ALERT] ほぼ毎日切り替えています！")
         print("   → 評価頻度が daily である可能性が高い")
         print("   → 切り替え閾値が低すぎる可能性")
     
     # 予想される問題パターン
-    print("\n🔍 予想される問題パターン:")
+    print("\n[SEARCH] 予想される問題パターン:")
     patterns = [
         "毎日評価 + 閾値なし切り替え",
         "短期的な価格変動への過反応", 
@@ -100,19 +100,19 @@ def check_backtest_logic_files():
     for file_path in logic_files:
         path = Path(file_path)
         if path.exists():
-            print(f"✅ {file_path}")
+            print(f"[OK] {file_path}")
             # ファイルサイズで複雑さを推測
             size = path.stat().st_size
             print(f"   サイズ: {size:,} bytes")
         else:
-            print(f"❌ {file_path}")
+            print(f"[ERROR] {file_path}")
 
 if __name__ == "__main__":
     diagnose_switching_logic()
     analyze_switching_frequency_cause() 
     check_backtest_logic_files()
     
-    print("\n🎯 次のステップ:")
+    print("\n[TARGET] 次のステップ:")
     print("1. 上記のロジックファイルの内容確認")
     print("2. 切り替え判定基準の特定")
     print("3. 評価頻度の確認（daily vs weekly vs monthly）") 

@@ -33,11 +33,11 @@ def analyze_symbol_switch_manager_internal():
             result = stage_func()
             stage_time = (time.perf_counter() - start_time) * 1000
             times[stage_name] = stage_time
-            print(f"✅ {stage_name}: {stage_time:.1f}ms")
+            print(f"[OK] {stage_name}: {stage_time:.1f}ms")
         except Exception as e:
             stage_time = (time.perf_counter() - start_time) * 1000
             times[stage_name] = stage_time
-            print(f"❌ {stage_name}: {stage_time:.1f}ms (Error: {e})")
+            print(f"[ERROR] {stage_name}: {stage_time:.1f}ms (Error: {e})")
     
     # 結果分析
     total_time = sum(times.values())
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     print(f"最重要最適化対象: {heaviest_stage[0]} ({heaviest_stage[1]:.1f}ms)")
     
     if heaviest_stage[1] > 1000:
-        print("⚠️ 1秒以上の重い処理発見！詳細調査必要")
+        print("[WARNING] 1秒以上の重い処理発見！詳細調査必要")
         print("推奨対策:")
         print("  1. クラス定義の軽量化")
         print("  2. 初期化処理の遅延化")

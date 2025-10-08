@@ -48,7 +48,7 @@ def create_test_excel_data():
         
         print("1. 取引シミュレーション実行...")
         result = simulate_trades(test_data, "TEST_EXCEL")
-        print("   ✅ 取引シミュレーション成功")
+        print("   [OK] 取引シミュレーション成功")
         
         # Excel出力テスト
         print("2. Excel出力テスト...")
@@ -62,11 +62,11 @@ def create_test_excel_data():
         
         # Excel出力実行
         filepath = save_backtest_results(result, output_dir, filename)
-        print(f"   ✅ Excel出力成功: {filepath}")
+        print(f"   [OK] Excel出力成功: {filepath}")
         
         # 出力されたファイルの確認
         if os.path.exists(filepath):
-            print(f"   ✅ ファイルが正常に作成されました: {filepath}")
+            print(f"   [OK] ファイルが正常に作成されました: {filepath}")
             
             # ファイルサイズをチェック
             file_size = os.path.getsize(filepath) / 1024  # KB
@@ -90,18 +90,18 @@ def create_test_excel_data():
                         
                         # リスク状態列がないことを確認
                         if 'リスク状態' not in df.columns:
-                            print("      ✅ リスク状態列が正しく削除されています")
+                            print("      [OK] リスク状態列が正しく削除されています")
                         else:
-                            print("      ❌ リスク状態列が残っています")
+                            print("      [ERROR] リスク状態列が残っています")
                             
                         # 取引量(株)列があることを確認
                         if '取引量(株)' in df.columns:
-                            print("      ✅ 取引量(株)列が追加されています")
+                            print("      [OK] 取引量(株)列が追加されています")
                             if len(df) > 0:
                                 sample_shares = df['取引量(株)'].iloc[0]
                                 print(f"      株数の例: {sample_shares}")
                         else:
-                            print("      ❌ 取引量(株)列がありません")
+                            print("      [ERROR] 取引量(株)列がありません")
                     
                     elif sheet_name == "パフォーマンス指標":
                         # 高度なパフォーマンス指標があることを確認
@@ -111,30 +111,30 @@ def create_test_excel_data():
                             
                             for metric in advanced_metrics:
                                 if metric in metrics_list:
-                                    print(f"      ✅ {metric}が含まれています")
+                                    print(f"      [OK] {metric}が含まれています")
                                 else:
-                                    print(f"      ❌ {metric}が含まれていません")
+                                    print(f"      [ERROR] {metric}が含まれていません")
                     
                     elif sheet_name == "損益推移":
                         # 累積損益計算の確認
                         if len(df) > 0 and '累積損益' in df.columns:
-                            print("      ✅ 累積損益が正しく計算されています")
+                            print("      [OK] 累積損益が正しく計算されています")
                             final_pnl = df['累積損益'].iloc[-1]
                             print(f"      最終累積損益: {final_pnl:.2f}円")
                         else:
-                            print("      ❌ 累積損益計算に問題があります")
+                            print("      [ERROR] 累積損益計算に問題があります")
                 
-                print("   ✅ Excel内容確認完了")
+                print("   [OK] Excel内容確認完了")
                 
             except Exception as e:
-                print(f"   ❌ Excelファイル読み込みエラー: {e}")
+                print(f"   [ERROR] Excelファイル読み込みエラー: {e}")
         else:
-            print(f"   ❌ ファイルが作成されませんでした")
+            print(f"   [ERROR] ファイルが作成されませんでした")
         
         return True
         
     except Exception as e:
-        print(f"❌ Excel出力テストでエラー: {e}")
+        print(f"[ERROR] Excel出力テストでエラー: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -155,7 +155,7 @@ def test_main_integration():
         output_path = simulate_and_save(test_data, "TEST_MAIN")
         
         if output_path and os.path.exists(output_path):
-            print(f"   ✅ main.py統合テスト成功: {output_path}")
+            print(f"   [OK] main.py統合テスト成功: {output_path}")
             
             # ファイルサイズをチェック
             file_size = os.path.getsize(output_path) / 1024  # KB
@@ -163,17 +163,17 @@ def test_main_integration():
             
             return True
         else:
-            print("   ❌ ファイル作成に失敗しました")
+            print("   [ERROR] ファイル作成に失敗しました")
             return False
         
     except Exception as e:
-        print(f"❌ main.py統合テストでエラー: {e}")
+        print(f"[ERROR] main.py統合テストでエラー: {e}")
         import traceback
         traceback.print_exc()
         return False
 
 if __name__ == "__main__":
-    print("🔍 trade_simulation.py修正のExcel出力テスト開始")
+    print("[SEARCH] trade_simulation.py修正のExcel出力テスト開始")
     
     # Excel出力テスト
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
@@ -184,17 +184,17 @@ if __name__ == "__main__":
     
     print("\n=== テスト結果まとめ ===")
     if excel_success:
-        print("✅ Excel出力テスト: 成功")
+        print("[OK] Excel出力テスト: 成功")
     else:
-        print("❌ Excel出力テスト: 失敗")
+        print("[ERROR] Excel出力テスト: 失敗")
         
     if main_success:
-        print("✅ main.py統合テスト: 成功")
+        print("[OK] main.py統合テスト: 成功")
     else:
-        print("❌ main.py統合テスト: 失敗")
+        print("[ERROR] main.py統合テスト: 失敗")
     
     if excel_success and main_success:
-        print("\n🎉 すべてのテストが成功しました！")
+        print("\n[SUCCESS] すべてのテストが成功しました！")
         print("trade_simulation.pyの修正がExcel出力まで正しく反映されています。")
     else:
-        print("\n⚠️ 一部のテストで問題が見つかりました。")
+        print("\n[WARNING] 一部のテストで問題が見つかりました。")

@@ -343,7 +343,7 @@ def show_system_status():
 
 def main():
     """メイン実行"""
-    print("🚀 エラーハンドリングシステム デモンストレーション")
+    print("[ROCKET] エラーハンドリングシステム デモンストレーション")
     print("フェーズ3: 実践環境準備 - エラーハンドリング強化")
     print()
     
@@ -357,10 +357,10 @@ def main():
         show_system_status()
         
         print("=" * 60)
-        print("✅ デモンストレーション完了")
+        print("[OK] デモンストレーション完了")
         print("=" * 60)
         print()
-        print("📊 生成されたファイル:")
+        print("[CHART] 生成されたファイル:")
         
         # ログファイル確認
         logs_dir = project_root / "logs"
@@ -372,10 +372,10 @@ def main():
                 print(f"  ... その他 {len(log_files) - 5} ファイル")
         
         print()
-        print("🎯 エラーハンドリングシステムが正常に動作しています!")
+        print("[TARGET] エラーハンドリングシステムが正常に動作しています!")
         
     except Exception as e:
-        print(f"❌ デモ実行エラー: {e}")
+        print(f"[ERROR] デモ実行エラー: {e}")
         import traceback
         traceback.print_exc()
         return 1

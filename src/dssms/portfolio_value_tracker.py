@@ -516,7 +516,7 @@ def main():
         tracker = PortfolioValueTracker(config)
         
         # サンプルデータでのテスト
-        print("\n📈 サンプルデータでの価値追跡テスト:")
+        print("\n[UP] サンプルデータでの価値追跡テスト:")
         
         sample_values = [
             {'timestamp': '2024-01-01 09:00:00', 'portfolio_value': 1000000, 'cash_value': 200000, 'position_value': 800000},
@@ -535,7 +535,7 @@ def main():
         
         # 統計情報の表示
         stats = tracker.get_value_statistics()
-        print(f"\n📊 統計情報:")
+        print(f"\n[CHART] 統計情報:")
         print(f"  平均値: ¥{stats['mean']:,.0f}")
         print(f"  標準偏差: ¥{stats['std']:,.0f}")
         print(f"  最小値: ¥{stats['min']:,.0f}")
@@ -543,7 +543,7 @@ def main():
         
         # レポート生成
         report = tracker.generate_tracking_report()
-        print(f"\n📋 追跡レポート:")
+        print(f"\n[LIST] 追跡レポート:")
         print(f"  履歴数: {report['tracking_summary']['history_count']}")
         print(f"  異常値率: {report['quality_metrics']['anomaly_rate']:.2%}")
         print(f"  修正率: {report['quality_metrics']['correction_rate']:.2%}")
@@ -553,11 +553,11 @@ def main():
         df = tracker.export_to_dataframe()
         print(f"\n📁 データ出力: {len(df)}行のDataFrame生成")
         
-        print(f"\n✅ ポートフォリオ価値追跡システム: 正常動作確認")
+        print(f"\n[OK] ポートフォリオ価値追跡システム: 正常動作確認")
         return True
         
     except Exception as e:
-        print(f"\n❌ エラー: {e}")
+        print(f"\n[ERROR] エラー: {e}")
         return False
 
 if __name__ == "__main__":

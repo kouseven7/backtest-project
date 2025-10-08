@@ -546,10 +546,10 @@ async def main():
         result = await demo.run_full_demo()
         
         if result.get('demo_summary', {}).get('overall_success', False):
-            print("\n🎉 DSSMS Phase 3 Task 3.2 リアルタイム実行環境構築完了!")
+            print("\n[SUCCESS] DSSMS Phase 3 Task 3.2 リアルタイム実行環境構築完了!")
             return 0
         else:
-            print("\n❌ デモ実行中にエラーが発生しました")
+            print("\n[ERROR] デモ実行中にエラーが発生しました")
             return 1
             
     except Exception as e:

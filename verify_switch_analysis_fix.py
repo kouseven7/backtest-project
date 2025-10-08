@@ -94,7 +94,7 @@ def analyze_switch_analysis_sheet(excel_path):
                     try:
                         perf_num = float(perf) if perf is not None else 0.0
                         expected_success = "成功" if perf_num > 0 else "失敗"
-                        match = "✅" if success == expected_success else "❌"
+                        match = "[OK]" if success == expected_success else "[ERROR]"
                         
                         logger.info(f"  Row {i+1}: Performance={perf} ({perf_num:.6f}) -> 判定={success}, 期待={expected_success} {match}")
                     except (ValueError, TypeError):
@@ -136,7 +136,7 @@ def main():
     success = analyze_switch_analysis_sheet(excel_path)
     
     if success:
-        logger.info("✅ 切替分析シートの検証が完了しました")
+        logger.info("[OK] 切替分析シートの検証が完了しました")
         
         # 問題との比較
         compare_with_issue_description()
@@ -147,7 +147,7 @@ def main():
         logger.info("2. 正のパフォーマンス値に対して '成功' が表示されているか")
         logger.info("3. 負のパフォーマンス値に対して '失敗' が表示されているか")
     else:
-        logger.error("❌ 切替分析シートの検証に失敗しました")
+        logger.error("[ERROR] 切替分析シートの検証に失敗しました")
 
 if __name__ == "__main__":
     main()

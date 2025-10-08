@@ -59,7 +59,7 @@ def debug_dssms_backtester():
                 print(f"   ✗ {symbol}: エラー - {e}")
         
         if not sample_data:
-            print("   ⚠️ テストデータが取得できませんでした")
+            print("   [WARNING] テストデータが取得できませんでした")
             return
             
         # バックテスト実行テスト
@@ -100,7 +100,7 @@ def debug_dssms_backtester():
                         print(f"   最初の記録: {first_record}")
                         print(f"   最後の記録: {last_record}")
                 else:
-                    print(f"   ⚠️ ポートフォリオ履歴が空です")
+                    print(f"   [WARNING] ポートフォリオ履歴が空です")
                 
                 # パフォーマンス履歴の確認
                 print(f"\n8. パフォーマンス履歴確認:")

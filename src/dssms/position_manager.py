@@ -1867,19 +1867,19 @@ def main():
             max_total_risk=0.5,
             stop_loss_threshold=0.05
         )
-        print("✅ PositionManager初期化成功")
+        print("[OK] PositionManager初期化成功")
         
         # 2. 空のポジション状態テスト
         positions = pm.get_current_positions()
-        print(f"✅ 初期ポジション数: {len(positions)}")
+        print(f"[OK] 初期ポジション数: {len(positions)}")
         
         # 3. ポートフォリオ価値テスト
         portfolio_value = pm.get_portfolio_value()
-        print(f"✅ 初期ポートフォリオ価値: {portfolio_value:,.0f}円")
+        print(f"[OK] 初期ポートフォリオ価値: {portfolio_value:,.0f}円")
         
         # 4. ポジション要約テスト
         summary = pm.get_position_summary()
-        print(f"✅ ポジション要約取得成功")
+        print(f"[OK] ポジション要約取得成功")
         print(f"  - 総ポジション数: {summary['total_positions']}")
         print(f"  - エクスポージャー比率: {summary['exposure_ratio']:.1%}")
         print(f"  - 総リターン率: {summary['return_rate']:.1%}")
@@ -1887,18 +1887,18 @@ def main():
         # 5. 制限チェックテスト
         try:
             pm.validate_position_limits("7203", 100, 2000)  # トヨタ想定
-            print("✅ ポジション制限チェック（正常ケース）成功")
+            print("[OK] ポジション制限チェック（正常ケース）成功")
         except Exception as e:
-            print(f"❌ ポジション制限チェックエラー: {e}")
+            print(f"[ERROR] ポジション制限チェックエラー: {e}")
         
         # 6. 制限超過テスト
         try:
             pm.validate_position_limits("7203", 10000, 2000)  # 過大ポジション
-            print("❌ ポジション制限チェック（制限超過）失敗")
+            print("[ERROR] ポジション制限チェック（制限超過）失敗")
         except RiskLimitExceededError:
-            print("✅ ポジション制限チェック（制限超過検出）成功")
+            print("[OK] ポジション制限チェック（制限超過検出）成功")
         except Exception as e:
-            print(f"❌ 予期しないエラー: {e}")
+            print(f"[ERROR] 予期しないエラー: {e}")
         
         print("\n" + "="*50)
         print("ポジション管理機能テスト")
@@ -1908,88 +1908,88 @@ def main():
         try:
             success = pm.add_position("7203", 100, 2000, "BUY")  # トヨタ 100株
             if success:
-                print("✅ ポジション追加成功")
+                print("[OK] ポジション追加成功")
                 positions = pm.get_current_positions()
                 print(f"  - 現在ポジション数: {len(positions)}")
                 if "7203" in positions:
                     pos = positions["7203"]
                     print(f"  - 7203: {pos['quantity']}株 @ {pos['average_price']}円")
         except Exception as e:
-            print(f"❌ ポジション追加エラー: {e}")
+            print(f"[ERROR] ポジション追加エラー: {e}")
         
         # 8. ポジション価格更新テスト
         try:
             success = pm.update_position_price("7203", 2100)  # 価格上昇
             if success:
-                print("✅ ポジション価格更新成功")
+                print("[OK] ポジション価格更新成功")
                 positions = pm.get_current_positions()
                 if "7203" in positions:
                     pos = positions["7203"]
                     print(f"  - 未実現PnL: {pos['unrealized_pnl']:,.0f}円")
         except Exception as e:
-            print(f"❌ ポジション価格更新エラー: {e}")
+            print(f"[ERROR] ポジション価格更新エラー: {e}")
         
         # 9. ポートフォリオ価値再計算テスト
         try:
             portfolio_value = pm.get_portfolio_value({"7203": 2100})
-            print(f"✅ ポートフォリオ価値更新: {portfolio_value:,.0f}円")
+            print(f"[OK] ポートフォリオ価値更新: {portfolio_value:,.0f}円")
         except Exception as e:
-            print(f"❌ ポートフォリオ価値計算エラー: {e}")
+            print(f"[ERROR] ポートフォリオ価値計算エラー: {e}")
         
         # 10. 追加購入テスト
         try:
             success = pm.add_position("7203", 100, 2050, "BUY")  # 追加購入
             if success:
-                print("✅ 追加購入成功")
+                print("[OK] 追加購入成功")
                 positions = pm.get_current_positions()
                 if "7203" in positions:
                     pos = positions["7203"]
                     print(f"  - 合計数量: {pos['quantity']}株")
                     print(f"  - 平均取得価格: {pos['average_price']:,.0f}円")
         except Exception as e:
-            print(f"❌ 追加購入エラー: {e}")
+            print(f"[ERROR] 追加購入エラー: {e}")
         
         # 11. 部分決済テスト
         try:
             success = pm.reduce_position("7203", 50, 2200, "SELL")  # 50株決済
             if success:
-                print("✅ 部分決済成功")
+                print("[OK] 部分決済成功")
                 positions = pm.get_current_positions()
                 if "7203" in positions:
                     pos = positions["7203"]
                     print(f"  - 残り数量: {pos['quantity']}株")
                     print(f"  - 実現PnL: {pos['realized_pnl']:,.0f}円")
         except Exception as e:
-            print(f"❌ 部分決済エラー: {e}")
+            print(f"[ERROR] 部分決済エラー: {e}")
         
         # 12. 取引履歴テスト
         try:
             history = pm.get_transaction_history(limit=5)
-            print(f"✅ 取引履歴取得成功: {len(history)}件")
+            print(f"[OK] 取引履歴取得成功: {len(history)}件")
             for i, tx in enumerate(history[:3]):
                 print(f"  {i+1}. {tx['transaction_type']} {tx['symbol']} "
                       f"{abs(tx['quantity'])}株 @ {tx['price']}円")
         except Exception as e:
-            print(f"❌ 取引履歴取得エラー: {e}")
+            print(f"[ERROR] 取引履歴取得エラー: {e}")
         
         # 13. ポジションサイズ計算テスト
         try:
             target_size = pm.calculate_position_size("6758", 0.15, 1500)  # Sony 15%配分
-            print(f"✅ ポジションサイズ計算成功: 6758 -> {target_size}株")
+            print(f"[OK] ポジションサイズ計算成功: 6758 -> {target_size}株")
         except Exception as e:
-            print(f"❌ ポジションサイズ計算エラー: {e}")
+            print(f"[ERROR] ポジションサイズ計算エラー: {e}")
         
         # 14. 最終要約
         try:
             summary = pm.get_position_summary()
-            print(f"\n📊 最終ポジション要約:")
+            print(f"\n[CHART] 最終ポジション要約:")
             print(f"  - 現在資本: {summary['current_capital']:,.0f}円")
             print(f"  - 総ポジション数: {summary['total_positions']}")
             print(f"  - 総リターン率: {summary['return_rate']:.2%}")
             print(f"  - 実現PnL: {summary['realized_pnl']:,.0f}円")
             print(f"  - 未実現PnL: {summary['unrealized_pnl']:,.0f}円")
         except Exception as e:
-            print(f"❌ 最終要約エラー: {e}")
+            print(f"[ERROR] 最終要約エラー: {e}")
         
         print("\n" + "="*50)
         print("リスク管理機能テスト")
@@ -1998,47 +1998,47 @@ def main():
         # 15. リスク制限チェックテスト
         try:
             risk_check = pm.check_risk_limits("6758", 150000, 1500)  # Sony 15万円
-            print(f"✅ リスク制限チェック成功: 判定 {'合格' if risk_check['passed'] else '不合格'}")
+            print(f"[OK] リスク制限チェック成功: 判定 {'合格' if risk_check['passed'] else '不合格'}")
             for check_name, result in risk_check['checks'].items():
-                status = "✅" if result['passed'] else "❌"
+                status = "[OK]" if result['passed'] else "[ERROR]"
                 print(f"  {status} {check_name}: {result['utilization']:.1%} 利用率")
         except RiskLimitExceededError as e:
-            print(f"⚠️  リスク制限チェック: 制限超過検出 - {e}")
+            print(f"[WARNING]  リスク制限チェック: 制限超過検出 - {e}")
         except Exception as e:
-            print(f"❌ リスク制限チェックエラー: {e}")
+            print(f"[ERROR] リスク制限チェックエラー: {e}")
         
         # 16. リスクメトリクス計算テスト
         try:
             risk_metrics = pm.calculate_risk_metrics({"7203": 2200, "6758": 1500})
-            print(f"✅ リスクメトリクス計算成功")
+            print(f"[OK] リスクメトリクス計算成功")
             print(f"  - リスク状況: {risk_metrics['risk_status']}")
             print(f"  - 現在ドローダウン: {risk_metrics['current_drawdown']:.2%}")
             print(f"  - レバレッジ比率: {risk_metrics['leverage_ratio']:.2f}x")
             print(f"  - 最大銘柄集中度: {risk_metrics['max_symbol_concentration']:.1%}")
         except Exception as e:
-            print(f"❌ リスクメトリクス計算エラー: {e}")
+            print(f"[ERROR] リスクメトリクス計算エラー: {e}")
         
         # 17. リスクサマリー取得テスト
         try:
             risk_summary = pm.get_risk_summary()
-            print(f"✅ リスクサマリー取得成功")
+            print(f"[OK] リスクサマリー取得成功")
             print(f"  - 総合リスク評価: {risk_summary['risk_status']}")
             if 'portfolio_performance' in risk_summary:
                 perf = risk_summary['portfolio_performance']
                 print(f"  - ポートフォリオリターン: {perf['total_return']:.2%}")
         except Exception as e:
-            print(f"❌ リスクサマリー取得エラー: {e}")
+            print(f"[ERROR] リスクサマリー取得エラー: {e}")
         
         # 18. 制限超過シミュレーション
         try:
-            print("\n🧪 制限超過シミュレーション:")
+            print("\n[TEST] 制限超過シミュレーション:")
             # 過大ポジション試行
             pm.check_risk_limits("9984", 300000, 3000)  # SoftBank 30万円（制限超過）
-            print("❌ 制限超過検出失敗")
+            print("[ERROR] 制限超過検出失敗")
         except RiskLimitExceededError as e:
-            print(f"✅ 制限超過正常検出: {e}")
+            print(f"[OK] 制限超過正常検出: {e}")
         except Exception as e:
-            print(f"❌ 制限超過テストエラー: {e}")
+            print(f"[ERROR] 制限超過テストエラー: {e}")
         
         print("\n" + "="*50)
         print("高度リスク評価機能テスト")
@@ -2055,24 +2055,24 @@ def main():
             portfolio_value = 900000 + (i * 3000) + (1000 * ((i % 7) - 3))  # 週次変動
             pm.record_daily_performance(test_date, portfolio_value, 0, portfolio_value - 900000)
         
-        print(f"✅ サンプル履歴データ追加: {len(pm.daily_pnl_history)}日分")
+        print(f"[OK] サンプル履歴データ追加: {len(pm.daily_pnl_history)}日分")
         
         # 19. VaR計算テスト
         try:
             var_result = pm.calculate_value_at_risk(confidence_level=0.95, time_horizon=1)
-            print(f"✅ VaR計算成功: {var_result['status']}")
+            print(f"[OK] VaR計算成功: {var_result['status']}")
             if var_result['status'] == 'success':
                 print(f"  - VaR金額: {var_result['var_amount']:,.0f}円")
                 print(f"  - VaR率: {var_result['var_percentage']:.2%}")
                 print(f"  - 信頼区間: {var_result['confidence_level']:.0%}")
                 print(f"  - データ点数: {var_result['statistics']['data_points']}件")
         except Exception as e:
-            print(f"❌ VaR計算エラー: {e}")
+            print(f"[ERROR] VaR計算エラー: {e}")
         
         # 20. 最大ドローダウン計算テスト
         try:
             dd_result = pm.calculate_maximum_drawdown()
-            print(f"✅ 最大ドローダウン計算成功: {dd_result['status']}")
+            print(f"[OK] 最大ドローダウン計算成功: {dd_result['status']}")
             if dd_result['status'] == 'success':
                 print(f"  - 最大ドローダウン: {dd_result['max_drawdown']:.2%}")
                 print(f"  - 最大ドローダウン金額: {dd_result['max_drawdown_amount']:,.0f}円")
@@ -2080,12 +2080,12 @@ def main():
                 print(f"  - 回復状況: {dd_result['recovery_status']}")
                 print(f"  - ピーク価値: {dd_result['peak_value']:,.0f}円")
         except Exception as e:
-            print(f"❌ 最大ドローダウン計算エラー: {e}")
+            print(f"[ERROR] 最大ドローダウン計算エラー: {e}")
             
         # 21. シャープレシオ計算テスト
         try:
             sharpe_result = pm.calculate_sharpe_ratio(risk_free_rate=0.001)
-            print(f"✅ シャープレシオ計算成功: {sharpe_result['status']}")
+            print(f"[OK] シャープレシオ計算成功: {sharpe_result['status']}")
             if sharpe_result['status'] == 'success':
                 print(f"  - シャープレシオ: {sharpe_result['sharpe_ratio']:.3f}")
                 print(f"  - 年率リターン: {sharpe_result['annualized_return']:.2%}")
@@ -2093,12 +2093,12 @@ def main():
                 print(f"  - リスク評価: {sharpe_result['risk_assessment']}")
                 print(f"  - ソルティノ比: {sharpe_result['additional_metrics']['sortino_ratio']:.3f}")
         except Exception as e:
-            print(f"❌ シャープレシオ計算エラー: {e}")
+            print(f"[ERROR] シャープレシオ計算エラー: {e}")
         
         # 22. 統合高度リスク分析テスト
         try:
             advanced_analysis = pm.get_advanced_risk_analysis()
-            print(f"✅ 統合高度リスク分析成功: {advanced_analysis['analysis_status']}")
+            print(f"[OK] 統合高度リスク分析成功: {advanced_analysis['analysis_status']}")
             if advanced_analysis['analysis_status'] == 'success':
                 print(f"  - 統合リスクスコア: {advanced_analysis['risk_score']:.1f}/100")
                 print(f"  - データ充足性: {'十分' if advanced_analysis['data_quality']['data_sufficiency'] else '不十分'}")
@@ -2108,7 +2108,7 @@ def main():
                 for i, rec in enumerate(advanced_analysis['recommendations'][:2]):
                     print(f"    {i+1}. {rec}")
         except Exception as e:
-            print(f"❌ 統合高度リスク分析エラー: {e}")
+            print(f"[ERROR] 統合高度リスク分析エラー: {e}")
         
         print("\n" + "="*50)
         print("損失アラート・統合スコア機能テスト")
@@ -2118,19 +2118,19 @@ def main():
         try:
             current_pv = pm.get_portfolio_value()
             alert_result = pm.check_loss_alerts(current_pv)
-            print(f"✅ 損失アラート監視成功: レベル {alert_result['alert_level']}")
+            print(f"[OK] 損失アラート監視成功: レベル {alert_result['alert_level']}")
             print(f"  - 現在損失率: {alert_result['current_loss_rate']:.2%}")
             print(f"  - アラート数: {alert_result['alert_count']}件")
             if alert_result['alerts']:
                 for alert in alert_result['alerts'][:2]:  # 最初の2件表示
                     print(f"    {alert['level']}: {alert['message']}")
         except Exception as e:
-            print(f"❌ 損失アラート機能エラー: {e}")
+            print(f"[ERROR] 損失アラート機能エラー: {e}")
         
         # 24. 統合リスクスコア計算テスト
         try:
             risk_score_result = pm.get_integrated_risk_score()
-            print(f"✅ 統合リスクスコア計算成功: {risk_score_result['status']}")
+            print(f"[OK] 統合リスクスコア計算成功: {risk_score_result['status']}")
             if risk_score_result['status'] == 'success':
                 print(f"  - 統合スコア: {risk_score_result['integrated_score']:.1f}/100")
                 print(f"  - リスクグレード: {risk_score_result['risk_grade']}")
@@ -2140,11 +2140,11 @@ def main():
                     print(f"    {component}: {score:.1f}/100")
                 print(f"  - 推奨事項数: {len(risk_score_result['recommendations'])}件")
         except Exception as e:
-            print(f"❌ 統合リスクスコア計算エラー: {e}")
+            print(f"[ERROR] 統合リスクスコア計算エラー: {e}")
         
         # 25. 損失シナリオテスト（損失状況をシミュレート）
         try:
-            print(f"\n🔥 損失シナリオテスト:")
+            print(f"\n[FIRE] 損失シナリオテスト:")
             # 大幅損失をシミュレート
             simulated_loss_pv = pm.initial_capital * 0.85  # 15%損失
             loss_alert = pm.check_loss_alerts(simulated_loss_pv)
@@ -2156,7 +2156,7 @@ def main():
             print(f"  - 20%損失シナリオ: アラートレベル {critical_alert['alert_level']}")
             print(f"    即座対応必要: {'YES' if critical_alert['requires_immediate_action'] else 'NO'}")
         except Exception as e:
-            print(f"❌ 損失シナリオテストエラー: {e}")
+            print(f"[ERROR] 損失シナリオテストエラー: {e}")
         
         # 26. 包括的精度検証テスト
         try:
@@ -2169,25 +2169,25 @@ def main():
             expected_avg = (100 * 1000 + 50 * 1100) / 150  # 平均価格
             actual_avg = pos['average_price']
             precision_ok = abs(expected_avg - actual_avg) < 1.0
-            print(f"  - 平均価格計算精度: {'✅ 正確' if precision_ok else '❌ 誤差あり'}")
+            print(f"  - 平均価格計算精度: {'[OK] 正確' if precision_ok else '[ERROR] 誤差あり'}")
             print(f"    期待値: {expected_avg:.2f}, 実際値: {actual_avg:.2f}")
             
             # リスク制限動作確認
             try:
                 pm.check_risk_limits("RISK_TEST", 1000000, 1000)  # 過大ポジション
-                print(f"  - リスク制限動作: ❌ 制限が働いていない")
+                print(f"  - リスク制限動作: [ERROR] 制限が働いていない")
             except RiskLimitExceededError:
-                print(f"  - リスク制限動作: ✅ 正常に制限検出")
+                print(f"  - リスク制限動作: [OK] 正常に制限検出")
             
             # エラーハンドリング検証
             try:
                 pm.add_position("", -100, 1000, "INVALID")  # 無効データ
-                print(f"  - エラーハンドリング: ❌ 無効データ受け入れ")
+                print(f"  - エラーハンドリング: [ERROR] 無効データ受け入れ")
             except (ValueError, PositionError):
-                print(f"  - エラーハンドリング: ✅ 無効データ正常拒否")
+                print(f"  - エラーハンドリング: [OK] 無効データ正常拒否")
                 
         except Exception as e:
-            print(f"❌ 包括的精度検証エラー: {e}")
+            print(f"[ERROR] 包括的精度検証エラー: {e}")
         
         # 27. 統合テスト準備状況確認
         try:
@@ -2205,7 +2205,7 @@ def main():
                 method_availability[method] = hasattr(pm, method) and callable(getattr(pm, method))
             
             available_count = sum(method_availability.values())
-            print(f"  - メソッド完全性: {available_count}/{len(required_methods)} ✅")
+            print(f"  - メソッド完全性: {available_count}/{len(required_methods)} [OK]")
             
             # データ構造整合性チェック
             test_result = pm.get_advanced_risk_analysis()
@@ -2214,7 +2214,7 @@ def main():
                 'risk_score' in test_result and
                 'recommendations' in test_result
             )
-            print(f"  - データ構造整合性: {'✅ 適合' if data_structure_ok else '❌ 不適合'}")
+            print(f"  - データ構造整合性: {'[OK] 適合' if data_structure_ok else '[ERROR] 不適合'}")
             
             # パフォーマンス要件確認
             import time
@@ -2223,31 +2223,31 @@ def main():
                 pm.get_portfolio_value()
             execution_time = (time.time() - start_time) * 1000 / 10  # ms平均
             perf_ok = execution_time < 100  # 100ms以下
-            print(f"  - パフォーマンス要件: {'✅ 満足' if perf_ok else '❌ 要改善'} ({execution_time:.1f}ms)")
+            print(f"  - パフォーマンス要件: {'[OK] 満足' if perf_ok else '[ERROR] 要改善'} ({execution_time:.1f}ms)")
             
         except Exception as e:
-            print(f"❌ 統合テスト準備確認エラー: {e}")
+            print(f"[ERROR] 統合テスト準備確認エラー: {e}")
         
         # 28. 最終統合レポート
         try:
-            print(f"\n📊 PositionManager 最終機能確認:")
+            print(f"\n[CHART] PositionManager 最終機能確認:")
             file_lines = len(open(__file__).readlines()) if '__file__' in globals() else 0
             print(f"  - 実装済みクラス行数: {file_lines}行")
-            print(f"  - 基本機能: ✅ ポジション管理、リスク制限、取引履歴")
-            print(f"  - 高度機能: ✅ VaR、ドローダウン、シャープレシオ")
-            print(f"  - 統合分析: ✅ リスクスコア、推奨事項生成")
-            print(f"  - アラート機能: ✅ 損失監視、リアルタイム通知")
-            print(f"  - 履歴追跡: ✅ 日次パフォーマンス記録・分析")
-            print(f"  - 精度検証: ✅ 計算精度、制限動作、エラー処理")
-            print(f"  - 統合準備: ✅ インターフェース、データ構造、パフォーマンス")
+            print(f"  - 基本機能: [OK] ポジション管理、リスク制限、取引履歴")
+            print(f"  - 高度機能: [OK] VaR、ドローダウン、シャープレシオ")
+            print(f"  - 統合分析: [OK] リスクスコア、推奨事項生成")
+            print(f"  - アラート機能: [OK] 損失監視、リアルタイム通知")
+            print(f"  - 履歴追跡: [OK] 日次パフォーマンス記録・分析")
+            print(f"  - 精度検証: [OK] 計算精度、制限動作、エラー処理")
+            print(f"  - 統合準備: [OK] インターフェース、データ構造、パフォーマンス")
         except Exception as e:
-            print(f"❌ 最終レポートエラー: {e}")
+            print(f"[ERROR] 最終レポートエラー: {e}")
         
-        print("\n🎉 PositionManager 損失アラート・最終テスト完了！")
-        print("✅ Phase 3 PositionManager実装 - 100%完成")
+        print("\n[SUCCESS] PositionManager 損失アラート・最終テスト完了！")
+        print("[OK] Phase 3 PositionManager実装 - 100%完成")
         
     except Exception as e:
-        print(f"❌ テスト実行エラー: {e}")
+        print(f"[ERROR] テスト実行エラー: {e}")
         import traceback
         traceback.print_exc()
 

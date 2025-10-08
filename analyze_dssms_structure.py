@@ -19,13 +19,13 @@ def analyze_existing_backtester_output():
         report_path = "backtest_results/dssms_results/dssms_detailed_report_20250903_112504.txt"
         
         if os.path.exists(report_path):
-            print(f"✅ レポートファイル発見: {report_path}")
+            print(f"[OK] レポートファイル発見: {report_path}")
             
             with open(report_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             
             # キー情報を抽出
-            print("\n📊 レポートから抽出した情報:")
+            print("\n[CHART] レポートから抽出した情報:")
             lines = content.split('\n')
             for line in lines:
                 if '銘柄切替回数:' in line or '平均保有期間:' in line or '切替成功率:' in line:
@@ -33,16 +33,16 @@ def analyze_existing_backtester_output():
                 if '総リターン:' in line or '最終ポートフォリオ価値:' in line:
                     print(f"  {line.strip()}")
             
-            print("\n🔍 問題の特定:")
+            print("\n[SEARCH] 問題の特定:")
             print("  - レポート: 銘柄切替回数 114回")
             print("  - Excel: 取引履歴 1件のみ")
             print("  - 原因: 114回の切り替えが1つの巨大取引として統合されている")
             
         else:
-            print(f"❌ レポートファイルが見つかりません: {report_path}")
+            print(f"[ERROR] レポートファイルが見つかりません: {report_path}")
     
     except Exception as e:
-        print(f"❌ レポート分析エラー: {e}")
+        print(f"[ERROR] レポート分析エラー: {e}")
 
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: def analyze_excel_output():
@@ -57,37 +57,37 @@ def analyze_existing_backtester_output():
             if excel_files:
                 latest_excel = sorted(excel_files)[-1]
                 excel_path = os.path.join(excel_dir, latest_excel)
-                print(f"✅ Excelファイル発見: {excel_path}")
+                print(f"[OK] Excelファイル発見: {excel_path}")
                 
                 # Excelファイルの内容を分析
                 try:
                     # 取引履歴シートを読み込み
                     trades_df = pd.read_excel(excel_path, sheet_name='取引履歴')
-                    print(f"📊 取引履歴: {len(trades_df)}件")
+                    print(f"[CHART] 取引履歴: {len(trades_df)}件")
                     print(trades_df.head())
                     
                     # 損益推移シートを読み込み
                     pnl_df = pd.read_excel(excel_path, sheet_name='損益推移')
-                    print(f"📈 損益推移: {len(pnl_df)}日分")
+                    print(f"[UP] 損益推移: {len(pnl_df)}日分")
                     
                     # パフォーマンス指標シートを読み込み
                     performance_df = pd.read_excel(excel_path, sheet_name='パフォーマンス指標')
-                    print(f"📈 パフォーマンス指標: {len(performance_df)}項目")
+                    print(f"[UP] パフォーマンス指標: {len(performance_df)}項目")
                     
                     return excel_path, trades_df, pnl_df, performance_df
                     
                 except Exception as e:
-                    print(f"❌ Excel読み込みエラー: {e}")
+                    print(f"[ERROR] Excel読み込みエラー: {e}")
                     return None, None, None, None
             else:
-                print("❌ Excelファイルが見つかりません")
+                print("[ERROR] Excelファイルが見つかりません")
                 return None, None, None, None
         else:
-            print("❌ Excel出力ディレクトリが見つかりません")
+            print("[ERROR] Excel出力ディレクトリが見つかりません")
             return None, None, None, None
             
     except Exception as e:
-        print(f"❌ Excel分析エラー: {e}")
+        print(f"[ERROR] Excel分析エラー: {e}")
         return None, None, None, None
 
 def design_switch_to_trade_converter():
@@ -149,7 +149,7 @@ def convert_switches_to_individual_trades(switch_history, portfolio_history):
     print("変換設計:")
     print(converter_design)
     
-    print("\n🎯 重要なポイント:")
+    print("\n[TARGET] 重要なポイント:")
     print("1. 各切り替え = Exit + Entry の2つの取引")
     print("2. 切り替えコストと保有期間の正確な記録")
     print("3. 戦略情報（trigger, reason）の保持")
@@ -160,7 +160,7 @@ def create_fix_implementation_plan():
     print(f"\n=== 修正実装計画 ===")
     
     plan = '''
-Phase 1: データ構造の理解と分析 ✅
+Phase 1: データ構造の理解と分析 [OK]
 - switch_historyの詳細構造分析
 - portfolio_historyとの関係確認
 - 既存Excel出力の問題点特定
@@ -188,7 +188,7 @@ Phase 5: マルチ戦略情報の追加 📝
     
     print(plan)
     
-    print("\n✅ 次のアクション:")
+    print("\n[OK] 次のアクション:")
     print("1. switch_historyの実際の構造確認")
     print("2. 変換ロジックの詳細実装")
     print("3. テスト実行とデバッグ")

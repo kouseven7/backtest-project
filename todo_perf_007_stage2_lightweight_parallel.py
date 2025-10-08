@@ -33,17 +33,17 @@ def get_yfinance():
         import yfinance as yf
         return yf
     except ImportError:
-        print("❌ yfinance not available")
+        print("[ERROR] yfinance not available")
         return None
 
 # SystemFallbackPolicy統合
 try:
     from src.config.system_modes import get_fallback_policy, ComponentType
     fallback_policy = get_fallback_policy()
-    print("✅ SystemFallbackPolicy統合成功")
+    print("[OK] SystemFallbackPolicy統合成功")
 except ImportError:
     fallback_policy = None
-    print("⚠️ SystemFallbackPolicy not available - using basic error handling")
+    print("[WARNING] SystemFallbackPolicy not available - using basic error handling")
 
 class ParallelMarketCapHelper:
     """市場キャップフィルタ並列処理ヘルパー"""
@@ -90,7 +90,7 @@ class ParallelMarketCapHelper:
             if not self.yf or not symbols:
                 return symbols  # フォールバック
             
-            print(f"🔧 並列市場キャップフィルタ開始: {len(symbols)}銘柄")
+            print(f"[TOOL] 並列市場キャップフィルタ開始: {len(symbols)}銘柄")
             
             # バッチ処理（API制限対応）
             filtered_symbols = []
@@ -106,18 +106,18 @@ class ParallelMarketCapHelper:
                     time.sleep(self.rate_limit_delay * 2)  # バッチ間待機
                 
                 self.stats["parallel_batches"] += 1
-                print(f"  ✅ バッチ {i//batch_size + 1}: {len(batch)} → {len(batch_filtered)}銘柄")
+                print(f"  [OK] バッチ {i//batch_size + 1}: {len(batch)} → {len(batch_filtered)}銘柄")
             
             execution_time = time.perf_counter() - start_time
             
-            print(f"🎯 並列処理完了: {len(symbols)} → {len(filtered_symbols)}銘柄 ({execution_time:.1f}秒)")
-            print(f"📊 統計: API呼び出し{self.stats['api_calls']}, キャッシュヒット{self.stats['cache_hits']}, エラー{self.stats['errors']}")
+            print(f"[TARGET] 並列処理完了: {len(symbols)} → {len(filtered_symbols)}銘柄 ({execution_time:.1f}秒)")
+            print(f"[CHART] 統計: API呼び出し{self.stats['api_calls']}, キャッシュヒット{self.stats['cache_hits']}, エラー{self.stats['errors']}")
             
             return filtered_symbols
             
         except Exception as e:
             execution_time = time.perf_counter() - start_time
-            print(f"❌ 並列処理エラー ({execution_time:.1f}秒): {e}")
+            print(f"[ERROR] 並列処理エラー ({execution_time:.1f}秒): {e}")
             
             # SystemFallbackPolicy統合
             if fallback_policy:
@@ -153,7 +153,7 @@ class ParallelMarketCapHelper:
                         
                 except Exception as e:
                     self.stats["errors"] += 1
-                    print(f"  ⚠️ {symbol} エラー: {e}")
+                    print(f"  [WARNING] {symbol} エラー: {e}")
                     # エラー時は除外（保守的判断）
         
         return filtered_symbols
@@ -199,7 +199,7 @@ class ParallelMarketCapHelper:
             return market_cap
             
         except Exception as e:
-            print(f"  ❌ {symbol} API エラー: {e}")
+            print(f"  [ERROR] {symbol} API エラー: {e}")
             return None
     
     def get_performance_stats(self) -> Dict[str, Any]:
@@ -239,7 +239,7 @@ class LightweightScreenerIntegration:
     def integrate_parallel_market_cap_filter(self):
         """並列市場キャップフィルタ統合実行"""
         
-        print("🚀 Stage 2軽量版: market_cap_filter並列化統合開始")
+        print("[ROCKET] Stage 2軽量版: market_cap_filter並列化統合開始")
         print("="*70)
         
         try:
@@ -266,13 +266,13 @@ class LightweightScreenerIntegration:
             return self.integration_results
             
         except Exception as e:
-            print(f"❌ 軽量統合エラー: {e}")
+            print(f"[ERROR] 軽量統合エラー: {e}")
             return {"error": str(e)}
     
     def _setup_integration(self) -> Dict[str, Any]:
         """統合セットアップ・準備確認"""
         
-        print("🔧 統合セットアップ・準備確認中...")
+        print("[TOOL] 統合セットアップ・準備確認中...")
         
         try:
             # yfinance可用性確認
@@ -295,7 +295,7 @@ class LightweightScreenerIntegration:
             setup_success = yf_available and helper_initialized
             
             return {
-                "status": "✅ 成功" if setup_success else "❌ 失敗",
+                "status": "[OK] 成功" if setup_success else "[ERROR] 失敗",
                 "yfinance_available": yf_available,
                 "fallback_policy_available": fallback_available,
                 "helper_initialized": helper_initialized,
@@ -354,7 +354,7 @@ class LightweightScreenerIntegration:
                     "improvement_seconds": round(improvement_seconds, 1),
                     "improvement_percentage": round(improvement_percentage, 1)
                 },
-                "performance_status": "✅ 目標達成" if improvement_percentage >= 40 else "⚠️ 要調整"
+                "performance_status": "[OK] 目標達成" if improvement_percentage >= 40 else "[WARNING] 要調整"
             }
             
         except Exception as e:
@@ -363,7 +363,7 @@ class LightweightScreenerIntegration:
     def _validate_integration(self) -> Dict[str, Any]:
         """統合バリデーション"""
         
-        print("✅ 統合バリデーション実行中...")
+        print("[OK] 統合バリデーション実行中...")
         
         try:
             validation_checks = {
@@ -371,25 +371,25 @@ class LightweightScreenerIntegration:
                     "threadpool_executor": "ThreadPoolExecutor" in str(type(ThreadPoolExecutor)),
                     "concurrent_futures": True,  # インポート成功
                     "rate_limiting": self.parallel_helper.rate_limit_delay > 0,
-                    "status": "✅ 実装済み"
+                    "status": "[OK] 実装済み"
                 },
                 "caching_system": {
                     "cache_mechanism": hasattr(self.parallel_helper, 'cache'),
                     "timestamp_tracking": hasattr(self.parallel_helper, 'cache_timestamp'),
                     "expiry_management": hasattr(self.parallel_helper, 'cache_expiry'),
-                    "status": "✅ 実装済み"
+                    "status": "[OK] 実装済み"
                 },
                 "error_handling": {
                     "system_fallback_policy": fallback_policy is not None,
                     "exception_handling": True,  # try-catch実装済み
                     "timeout_management": True,  # 30秒タイムアウト設定済み
-                    "status": "✅ 実装済み"
+                    "status": "[OK] 実装済み"
                 },
                 "api_management": {
                     "yfinance_integration": get_yfinance() is not None,
                     "rate_limit_compliance": True,  # 0.2秒待機実装
                     "batch_processing": True,  # バッチ処理実装
-                    "status": "✅ 実装済み"
+                    "status": "[OK] 実装済み"
                 }
             }
             
@@ -412,7 +412,7 @@ class LightweightScreenerIntegration:
                     "total_checks": total_checks,
                     "success_rate": f"{success_rate:.1f}%"
                 },
-                "overall_validation": "✅ 成功" if success_rate >= 90 else "⚠️ 要改善",
+                "overall_validation": "[OK] 成功" if success_rate >= 90 else "[WARNING] 要改善",
                 "validation_timestamp": datetime.now().isoformat()
             }
             
@@ -428,9 +428,9 @@ class LightweightScreenerIntegration:
             performance_data = self.integration_results.get("performance_test", {})
             validation_data = self.integration_results.get("integration_validation", {})
             
-            setup_ok = setup_data.get("status") == "✅ 成功"
-            performance_ok = performance_data.get("performance_status") == "✅ 目標達成"
-            validation_ok = validation_data.get("overall_validation") == "✅ 成功"
+            setup_ok = setup_data.get("status") == "[OK] 成功"
+            performance_ok = performance_data.get("performance_status") == "[OK] 目標達成"
+            validation_ok = validation_data.get("overall_validation") == "[OK] 成功"
             
             success_stages = sum([setup_ok, performance_ok, validation_ok])
             
@@ -440,13 +440,13 @@ class LightweightScreenerIntegration:
             expected_time = scaling_data.get("estimated_200_symbols_time", 52.5)
             
             if success_stages >= 3:
-                overall_status = "✅ 完全成功"
+                overall_status = "[OK] 完全成功"
                 next_action = "実際のScreenerへの軽量統合実装"
             elif success_stages >= 2:
-                overall_status = "⚠️ 部分的成功"
+                overall_status = "[WARNING] 部分的成功"
                 next_action = "部分的統合・段階的改善"
             else:
-                overall_status = "❌ 要改善"
+                overall_status = "[ERROR] 要改善"
                 next_action = "課題修正・再テスト"
             
             return {
@@ -454,9 +454,9 @@ class LightweightScreenerIntegration:
                     "overall_status": overall_status,
                     "success_stages": f"{success_stages}/3",
                     "stage_results": {
-                        "setup": "✅" if setup_ok else "❌",
-                        "performance": "✅" if performance_ok else "❌", 
-                        "validation": "✅" if validation_ok else "❌"
+                        "setup": "[OK]" if setup_ok else "[ERROR]",
+                        "performance": "[OK]" if performance_ok else "[ERROR]", 
+                        "validation": "[OK]" if validation_ok else "[ERROR]"
                     }
                 },
                 "expected_impact": {
@@ -478,7 +478,7 @@ class LightweightScreenerIntegration:
 
 def main():
     """軽量統合メイン実行"""
-    print("🚀 TODO-PERF-007 Stage 2軽量版: market_cap_filter外部ヘルパー並列化")
+    print("[ROCKET] TODO-PERF-007 Stage 2軽量版: market_cap_filter外部ヘルパー並列化")
     print("目標: 1-2時間で40-50%削減達成・既存コード変更最小限")
     print("="*80)
     
@@ -488,7 +488,7 @@ def main():
         
         if "error" not in results:
             print("\n" + "="*80)
-            print("🎯 Stage 2軽量版: 外部ヘルパー並列化完了")
+            print("[TARGET] Stage 2軽量版: 外部ヘルパー並列化完了")
             print("="*80)
             
             final_assessment = results.get("final_assessment", {})
@@ -502,12 +502,12 @@ def main():
                 print(f"  成功段階: {assessment['success_stages']}")
                 print(f"  段階結果: セットアップ{assessment['stage_results']['setup']} パフォーマンス{assessment['stage_results']['performance']} バリデーション{assessment['stage_results']['validation']}")
                 
-                print(f"\n📊 期待効果:")
+                print(f"\n[CHART] 期待効果:")
                 print(f"  パフォーマンス改善: {impact['performance_improvement']}")
                 print(f"  時間短縮: {impact['time_reduction']}")
                 print(f"  目標達成状況: {impact['target_achievement']}")
                 
-                print(f"\n🚀 次ステップ:")
+                print(f"\n[ROCKET] 次ステップ:")
                 print(f"  即座対応: {next_steps['immediate_action']}")
                 print(f"  実装準備: {next_steps['implementation_readiness']}")
                 print(f"  リスク評価: {next_steps['risk_assessment']}")
@@ -521,14 +521,14 @@ def main():
             print(f"\n📄 詳細レポート: {report_file}")
             
             print("\n" + "="*80)
-            print("✅ Stage 2軽量版完了 → 実際のScreener統合準備完了")
-            print("🎯 次作業: 外部ヘルパー関数の実際のScreenerへの統合（30-60分）")
+            print("[OK] Stage 2軽量版完了 → 実際のScreener統合準備完了")
+            print("[TARGET] 次作業: 外部ヘルパー関数の実際のScreenerへの統合（30-60分）")
             print("⚡ 期待効果: market_cap_filter 52.5秒→25-30秒（40-50%削減）")
             print("="*80)
             
             return True
         else:
-            print(f"\n❌ Stage 2軽量版失敗: {results.get('error', '不明なエラー')}")
+            print(f"\n[ERROR] Stage 2軽量版失敗: {results.get('error', '不明なエラー')}")
             return False
             
     except Exception as e:

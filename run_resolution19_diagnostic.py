@@ -68,11 +68,11 @@ def main():
         
         # 診断システムアクセス確認
         if not hasattr(backtester, 'ranking_diagnostics') or backtester.ranking_diagnostics is None:
-            print("⚠️  警告: ランキング診断システムが初期化されていません")
+            print("[WARNING]  警告: ランキング診断システムが初期化されていません")
             logger.error("ランキング診断システム初期化失敗")
             return
         
-        print("✅ ランキング診断システム初期化完了")
+        print("[OK] ランキング診断システム初期化完了")
         
         # 2. 複数日付での診断実行
         print("\n2. 複数日付での診断実行...")
@@ -98,8 +98,8 @@ def main():
                 top_symbol = ranking_result.get('top_symbol')
                 diagnostic_info = ranking_result.get('diagnostic_info', {})
                 
-                print(f"    🎯 top_symbol: {top_symbol}")
-                print(f"    📊 診断成功: {diagnostic_info.get('pipeline_success', False)}")
+                print(f"    [TARGET] top_symbol: {top_symbol}")
+                print(f"    [CHART] 診断成功: {diagnostic_info.get('pipeline_success', False)}")
                 print(f"    ⏱️  実行時間: {diagnostic_info.get('total_duration_ms', 0):.1f}ms")
                 
                 # 診断結果を保存
@@ -112,11 +112,11 @@ def main():
                 
                 # top_symbol=None問題の検出
                 if top_symbol is None:
-                    print(f"    ⚠️  問題検出: top_symbol=None")
+                    print(f"    [WARNING]  問題検出: top_symbol=None")
                     logger.warning(f"top_symbol=None検出: {test_date}")
                 
             except Exception as e:
-                print(f"    ❌ エラー: {str(e)}")
+                print(f"    [ERROR] エラー: {str(e)}")
                 logger.error(f"診断エラー {test_date}: {e}")
         
         # 3. 診断結果分析
@@ -124,7 +124,7 @@ def main():
         none_count = sum(1 for result in diagnostic_results if result['top_symbol'] is None)
         success_count = sum(1 for result in diagnostic_results if result['diagnostic_successful'])
         
-        print(f"   📈 統計:")
+        print(f"   [UP] 統計:")
         print(f"     - 総診断回数: {len(diagnostic_results)}")
         print(f"     - top_symbol=None発生: {none_count}回")
         print(f"     - 診断パイプライン成功: {success_count}回")
@@ -143,23 +143,23 @@ def main():
             summary = report.get('diagnostic_summary', {})
             recommendations = report.get('recommendations', [])
             
-            print(f"   📊 概要:")
+            print(f"   [CHART] 概要:")
             print(f"     - 成功率: {summary.get('success_rate', 0):.1%}")
             print(f"     - 平均実行時間: {summary.get('average_duration_ms', 0):.1f}ms")
             print(f"     - None発生回数: {summary.get('none_top_symbol_count', 0)}")
             
-            print(f"\n   💡 推奨事項:")
+            print(f"\n   [IDEA] 推奨事項:")
             for i, rec in enumerate(recommendations[:3], 1):
                 print(f"     {i}. {rec}")
         
         # 5. 結論と次ステップ
         print("\n" + "=" * 60)
-        print("🔍 Resolution 19診断結果")
+        print("[SEARCH] Resolution 19診断結果")
         print("=" * 60)
         
         if none_count > 0:
-            print(f"❌ 問題確認: top_symbol=None が {none_count}/{len(diagnostic_results)} 回発生")
-            print("🔧 次ステップ: ランキングシステム修復が必要")
+            print(f"[ERROR] 問題確認: top_symbol=None が {none_count}/{len(diagnostic_results)} 回発生")
+            print("[TOOL] 次ステップ: ランキングシステム修復が必要")
             
             # 主要なエラーパターンを特定
             error_patterns = {}
@@ -169,18 +169,18 @@ def main():
                     error_key = ranking_data.get('data_source', 'unknown')
                     error_patterns[error_key] = error_patterns.get(error_key, 0) + 1
             
-            print("\n🎯 エラーパターン分析:")
+            print("\n[TARGET] エラーパターン分析:")
             for pattern, count in error_patterns.items():
                 print(f"   - {pattern}: {count}回")
             
         else:
-            print("✅ 問題なし: すべての診断でtop_symbolが正常に取得されました")
+            print("[OK] 問題なし: すべての診断でtop_symbolが正常に取得されました")
             print("👍 ランキングシステムは正常に動作しています")
         
         logger.info("Resolution 19診断完了")
         
     except Exception as e:
-        print(f"❌ 診断実行エラー: {str(e)}")
+        print(f"[ERROR] 診断実行エラー: {str(e)}")
         logger.error(f"診断実行エラー: {e}")
         import traceback
         traceback.print_exc()

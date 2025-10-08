@@ -30,13 +30,13 @@ def analyze_current_performance_status():
         target_import = 1.2
         remaining_import = import_time - target_import
         if remaining_import > 0:
-            print(f"   📊 TODO-PERF-005残り: {remaining_import:.1f}ms削減必要")
-            print(f"   🎯 インポート時間最適化: {remaining_import/import_time*100:.1f}%削減で達成")
+            print(f"   [CHART] TODO-PERF-005残り: {remaining_import:.1f}ms削減必要")
+            print(f"   [TARGET] インポート時間最適化: {remaining_import/import_time*100:.1f}%削減で達成")
         else:
-            print(f"   ✅ インポート時間目標達成済み")
+            print(f"   [OK] インポート時間目標達成済み")
         
     except Exception as e:
-        print(f"   ❌ インポートエラー: {e}")
+        print(f"   [ERROR] インポートエラー: {e}")
         results['dssms_import_time'] = 0
         import traceback
         traceback.print_exc()
@@ -72,10 +72,10 @@ def analyze_current_performance_status():
             exec_time_estimate = 0  # 実際の測定は別途必要
             results['exec_time_sample'] = exec_time_estimate
             
-            print(f"   ⚠️ 実行時間測定は別途詳細分析が必要")
+            print(f"   [WARNING] 実行時間測定は別途詳細分析が必要")
             
         except Exception as e:
-            print(f"   ❌ 実行テストエラー: {e}")
+            print(f"   [ERROR] 実行テストエラー: {e}")
             results['init_time'] = 0
             results['exec_time_sample'] = 0
     
@@ -94,7 +94,7 @@ def analyze_current_performance_status():
         print(f"   yfinanceインポート時間: {yfinance_import_time:.1f}ms")
         print(f"   yfinance追加モジュール数: {yfinance_modules}")
     except Exception as e:
-        print(f"   ❌ yfinanceインポートエラー: {e}")
+        print(f"   [ERROR] yfinanceインポートエラー: {e}")
         results['yfinance_import_time'] = 0
     
     # openpyxlインポート時間
@@ -110,7 +110,7 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
         print(f"   openpyxlインポート時間: {openpyxl_import_time:.1f}ms")
         print(f"   openpyxl追加モジュール数: {openpyxl_modules}")
     except Exception as e:
-        print(f"   ❌ openpyxlインポートエラー: {e}")
+        print(f"   [ERROR] openpyxlインポートエラー: {e}")
         results['openpyxl_import_time'] = 0
     
     return results
@@ -123,7 +123,7 @@ def analyze_todo_perf_003_validity(results):
     yfinance_import = results.get('yfinance_import_time', 0)
     openpyxl_import = results.get('openpyxl_import_time', 0)
     
-    print("🔍 前提条件検証:")
+    print("[SEARCH] 前提条件検証:")
     
     # 1. インポート時間 vs 実行時間の混同チェック
     print("1. 測定対象の整合性:")
@@ -134,9 +134,9 @@ def analyze_todo_perf_003_validity(results):
     if yfinance_import > 0:
         discrepancy = abs(957.5 - yfinance_import)
         if discrepancy > 100:
-            print(f"   ⚠️ 大きな乖離: {discrepancy:.1f}ms差 - 測定条件が異なる可能性")
+            print(f"   [WARNING] 大きな乖離: {discrepancy:.1f}ms差 - 測定条件が異なる可能性")
         else:
-            print(f"   ✅ 概ね一致: {discrepancy:.1f}ms差")
+            print(f"   [OK] 概ね一致: {discrepancy:.1f}ms差")
     
     # 2. 最適化対象の優先度分析
     print("\n2. 最適化対象優先度:")
@@ -156,16 +156,16 @@ def analyze_todo_perf_003_validity(results):
     
     if dssms_import > 1.2:
         remaining = dssms_import - 1.2
-        print(f"   🎯 優先課題: TODO-PERF-005完了 (残り{remaining:.1f}ms削減)")
-        print(f"   📋 対象: DSSMSIntegratedBacktesterインポート時間最適化")
+        print(f"   [TARGET] 優先課題: TODO-PERF-005完了 (残り{remaining:.1f}ms削減)")
+        print(f"   [LIST] 対象: DSSMSIntegratedBacktesterインポート時間最適化")
         phase3_priority = "DSSMS_IMPORT_OPTIMIZATION"
     elif yfinance_import > 100 or openpyxl_import > 100:
-        print(f"   🎯 次期課題: 重いライブラリインポート最適化")
-        print(f"   📋 対象: yfinance ({yfinance_import:.1f}ms), openpyxl ({openpyxl_import:.1f}ms)")
+        print(f"   [TARGET] 次期課題: 重いライブラリインポート最適化")
+        print(f"   [LIST] 対象: yfinance ({yfinance_import:.1f}ms), openpyxl ({openpyxl_import:.1f}ms)")
         phase3_priority = "HEAVY_LIBRARY_OPTIMIZATION"
     else:
-        print(f"   ✅ インポート時間最適化完了")
-        print(f"   📋 次段階: 実行時間最適化に移行可能")
+        print(f"   [OK] インポート時間最適化完了")
+        print(f"   [LIST] 次段階: 実行時間最適化に移行可能")
         phase3_priority = "EXECUTION_TIME_OPTIMIZATION"
     
     return {
@@ -210,21 +210,21 @@ def main():
         
         # 結果サマリー
         print("\n=== 分析結果サマリー ===")
-        print(f"🎯 Phase 3優先度: {analysis['phase3_priority']}")
-        print(f"📊 DSSMS残り削減: {analysis['dssms_import_remaining']:.1f}ms")
-        print(f"📊 重ライブラリ影響: {analysis['heavy_libraries_impact']:.1f}ms")
+        print(f"[TARGET] Phase 3優先度: {analysis['phase3_priority']}")
+        print(f"[CHART] DSSMS残り削減: {analysis['dssms_import_remaining']:.1f}ms")
+        print(f"[CHART] 重ライブラリ影響: {analysis['heavy_libraries_impact']:.1f}ms")
         
-        print("\n📋 推奨事項:")
+        print("\n[LIST] 推奨事項:")
         for i, rec in enumerate(analysis['recommendation'], 1):
             print(f"   {i}. {rec}")
         
-        print("\n🔍 TODO-PERF-003検証結果:")
+        print("\n[SEARCH] TODO-PERF-003検証結果:")
         if analysis['phase3_priority'] == "DSSMS_IMPORT_OPTIMIZATION":
-            print("   ⚠️ 前提条件不適切: まずTODO-PERF-005完了が必要")
+            print("   [WARNING] 前提条件不適切: まずTODO-PERF-005完了が必要")
         elif analysis['phase3_priority'] == "HEAVY_LIBRARY_OPTIMIZATION":
-            print("   ✅ Phase 3として適切: 重いライブラリ最適化が有効")
+            print("   [OK] Phase 3として適切: 重いライブラリ最適化が有効")
         else:
-            print("   📈 段階移行: 実行時間最適化フェーズへ")
+            print("   [UP] 段階移行: 実行時間最適化フェーズへ")
         
         return analysis
         

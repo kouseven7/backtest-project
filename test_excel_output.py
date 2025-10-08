@@ -58,10 +58,10 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
         )
         
         if filepath:
-            print(f"✅ Excel出力成功: {filepath}")
+            print(f"[OK] Excel出力成功: {filepath}")
             return True
         else:
-            print("❌ Excel出力失敗")
+            print("[ERROR] Excel出力失敗")
             return False
             
     except Exception as e:

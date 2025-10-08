@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 def test_trend_transition_system():
     """2-2-2 トレンド移行期特別処理ルール - 統合テスト"""
     
-    print("🚀 2-2-2「トレンド移行期の特別処理ルール」統合テスト開始")
+    print("[ROCKET] 2-2-2「トレンド移行期の特別処理ルール」統合テスト開始")
     print("=" * 80)
     
     test_results = {
@@ -68,7 +68,7 @@ def test_trend_transition_system():
             return test_results
         
         # テスト2: テストデータ作成
-        print("\n📊 テスト2: テストデータ作成")
+        print("\n[CHART] テスト2: テストデータ作成")
         try:
             # 通常トレンドデータ
             normal_data = create_normal_trend_data()
@@ -92,7 +92,7 @@ def test_trend_transition_system():
             return test_results
         
         # テスト3: 移行期検出テスト
-        print("\n🔍 テスト3: 移行期検出テスト")
+        print("\n[SEARCH] テスト3: 移行期検出テスト")
         try:
             detector = TrendTransitionDetector(detection_sensitivity="medium")
             
@@ -117,7 +117,7 @@ def test_trend_transition_system():
             return test_results
         
         # テスト4: ルール管理テスト
-        print("\n📋 テスト4: ルール管理テスト")
+        print("\n[LIST] テスト4: ルール管理テスト")
         try:
             manager = TrendTransitionManager(detection_sensitivity="medium")
             
@@ -208,7 +208,7 @@ def test_trend_transition_system():
                 print("✓ パフォーマンス良好")
                 test_results['performance_test'] = True
             else:
-                print("⚠️ パフォーマンス要改善")
+                print("[WARNING] パフォーマンス要改善")
                 test_results['performance_test'] = False
                 
         except Exception as e:
@@ -237,22 +237,22 @@ def test_trend_transition_system():
         
         # 最終結果
         print("\n" + "=" * 80)
-        print("📊 テスト結果サマリー")
+        print("[CHART] テスト結果サマリー")
         
         passed_tests = sum(test_results.values())
         total_tests = len(test_results)
         
         for test_name, result in test_results.items():
-            status = "✅ PASS" if result else "❌ FAIL"
+            status = "[OK] PASS" if result else "[ERROR] FAIL"
             print(f"{status} {test_name}")
         
-        print(f"\n🎯 総合結果: {passed_tests}/{total_tests} テストパス ({passed_tests/total_tests*100:.0f}%)")
+        print(f"\n[TARGET] 総合結果: {passed_tests}/{total_tests} テストパス ({passed_tests/total_tests*100:.0f}%)")
         
         if passed_tests == total_tests:
-            print("🎉 2-2-2「トレンド移行期の特別処理ルール」実装完了！")
+            print("[SUCCESS] 2-2-2「トレンド移行期の特別処理ルール」実装完了！")
             print("次の実装項目: 2-2-3「信頼度閾値に基づく意思決定ロジック」")
         else:
-            print("⚠️ 一部テストに失敗しました。実装を確認してください。")
+            print("[WARNING] 一部テストに失敗しました。実装を確認してください。")
             
         return test_results
         

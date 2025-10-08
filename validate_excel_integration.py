@@ -18,7 +18,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src'))
 def validate_excel_integration():
     """決定論的DSSMS結果のExcel出力統合を検証"""
     
-    print("🔍 決定論的DSSMS Excel出力統合検証開始")
+    print("[SEARCH] 決定論的DSSMS Excel出力統合検証開始")
     print("=" * 60)
     
     try:
@@ -34,8 +34,8 @@ def validate_excel_integration():
         # 決定論的DSSMS実行
         symbols = ['6758', '7203', '9984']  # Sony, Toyota, SoftBank
         
-        print(f"📊 対象銘柄: {symbols}")
-        print(f"🎯 決定論的モード: 有効")
+        print(f"[CHART] 対象銘柄: {symbols}")
+        print(f"[TARGET] 決定論的モード: 有効")
         
         # バックテスト実行
         backtester = DSSMSBacktester(config={
@@ -44,14 +44,14 @@ def validate_excel_integration():
             'initial_capital': 1000000
         })
         
-        print("\n🚀 DSSMSバックテスト実行中...")
+        print("\n[ROCKET] DSSMSバックテスト実行中...")
         results = backtester.simulate_dynamic_selection(
             start_date=start_date,
             end_date=end_date,
             symbol_universe=symbols
         )
         
-        print(f"✅ バックテスト完了")
+        print(f"[OK] バックテスト完了")
         print(f"   最終価値: {results.get('final_value', 'N/A'):,}円")
         print(f"   総リターン: {results.get('total_return', 'N/A'):.4f} ({results.get('total_return', 0)*100:.2f}%)")
         print(f"   スイッチ回数: {results.get('switches', 'N/A')}回")
@@ -108,7 +108,7 @@ def validate_excel_integration():
         total_return_diff = abs(results.get('total_return', 0) - results2.get('total_return', 0))
         switches_diff = abs(results.get('switches', 0) - results2.get('switches', 0))
         
-        print(f"📊 決定論的動作検証結果:")
+        print(f"[CHART] 決定論的動作検証結果:")
         print(f"   最終価値差異: {final_value_diff:,.0f}円")
         print(f"   総リターン差異: {total_return_diff:.10f}")
         print(f"   スイッチ回数差異: {switches_diff}")
@@ -118,14 +118,14 @@ def validate_excel_integration():
                            total_return_diff == 0 and 
                            switches_diff == 0)
         
-        print(f"\n🎯 Excel統合検証結果:")
-        print(f"   ✅ 決定論的動作: {'合格' if consistency_check else '不合格'}")
-        print(f"   ✅ データ出力準備: 完了")
-        print(f"   ✅ JSON形式保存: 完了")
-        print(f"   ✅ Excel統合対応: 準備完了")
+        print(f"\n[TARGET] Excel統合検証結果:")
+        print(f"   [OK] 決定論的動作: {'合格' if consistency_check else '不合格'}")
+        print(f"   [OK] データ出力準備: 完了")
+        print(f"   [OK] JSON形式保存: 完了")
+        print(f"   [OK] Excel統合対応: 準備完了")
         
         # 次のステップ推奨
-        print(f"\n📋 次のステップ:")
+        print(f"\n[LIST] 次のステップ:")
         print(f"   1. Excel出力システムV2での{output_file}読み込み")
         print(f"   2. 決定論的結果のExcelファイル生成")
         print(f"   3. 複数実行での一貫性確認")
@@ -139,8 +139,8 @@ def validate_excel_integration():
         }
         
     except Exception as e:
-        print(f"❌ エラー発生: {str(e)}")
-        print(f"📋 詳細:")
+        print(f"[ERROR] エラー発生: {str(e)}")
+        print(f"[LIST] 詳細:")
         traceback.print_exc()
         return {
             'success': False,
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     validation_results = validate_excel_integration()
     
     if validation_results['success']:
-        print(f"\n🎉 Excel統合検証完了: 成功")
+        print(f"\n[SUCCESS] Excel統合検証完了: 成功")
     else:
         print(f"\n💥 Excel統合検証完了: 失敗")
         sys.exit(1)

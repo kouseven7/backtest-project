@@ -48,7 +48,7 @@ try:
     print("All components imported successfully!")
     
 except ImportError as e:
-    print(f"❌ Import failed: {e}")
+    print(f"[ERROR] Import failed: {e}")
     print("This is expected due to missing dependencies")
 
 # 基本的なデータ生成テスト
@@ -77,7 +77,7 @@ try:
     print(f"  Date range: {dates[0]} to {dates[-1]}")
     
 except Exception as e:
-    print(f"❌ Data generation failed: {e}")
+    print(f"[ERROR] Data generation failed: {e}")
 
 # 設定ファイル読み込みテスト
 print("\n3. Testing configuration files...")
@@ -97,10 +97,10 @@ try:
                 config_data = json.load(f)
             print(f"✓ {config_path.name}: {len(config_data)} sections")
         else:
-            print(f"❌ {config_path.name}: File not found")
+            print(f"[ERROR] {config_path.name}: File not found")
             
 except Exception as e:
-    print(f"❌ Configuration loading failed: {e}")
+    print(f"[ERROR] Configuration loading failed: {e}")
 
 # 基本的な計算テスト
 print("\n4. Testing basic calculations...")
@@ -132,7 +132,7 @@ try:
     print(f"✓ Volatility calculation: {len(volatility)} values")
     
 except Exception as e:
-    print(f"❌ Basic calculations failed: {e}")
+    print(f"[ERROR] Basic calculations failed: {e}")
 
 # パッケージ情報テスト
 print("\n5. Testing package information...")
@@ -143,7 +143,7 @@ try:
     print(f"✓ Package description: {__description__}")
     
 except ImportError:
-    print("❌ Package information not available")
+    print("[ERROR] Package information not available")
 
 print("\n=== Test Summary ===")
 print("Basic functionality test completed.")

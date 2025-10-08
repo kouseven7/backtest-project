@@ -682,9 +682,9 @@ def main():
         
         # システムステータスの確認
         status = bridge.get_system_status()
-        print(f"\n📊 システムステータス:")
-        print(f"  V2システム: {'✅' if status['system_availability']['v2_calculator'] else '❌'}")
-        print(f"  Legacyシステム: {'✅' if status['system_availability']['legacy_calculator'] else '❌'}")
+        print(f"\n[CHART] システムステータス:")
+        print(f"  V2システム: {'[OK]' if status['system_availability']['v2_calculator'] else '[ERROR]'}")
+        print(f"  Legacyシステム: {'[OK]' if status['system_availability']['legacy_calculator'] else '[ERROR]'}")
         print(f"  統合モード: {status['current_mode']}")
         
         # サンプルデータでのテスト
@@ -716,12 +716,12 @@ def main():
                 print(f"  最終価値: ¥{result.primary_result.get('final_value', 0.0):,.0f}")
         
         if result.warnings:
-            print(f"  ⚠️  警告: {len(result.warnings)}件")
+            print(f"  [WARNING]  警告: {len(result.warnings)}件")
             for warning in result.warnings:
                 print(f"    - {warning}")
         
         if result.errors:
-            print(f"  ❌ エラー: {len(result.errors)}件")
+            print(f"  [ERROR] エラー: {len(result.errors)}件")
             for error in result.errors:
                 print(f"    - {error}")
         
@@ -736,11 +736,11 @@ def main():
         print(f"  フォールバック結果: {fallback_result.integration_status}")
         print(f"  フォールバック使用: {'はい' if fallback_result.fallback_used else 'いいえ'}")
         
-        print(f"\n✅ パフォーマンス計算統合ブリッジ: 正常動作確認")
+        print(f"\n[OK] パフォーマンス計算統合ブリッジ: 正常動作確認")
         return True
         
     except Exception as e:
-        print(f"\n❌ エラー: {e}")
+        print(f"\n[ERROR] エラー: {e}")
         traceback.print_exc()
         return False
 

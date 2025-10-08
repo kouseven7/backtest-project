@@ -63,7 +63,7 @@ def test_switch_analysis_fix():
 if __name__ == "__main__":
     success = test_switch_analysis_fix()
     if success:
-        print("✅ 切替分析修正の検証に成功しました")
+        print("[OK] 切替分析修正の検証に成功しました")
     else:
-        print("❌ 切替分析修正の検証に失敗しました")
+        print("[ERROR] 切替分析修正の検証に失敗しました")
         sys.exit(1)

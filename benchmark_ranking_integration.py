@@ -43,7 +43,7 @@ class RankingIntegrationBenchmark:
     
     def measure_current_integration_performance(self) -> Dict[str, Any]:
         """現在の統合システムパフォーマンス測定"""
-        self.logger.info("🔍 現在の統合システムパフォーマンス測定開始")
+        self.logger.info("[SEARCH] 現在の統合システムパフォーマンス測定開始")
         
         results = {
             'measurement_timestamp': datetime.now().isoformat(),
@@ -98,7 +98,7 @@ class RankingIntegrationBenchmark:
             results['selected_symbol'] = selected_symbol
             results['test_symbols_count'] = len(test_symbols)
             
-            self.logger.info("✅ パフォーマンス測定完了")
+            self.logger.info("[OK] パフォーマンス測定完了")
             self.logger.info(f"  - 初期化時間: {results['initialization_time_ms']:.2f}ms")
             self.logger.info(f"  - 単純選択時間: {results['single_symbol_selection_time_ms']:.2f}ms") 
             self.logger.info(f"  - 高度ランキング時間: {results['multi_symbol_ranking_time_ms']:.2f}ms")
@@ -112,7 +112,7 @@ class RankingIntegrationBenchmark:
     
     def analyze_duplication_patterns(self) -> Dict[str, Any]:
         """重複処理パターンの分析"""
-        self.logger.info("🔍 重複処理パターン分析開始")
+        self.logger.info("[SEARCH] 重複処理パターン分析開始")
         
         analysis = {
             'timestamp': datetime.now().isoformat(),
@@ -142,7 +142,7 @@ class RankingIntegrationBenchmark:
                 optimization_opportunities = self._identify_optimization_opportunities()
                 analysis['optimization_opportunities'] = optimization_opportunities
                 
-            self.logger.info("✅ 重複パターン分析完了")
+            self.logger.info("[OK] 重複パターン分析完了")
             return analysis
             
         except Exception as e:
@@ -226,7 +226,7 @@ class RankingIntegrationBenchmark:
     
     def run_comprehensive_benchmark(self) -> Dict[str, Any]:
         """包括的ベンチマーク実行"""  
-        self.logger.info("🚀 TODO-DSSMS-004.2 包括的ベンチマーク開始")
+        self.logger.info("[ROCKET] TODO-DSSMS-004.2 包括的ベンチマーク開始")
         
         benchmark = {
             'benchmark_info': {
@@ -255,7 +255,7 @@ class RankingIntegrationBenchmark:
             # 4. ベンチマーク結果保存
             self._save_benchmark_results(benchmark)
             
-            self.logger.info("✅ 包括的ベンチマーク完了")
+            self.logger.info("[OK] 包括的ベンチマーク完了")
             return benchmark
             
         except Exception as e:
@@ -327,31 +327,31 @@ def main():
     benchmark = RankingIntegrationBenchmark()
     results = benchmark.run_comprehensive_benchmark()
     
-    print("\n📊 ベンチマーク結果サマリー:")
+    print("\n[CHART] ベンチマーク結果サマリー:")
     
     # パフォーマンス結果表示
     perf = results.get('current_performance', {})
     if perf:
-        print(f"  🚀 初期化時間: {perf.get('initialization_time_ms', 0):.2f}ms")
+        print(f"  [ROCKET] 初期化時間: {perf.get('initialization_time_ms', 0):.2f}ms")
         print(f"  ⚡ 単純選択時間: {perf.get('single_symbol_selection_time_ms', 0):.2f}ms")
-        print(f"  🔥 高度ランキング時間: {perf.get('multi_symbol_ranking_time_ms', 0):.2f}ms")
+        print(f"  [FIRE] 高度ランキング時間: {perf.get('multi_symbol_ranking_time_ms', 0):.2f}ms")
     
     # 重複分析結果表示
     dup = results.get('duplication_analysis', {})
     if dup:
         hotspots = dup.get('duplication_hotspots', [])
-        print(f"  🔍 重複処理発見: {len(hotspots)}件")
+        print(f"  [SEARCH] 重複処理発見: {len(hotspots)}件")
         for hotspot in hotspots[:3]:  # トップ3表示
             print(f"    - {hotspot.get('description', 'N/A')}")
     
     # 推奨事項表示
     recommendations = results.get('recommendations', [])
     if recommendations:
-        print(f"  💡 最適化推奨事項: {len(recommendations)}件")
+        print(f"  [IDEA] 最適化推奨事項: {len(recommendations)}件")
         for rec in recommendations[:3]:  # トップ3表示
             print(f"    - [{rec.get('priority', 'N/A')}] {rec.get('title', 'N/A')}")
     
-    print(f"\n✅ ベンチマーク完了 - Stage 3実装の準備が整いました")
+    print(f"\n[OK] ベンチマーク完了 - Stage 3実装の準備が整いました")
 
 
 if __name__ == "__main__":

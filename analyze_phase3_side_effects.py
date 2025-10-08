@@ -176,10 +176,10 @@ def identify_bottleneck_root_cause():
     print(f"最終追加モジュール数: {final_modules}")
     
     # 根本原因判定
-    print(f"\n🔍 根本原因分析:")
+    print(f"\n[SEARCH] 根本原因分析:")
     
     if lazy_total > 100:
-        print(f"⚠️ 遅延インポート機構オーバーヘッド: {lazy_total:.1f}ms > 100ms")
+        print(f"[WARNING] 遅延インポート機構オーバーヘッド: {lazy_total:.1f}ms > 100ms")
         print("   → 遅延化の利益を相殺している可能性")
     
     if dssms_total > 2000:
@@ -187,11 +187,11 @@ def identify_bottleneck_root_cause():
         print("   → 循環依存や重複処理の可能性")
     
     if final_modules > 200:
-        print(f"⚠️ 過剰なモジュール読み込み: {final_modules} > 200")
+        print(f"[WARNING] 過剰なモジュール読み込み: {final_modules} > 200")
         print("   → 不要な依存関係の可能性")
     
     # 対策提案
-    print(f"\n💡 対策提案:")
+    print(f"\n[IDEA] 対策提案:")
     
     if lazy_total > 100:
         print("   1. 遅延インポート機構の軽量化")
@@ -225,12 +225,12 @@ def main():
     print("Phase 3追加分析結果サマリー")
     print("=" * 70)
     
-    print(f"✅ 副作用分析結果:")
+    print(f"[OK] 副作用分析結果:")
     print(f"   遅延機構オーバーヘッド: {root_cause['lazy_overhead_ms']:.1f}ms")
     print(f"   DSSMSチェーン時間: {root_cause['dssms_chain_ms']:.1f}ms")
     print(f"   追加モジュール数: {root_cause['final_modules']}")
     
-    print(f"\n📋 推奨対策:")
+    print(f"\n[LIST] 推奨対策:")
     for i, rec in enumerate(root_cause['recommendations'], 1):
         rec_names = {
             'lazy_optimization': '遅延インポート機構軽量化',
@@ -239,7 +239,7 @@ def main():
         }
         print(f"   {i}. {rec_names.get(rec, rec)}")
     
-    print(f"\n🎯 Phase 3改良方針:")
+    print(f"\n[TARGET] Phase 3改良方針:")
     print("   • 個別ライブラリ最適化は成功（yfinance 280ms、openpyxl 233ms削減）")
     print("   • システム統合時のオーバーヘッドが課題")
     print("   • 選択的適用による最適バランス探索が必要")

@@ -83,10 +83,10 @@ try:
             print(f"問題箇所特定エラー: {e}")
             print(f"エラータイプ: {type(e)}")
     
-    print("\n✅ 簡易テスト完了")
+    print("\n[OK] 簡易テスト完了")
     
 except Exception as e:
-    print(f"❌ テストエラー: {e}")
+    print(f"[ERROR] テストエラー: {e}")
     print(f"エラータイプ: {type(e)}")
     import traceback
     traceback.print_exc()

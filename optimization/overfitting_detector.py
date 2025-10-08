@@ -85,23 +85,23 @@ class OverfittingDetector:
         
         if risk_level == "high":
             recommendations.extend([
-                "⚠️ 高いオーバーフィッティングリスクが検出されました",
-                "📊 アウトオブサンプル期間でのテストを必須で実施してください",
-                "🔧 パラメータ数を大幅に減らすことを強く推奨します",
-                "📈 より長期間のデータでの検証を実施してください",
+                "[WARNING] 高いオーバーフィッティングリスクが検出されました",
+                "[CHART] アウトオブサンプル期間でのテストを必須で実施してください",
+                "[TOOL] パラメータ数を大幅に減らすことを強く推奨します",
+                "[UP] より長期間のデータでの検証を実施してください",
                 "🚫 このパラメータセットの実運用は推奨されません"
             ])
         elif risk_level == "medium":
             recommendations.extend([
                 "⚡ 中程度のオーバーフィッティングリスクが検出されました", 
-                "🧪 追加のバックテスト期間での検証を推奨します",
-                "📉 パラメータの簡素化を検討してください",
-                "🔍 ウォークフォワード分析を実施してください"
+                "[TEST] 追加のバックテスト期間での検証を推奨します",
+                "[DOWN] パラメータの簡素化を検討してください",
+                "[SEARCH] ウォークフォワード分析を実施してください"
             ])
         else:
             recommendations.extend([
-                "✅ オーバーフィッティングリスクは低いです",
-                "📋 定期的なパフォーマンス監視を継続してください"
+                "[OK] オーバーフィッティングリスクは低いです",
+                "[LIST] 定期的なパフォーマンス監視を継続してください"
             ])
         
         return recommendations
@@ -110,15 +110,15 @@ class OverfittingDetector:
         """検証レポートを生成"""
         report = f"""
 === オーバーフィッティング検証レポート ===
-🎯 リスクレベル: {analysis_result['overfitting_risk'].upper()}
-📊 パラメータ数: {analysis_result['parameter_count']}
+[TARGET] リスクレベル: {analysis_result['overfitting_risk'].upper()}
+[CHART] パラメータ数: {analysis_result['parameter_count']}
 
-📈 パフォーマンス分析:
+[UP] パフォーマンス分析:
   - シャープレシオ: {analysis_result['analysis_details']['best_sharpe_ratio']:.2f}
   - 総リターン: {analysis_result['analysis_details']['best_total_return']:.1%}
   - 勝率: {analysis_result['analysis_details']['best_win_rate']:.1%}
 
-⚠️ 検出された警告:
+[WARNING] 検出された警告:
 """
         for warning in analysis_result['warnings']:
             report += f"  - {warning}\n"
@@ -126,7 +126,7 @@ class OverfittingDetector:
         if not analysis_result['warnings']:
             report += "  なし\n"
         
-        report += "\n💡 推奨事項:\n"
+        report += "\n[IDEA] 推奨事項:\n"
         for rec in analysis_result['recommendations']:
             report += f"  {rec}\n"
         

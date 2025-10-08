@@ -316,11 +316,11 @@ def main():
         if args.cleanup:
             print("🧹 古いレポートをクリーンアップ中...")
             deleted_count = generator.cleanup_old_reports()
-            print(f"✅ クリーンアップ完了: {deleted_count}ファイルを削除")
+            print(f"[OK] クリーンアップ完了: {deleted_count}ファイルを削除")
             
         # サマリーレポート生成
         if args.summary_only:
-            print(f"📊 サマリーレポートを生成中... (過去{args.hours}時間)")
+            print(f"[CHART] サマリーレポートを生成中... (過去{args.hours}時間)")
             summary = generator.generate_summary_report(analysis_hours=args.hours)
             
             print("\n=== サマリーレポート ===")
@@ -333,9 +333,9 @@ def main():
             
         else:
             # 完全レポート生成
-            print(f"📊 完全レポートを生成中... ({args.type}, 過去{args.hours}時間)")
+            print(f"[CHART] 完全レポートを生成中... ({args.type}, 過去{args.hours}時間)")
             if args.emergency:
-                print("⚠️ 緊急モードが有効化されています")
+                print("[WARNING] 緊急モードが有効化されています")
                 
             results = generator.generate_full_report(
                 report_type=args.type,
@@ -354,12 +354,12 @@ def main():
                     print(f"  📄 {file_path}")
                     
             if results["warnings"]:
-                print("\n⚠️ 警告:")
+                print("\n[WARNING] 警告:")
                 for warning in results["warnings"]:
                     print(f"  - {warning}")
                     
             if results["errors"]:
-                print("\n❌ エラー:")
+                print("\n[ERROR] エラー:")
                 for error in results["errors"]:
                     print(f"  - {error}")
                     
@@ -378,10 +378,10 @@ def main():
     except KeyboardInterrupt:
         print("\n⏹️ ユーザーによって中断されました")
     except Exception as e:
-        print(f"\n❌ 予期しないエラーが発生: {e}")
+        print(f"\n[ERROR] 予期しないエラーが発生: {e}")
         logger.error(f"メイン処理エラー: {e}")
         
-    print("\n🏁 処理完了")
+    print("\n[FINISH] 処理完了")
 
 if __name__ == "__main__":
     main()

@@ -48,7 +48,7 @@ def create_test_stock_data():
 
 def test_strategy_error_stopping():
     """戦略エラー停止機能テスト"""
-    print("\n🔍 Test 1: VWAPBreakoutStrategy エラー停止機能確認")
+    print("\n[SEARCH] Test 1: VWAPBreakoutStrategy エラー停止機能確認")
     
     try:
         from config.multi_strategy_manager import MultiStrategyManager
@@ -61,11 +61,11 @@ def test_strategy_error_stopping():
         test_data = create_test_stock_data()
         test_params = {'lookback_period': 20, 'breakout_threshold': 0.02}
         
-        print(f"  📊 テストデータ: {test_data.shape[0]}日分")
-        print(f"  📋 テストパラメータ: {test_params}")
+        print(f"  [CHART] テストデータ: {test_data.shape[0]}日分")
+        print(f"  [LIST] テストパラメータ: {test_params}")
         
         # VWAPBreakoutStrategy を index_data なしで呼び出し（エラー期待）
-        print("\n  🎯 VWAPBreakoutStrategy を index_data パラメータなしで呼び出し...")
+        print("\n  [TARGET] VWAPBreakoutStrategy を index_data パラメータなしで呼び出し...")
         
         try:
             strategy_instance = manager.get_strategy_instance(
@@ -73,25 +73,25 @@ def test_strategy_error_stopping():
                 data=test_data,
                 params=test_params
             )
-            print("  ❌ エラー停止機能が動作していません - 戦略インスタンスが作成されました")
+            print("  [ERROR] エラー停止機能が動作していません - 戦略インスタンスが作成されました")
             return False
             
         except ValueError as e:
             if "Real data required" in str(e) and "index_data" in str(e):
-                print("  ✅ エラー停止機能が正しく動作しています")
+                print("  [OK] エラー停止機能が正しく動作しています")
                 print(f"  📝 エラーメッセージ: {str(e)[:100]}...")
                 return True
             else:
-                print(f"  ⚠️ 予期しないエラー: {e}")
+                print(f"  [WARNING] 予期しないエラー: {e}")
                 return False
                 
     except Exception as e:
-        print(f"  ❌ テスト実行エラー: {e}")
+        print(f"  [ERROR] テスト実行エラー: {e}")
         return False
 
 def test_opening_gap_strategy_error_stopping():
     """OpeningGapStrategy エラー停止機能テスト"""
-    print("\n🔍 Test 2: OpeningGapStrategy エラー停止機能確認")
+    print("\n[SEARCH] Test 2: OpeningGapStrategy エラー停止機能確認")
     
     try:
         from config.multi_strategy_manager import MultiStrategyManager
@@ -104,11 +104,11 @@ def test_opening_gap_strategy_error_stopping():
         test_data = create_test_stock_data()
         test_params = {'gap_threshold': 0.02, 'holding_period': 5}
         
-        print(f"  📊 テストデータ: {test_data.shape[0]}日分")
-        print(f"  📋 テストパラメータ: {test_params}")
+        print(f"  [CHART] テストデータ: {test_data.shape[0]}日分")
+        print(f"  [LIST] テストパラメータ: {test_params}")
         
         # OpeningGapStrategy を dow_data なしで呼び出し（エラー期待）
-        print("\n  🎯 OpeningGapStrategy を dow_data パラメータなしで呼び出し...")
+        print("\n  [TARGET] OpeningGapStrategy を dow_data パラメータなしで呼び出し...")
         
         try:
             strategy_instance = manager.get_strategy_instance(
@@ -116,25 +116,25 @@ def test_opening_gap_strategy_error_stopping():
                 data=test_data,
                 params=test_params
             )
-            print("  ❌ エラー停止機能が動作していません - 戦略インスタンスが作成されました")
+            print("  [ERROR] エラー停止機能が動作していません - 戦略インスタンスが作成されました")
             return False
             
         except ValueError as e:
             if "Real data required" in str(e) and "dow_data" in str(e):
-                print("  ✅ エラー停止機能が正しく動作しています")
+                print("  [OK] エラー停止機能が正しく動作しています")
                 print(f"  📝 エラーメッセージ: {str(e)[:100]}...")
                 return True
             else:
-                print(f"  ⚠️ 予期しないエラー: {e}")
+                print(f"  [WARNING] 予期しないエラー: {e}")
                 return False
                 
     except Exception as e:
-        print(f"  ❌ テスト実行エラー: {e}")
+        print(f"  [ERROR] テスト実行エラー: {e}")
         return False
 
 def test_other_strategies_unaffected():
     """他の戦略への影響がないことを確認"""
-    print("\n🔍 Test 3: 他の5戦略への影響なし確認")
+    print("\n[SEARCH] Test 3: 他の5戦略への影響なし確認")
     
     unaffected_strategies = [
         'MomentumInvestingStrategy',
@@ -158,7 +158,7 @@ def test_other_strategies_unaffected():
             test_data = create_test_stock_data()
             test_params = {'lookback_period': 20}
             
-            print(f"\n  🎯 {strategy_name} テスト中...")
+            print(f"\n  [TARGET] {strategy_name} テスト中...")
             
             # 戦略インスタンス化試行
             strategy_instance = manager.get_strategy_instance(
@@ -169,27 +169,27 @@ def test_other_strategies_unaffected():
             
             # backtest()メソッド確認
             if hasattr(strategy_instance, 'backtest') and callable(strategy_instance.backtest):
-                print(f"  ✅ {strategy_name}: 正常動作")
+                print(f"  [OK] {strategy_name}: 正常動作")
                 results[strategy_name] = True
             else:
-                print(f"  ⚠️ {strategy_name}: backtest()メソッドなし")
+                print(f"  [WARNING] {strategy_name}: backtest()メソッドなし")
                 results[strategy_name] = False
                 
         except Exception as e:
-            print(f"  ❌ {strategy_name}: エラー - {str(e)[:50]}...")
+            print(f"  [ERROR] {strategy_name}: エラー - {str(e)[:50]}...")
             results[strategy_name] = False
     
     success_count = sum(results.values())
     total_count = len(results)
     success_rate = (success_count / total_count) * 100 if total_count > 0 else 0
     
-    print(f"\n  📊 他戦略動作確認結果: {success_count}/{total_count} ({success_rate:.1f}%)")
+    print(f"\n  [CHART] 他戦略動作確認結果: {success_count}/{total_count} ({success_rate:.1f}%)")
     
     return success_count >= 3  # 最低3戦略は動作することを期待
 
 def main():
     """メインテスト実行"""
-    print("\n🚀 TODO #14 Phase 1 検証テスト開始\n")
+    print("\n[ROCKET] TODO #14 Phase 1 検証テスト開始\n")
     
     test_results = []
     
@@ -207,7 +207,7 @@ def main():
     
     # 総合評価
     print("\n" + "="*80)
-    print("📊 TODO #14 Phase 1 検証結果")
+    print("[CHART] TODO #14 Phase 1 検証結果")
     print("="*80)
     
     passed_tests = sum(1 for _, result in test_results if result)
@@ -215,16 +215,16 @@ def main():
     success_rate = (passed_tests / total_tests) * 100 if total_tests > 0 else 0
     
     for test_name, result in test_results:
-        status = "✅ PASS" if result else "❌ FAIL"
+        status = "[OK] PASS" if result else "[ERROR] FAIL"
         print(f"{status}: {test_name}")
     
-    print(f"\n🎯 Phase 1 実装品質: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
+    print(f"\n[TARGET] Phase 1 実装品質: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
     
     if success_rate >= 80:
-        print("✅ TODO #14 Phase 1 実装成功 - Phase 2 準備可能")
+        print("[OK] TODO #14 Phase 1 実装成功 - Phase 2 準備可能")
         return True
     else:
-        print("❌ TODO #14 Phase 1 要改善 - Phase 2 延期推奨")
+        print("[ERROR] TODO #14 Phase 1 要改善 - Phase 2 延期推奨")
         return False
 
 if __name__ == "__main__":

@@ -69,7 +69,7 @@ class ParameterValidator:
                 "errors": [f"未対応の戦略です: {strategy_name}"],
                 "warnings": [],
                 "valid": False,
-                "validation_summary": "❌ 未対応戦略"
+                "validation_summary": "[ERROR] 未対応戦略"
             }
     
     def _normalize_strategy_name(self, strategy_name: str) -> str:

@@ -33,7 +33,7 @@ def demo_complete_integration():
     
     try:
         # 1. 重要指標選定システムの実行
-        print("\n🔍 ステップ1: 重要指標分析実行")
+        print("\n[SEARCH] ステップ1: 重要指標分析実行")
         from config.metric_selection_manager import MetricSelectionManager
         
         manager = MetricSelectionManager()
@@ -47,7 +47,7 @@ def demo_complete_integration():
         print(f"  ✓ 重み改善スコア: {result['weight_optimization']['improvement_score']:.3f}")
         
         # 2. 戦略スコアリングシステムでの評価（最適化前）
-        print("\n📊 ステップ2: 最適化前の戦略スコア評価")
+        print("\n[CHART] ステップ2: 最適化前の戦略スコア評価")
         from config.strategy_scoring_model import StrategyScoreManager
         
         scoring_manager = StrategyScoreManager()
@@ -97,7 +97,7 @@ def demo_complete_integration():
             print(f"  {strategy['strategy_name']}: {score.composite_score:.3f}")
         
         # 3. 最適化された重みでの評価
-        print("\n🎯 ステップ3: 最適化後の戦略スコア評価")
+        print("\n[TARGET] ステップ3: 最適化後の戦略スコア評価")
         
         # 最適化された重みを適用
         optimized_weights = result['weight_optimization']['optimized_weights']
@@ -124,7 +124,7 @@ def demo_complete_integration():
             print(f"  {strategy['strategy_name']}: {score.composite_score:.3f}")
         
         # 4. 改善効果の比較
-        print("\n📈 ステップ4: 最適化効果の評価")
+        print("\n[UP] ステップ4: 最適化効果の評価")
         print("\n最適化による変化:")
         for i, strategy in enumerate(sample_strategies):
             improvement = optimized_scores[i].composite_score - original_scores[i].composite_score
@@ -155,10 +155,10 @@ def demo_complete_integration():
         print(f"  ✓ レポート生成完了: {report_path}")
         
         print("\n" + "=" * 80)
-        print("🎉 統合デモが成功しました！")
-        print(f"📊 平均スコア改善: {avg_improvement:+.3f}")
-        print(f"📈 重み最適化による改善: {result['weight_optimization']['improvement_score']:.3f}")
-        print(f"📋 詳細レポート: {report_path}")
+        print("[SUCCESS] 統合デモが成功しました！")
+        print(f"[CHART] 平均スコア改善: {avg_improvement:+.3f}")
+        print(f"[UP] 重み最適化による改善: {result['weight_optimization']['improvement_score']:.3f}")
+        print(f"[LIST] 詳細レポート: {report_path}")
         print("=" * 80)
         
         return True
@@ -184,7 +184,7 @@ def generate_integration_report(data):
     content = f"""# 重要指標選定システム統合デモレポート
 
 **実行日時**: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
-**統合テスト**: ✅ 成功  
+**統合テスト**: [OK] 成功  
 
 ## 統合結果サマリー
 
@@ -256,7 +256,7 @@ def demo_quick_analysis():
         manager = MetricSelectionManager()
         
         # 分析実行
-        print("\n📊 重要指標分析を実行中...")
+        print("\n[CHART] 重要指標分析を実行中...")
         result = manager.run_complete_analysis(
             target_metric="sharpe_ratio",
             optimization_method="importance_based"
@@ -280,7 +280,7 @@ def demo_quick_analysis():
         return False
 
 if __name__ == "__main__":
-    print("🚀 重要指標選定システム 統合デモを開始します\n")
+    print("[ROCKET] 重要指標選定システム 統合デモを開始します\n")
     
     # メニュー選択
     print("実行するデモを選択してください:")
@@ -299,11 +299,11 @@ if __name__ == "__main__":
             success = demo_quick_analysis()
         
         if success:
-            print("\n✅ デモが正常に完了しました！")
+            print("\n[OK] デモが正常に完了しました！")
         else:
-            print("\n❌ デモ実行中にエラーが発生しました。")
+            print("\n[ERROR] デモ実行中にエラーが発生しました。")
             
     except KeyboardInterrupt:
-        print("\n\n⚠️ デモが中断されました。")
+        print("\n\n[WARNING] デモが中断されました。")
     except Exception as e:
-        print(f"\n❌ 予期しないエラーが発生しました: {e}")
+        print(f"\n[ERROR] 予期しないエラーが発生しました: {e}")

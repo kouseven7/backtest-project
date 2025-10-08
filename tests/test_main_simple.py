@@ -51,10 +51,10 @@ def test_single_strategy():
         logger.info(f"VWAPBounce戦略結果: エントリー {entry_count}, エグジット {exit_count}")
         
         if entry_count > 0:
-            logger.info("✅ 戦略が正常に動作しています")
+            logger.info("[OK] 戦略が正常に動作しています")
             return True
         else:
-            logger.warning("⚠️ エントリーシグナルが生成されませんでした")
+            logger.warning("[WARNING] エントリーシグナルが生成されませんでした")
             return False
             
     except Exception as e:

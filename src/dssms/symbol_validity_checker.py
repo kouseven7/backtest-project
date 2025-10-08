@@ -463,7 +463,7 @@ class SymbolValidityChecker:
         invalid_count = total_symbols - valid_count
         
         report_lines.extend([
-            "📊 サマリー統計",
+            "[CHART] サマリー統計",
             "-" * 20,
             f"チェック対象銘柄数: {total_symbols}",
             f"有効: {valid_count} ({valid_count/total_symbols*100:.1f}%)",
@@ -473,7 +473,7 @@ class SymbolValidityChecker:
         
         # 詳細結果
         report_lines.extend([
-            "📋 詳細結果",
+            "[LIST] 詳細結果",
             "-" * 20
         ])
         
@@ -481,7 +481,7 @@ class SymbolValidityChecker:
             is_valid = result.get("is_valid", False)
             status = result.get("status", "unknown")
             
-            status_emoji = "✅" if is_valid else "❌"
+            status_emoji = "[OK]" if is_valid else "[ERROR]"
             report_lines.append(f"{status_emoji} {symbol}: {status}")
             
             # 問題詳細

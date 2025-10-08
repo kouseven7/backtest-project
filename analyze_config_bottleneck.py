@@ -131,18 +131,18 @@ def analyze_config_import_bottleneck():
     print(f"この調査で追加されたモジュール数: {current_modules - initial_module_count}")
     
     if heavy_modules:
-        print(f"\n🔥 重いconfigモジュール発見:")
+        print(f"\n[FIRE] 重いconfigモジュール発見:")
         for module_name, import_time in sorted(heavy_modules, key=lambda x: x[1], reverse=True):
             print(f"  - {module_name}: {import_time:.1f}ms")
     
-    print(f"\n📊 推定されるボトルネック:")
+    print(f"\n[CHART] 推定されるボトルネック:")
     if config_import_time > 1000:
-        print(f"  ⚠️ config パッケージ自体が重い: {config_import_time:.1f}ms")
+        print(f"  [WARNING] config パッケージ自体が重い: {config_import_time:.1f}ms")
     if heavy_modules:
         total_heavy_time = sum(time for _, time in heavy_modules)
-        print(f"  ⚠️ 重いconfigサブモジュール合計: {total_heavy_time:.1f}ms")
+        print(f"  [WARNING] 重いconfigサブモジュール合計: {total_heavy_time:.1f}ms")
     if len(python_files) > 50:
-        print(f"  ⚠️ configディレクトリに多数のファイル: {len(python_files)}個")
+        print(f"  [WARNING] configディレクトリに多数のファイル: {len(python_files)}個")
     
     return {
         'config_import_time': config_import_time,

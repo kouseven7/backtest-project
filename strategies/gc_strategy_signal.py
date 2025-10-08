@@ -268,13 +268,13 @@ class GCStrategy(BaseStrategy):
             if params and 'parameters' in params:
                 self.params.update(params['parameters'])
                 self._approved_params = params
-                print(f"✅ 最適化パラメータを読み込みました (ID: {params.get('parameter_id', 'N/A')})")
+                print(f"[OK] 最適化パラメータを読み込みました (ID: {params.get('parameter_id', 'N/A')})")
                 return True
             else:
-                print(f"⚠️ 承認済みの最適化パラメータが見つかりません")
+                print(f"[WARNING] 承認済みの最適化パラメータが見つかりません")
                 return False
         except Exception as e:
-            print(f"❌ 最適化パラメータの読み込みでエラー: {e}")
+            print(f"[ERROR] 最適化パラメータの読み込みでエラー: {e}")
             return False
 
     def run_optimized_strategy(self):
@@ -285,11 +285,11 @@ class GCStrategy(BaseStrategy):
         """
         loaded = self.load_optimized_parameters()
         if loaded and hasattr(self, '_approved_params'):
-            print(f"\n📊 使用パラメータ: {self._approved_params.get('parameters', {})}")
+            print(f"\n[CHART] 使用パラメータ: {self._approved_params.get('parameters', {})}")
             print(f"   作成日時: {self._approved_params.get('created_at', 'N/A')}")
             print(f"   シャープレシオ: {self._approved_params.get('performance_metrics', {}).get('sharpe_ratio', 'N/A')}")
         else:
-            print(f"📊 デフォルトパラメータを使用: {self.params}")
+            print(f"[CHART] デフォルトパラメータを使用: {self.params}")
         return self.backtest()
 
     def get_optimization_info(self):

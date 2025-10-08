@@ -28,7 +28,7 @@ class HierarchicalRankingBottleneckAnalyzer:
         
     def analyze_import_dependencies(self, module_path: str) -> Dict[str, Any]:
         """インポート依存関係の詳細分析"""
-        print("🔍 hierarchical_ranking_system.py 依存関係分析中...")
+        print("[SEARCH] hierarchical_ranking_system.py 依存関係分析中...")
         
         try:
             with open(module_path, 'r', encoding='utf-8') as f:
@@ -89,9 +89,9 @@ class HierarchicalRankingBottleneckAnalyzer:
                 'optimization_potential': sum(cost for cost in import_costs.values() if cost > 100)
             }
             
-            print(f"  📊 総インポート数: {analysis['total_imports']}")
+            print(f"  [CHART] 総インポート数: {analysis['total_imports']}")
             print(f"  ⏱️ 総インポートコスト: {analysis['total_import_cost']:.1f}ms")
-            print(f"  🎯 最適化可能コスト: {analysis['optimization_potential']:.1f}ms")
+            print(f"  [TARGET] 最適化可能コスト: {analysis['optimization_potential']:.1f}ms")
             print(f"  🔴 重いインポート: {len(heavy_imports)}個")
             
             for heavy in heavy_imports[:5]:  # Top 5表示
@@ -100,7 +100,7 @@ class HierarchicalRankingBottleneckAnalyzer:
             return analysis
             
         except Exception as e:
-            print(f"❌ 依存関係分析エラー: {e}")
+            print(f"[ERROR] 依存関係分析エラー: {e}")
             return {}
     
     def _measure_import_cost(self, module_name: str) -> float:
@@ -164,9 +164,9 @@ class HierarchicalRankingBottleneckAnalyzer:
                 'large_init_classes': [c for c in classes if c['has_init'] and c['methods_count'] > 5]
             }
             
-            print(f"  📊 総クラス数: {initialization_complexity['total_classes']}")
-            print(f"  🔧 総メソッド数: {initialization_complexity['total_methods']}")
-            print(f"  📈 複雑クラス: {len(initialization_complexity['complex_classes'])}個")
+            print(f"  [CHART] 総クラス数: {initialization_complexity['total_classes']}")
+            print(f"  [TOOL] 総メソッド数: {initialization_complexity['total_methods']}")
+            print(f"  [UP] 複雑クラス: {len(initialization_complexity['complex_classes'])}個")
             
             for complex_class in initialization_complexity['complex_classes']:
                 print(f"    - {complex_class['name']}: {complex_class['methods_count']}メソッド")
@@ -178,7 +178,7 @@ class HierarchicalRankingBottleneckAnalyzer:
             }
             
         except Exception as e:
-            print(f"❌ クラス分析エラー: {e}")
+            print(f"[ERROR] クラス分析エラー: {e}")
             return {}
     
     def analyze_init_py_impact(self) -> Dict[str, Any]:
@@ -229,13 +229,13 @@ class HierarchicalRankingBottleneckAnalyzer:
                     print(f"  📄 {init_file}: {import_time:.1f}ms")
                     
                 except Exception as e:
-                    print(f"  ❌ {init_file} 分析エラー: {e}")
+                    print(f"  [ERROR] {init_file} 分析エラー: {e}")
         
         return init_analysis
     
     def identify_lazy_loading_opportunities(self, dependency_analysis: Dict) -> Dict[str, Any]:
         """遅延ローディング機会の特定"""
-        print("🎯 遅延ローディング機会特定中...")
+        print("[TARGET] 遅延ローディング機会特定中...")
         
         # 重いインポートを遅延可能カテゴリに分類
         heavy_imports = dependency_analysis.get('heavy_imports', [])
@@ -296,7 +296,7 @@ class HierarchicalRankingBottleneckAnalyzer:
         # 優先度順にソート
         optimization_plan.sort(key=lambda x: x['priority_score'], reverse=True)
         
-        print(f"  🎯 最適化対象モジュール: {len(optimization_plan)}個")
+        print(f"  [TARGET] 最適化対象モジュール: {len(optimization_plan)}個")
         for i, plan in enumerate(optimization_plan[:5]):  # Top 5表示
             print(f"    {i+1}. {plan['module']} ({plan['category']}): "
                   f"{plan['cost_ms']:.1f}ms, 遅延可能度: {plan['lazy_loading_feasibility']:.1%}")
@@ -310,12 +310,12 @@ class HierarchicalRankingBottleneckAnalyzer:
     
     def generate_comprehensive_analysis_report(self) -> Dict[str, Any]:
         """総合分析レポート生成"""
-        print("📋 hierarchical_ranking_system 総合ボトルネック分析実行中...")
+        print("[LIST] hierarchical_ranking_system 総合ボトルネック分析実行中...")
         
         module_path = 'src/dssms/hierarchical_ranking_system.py'
         
         if not Path(module_path).exists():
-            print(f"❌ {module_path} が見つかりません")
+            print(f"[ERROR] {module_path} が見つかりません")
             return {}
         
         # Stage 1: 各種分析実行
@@ -395,7 +395,7 @@ class HierarchicalRankingBottleneckAnalyzer:
 
 def main():
     """メイン実行関数"""
-    print("🚀 TODO-PERF-001 Stage 1: hierarchical_ranking_system ボトルネック詳細分析開始")
+    print("[ROCKET] TODO-PERF-001 Stage 1: hierarchical_ranking_system ボトルネック詳細分析開始")
     print("=" * 80)
     
     analyzer = HierarchicalRankingBottleneckAnalyzer()
@@ -410,23 +410,23 @@ def main():
             json.dump(report, f, indent=2, ensure_ascii=False)
         
         print("\n" + "=" * 80)
-        print("📊 Stage 1 分析結果サマリー")
+        print("[CHART] Stage 1 分析結果サマリー")
         print("=" * 80)
         
         current_time = report['current_bottleneck']['total_import_time_ms']
         target_time = report['current_bottleneck']['target_time_ms']
         needed_reduction = report['current_bottleneck']['reduction_needed_ms']
         
-        print(f"🎯 現在のインポート時間: {current_time:.1f}ms")
-        print(f"🎯 目標時間: {target_time}ms")
-        print(f"🎯 必要削減量: {needed_reduction:.1f}ms ({report['current_bottleneck']['reduction_needed_percentage']:.1f}%)")
+        print(f"[TARGET] 現在のインポート時間: {current_time:.1f}ms")
+        print(f"[TARGET] 目標時間: {target_time}ms")
+        print(f"[TARGET] 必要削減量: {needed_reduction:.1f}ms ({report['current_bottleneck']['reduction_needed_percentage']:.1f}%)")
         
         optimization = report['optimization_projection']
-        print(f"\n📈 最適化効果予測:")
+        print(f"\n[UP] 最適化効果予測:")
         print(f"  予測削減量: {optimization['predicted_savings']:.1f}ms")
         print(f"  最適化後時間: {optimization['optimized_time']:.1f}ms")
         print(f"  改善率: {optimization['improvement_percentage']:.1f}%")
-        print(f"  目標達成可能性: {'✅ 可能' if optimization['meets_target'] else '⚠️ 追加最適化必要'}")
+        print(f"  目標達成可能性: {'[OK] 可能' if optimization['meets_target'] else '[WARNING] 追加最適化必要'}")
         
         # Stage 2計画
         stage2_plan = report['stage2_implementation_plan']
@@ -441,14 +441,14 @@ def main():
         
         # Stage 1完了・Stage 2準備完了の確認
         print("\n" + "=" * 80)
-        print("✅ Stage 1: ボトルネック詳細分析・根本原因特定 完了")
-        print("🚀 Stage 2: 重いライブラリ遅延インポート実装 準備完了")
+        print("[OK] Stage 1: ボトルネック詳細分析・根本原因特定 完了")
+        print("[ROCKET] Stage 2: 重いライブラリ遅延インポート実装 準備完了")
         print("=" * 80)
         
         return True
         
     except Exception as e:
-        print(f"❌ Stage 1 分析実行エラー: {e}")
+        print(f"[ERROR] Stage 1 分析実行エラー: {e}")
         traceback.print_exc()
         return False
 

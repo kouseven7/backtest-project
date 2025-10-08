@@ -35,25 +35,25 @@ def debug_import_chain():
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
                 ultra_light_time = (time.perf_counter() - start) * 1000
-                print(f"   ✅ UltraLight直接ロード成功: {ultra_light_time:.1f}ms")
+                print(f"   [OK] UltraLight直接ロード成功: {ultra_light_time:.1f}ms")
                 
                 # クラス確認
                 if hasattr(module, 'SymbolSwitchManagerUltraLight'):
-                    print(f"   ✅ SymbolSwitchManagerUltraLightクラス存在")
+                    print(f"   [OK] SymbolSwitchManagerUltraLightクラス存在")
                     return module.SymbolSwitchManagerUltraLight, ultra_light_time
                 else:
-                    print(f"   ❌ SymbolSwitchManagerUltraLightクラス不存在")
+                    print(f"   [ERROR] SymbolSwitchManagerUltraLightクラス不存在")
                     return None, ultra_light_time
             else:
-                print(f"   ❌ specまたはloader作成失敗")
+                print(f"   [ERROR] specまたはloader作成失敗")
                 return None, 0
         except Exception as e:
-            print(f"   ❌ UltraLight直接ロードエラー: {e}")
+            print(f"   [ERROR] UltraLight直接ロードエラー: {e}")
             import traceback
             traceback.print_exc()
             return None, 0
     else:
-        print("   ❌ UltraLightファイル不存在")
+        print("   [ERROR] UltraLightファイル不存在")
         return None, 0
 
 def debug_fallback_import():
@@ -67,7 +67,7 @@ def debug_fallback_import():
         print(f"   通常版SymbolSwitchManagerインポート: {fallback_time:.1f}ms")
         return SymbolSwitchManager, fallback_time
     except ImportError as e:
-        print(f"   ❌ 通常版インポートエラー: {e}")
+        print(f"   [ERROR] 通常版インポートエラー: {e}")
         return None, 0
 
 def debug_dssms_integrated_import():
@@ -114,7 +114,7 @@ def debug_dssms_integrated_import():
     components.append(("総時間", total_time))
     
     # 結果表示
-    print("\n📊 インポート時間詳細:")
+    print("\n[CHART] インポート時間詳細:")
     for component, time_ms in components:
         percentage = (time_ms / total_time * 100) if total_time > 0 else 0
         print(f"   {component}: {time_ms:.1f}ms ({percentage:.1f}%)")
@@ -130,20 +130,20 @@ def main():
         
         # 最大ボトルネック特定
         max_component = max(components[:-1], key=lambda x: x[1])  # 総時間除く
-        print(f"🔥 最大ボトルネック: {max_component[0]} ({max_component[1]:.1f}ms)")
+        print(f"[FIRE] 最大ボトルネック: {max_component[0]} ({max_component[1]:.1f}ms)")
         
         # 2854ms問題の原因推定
         total_time = components[-1][1]
-        print(f"📊 現在の総インポート時間: {total_time:.1f}ms")
+        print(f"[CHART] 現在の総インポート時間: {total_time:.1f}ms")
         
         if total_time > 2000:
-            print("⚠️ 2000ms超過 - 重いフォールバック版が使用されている可能性")
-            print("🔧 推奨対応: UltraLight版ロード機構の修正")
+            print("[WARNING] 2000ms超過 - 重いフォールバック版が使用されている可能性")
+            print("[TOOL] 推奨対応: UltraLight版ロード機構の修正")
         elif total_time > 100:
-            print("⚠️ 100ms超過 - 部分的最適化が必要")
-            print("🔧 推奨対応: 個別コンポーネント最適化")
+            print("[WARNING] 100ms超過 - 部分的最適化が必要")
+            print("[TOOL] 推奨対応: 個別コンポーネント最適化")
         else:
-            print("✅ インポート時間正常範囲")
+            print("[OK] インポート時間正常範囲")
         
     except Exception as e:
         print(f"分析エラー: {e}")

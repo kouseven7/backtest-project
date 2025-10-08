@@ -11,13 +11,13 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 try:
     from src.dssms.dssms_backtester import DSSMSBacktester
     
-    print("🧪 Problem 1: 動作確認テスト開始")
+    print("[TEST] Problem 1: 動作確認テスト開始")
     print("="*50)
     
     # DSSMSBacktester初期化
     print("1. DSSMSBacktester初期化中...")
     backtester = DSSMSBacktester()
-    print("✅ DSSMSBacktester初期化成功")
+    print("[OK] DSSMSBacktester初期化成功")
     
     # 設定確認
     print("\n2. 重要設定確認:")
@@ -51,66 +51,66 @@ try:
     total_checks = 7
     
     if score_threshold == 0.08:
-        print("   ✅ score_difference_threshold: 正常")
+        print("   [OK] score_difference_threshold: 正常")
         success_count += 1
     else:
-        print(f"   ❌ score_difference_threshold: {score_threshold} (期待値: 0.08)")
+        print(f"   [ERROR] score_difference_threshold: {score_threshold} (期待値: 0.08)")
     
     if holding_period == 2:
-        print("   ✅ minimum_holding_period_hours: 正常")
+        print("   [OK] minimum_holding_period_hours: 正常")
         success_count += 1
     else:
-        print(f"   ❌ minimum_holding_period_hours: {holding_period} (期待値: 2)")
+        print(f"   [ERROR] minimum_holding_period_hours: {holding_period} (期待値: 2)")
     
     if confidence_threshold == 0.5:
-        print("   ✅ confidence_threshold: 正常")
+        print("   [OK] confidence_threshold: 正常")
         success_count += 1
     else:
-        print(f"   ❌ confidence_threshold: {confidence_threshold} (期待値: 0.5)")
+        print(f"   [ERROR] confidence_threshold: {confidence_threshold} (期待値: 0.5)")
     
     if max_daily == 5:
-        print("   ✅ max_daily_switches: 正常")
+        print("   [OK] max_daily_switches: 正常")
         success_count += 1
     else:
-        print(f"   ❌ max_daily_switches: {max_daily} (期待値: 5)")
+        print(f"   [ERROR] max_daily_switches: {max_daily} (期待値: 5)")
     
     if max_weekly == 20:
-        print("   ✅ max_weekly_switches: 正常")
+        print("   [OK] max_weekly_switches: 正常")
         success_count += 1
     else:
-        print(f"   ❌ max_weekly_switches: {max_weekly} (期待値: 20)")
+        print(f"   [ERROR] max_weekly_switches: {max_weekly} (期待値: 20)")
     
     if probabilistic == True:
-        print("   ✅ enable_probabilistic: 正常")
+        print("   [OK] enable_probabilistic: 正常")
         success_count += 1
     else:
-        print(f"   ❌ enable_probabilistic: {probabilistic} (期待値: True)")
+        print(f"   [ERROR] enable_probabilistic: {probabilistic} (期待値: True)")
     
     if noise_enabled == True:
-        print("   ✅ enable_noise: 正常")
+        print("   [OK] enable_noise: 正常")
         success_count += 1
     else:
-        print(f"   ❌ enable_noise: {noise_enabled} (期待値: True)")
+        print(f"   [ERROR] enable_noise: {noise_enabled} (期待値: True)")
     
-    print(f"\n📊 設定確認結果: {success_count}/{total_checks} 項目が正常")
+    print(f"\n[CHART] 設定確認結果: {success_count}/{total_checks} 項目が正常")
     
     if success_count == total_checks:
-        print("🎉 Problem 1 設定変更: 全項目成功")
+        print("[SUCCESS] Problem 1 設定変更: 全項目成功")
         exit_code = 0
     else:
-        print("⚠️ Problem 1 設定変更: 一部不完全")
+        print("[WARNING] Problem 1 設定変更: 一部不完全")
         exit_code = 1
     
     print("="*50)
-    print("🧪 Problem 1 動作確認テスト完了")
+    print("[TEST] Problem 1 動作確認テスト完了")
     
     exit(exit_code)
     
 except ImportError as e:
-    print(f"❌ Import エラー: {e}")
+    print(f"[ERROR] Import エラー: {e}")
     exit(1)
 except Exception as e:
-    print(f"❌ 実行エラー: {e}")
+    print(f"[ERROR] 実行エラー: {e}")
     import traceback
     traceback.print_exc()
     exit(1)

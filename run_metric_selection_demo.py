@@ -15,19 +15,19 @@ sys.path.append(project_path)
 
 def simple_analysis_demo():
     """シンプルな分析デモ"""
-    print("🚀 重要指標選定システム - シンプル実行デモ")
+    print("[ROCKET] 重要指標選定システム - シンプル実行デモ")
     print("=" * 60)
     
     try:
         from config.metric_selection_manager import MetricSelectionManager
         
         # 1. マネージャー初期化
-        print("📋 システム初期化中...")
+        print("[LIST] システム初期化中...")
         manager = MetricSelectionManager()
         print("   ✓ 初期化完了")
         
         # 2. 重要指標分析実行
-        print("\n📊 重要指標分析実行中...")
+        print("\n[CHART] 重要指標分析実行中...")
         result = manager.run_complete_analysis(
             target_metric="sharpe_ratio",
             optimization_method="balanced_approach"
@@ -35,7 +35,7 @@ def simple_analysis_demo():
         print("   ✓ 分析完了")
         
         # 3. 結果表示
-        print(f"\n📈 分析結果:")
+        print(f"\n[UP] 分析結果:")
         print(f"   信頼度レベル: {result.confidence_level}")
         print(f"   推奨指標数: {len(result.recommended_metrics)}")
         
@@ -54,11 +54,11 @@ def simple_analysis_demo():
             for category, weight in sorted(weights.items(), key=lambda x: x[1], reverse=True):
                 print(f"   {category}: {weight:.3f}")
         
-        print(f"\n✅ システムが正常に動作しています!")
+        print(f"\n[OK] システムが正常に動作しています!")
         return True
         
     except Exception as e:
-        print(f"\n❌ エラーが発生しました: {e}")
+        print(f"\n[ERROR] エラーが発生しました: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -80,7 +80,7 @@ def show_latest_report():
             # レポートの一部を表示
             with open(latest_report, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
-                print("\n📋 レポートサマリー:")
+                print("\n[LIST] レポートサマリー:")
                 for line in lines[:15]:  # 最初の15行を表示
                     if line.strip():
                         print(f"   {line.rstrip()}")
@@ -92,7 +92,7 @@ def show_latest_report():
 
 def check_system_status():
     """システム状態の確認"""
-    print("\n🔍 システム状態確認")
+    print("\n[SEARCH] システム状態確認")
     print("-" * 40)
     
     # 必要なディレクトリの確認
@@ -124,7 +124,7 @@ def check_system_status():
 
 def main():
     """メイン関数"""
-    print("🔧 重要指標選定システム - 実運用デモ")
+    print("[TOOL] 重要指標選定システム - 実運用デモ")
     print("=" * 60)
     print("実行メニュー:")
     print("1. システム状態確認")
@@ -142,7 +142,7 @@ def main():
         elif choice == "3":
             show_latest_report()
         elif choice == "4":
-            print("\n📋 全体実行を開始します...")
+            print("\n[LIST] 全体実行を開始します...")
             check_system_status()
             success = simple_analysis_demo()
             if success:
@@ -154,12 +154,12 @@ def main():
             if success:
                 show_latest_report()
         
-        print(f"\n🎯 実行完了 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"\n[TARGET] 実行完了 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         
     except KeyboardInterrupt:
-        print("\n\n⚠️ 実行が中断されました。")
+        print("\n\n[WARNING] 実行が中断されました。")
     except Exception as e:
-        print(f"\n❌ 予期しないエラー: {e}")
+        print(f"\n[ERROR] 予期しないエラー: {e}")
 
 if __name__ == "__main__":
     main()

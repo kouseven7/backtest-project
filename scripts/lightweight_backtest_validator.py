@@ -17,7 +17,7 @@ sys.path.insert(0, str(project_root))
 
 def verify_switching_mechanism(quick: bool = False) -> Dict[str, Any]:
     """切替メカニズム基本動作確認"""
-    print("🔍 切替メカニズム基本動作確認実行中...")
+    print("[SEARCH] 切替メカニズム基本動作確認実行中...")
     
     test_symbols = ['7203', '9432', '9984'] if quick else ['7203', '9432', '9984', '6758', '8058']
     test_days = 7 if quick else 14
@@ -53,30 +53,30 @@ def verify_switching_mechanism(quick: bool = False) -> Dict[str, Any]:
         result['success'] = result['improvement_confirmed']
         
         # 結果出力
-        print(f"✅ 実行完了 ({execution_time:.1f}秒)")
-        print(f"📊 切替数: {switching_count}回")
-        print(f"🎯 期待レンジ: {expected_min}-{expected_max}回")
+        print(f"[OK] 実行完了 ({execution_time:.1f}秒)")
+        print(f"[CHART] 切替数: {switching_count}回")
+        print(f"[TARGET] 期待レンジ: {expected_min}-{expected_max}回")
         
         if result['improvement_confirmed']:
-            print("✅ 改善確認: 3回→改善済み")
+            print("[OK] 改善確認: 3回→改善済み")
         else:
-            print("❌ 改善未確認: 依然として低頻度")
+            print("[ERROR] 改善未確認: 依然として低頻度")
             
         if result['within_expected_range']:
-            print("✅ 期待レンジ内")
+            print("[OK] 期待レンジ内")
         else:
-            print("⚠️  期待レンジ外（要調整）")
+            print("[WARNING]  期待レンジ外（要調整）")
             
     except Exception as e:
         result['error'] = str(e)
-        print(f"❌ 実行エラー: {e}")
+        print(f"[ERROR] 実行エラー: {e}")
         
     return result
 
 
 def verify_deterministic_reproducibility() -> Dict[str, Any]:
     """決定論的再現性確認"""
-    print("\n🔍 決定論的再現性確認実行中...")
+    print("\n[SEARCH] 決定論的再現性確認実行中...")
     
     result = {
         'success': False,
@@ -115,18 +115,18 @@ def verify_deterministic_reproducibility() -> Dict[str, Any]:
         result['success'] = True
         
         # 結果出力
-        print(f"📊 Run 1切替数: {switches1}回")
-        print(f"📊 Run 2切替数: {switches2}回")
-        print(f"📈 差異: ±{result['difference_percent']:.1f}%")
+        print(f"[CHART] Run 1切替数: {switches1}回")
+        print(f"[CHART] Run 2切替数: {switches2}回")
+        print(f"[UP] 差異: ±{result['difference_percent']:.1f}%")
         
         if result['reproducible']:
-            print("✅ 決定論的再現性: OK (±5%以内)")
+            print("[OK] 決定論的再現性: OK (±5%以内)")
         else:
-            print("❌ 決定論的再現性: NG (±5%超過)")
+            print("[ERROR] 決定論的再現性: NG (±5%超過)")
             
     except Exception as e:
         result['error'] = str(e)
-        print(f"❌ 実行エラー: {e}")
+        print(f"[ERROR] 実行エラー: {e}")
         
     return result
 
@@ -209,7 +209,7 @@ def main():
         
     # 総合結果
     print("\n" + "="*40)
-    print("📋 軽量検証結果サマリー")
+    print("[LIST] 軽量検証結果サマリー")
     print("="*40)
     
     success_count = 0
@@ -219,20 +219,20 @@ def main():
         total_count += 1
         if result.get('success', False):
             success_count += 1
-            print(f"✅ {test_name}: 成功")
+            print(f"[OK] {test_name}: 成功")
         else:
-            print(f"❌ {test_name}: 失敗")
+            print(f"[ERROR] {test_name}: 失敗")
             if 'error' in result:
                 print(f"   エラー: {result['error']}")
                 
     success_rate = success_count / total_count * 100 if total_count > 0 else 0
-    print(f"\n🎯 成功率: {success_rate:.1f}% ({success_count}/{total_count})")
+    print(f"\n[TARGET] 成功率: {success_rate:.1f}% ({success_count}/{total_count})")
     
     if success_rate == 100:
-        print("🎉 軽量検証完了: Stage 3へ進行可能")
+        print("[SUCCESS] 軽量検証完了: Stage 3へ進行可能")
         sys.exit(0)
     else:
-        print("⚠️  問題検出: 要修正")
+        print("[WARNING]  問題検出: 要修正")
         sys.exit(1)
 
 

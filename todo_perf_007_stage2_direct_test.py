@@ -19,7 +19,7 @@ sys.path.append(str(project_root))
 def test_parallel_market_cap_directly():
     """並列処理効果を直接テスト"""
     
-    print("🚀 TODO-PERF-007 Stage 2: 並列処理直接テスト")
+    print("[ROCKET] TODO-PERF-007 Stage 2: 並列処理直接テスト")
     print("="*70)
     
     try:
@@ -44,7 +44,7 @@ def test_parallel_market_cap_directly():
         print("⚡ 段階的パフォーマンステスト実行中...")
         
         for size_name, symbols in test_sets.items():
-            print(f"\n🔧 {size_name}テスト ({len(symbols)}銘柄)...")
+            print(f"\n[TOOL] {size_name}テスト ({len(symbols)}銘柄)...")
             
             start_time = time.perf_counter()
             filtered_symbols = helper.get_market_cap_data_parallel(symbols, min_market_cap)
@@ -60,12 +60,12 @@ def test_parallel_market_cap_directly():
                 "filter_rate": round(len(filtered_symbols) / len(symbols) * 100, 1) if symbols else 0
             }
             
-            print(f"  ✅ 実行時間: {execution_time:.2f}秒")
-            print(f"  📊 処理能力: {symbols_per_second:.1f}銘柄/秒")
-            print(f"  🎯 フィルタ結果: {len(symbols)} → {len(filtered_symbols)}銘柄")
+            print(f"  [OK] 実行時間: {execution_time:.2f}秒")
+            print(f"  [CHART] 処理能力: {symbols_per_second:.1f}銘柄/秒")
+            print(f"  [TARGET] フィルタ結果: {len(symbols)} → {len(filtered_symbols)}銘柄")
         
         # 200銘柄への外挿計算
-        print(f"\n📈 200銘柄スケール外挿計算中...")
+        print(f"\n[UP] 200銘柄スケール外挿計算中...")
         
         if "large" in results:
             large_throughput = results["large"]["symbols_per_second"]
@@ -93,9 +93,9 @@ def test_parallel_market_cap_directly():
                     "performance_category": "excellent" if improvement_percentage >= 50 else "good" if improvement_percentage >= 40 else "needs_improvement"
                 }
                 
-                print(f"  📊 推定200銘柄時間: {realistic_200_time:.1f}秒")
-                print(f"  🎯 改善効果: {original_time}秒 → {realistic_200_time:.1f}秒 ({improvement_percentage:.1f}%削減)")
-                print(f"  ✨ 目標達成: {'✅ 達成' if improvement_percentage >= 40 else '❌ 未達成'}")
+                print(f"  [CHART] 推定200銘柄時間: {realistic_200_time:.1f}秒")
+                print(f"  [TARGET] 改善効果: {original_time}秒 → {realistic_200_time:.1f}秒 ({improvement_percentage:.1f}%削減)")
+                print(f"  ✨ 目標達成: {'[OK] 達成' if improvement_percentage >= 40 else '[ERROR] 未達成'}")
                 
                 results["extrapolation"] = extrapolation
         
@@ -103,7 +103,7 @@ def test_parallel_market_cap_directly():
         performance_stats = helper.get_performance_stats()
         results["performance_stats"] = performance_stats
         
-        print(f"\n📊 パフォーマンス統計:")
+        print(f"\n[CHART] パフォーマンス統計:")
         metrics = performance_stats.get("performance_metrics", {})
         print(f"  キャッシュヒット率: {metrics.get('cache_hit_rate', 'N/A')}")
         print(f"  API呼び出し率: {metrics.get('api_call_rate', 'N/A')}")
@@ -120,22 +120,22 @@ def test_parallel_market_cap_directly():
         if "extrapolation" in results:
             extrap = results["extrapolation"]
             if extrap["target_achievement"]:
-                print(f"\n🎉 Stage 2軽量版: 成功！")
-                print(f"🎯 目標達成: {extrap['improvement_percentage']:.1f}%削減 (目標40%以上)")
+                print(f"\n[SUCCESS] Stage 2軽量版: 成功！")
+                print(f"[TARGET] 目標達成: {extrap['improvement_percentage']:.1f}%削減 (目標40%以上)")
                 print(f"⚡ パフォーマンス向上: {extrap['original_time']}秒 → {extrap['estimated_200_symbols_time']}秒")
-                print(f"✅ Stage 3準備完了")
+                print(f"[OK] Stage 3準備完了")
                 return True
             else:
-                print(f"\n⚠️ Stage 2軽量版: 部分的成功")
-                print(f"🎯 達成改善: {extrap['improvement_percentage']:.1f}%削減 (目標40%)")
-                print(f"🔧 追加最適化推奨")
+                print(f"\n[WARNING] Stage 2軽量版: 部分的成功")
+                print(f"[TARGET] 達成改善: {extrap['improvement_percentage']:.1f}%削減 (目標40%)")
+                print(f"[TOOL] 追加最適化推奨")
                 return False
         else:
-            print(f"\n❌ Stage 2軽量版: 外挿計算失敗")
+            print(f"\n[ERROR] Stage 2軽量版: 外挿計算失敗")
             return False
         
     except Exception as e:
-        print(f"❌ 直接テストエラー: {e}")
+        print(f"[ERROR] 直接テストエラー: {e}")
         return False
 
 if __name__ == "__main__":

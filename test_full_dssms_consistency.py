@@ -22,7 +22,7 @@ def run_full_dssms_backtest():
         
         results = []
         
-        print("\n🧪 2回実行で一貫性確認:")
+        print("\n[TEST] 2回実行で一貫性確認:")
         
         for run in range(2):
             print(f"\n   実行 {run + 1}/2...")
@@ -62,13 +62,13 @@ def run_full_dssms_backtest():
                             print(f"       vs_{symbol}: {value:.2f}%")
                 
             except Exception as e:
-                print(f"     ❌ 実行{run + 1}エラー: {e}")
+                print(f"     [ERROR] 実行{run + 1}エラー: {e}")
                 import traceback
                 traceback.print_exc()
         
         # 結果比較
         if len(results) == 2:
-            print(f"\n📊 結果比較:")
+            print(f"\n[CHART] 結果比較:")
             
             result1, result2 = results[0], results[1]
             
@@ -95,15 +95,15 @@ def run_full_dssms_backtest():
                     print(f"     差異: {diff:.6f} ({diff_pct:.4f}%)")
                     
                     if diff < 0.01:  # 許容誤差
-                        print(f"     ✅ 一貫性: 良好")
+                        print(f"     [OK] 一貫性: 良好")
                     else:
-                        print(f"     ⚠️ 一貫性: 差異あり")
+                        print(f"     [WARNING] 一貫性: 差異あり")
                         all_consistent = False
                 else:
                     if val1 == val2:
-                        print(f"   {name}: ✅ 完全一致")
+                        print(f"   {name}: [OK] 完全一致")
                     else:
-                        print(f"   {name}: ⚠️ 不一致 ({val1} ≠ {val2})")
+                        print(f"   {name}: [WARNING] 不一致 ({val1} ≠ {val2})")
                         all_consistent = False
             
             # vs_戦略比較の一貫性
@@ -124,26 +124,26 @@ def run_full_dssms_backtest():
                         print(f"     vs_{symbol}: {val1:.2f}% vs {val2:.2f}% (差異: {diff:.4f}%)")
                         
                         if diff < 0.01:
-                            print(f"       ✅ 一貫")
+                            print(f"       [OK] 一貫")
                         else:
-                            print(f"       ⚠️ 差異あり")
+                            print(f"       [WARNING] 差異あり")
                             all_consistent = False
             
             # 総合評価
-            print(f"\n🎯 総合評価:")
+            print(f"\n[TARGET] 総合評価:")
             if all_consistent:
-                print("   ✅ 完全な決定論的動作を確認")
-                print("   ✅ 同じ条件で同じ結果を再現")
-                print("   ✅ ランダム要素の制御成功")
+                print("   [OK] 完全な決定論的動作を確認")
+                print("   [OK] 同じ条件で同じ結果を再現")
+                print("   [OK] ランダム要素の制御成功")
             else:
-                print("   ⚠️ 部分的な一貫性のみ")
-                print("   ⚠️ 追加の修正が必要")
+                print("   [WARNING] 部分的な一貫性のみ")
+                print("   [WARNING] 追加の修正が必要")
         
         else:
-            print("❌ 2つの有効な結果が得られませんでした")
+            print("[ERROR] 2つの有効な結果が得られませんでした")
     
     except Exception as e:
-        print(f"❌ フルバックテストエラー: {e}")
+        print(f"[ERROR] フルバックテストエラー: {e}")
         import traceback
         traceback.print_exc()
 

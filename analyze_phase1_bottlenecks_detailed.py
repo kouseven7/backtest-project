@@ -34,11 +34,11 @@ class Phase1BottleneckAnalyzer:
     
     def measure_import_times_detailed(self) -> Dict[str, float]:
         """重いライブラリの詳細インポート時間測定"""
-        print("📊 重いライブラリ詳細インポート時間測定開始...")
+        print("[CHART] 重いライブラリ詳細インポート時間測定開始...")
         import_times = {}
         
         for library in self.heavy_libraries:
-            print(f"  📈 {library} インポート時間測定中...")
+            print(f"  [UP] {library} インポート時間測定中...")
             
             # 複数回測定で精度向上
             times = []
@@ -71,20 +71,20 @@ class Phase1BottleneckAnalyzer:
                     'min_ms': min(times),
                     'max_ms': max(times)
                 }
-                print(f"  ✅ {library}: 平均 {avg_time:.1f}ms (範囲: {min(times):.1f}-{max(times):.1f}ms)")
+                print(f"  [OK] {library}: 平均 {avg_time:.1f}ms (範囲: {min(times):.1f}-{max(times):.1f}ms)")
             else:
                 import_times[library] = {
                     'average_ms': 0,
                     'measurements': [],
                     'error': 'All measurements failed'
                 }
-                print(f"  ❌ {library}: 測定失敗")
+                print(f"  [ERROR] {library}: 測定失敗")
         
         return import_times
     
     def find_heavy_library_usages(self) -> Dict[str, List[Dict]]:
         """重いライブラリの使用箇所特定"""
-        print("🔍 重いライブラリ使用箇所特定中...")
+        print("[SEARCH] 重いライブラリ使用箇所特定中...")
         usages = {lib: [] for lib in self.heavy_libraries}
         
         # Pythonファイルを再帰的に検索
@@ -117,19 +117,19 @@ class Phase1BottleneckAnalyzer:
                                 })
                                 
             except Exception as e:
-                print(f"  ⚠️ ファイル読み取りエラー: {file_path} - {str(e)}")
+                print(f"  [WARNING] ファイル読み取りエラー: {file_path} - {str(e)}")
         
         # 結果サマリー
         for lib, usage_list in usages.items():
             import_count = len([u for u in usage_list if u['type'] == 'import'])
             usage_count = len([u for u in usage_list if u['type'] == 'usage'])
-            print(f"  📋 {lib}: インポート {import_count}箇所, 使用 {usage_count}箇所")
+            print(f"  [LIST] {lib}: インポート {import_count}箇所, 使用 {usage_count}箇所")
         
         return usages
     
     def find_lazy_loader_remnants(self) -> List[Dict]:
         """lazy_loader残存参照の完全特定"""
-        print("🔍 lazy_loader残存参照完全特定中...")
+        print("[SEARCH] lazy_loader残存参照完全特定中...")
         remnants = []
         
         # Pythonファイルを再帰的に検索
@@ -152,9 +152,9 @@ class Phase1BottleneckAnalyzer:
                             })
                             
             except Exception as e:
-                print(f"  ⚠️ ファイル読み取りエラー: {file_path} - {str(e)}")
+                print(f"  [WARNING] ファイル読み取りエラー: {file_path} - {str(e)}")
         
-        print(f"  📋 lazy_loader残存参照: {len(remnants)}箇所発見")
+        print(f"  [LIST] lazy_loader残存参照: {len(remnants)}箇所発見")
         for remnant in remnants:
             print(f"    - {remnant['file']}:{remnant['line']} | {remnant['content']}")
         
@@ -162,7 +162,7 @@ class Phase1BottleneckAnalyzer:
     
     def analyze_lazy_loading_strategy(self, import_times: Dict, usages: Dict) -> Dict:
         """遅延インポート戦略分析"""
-        print("📈 遅延インポート戦略分析中...")
+        print("[UP] 遅延インポート戦略分析中...")
         strategy = {}
         
         for lib, time_data in import_times.items():
@@ -241,7 +241,7 @@ class Phase1BottleneckAnalyzer:
     
     def generate_implementation_plan(self, strategy: Dict, remnants: List[Dict]) -> Dict:
         """実装計画生成"""
-        print("📋 Phase 1実装計画生成中...")
+        print("[LIST] Phase 1実装計画生成中...")
         
         plan = {
             'phase1_overview': {
@@ -331,7 +331,7 @@ class Phase1BottleneckAnalyzer:
     
     def run_complete_analysis(self) -> Dict:
         """Phase 1完全分析実行"""
-        print("🚀 TODO-PERF-001 Phase 1: 現状ボトルネック完全分析開始")
+        print("[ROCKET] TODO-PERF-001 Phase 1: 現状ボトルネック完全分析開始")
         print("=" * 80)
         
         start_time = time.time()
@@ -382,14 +382,14 @@ class Phase1BottleneckAnalyzer:
             return
         
         print("\n" + "="*80)
-        print("📊 TODO-PERF-001 Phase 1: 重要発見事項サマリー")
+        print("[CHART] TODO-PERF-001 Phase 1: 重要発見事項サマリー")
         print("="*80)
         
         # インポート時間結果
         import_times = self.analysis_results['import_times']
         total_reduction = 0
         
-        print("🎯 重いライブラリ最適化ポテンシャル:")
+        print("[TARGET] 重いライブラリ最適化ポテンシャル:")
         for lib, data in import_times.items():
             if 'average_ms' in data:
                 avg_time = data['average_ms']
@@ -406,11 +406,11 @@ class Phase1BottleneckAnalyzer:
         # 実装計画概要
         plan = self.analysis_results['implementation_plan']
         expected_total = plan['phase1_overview']['expected_total_reduction_ms']
-        print(f"📋 実装計画期待効果: {expected_total:.1f}ms削減")
+        print(f"[LIST] 実装計画期待効果: {expected_total:.1f}ms削減")
         
         # 成功判定基準
         criteria = plan['success_criteria']['quantitative']
-        print(f"✅ 合格判定基準: {criteria['minimum_reduction_ms']:.1f}ms以上削減")
+        print(f"[OK] 合格判定基準: {criteria['minimum_reduction_ms']:.1f}ms以上削減")
         
         print(f"\n⏱️ 分析時間: {self.analysis_results['analysis_duration_seconds']:.1f}秒")
         print("="*80)
@@ -430,12 +430,12 @@ def main():
         # 重要発見事項サマリー
         analyzer.print_executive_summary()
         
-        print(f"\n🎉 Phase 1 Stage 1完了 - 次は Stage 2 yfinance遅延インポート実装に進行")
+        print(f"\n[SUCCESS] Phase 1 Stage 1完了 - 次は Stage 2 yfinance遅延インポート実装に進行")
         
         return True
         
     except Exception as e:
-        print(f"❌ Phase 1 Stage 1分析エラー: {str(e)}")
+        print(f"[ERROR] Phase 1 Stage 1分析エラー: {str(e)}")
         import traceback
         traceback.print_exc()
         return False

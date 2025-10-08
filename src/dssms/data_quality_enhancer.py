@@ -331,9 +331,9 @@ class DSSMSDataQualityEnhancer:
             self.logger.info(f"品質向上適用: {'はい' if metrics.enhancement_applied else 'いいえ'}")
             
             if metrics.quality_score >= self.config.quality_threshold:
-                self.logger.info("✅ 品質基準を満たしています")
+                self.logger.info("[OK] 品質基準を満たしています")
             else:
-                self.logger.warning(f"⚠️  品質基準未達（目標: {self.config.quality_threshold:.3f}）")
+                self.logger.warning(f"[WARNING]  品質基準未達（目標: {self.config.quality_threshold:.3f}）")
             
             self.logger.info("=" * 50)
             

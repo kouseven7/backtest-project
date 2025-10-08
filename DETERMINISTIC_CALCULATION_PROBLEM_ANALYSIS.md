@@ -5,7 +5,7 @@
 **問題**: 切替回数117回→3-1回への激減  
 **根本原因**: 決定論的計算の導入による動的判定機能の停止  
 
-## 🚨 **Critical Discovery: 決定論的計算が切替機能を破壊**
+## [ALERT] **Critical Discovery: 決定論的計算が切替機能を破壊**
 
 ### **問題の核心**
 ```
@@ -35,7 +35,7 @@ def _generate_deterministic_score(self, symbol: str, date: datetime) -> float:
 # 4. 切替判定アルゴリズムの前提条件を破壊
 ```
 
-## 🎯 **解決戦略: 高度な実データ分析システム復旧**
+## [TARGET] **解決戦略: 高度な実データ分析システム復旧**
 
 ### **Phase 1: 決定論的計算完全除去 (優先度: CRITICAL)**
 
@@ -45,7 +45,7 @@ def _generate_deterministic_score(self, symbol: str, date: datetime) -> float:
 class ComprehensiveScoringEngine:
     def __init__(self, data_manager=None):
         self.data_manager = data_manager
-        self.use_deterministic = False  # 🔧 完全に無効化
+        self.use_deterministic = False  # [TOOL] 完全に無効化
         
     def calculate_composite_score(self, symbol: str, date: datetime = None) -> float:
         """実データベースの動的スコア計算"""
@@ -250,14 +250,14 @@ class AdvancedSwitchingLogic:
         return final_decision
 ```
 
-## 🔧 **実装優先順位・タイムライン**
+## [TOOL] **実装優先順位・タイムライン**
 
 ### **即座に実行すべき修正**
 ```python
 # TODO(tag:immediate, rationale:決定論除去): src/dssms/dssms_backtester.py
 class DSSMSBacktester:
     def _update_symbol_ranking(self, date: datetime, symbols: List[str]) -> Dict[str, Any]:
-        # 🚨 決定論的計算を完全除去
+        # [ALERT] 決定論的計算を完全除去
         use_integration_patch = True  # 強制的に有効化
         use_deterministic_scoring = False  # 強制的に無効化
         
@@ -289,7 +289,7 @@ Hour 5: 高度切替判定ロジック実装
 Hour 6: 統合テスト・検証
 ```
 
-## 📊 **期待される効果**
+## [CHART] **期待される効果**
 
 ### **切替回数回復**
 ```
@@ -312,7 +312,7 @@ Hour 6: 統合テスト・検証
 根拠: 市場指数との相関・ベータ値による調整
 ```
 
-## 🚨 **リスク評価・対策**
+## [ALERT] **リスク評価・対策**
 
 ### **実装リスク**
 - **Technical Risk**: 実データAPI依存によるエラー増加可能性
@@ -326,24 +326,24 @@ Hour 6: 統合テスト・検証
 - **Investment Risk**: 切替回数増加による取引コスト増
 - **対策**: 切替判定しきい値の最適化・リスク調整機構
 
-## 📋 **Success Criteria（成功判定基準）**
+## [LIST] **Success Criteria（成功判定基準）**
 
 ### **Technical Success**
-- ✅ 決定論的計算の完全除去確認
-- ✅ ComprehensiveScoringEngine実データ取得成功率 >90%
-- ✅ 動的スコア計算の正常動作確認
+- [OK] 決定論的計算の完全除去確認
+- [OK] ComprehensiveScoringEngine実データ取得成功率 >90%
+- [OK] 動的スコア計算の正常動作確認
 
 ### **Functional Success**  
-- ✅ 切替回数: 3回 → 30回以上への回復
-- ✅ top_symbol=None問題の完全解決
-- ✅ ランキング変動の確認（日次変化率 >10%）
+- [OK] 切替回数: 3回 → 30回以上への回復
+- [OK] top_symbol=None問題の完全解決
+- [OK] ランキング変動の確認（日次変化率 >10%）
 
 ### **Investment Success**
-- ✅ バックテスト結果の市場連動性向上
-- ✅ 117回レベルへの段階的回復達成
-- ✅ 投資戦略の実用性確認
+- [OK] バックテスト結果の市場連動性向上
+- [OK] 117回レベルへの段階的回復達成
+- [OK] 投資戦略の実用性確認
 
-## 🎯 **Next Actions (エージェントモード実行用)**
+## [TARGET] **Next Actions (エージェントモード実行用)**
 
 ### **Phase 1実行コマンド**
 ```bash

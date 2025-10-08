@@ -440,7 +440,7 @@ class DataCleaningEngine:
         avg_retention = np.mean([r.get("data_retention", 0) for r in cleaning_results])
         
         report_lines.extend([
-            "📊 サマリー統計",
+            "[CHART] サマリー統計",
             "-" * 20,
             f"処理対象銘柄数: {total_symbols}",
             f"成功: {success_count} ({success_count/total_symbols*100:.1f}%)",
@@ -453,7 +453,7 @@ class DataCleaningEngine:
         
         # 処理詳細
         report_lines.extend([
-            "🔧 処理詳細",
+            "[TOOL] 処理詳細",
             "-" * 20
         ])
         
@@ -463,9 +463,9 @@ class DataCleaningEngine:
             retention = result.get("data_retention", 0)
             
             status_emoji = {
-                "success": "✅", 
-                "warning": "⚠️", 
-                "failed": "❌", 
+                "success": "[OK]", 
+                "warning": "[WARNING]", 
+                "failed": "[ERROR]", 
                 "fallback_success": "🔄"
             }.get(status, "❓")
             

@@ -234,7 +234,7 @@ def test_fixed_detector():
     sys.path.append(str(Path(__file__).parent))
     from config.error_handling import fetch_stock_data
     
-    logger.info("🧪 修正版Perfect Order検出器テスト開始")
+    logger.info("[TEST] 修正版Perfect Order検出器テスト開始")
     
     # データ取得
     data = fetch_stock_data("7203", "2023-01-01", "2023-12-31")
@@ -257,15 +257,15 @@ def test_fixed_detector():
     logger.info(f"Exit Signal数: {(backtest_data['Exit_Signal'] == 1).sum()}")
     
     if len(signals) > 0:
-        logger.info("✅ Perfect Order検出器修正成功！")
-        logger.info("🚀 DSSMSシステムの復活が可能です")
+        logger.info("[OK] Perfect Order検出器修正成功！")
+        logger.info("[ROCKET] DSSMSシステムの復活が可能です")
         
         # 最初の5つのシグナルを表示
         logger.info("\n最初のシグナル例:")
         for i, signal in enumerate(signals[:5]):
             logger.info(f"  {signal['date'].strftime('%Y-%m-%d')}: {signal['signal_type']} (強度={signal['strength']:.1f})")
     else:
-        logger.error("❌ まだシグナルが検出されていません")
+        logger.error("[ERROR] まだシグナルが検出されていません")
     
     return detector, backtest_data
 

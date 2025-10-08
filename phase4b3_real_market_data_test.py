@@ -56,10 +56,10 @@ def phase4b3_real_market_data_integration_test() -> Tuple[bool, Dict[str, Any]]:
                 overall_success = False
                 logger.warning(f"Real market data test failed for {symbol}")
         
-        # ✅ Real market data統合品質評価
+        # [OK] Real market data統合品質評価
         integration_quality_score = calculate_real_data_integration_quality(test_results)
         
-        # ✅ バックテスト基本理念遵守確認（Real data環境）
+        # [OK] バックテスト基本理念遵守確認（Real data環境）
         backtest_principle_compliance = verify_backtest_principle_in_real_data(test_results)
         
         final_result = {
@@ -106,7 +106,7 @@ def test_single_symbol_integration(symbol: str) -> Dict[str, Any]:
     try:
         logger.info(f"Starting integration test for symbol: {symbol}")
         
-        # ✅ Real market dataの取得
+        # [OK] Real market dataの取得
         data_fetcher_result = fetch_real_market_data(symbol)
         if not data_fetcher_result.get('data_fetch_success', False):
             logger.warning(f"Failed to fetch real market data for {symbol}")
@@ -116,13 +116,13 @@ def test_single_symbol_integration(symbol: str) -> Dict[str, Any]:
                 'symbol': symbol
             }
         
-        # ✅ 統合システムでのバックテスト実行
+        # [OK] 統合システムでのバックテスト実行
         backtest_result = execute_integrated_backtest_with_real_data(
             symbol, 
             data_fetcher_result['data']
         )
         
-        # ✅ 結果品質検証
+        # [OK] 結果品質検証
         quality_metrics = validate_real_data_backtest_quality(backtest_result, symbol)
         
         symbol_result = {
@@ -268,7 +268,7 @@ def execute_integrated_backtest_with_real_data(symbol: str, data: pd.DataFrame) 
     try:
         logger.info(f"Executing integrated backtest for {symbol} with real market data")
         
-        # ✅ バックテスト基本理念遵守: 実際のbacktest実行必須
+        # [OK] バックテスト基本理念遵守: 実際のbacktest実行必須
         # 統合システムの戦略を順次実行
         strategies_to_test = [
             'VWAPBreakoutStrategy',
@@ -304,7 +304,7 @@ def execute_integrated_backtest_with_real_data(symbol: str, data: pd.DataFrame) 
             except Exception as strategy_error:
                 logger.error(f"Strategy {strategy_name} execution failed for {symbol}: {strategy_error}")
         
-        # ✅ Excel出力実行
+        # [OK] Excel出力実行
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: excel_output_success = False
         excel_file_path = None
@@ -374,7 +374,7 @@ def execute_single_strategy_with_real_data(strategy_name: str, data: pd.DataFram
                 'error': f'Strategy class not found: {strategy_name}'
             }
         
-        # ✅ バックテスト基本理念遵守: 実際のbacktest()実行
+        # [OK] バックテスト基本理念遵守: 実際のbacktest()実行
         strategy_instance = strategy_class(**params)
         result_data = strategy_instance.backtest(data.copy())
         
@@ -587,7 +587,7 @@ def phase4b3_real_data_test_report(test_results: Tuple[bool, Dict[str, Any]]) ->
 
 ## 実行サマリー
 - **実行日時**: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-- **Real Market Data統合テスト**: {'✅ 成功' if success else '❌ 失敗'}
+- **Real Market Data統合テスト**: {'[OK] 成功' if success else '[ERROR] 失敗'}
 - **テスト対象銘柄**: {', '.join(results.get('tested_symbols', []))}
 
 ## テスト結果サマリー
@@ -603,7 +603,7 @@ def phase4b3_real_data_test_report(test_results: Tuple[bool, Dict[str, Any]]) ->
     
     individual_results = results.get('individual_results', {})
     for symbol, result in individual_results.items():
-        status = '✅' if result.get('integration_success', False) else '❌'
+        status = '[OK]' if result.get('integration_success', False) else '[ERROR]'
         trades = result.get('trades_count', 0)
         quality = result.get('quality_score', 0)
         
@@ -614,7 +614,7 @@ def phase4b3_real_data_test_report(test_results: Tuple[bool, Dict[str, Any]]) ->
 - **品質スコア**: {quality:.2f}
 - **データ行数**: {result.get('data_rows', 0)}
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
-# ORIGINAL: - **Excel出力**: {'✅' if result.get('excel_output_success', False) else '❌'}
+# ORIGINAL: - **Excel出力**: {'[OK]' if result.get('excel_output_success', False) else '[ERROR]'}
 """
     
     # バックテスト基本理念遵守確認
@@ -623,7 +623,7 @@ def phase4b3_real_data_test_report(test_results: Tuple[bool, Dict[str, Any]]) ->
 ## バックテスト基本理念遵守確認
 - **全体遵守率**: {backtest_compliance.get('overall_compliance_rate', 0):.1%}
 - **遵守銘柄数**: {backtest_compliance.get('compliant_symbols', 0)}/{backtest_compliance.get('total_symbols', 0)}
-- **遵守基準達成**: {'✅' if backtest_compliance.get('compliance_threshold_met', False) else '❌'}
+- **遵守基準達成**: {'[OK]' if backtest_compliance.get('compliance_threshold_met', False) else '[ERROR]'}
 """
     
     return report
@@ -648,32 +648,32 @@ if __name__ == "__main__":
         
         # 結果表示
         print("\n" + "="*80)
-        print("🚀 Phase 4-B-3-2: Real Market Data統合テスト 実行完了")
+        print("[ROCKET] Phase 4-B-3-2: Real Market Data統合テスト 実行完了")
         print("="*80)
-        print(f"📊 Real Data統合テスト結果: {'✅ 成功' if test_success else '❌ 失敗'}")
+        print(f"[CHART] Real Data統合テスト結果: {'[OK] 成功' if test_success else '[ERROR] 失敗'}")
         
         if test_success:
             test_summary = test_results.get('test_summary', {})
-            print(f"🎯 テスト対象銘柄: {test_summary.get('total_symbols', 0)}")
-            print(f"✅ 統合成功銘柄: {test_summary.get('successful_symbols', 0)}")
-            print(f"📈 総取引数: {test_summary.get('total_trades_generated', 0)}")
-            print(f"📊 統合品質スコア: {test_results.get('integration_quality_score', 0):.2f}")
+            print(f"[TARGET] テスト対象銘柄: {test_summary.get('total_symbols', 0)}")
+            print(f"[OK] 統合成功銘柄: {test_summary.get('successful_symbols', 0)}")
+            print(f"[UP] 総取引数: {test_summary.get('total_trades_generated', 0)}")
+            print(f"[CHART] 統合品質スコア: {test_results.get('integration_quality_score', 0):.2f}")
             
             backtest_compliance = test_results.get('backtest_principle_compliance', {})
             print(f"🔒 バックテスト基本理念遵守: {backtest_compliance.get('overall_compliance_rate', 0):.1%}")
         else:
-            print(f"❌ 問題発見: {test_results.get('error', 'Unknown error')}")
+            print(f"[ERROR] 問題発見: {test_results.get('error', 'Unknown error')}")
         
         print(f"📄 詳細レポート: {report_file}")
         print("="*80)
         
         # 次工程への移行判定
         if test_success:
-            print("✅ Phase 4-B-3-3 (Production mode準備完了検証) への移行準備完了")
+            print("[OK] Phase 4-B-3-3 (Production mode準備完了検証) への移行準備完了")
         else:
-            print("⚠️  Real Market Data統合問題解決後にPhase 4-B-3-3へ移行")
+            print("[WARNING]  Real Market Data統合問題解決後にPhase 4-B-3-3へ移行")
             
     except Exception as e:
         logger.error(f"Phase 4-B-3-2 execution failed: {e}")
-        print(f"❌ Phase 4-B-3-2実行エラー: {e}")
+        print(f"[ERROR] Phase 4-B-3-2実行エラー: {e}")
         # TODO(tag:phase4b3, rationale:Phase 4-B-3-2 real market data integration success required)

@@ -21,19 +21,19 @@ def test_phase2_optimization_fix():
     try:
         from src.dssms.dssms_integrated_main import DSSMSIntegratedBacktester
         import_time = (time.perf_counter() - start_import) * 1000
-        print(f"   📊 DSSMSIntegratedBacktester: {import_time:.1f}ms")
+        print(f"   [CHART] DSSMSIntegratedBacktester: {import_time:.1f}ms")
         
         target_time = 1.2
         if import_time <= target_time:
-            print(f"   ✅ Phase 2目標達成! ({target_time}ms以下)")
+            print(f"   [OK] Phase 2目標達成! ({target_time}ms以下)")
             improvement = True
         else:
             remaining = import_time - target_time
-            print(f"   ⚠️ Phase 2目標未達成: 残り{remaining:.1f}ms短縮必要")
+            print(f"   [WARNING] Phase 2目標未達成: 残り{remaining:.1f}ms短縮必要")
             improvement = False
             
     except Exception as e:
-        print(f"   ❌ インポートエラー: {e}")
+        print(f"   [ERROR] インポートエラー: {e}")
         return False
     
     print()
@@ -51,30 +51,30 @@ def test_phase2_optimization_fix():
         backtester = DSSMSIntegratedBacktester(config)
         init_time = (time.perf_counter() - start_init) * 1000
         
-        print(f"   📊 初期化時間: {init_time:.1f}ms")
+        print(f"   [CHART] 初期化時間: {init_time:.1f}ms")
         
         # コンポーネント初期化
         switch_manager = backtester.ensure_components()
         
         if switch_manager:
             switch_manager_type = type(switch_manager).__name__
-            print(f"   🔍 使用中SymbolSwitchManager: {switch_manager_type}")
+            print(f"   [SEARCH] 使用中SymbolSwitchManager: {switch_manager_type}")
             
             if switch_manager_type == "SymbolSwitchManagerFast":
-                print(f"   ✅ 軽量版使用中（Phase 2修正成功）")
+                print(f"   [OK] 軽量版使用中（Phase 2修正成功）")
                 fast_version_used = True
             elif switch_manager_type == "SymbolSwitchManager":
-                print(f"   ❌ 重い元版使用中（Phase 2修正未適用）")
+                print(f"   [ERROR] 重い元版使用中（Phase 2修正未適用）")
                 fast_version_used = False
             else:
-                print(f"   ⚠️ 不明なSymbolSwitchManager: {switch_manager_type}")
+                print(f"   [WARNING] 不明なSymbolSwitchManager: {switch_manager_type}")
                 fast_version_used = False
         else:
-            print(f"   ❌ SymbolSwitchManager初期化失敗")
+            print(f"   [ERROR] SymbolSwitchManager初期化失敗")
             fast_version_used = False
             
     except Exception as e:
-        print(f"   ❌ 初期化エラー: {e}")
+        print(f"   [ERROR] 初期化エラー: {e}")
         fast_version_used = False
     
     print()  
@@ -85,16 +85,16 @@ def test_phase2_optimization_fix():
         stats = # lazy_modules除去: get_import_stats()
         
         if stats:
-            print("   📈 遅延ロード統計 (使用記録):")
+            print("   [UP] 遅延ロード統計 (使用記録):")
             for module, load_time in stats.items():
                 print(f"      {module}: {load_time:.1f}ms")
             stats_recorded = True
         else:
-            print("   ❌ 遅延ロード統計が空（未使用）")
+            print("   [ERROR] 遅延ロード統計が空（未使用）")
             stats_recorded = False
             
     except Exception as e:
-        print(f"   ❌ lazy_loader統計エラー: {e}")
+        print(f"   [ERROR] lazy_loader統計エラー: {e}")
         stats_recorded = False
     
     print()
@@ -110,14 +110,14 @@ def test_phase2_optimization_fix():
     total_count = len(results)
     success_rate = (success_count / total_count) * 100
     
-    print(f"📊 修正成功率: {success_rate:.1f}% ({success_count}/{total_count})")
+    print(f"[CHART] 修正成功率: {success_rate:.1f}% ({success_count}/{total_count})")
     
     if success_rate >= 66.7:  # 2/3以上
-        print("✅ Phase 2修正おおむね成功")
+        print("[OK] Phase 2修正おおむね成功")
         if success_rate < 100:
-            print("⚠️ 一部課題残存 - 追加修正必要")
+            print("[WARNING] 一部課題残存 - 追加修正必要")
     else:
-        print("❌ Phase 2修正要再検討")
+        print("[ERROR] Phase 2修正要再検討")
     
     return results
 
@@ -126,7 +126,7 @@ def identify_remaining_issues():
     print("\n4. 残存課題特定")
     
     # SymbolSwitchManagerFast性能問題調査
-    print("   🔍 SymbolSwitchManagerFast性能逆転問題:")
+    print("   [SEARCH] SymbolSwitchManagerFast性能逆転問題:")
     try:
         start_fast = time.perf_counter()
         from src.dssms.symbol_switch_manager_fast import SymbolSwitchManagerFast
@@ -141,13 +141,13 @@ def identify_remaining_issues():
         
         if fast_import_time > orig_import_time:
             ratio = fast_import_time / orig_import_time
-            print(f"      ❌ 逆転問題確認: 軽量版が{ratio:.1f}倍重い")
-            print(f"      📋 次のタスク: SymbolSwitchManagerFast実装見直し必要")
+            print(f"      [ERROR] 逆転問題確認: 軽量版が{ratio:.1f}倍重い")
+            print(f"      [LIST] 次のタスク: SymbolSwitchManagerFast実装見直し必要")
         else:
-            print(f"      ✅ 性能逆転解決済み")
+            print(f"      [OK] 性能逆転解決済み")
             
     except Exception as e:
-        print(f"      ❌ 性能測定エラー: {e}")
+        print(f"      [ERROR] 性能測定エラー: {e}")
 
 def main():
     """メイン実行"""
@@ -155,7 +155,7 @@ def main():
         results = test_phase2_optimization_fix()
         identify_remaining_issues()
         
-        print("\n📋 次のステップ:")
+        print("\n[LIST] 次のステップ:")
         if not results['fast_version_used']:
             print("1. 【最優先】SymbolSwitchManagerFast使用確認・統合調査")
         if not results['stats_recorded']:

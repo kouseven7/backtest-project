@@ -20,7 +20,7 @@ class CorrectedCurrentEngineAnalyzer:
         
     def analyze_current_engine_corrected(self):
         """修正版: 現在エンジンの詳細品質分析"""
-        print("🔧 Task 6.1修正版: 現在エンジンの詳細品質分析")
+        print("[TOOL] Task 6.1修正版: 現在エンジンの詳細品質分析")
         print("=" * 80)
         
         # 1. Task 4.2から正確なスコア取得
@@ -39,7 +39,7 @@ class CorrectedCurrentEngineAnalyzer:
     
     def _get_accurate_task42_score(self):
         """1. Task 4.2から正確なスコア取得"""
-        print("\n🔍 1. Task 4.2からの正確なスコア取得")
+        print("\n[SEARCH] 1. Task 4.2からの正確なスコア取得")
         print("-" * 60)
         
         try:
@@ -62,7 +62,7 @@ class CorrectedCurrentEngineAnalyzer:
                 
                 self.analysis_results['accurate_task42_scores'] = accurate_scores
                 
-                print(f"✅ 正確なTask 4.2スコア:")
+                print(f"[OK] 正確なTask 4.2スコア:")
                 print(f"   総合スコア: {accurate_scores['total_score']}点")
                 print(f"   実装率: {accurate_scores['implementation_percentage']}%")
                 print(f"   品質率: {accurate_scores['quality_percentage']}%")
@@ -70,23 +70,23 @@ class CorrectedCurrentEngineAnalyzer:
                 print(f"   実装数: {accurate_scores['implemented_count']}/{accurate_scores['total_calculations']}")
                 
                 if accurate_scores['total_score'] >= 80:
-                    print(f"🎯 品質判定: 高品質エンジン（80点以上）")
+                    print(f"[TARGET] 品質判定: 高品質エンジン（80点以上）")
                 elif accurate_scores['total_score'] >= 50:
-                    print(f"📊 品質判定: 中品質エンジン（50-79点）")
+                    print(f"[CHART] 品質判定: 中品質エンジン（50-79点）")
                 else:
-                    print(f"⚠️ 品質判定: 低品質エンジン（50点未満）")
+                    print(f"[WARNING] 品質判定: 低品質エンジン（50点未満）")
                 
             else:
-                print("❌ Task 4.2結果ファイルが見つかりません")
+                print("[ERROR] Task 4.2結果ファイルが見つかりません")
                 self.analysis_results['accurate_task42_scores'] = {'error': 'file_not_found'}
                 
         except Exception as e:
-            print(f"❌ スコア取得エラー: {e}")
+            print(f"[ERROR] スコア取得エラー: {e}")
             self.analysis_results['accurate_task42_scores'] = {'error': str(e)}
     
     def _analyze_scoring_contradiction(self):
         """2. 矛盾の詳細分析"""
-        print("\n🔍 2. 品質スコア矛盾の詳細分析")
+        print("\n[SEARCH] 2. 品質スコア矛盾の詳細分析")
         print("-" * 60)
         
         accurate_scores = self.analysis_results.get('accurate_task42_scores', {})
@@ -102,24 +102,24 @@ class CorrectedCurrentEngineAnalyzer:
         if accurate_scores.get('total_score', 0) > 0:
             contradiction_analysis['contradiction_confirmed'] = True
             
-            print(f"🚨 重大な矛盾が確認されました！")
-            print(f"   ❌ 従来の認識: {contradiction_analysis['original_belief']}")
-            print(f"   ✅ 実際の状況: {contradiction_analysis['actual_reality']}")
-            print(f"   📈 スコア差: {contradiction_analysis['score_gap']}点")
+            print(f"[ALERT] 重大な矛盾が確認されました！")
+            print(f"   [ERROR] 従来の認識: {contradiction_analysis['original_belief']}")
+            print(f"   [OK] 実際の状況: {contradiction_analysis['actual_reality']}")
+            print(f"   [UP] スコア差: {contradiction_analysis['score_gap']}点")
             
             # Problem 15の見直しが必要
-            print(f"⚠️ Problem 15の前提条件が無効:")
+            print(f"[WARNING] Problem 15の前提条件が無効:")
             print(f"   - 「0点エンジン問題」→「実際は85.0点の高品質エンジン」")
             print(f"   - 品質問題ではなく、評価システムの信頼性問題")
             
         else:
-            print(f"✅ 矛盾は確認されませんでした")
+            print(f"[OK] 矛盾は確認されませんでした")
         
         self.analysis_results['contradiction_analysis'] = contradiction_analysis
     
     def _verify_actual_quality(self):
         """3. 実際の品質状況確認"""
-        print("\n🔍 3. 実際の品質状況確認")
+        print("\n[SEARCH] 3. 実際の品質状況確認")
         print("-" * 60)
         
         try:
@@ -168,32 +168,32 @@ class CorrectedCurrentEngineAnalyzer:
                 print(f"📁 ファイル情報:")
                 print(f"   サイズ: {quality_verification['file_size']:,} bytes")
                 print(f"   行数: {quality_verification['line_count']:,} lines")
-                print(f"📊 計算実装状況:")
+                print(f"[CHART] 計算実装状況:")
                 for calc, implemented in quality_verification['calculation_implementations'].items():
-                    status = "✅" if implemented else "❌"
+                    status = "[OK]" if implemented else "[ERROR]"
                     print(f"   {status} {calc}: {'実装済み' if implemented else '未実装'}")
-                print(f"📈 実装率: {implementation_rate:.1f}% ({implemented_count}/{total_calculations})")
+                print(f"[UP] 実装率: {implementation_rate:.1f}% ({implemented_count}/{total_calculations})")
                 
                 # Task 4.2スコアとの整合性確認
                 task42_scores = self.analysis_results.get('accurate_task42_scores', {})
                 task42_implementation_rate = task42_scores.get('implementation_percentage', 0)
                 
                 if abs(implementation_rate - task42_implementation_rate) < 20:  # 20%以内なら整合
-                    print(f"✅ Task 4.2との整合性: 良好（差異{abs(implementation_rate - task42_implementation_rate):.1f}%）")
+                    print(f"[OK] Task 4.2との整合性: 良好（差異{abs(implementation_rate - task42_implementation_rate):.1f}%）")
                 else:
-                    print(f"⚠️ Task 4.2との整合性: 要確認（差異{abs(implementation_rate - task42_implementation_rate):.1f}%）")
+                    print(f"[WARNING] Task 4.2との整合性: 要確認（差異{abs(implementation_rate - task42_implementation_rate):.1f}%）")
                 
             else:
-                print(f"❌ ファイル {self.target_engine} が見つかりません")
+                print(f"[ERROR] ファイル {self.target_engine} が見つかりません")
                 self.analysis_results['quality_verification'] = {'error': 'file_not_found'}
                 
         except Exception as e:
-            print(f"❌ 品質確認エラー: {e}")
+            print(f"[ERROR] 品質確認エラー: {e}")
             self.analysis_results['quality_verification'] = {'error': str(e)}
     
     def _define_corrected_problem16(self):
         """4. 修正されたProblem 16定義"""
-        print("\n🔍 4. 修正されたProblem 16定義")
+        print("\n[SEARCH] 4. 修正されたProblem 16定義")
         print("-" * 60)
         
         contradiction_analysis = self.analysis_results.get('contradiction_analysis', {})
@@ -245,16 +245,16 @@ class CorrectedCurrentEngineAnalyzer:
         
         self.analysis_results['corrected_problem16'] = problem16_corrected
         
-        print(f"📋 修正されたProblem 16:")
+        print(f"[LIST] 修正されたProblem 16:")
         print(f"   タイトル: {problem16_corrected['title']}")
         print(f"   重要度: {problem16_corrected['severity']}")
         print(f"   説明: {problem16_corrected['description']}")
         
         if problem16_corrected['severity'] == 'critical':
-            print(f"🚨 Critical問題確認:")
+            print(f"[ALERT] Critical問題確認:")
             print(f"   Problem 15無効化: {problem16_corrected['impact_assessment']['problem15_invalidated']}")
             print(f"   評価システム信頼: {problem16_corrected['impact_assessment']['evaluation_system_trust']}")
-            print(f"💡 推奨解決策:")
+            print(f"[IDEA] 推奨解決策:")
             for solution in problem16_corrected['recommended_solutions']:
                 print(f"     {solution}")
     
@@ -266,12 +266,12 @@ class CorrectedCurrentEngineAnalyzer:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(self.analysis_results, f, ensure_ascii=False, indent=2, default=str)
         
-        print(f"\n✅ 修正された分析結果保存: {output_file}")
+        print(f"\n[OK] 修正された分析結果保存: {output_file}")
         return output_file
 
 def main():
     """メイン実行"""
-    print("🔧 Task 6.1修正版: 品質スコア矛盾を解決した正確な分析")
+    print("[TOOL] Task 6.1修正版: 品質スコア矛盾を解決した正確な分析")
     print("=" * 80)
     
     analyzer = CorrectedCurrentEngineAnalyzer()
@@ -283,20 +283,20 @@ def main():
     output_file = analyzer.save_corrected_results()
     
     print("\n" + "=" * 80)
-    print("📋 修正版Task 6.1完了サマリー")
+    print("[LIST] 修正版Task 6.1完了サマリー")
     print("=" * 80)
     
     contradiction = analyzer.analysis_results.get('contradiction_analysis', {})
     problem16 = analyzer.analysis_results.get('corrected_problem16', {})
     
     if contradiction.get('contradiction_confirmed', False):
-        print("🚨 重大な発見: 品質評価矛盾が確認されました")
+        print("[ALERT] 重大な発見: 品質評価矛盾が確認されました")
         print(f"   実際のエンジン品質: {analyzer.analysis_results.get('accurate_task42_scores', {}).get('total_score', 0)}点")
         print(f"   従来の誤認: 0点")
         print(f"   Problem 16: {problem16.get('severity', 'unknown')}レベル")
-        print("💡 次のアクション: Problem 15の無効化とroadmap2.md更新")
+        print("[IDEA] 次のアクション: Problem 15の無効化とroadmap2.md更新")
     else:
-        print("✅ 品質評価に矛盾は確認されませんでした")
+        print("[OK] 品質評価に矛盾は確認されませんでした")
     
     return output_file
 

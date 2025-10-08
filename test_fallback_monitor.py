@@ -419,12 +419,12 @@ def test_dataclass_structures():
 
 if __name__ == "__main__":
     """Standalone test execution"""
-    print("🧪 Running FallbackMonitor Test Suite")
+    print("[TEST] Running FallbackMonitor Test Suite")
     print("=" * 50)
     
     # Run with pytest discovery
     import sys
     exit_code = pytest.main([__file__, "-v", "--tb=short"])
     
-    print(f"\n📊 Test Suite Result: {'✅ PASSED' if exit_code == 0 else '❌ FAILED'}")
+    print(f"\n[CHART] Test Suite Result: {'[OK] PASSED' if exit_code == 0 else '[ERROR] FAILED'}")
     sys.exit(exit_code)

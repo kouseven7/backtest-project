@@ -46,7 +46,7 @@ try:
     from execution_monitoring_system import ExecutionMonitoringSystem
 except ImportError as e:
     logger.error(f"Failed to import coordination modules: {e}")
-    print(f"❌ モジュールのインポートに失敗しました: {e}")
+    print(f"[ERROR] モジュールのインポートに失敗しました: {e}")
     sys.exit(1)
 
 class CoordinationDemo:
@@ -77,7 +77,7 @@ class CoordinationDemo:
     def run_comprehensive_demo(self):
         """包括的デモ実行"""
         print("=" * 80)
-        print("🚀 Multi-Strategy Coordination System - Comprehensive Demo")
+        print("[ROCKET] Multi-Strategy Coordination System - Comprehensive Demo")
         print("=" * 80)
         print(f"Demo Start Time: {self.demo_start_time.strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"Available Strategies: {len(self.demo_strategies)}")
@@ -112,13 +112,13 @@ class CoordinationDemo:
             
         except Exception as e:
             logger.error(f"Demo execution failed: {e}")
-            print(f"❌ デモ実行中にエラーが発生しました: {e}")
+            print(f"[ERROR] デモ実行中にエラーが発生しました: {e}")
             import traceback
             traceback.print_exc()
     
     def _test_interface_initialization(self):
         """インターフェース初期化テスト"""
-        print("📋 Phase 1: Interface Initialization Test")
+        print("[LIST] Phase 1: Interface Initialization Test")
         print("-" * 50)
         
         try:
@@ -128,7 +128,7 @@ class CoordinationDemo:
             # システム状況確認
             status = self.interface.get_system_status()
             
-            print(f"✅ Interface initialization successful")
+            print(f"[OK] Interface initialization successful")
             print(f"   Coordination State: {status['coordination']['state']}")
             print(f"   Integration Mode: {status['integration']['integration_config']['mode']}")
             print(f"   Integrated Systems: {len(status['integration']['integrated_systems'])}")
@@ -142,14 +142,14 @@ class CoordinationDemo:
             self._record_test_result("interface_initialization", True, "Interface initialized successfully")
             
         except Exception as e:
-            print(f"❌ Interface initialization failed: {e}")
+            print(f"[ERROR] Interface initialization failed: {e}")
             self._record_test_result("interface_initialization", False, str(e))
         
         print()
     
     def _test_individual_components(self):
         """個別コンポーネントテスト"""
-        print("🔧 Phase 2: Individual Components Test")
+        print("[TOOL] Phase 2: Individual Components Test")
         print("-" * 50)
         
         # リソース配分エンジンテスト
@@ -173,14 +173,14 @@ class CoordinationDemo:
         try:
             engine = self.coordination_manager.resource_engine
             if not engine:
-                print("    ⚠️ Resource engine not available, skipping test")
+                print("    [WARNING] Resource engine not available, skipping test")
                 return
             
             # リソース配分テスト
             test_strategies = self.demo_strategies[:3]
             allocations = engine.allocate_resources(test_strategies)
             
-            print(f"    ✅ Resource allocation successful for {len(test_strategies)} strategies")
+            print(f"    [OK] Resource allocation successful for {len(test_strategies)} strategies")
             for allocation in allocations:
                 print(f"       {allocation.strategy_name}: {allocation.execution_mode.value} mode, "
                       f"CPU={allocation.allocated_cpu:.2f}, Memory={allocation.allocated_memory_mb}MB")
@@ -188,7 +188,7 @@ class CoordinationDemo:
             self._record_test_result("resource_allocation", True, f"Allocated resources for {len(allocations)} strategies")
             
         except Exception as e:
-            print(f"    ❌ Resource allocation test failed: {e}")
+            print(f"    [ERROR] Resource allocation test failed: {e}")
             self._record_test_result("resource_allocation", False, str(e))
     
     def _test_dependency_resolver(self):
@@ -198,14 +198,14 @@ class CoordinationDemo:
         try:
             resolver = self.coordination_manager.dependency_resolver
             if not resolver:
-                print("    ⚠️ Dependency resolver not available, skipping test")
+                print("    [WARNING] Dependency resolver not available, skipping test")
                 return
             
             # 依存関係解決テスト
             test_strategies = self.demo_strategies[:4]
             resolution = resolver.resolve_dependencies(test_strategies)
             
-            print(f"    ✅ Dependency resolution successful")
+            print(f"    [OK] Dependency resolution successful")
             print(f"       Execution Order: {resolution.execution_order}")
             print(f"       Parallel Groups: {len(resolution.parallel_groups)} groups")
             print(f"       Critical Path Duration: {resolution.critical_path_duration:.1f}s")
@@ -213,7 +213,7 @@ class CoordinationDemo:
             self._record_test_result("dependency_resolution", True, f"Resolved dependencies for {len(test_strategies)} strategies")
             
         except Exception as e:
-            print(f"    ❌ Dependency resolution test failed: {e}")
+            print(f"    [ERROR] Dependency resolution test failed: {e}")
             self._record_test_result("dependency_resolution", False, str(e))
     
     def _test_execution_scheduler(self):
@@ -223,7 +223,7 @@ class CoordinationDemo:
         try:
             scheduler = self.coordination_manager.execution_scheduler
             if not scheduler:
-                print("    ⚠️ Execution scheduler not available, skipping test")
+                print("    [WARNING] Execution scheduler not available, skipping test")
                 return
             
             # デモタスク作成
@@ -245,12 +245,12 @@ class CoordinationDemo:
             
             # スケジューリング計画作成
             plan = scheduler.create_scheduling_plan(demo_tasks)
-            print(f"    ✅ Scheduling plan created: {len(plan.execution_batches)} batches")
+            print(f"    [OK] Scheduling plan created: {len(plan.execution_batches)} batches")
             
             self._record_test_result("execution_scheduling", True, f"Created scheduling plan for {len(demo_tasks)} tasks")
             
         except Exception as e:
-            print(f"    ❌ Execution scheduler test failed: {e}")
+            print(f"    [ERROR] Execution scheduler test failed: {e}")
             self._record_test_result("execution_scheduling", False, str(e))
     
     def _test_monitoring_system(self):
@@ -260,13 +260,13 @@ class CoordinationDemo:
         try:
             monitor = self.coordination_manager.monitoring_system
             if not monitor:
-                print("    ⚠️ Monitoring system not available, skipping test")
+                print("    [WARNING] Monitoring system not available, skipping test")
                 return
             
             # リアルタイムメトリクス取得
             metrics = monitor.get_real_time_metrics()
             
-            print(f"    ✅ Monitoring system operational")
+            print(f"    [OK] Monitoring system operational")
             print(f"       System Metrics: {len(metrics.get('system_metrics', {}))}")
             print(f"       Performance Metrics: {len(metrics.get('performance_metrics', {}))}")
             print(f"       Active Alerts: {metrics.get('active_alerts_count', 0)}")
@@ -274,12 +274,12 @@ class CoordinationDemo:
             self._record_test_result("monitoring_system", True, "Monitoring system operational")
             
         except Exception as e:
-            print(f"    ❌ Monitoring system test failed: {e}")
+            print(f"    [ERROR] Monitoring system test failed: {e}")
             self._record_test_result("monitoring_system", False, str(e))
     
     def _test_basic_coordination(self):
         """基本調整機能テスト"""
-        print("🎯 Phase 3: Basic Coordination Test")
+        print("[TARGET] Phase 3: Basic Coordination Test")
         print("-" * 50)
         
         try:
@@ -294,7 +294,7 @@ class CoordinationDemo:
             result = self.interface.execute_strategy_coordination(basic_strategies)
             
             if result['success']:
-                print(f"✅ Basic coordination successful")
+                print(f"[OK] Basic coordination successful")
                 print(f"   Method: {result['method']}")
                 print(f"   Execution ID: {result.get('execution_id', 'N/A')}")
                 
@@ -303,18 +303,18 @@ class CoordinationDemo:
                 
                 self._record_test_result("basic_coordination", True, f"Coordinated {len(basic_strategies)} strategies")
             else:
-                print(f"❌ Basic coordination failed: {result.get('error', 'Unknown error')}")
+                print(f"[ERROR] Basic coordination failed: {result.get('error', 'Unknown error')}")
                 self._record_test_result("basic_coordination", False, result.get('error', 'Unknown error'))
             
         except Exception as e:
-            print(f"❌ Basic coordination test failed: {e}")
+            print(f"[ERROR] Basic coordination test failed: {e}")
             self._record_test_result("basic_coordination", False, str(e))
         
         print()
     
     def _test_advanced_coordination(self):
         """高度調整機能テスト"""
-        print("🚀 Phase 4: Advanced Coordination Test")
+        print("[ROCKET] Phase 4: Advanced Coordination Test")
         print("-" * 50)
         
         try:
@@ -328,7 +328,7 @@ class CoordinationDemo:
             # 調整計画作成
             plan = self.coordination_manager.create_coordination_plan(advanced_strategies)
             
-            print(f"\n📋 Coordination Plan Analysis:")
+            print(f"\n[LIST] Coordination Plan Analysis:")
             print(f"   Plan ID: {plan.plan_id}")
             print(f"   Resource Allocations: {len(plan.resource_allocations)}")
             print(f"   Execution Timeline: {len(plan.execution_timeline)} events")
@@ -342,11 +342,11 @@ class CoordinationDemo:
             if risk['risk_factors']:
                 print("   Risk Factors:")
                 for factor in risk['risk_factors']:
-                    print(f"     ⚠️ {factor}")
+                    print(f"     [WARNING] {factor}")
             
             # 調整実行
             execution_id = self.coordination_manager.execute_coordination_plan(plan)
-            print(f"\n🎯 Advanced coordination started: {execution_id}")
+            print(f"\n[TARGET] Advanced coordination started: {execution_id}")
             
             # 実行監視（長時間）
             self._monitor_execution(20)  # 20秒間監視
@@ -354,7 +354,7 @@ class CoordinationDemo:
             self._record_test_result("advanced_coordination", True, f"Coordinated {len(advanced_strategies)} strategies")
             
         except Exception as e:
-            print(f"❌ Advanced coordination test failed: {e}")
+            print(f"[ERROR] Advanced coordination test failed: {e}")
             self._record_test_result("advanced_coordination", False, str(e))
         
         print()
@@ -395,13 +395,13 @@ class CoordinationDemo:
             # フォールバック判定テスト
             fallback_level = fallback_manager.should_trigger_fallback(test_status, {}, [])
             
-            print(f"    ✅ Individual fallback mechanism operational")
+            print(f"    [OK] Individual fallback mechanism operational")
             print(f"       Detected Fallback Level: {fallback_level.value if fallback_level else 'None'}")
             
             self._record_test_result("individual_fallback", True, "Individual fallback mechanism works")
             
         except Exception as e:
-            print(f"    ❌ Individual fallback test failed: {e}")
+            print(f"    [ERROR] Individual fallback test failed: {e}")
             self._record_test_result("individual_fallback", False, str(e))
     
     def _test_system_fallback(self):
@@ -412,7 +412,7 @@ class CoordinationDemo:
             # フォールバック設定確認
             fallback_config = self.coordination_manager.fallback_manager.fallback_config
             
-            print(f"    ✅ System fallback configuration loaded")
+            print(f"    [OK] System fallback configuration loaded")
             print(f"       Emergency Alert Threshold: {fallback_config.get('emergency_alert_threshold', 3)}")
             print(f"       System Failure Threshold: {fallback_config.get('system_failure_threshold', 0.3)}")
             print(f"       Essential Strategies: {len(fallback_config.get('essential_strategies', []))}")
@@ -426,7 +426,7 @@ class CoordinationDemo:
             self._record_test_result("system_fallback", True, "System fallback configuration verified")
             
         except Exception as e:
-            print(f"    ❌ System fallback test failed: {e}")
+            print(f"    [ERROR] System fallback test failed: {e}")
             self._record_test_result("system_fallback", False, str(e))
     
     def _test_performance_and_load(self):
@@ -452,23 +452,23 @@ class CoordinationDemo:
                     concurrent_tests.append(result)
                     
                     if result['success']:
-                        print(f"    ✅ Concurrent test {i+1} started successfully")
+                        print(f"    [OK] Concurrent test {i+1} started successfully")
                     else:
-                        print(f"    ❌ Concurrent test {i+1} failed to start")
+                        print(f"    [ERROR] Concurrent test {i+1} failed to start")
                 
                 except Exception as e:
-                    print(f"    ❌ Concurrent test {i+1} exception: {e}")
+                    print(f"    [ERROR] Concurrent test {i+1} exception: {e}")
                 
                 time.sleep(1)  # 少し間隔をあける
             
             # 負荷テスト監視
-            print(f"\n  📊 Load testing in progress...")
+            print(f"\n  [CHART] Load testing in progress...")
             self._monitor_execution(15)  # 15秒間監視
             
             test_duration = time.time() - test_start_time
             success_count = sum(1 for test in concurrent_tests if test.get('success', False))
             
-            print(f"\n  📈 Performance Test Results:")
+            print(f"\n  [UP] Performance Test Results:")
             print(f"     Test Duration: {test_duration:.1f}s")
             print(f"     Concurrent Tests: {len(concurrent_tests)}")
             print(f"     Successful: {success_count}")
@@ -477,7 +477,7 @@ class CoordinationDemo:
             self._record_test_result("performance_load", True, f"Load test completed: {success_count}/{len(concurrent_tests)} successful")
             
         except Exception as e:
-            print(f"❌ Performance and load test failed: {e}")
+            print(f"[ERROR] Performance and load test failed: {e}")
             self._record_test_result("performance_load", False, str(e))
         
         print()
@@ -495,7 +495,7 @@ class CoordinationDemo:
             print(f"Integrated Systems Found: {len(integrated_systems)}")
             
             if not integrated_systems:
-                print("  ⚠️ No integrated systems found, testing interface compatibility")
+                print("  [WARNING] No integrated systems found, testing interface compatibility")
                 self._test_interface_compatibility()
             else:
                 # 各統合システムテスト
@@ -505,7 +505,7 @@ class CoordinationDemo:
             self._record_test_result("system_integration", True, f"Integration test completed for {len(integrated_systems)} systems")
             
         except Exception as e:
-            print(f"❌ System integration test failed: {e}")
+            print(f"[ERROR] System integration test failed: {e}")
             self._record_test_result("system_integration", False, str(e))
         
         print()
@@ -528,17 +528,17 @@ class CoordinationDemo:
             success = self.interface.update_configuration(config_update)
             
             if success:
-                print("    ✅ Dynamic configuration update successful")
+                print("    [OK] Dynamic configuration update successful")
             else:
-                print("    ❌ Dynamic configuration update failed")
+                print("    [ERROR] Dynamic configuration update failed")
             
             # API互換性テスト（Web インターフェース経由）
             status = self.interface.get_system_status()
             if status:
-                print("    ✅ API compatibility verified")
+                print("    [OK] API compatibility verified")
             
         except Exception as e:
-            print(f"    ❌ Interface compatibility test failed: {e}")
+            print(f"    [ERROR] Interface compatibility test failed: {e}")
     
     def _test_integrated_system(self, system_id: str, system_info: Dict[str, Any]):
         """統合システムテスト"""
@@ -555,16 +555,16 @@ class CoordinationDemo:
             )
             
             if result['success']:
-                print(f"    ✅ Integration successful: {result['method']}")
+                print(f"    [OK] Integration successful: {result['method']}")
             else:
-                print(f"    ❌ Integration failed: {result.get('error', 'Unknown error')}")
+                print(f"    [ERROR] Integration failed: {result.get('error', 'Unknown error')}")
             
         except Exception as e:
-            print(f"    ❌ Integrated system test failed: {e}")
+            print(f"    [ERROR] Integrated system test failed: {e}")
     
     def _monitor_execution(self, duration_seconds: int):
         """実行監視"""
-        print(f"  📊 Monitoring execution for {duration_seconds} seconds...")
+        print(f"  [CHART] Monitoring execution for {duration_seconds} seconds...")
         
         start_time = time.time()
         while time.time() - start_time < duration_seconds:
@@ -588,7 +588,7 @@ class CoordinationDemo:
                 time.sleep(2)
             
             except Exception as e:
-                print(f"    ⚠️ Monitoring error: {e}")
+                print(f"    [WARNING] Monitoring error: {e}")
                 break
     
     def _record_test_result(self, test_name: str, success: bool, message: str):
@@ -602,7 +602,7 @@ class CoordinationDemo:
     
     def _generate_final_report(self):
         """最終レポート生成"""
-        print("📊 Final Demo Report")
+        print("[CHART] Final Demo Report")
         print("=" * 80)
         
         demo_duration = datetime.now() - self.demo_start_time
@@ -618,7 +618,7 @@ class CoordinationDemo:
         print("Test Results Summary:")
         print("-" * 50)
         for result in self.test_results:
-            status_emoji = "✅" if result['success'] else "❌"
+            status_emoji = "[OK]" if result['success'] else "[ERROR]"
             print(f"{status_emoji} {result['test_name']:25s} - {result['message']}")
         
         print()
@@ -637,16 +637,16 @@ class CoordinationDemo:
             print(f"Average Duration: {stats.get('average_coordination_time', 0):.1f}s")
         
         except Exception as e:
-            print(f"⚠️ Could not retrieve system statistics: {e}")
+            print(f"[WARNING] Could not retrieve system statistics: {e}")
         
         # レポートファイル保存
         self._save_report_to_file()
         
         print("\n" + "=" * 80)
         if successful_tests == total_tests:
-            print("🎉 ALL TESTS PASSED - Demo completed successfully!")
+            print("[SUCCESS] ALL TESTS PASSED - Demo completed successfully!")
         else:
-            print(f"⚠️ {total_tests - successful_tests} test(s) failed - Demo completed with issues")
+            print(f"[WARNING] {total_tests - successful_tests} test(s) failed - Demo completed with issues")
         print("=" * 80)
     
     def _save_report_to_file(self):
@@ -670,7 +670,7 @@ class CoordinationDemo:
             print(f"📄 Demo report saved: {report_filename}")
             
         except Exception as e:
-            print(f"⚠️ Failed to save report file: {e}")
+            print(f"[WARNING] Failed to save report file: {e}")
     
     def cleanup(self):
         """クリーンアップ"""
@@ -678,7 +678,7 @@ class CoordinationDemo:
             self.interface.shutdown()
             print("🧹 Demo cleanup completed")
         except Exception as e:
-            print(f"⚠️ Cleanup error: {e}")
+            print(f"[WARNING] Cleanup error: {e}")
 
 def main():
     """メイン実行関数"""
@@ -691,7 +691,7 @@ def main():
     except KeyboardInterrupt:
         print("\n🛑 Demo interrupted by user")
     except Exception as e:
-        print(f"❌ Demo failed: {e}")
+        print(f"[ERROR] Demo failed: {e}")
         import traceback
         traceback.print_exc()
     finally:

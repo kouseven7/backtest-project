@@ -29,11 +29,11 @@ def analyze_strategy_statistics_data_source():
         "recommendations": []
     }
     
-    print("🔍 Task 4.1: 戦略別統計未計算問題の特定を開始")
+    print("[SEARCH] Task 4.1: 戦略別統計未計算問題の特定を開始")
     print("=" * 60)
     
     # 1. DSSMSBacktester.get_strategy_statistics()の実装状況
-    print("\n📊 Step 1: DSSMSBacktester統計メソッド分析")
+    print("\n[CHART] Step 1: DSSMSBacktester統計メソッド分析")
     try:
         # DSSMSBacktesterクラスを調査
         backtester_path = Path("src/dssms/dssms_backtester.py")
@@ -72,20 +72,20 @@ def analyze_strategy_statistics_data_source():
                 "profit_implementations": profit_patterns[:5]
             }
             
-            print(f"✅ DSSMSBacktester統計メソッド: {len(statistics_methods)}件発見")
-            print(f"📈 勝率関連実装: {len(win_rate_patterns)}件")
-            print(f"💰 利益関連実装: {len(profit_patterns)}件")
+            print(f"[OK] DSSMSBacktester統計メソッド: {len(statistics_methods)}件発見")
+            print(f"[UP] 勝率関連実装: {len(win_rate_patterns)}件")
+            print(f"[MONEY] 利益関連実装: {len(profit_patterns)}件")
             
             if statistics_methods:
-                print("🔍 発見された統計メソッド:")
+                print("[SEARCH] 発見された統計メソッド:")
                 for method in statistics_methods[:3]:
                     print(f"   {method}")
         else:
             results["problems_identified"].append("DSSMSBacktesterファイルが見つからない")
-            print("❌ DSSMSBacktesterファイルが見つかりません")
+            print("[ERROR] DSSMSBacktesterファイルが見つかりません")
             
     except Exception as e:
-        print(f"❌ DSSMSBacktester分析エラー: {e}")
+        print(f"[ERROR] DSSMSBacktester分析エラー: {e}")
         results["problems_identified"].append(f"DSSMSBacktester分析エラー: {e}")
     
     # 2. trade_historyデータの構造と内容分析
@@ -134,7 +134,7 @@ def analyze_strategy_statistics_data_source():
         results["data_sources"]["trade_history_analysis"] = trade_history_analysis
         
     except Exception as e:
-        print(f"❌ trade_history分析エラー: {e}")
+        print(f"[ERROR] trade_history分析エラー: {e}")
         results["problems_identified"].append(f"trade_history分析エラー: {e}")
     
     # 3. switch_historyからの統計計算可能性
@@ -177,7 +177,7 @@ def analyze_strategy_statistics_data_source():
         results["data_sources"]["switch_statistics_potential"] = switch_statistics_potential
         
     except Exception as e:
-        print(f"❌ switch_history統計分析エラー: {e}")
+        print(f"[ERROR] switch_history統計分析エラー: {e}")
         results["problems_identified"].append(f"switch_history統計分析エラー: {e}")
     
     # 4. 各統一エンジンでの統計計算実装比較
@@ -224,11 +224,11 @@ def analyze_strategy_statistics_data_source():
         results["calculation_implementations"] = calculation_implementations
         
     except Exception as e:
-        print(f"❌ 統計計算実装比較エラー: {e}")
+        print(f"[ERROR] 統計計算実装比較エラー: {e}")
         results["problems_identified"].append(f"統計計算実装比較エラー: {e}")
     
     # 5. Excel出力での戦略別統計シート分析
-    print("\n📊 Step 5: Excel戦略別統計シート分析")
+    print("\n[CHART] Step 5: Excel戦略別統計シート分析")
     try:
         # 最新のExcelファイルを検索
         excel_files = list(Path("backtest_results/dssms_results").glob("*.xlsx"))
@@ -288,26 +288,26 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
                         "statistics_items_found": stats_found
                     }
                     
-                    print(f"✅ {sheet_name}シート: {ws.max_row}行 x {ws.max_column}列")
+                    print(f"[OK] {sheet_name}シート: {ws.max_row}行 x {ws.max_column}列")
                     stats_count = sum(stats_found.values())
                     print(f"   統計項目発見: {stats_count}/5項目")
                 
                 results["findings"]["excel_statistics_analysis"] = excel_statistics_analysis
                 
             except Exception as excel_error:
-                print(f"❌ Excel分析エラー: {excel_error}")
+                print(f"[ERROR] Excel分析エラー: {excel_error}")
                 results["problems_identified"].append(f"Excel分析エラー: {excel_error}")
                 
         else:
-            print("❌ Excelファイルが見つかりません")
+            print("[ERROR] Excelファイルが見つかりません")
             results["problems_identified"].append("Excelファイルが見つからない")
             
     except Exception as e:
-        print(f"❌ Excel統計分析エラー: {e}")
+        print(f"[ERROR] Excel統計分析エラー: {e}")
         results["problems_identified"].append(f"Excel統計分析エラー: {e}")
     
     # 6. 問題の特定と推奨事項
-    print("\n🎯 Step 6: 統計計算問題の特定")
+    print("\n[TARGET] Step 6: 統計計算問題の特定")
     
     # 実装格差の分析
     implementation_gaps = []
@@ -343,7 +343,7 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
     results["problems_identified"].extend(data_source_issues)
     
     # 推奨事項の生成
-    print("\n💡 推奨事項:")
+    print("\n[IDEA] 推奨事項:")
     recommendations = [
         "v3エンジンの統計計算実装（現在完全未実装）",
         "DSSMSBacktester.get_strategy_statistics()メソッド実装",
@@ -356,7 +356,7 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
         print(f"{i}. {rec}")
         results["recommendations"].append(rec)
     
-    print("\n❌ 特定された問題:")
+    print("\n[ERROR] 特定された問題:")
     for problem in results["problems_identified"]:
         print(f"   {problem}")
     
@@ -367,7 +367,7 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
     
     print(f"\n💾 分析結果を保存: {output_file}")
     print("=" * 60)
-    print("🔍 Task 4.1: 戦略別統計未計算問題の特定完了")
+    print("[SEARCH] Task 4.1: 戦略別統計未計算問題の特定完了")
     
     return results
 
@@ -376,10 +376,10 @@ if __name__ == "__main__":
         results = analyze_strategy_statistics_data_source()
         
         # 重要な発見事項を表示
-        print("\n🎯 重要な発見事項:")
+        print("\n[TARGET] 重要な発見事項:")
         for problem in results["problems_identified"]:
-            print(f"❌ {problem}")
+            print(f"[ERROR] {problem}")
             
     except Exception as e:
-        print(f"❌ Task 4.1実行エラー: {e}")
+        print(f"[ERROR] Task 4.1実行エラー: {e}")
         traceback.print_exc()

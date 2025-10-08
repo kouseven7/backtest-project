@@ -62,7 +62,7 @@ class FileBaselineAnalyzer:
     
     def analyze_project_files(self):
         """プロジェクト全体のファイル分析実行"""
-        print(f"🔍 Project 18 ファイルベースライン調査開始: {self.project_root}")
+        print(f"[SEARCH] Project 18 ファイルベースライン調査開始: {self.project_root}")
         
         # ディレクトリ走査
         for root, dirs, files in os.walk(self.project_root):
@@ -92,7 +92,7 @@ class FileBaselineAnalyzer:
                     self._categorize_file(file_path, rel_root)
                     
                 except (OSError, PermissionError):
-                    print(f"⚠️  ファイルアクセス失敗: {file_path}")
+                    print(f"[WARNING]  ファイルアクセス失敗: {file_path}")
             
             # ディレクトリ情報保存
             if str(rel_root) != '.':
@@ -177,7 +177,7 @@ class FileBaselineAnalyzer:
             f"Generated: {self.analysis_time.strftime('%Y-%m-%d %H:%M:%S')}",
             "=" * 80,
             "",
-            "📊 Project Overview:",
+            "[CHART] Project Overview:",
             f"  - Total Files: {self.baseline_data['total_files']:,}",
             f"  - Total Size: {self.baseline_data['total_size_mb']:.2f} MB",
             f"  - Project Root: {self.baseline_data['project_root']}",
@@ -251,7 +251,7 @@ def main():
     
     analyzer = FileBaselineAnalyzer(project_root)
     
-    print("🚀 Problem 18 File Baseline Analysis Starting...")
+    print("[ROCKET] Problem 18 File Baseline Analysis Starting...")
     analyzer.analyze_project_files()
     
     # レポート生成・表示
@@ -266,7 +266,7 @@ def main():
     cleanup_count = len(analyzer.baseline_data['cleanup_candidates'])
     cleanup_size_mb = sum(f['size'] for f in analyzer.baseline_data['cleanup_candidates']) / (1024 * 1024)
     
-    print(f"\n📈 Problem 18 KPI Baseline:")
+    print(f"\n[UP] Problem 18 KPI Baseline:")
     print(f"  - Cleanup Potential: {cleanup_count} files ({cleanup_size_mb:.2f} MB)")
     print(f"  - Protected Files: {len(analyzer.baseline_data['protection_files'])} files")
     print(f"  - Cleanup Ratio: {cleanup_count/analyzer.baseline_data['total_files']*100:.1f}%")

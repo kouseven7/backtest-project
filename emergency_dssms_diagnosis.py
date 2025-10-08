@@ -35,7 +35,7 @@ def diagnose_perfect_order_system():
         data = fetch_stock_data(test_symbol, "2023-01-01", "2023-12-31")
         
         if data is not None and not data.empty:
-            logger.info(f"✅ データ取得成功: {test_symbol} ({len(data)}日分)")
+            logger.info(f"[OK] データ取得成功: {test_symbol} ({len(data)}日分)")
             
             # パーフェクトオーダー検出テスト
             result = detector.detect_perfect_order(data, "daily", test_symbol)
@@ -76,13 +76,13 @@ def diagnose_perfect_order_system():
             logger.info(f"2023年中のパーフェクトオーダー発生: {po_count}回/12ヶ月")
             
             if po_count == 0:
-                logger.error("❌ 致命的問題: 一年間でパーフェクトオーダーが一度も検出されていません")
+                logger.error("[ERROR] 致命的問題: 一年間でパーフェクトオーダーが一度も検出されていません")
                 logger.error("これがDSSMS -100%損失の主要原因と考えられます")
             
             return monthly_checks
             
         else:
-            logger.error(f"❌ データ取得失敗: {test_symbol}")
+            logger.error(f"[ERROR] データ取得失敗: {test_symbol}")
             return []
             
     except Exception as e:
@@ -111,11 +111,11 @@ def diagnose_ranking_system():
         ranking_result = ranking_system.rank_symbols(test_symbols, datetime(2023, 6, 15))
         
         if ranking_result and hasattr(ranking_result, 'ranked_symbols'):
-            logger.info(f"✅ ランキング成功: {len(ranking_result.ranked_symbols)}銘柄")
+            logger.info(f"[OK] ランキング成功: {len(ranking_result.ranked_symbols)}銘柄")
             for i, symbol in enumerate(ranking_result.ranked_symbols[:3]):
                 logger.info(f"  順位{i+1}: {symbol}")
         else:
-            logger.error("❌ ランキング結果が無効")
+            logger.error("[ERROR] ランキング結果が無効")
             
     except Exception as e:
         logger.error(f"ランキングシステム診断エラー: {e}")
@@ -132,7 +132,7 @@ def diagnose_switch_manager():
         from src.dssms.intelligent_switch_manager import IntelligentSwitchManager
         
         switch_manager = IntelligentSwitchManager()
-        logger.info("✅ スイッチマネージャー初期化成功")
+        logger.info("[OK] スイッチマネージャー初期化成功")
         
         # スイッチ条件の診断
         # これは具体的な条件を確認する必要があります
@@ -158,16 +158,16 @@ def diagnose_data_quality():
             data = fetch_stock_data(symbol, "2023-01-01", "2023-12-31")
             
             if data is not None and not data.empty:
-                logger.info(f"✅ {symbol}: {len(data)}日分のデータ")
+                logger.info(f"[OK] {symbol}: {len(data)}日分のデータ")
                 
                 # データ品質チェック
                 null_count = data.isnull().sum().sum()
                 zero_volume = (data['Volume'] == 0).sum() if 'Volume' in data.columns else 0
                 
                 if null_count > 0:
-                    logger.warning(f"  ⚠️  欠損値: {null_count}個")
+                    logger.warning(f"  [WARNING]  欠損値: {null_count}個")
                 if zero_volume > 0:
-                    logger.warning(f"  ⚠️  出来高ゼロ: {zero_volume}日")
+                    logger.warning(f"  [WARNING]  出来高ゼロ: {zero_volume}日")
                     
                 # 価格の年間推移確認
                 start_price = data['Close'].iloc[0]
@@ -177,12 +177,12 @@ def diagnose_data_quality():
                 logger.info(f"  年間リターン: {annual_return:.2f}%")
                 
                 if annual_return > 0:
-                    logger.info(f"  ✅ {symbol}は2023年にプラス収益")
+                    logger.info(f"  [OK] {symbol}は2023年にプラス収益")
                 else:
-                    logger.info(f"  📉 {symbol}は2023年にマイナス収益")
+                    logger.info(f"  [DOWN] {symbol}は2023年にマイナス収益")
                     
             else:
-                logger.error(f"❌ {symbol}: データ取得失敗")
+                logger.error(f"[ERROR] {symbol}: データ取得失敗")
                 
     except Exception as e:
         logger.error(f"データ品質診断エラー: {e}")
@@ -191,7 +191,7 @@ def diagnose_data_quality():
 
 def main():
     """メイン診断実行"""
-    logger.info("🚨 DSSMS緊急診断開始 🚨")
+    logger.info("[ALERT] DSSMS緊急診断開始 [ALERT]")
     logger.info(f"実行時刻: {datetime.now()}")
     
     # 1. パーフェクトオーダーシステム診断
@@ -208,7 +208,7 @@ def main():
     
     # 総合判定
     logger.info("=" * 60)
-    logger.info("🎯 総合診断結果")
+    logger.info("[TARGET] 総合診断結果")
     logger.info("=" * 60)
     
     if len(monthly_po_results) > 0:
@@ -216,7 +216,7 @@ def main():
         logger.info(f"パーフェクトオーダー発生月数: {po_months}/12ヶ月")
         
         if po_months == 0:
-            logger.error("🚨 致命的問題確認:")
+            logger.error("[ALERT] 致命的問題確認:")
             logger.error("  - パーフェクトオーダーが全く検出されていません")
             logger.error("  - これがDSSMS -100%損失の根本原因です")
             logger.error("  - パーフェクトオーダー検出ロジックの緊急修正が必要")

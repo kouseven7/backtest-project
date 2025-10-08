@@ -25,9 +25,9 @@ for strategy_name, module_path in strategy_imports:
         print(f"インポート中: {strategy_name} from {module_path}")
         module = __import__(module_path, fromlist=[strategy_name])
         strategy_class = getattr(module, strategy_name)
-        print(f"✅ {strategy_name} インポート成功")
+        print(f"[OK] {strategy_name} インポート成功")
     except Exception as e:
-        print(f"❌ {strategy_name} インポートエラー: {e}")
+        print(f"[ERROR] {strategy_name} インポートエラー: {e}")
         import traceback
         traceback.print_exc()
         print()

@@ -1,7 +1,7 @@
 # DSSMS実行環境 銘柄最適化 ロードマップ計画
 **Dynamic Stock Selection Management System - Implementation Roadmap**
 
-## 📋 プロジェクト概要
+## [LIST] プロジェクト概要
 
 **目的**: DSSMSバックテストシステムの決定論的動作確保と実取引対応準備  
 **期間**: 4週間  
@@ -204,7 +204,7 @@
 
 ---
 
-## 📊 成功指標・検証基準
+## [CHART] 成功指標・検証基準
 
 ### 定量的目標
 - **差異削減率**: > 80%（目標: 90%）
@@ -248,7 +248,7 @@ config/dssms/
 
 ---
 
-## 🚀 実装開始準備
+## [ROCKET] 実装開始準備
 
 ### 即座開始可能タスク
 1. **T1.1.1**: データキャッシュシステム設計・実装
@@ -281,10 +281,10 @@ config/dssms/
 
 ---
 
-# 🚨 緊急問題調査・解決ロードマップ
+# [ALERT] 緊急問題調査・解決ロードマップ
 **Main.py実行エラー & DSSMS出力システム不整合問題**
 
-## 📊 問題現状
+## [CHART] 問題現状
 
 ### 🔴 主要問題
 1. **main.py実行エラー**: `ModuleNotFoundError: No module named 'output.simple_excel_exporter'`
@@ -292,14 +292,14 @@ config/dssms/
 3. **Excel出力異常**: サマリーシートの値が0または空白
 4. **取引履歴不整合**: 取引回数・損益計算の相違
 
-### 📈 影響範囲
+### [UP] 影響範囲
 - **即座の影響**: main.pyによる統合バックテスト実行不可
 - **中期的影響**: DSSMSシステムの信頼性低下
 - **長期的影響**: 実取引準備の大幅遅延
 
 ---
 
-## 🔍 Phase 1: 問題把握・原因特定
+## [SEARCH] Phase 1: 問題把握・原因特定
 
 ### Phase 1.1: モジュール構造調査
 **目的**: インポートエラーの根本原因特定  
@@ -321,13 +321,13 @@ for f in output_files:
 
 # simple_excel_exporterの存在確認
 simple_excel_files = glob.glob('**/simple_excel_exporter.py', recursive=True)
-print('\\n🔍 simple_excel_exporter.pyの場所:')
+print('\\n[SEARCH] simple_excel_exporter.pyの場所:')
 for f in simple_excel_files:
     print(f'  {f}')
 
 # __init__.pyの存在確認
 init_files = glob.glob('output/__init__.py')
-print('\\n📋 output/__init__.py:')
+print('\\n[LIST] output/__init__.py:')
 print(f'  存在: {\"あり\" if init_files else \"なし\"}')
 "
 ```
@@ -358,18 +358,18 @@ try:
             for alias in node.names:
                 imports.append(f'from {module} import {alias.name}')
     
-    print('📋 main.pyの全インポート文:')
+    print('[LIST] main.pyの全インポート文:')
     for imp in imports:
         print(f'  {imp}')
         
     # 問題のあるインポートの特定
     problem_imports = [imp for imp in imports if 'output' in imp and 'simple_excel_exporter' in imp]
-    print('\\n❌ 問題のあるインポート:')
+    print('\\n[ERROR] 問題のあるインポート:')
     for imp in problem_imports:
         print(f'  {imp}')
         
 except Exception as e:
-    print(f'❌ エラー: {e}')
+    print(f'[ERROR] エラー: {e}')
 "
 ```
 
@@ -391,23 +391,23 @@ for i, path in enumerate(sys.path):
 print('\\n=== モジュール検索テスト ===')
 try:
     import output
-    print('✅ outputモジュール: インポート成功')
+    print('[OK] outputモジュール: インポート成功')
     print(f'   パス: {output.__file__}')
     print(f'   内容: {dir(output)}')
 except ImportError as e:
-    print(f'❌ outputモジュール: {e}')
+    print(f'[ERROR] outputモジュール: {e}')
 
 try:
     from output import simple_excel_exporter
-    print('✅ simple_excel_exporter: インポート成功')
+    print('[OK] simple_excel_exporter: インポート成功')
 except ImportError as e:
-    print(f'❌ simple_excel_exporter: {e}')
+    print(f'[ERROR] simple_excel_exporter: {e}')
     
 try:
     import output.simple_excel_exporter
-    print('✅ output.simple_excel_exporter (直接): インポート成功')
+    print('[OK] output.simple_excel_exporter (直接): インポート成功')
 except ImportError as e:
-    print(f'❌ output.simple_excel_exporter (直接): {e}')
+    print(f'[ERROR] output.simple_excel_exporter (直接): {e}')
 "
 ```
 
@@ -427,7 +427,7 @@ try:
     
     # クラスのメソッド一覧
     methods = [method for method in dir(DSSMSBacktester) if not method.startswith('_')]
-    print('🔧 DSSMSBacktesterの公開メソッド:')
+    print('[TOOL] DSSMSBacktesterの公開メソッド:')
     for method in methods:
         print(f'  - {method}')
     
@@ -438,14 +438,14 @@ try:
         print(f'  - {method}')
         
     # 実際のインスタンス作成テスト
-    print('\\n🧪 インスタンス作成テスト:')
+    print('\\n[TEST] インスタンス作成テスト:')
     instance = DSSMSBacktester()
-    print('✅ DSSMSBacktesterインスタンス作成成功')
+    print('[OK] DSSMSBacktesterインスタンス作成成功')
     
 except ImportError as e:
-    print(f'❌ DSSMSBacktesterインポートエラー: {e}')
+    print(f'[ERROR] DSSMSBacktesterインポートエラー: {e}')
 except Exception as e:
-    print(f'❌ インスタンス作成エラー: {e}')
+    print(f'[ERROR] インスタンス作成エラー: {e}')
 "
 ```
 
@@ -461,7 +461,7 @@ print('=== 既存出力ファイル分析 ===')
 # Excel出力ファイル
 excel_files = glob.glob('**/*.xlsx', recursive=True)
 excel_files.sort(key=os.path.getmtime, reverse=True)
-print('📊 最新のExcelファイル (上位5件):')
+print('[CHART] 最新のExcelファイル (上位5件):')
 for i, f in enumerate(excel_files[:5]):
     mtime = datetime.fromtimestamp(os.path.getmtime(f))
     size = os.path.getsize(f)
@@ -471,7 +471,7 @@ for i, f in enumerate(excel_files[:5]):
 # レポートファイル
 report_files = glob.glob('**/*report*.txt', recursive=True)
 report_files.sort(key=os.path.getmtime, reverse=True)
-print('\\n📋 最新のレポートファイル (上位5件):')
+print('\\n[LIST] 最新のレポートファイル (上位5件):')
 for i, f in enumerate(report_files[:5]):
     mtime = datetime.fromtimestamp(os.path.getmtime(f))
     size = os.path.getsize(f)
@@ -480,7 +480,7 @@ for i, f in enumerate(report_files[:5]):
 
 # DSSMSファイルのフィルタリング
 dssms_files = [f for f in excel_files + report_files if 'dssms' in f.lower()]
-print(f'\\n🎯 DSSMS関連ファイル数: {len(dssms_files)}')
+print(f'\\n[TARGET] DSSMS関連ファイル数: {len(dssms_files)}')
 "
 ```
 
@@ -501,7 +501,7 @@ print('=== データ不整合調査 ===')
 excel_files = glob.glob('**/*dssms*.xlsx', recursive=True)
 if excel_files:
     latest_excel = max(excel_files, key=os.path.getmtime)
-    print(f'📊 最新Excelファイル: {latest_excel}')
+    print(f'[CHART] 最新Excelファイル: {latest_excel}')
     
     try:
         # Excelファイルのシート一覧
@@ -512,25 +512,25 @@ if excel_files:
         for sheet in xls.sheet_names:
             try:
                 df = pd.read_excel(latest_excel, sheet_name=sheet)
-                print(f'\\n📋 [{sheet}] シート:')
+                print(f'\\n[LIST] [{sheet}] シート:')
                 print(f'   形状: {df.shape}')
                 print(f'   列名: {list(df.columns)[:10]}')  # 最初の10列
                 if not df.empty:
                     print(f'   先頭3行:')
                     print(df.head(3).to_string())
             except Exception as e:
-                print(f'   ❌ {sheet}シート読み込みエラー: {e}')
+                print(f'   [ERROR] {sheet}シート読み込みエラー: {e}')
                 
     except Exception as e:
-        print(f'   ❌ Excel読み込みエラー: {e}')
+        print(f'   [ERROR] Excel読み込みエラー: {e}')
 else:
-    print('❌ DSSMSのExcelファイルが見つかりません')
+    print('[ERROR] DSSMSのExcelファイルが見つかりません')
 
 # 最新のレポートファイル内容確認
 report_files = glob.glob('**/*dssms*report*.txt', recursive=True)
 if report_files:
     latest_report = max(report_files, key=os.path.getmtime)
-    print(f'\\n📋 最新レポートファイル: {latest_report}')
+    print(f'\\n[LIST] 最新レポートファイル: {latest_report}')
     
     try:
         with open(latest_report, 'r', encoding='utf-8') as f:
@@ -547,14 +547,14 @@ if report_files:
             elif '銘柄切替回数:' in line:
                 key_values['切替回数'] = line.strip()
         
-        print('   📊 重要指標:')
+        print('   [CHART] 重要指標:')
         for key, value in key_values.items():
             print(f'     {key}: {value}')
             
     except Exception as e:
-        print(f'   ❌ レポート読み込みエラー: {e}')
+        print(f'   [ERROR] レポート読み込みエラー: {e}')
 else:
-    print('❌ DSSMSのレポートファイルが見つかりません')
+    print('[ERROR] DSSMSのレポートファイルが見つかりません')
 "
 ```
 
@@ -576,35 +576,35 @@ try:
     import pandas as pd
     import numpy as np
     import logging
-    print('✅ 基本ライブラリ: OK')
+    print('[OK] 基本ライブラリ: OK')
 except Exception as e:
-    print(f'❌ 基本ライブラリ: {e}')
+    print(f'[ERROR] 基本ライブラリ: {e}')
 
 # Step 2: プロジェクト設定インポート
 try:
     print('\\nStep 2: プロジェクト設定インポート')
     from config.logger_config import setup_logger
     from config.optimized_parameters import get_optimized_parameters
-    print('✅ プロジェクト設定: OK')
+    print('[OK] プロジェクト設定: OK')
 except Exception as e:
-    print(f'❌ プロジェクト設定: {e}')
+    print(f'[ERROR] プロジェクト設定: {e}')
     traceback.print_exc()
 
 # Step 3: 統合システムインポート
 try:
     print('\\nStep 3: 統合システムインポート')
     from config.multi_strategy_manager import MultiStrategyManager
-    print('✅ 統合システム: OK')
+    print('[OK] 統合システム: OK')
 except Exception as e:
-    print(f'❌ 統合システム: {e}')
+    print(f'[ERROR] 統合システム: {e}')
 
 # Step 4: 問題のある出力モジュールインポート
 try:
     print('\\nStep 4: 出力モジュールインポート')
     from output.simple_simulation_handler import simulate_and_save
-    print('✅ 出力モジュール: OK')
+    print('[OK] 出力モジュール: OK')
 except Exception as e:
-    print(f'❌ 出力モジュール: {e}')
+    print(f'[ERROR] 出力モジュール: {e}')
     traceback.print_exc()
 "
 ```
@@ -654,7 +654,7 @@ except Exception as e:
 
 ## 📅 実行スケジュール
 
-### 🚨 即時実行 (Phase 1)
+### [ALERT] 即時実行 (Phase 1)
 **今日実行**: 全調査タスクの順次実行  
 **所要時間**: 2-3時間  
 **成果物**: 問題調査レポート・根本原因特定
@@ -664,14 +664,14 @@ except Exception as e:
 **所要時間**: 4-6時間  
 **成果物**: 動作するmain.py・基本出力機能
 
-### 🔧 システム再構築 (Phase 2.2-2.3)
+### [TOOL] システム再構築 (Phase 2.2-2.3)
 **今週内**: 出力システム全面改修・品質向上  
 **所要時間**: 2-3日  
 **成果物**: 信頼性の高い統合出力システム
 
 ---
 
-## ✅ 成功基準
+## [OK] 成功基準
 
 ### Phase 1 完了基準
 - [ ] 全問題の根本原因特定完了

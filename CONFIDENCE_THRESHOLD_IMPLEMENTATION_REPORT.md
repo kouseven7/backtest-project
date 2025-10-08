@@ -1,14 +1,14 @@
 # 2-2-3 信頼度閾値に基づく意思決定ロジック 実装完了レポート
 
-## 🎯 実装概要
+## [TARGET] 実装概要
 
 **実装日**: 2025-07-13  
-**ステータス**: ✅ 完了  
+**ステータス**: [OK] 完了  
 **テスト結果**: 3/3 成功
 
 2-2-3「信頼度閾値に基づく意思決定ロジック」を既存の2-2-1、2-2-2と統合して実装しました。
 
-## 📋 実装内容
+## [LIST] 実装内容
 
 ### 1. ConfidenceThresholdManager (`confidence_threshold_manager.py`)
 
@@ -74,7 +74,7 @@ class RiskLevel(Enum):
 - **IntegratedDecisionSystem**: 市場コンテキスト統合デモ
 - **リスク調整**: 異なるリスク許容度での比較デモ
 
-## 🔧 技術仕様
+## [TOOL] 技術仕様
 
 ### アーキテクチャ
 
@@ -110,22 +110,22 @@ class ActionType(Enum):
     NO_ACTION = "no_action"
 ```
 
-## 📊 テスト結果
+## [CHART] テスト結果
 
 ### 基本トレンド検出テスト
-- ✅ UnifiedTrendDetector統合成功
-- ✅ 信頼度スコア取得成功
-- ✅ 信頼度レベル判定成功
+- [OK] UnifiedTrendDetector統合成功
+- [OK] 信頼度スコア取得成功
+- [OK] 信頼度レベル判定成功
 
 ### ConfidenceThresholdManagerテスト
-- ✅ 戦略別信頼度調整成功
-- ✅ シナリオ別意思決定成功
-- ✅ 統計情報取得成功
+- [OK] 戦略別信頼度調整成功
+- [OK] シナリオ別意思決定成功
+- [OK] 統計情報取得成功
 
 ### IntegratedDecisionSystemテスト
-- ✅ 市場コンテキスト分析成功
-- ✅ 時系列シミュレーション成功
-- ✅ リスク管理機能成功
+- [OK] 市場コンテキスト分析成功
+- [OK] 時系列シミュレーション成功
+- [OK] リスク管理機能成功
 
 ## 💼 使用例
 
@@ -188,7 +188,7 @@ ConfidenceThresholdManager → 基本意思決定
 IntegratedDecisionSystem → 最終意思決定
 ```
 
-## 📈 パフォーマンス特性
+## [UP] パフォーマンス特性
 
 ### 保守的意思決定
 - 低信頼度環境では`NO_ACTION`を選択
@@ -202,7 +202,7 @@ IntegratedDecisionSystem → 最終意思決定
 - 信頼度 0.6-0.7: 25%ポジション (0.25)
 - 信頼度 < 0.6: ポジション無し (0.0)
 
-## 🎯 今後の拡張可能性
+## [TARGET] 今後の拡張可能性
 
 ### 機械学習統合
 - 信頼度予測モデルの追加
@@ -216,7 +216,7 @@ IntegratedDecisionSystem → 最終意思決定
 - 戦略別の詳細パラメータ調整
 - 業界/銘柄特化の閾値設定
 
-## ✅ 実装完了確認
+## [OK] 実装完了確認
 
 - [x] ConfidenceThresholdManager実装
 - [x] IntegratedDecisionSystem実装
@@ -227,4 +227,4 @@ IntegratedDecisionSystem → 最終意思決定
 - [x] テスト実行・検証
 - [x] ドキュメント作成
 
-**2-2-3「信頼度閾値に基づく意思決定ロジック」の実装が正常に完了しました。** 🎉
+**2-2-3「信頼度閾値に基づく意思決定ロジック」の実装が正常に完了しました。** [SUCCESS]

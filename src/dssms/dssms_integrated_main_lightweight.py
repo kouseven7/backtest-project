@@ -189,12 +189,12 @@ if __name__ == "__main__":
     backtester = DSSMSIntegratedBacktester()
     init_time = (time.perf_counter() - start_time) * 1000
     
-    print(f"✅ 軽量版初期化時間: {init_time:.1f}ms")
+    print(f"[OK] 軽量版初期化時間: {init_time:.1f}ms")
     
     if init_time <= 1500:
-        print(f"🎯 目標達成: {init_time:.1f}ms ≤ 1500ms")
-        print("📋 TODO-PERF-001 完全達成！")
+        print(f"[TARGET] 目標達成: {init_time:.1f}ms ≤ 1500ms")
+        print("[LIST] TODO-PERF-001 完全達成！")
     else:
-        print(f"⚠️ 目標未達成: {init_time:.1f}ms > 1500ms")
+        print(f"[WARNING] 目標未達成: {init_time:.1f}ms > 1500ms")
         remaining = init_time - 1500
-        print(f"📉 目標まで: {remaining:.1f}ms の追加最適化が必要")
+        print(f"[DOWN] 目標まで: {remaining:.1f}ms の追加最適化が必要")

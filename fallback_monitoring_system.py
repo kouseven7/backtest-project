@@ -86,7 +86,7 @@ class FallbackMonitor:
             self.auto_cleanup = FallbackReportAutoCleanup(self.reports_dir)
         else:
             self.auto_cleanup = None
-            logger.warning("⚠️ 自動削除機能が利用できません")
+            logger.warning("[WARNING] 自動削除機能が利用できません")
         
     def create_monitoring_infrastructure(self) -> Dict[str, Any]:
         """監視システム基盤構築のメイン実装"""
@@ -121,7 +121,7 @@ class FallbackMonitor:
         # システム設定保存
         self._save_monitoring_configuration(infrastructure_results)
         
-        logger.info("✅ Stage 2: 監視システム基盤構築完了")
+        logger.info("[OK] Stage 2: 監視システム基盤構築完了")
         return infrastructure_results
     
     def _load_baseline_data(self, baseline_file: Optional[Path]) -> Dict[str, Any]:
@@ -170,12 +170,12 @@ class FallbackMonitor:
         next_friday = self._calculate_next_friday()
         weekly_system['next_report_date'] = next_friday.isoformat()
         
-        logger.info(f"📊 次回週次レポート予定: {next_friday.strftime('%Y-%m-%d %H:%M')}")
+        logger.info(f"[CHART] 次回週次レポート予定: {next_friday.strftime('%Y-%m-%d %H:%M')}")
         return weekly_system
     
     def _setup_trend_analysis_system(self) -> Dict[str, Any]:
         """フォールバック使用トレンド分析システム設定"""
-        logger.info("📈 トレンド分析システム設定中...")
+        logger.info("[UP] トレンド分析システム設定中...")
         
         trend_system = {
             'analysis_methods': [
@@ -200,12 +200,12 @@ class FallbackMonitor:
             }
         }
         
-        logger.info("📊 トレンド分析システム設定完了")
+        logger.info("[CHART] トレンド分析システム設定完了")
         return trend_system
     
     def _setup_visualization_system(self) -> Dict[str, Any]:
         """可視化システム設定"""
-        logger.info("📊 可視化システム設定中...")
+        logger.info("[CHART] 可視化システム設定中...")
         
         visualization_system = {
             'chart_types': {
@@ -237,7 +237,7 @@ class FallbackMonitor:
     
     def _implement_priority_algorithm(self) -> Dict[str, Any]:
         """優先度付けアルゴリズム実装"""
-        logger.info("🎯 優先度付けアルゴリズム実装中...")
+        logger.info("[TARGET] 優先度付けアルゴリズム実装中...")
         
         priority_algorithm = {
             'scoring_factors': {
@@ -313,7 +313,7 @@ class FallbackMonitor:
     
     def _generate_initial_monitoring_report(self) -> Dict[str, Any]:
         """初期監視レポート生成"""
-        logger.info("📋 初期監視レポート生成中...")
+        logger.info("[LIST] 初期監視レポート生成中...")
         
         # 現在の統計取得
         policy = SystemFallbackPolicy(SystemMode.DEVELOPMENT)
@@ -392,7 +392,7 @@ class FallbackMonitor:
             plt.savefig(chart_path, dpi=300, bbox_inches='tight')
             plt.close()
             
-            logger.info(f"📊 デモチャート生成完了: {chart_path}")
+            logger.info(f"[CHART] デモチャート生成完了: {chart_path}")
             return chart_path
             
         except Exception as e:
@@ -422,7 +422,7 @@ class FallbackMonitor:
     
     def generate_weekly_report(self) -> Dict[str, Any]:
         """週次レポート生成（デモ実装）"""
-        logger.info("📊 週次レポート生成中...")
+        logger.info("[CHART] 週次レポート生成中...")
         
         policy = SystemFallbackPolicy(SystemMode.DEVELOPMENT)
         current_stats = policy.get_usage_statistics()
@@ -447,16 +447,16 @@ class FallbackMonitor:
         
         if stats.get('total_failures', 0) == 0:
             recommendations.extend([
-                "✅ 素晴らしい成果！フォールバック使用量0件を維持しています",
+                "[OK] 素晴らしい成果！フォールバック使用量0件を維持しています",
                 "🔒 現在の品質レベルを維持するため、継続監視を推奨",
-                "📋 定期的なコード品質チェックの実施",
-                "🎯 他プロジェクトへのベストプラクティス共有を検討"
+                "[LIST] 定期的なコード品質チェックの実施",
+                "[TARGET] 他プロジェクトへのベストプラクティス共有を検討"
             ])
         else:
             recommendations.extend([
-                "⚠️ フォールバック使用が検出されました",
-                "🔧 使用頻度の高いコンポーネントから優先的に修正",
-                "📊 根本原因分析の実施を推奨"
+                "[WARNING] フォールバック使用が検出されました",
+                "[TOOL] 使用頻度の高いコンポーネントから優先的に修正",
+                "[CHART] 根本原因分析の実施を推奨"
             ])
         
         return recommendations
@@ -464,7 +464,7 @@ class FallbackMonitor:
 
 def main():
     """メイン実行関数"""
-    print("🚀 TODO-QG-002 Stage 2: 監視システム基盤構築開始")
+    print("[ROCKET] TODO-QG-002 Stage 2: 監視システム基盤構築開始")
     
     monitor = FallbackMonitor()
     
@@ -477,32 +477,32 @@ def main():
         print("🏗️ Stage 2: 監視システム基盤構築結果サマリー")
         print("="*80)
         
-        print("✅ システム構築完了:")
+        print("[OK] システム構築完了:")
         print("   📅 週次自動レポート生成システム")
-        print("   📈 フォールバック使用トレンド分析")
-        print("   📊 除去進捗可視化システム")
-        print("   🎯 優先度付けアルゴリズム")
+        print("   [UP] フォールバック使用トレンド分析")
+        print("   [CHART] 除去進捗可視化システム")
+        print("   [TARGET] 優先度付けアルゴリズム")
         
         # 次回レポート予定
         next_report = infrastructure_results['weekly_report_system']['next_report_date']
-        print(f"\n📋 次回週次レポート予定: {next_report}")
+        print(f"\n[LIST] 次回週次レポート予定: {next_report}")
         
         # 現在の優秀な状況報告
         current_priorities = infrastructure_results['priority_algorithm']['current_priorities']
         total_usage = sum(p['usage_count'] for p in current_priorities.values())
-        print(f"\n🎉 現在の状況: フォールバック使用量 {total_usage}件 (優秀！)")
+        print(f"\n[SUCCESS] 現在の状況: フォールバック使用量 {total_usage}件 (優秀！)")
         
         # デモレポート生成
         demo_report = monitor.generate_weekly_report()
-        print(f"\n📊 デモ週次レポート生成完了")
+        print(f"\n[CHART] デモ週次レポート生成完了")
         print(f"   ステータス: {demo_report['executive_summary']['status']}")
         print(f"   目標達成状況: {demo_report['executive_summary']['goal_achievement']}")
         
-        print(f"\n✅ Stage 2完了 - 次段階: Stage 3 進捗可視化・レポート実装")
+        print(f"\n[OK] Stage 2完了 - 次段階: Stage 3 進捗可視化・レポート実装")
         return True
         
     except Exception as e:
-        print(f"❌ Stage 2失敗: {e}")
+        print(f"[ERROR] Stage 2失敗: {e}")
         logger.error(f"監視システム構築エラー: {e}")
         import traceback
         traceback.print_exc()
@@ -510,7 +510,7 @@ def main():
 
     def generate_weekly_report_with_cleanup(self) -> Dict[str, Any]:
         """自動削除機能付き週次レポート生成"""
-        logger.info("📊 自動削除機能付き週次レポート生成開始")
+        logger.info("[CHART] 自動削除機能付き週次レポート生成開始")
         
         try:
             # 1. 通常の週次レポート生成
@@ -521,9 +521,9 @@ def main():
             if self.auto_cleanup is not None:
                 logger.info("🧹 自動削除機能実行中...")
                 cleanup_results = self.auto_cleanup.implement_auto_cleanup()
-                logger.info("✅ 自動削除機能実行完了")
+                logger.info("[OK] 自動削除機能実行完了")
             else:
-                logger.warning("⚠️ 自動削除機能が利用できません")
+                logger.warning("[WARNING] 自動削除機能が利用できません")
             
             # 3. 統合結果
             enhanced_report = {
@@ -537,11 +537,11 @@ def main():
             # 4. 強化レポート保存
             self._save_enhanced_weekly_report(enhanced_report)
             
-            logger.info("📋 自動削除機能付き週次レポート生成完了")
+            logger.info("[LIST] 自動削除機能付き週次レポート生成完了")
             return enhanced_report
             
         except Exception as e:
-            logger.error(f"❌ 自動削除機能付き週次レポート生成エラー: {e}")
+            logger.error(f"[ERROR] 自動削除機能付き週次レポート生成エラー: {e}")
             return {
                 'report_generation_timestamp': datetime.now().isoformat(),
                 'integration_status': 'error',
@@ -562,7 +562,7 @@ def main():
                 json.dump(enhanced_report, f, indent=2, ensure_ascii=False, default=str)
             logger.info(f"💾 強化週次レポート保存: {enhanced_report_file}")
         except Exception as e:
-            logger.error(f"❌ 強化週次レポート保存エラー: {e}")
+            logger.error(f"[ERROR] 強化週次レポート保存エラー: {e}")
     
     def get_auto_cleanup_statistics(self) -> Dict[str, Any]:
         """自動削除統計情報取得"""
@@ -577,7 +577,7 @@ def main():
 
 def main():
     """メイン実行関数"""
-    print("🚀 TODO-QG-002 Stage 2: 監視システム基盤構築開始")
+    print("[ROCKET] TODO-QG-002 Stage 2: 監視システム基盤構築開始")
     
     monitor = FallbackMonitor()
     
@@ -590,32 +590,32 @@ def main():
         print("🏗️ Stage 2: 監視システム基盤構築結果サマリー")
         print("="*80)
         
-        print("✅ システム構築完了:")
+        print("[OK] システム構築完了:")
         print("   📅 週次自動レポート生成システム")
-        print("   📈 フォールバック使用トレンド分析")
-        print("   📊 除去進捗可視化システム")
-        print("   🎯 優先度付けアルゴリズム")
+        print("   [UP] フォールバック使用トレンド分析")
+        print("   [CHART] 除去進捗可視化システム")
+        print("   [TARGET] 優先度付けアルゴリズム")
         
         # 次回レポート予定
         next_report = infrastructure_results['weekly_report_system']['next_report_date']
-        print(f"\n📋 次回週次レポート予定: {next_report}")
+        print(f"\n[LIST] 次回週次レポート予定: {next_report}")
         
         # 現在の優秀な状況報告
         current_priorities = infrastructure_results['priority_algorithm']['current_priorities']
         total_usage = sum(p['usage_count'] for p in current_priorities.values())
-        print(f"\n🎉 現在の状況: フォールバック使用量 {total_usage}件 (優秀！)")
+        print(f"\n[SUCCESS] 現在の状況: フォールバック使用量 {total_usage}件 (優秀！)")
         
         # デモレポート生成
         demo_report = monitor.generate_weekly_report()
-        print(f"\n📊 デモ週次レポート生成完了")
+        print(f"\n[CHART] デモ週次レポート生成完了")
         print(f"   ステータス: {demo_report['executive_summary']['status']}")
         print(f"   目標達成状況: {demo_report['executive_summary']['goal_achievement']}")
         
-        print(f"\n✅ Stage 2完了 - 次段階: Stage 3 進捗可視化・レポート実装")
+        print(f"\n[OK] Stage 2完了 - 次段階: Stage 3 進捗可視化・レポート実装")
         return True
         
     except Exception as e:
-        print(f"❌ Stage 2失敗: {e}")
+        print(f"[ERROR] Stage 2失敗: {e}")
         logger.error(f"監視システム構築エラー: {e}")
         import traceback
         traceback.print_exc()

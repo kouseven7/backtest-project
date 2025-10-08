@@ -40,7 +40,7 @@ class RealPerformanceAnalyzer:
     
     def analyze_import_performance(self):
         """インポート時間詳細測定"""
-        print("🔍 Phase 1: インポート時間詳細測定")
+        print("[SEARCH] Phase 1: インポート時間詳細測定")
         
         import_measurements = {}
         
@@ -67,7 +67,7 @@ class RealPerformanceAnalyzer:
                     "time_ms": import_time,
                     "status": "success"
                 }
-                print(f"  ✅ {component}: {import_time:.1f}ms")
+                print(f"  [OK] {component}: {import_time:.1f}ms")
             except Exception as e:
                 import_time = (time.time() - start_time) * 1000
                 import_measurements[component] = {
@@ -75,14 +75,14 @@ class RealPerformanceAnalyzer:
                     "status": "error",
                     "error": str(e)
                 }
-                print(f"  ❌ {component}: {import_time:.1f}ms (Error: {str(e)[:50]})")
+                print(f"  [ERROR] {component}: {import_time:.1f}ms (Error: {str(e)[:50]})")
         
         self.results["measurements"]["import_times"] = import_measurements
         return import_measurements
     
     def analyze_screener_bottleneck(self):
         """Screener処理の詳細分析"""
-        print("\n🔍 Phase 2: Screener処理ボトルネック分析")
+        print("\n[SEARCH] Phase 2: Screener処理ボトルネック分析")
         
         # ログ解析によるScreener処理時間推定
         screener_analysis = {
@@ -107,11 +107,11 @@ class RealPerformanceAnalyzer:
         self.results["bottleneck_analysis"]["screener"] = screener_analysis
         self.results["bottleneck_analysis"]["screener_bottlenecks"] = bottlenecks
         
-        print("  📊 Screener処理時間分析:")
+        print("  [CHART] Screener処理時間分析:")
         for phase, time_info in screener_analysis.items():
             print(f"    - {phase}: {time_info}")
             
-        print("  🎯 主要ボトルネック:")
+        print("  [TARGET] 主要ボトルネック:")
         for key, info in bottlenecks.items():
             print(f"    - {key}: {info}")
             
@@ -119,7 +119,7 @@ class RealPerformanceAnalyzer:
     
     def analyze_document_claims_vs_reality(self):
         """文書記載vs実測の乖離分析"""
-        print("\n🔍 Phase 3: 文書記載vs実測乖離分析")
+        print("\n[SEARCH] Phase 3: 文書記載vs実測乖離分析")
         
         document_claims = {
             "system_startup": {
@@ -154,14 +154,14 @@ class RealPerformanceAnalyzer:
         self.results["bottleneck_analysis"]["document_vs_reality"] = document_claims
         self.results["bottleneck_analysis"]["reality_assessment"] = reality_assessment
         
-        print("  📊 文書記載vs実測比较:")
+        print("  [CHART] 文書記載vs実測比较:")
         for aspect, data in document_claims.items():
             print(f"    - {aspect}:")
             print(f"      記載: {data['claimed']}")
             print(f"      実測: {data['reality']}")
             print(f"      乖離: {data['discrepancy_factor']}")
             
-        print("  💡 現実評価:")
+        print("  [IDEA] 現実評価:")
         for key, value in reality_assessment.items():
             if isinstance(value, list):
                 print(f"    - {key}:")
@@ -174,7 +174,7 @@ class RealPerformanceAnalyzer:
     
     def assess_further_improvement_potential(self):
         """さらなる改善可能性の技術的評価"""
-        print("\n🔍 Phase 4: さらなる改善可能性評価")
+        print("\n[SEARCH] Phase 4: さらなる改善可能性評価")
         
         improvement_opportunities = {
             "high_impact_low_effort": {
@@ -237,7 +237,7 @@ class RealPerformanceAnalyzer:
         self.results["improvement_assessment"]["opportunities"] = improvement_opportunities
         self.results["improvement_assessment"]["roadmap"] = realistic_roadmap
         
-        print("  🎯 改善機会分析:")
+        print("  [TARGET] 改善機会分析:")
         for category, opportunities in improvement_opportunities.items():
             print(f"    {category}:")
             for opp_name, details in opportunities.items():
@@ -246,7 +246,7 @@ class RealPerformanceAnalyzer:
                 print(f"        工数: {details['effort']}")
                 print(f"        実現性: {details['technical_feasibility']}")
                 
-        print("  📋 現実的ロードマップ:")
+        print("  [LIST] 現実的ロードマップ:")
         for phase, details in realistic_roadmap.items():
             if isinstance(details, dict) and 'duration' in details:
                 print(f"    {phase}:")
@@ -287,7 +287,7 @@ class RealPerformanceAnalyzer:
         print(f"\n📄 包括的分析レポート保存: {report_file}")
         
         # 最終結論表示
-        print("\n🎯 最終結論:")
+        print("\n[TARGET] 最終結論:")
         print(f"  ユーザー評価の正確性: {final_conclusion['user_assessment_accuracy']}")
         print(f"  文書記載の正確性: {final_conclusion['document_claims_accuracy']}")
         print("  実際のボトルネック:")
@@ -300,7 +300,7 @@ class RealPerformanceAnalyzer:
 
 def main():
     """メイン実行関数"""
-    print("🔍 DSSMSシステム実測パフォーマンス詳細分析開始")
+    print("[SEARCH] DSSMSシステム実測パフォーマンス詳細分析開始")
     print("=" * 60)
     
     analyzer = RealPerformanceAnalyzer()
@@ -321,11 +321,11 @@ def main():
         # 最終レポート生成
         results = analyzer.generate_comprehensive_report()
         
-        print("\n✅ 実測パフォーマンス分析完了")
+        print("\n[OK] 実測パフォーマンス分析完了")
         return results
         
     except Exception as e:
-        print(f"\n❌ 分析中にエラーが発生: {e}")
+        print(f"\n[ERROR] 分析中にエラーが発生: {e}")
         import traceback
         traceback.print_exc()
         return None

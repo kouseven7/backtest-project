@@ -40,10 +40,10 @@ def demo_simple_mode():
         
         # 初期化テスト
         if runner.initialize(args):
-            print("✅ 初期化成功")
+            print("[OK] 初期化成功")
             
             # 単一実行テスト（実際の実行ループは行わない）
-            print("📊 コンポーネント状態確認...")
+            print("[CHART] コンポーネント状態確認...")
             
             if runner.scheduler:
                 print(f"  - スケジューラー: {runner.scheduler.get_status()}")
@@ -54,12 +54,12 @@ def demo_simple_mode():
             if runner.strategy_manager:
                 print(f"  - 戦略管理: {runner.strategy_manager.get_execution_summary()}")
             
-            print("✅ シンプルモードデモ完了")
+            print("[OK] シンプルモードデモ完了")
         else:
-            print("❌ 初期化失敗")
+            print("[ERROR] 初期化失敗")
             
     except Exception as e:
-        print(f"❌ シンプルモードデモエラー: {e}")
+        print(f"[ERROR] シンプルモードデモエラー: {e}")
 
 def demo_configuration_validation():
     """設定ファイル検証デモ"""
@@ -77,11 +77,11 @@ def demo_configuration_validation():
             if Path(config_file).exists():
                 with open(config_file, 'r', encoding='utf-8') as f:
                     config = json.load(f)
-                print(f"✅ {config_file}: 有効")
+                print(f"[OK] {config_file}: 有効")
             else:
-                print(f"⚠️  {config_file}: ファイル不存在")
+                print(f"[WARNING]  {config_file}: ファイル不存在")
         except Exception as e:
-            print(f"❌ {config_file}: {e}")
+            print(f"[ERROR] {config_file}: {e}")
 
 def demo_component_integration():
     """コンポーネント統合テスト"""
@@ -95,20 +95,20 @@ def demo_component_integration():
         
         # スケジューラーテスト
         scheduler = PaperTradeScheduler({'default_interval_minutes': 15})
-        print(f"✅ スケジューラー初期化: {scheduler.get_status()}")
+        print(f"[OK] スケジューラー初期化: {scheduler.get_status()}")
         
         # モニターテスト
         monitor = PaperTradeMonitor({'performance_window_hours': 24})
-        print(f"✅ モニター初期化: {monitor.get_status()}")
+        print(f"[OK] モニター初期化: {monitor.get_status()}")
         
         # 戦略管理テスト
         strategy_manager = StrategyExecutionManager({'execution_mode': 'simple'})
-        print(f"✅ 戦略管理初期化: {strategy_manager.get_execution_summary()}")
+        print(f"[OK] 戦略管理初期化: {strategy_manager.get_execution_summary()}")
         
-        print("✅ 全コンポーネント統合テスト完了")
+        print("[OK] 全コンポーネント統合テスト完了")
         
     except Exception as e:
-        print(f"❌ コンポーネント統合テストエラー: {e}")
+        print(f"[ERROR] コンポーネント統合テストエラー: {e}")
 
 def demo_strategy_execution():
     """戦略実行デモテスト"""
@@ -131,20 +131,20 @@ def demo_strategy_execution():
         result = strategy_manager.execute_strategy('VWAP_Breakout', ['AAPL'])
         
         if result.get('success', False):
-            print(f"✅ 戦略実行成功: {result['strategy']}")
+            print(f"[OK] 戦略実行成功: {result['strategy']}")
             print(f"  - シグナル数: {result.get('signals_generated', 0)}")
             print(f"  - 取引数: {result.get('trades_executed', 0)}")
         else:
-            print(f"⚠️ 戦略実行失敗: {result.get('error', 'Unknown error')}")
+            print(f"[WARNING] 戦略実行失敗: {result.get('error', 'Unknown error')}")
         
-        print("✅ 戦略実行デモ完了")
+        print("[OK] 戦略実行デモ完了")
         
     except Exception as e:
-        print(f"❌ 戦略実行デモエラー: {e}")
+        print(f"[ERROR] 戦略実行デモエラー: {e}")
 
 def main():
     """メインデモ実行"""
-    print("🚀 ペーパートレード実行システム デモ開始")
+    print("[ROCKET] ペーパートレード実行システム デモ開始")
     print(f"実行時刻: {datetime.now()}")
     
     # ログディレクトリ作成
@@ -157,7 +157,7 @@ def main():
     demo_strategy_execution()
     demo_simple_mode()
     
-    print("\n🎉 デモ完了")
+    print("\n[SUCCESS] デモ完了")
 
 if __name__ == "__main__":
     main()

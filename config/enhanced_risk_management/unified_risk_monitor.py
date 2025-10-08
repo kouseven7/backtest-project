@@ -537,6 +537,6 @@ if __name__ == "__main__":
     # テスト実行
     success = run_unified_risk_monitor_test()
     if success:
-        print("✅ UnifiedRiskMonitor test passed")
+        print("[OK] UnifiedRiskMonitor test passed")
     else:
-        print("❌ UnifiedRiskMonitor test failed")
+        print("[ERROR] UnifiedRiskMonitor test failed")

@@ -20,17 +20,17 @@ from fallback_monitoring_system import FallbackMonitor
 
 def test_integrated_auto_cleanup():
     """統合自動削除機能テスト"""
-    print("🧪 自動削除機能統合テスト開始")
+    print("[TEST] 自動削除機能統合テスト開始")
     
     try:
         # FallbackMonitor初期化
         monitor = FallbackMonitor()
         
         # 1. 自動削除機能の利用可能性確認
-        print(f"\n🔧 自動削除機能利用可能: {monitor.auto_cleanup is not None}")
+        print(f"\n[TOOL] 自動削除機能利用可能: {monitor.auto_cleanup is not None}")
         
         # 2. 自動削除統計情報取得
-        print("\n📊 自動削除統計情報:")
+        print("\n[CHART] 自動削除統計情報:")
         cleanup_stats = monitor.get_auto_cleanup_statistics()
         
         if cleanup_stats.get('auto_cleanup_available', True):
@@ -40,11 +40,11 @@ def test_integrated_auto_cleanup():
             print(f"  {cleanup_stats.get('message', '不明なエラー')}")
         
         # 3. 自動削除機能付き週次レポート生成テスト
-        print("\n📋 自動削除機能付き週次レポート生成テスト...")
+        print("\n[LIST] 自動削除機能付き週次レポート生成テスト...")
         enhanced_report = monitor.generate_weekly_report_with_cleanup()
         
         # 4. 結果検証
-        print("\n✅ テスト結果:")
+        print("\n[OK] テスト結果:")
         print(f"  統合ステータス: {enhanced_report.get('integration_status', 'unknown')}")
         print(f"  自動削除有効: {enhanced_report.get('auto_cleanup_enabled', False)}")
         
@@ -66,11 +66,11 @@ def test_integrated_auto_cleanup():
             else:
                 print(f"  {subdir}/: ディレクトリ未作成")
         
-        print("\n🎉 自動削除機能統合テスト成功")
+        print("\n[SUCCESS] 自動削除機能統合テスト成功")
         return True
         
     except Exception as e:
-        print(f"❌ 統合テスト失敗: {e}")
+        print(f"[ERROR] 統合テスト失敗: {e}")
         import traceback
         traceback.print_exc()
         return False

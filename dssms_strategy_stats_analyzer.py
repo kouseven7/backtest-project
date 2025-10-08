@@ -52,7 +52,7 @@ class DSSMSStrategyStatsAnalyzer:
         
     def analyze_excel_strategy_stats(self, excel_path: str) -> Dict[str, Any]:
         """Excelファイルの戦略別統計シートを分析"""
-        self.logger.info(f"📊 Excel戦略別統計分析開始: {excel_path}")
+        self.logger.info(f"[CHART] Excel戦略別統計分析開始: {excel_path}")
         
         try:
             # Excelファイルを読み込み
@@ -287,7 +287,7 @@ class DSSMSStrategyStatsAnalyzer:
     
     def check_unified_output_engine(self) -> Dict[str, Any]:
         """統一出力エンジンのコードを確認"""
-        self.logger.info("🔧 統一出力エンジンコード分析")
+        self.logger.info("[TOOL] 統一出力エンジンコード分析")
         
         try:
             engine_path = "src/dssms/unified_output_engine.py"
@@ -323,7 +323,7 @@ class DSSMSStrategyStatsAnalyzer:
     
     def generate_comprehensive_report(self, excel_path: str, json_path: str, text_path: str) -> str:
         """総合戦略別統計問題レポート生成"""
-        self.logger.info("🔍 総合戦略別統計問題分析開始")
+        self.logger.info("[SEARCH] 総合戦略別統計問題分析開始")
         
         # 各ファイルを分析
         excel_analysis = self.analyze_excel_strategy_stats(excel_path)
@@ -353,7 +353,7 @@ class DSSMSStrategyStatsAnalyzer:
         with open(summary_path, 'w', encoding='utf-8') as f:
             f.write(summary)
         
-        self.logger.info(f"📋 詳細レポート: {report_path}")
+        self.logger.info(f"[LIST] 詳細レポート: {report_path}")
         self.logger.info(f"📝 サマリーレポート: {summary_path}")
         
         return summary_path
@@ -368,7 +368,7 @@ class DSSMSStrategyStatsAnalyzer:
         report.append("")
         
         # 問題サマリー
-        report.append("🚨 発見された問題:")
+        report.append("[ALERT] 発見された問題:")
         report.append("-" * 40)
         if self.issues:
             for i, issue in enumerate(self.issues, 1):
@@ -382,7 +382,7 @@ class DSSMSStrategyStatsAnalyzer:
         # Excel分析結果
         excel_data = self.analysis_results.get('excel_analysis', {})
         if excel_data and not excel_data.get('error'):
-            report.append("📊 Excel戦略別統計分析:")
+            report.append("[CHART] Excel戦略別統計分析:")
             report.append("-" * 40)
             report.append(f"戦略別統計シート: {'発見' if excel_data.get('sheet_found') else '未発見'}")
             if excel_data.get('sheet_found'):
@@ -419,7 +419,7 @@ class DSSMSStrategyStatsAnalyzer:
         # 統一出力エンジン分析
         engine_data = self.analysis_results.get('engine_analysis', {})
         if engine_data and not engine_data.get('error'):
-            report.append("🔧 統一出力エンジン分析:")
+            report.append("[TOOL] 統一出力エンジン分析:")
             report.append("-" * 40)
             report.append(f"エンジンファイル: {'存在' if engine_data.get('engine_file_exists') else '不在'}")
             report.append(f"戦略処理メソッド: {engine_data.get('strategy_methods_found', [])}")
@@ -427,7 +427,7 @@ class DSSMSStrategyStatsAnalyzer:
             report.append("")
         
         # 修正提案
-        report.append("🔧 修正提案:")
+        report.append("[TOOL] 修正提案:")
         report.append("-" * 40)
         
         if any(issue['category'] in ['single_strategy', 'missing_strategies'] for issue in self.issues):
@@ -461,7 +461,7 @@ def main():
     json_path = "backtest_results/dssms_results/dssms_unified_data_20250908_150951.json"
     text_path = "backtest_results/dssms_results/dssms_unified_report_20250908_150951.txt"
     
-    print("🔍 DSSMS戦略別統計問題分析システム")
+    print("[SEARCH] DSSMS戦略別統計問題分析システム")
     print("=" * 60)
     print("対象ファイル:")
     print(f"Excel: {excel_path}")
@@ -472,8 +472,8 @@ def main():
     # 総合分析実行
     summary_path = analyzer.generate_comprehensive_report(excel_path, json_path, text_path)
     
-    print(f"\n✅ 分析完了")
-    print(f"📋 サマリーレポート: {summary_path}")
+    print(f"\n[OK] 分析完了")
+    print(f"[LIST] サマリーレポート: {summary_path}")
     print("\n次のステップ:")
     print("1. サマリーレポートで問題を確認")
     print("2. 統一出力エンジンの戦略別統計生成機能を修正")

@@ -11,7 +11,7 @@ Requirements:
 - matplotlib経由でのグラフ可視化
 - reports/monitoring/配下に出力、自動クリーンアップ対応
 
-Progress Status: Phase 1 - Mini-Task 1/4 基本構造・依存関係実装 ✅
+Progress Status: Phase 1 - Mini-Task 1/4 基本構造・依存関係実装 [OK]
 Next: Mini-Task 2 (データ分析機能実装)
 """
 
@@ -375,9 +375,9 @@ class FallbackMonitor:
         summary += f"Total fallback calls: {total_fallback_calls}. "
         
         if production_metrics.acceptable_for_production:
-            summary += "✅ System ready for production."
+            summary += "[OK] System ready for production."
         else:
-            summary += f"⚠️ Production readiness: {production_metrics.overall_score:.2f}/1.0. "
+            summary += f"[WARNING] Production readiness: {production_metrics.overall_score:.2f}/1.0. "
             
         if high_risk_components:
             summary += f" {len(high_risk_components)} high-risk components require attention."
@@ -450,7 +450,7 @@ class FallbackMonitor:
         
         # Production readiness スタイル決定
         readiness_style = "color: green;" if report.production_metrics.acceptable_for_production else "color: red;"
-        readiness_icon = "✅" if report.production_metrics.acceptable_for_production else "⚠️"
+        readiness_icon = "[OK]" if report.production_metrics.acceptable_for_production else "[WARNING]"
         
         # コンポーネント統計テーブル構築
         stats_rows = ""
@@ -500,18 +500,18 @@ class FallbackMonitor:
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔧 Fallback Monitor - Weekly Report</h1>
+            <h1>[TOOL] Fallback Monitor - Weekly Report</h1>
             <p><strong>Report ID:</strong> {report.report_id}</p>
             <p><strong>Generated:</strong> {report.generation_timestamp.strftime('%Y-%m-%d %H:%M:%S')}</p>
             <p><strong>Analysis Period:</strong> {report.analysis_period_start.strftime('%Y-%m-%d')} ~ {report.analysis_period_end.strftime('%Y-%m-%d')} ({self.analysis_days} days)</p>
         </div>
         
         <div class="executive-summary">
-            <h2>📋 Executive Summary</h2>
+            <h2>[LIST] Executive Summary</h2>
             <p>{report.executive_summary}</p>
         </div>
         
-        <h2>📊 Key Metrics</h2>
+        <h2>[CHART] Key Metrics</h2>
         <div class="metric-card">
             <div class="metric-value" style="{readiness_style}">{readiness_icon} {report.production_metrics.overall_score:.2f}</div>
             <div>Production Readiness</div>
@@ -529,7 +529,7 @@ class FallbackMonitor:
             <div>Components Analyzed</div>
         </div>
         
-        <h2>📈 Fallback Usage Statistics</h2>
+        <h2>[UP] Fallback Usage Statistics</h2>
         <table>
             <thead>
                 <tr>
@@ -547,7 +547,7 @@ class FallbackMonitor:
             </tbody>
         </table>
         
-        <h2>🎯 Production Readiness Assessment</h2>
+        <h2>[TARGET] Production Readiness Assessment</h2>
         <div class="metric-card">
             <div class="metric-value" style="{readiness_style}">
                 {'READY' if report.production_metrics.acceptable_for_production else 'NOT READY'}
@@ -559,13 +559,13 @@ class FallbackMonitor:
             <div>Critical Component Stability</div>
         </div>
         
-        <h3>💡 Recommendations</h3>
+        <h3>[IDEA] Recommendations</h3>
         <ul>
             {recommendations_html}
         </ul>
         
         <div class="chart-section">
-            <h2>📊 Visual Analysis</h2>
+            <h2>[CHART] Visual Analysis</h2>
             {chart_html}
         </div>
         
@@ -733,7 +733,7 @@ if __name__ == "__main__":
     # FallbackMonitor初期化テスト
     monitor = FallbackMonitor()
     
-    print("🔧 FallbackMonitor Demo - Mini-Task 1 Validation")
+    print("[TOOL] FallbackMonitor Demo - Mini-Task 1 Validation")
     print("=" * 50)
     
     # システム状況確認
@@ -743,7 +743,7 @@ if __name__ == "__main__":
     
     # Production readiness評価テスト (placeholder)
     readiness = monitor.evaluate_production_readiness()
-    print(f"\n📊 Production Readiness (placeholder):")
+    print(f"\n[CHART] Production Readiness (placeholder):")
     print(f"  Score: {readiness.overall_score}")
     print(f"  Acceptable: {readiness.acceptable_for_production}")
     
@@ -751,5 +751,5 @@ if __name__ == "__main__":
     cleanup_result = monitor.cleanup_old_reports()
     print(f"\n🧹 Cleanup Test: {cleanup_result}")
     
-    print("\n✅ Mini-Task 1 基本構造実装 - Complete")
-    print("📋 Next: Mini-Task 2 (データ分析機能実装)")
+    print("\n[OK] Mini-Task 1 基本構造実装 - Complete")
+    print("[LIST] Next: Mini-Task 2 (データ分析機能実装)")

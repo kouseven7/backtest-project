@@ -126,19 +126,19 @@ def analyze_toyota_trend_patterns(data: pd.DataFrame):
         logger.info(f"  Q{q}: {q_return:+.1f}% ({q_data.index[0].strftime('%m/%d')} - {q_data.index[-1].strftime('%m/%d')})")
     
     # 推奨戦略
-    logger.info(f"\n💡 分析結果と推奨戦略:")
+    logger.info(f"\n[IDEA] 分析結果と推奨戦略:")
     
     if perfect_order_days == 0:
-        logger.warning("❌ 厳密なPerfect Orderは2023年中に一度も発生していません")
-        logger.info("📈 これは一般的で、多くの銘柄で同様の現象が見られます")
+        logger.warning("[ERROR] 厳密なPerfect Orderは2023年中に一度も発生していません")
+        logger.info("[UP] これは一般的で、多くの銘柄で同様の現象が見られます")
     
     if semi_perfect_days > 0:
-        logger.info(f"✅ 準Perfect Order ({semi_perfect_days}日) を基準にする戦略を推奨")
+        logger.info(f"[OK] 準Perfect Order ({semi_perfect_days}日) を基準にする戦略を推奨")
     elif uptrend_days > valid_days * 0.3:  # 30%以上
-        logger.info(f"✅ 単純上昇トレンド ({uptrend_days}日) を基準にする戦略を推奨")
+        logger.info(f"[OK] 単純上昇トレンド ({uptrend_days}日) を基準にする戦略を推奨")
     else:
-        logger.warning("⚠️  2023年のトヨタはトレンド戦略に適さない可能性があります")
-        logger.info("📊 別の指標（RSI、MACD等）やレンジ戦略を検討してください")
+        logger.warning("[WARNING]  2023年のトヨタはトレンド戦略に適さない可能性があります")
+        logger.info("[CHART] 別の指標（RSI、MACD等）やレンジ戦略を検討してください")
     
     return {
         'perfect_order_days': perfect_order_days,
@@ -192,7 +192,7 @@ def suggest_alternative_strategies():
 
 def main():
     """メイン実行"""
-    logger.info("🔍 パーフェクトオーダー問題の根本分析開始")
+    logger.info("[SEARCH] パーフェクトオーダー問題の根本分析開始")
     
     # データ取得
     data = fetch_stock_data("7203", "2023-01-01", "2023-12-31")
@@ -205,20 +205,20 @@ def main():
     
     # 結論
     logger.info("=" * 60)
-    logger.info("🎯 結論と次のアクション")
+    logger.info("[TARGET] 結論と次のアクション")
     logger.info("=" * 60)
     
     if result['semi_perfect_days'] > 0:
-        logger.info("✅ 準Perfect Order戦略への変更を推奨")
+        logger.info("[OK] 準Perfect Order戦略への変更を推奨")
         logger.info("   修正: 価格 > SMA5 > SMA25 の条件に緩和")
     elif result['uptrend_days'] > result['valid_days'] * 0.3:
-        logger.info("✅ 単純上昇トレンド戦略への変更を推奨")
+        logger.info("[OK] 単純上昇トレンド戦略への変更を推奨")
         logger.info("   修正: 価格 > SMA5 の条件のみに簡略化")
     else:
-        logger.info("❌ パーフェクトオーダー系戦略は2023年トヨタに不適")
+        logger.info("[ERROR] パーフェクトオーダー系戦略は2023年トヨタに不適")
         logger.info("   推奨: 全く異なる戦略（RSI、ボリバン等）に変更")
     
-    logger.info("\n📋 実装優先順位:")
+    logger.info("\n[LIST] 実装優先順位:")
     logger.info("1. 準Perfect Order検出器の実装")
     logger.info("2. DSSMSバックテスター integration")
     logger.info("3. 代替戦略システムの検討")

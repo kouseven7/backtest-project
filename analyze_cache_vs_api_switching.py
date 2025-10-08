@@ -227,15 +227,15 @@ class DSSMSSwitchingAnalyzer:
             # 結論生成
             if degradation_detected:
                 summary['conclusions'].append(
-                    "🔍 仮説支持: キャッシュ蓄積による切替回数減少が確認された"
+                    "[SEARCH] 仮説支持: キャッシュ蓄積による切替回数減少が確認された"
                 )
                 if post_clear_count > 50 and third_run_count < 10:
                     summary['conclusions'].append(
-                        "⚠️ 重大な劣化: 切替回数が大幅に減少（API→キャッシュ影響大）"
+                        "[WARNING] 重大な劣化: 切替回数が大幅に減少（API→キャッシュ影響大）"
                     )
             else:
                 summary['conclusions'].append(
-                    "❌ 仮説不支持: キャッシュ蓄積による明確な切替回数減少は確認されなかった"
+                    "[ERROR] 仮説不支持: キャッシュ蓄積による明確な切替回数減少は確認されなかった"
                 )
         
         return summary

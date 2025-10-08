@@ -221,7 +221,7 @@ def main():
         logger.info(f"総合結果: {'✓ 成功' if overall_success else '✗ 失敗'}")
         
         if overall_success:
-            logger.info("\n🎉 DSSMS Phase 3 Task 3.1 実装完了!")
+            logger.info("\n[SUCCESS] DSSMS Phase 3 Task 3.1 実装完了!")
             logger.info("市場全体監視システムが正常に動作しています。")
         else:
             logger.warning("\n⚠ いくつかの問題が検出されました。ログを確認してください。")

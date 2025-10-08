@@ -27,7 +27,7 @@ class ContextEngineExcelImpactAnalyzer:
         
     def analyze_engine_excel_impact(self):
         """各エンジンのExcel出力への実際の影響度を分析"""
-        print("🔍 コンテキスト内エンジンのExcel出力影響調査開始")
+        print("[SEARCH] コンテキスト内エンジンのExcel出力影響調査開始")
         print("=" * 60)
         
         for engine_file in self.context_engines:
@@ -36,7 +36,7 @@ class ContextEngineExcelImpactAnalyzer:
                 impact_data = self._analyze_single_engine(engine_file)
                 self.analysis_results[engine_file] = impact_data
             else:
-                print(f"\n❌ ファイル未発見: {engine_file}")
+                print(f"\n[ERROR] ファイル未発見: {engine_file}")
                 self.analysis_results[engine_file] = {"status": "not_found"}
                 
         return self.analysis_results
@@ -204,7 +204,7 @@ class ContextEngineExcelImpactAnalyzer:
             self.analyze_engine_excel_impact()
         
         print("\n" + "="*80)
-        print("📊 Excel出力影響度分析レポート")
+        print("[CHART] Excel出力影響度分析レポート")
         print("="*80)
         
         # 影響度による分類
@@ -275,7 +275,7 @@ class ContextEngineExcelImpactAnalyzer:
     
     def _analyze_conflicts(self):
         """競合分析"""
-        print(f"\n⚠️  競合問題分析:")
+        print(f"\n[WARNING]  競合問題分析:")
         
         conflict_count = 0
         for engine_file, data in self.analysis_results.items():
@@ -286,13 +286,13 @@ class ContextEngineExcelImpactAnalyzer:
                     print(f"  🔸 {engine_file}: {', '.join(conflicts)}")
         
         if conflict_count == 0:
-            print("  ✅ 重大な競合は検出されませんでした")
+            print("  [OK] 重大な競合は検出されませんでした")
         else:
-            print(f"  ❌ {conflict_count}個のファイルで潜在的競合を検出")
+            print(f"  [ERROR] {conflict_count}個のファイルで潜在的競合を検出")
     
     def _generate_recommendations(self):
         """推奨アクション生成"""
-        print(f"\n💡 推奨アクション:")
+        print(f"\n[IDEA] 推奨アクション:")
         
         # 使用中で高影響のファイルを特定
         active_high_impact = []
@@ -333,12 +333,12 @@ class ContextEngineExcelImpactAnalyzer:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(self.analysis_results, f, ensure_ascii=False, indent=2)
         
-        print(f"\n✅ 分析結果保存: {output_file}")
+        print(f"\n[OK] 分析結果保存: {output_file}")
         return output_file
 
 def main():
     """メイン実行"""
-    print("🚀 コンテキスト内エンジンファイルのExcel出力影響調査")
+    print("[ROCKET] コンテキスト内エンジンファイルのExcel出力影響調査")
     print("=" * 60)
     
     analyzer = ContextEngineExcelImpactAnalyzer()
@@ -352,7 +352,7 @@ def main():
     # 結果保存
     output_file = analyzer.save_results()
     
-    print(f"\n✅ 調査完了: {output_file}")
+    print(f"\n[OK] 調査完了: {output_file}")
     
     return output_file
 

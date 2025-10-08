@@ -1706,10 +1706,10 @@ def main():
         }
         
         generator = DSSMSReportGenerator(config)
-        print("✅ DSSMSReportGenerator初期化成功")
+        print("[OK] DSSMSReportGenerator初期化成功")
         
         # 2. サンプルデータ作成
-        print(f"\n📊 統合サンプルデータ作成:")
+        print(f"\n[CHART] 統合サンプルデータ作成:")
         
         all_data = {
             'backtest_results': {
@@ -1747,14 +1747,14 @@ def main():
             }
         }
         
-        print(f"✅ 統合データ準備完了: {len(all_data['backtest_results']['daily_results'])}件の日次データ")
+        print(f"[OK] 統合データ準備完了: {len(all_data['backtest_results']['daily_results'])}件の日次データ")
         
         # 3. 包括的レポート生成テスト
-        print(f"\n📋 包括的レポート生成テスト:")
+        print(f"\n[LIST] 包括的レポート生成テスト:")
         
         comprehensive_report = generator.generate_comprehensive_report(all_data)
         
-        print(f"✅ 包括的レポート生成成功:")
+        print(f"[OK] 包括的レポート生成成功:")
         print(f"  - 総合評価: {comprehensive_report['executive_summary']['overall_grade']}")
         print(f"  - 総合スコア: {comprehensive_report['executive_summary']['overall_score']:.3f}")
         print(f"  - 主要成果数: {len(comprehensive_report['executive_summary']['key_achievements'])}")
@@ -1766,24 +1766,24 @@ def main():
             print(f"  - {achievement}")
         
         # 5. 推奨事項表示
-        print(f"\n💡 主要推奨事項:")
+        print(f"\n[IDEA] 主要推奨事項:")
         for i, rec in enumerate(comprehensive_report['recommendations'][:3]):
             print(f"  {i+1}. {rec['title']}: {rec['description']}")
         
         # 6. レポート統計確認
-        print(f"\n📊 レポート統計確認:")
+        print(f"\n[CHART] レポート統計確認:")
         stats = generator.get_report_statistics()
         
-        print(f"✅ レポート統計取得成功:")
+        print(f"[OK] レポート統計取得成功:")
         print(f"  - 総レポート数: {stats['total_reports']}")
         print(f"  - 分析深度: {stats['analysis_depth']}")
         print(f"  - 最終生成: {stats['last_report']}")
         
-        print(f"\n🎉 DSSMSReportGenerator テスト完了！")
+        print(f"\n[SUCCESS] DSSMSReportGenerator テスト完了！")
         print(f"実装機能: 包括分析、推奨事項生成、トレンド分析、ベンチマーク評価")
         
     except Exception as e:
-        print(f"❌ テスト実行エラー: {e}")
+        print(f"[ERROR] テスト実行エラー: {e}")
         import traceback
         traceback.print_exc()
 

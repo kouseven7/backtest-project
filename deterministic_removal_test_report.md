@@ -8,22 +8,22 @@
 
 ## 重要発見事項
 
-### ✅ ComprehensiveScoringEngine実データ分析の確認
+### [OK] ComprehensiveScoringEngine実データ分析の確認
 - **実データスコア範囲**: 0.511-0.992
 - **修復実行**: `top_symbol=6758` として正常に修復
 - **最上位銘柄**: 6758 (0.992)
 
 これにより決定論的計算除去が成功し、実データ分析システムが正常に動作していることが確認されました。
 
-### ⚠️ 新たな問題発見: ランキング診断の継続的失敗
+### [WARNING] 新たな問題発見: ランキング診断の継続的失敗
 
 #### 問題パターン
 ```log
-[2025-09-25 14:43:37,804] INFO - dssms.backtester - 🔍 診断完了: 成功=False, top_symbol=None
-[2025-09-25 14:43:37,804] INFO - dssms.backtester - 🔧 決定論的計算除去: ComprehensiveScoringEngine実データ分析開始
+[2025-09-25 14:43:37,804] INFO - dssms.backtester - [SEARCH] 診断完了: 成功=False, top_symbol=None
+[2025-09-25 14:43:37,804] INFO - dssms.backtester - [TOOL] 決定論的計算除去: ComprehensiveScoringEngine実データ分析開始
 [2025-09-25 14:43:37,803] INFO - dssms.backtester - 実データスコア計算完了: 5銘柄, 範囲=0.511-0.992
-[2025-09-25 14:43:37,804] WARNING - dssms.backtester - 🔍 Resolution 19: ランキング診断失敗 - 修復が必要です
-[2025-09-25 14:43:37,804] INFO - dssms.backtester - 🔧 診断結果修正: top_symbol=6758
+[2025-09-25 14:43:37,804] WARNING - dssms.backtester - [SEARCH] Resolution 19: ランキング診断失敗 - 修復が必要です
+[2025-09-25 14:43:37,804] INFO - dssms.backtester - [TOOL] 診断結果修正: top_symbol=6758
 ```
 
 #### 診断結果構造の不一致
@@ -52,12 +52,12 @@
 
 ## 問題分析
 
-### Phase 1 成果: ✅ 決定論的計算除去成功
+### Phase 1 成果: [OK] 決定論的計算除去成功
 1. **ComprehensiveScoringEngine統合**: 正常動作確認
 2. **実データスコア範囲**: 0.511-0.992 (期待された動的範囲)
 3. **フォールバック機能**: 診断失敗時の修復機能が作動
 
-### 新発見問題: ⚠️ ランキングパイプライン診断の不安定性
+### 新発見問題: [WARNING] ランキングパイプライン診断の不安定性
 1. **構造不一致**: 初日と2日目以降のランキング結果構造が異なる
 2. **診断成功率**: 1/10日 (10%)
 3. **影響**: 有効なランキング情報の欠如により切替判定が機能しない
@@ -138,9 +138,9 @@ YFTzMissingError('possibly delisted; no timezone found')
 - **切替頻度**: 1回/10日 → 5-7回/10日（目標）
 
 ### 実装状況
-- ✅ Phase 4B-1: 動的信頼度計算完了
-- ✅ Phase 4B-2: 市場条件動的計算完了  
-- ✅ データ取得エラー修正完了
+- [OK] Phase 4B-1: 動的信頼度計算完了
+- [OK] Phase 4B-2: 市場条件動的計算完了  
+- [OK] データ取得エラー修正完了
 - 🚧 Phase 4Bテスト実行: 準備完了
 
 ### 推奨次ステップ
@@ -154,21 +154,21 @@ YFTzMissingError('possibly delisted; no timezone found')
 
 ## Phase 4B実行結果 (2025-09-25 15:23更新)
 
-### 🚨 重大発見: Phase 4B失敗分析
+### [ALERT] 重大発見: Phase 4B失敗分析
 
 #### テスト実行結果
-- **切替回数**: 0回 (目標: 3-7回) ❌
-- **最終価値**: 0円 (初期: 1,000,000円) ❌  
-- **総リターン**: -100.00% (目標: >-50%) ❌
-- **成功基準達成**: 1/3項目のみ ❌
+- **切替回数**: 0回 (目標: 3-7回) [ERROR]
+- **最終価値**: 0円 (初期: 1,000,000円) [ERROR]  
+- **総リターン**: -100.00% (目標: >-50%) [ERROR]
+- **成功基準達成**: 1/3項目のみ [ERROR]
 
 #### 動的計算システムの実際動作確認
 ```log
-🔍 ISM MARKET CONTEXT: {
-  'volatility': 0.017 → 0.234 → 0.097 → 0.027 (動的変動確認 ✅)
-  'market_condition': 'bullish' → 'high_volatility' → 'moderate_volatility' (動的判定確認 ✅)
-  'market_trend': 0.027 → 0.000012 → -0.010 → 0.028 (実データ分析確認 ✅)
-  'time_since_last_switch': 3 → 4 → 5 → 6 → 7 → 8 → 9 (経過日数追跡確認 ✅)
+[SEARCH] ISM MARKET CONTEXT: {
+  'volatility': 0.017 → 0.234 → 0.097 → 0.027 (動的変動確認 [OK])
+  'market_condition': 'bullish' → 'high_volatility' → 'moderate_volatility' (動的判定確認 [OK])
+  'market_trend': 0.027 → 0.000012 → -0.010 → 0.028 (実データ分析確認 [OK])
+  'time_since_last_switch': 3 → 4 → 5 → 6 → 7 → 8 → 9 (経過日数追跡確認 [OK])
 }
 ```
 
@@ -196,8 +196,8 @@ confidence = 0.6 * market_factor * time_factor
 
 #### 3. ランキング結果の構造不整合継続
 ```log
-🔧 Phase 4A構造不整合検出: 欠如キー={'top_symbol', 'diagnostic_info', 'data_source', 'rankings', 'top_score', 'total_symbols'}
-🔧 構造修復完了: top_symbol=6758, total_symbols=5
+[TOOL] Phase 4A構造不整合検出: 欠如キー={'top_symbol', 'diagnostic_info', 'data_source', 'rankings', 'top_score', 'total_symbols'}
+[TOOL] 構造修復完了: top_symbol=6758, total_symbols=5
 ```
 - **Phase 4A修復**: 毎日実行されているが根本解決されていない
 - **影響**: ランキングパイプラインの信頼性低下の可能性
@@ -211,9 +211,9 @@ confidence = 0.6 * market_factor * time_factor
 4. **ランキング構造根本修復**: Phase 4A依存から脱却
 
 #### 技術分析
-- **動的計算システム**: ✅ 完全動作確認
-- **市場データ取得**: ✅ 実データ正常取得  
-- **ISM統合システム**: ✅ 100%統合率達成
-- **切替判定ロジック**: ❌ 過度に保守的で機能不全
+- **動的計算システム**: [OK] 完全動作確認
+- **市場データ取得**: [OK] 実データ正常取得  
+- **ISM統合システム**: [OK] 100%統合率達成
+- **切替判定ロジック**: [ERROR] 過度に保守的で機能不全
 
 **Phase 4B結論**: 技術実装は成功、切替判定ロジックの根本的緩和が必要

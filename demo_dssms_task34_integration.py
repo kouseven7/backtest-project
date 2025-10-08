@@ -259,7 +259,7 @@ def run_emergency_scenario_demo():
     if emergency_result.evaluation_result.alerts:
         logger.info(f"\n重要アラート:")
         for alert in emergency_result.evaluation_result.alerts:
-            logger.info(f"  ⚠️  {alert}")
+            logger.info(f"  [WARNING]  {alert}")
     
     return emergency_result
 

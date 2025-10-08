@@ -36,9 +36,9 @@ class DSSMSAnalyzer:
             # DSSMS backtesterをインポート（エラーハンドリング付き）
             try:
                 from src.dssms.dssms_backtester import DSSMSBacktester
-                logger.info("✅ DSSMSBacktester インポート成功")
+                logger.info("[OK] DSSMSBacktester インポート成功")
             except ImportError as e:
-                logger.error(f"❌ DSSMSBacktester インポート失敗: {e}")
+                logger.error(f"[ERROR] DSSMSBacktester インポート失敗: {e}")
                 return {
                     'status': 'import_failed',
                     'error': str(e),
@@ -148,7 +148,7 @@ class DSSMSAnalyzer:
         ultra_simple = UltraSimpleRanking(['6758', '7203', '8306', '9984'])
         ultra_results = ultra_simple.simulate_switches(100)
         
-        logger.info(f"✅ UltraSimple: {ultra_results['switch_count']}回切替")
+        logger.info(f"[OK] UltraSimple: {ultra_results['switch_count']}回切替")
         
         # Step 2: DSSMS解析
         dssms_analysis = self.analyze_dssms_switching_logic()
@@ -196,15 +196,15 @@ class DSSMSAnalyzer:
         recommendations = []
         
         if dssms_candidates < ultra_switches * 0.3:
-            recommendations.append("🚨 CRITICAL: 切替回数が70%以上減少")
+            recommendations.append("[ALERT] CRITICAL: 切替回数が70%以上減少")
             recommendations.append("→ DSSMS切替判定ロジックに根本的問題")
             recommendations.append("→ UltraSimpleの決定論的ロジック適用を検討")
             
         if dssms_candidates == 0:
-            recommendations.append("🔥 EMERGENCY: 切替が全く発生していない")
+            recommendations.append("[FIRE] EMERGENCY: 切替が全く発生していない")
             recommendations.append("→ top_symbol=None または無限ループの可能性")
             
-        recommendations.append("✅ 詳細調査項目:")
+        recommendations.append("[OK] 詳細調査項目:")
         recommendations.append("  1. DSSMSのshould_switch()ロジック確認")
         recommendations.append("  2. top_symbol選択プロセス検証")
         recommendations.append("  3. 切替条件の複雑性簡素化")
@@ -214,7 +214,7 @@ class DSSMSAnalyzer:
 def main():
     """メイン解析実行"""
     
-    print("🔍 DSSMS vs Ultra Simple 差分解析")
+    print("[SEARCH] DSSMS vs Ultra Simple 差分解析")
     print("=" * 60)
     print(f"実行時刻: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print()
@@ -226,17 +226,17 @@ def main():
         comparison_results = analyzer.compare_ultra_vs_dssms()
         
         # 結果表示
-        print("📊 比較結果:")
+        print("[CHART] 比較結果:")
         print("-" * 40)
         
         # UltraSimple結果
         ultra = comparison_results['ultra_simple']
-        print(f"✅ Ultra Simple: {ultra['switches']}回切替 ({ultra['status']})")
+        print(f"[OK] Ultra Simple: {ultra['switches']}回切替 ({ultra['status']})")
         print(f"   パターン: {ultra['pattern']}")
         
         # DSSMS結果  
         dssms = comparison_results['dssms']
-        print(f"\n🔍 DSSMS分析: {dssms.get('status', 'unknown')}")
+        print(f"\n[SEARCH] DSSMS分析: {dssms.get('status', 'unknown')}")
         
         if dssms.get('status') == 'log_analyzed':
             print(f"   ログファイル: {dssms['log_file']}")
@@ -255,14 +255,14 @@ def main():
         
         # 推奨事項
         if 'recommendations' in diff:
-            print(f"\n💡 推奨事項:")
+            print(f"\n[IDEA] 推奨事項:")
             for rec in diff['recommendations']:
                 print(f"   {rec}")
         
         return comparison_results
         
     except Exception as e:
-        print(f"❌ 解析エラー: {e}")
+        print(f"[ERROR] 解析エラー: {e}")
         logger.error(f"メイン解析失敗: {e}")
         return None
 

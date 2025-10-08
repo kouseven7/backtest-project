@@ -1039,24 +1039,24 @@ if __name__ == "__main__":
         manager = MultiStrategyCoordinationManager()
         
         # コンポーネント初期化（利用可能なもののみ）
-        print("🔧 Initializing coordination components...")
+        print("[TOOL] Initializing coordination components...")
         try:
             manager.initialize_components()
-            print("✅ Components initialized successfully")
+            print("[OK] Components initialized successfully")
         except Exception as e:
-            print(f"⚠️ Component initialization partial: {e}")
+            print(f"[WARNING] Component initialization partial: {e}")
         
         # デモ戦略
         demo_strategies = create_demo_strategies()
         
-        print(f"\n🎯 Creating coordination plan for {len(demo_strategies)} strategies:")
+        print(f"\n[TARGET] Creating coordination plan for {len(demo_strategies)} strategies:")
         for strategy in demo_strategies:
             print(f"  - {strategy}")
         
         # 調整計画作成
         plan = manager.create_coordination_plan(demo_strategies)
         
-        print(f"\n📋 Coordination Plan Created:")
+        print(f"\n[LIST] Coordination Plan Created:")
         print(f"  Plan ID: {plan.plan_id}")
         print(f"  Strategies: {len(plan.strategies)}")
         print(f"  Resource Allocations: {len(plan.resource_allocations)}")
@@ -1070,13 +1070,13 @@ if __name__ == "__main__":
         if risk['risk_factors']:
             print(f"  Risk Factors:")
             for factor in risk['risk_factors']:
-                print(f"    ⚠️ {factor}")
+                print(f"    [WARNING] {factor}")
         
         # フォールバックシナリオ表示
         print(f"  Fallback Scenarios: {len(plan.fallback_scenarios)} levels prepared")
         
         # 調整実行開始
-        print(f"\n🚀 Starting coordination execution...")
+        print(f"\n[ROCKET] Starting coordination execution...")
         execution_id = manager.execute_coordination_plan(plan)
         print(f"Execution ID: {execution_id}")
         
@@ -1087,7 +1087,7 @@ if __name__ == "__main__":
         while time.time() - start_monitor_time < monitoring_duration:
             status = manager.get_coordination_status()
             
-            print(f"\n📊 Coordination Status (t+{int(time.time() - start_monitor_time)}s):")
+            print(f"\n[CHART] Coordination Status (t+{int(time.time() - start_monitor_time)}s):")
             print(f"  State: {status['state']}")
             print(f"  Active Strategies: {len(status.get('active_strategies', []))}")
             print(f"  Completed Strategies: {len(status.get('completed_strategies', []))}")
@@ -1102,7 +1102,7 @@ if __name__ == "__main__":
             time.sleep(5)
         
         # 最終統計
-        print(f"\n📈 Final Statistics:")
+        print(f"\n[UP] Final Statistics:")
         stats = manager.performance_stats
         print(f"  Total Coordinations: {stats['total_coordinations']}")
         print(f"  Successful: {stats['successful_coordinations']}")
@@ -1113,10 +1113,10 @@ if __name__ == "__main__":
         if manager.coordination_history:
             print(f"  Coordination History: {len(manager.coordination_history)} entries")
         
-        print("\n✅ Multi-Strategy Coordination Manager demo completed successfully!")
+        print("\n[OK] Multi-Strategy Coordination Manager demo completed successfully!")
         
     except Exception as e:
-        print(f"\n❌ Demo failed: {e}")
+        print(f"\n[ERROR] Demo failed: {e}")
         import traceback
         traceback.print_exc()
         

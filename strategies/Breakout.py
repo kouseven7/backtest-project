@@ -192,17 +192,17 @@ class BreakoutStrategy(BaseStrategy):
         """
         # 最適化パラメータの読み込み
         if hasattr(self, 'optimization_mode') and self.optimization_mode and not self.load_optimized_parameters():
-            print(f"⚠️ 最適化パラメータの読み込みに失敗しました。デフォルトパラメータを使用します。")
+            print(f"[WARNING] 最適化パラメータの読み込みに失敗しました。デフォルトパラメータを使用します。")
         
         # 使用するパラメータの表示
         if hasattr(self, '_approved_params') and self._approved_params:
-            print(f"✅ 最適化パラメータを使用:")
+            print(f"[OK] 最適化パラメータを使用:")
             print(f"   パラメータID: {self._approved_params.get('parameter_id', 'N/A')}")
             print(f"   作成日時: {self._approved_params.get('created_at', 'N/A')}")
             print(f"   シャープレシオ: {self._approved_params.get('sharpe_ratio', 'N/A')}")
             print(f"   パラメータ: {self._approved_params.get('parameters', {})}")
         else:
-            print(f"📊 デフォルトパラメータを使用: {self.params}")
+            print(f"[CHART] デフォルトパラメータを使用: {self.params}")
         
         # 戦略実行
         return self.backtest()
@@ -254,14 +254,14 @@ class BreakoutStrategy(BaseStrategy):
                 # パラメータを更新
                 self.params.update(params['parameters'])
                 self._approved_params = params
-                print(f"✅ 最適化パラメータを読み込みました (ID: {params.get('parameter_id', 'N/A')})")
+                print(f"[OK] 最適化パラメータを読み込みました (ID: {params.get('parameter_id', 'N/A')})")
                 return True
             else:
-                print(f"⚠️ 承認済みの最適化パラメータが見つかりません")
+                print(f"[WARNING] 承認済みの最適化パラメータが見つかりません")
                 return False
                 
         except Exception as e:
-            print(f"❌ 最適化パラメータの読み込みでエラー: {e}")
+            print(f"[ERROR] 最適化パラメータの読み込みでエラー: {e}")
             return False
 
 # テストコード

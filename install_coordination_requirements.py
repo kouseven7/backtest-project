@@ -144,7 +144,7 @@ def install_packages(packages: List[str], description: str = "") -> Dict[str, An
             )
             
             if result.returncode == 0:
-                print(f"    ✅ {package} installed successfully")
+                print(f"    [OK] {package} installed successfully")
                 results['successful'] += 1
                 results['details'].append({
                     'package': package,
@@ -153,7 +153,7 @@ def install_packages(packages: List[str], description: str = "") -> Dict[str, An
                 })
             else:
                 error_msg = result.stderr.strip() or result.stdout.strip()
-                print(f"    ❌ {package} installation failed: {error_msg}")
+                print(f"    [ERROR] {package} installation failed: {error_msg}")
                 results['failed'] += 1
                 results['details'].append({
                     'package': package,
@@ -162,7 +162,7 @@ def install_packages(packages: List[str], description: str = "") -> Dict[str, An
                 })
                 
         except subprocess.TimeoutExpired:
-            print(f"    ❌ {package} installation timeout")
+            print(f"    [ERROR] {package} installation timeout")
             results['failed'] += 1
             results['details'].append({
                 'package': package,
@@ -171,7 +171,7 @@ def install_packages(packages: List[str], description: str = "") -> Dict[str, An
             })
             
         except Exception as e:
-            print(f"    ❌ {package} installation error: {e}")
+            print(f"    [ERROR] {package} installation error: {e}")
             results['failed'] += 1
             results['details'].append({
                 'package': package,
@@ -239,16 +239,16 @@ def create_requirements_txt():
         with open('coordination_requirements.txt', 'w', encoding='utf-8') as f:
             f.write(requirements_content)
         
-        print("✅ coordination_requirements.txt created")
+        print("[OK] coordination_requirements.txt created")
         return True
         
     except Exception as e:
-        print(f"❌ Failed to create requirements.txt: {e}")
+        print(f"[ERROR] Failed to create requirements.txt: {e}")
         return False
 
 def main():
     """メイン実行"""
-    print("🚀 Multi-Strategy Coordination System - Package Installation")
+    print("[ROCKET] Multi-Strategy Coordination System - Package Installation")
     print("=" * 70)
     
     # Python バージョン確認
@@ -257,30 +257,30 @@ def main():
     print(f"   {version_msg}")
     
     if not version_ok:
-        print("❌ Incompatible Python version. Please upgrade to Python 3.8+")
+        print("[ERROR] Incompatible Python version. Please upgrade to Python 3.8+")
         sys.exit(1)
     
-    print("✅ Python version is compatible\n")
+    print("[OK] Python version is compatible\n")
     
     # 既存パッケージ確認
-    print("📋 Checking existing packages...")
+    print("[LIST] Checking existing packages...")
     installed_packages = []
     missing_packages = []
     
     for package in COORDINATION_REQUIREMENTS:
         is_installed, msg = check_package_installed(package)
         if is_installed:
-            print(f"  ✅ {msg}")
+            print(f"  [OK] {msg}")
             installed_packages.append(package)
         else:
-            print(f"  ❌ {msg}")
+            print(f"  [ERROR] {msg}")
             missing_packages.append(package)
     
     print(f"\nPackage Summary: {len(installed_packages)} installed, {len(missing_packages)} missing")
     
     # 必要なパッケージをインストール
     if missing_packages:
-        print(f"\n🔧 Installing {len(missing_packages)} missing packages...")
+        print(f"\n[TOOL] Installing {len(missing_packages)} missing packages...")
         
         install_results = install_packages(missing_packages, "required ")
         
@@ -292,18 +292,18 @@ def main():
             print(f"\nFailed installations:")
             for detail in install_results['details']:
                 if detail['status'] == 'failed':
-                    print(f"  ❌ {detail['package']}: {detail['message']}")
+                    print(f"  [ERROR] {detail['package']}: {detail['message']}")
         
     else:
-        print("✅ All required packages are already installed!")
+        print("[OK] All required packages are already installed!")
     
     # オプションパッケージ確認
-    print(f"\n🎯 Optional Packages Check:")
+    print(f"\n[TARGET] Optional Packages Check:")
     optional_installed = 0
     for package in OPTIONAL_REQUIREMENTS:
         is_installed, msg = check_package_installed(package)
         if is_installed:
-            print(f"  ✅ {msg}")
+            print(f"  [OK] {msg}")
             optional_installed += 1
         else:
             print(f"  ➖ {msg}")
@@ -311,7 +311,7 @@ def main():
     print(f"Optional packages: {optional_installed}/{len(OPTIONAL_REQUIREMENTS)} installed")
     
     # システム機能確認
-    print(f"\n🔍 System Capabilities Check:")
+    print(f"\n[SEARCH] System Capabilities Check:")
     capabilities = check_system_capabilities()
     
     capability_descriptions = {
@@ -326,10 +326,10 @@ def main():
     for cap, enabled in capabilities.items():
         desc = capability_descriptions.get(cap, cap)
         if enabled:
-            print(f"  ✅ {desc}")
+            print(f"  [OK] {desc}")
             enabled_capabilities += 1
         else:
-            print(f"  ❌ {desc}")
+            print(f"  [ERROR] {desc}")
     
     print(f"System capabilities: {enabled_capabilities}/{len(capabilities)} available")
     
@@ -339,34 +339,34 @@ def main():
     
     # 最終サマリー
     print(f"\n" + "=" * 70)
-    print("📊 Installation Summary")
+    print("[CHART] Installation Summary")
     print("=" * 70)
     
     all_required_installed = len(missing_packages) == 0
     core_capabilities = all(['system_monitoring', 'web_interface', 'network_analysis']) <= capabilities.keys()
     
     if all_required_installed and enabled_capabilities >= 4:
-        print("🎉 INSTALLATION SUCCESSFUL!")
+        print("[SUCCESS] INSTALLATION SUCCESSFUL!")
         print("   All required packages are installed and system capabilities are available.")
         print("   The Multi-Strategy Coordination System is ready to use.")
         
-        print(f"\n🎯 Next Steps:")
+        print(f"\n[TARGET] Next Steps:")
         print(f"   1. Run: python demo_multi_strategy_coordination.py")
         print(f"   2. Access web dashboard at: http://localhost:5000")
         print(f"   3. Review system logs and configuration files")
         
     elif all_required_installed:
-        print("⚠️ PARTIAL SUCCESS")
+        print("[WARNING] PARTIAL SUCCESS")
         print("   Required packages installed, but some capabilities may be limited.")
         print("   Consider installing optional packages for full functionality.")
         
     else:
-        print("❌ INSTALLATION ISSUES")
+        print("[ERROR] INSTALLATION ISSUES")
         print("   Some required packages could not be installed.")
         print("   Please resolve the installation errors before proceeding.")
         
         if missing_packages:
-            print(f"\n🔧 Manual installation commands:")
+            print(f"\n[TOOL] Manual installation commands:")
             print(f"   pip install {' '.join(missing_packages)}")
     
     print("=" * 70)

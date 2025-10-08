@@ -53,7 +53,7 @@ class ParallelDataFetcherIntegrator:
         
     def integrate_parallel_data_fetcher(self):
         """ParallelDataFetcher統合実装実行"""
-        print("🚀 Stage 2: ParallelDataFetcher統合実装開始")
+        print("[ROCKET] Stage 2: ParallelDataFetcher統合実装開始")
         print("="*70)
         
         try:
@@ -84,7 +84,7 @@ class ParallelDataFetcherIntegrator:
             return self.integration_results
             
         except Exception as e:
-            print(f"❌ Stage 2 統合エラー: {e}")
+            print(f"[ERROR] Stage 2 統合エラー: {e}")
             return self._handle_integration_failure(str(e))
     
     def _create_screener_backup(self) -> Dict[str, Any]:
@@ -104,9 +104,9 @@ class ParallelDataFetcherIntegrator:
             original_size = self.screener_path.stat().st_size
             
             if backup_size == original_size:
-                print(f"  ✅ バックアップ作成成功: {self.backup_path}")
+                print(f"  [OK] バックアップ作成成功: {self.backup_path}")
                 return {
-                    "status": "✅ 成功",
+                    "status": "[OK] 成功",
                     "backup_path": str(self.backup_path),
                     "file_size": backup_size,
                     "timestamp": datetime.now().isoformat()
@@ -120,7 +120,7 @@ class ParallelDataFetcherIntegrator:
     def _extract_parallel_component(self) -> Dict[str, Any]:
         """ParallelDataFetcherコンポーネント抽出"""
         
-        print("🔧 ParallelDataFetcherコンポーネント抽出中...")
+        print("[TOOL] ParallelDataFetcherコンポーネント抽出中...")
         
         try:
             if not self.parallel_component_path.exists():
@@ -139,10 +139,10 @@ class ParallelDataFetcherIntegrator:
             required_imports = self._extract_required_imports(content)
             
             if parallel_class and cache_class:
-                print(f"  ✅ ParallelDataFetcher抽出成功: {len(parallel_class)}文字")
-                print(f"  ✅ SmartCache抽出成功: {len(cache_class)}文字")
+                print(f"  [OK] ParallelDataFetcher抽出成功: {len(parallel_class)}文字")
+                print(f"  [OK] SmartCache抽出成功: {len(cache_class)}文字")
                 return {
-                    "status": "✅ 成功",
+                    "status": "[OK] 成功",
                     "parallel_data_fetcher": parallel_class,
                     "smart_cache": cache_class,
                     "required_imports": required_imports,
@@ -174,7 +174,7 @@ class ParallelDataFetcherIntegrator:
             return None
             
         except Exception as e:
-            print(f"  ❌ {class_name}抽出エラー: {e}")
+            print(f"  [ERROR] {class_name}抽出エラー: {e}")
             return None
     
     def _extract_required_imports(self, content: str) -> List[str]:
@@ -200,7 +200,7 @@ class ParallelDataFetcherIntegrator:
     def _integrate_into_screener(self) -> Dict[str, Any]:
         """Screenerへの統合実装"""
         
-        print("🔧 Screenerへの統合実装中...")
+        print("[TOOL] Screenerへの統合実装中...")
         
         try:
             # 既存Screener読み込み
@@ -215,13 +215,13 @@ class ParallelDataFetcherIntegrator:
                 with open(self.screener_path, 'w', encoding='utf-8') as f:
                     f.write(integrated_content)
                 
-                print(f"  ✅ 統合実装成功: {len(integrated_content)}文字")
+                print(f"  [OK] 統合実装成功: {len(integrated_content)}文字")
                 
                 # 統合内容検証
                 validation = self._validate_integration(integrated_content)
                 
                 return {
-                    "status": "✅ 成功",
+                    "status": "[OK] 成功",
                     "integrated_size": len(integrated_content),
                     "validation": validation,
                     "integration_timestamp": datetime.now().isoformat()
@@ -295,7 +295,7 @@ except ImportError:
                 return None
                 
         except Exception as e:
-            print(f"  ❌ 統合Screener作成エラー: {e}")
+            print(f"  [ERROR] 統合Screener作成エラー: {e}")
             return None
     
     def _update_imports(self, original_content: str, required_imports: List[str]) -> str:
@@ -329,7 +329,7 @@ except ImportError:
             return updated_imports
             
         except Exception as e:
-            print(f"  ❌ インポート更新エラー: {e}")
+            print(f"  [ERROR] インポート更新エラー: {e}")
             return original_content.split('\\n\\n')[0]  # フォールバック
     
     def _update_screener_class(self, original_content: str, parallel_class: str, cache_class: str) -> str:
@@ -356,7 +356,7 @@ except ImportError:
                 return original_content
                 
         except Exception as e:
-            print(f"  ❌ Screenerクラス更新エラー: {e}")
+            print(f"  [ERROR] Screenerクラス更新エラー: {e}")
             return original_content
     
     def _create_parallel_integrated_class(self, class_content: str) -> Optional[str]:
@@ -441,7 +441,7 @@ except ImportError:
             return updated_class
             
         except Exception as e:
-            print(f"  ❌ 並列統合クラス作成エラー: {e}")
+            print(f"  [ERROR] 並列統合クラス作成エラー: {e}")
             return None
     
     def _validate_integration(self, integrated_content: str) -> Dict[str, Any]:
@@ -462,7 +462,7 @@ except ImportError:
         return {
             "checks": validation_checks,
             "success_rate": f"{success_count}/{total_checks}",
-            "overall_status": "✅ 成功" if success_count >= total_checks - 1 else "⚠️ 部分的成功"
+            "overall_status": "[OK] 成功" if success_count >= total_checks - 1 else "[WARNING] 部分的成功"
         }
     
     def _validate_performance(self) -> Dict[str, Any]:
@@ -481,7 +481,7 @@ except ImportError:
                 syntax_valid = True
             except SyntaxError as e:
                 syntax_valid = False
-                print(f"  ❌ 構文エラー: {e}")
+                print(f"  [ERROR] 構文エラー: {e}")
             
             # インポート・クラス存在確認
             integration_checks = {
@@ -495,10 +495,10 @@ except ImportError:
             success_count = sum(integration_checks.values())
             
             return {
-                "syntax_validation": "✅ 成功" if syntax_valid else "❌ 失敗",
+                "syntax_validation": "[OK] 成功" if syntax_valid else "[ERROR] 失敗",
                 "integration_checks": integration_checks,
                 "integration_success_rate": f"{success_count}/{len(integration_checks)}",
-                "overall_status": "✅ 成功" if syntax_valid and success_count >= 4 else "❌ 要修正"
+                "overall_status": "[OK] 成功" if syntax_valid and success_count >= 4 else "[ERROR] 要修正"
             }
             
         except Exception as e:
@@ -508,30 +508,30 @@ except ImportError:
         """統合成功評価"""
         
         try:
-            backup_ok = self.integration_results["backup_status"].get("status") == "✅ 成功"
-            extraction_ok = self.integration_results["component_extraction"].get("status") == "✅ 成功"
-            integration_ok = self.integration_results["screener_integration"].get("status") == "✅ 成功"
-            validation_ok = self.integration_results["performance_validation"].get("overall_status") == "✅ 成功"
+            backup_ok = self.integration_results["backup_status"].get("status") == "[OK] 成功"
+            extraction_ok = self.integration_results["component_extraction"].get("status") == "[OK] 成功"
+            integration_ok = self.integration_results["screener_integration"].get("status") == "[OK] 成功"
+            validation_ok = self.integration_results["performance_validation"].get("overall_status") == "[OK] 成功"
             
             success_stages = sum([backup_ok, extraction_ok, integration_ok, validation_ok])
             
             if success_stages >= 3:
-                overall_status = "✅ 成功"
+                overall_status = "[OK] 成功"
                 next_action = "Stage 3: SmartCache・OptimizedAlgorithmEngine統合実装"
             elif success_stages >= 2:
-                overall_status = "⚠️ 部分的成功"
+                overall_status = "[WARNING] 部分的成功"
                 next_action = "統合修正・再テスト必要"
             else:
-                overall_status = "❌ 失敗"
+                overall_status = "[ERROR] 失敗"
                 next_action = "ロールバック・原因分析・再実装"
             
             return {
                 "stage_success_count": f"{success_stages}/4",
                 "overall_status": overall_status,
-                "backup_status": "✅" if backup_ok else "❌",
-                "extraction_status": "✅" if extraction_ok else "❌",
-                "integration_status": "✅" if integration_ok else "❌",
-                "validation_status": "✅" if validation_ok else "❌",
+                "backup_status": "[OK]" if backup_ok else "[ERROR]",
+                "extraction_status": "[OK]" if extraction_ok else "[ERROR]",
+                "integration_status": "[OK]" if integration_ok else "[ERROR]",
+                "validation_status": "[OK]" if validation_ok else "[ERROR]",
                 "next_action": next_action,
                 "expected_performance": "market_cap_filter: 52.5秒→15秒（70%削減期待）",
                 "completion_timestamp": datetime.now().isoformat()
@@ -543,17 +543,17 @@ except ImportError:
     def _handle_integration_failure(self, error_message: str) -> Dict[str, Any]:
         """統合失敗処理・ロールバック"""
         
-        print(f"🚨 統合失敗・ロールバック実行: {error_message}")
+        print(f"[ALERT] 統合失敗・ロールバック実行: {error_message}")
         
         try:
             # バックアップファイルが存在する場合は復元
             if self.backup_path.exists() and self.screener_path.exists():
                 shutil.copy2(self.backup_path, self.screener_path)
-                print(f"  ✅ バックアップから復元完了: {self.screener_path}")
+                print(f"  [OK] バックアップから復元完了: {self.screener_path}")
                 
             return {
                 "error": error_message,
-                "rollback_status": "✅ 完了",
+                "rollback_status": "[OK] 完了",
                 "backup_restored": True,
                 "next_action": "原因分析・統合戦略再検討・Stage 2再実装",
                 "failure_timestamp": datetime.now().isoformat()
@@ -563,7 +563,7 @@ except ImportError:
             return {
                 "error": error_message,
                 "rollback_error": str(rollback_error),
-                "rollback_status": "❌ 失敗",
+                "rollback_status": "[ERROR] 失敗",
                 "critical_action_required": "手動バックアップ復元必要"
             }
     
@@ -617,12 +617,12 @@ except ImportError:
             return complete_report, report_file
             
         except Exception as e:
-            print(f"❌ Stage 2 レポート生成エラー: {e}")
+            print(f"[ERROR] Stage 2 レポート生成エラー: {e}")
             return {"error": str(e)}, None
 
 def main():
     """Stage 2 メイン実行"""
-    print("🚀 TODO-PERF-007 Stage 2: ParallelDataFetcher統合実装開始")
+    print("[ROCKET] TODO-PERF-007 Stage 2: ParallelDataFetcher統合実装開始")
     print("目標: 25分で完了・market_cap_filter 52.5秒→15秒（70%削減）達成")
     print("="*80)
     
@@ -632,17 +632,17 @@ def main():
         
         if "error" not in results:
             print("\n" + "="*80)
-            print("🎯 Stage 2: ParallelDataFetcher統合実装完了")
+            print("[TARGET] Stage 2: ParallelDataFetcher統合実装完了")
             print("="*80)
             
             summary = results["summary"]["stage_2_completion"]
             implementation = results["summary"]["implementation_results"]
             
-            print(f"\n🔧 Stage 2実装結果:")
+            print(f"\n[TOOL] Stage 2実装結果:")
             print(f"  統合ステータス: {summary['integration_status']}")
             print(f"  主要目標: {summary['primary_goal']}")
             
-            print(f"\n📊 実装詳細:")
+            print(f"\n[CHART] 実装詳細:")
             print(f"  バックアップ作成: {implementation['backup_created']}")
             print(f"  コンポーネント抽出: {implementation['component_extracted']}")
             print(f"  Screener統合: {implementation['screener_integrated']}")
@@ -651,24 +651,24 @@ def main():
             achievements = results["summary"]["technical_achievements"]
             print(f"\n🏆 技術的成果:")
             for achievement in achievements:
-                print(f"  ✅ {achievement}")
+                print(f"  [OK] {achievement}")
             
             next_steps = results["summary"]["next_steps"]
-            print(f"\n🚀 次ステップ:")
+            print(f"\n[ROCKET] 次ステップ:")
             for step in next_steps:
-                print(f"  📋 {step}")
+                print(f"  [LIST] {step}")
             
             print(f"\n📄 詳細レポート: {report_file}")
             
             print("\n" + "="*80)
-            print("✅ Stage 2完了 → Stage 3 SmartCache・OptimizedAlgorithmEngine統合実装準備完了")
-            print("🎯 次作業: yfinance API最適化・final_selection最適化（45.7秒→15秒目標）")
+            print("[OK] Stage 2完了 → Stage 3 SmartCache・OptimizedAlgorithmEngine統合実装準備完了")
+            print("[TARGET] 次作業: yfinance API最適化・final_selection最適化（45.7秒→15秒目標）")
             print("⏱️ 予定時間: 30分（キャッシュ統合・numpy最適化・SystemFallbackPolicy）")
             print("="*80)
             
             return True
         else:
-            print(f"\n❌ Stage 2 失敗: {results.get('error', '不明なエラー')}")
+            print(f"\n[ERROR] Stage 2 失敗: {results.get('error', '不明なエラー')}")
             return False
             
     except Exception as e:

@@ -59,12 +59,12 @@ class WeightCalculationSystemTester:
             
         except Exception as e:
             logger.error(f"重み計算システムテスト実行エラー: {e}")
-            print(f"❌ テスト実行エラー: {e}")
+            print(f"[ERROR] テスト実行エラー: {e}")
             traceback.print_exc()
     
     def _test_multi_strategy_manager_initialization(self):
         """Test 1: MultiStrategyManager初期化確認"""
-        print("\n🔍 Test 1: MultiStrategyManager初期化確認")
+        print("\n[SEARCH] Test 1: MultiStrategyManager初期化確認")
         
         try:
             from config.multi_strategy_manager import MultiStrategyManager
@@ -76,27 +76,27 @@ class WeightCalculationSystemTester:
                 initialization_result = manager.initialize_systems()
                 
                 if initialization_result:
-                    print("✅ MultiStrategyManager初期化: 成功")
+                    print("[OK] MultiStrategyManager初期化: 成功")
                     self.test_results['manager_initialization'] = {'status': 'success', 'points': 3}
                     self.achieved_points += 3
                 else:
-                    print("❌ MultiStrategyManager初期化: 失敗")
+                    print("[ERROR] MultiStrategyManager初期化: 失敗")
                     self.test_results['manager_initialization'] = {'status': 'failed', 'points': 0, 'error': 'initialization_failed'}
             else:
-                print("⚠️ initialize_systems()メソッド未実装")
+                print("[WARNING] initialize_systems()メソッド未実装")
                 self.test_results['manager_initialization'] = {'status': 'partial', 'points': 1, 'issue': 'method_missing'}
                 self.achieved_points += 1
                 
         except ImportError as e:
-            print(f"❌ MultiStrategyManagerインポートエラー: {e}")
+            print(f"[ERROR] MultiStrategyManagerインポートエラー: {e}")
             self.test_results['manager_initialization'] = {'status': 'failed', 'points': 0, 'error': str(e)}
         except Exception as e:
-            print(f"❌ 初期化テストエラー: {e}")
+            print(f"[ERROR] 初期化テストエラー: {e}")
             self.test_results['manager_initialization'] = {'status': 'failed', 'points': 0, 'error': str(e)}
     
     def _test_strategy_registry_status(self):
         """Test 2: 戦略レジストリ状況確認"""
-        print("\n🔍 Test 2: 戦略レジストリ状況確認")
+        print("\n[SEARCH] Test 2: 戦略レジストリ状況確認")
         
         try:
             from config.multi_strategy_manager import MultiStrategyManager
@@ -106,30 +106,30 @@ class WeightCalculationSystemTester:
                 registry = manager.strategy_registry
                 registered_strategies = len(registry) if registry else 0
                 
-                print(f"📊 登録戦略数: {registered_strategies}/7")
+                print(f"[CHART] 登録戦略数: {registered_strategies}/7")
                 
                 if registered_strategies == 7:
-                    print("✅ 戦略レジストリ: 完全登録（7/7戦略）")
+                    print("[OK] 戦略レジストリ: 完全登録（7/7戦略）")
                     self.test_results['strategy_registry'] = {'status': 'success', 'points': 3, 'registered': registered_strategies}
                     self.achieved_points += 3
                 elif registered_strategies >= 5:
-                    print(f"⚠️ 戦略レジストリ: 部分登録（{registered_strategies}/7戦略）")
+                    print(f"[WARNING] 戦略レジストリ: 部分登録（{registered_strategies}/7戦略）")
                     self.test_results['strategy_registry'] = {'status': 'partial', 'points': 2, 'registered': registered_strategies}
                     self.achieved_points += 2
                 else:
-                    print(f"❌ 戦略レジストリ: 不完全（{registered_strategies}/7戦略）")
+                    print(f"[ERROR] 戦略レジストリ: 不完全（{registered_strategies}/7戦略）")
                     self.test_results['strategy_registry'] = {'status': 'failed', 'points': 0, 'registered': registered_strategies}
             else:
-                print("❌ strategy_registry属性が存在しません")
+                print("[ERROR] strategy_registry属性が存在しません")
                 self.test_results['strategy_registry'] = {'status': 'failed', 'points': 0, 'error': 'registry_missing'}
                 
         except Exception as e:
-            print(f"❌ 戦略レジストリテストエラー: {e}")
+            print(f"[ERROR] 戦略レジストリテストエラー: {e}")
             self.test_results['strategy_registry'] = {'status': 'failed', 'points': 0, 'error': str(e)}
     
     def _test_all_strategy_initialization(self):
         """Test 3: 全戦略初期化状況確認（TODO #12の成果確認）"""
-        print("\n🔍 Test 3: 全戦略初期化状況確認")
+        print("\n[SEARCH] Test 3: 全戦略初期化状況確認")
         
         try:
             from config.multi_strategy_manager import MultiStrategyManager
@@ -157,35 +157,35 @@ class WeightCalculationSystemTester:
                         strategy_instance = manager.get_strategy_instance(strategy_name, test_data, {})
                         if strategy_instance:
                             successful_initializations += 1
-                            print(f"✅ {strategy_name}: 初期化成功")
+                            print(f"[OK] {strategy_name}: 初期化成功")
                         else:
                             failed_strategies.append(strategy_name)
-                            print(f"❌ {strategy_name}: 初期化失敗")
+                            print(f"[ERROR] {strategy_name}: 初期化失敗")
                     else:
-                        print("⚠️ get_strategy_instance()メソッド未実装")
+                        print("[WARNING] get_strategy_instance()メソッド未実装")
                         break
                         
                 except Exception as e:
                     failed_strategies.append(strategy_name)
-                    print(f"❌ {strategy_name}: 初期化エラー - {e}")
+                    print(f"[ERROR] {strategy_name}: 初期化エラー - {e}")
             
             success_rate = (successful_initializations / len(expected_strategies)) * 100
-            print(f"\n📊 戦略初期化成功率: {successful_initializations}/{len(expected_strategies)} ({success_rate:.1f}%)")
+            print(f"\n[CHART] 戦略初期化成功率: {successful_initializations}/{len(expected_strategies)} ({success_rate:.1f}%)")
             
             if success_rate == 100:
-                print("✅ 全戦略初期化: 完全成功（TODO #12目標達成）")
+                print("[OK] 全戦略初期化: 完全成功（TODO #12目標達成）")
                 self.test_results['strategy_initialization'] = {'status': 'success', 'points': 4, 'success_rate': success_rate}
                 self.achieved_points += 4
             elif success_rate >= 80:
-                print(f"⚠️ 戦略初期化: 高成功率（{success_rate:.1f}%）")
+                print(f"[WARNING] 戦略初期化: 高成功率（{success_rate:.1f}%）")
                 self.test_results['strategy_initialization'] = {'status': 'partial', 'points': 3, 'success_rate': success_rate}
                 self.achieved_points += 3
             elif success_rate >= 60:
-                print(f"⚠️ 戦略初期化: 中成功率（{success_rate:.1f}%）")
+                print(f"[WARNING] 戦略初期化: 中成功率（{success_rate:.1f}%）")
                 self.test_results['strategy_initialization'] = {'status': 'partial', 'points': 2, 'success_rate': success_rate}
                 self.achieved_points += 2
             else:
-                print(f"❌ 戦略初期化: 低成功率（{success_rate:.1f}%）")
+                print(f"[ERROR] 戦略初期化: 低成功率（{success_rate:.1f}%）")
                 self.test_results['strategy_initialization'] = {'status': 'failed', 'points': 0, 'success_rate': success_rate}
             
             if failed_strategies:
@@ -193,12 +193,12 @@ class WeightCalculationSystemTester:
                 self.test_results['strategy_initialization']['failed_strategies'] = failed_strategies
                 
         except Exception as e:
-            print(f"❌ 戦略初期化テストエラー: {e}")
+            print(f"[ERROR] 戦略初期化テストエラー: {e}")
             self.test_results['strategy_initialization'] = {'status': 'failed', 'points': 0, 'error': str(e)}
     
     def _test_weight_calculation_system(self):
         """Test 4: 重み計算システム動作確認"""
-        print("\n🔍 Test 4: 重み計算システム動作確認")
+        print("\n[SEARCH] Test 4: 重み計算システム動作確認")
         
         try:
             from config.multi_strategy_manager import MultiStrategyManager
@@ -217,45 +217,45 @@ class WeightCalculationSystemTester:
             for method_name in weight_methods:
                 if hasattr(manager, method_name):
                     available_methods.append(method_name)
-                    print(f"✅ {method_name}メソッド: 存在")
+                    print(f"[OK] {method_name}メソッド: 存在")
                 else:
-                    print(f"❌ {method_name}メソッド: 未実装")
+                    print(f"[ERROR] {method_name}メソッド: 未実装")
             
             if available_methods:
-                print(f"\n📊 重み計算関連メソッド: {len(available_methods)}/{len(weight_methods)}実装済み")
+                print(f"\n[CHART] 重み計算関連メソッド: {len(available_methods)}/{len(weight_methods)}実装済み")
                 
                 # 実際の重み計算テスト試行
                 try:
                     primary_method = available_methods[0]
-                    print(f"🔍 {primary_method}メソッドのテスト実行")
+                    print(f"[SEARCH] {primary_method}メソッドのテスト実行")
                     
                     # テスト実行（簡易版）
                     test_result = getattr(manager, primary_method)()
                     
                     if test_result:
-                        print("✅ 重み計算システム: 動作確認成功")
+                        print("[OK] 重み計算システム: 動作確認成功")
                         self.test_results['weight_calculation'] = {'status': 'success', 'points': 3, 'methods': available_methods}
                         self.achieved_points += 3
                     else:
-                        print("⚠️ 重み計算システム: 部分動作")
+                        print("[WARNING] 重み計算システム: 部分動作")
                         self.test_results['weight_calculation'] = {'status': 'partial', 'points': 1, 'methods': available_methods}
                         self.achieved_points += 1
                         
                 except Exception as method_error:
-                    print(f"⚠️ 重み計算メソッド実行エラー: {method_error}")
+                    print(f"[WARNING] 重み計算メソッド実行エラー: {method_error}")
                     self.test_results['weight_calculation'] = {'status': 'partial', 'points': 1, 'methods': available_methods, 'execution_error': str(method_error)}
                     self.achieved_points += 1
             else:
-                print("❌ 重み計算関連メソッド: 未実装")
+                print("[ERROR] 重み計算関連メソッド: 未実装")
                 self.test_results['weight_calculation'] = {'status': 'failed', 'points': 0, 'methods': []}
                 
         except Exception as e:
-            print(f"❌ 重み計算システムテストエラー: {e}")
+            print(f"[ERROR] 重み計算システムテストエラー: {e}")
             self.test_results['weight_calculation'] = {'status': 'failed', 'points': 0, 'error': str(e)}
     
     def _test_integrated_multi_strategy_flow(self):
         """Test 5: 統合マルチ戦略フロー確認"""
-        print("\n🔍 Test 5: 統合マルチ戦略フロー確認")
+        print("\n[SEARCH] Test 5: 統合マルチ戦略フロー確認")
         
         try:
             from config.multi_strategy_manager import MultiStrategyManager
@@ -272,47 +272,47 @@ class WeightCalculationSystemTester:
             for method_name in integration_methods:
                 if hasattr(manager, method_name):
                     available_integration_methods.append(method_name)
-                    print(f"✅ {method_name}メソッド: 存在")
+                    print(f"[OK] {method_name}メソッド: 存在")
             
             if available_integration_methods:
-                print("✅ 統合マルチ戦略フロー: 基本機能実装済み")
+                print("[OK] 統合マルチ戦略フロー: 基本機能実装済み")
                 self.test_results['integration_flow'] = {'status': 'success', 'points': 2, 'methods': available_integration_methods}
                 self.achieved_points += 2
             else:
-                print("❌ 統合マルチ戦略フロー: 未実装")
+                print("[ERROR] 統合マルチ戦略フロー: 未実装")
                 self.test_results['integration_flow'] = {'status': 'failed', 'points': 0, 'methods': []}
                 
         except Exception as e:
-            print(f"❌ 統合フローテストエラー: {e}")
+            print(f"[ERROR] 統合フローテストエラー: {e}")
             self.test_results['integration_flow'] = {'status': 'failed', 'points': 0, 'error': str(e)}
     
     def _compile_comprehensive_results(self):
         """総合評価・結果取りまとめ"""
         print("\n" + "=" * 60)
-        print("📊 TODO #12完了後：重み配分計算システム総合評価")
+        print("[CHART] TODO #12完了後：重み配分計算システム総合評価")
         print("=" * 60)
         
         success_rate = (self.achieved_points / self.total_points) * 100
         
-        print(f"🎯 重み配分計算システム得点: {self.achieved_points}/{self.total_points}点 ({success_rate:.1f}%)")
+        print(f"[TARGET] 重み配分計算システム得点: {self.achieved_points}/{self.total_points}点 ({success_rate:.1f}%)")
         
         if success_rate >= 80:
-            print("✅ 評価: 優秀 - TODO #12による大幅改善達成")
+            print("[OK] 評価: 優秀 - TODO #12による大幅改善達成")
             overall_status = "大幅改善"
         elif success_rate >= 60:
-            print("⚠️ 評価: 良好 - TODO #12による改善確認、さらなる向上余地あり")
+            print("[WARNING] 評価: 良好 - TODO #12による改善確認、さらなる向上余地あり")
             overall_status = "改善確認"
         elif success_rate >= 40:
-            print("⚠️ 評価: 部分改善 - TODO #12効果は限定的")
+            print("[WARNING] 評価: 部分改善 - TODO #12効果は限定的")
             overall_status = "部分改善"
         else:
-            print("❌ 評価: 要改善 - TODO #12効果が十分でない")
+            print("[ERROR] 評価: 要改善 - TODO #12効果が十分でない")
             overall_status = "要改善"
         
         # 詳細結果表示
-        print("\n📋 詳細テスト結果:")
+        print("\n[LIST] 詳細テスト結果:")
         for test_name, result in self.test_results.items():
-            status_emoji = "✅" if result['status'] == 'success' else "⚠️" if result['status'] == 'partial' else "❌"
+            status_emoji = "[OK]" if result['status'] == 'success' else "[WARNING]" if result['status'] == 'partial' else "[ERROR]"
             print(f"{status_emoji} {test_name}: {result['points']}点 ({result['status']})")
             if 'error' in result:
                 print(f"   エラー: {result['error']}")
@@ -320,7 +320,7 @@ class WeightCalculationSystemTester:
                 print(f"   課題: {result['issue']}")
         
         # TODO #12前後の比較
-        print(f"\n📈 TODO #12による改善:")
+        print(f"\n[UP] TODO #12による改善:")
         print(f"修正前: 0/15点 (0%)")
         print(f"修正後: {self.achieved_points}/15点 ({success_rate:.1f}%)")
         print(f"改善度: +{self.achieved_points}点 (+{success_rate:.1f}%)")
@@ -363,4 +363,4 @@ if __name__ == "__main__":
     tester = WeightCalculationSystemTester()
     results = tester.execute_comprehensive_weight_system_test()
     
-    print(f"\n🎯 テスト完了 - {datetime.now().strftime('%Y年%m月%d日 %H:%M:%S')}")
+    print(f"\n[TARGET] テスト完了 - {datetime.now().strftime('%Y年%m月%d日 %H:%M:%S')}")

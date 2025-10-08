@@ -72,6 +72,14 @@ class UnifiedExporter:
         exported_files = {}
         
         try:
+            # 包括的取引パフォーマンス計算（新実装）
+            enhanced_performance = self._calculate_trade_performance(trades)
+            
+            # 既存のperformanceと統合
+            combined_performance = {**performance, **enhanced_performance}
+            
+            logger.info(f"統合パフォーマンス: 総損益 ¥{enhanced_performance.get('total_pnl', 0):,.0f}, 最終ポートフォリオ ¥{enhanced_performance.get('final_portfolio_value', 0):,.0f}")
+            
             # CSV: データ分析用（Excel代替）
             csv_file = self.main_dir / "csv" / f"{base_name}_data.csv"
             stock_data.to_csv(csv_file, index=True, encoding='utf-8-sig')
@@ -84,19 +92,28 @@ class UnifiedExporter:
                 trades_df.to_csv(trades_csv, index=False, encoding='utf-8-sig')
                 exported_files['csv_trades'] = trades_csv
             
-            # JSON: 構造化データ・プログラム連携用
+            # JSON: 構造化データ・プログラム連携用（包括的パフォーマンス含む）
             json_data = {
                 "metadata": {
                     "ticker": ticker,
                     "strategy": strategy_name,
                     "export_time": datetime.now().isoformat(),
                     "data_points": len(stock_data),
-                    "backtest_compliance": True  # 基本理念遵守フラグ
+                    "backtest_compliance": True,  # 基本理念遵守フラグ
+                    "enhanced_pnl_calculation": True  # 包括的P&L計算フラグ
                 },
-                "performance": performance,
+                "performance": combined_performance,  # 統合パフォーマンス
                 "trades": trades,
-                "summary": self._create_summary(performance, trades),
-                "backtest_validation": self._get_backtest_validation_info(stock_data, trades)
+                "summary": self._create_summary(combined_performance, trades),
+                "backtest_validation": self._get_backtest_validation_info(stock_data, trades),
+                "pnl_breakdown": {
+                    "total_pnl": enhanced_performance.get('total_pnl', 0),
+                    "realized_pnl": enhanced_performance.get('realized_pnl', 0),
+                    "unrealized_pnl": enhanced_performance.get('unrealized_pnl', 0),
+                    "paired_trades": enhanced_performance.get('paired_trades', 0),
+                    "win_rate": enhanced_performance.get('win_rate', 0),
+                    "profit_factor": enhanced_performance.get('profit_factor', 0)
+                }
             }
             
             json_file = self.main_dir / "json" / f"{base_name}_complete.json"
@@ -295,24 +312,306 @@ class UnifiedExporter:
                 "warning": "Signal columns missing"
             }
     
+    def _calculate_trade_performance(self, trades: List[Dict[str, Any]], initial_portfolio_value: float = 1000000.0) -> Dict[str, Any]:
+        """
+        包括的取引パフォーマンス計算（バックテスト基本理念遵守版）
+        エントリー価格とエグジット価格から損益計算し、適切なP&L・勝率・ポートフォリオ価値を算出
+        
+        Args:
+            trades: 取引データリスト（timestamp, type, price, signal形式）
+            initial_portfolio_value: 初期ポートフォリオ価値（デフォルト：¥1,000,000）
+            
+        Returns:
+            包括的パフォーマンス辞書
+        """
+        try:
+            if not trades:
+                logger.warning("取引データが空です - ゼロ値を返します")
+                return self._generate_empty_performance(initial_portfolio_value)
+            
+            # 取引を時系列順にソート
+            sorted_trades = sorted(trades, key=lambda x: x.get('timestamp', ''))
+            
+            # エントリー・エグジットの分離とペアリング
+            entries = [t for t in sorted_trades if t.get('type') == 'Entry']
+            exits = [t for t in sorted_trades if t.get('type') == 'Exit']
+            
+            logger.info(f"取引ペアリング: エントリー {len(entries)}件, エグジット {len(exits)}件")
+            
+            # 取引ペアの構築
+            trade_pairs = self._build_trade_pairs(entries, exits)
+            
+            # P&L計算
+            pnl_results = self._calculate_pnl_from_pairs(trade_pairs)
+            
+            # 勝敗統計
+            win_loss_stats = self._calculate_win_loss_statistics(pnl_results)
+            
+            # ポートフォリオ価値計算
+            final_portfolio_value = initial_portfolio_value + pnl_results['total_pnl']
+            
+            # 総合パフォーマンス組み立て
+            comprehensive_performance = {
+                # 基本統計
+                'total_trades': len(trade_pairs),
+                'paired_trades': len([p for p in trade_pairs if p['is_paired']]),
+                'unpaired_entries': len([p for p in trade_pairs if not p['is_paired'] and p['entry'] is not None]),
+                'unpaired_exits': len(exits) - sum(1 for p in trade_pairs if p['exit'] is not None),
+                
+                # 損益統計
+                'total_pnl': pnl_results['total_pnl'],
+                'realized_pnl': pnl_results['realized_pnl'],
+                'unrealized_pnl': pnl_results['unrealized_pnl'],
+                'average_pnl_per_trade': pnl_results['average_pnl'],
+                
+                # 勝敗統計
+                'win_count': win_loss_stats['wins'],
+                'loss_count': win_loss_stats['losses'],
+                'break_even_count': win_loss_stats['break_even'],
+                'win_rate': win_loss_stats['win_rate'],
+                'profit_factor': win_loss_stats['profit_factor'],
+                
+                # ポートフォリオ統計
+                'initial_portfolio_value': initial_portfolio_value,
+                'final_portfolio_value': final_portfolio_value,
+                'total_return': (final_portfolio_value - initial_portfolio_value) / initial_portfolio_value,
+                'portfolio_change': final_portfolio_value - initial_portfolio_value,
+                
+                # 品質指標
+                'pairing_efficiency': len([p for p in trade_pairs if p['is_paired']]) / max(len(entries), 1),
+                'data_integrity_score': self._calculate_data_integrity_score(trade_pairs, entries, exits)
+            }
+            
+            logger.info(f"P&L計算完了: 総損益 ¥{comprehensive_performance['total_pnl']:,.0f}, 勝率 {comprehensive_performance['win_rate']:.1%}")
+            
+            return comprehensive_performance
+            
+        except Exception as e:
+            logger.error(f"取引パフォーマンス計算エラー: {e}")
+            return self._generate_empty_performance(initial_portfolio_value)
+    
+    def _build_trade_pairs(self, entries: List[Dict[str, Any]], exits: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        エントリー・エグジット取引のペアリング構築
+        時系列順でのマッチング、余剰取引の処理
+        """
+        trade_pairs = []
+        used_exit_indices = set()
+        
+        for i, entry in enumerate(entries):
+            entry_time = entry.get('timestamp', '')
+            entry_price = float(entry.get('price', 0))
+            
+            # このエントリー後の最初の利用可能エグジットを検索
+            matched_exit = None
+            matched_exit_idx = None
+            
+            for j, exit_trade in enumerate(exits):
+                if j in used_exit_indices:
+                    continue
+                    
+                exit_time = exit_trade.get('timestamp', '')
+                
+                # 時系列チェック（エントリー後のエグジット）
+                if exit_time > entry_time:
+                    matched_exit = exit_trade
+                    matched_exit_idx = j
+                    break
+            
+            # ペア構築
+            if matched_exit:
+                used_exit_indices.add(matched_exit_idx)
+                trade_pairs.append({
+                    'pair_id': f"pair_{i+1}",
+                    'entry': entry,
+                    'exit': matched_exit,
+                    'is_paired': True,
+                    'entry_price': entry_price,
+                    'exit_price': float(matched_exit.get('price', 0)),
+                    'entry_time': entry_time,
+                    'exit_time': matched_exit.get('timestamp', '')
+                })
+            else:
+                # ペア化されないエントリー（ポジション継続中）
+                trade_pairs.append({
+                    'pair_id': f"unpaired_entry_{i+1}",
+                    'entry': entry,
+                    'exit': None,
+                    'is_paired': False,
+                    'entry_price': entry_price,
+                    'exit_price': None,
+                    'entry_time': entry_time,
+                    'exit_time': None
+                })
+        
+        logger.info(f"取引ペア構築完了: {len([p for p in trade_pairs if p['is_paired']])}ペア, {len([p for p in trade_pairs if not p['is_paired']])}未ペア")
+        
+        return trade_pairs
+    
+    def _calculate_pnl_from_pairs(self, trade_pairs: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        取引ペアからP&L計算（実現・未実現損益含む）
+        """
+        realized_pnl = 0.0
+        unrealized_pnl = 0.0
+        pnl_details = []
+        
+        for pair in trade_pairs:
+            if pair['is_paired'] and pair['exit_price'] is not None:
+                # 実現損益計算（エグジット価格 - エントリー価格）
+                pair_pnl = pair['exit_price'] - pair['entry_price']
+                realized_pnl += pair_pnl
+                
+                pnl_details.append({
+                    'pair_id': pair['pair_id'],
+                    'pnl': pair_pnl,
+                    'type': 'realized',
+                    'entry_price': pair['entry_price'],
+                    'exit_price': pair['exit_price']
+                })
+            else:
+                # 未実現損益（現在は0として処理、将来的には最新価格との差で計算可能）
+                pair_pnl = 0.0
+                unrealized_pnl += pair_pnl
+                
+                pnl_details.append({
+                    'pair_id': pair['pair_id'],
+                    'pnl': pair_pnl,
+                    'type': 'unrealized',
+                    'entry_price': pair['entry_price'],
+                    'exit_price': None
+                })
+        
+        total_pnl = realized_pnl + unrealized_pnl
+        completed_trades = len([d for d in pnl_details if d['type'] == 'realized'])
+        average_pnl = realized_pnl / max(completed_trades, 1)
+        
+        return {
+            'total_pnl': total_pnl,
+            'realized_pnl': realized_pnl,
+            'unrealized_pnl': unrealized_pnl,
+            'average_pnl': average_pnl,
+            'pnl_details': pnl_details,
+            'completed_trades': completed_trades
+        }
+    
+    def _calculate_win_loss_statistics(self, pnl_results: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        勝敗統計計算（勝率・プロフィットファクター等）
+        """
+        realized_trades = [d for d in pnl_results['pnl_details'] if d['type'] == 'realized']
+        
+        if not realized_trades:
+            return {
+                'wins': 0,
+                'losses': 0,
+                'break_even': 0,
+                'win_rate': 0.0,
+                'profit_factor': 0.0,
+                'total_winning_pnl': 0.0,
+                'total_losing_pnl': 0.0
+            }
+        
+        wins = len([t for t in realized_trades if t['pnl'] > 0])
+        losses = len([t for t in realized_trades if t['pnl'] < 0])
+        break_even = len([t for t in realized_trades if t['pnl'] == 0])
+        
+        total_winning_pnl = sum(t['pnl'] for t in realized_trades if t['pnl'] > 0)
+        total_losing_pnl = abs(sum(t['pnl'] for t in realized_trades if t['pnl'] < 0))
+        
+        win_rate = wins / len(realized_trades) if realized_trades else 0.0
+        profit_factor = total_winning_pnl / max(total_losing_pnl, 0.01)  # ゼロ除算回避
+        
+        return {
+            'wins': wins,
+            'losses': losses,
+            'break_even': break_even,
+            'win_rate': win_rate,
+            'profit_factor': profit_factor,
+            'total_winning_pnl': total_winning_pnl,
+            'total_losing_pnl': total_losing_pnl
+        }
+    
+    def _calculate_data_integrity_score(self, trade_pairs: List[Dict[str, Any]], entries: List[Dict[str, Any]], exits: List[Dict[str, Any]]) -> float:
+        """
+        データ整合性スコア計算（0.0-1.0）
+        """
+        if not entries and not exits:
+            return 0.0
+        
+        paired_count = len([p for p in trade_pairs if p['is_paired']])
+        total_entries = len(entries)
+        
+        # ペアリング効率性 + データ完整性
+        pairing_score = paired_count / max(total_entries, 1)
+        data_completeness_score = 1.0 if all(
+            t.get('price') and t.get('timestamp') for t in entries + exits
+        ) else 0.5
+        
+        return (pairing_score + data_completeness_score) / 2.0
+    
+    def _generate_empty_performance(self, initial_value: float) -> Dict[str, Any]:
+        """
+        空の取引データ用デフォルトパフォーマンス
+        """
+        return {
+            'total_trades': 0,
+            'paired_trades': 0,
+            'unpaired_entries': 0,
+            'unpaired_exits': 0,
+            'total_pnl': 0.0,
+            'realized_pnl': 0.0,
+            'unrealized_pnl': 0.0,
+            'average_pnl_per_trade': 0.0,
+            'win_count': 0,
+            'loss_count': 0,
+            'break_even_count': 0,
+            'win_rate': 0.0,
+            'profit_factor': 0.0,
+            'initial_portfolio_value': initial_value,
+            'final_portfolio_value': initial_value,
+            'total_return': 0.0,
+            'portfolio_change': 0.0,
+            'pairing_efficiency': 0.0,
+            'data_integrity_score': 0.0
+        }
+
     def _create_summary(self, performance: Dict[str, Any], trades: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """サマリー作成（バックテスト基本理念遵守版）"""
+        """サマリー作成（バックテスト基本理念遵守版・包括的P&L対応）"""
         return {
             "quick_stats": {
-                "total_trades": len(trades),
+                "total_trades": performance.get('total_trades', len(trades)),
+                "paired_trades": performance.get('paired_trades', 0),
                 "win_rate": performance.get('win_rate', 0),
                 "total_return": performance.get('total_return', 0),
-                "profit_factor": performance.get('profit_factor', 0)
+                "profit_factor": performance.get('profit_factor', 0),
+                "total_pnl": performance.get('total_pnl', 0)
+            },
+            "portfolio_metrics": {
+                "initial_portfolio_value": performance.get('initial_portfolio_value', 1000000),
+                "final_portfolio_value": performance.get('final_portfolio_value', 1000000),
+                "portfolio_change": performance.get('portfolio_change', 0),
+                "realized_pnl": performance.get('realized_pnl', 0),
+                "unrealized_pnl": performance.get('unrealized_pnl', 0)
             },
             "risk_metrics": {
                 "max_drawdown": performance.get('max_drawdown', 0),
                 "volatility": performance.get('volatility', 0),
                 "sharpe_ratio": performance.get('sharpe_ratio', 0)
             },
+            "trade_quality": {
+                "win_count": performance.get('win_count', 0),
+                "loss_count": performance.get('loss_count', 0),
+                "break_even_count": performance.get('break_even_count', 0),
+                "pairing_efficiency": performance.get('pairing_efficiency', 0),
+                "data_integrity_score": performance.get('data_integrity_score', 0)
+            },
             "backtest_quality": {
                 "actual_backtest_executed": True,
                 "excel_dependency_removed": True,
-                "signal_integrity_verified": len(trades) > 0
+                "signal_integrity_verified": performance.get('total_trades', len(trades)) > 0,
+                "enhanced_pnl_calculation": True,
+                "trade_pairing_implemented": True
             }
         }
     
@@ -335,18 +634,24 @@ class UnifiedExporter:
 バックテスト基本理念遵守確認
 ==========================================
 
-✅ 実際のbacktest()実行: 完了
-✅ Entry_Signal/Exit_Signal生成: {signal_stats['entry_signals']}エントリー / {signal_stats['exit_signals']}エグジット
-✅ 実際の取引実行: {len(trades)}件の取引
-✅ Excel依存性除去: 完了（CSV+JSON+TXT+YAML）
+[OK] 実際のbacktest()実行: 完了
+[OK] Entry_Signal/Exit_Signal生成: {signal_stats['entry_signals']}エントリー / {signal_stats['exit_signals']}エグジット
+[OK] 実際の取引実行: {len(trades)}件の取引
+[OK] Excel依存性除去: 完了（CSV+JSON+TXT+YAML）
 
 ==========================================
-パフォーマンス概要
+パフォーマンス概要（包括的P&L計算）
 ==========================================
 
-総リターン: {performance.get('total_return', 0):.2%}
-最終ポートフォリオ価値: ¥{performance.get('final_portfolio_value', 0):,.0f}
+初期ポートフォリオ価値: ¥{performance.get('initial_portfolio_value', 1000000):,.0f}
+最終ポートフォリオ価値: ¥{performance.get('final_portfolio_value', 1000000):,.0f}
 総損益: ¥{performance.get('total_pnl', 0):,.0f}
+総リターン: {performance.get('total_return', 0):.2%}
+
+損益内訳:
+- 実現損益: ¥{performance.get('realized_pnl', 0):,.0f}
+- 未実現損益: ¥{performance.get('unrealized_pnl', 0):,.0f}
+- 平均取引損益: ¥{performance.get('average_pnl_per_trade', 0):,.0f}
 
 リスク指標:
 - 最大ドローダウン: {performance.get('max_drawdown', 0):.2%}
@@ -354,13 +659,23 @@ class UnifiedExporter:
 - シャープレシオ: {performance.get('sharpe_ratio', 0):.3f}
 
 ==========================================
-取引統計
+取引統計（包括的ペアリング）
 ==========================================
 
-総取引数: {len(trades)}
-勝ちトレード: {performance.get('winning_trades', 0)}
-負けトレード: {performance.get('losing_trades', 0)}
-勝率: {performance.get('win_rate', 0):.2%}
+総取引数: {performance.get('total_trades', len(trades))}
+ペア化済み取引: {performance.get('paired_trades', 0)}
+未ペア取引（継続中）: {performance.get('unpaired_entries', 0)}
+
+勝敗統計:
+- 勝ちトレード: {performance.get('win_count', 0)}
+- 負けトレード: {performance.get('loss_count', 0)}
+- 引き分け: {performance.get('break_even_count', 0)}
+- 勝率: {performance.get('win_rate', 0):.2%}
+- プロフィットファクター: {performance.get('profit_factor', 0):.2f}
+
+品質指標:
+- ペアリング効率: {performance.get('pairing_efficiency', 0):.2%}
+- データ整合性スコア: {performance.get('data_integrity_score', 0):.2f}
 
 シグナル統計:
 - エントリーシグナル: {signal_stats['entry_signals']}
@@ -404,9 +719,9 @@ DSSMS実行結果レポート（Excel廃棄版）
 DSSMS概要・バックテスト基本理念遵守確認
 ==========================================
 
-✅ DSSMS統合でも実際のbacktest()実行: 完了
-✅ 銘柄選択後の戦略実行: 完了
-✅ Excel依存性除去: 完了
+[OK] DSSMS統合でも実際のbacktest()実行: 完了
+[OK] 銘柄選択後の戦略実行: 完了
+[OK] Excel依存性除去: 完了
 
 切替イベント数: {len(switches)}
 処理銘柄数: {metadata.get('processed_stocks', 'N/A')}
@@ -423,9 +738,9 @@ DSSMS概要・バックテスト基本理念遵守確認
 無効切替: {len([s for s in switches if not s.get('is_beneficial', True)])}
 
 切替品質:
-- 実際のパフォーマンス基準: ✅
-- バックテスト結果基準: ✅
-- Excel出力廃棄対応: ✅
+- 実際のパフォーマンス基準: [OK]
+- バックテスト結果基準: [OK]
+- Excel出力廃棄対応: [OK]
 
 ==========================================
 """
@@ -433,22 +748,22 @@ DSSMS概要・バックテスト基本理念遵守確認
     
     def _log_export_summary(self, export_type: str, exported_files: Dict[str, Path], trades_count: int, stock_data: pd.DataFrame):
         """出力サマリーログ"""
-        logger.info(f"📊 {export_type.upper()}出力サマリー:")
+        logger.info(f"[CHART] {export_type.upper()}出力サマリー:")
         logger.info(f"  - 出力ファイル数: {len(exported_files)}")
         logger.info(f"  - 取引数: {trades_count}")
         logger.info(f"  - データポイント数: {len(stock_data)}")
-        logger.info(f"  - バックテスト基本理念遵守: ✅")
+        logger.info(f"  - バックテスト基本理念遵守: [OK]")
         
         for format_type, file_path in exported_files.items():
             logger.info(f"  - {format_type}: {file_path.name}")
     
     def _log_dssms_export_summary(self, exported_files: Dict[str, Path], switches_count: int, ranking_data: pd.DataFrame):
         """DSSMS出力サマリーログ"""
-        logger.info(f"📊 DSSMS出力サマリー:")
+        logger.info(f"[CHART] DSSMS出力サマリー:")
         logger.info(f"  - 出力ファイル数: {len(exported_files)}")
         logger.info(f"  - 切替イベント数: {switches_count}")
         logger.info(f"  - ランキング銘柄数: {len(ranking_data)}")
-        logger.info(f"  - バックテスト基本理念遵守: ✅")
+        logger.info(f"  - バックテスト基本理念遵守: [OK]")
         
         for format_type, file_path in exported_files.items():
             logger.info(f"  - {format_type}: {file_path.name}")
@@ -522,4 +837,4 @@ def enhance_data_extraction_output(analysis_results: Dict[str, Any], output_form
 
 # Excel出力完全廃棄記念コメント
 # TODO(tag:excel_deprecated, rationale:Excel output completely eliminated since 2025-10-08)
-# 🎉 Excel dependency removed - CSV+JSON+TXT+YAML unified output system operational
+# [SUCCESS] Excel dependency removed - CSV+JSON+TXT+YAML unified output system operational

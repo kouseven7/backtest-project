@@ -138,7 +138,7 @@ class ExcelStrategyStatsPatcher:
             # ファイルを保存
             workbook.save(excel_path)
             
-            self.logger.info(f"✅ 戦略別統計シートを更新完了: {len(strategy_stats)}戦略")
+            self.logger.info(f"[OK] 戦略別統計シートを更新完了: {len(strategy_stats)}戦略")
             self.logger.info(f"総合勝率: {total_win_rate:.2f}%")
             
             return True
@@ -172,7 +172,7 @@ class ExcelStrategyStatsPatcher:
                 stats = self._calculate_single_strategy_stats(trades_list)
                 strategy_stats[strategy] = stats
             
-            self.logger.info(f"📊 戦略別統計計算完了: {len(strategy_stats)}戦略")
+            self.logger.info(f"[CHART] 戦略別統計計算完了: {len(strategy_stats)}戦略")
             for strategy, stats in strategy_stats.items():
                 self.logger.info(f"  {strategy}: {stats['trade_count']}件, 勝率{stats['win_rate']:.1f}%")
             
@@ -246,14 +246,14 @@ def main():
     excel_path = "backtest_results/dssms_results/dssms_unified_backtest_20250908_152431.xlsx"
     json_path = "backtest_results/dssms_results/dssms_unified_data_20250908_152431.json"
     
-    print("🔧 DSSMS Excel戦略別統計直接修正システム")
+    print("[TOOL] DSSMS Excel戦略別統計直接修正システム")
     print("=" * 60)
     print(f"対象Excel: {excel_path}")
     print(f"対象JSON: {json_path}")
     print("=" * 60)
     
     if patcher.patch_excel_strategy_stats(excel_path, json_path):
-        print("✅ 戦略別統計シート修正完了！")
+        print("[OK] 戦略別統計シート修正完了！")
         print("\n修正内容:")
         print("- DSSMSStrategyを7つの個別戦略に分割")
         print("- 各戦略の実際の勝率を表示")
@@ -263,7 +263,7 @@ def main():
         print("2. '戦略別統計'シートを確認")
         print("3. 7つの戦略が個別に表示されているか確認")
     else:
-        print("❌ 戦略別統計シート修正失敗")
+        print("[ERROR] 戦略別統計シート修正失敗")
 
 if __name__ == "__main__":
     main()

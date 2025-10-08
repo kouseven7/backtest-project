@@ -43,11 +43,11 @@
 
 全5項目のテストが**100%成功**しました：
 
-✅ **Basic Rule Engine**: ルールエンジンの基本機能  
-✅ **Configurable Rules**: JSON設定可能ルール  
-✅ **Rule Configuration Manager**: 設定管理システム  
-✅ **Integration Scenario**: 実世界シナリオ統合テスト  
-✅ **Sample Configurations**: サンプル設定ファイル作成  
+[OK] **Basic Rule Engine**: ルールエンジンの基本機能  
+[OK] **Configurable Rules**: JSON設定可能ルール  
+[OK] **Rule Configuration Manager**: 設定管理システム  
+[OK] **Integration Scenario**: 実世界シナリオ統合テスト  
+[OK] **Sample Configurations**: サンプル設定ファイル作成  
 
 ### テスト内容詳細
 

@@ -43,7 +43,7 @@ class IntegrationEffectValidator:
     
     def run_comprehensive_validation(self) -> Dict[str, Any]:
         """包括的統合効果検証実行"""
-        self.logger.info("🚀 TODO-DSSMS-004.2 Stage 4: 統合効果検証開始")
+        self.logger.info("[ROCKET] TODO-DSSMS-004.2 Stage 4: 統合効果検証開始")
         
         validation = {
             'validation_info': {
@@ -77,7 +77,7 @@ class IntegrationEffectValidator:
             # 6. 検証結果保存
             self._save_validation_results(validation)
             
-            self.logger.info("✅ 統合効果検証完了")
+            self.logger.info("[OK] 統合効果検証完了")
             return validation
             
         except Exception as e:
@@ -87,7 +87,7 @@ class IntegrationEffectValidator:
     
     def validate_performance_improvements(self) -> Dict[str, Any]:
         """パフォーマンス改善効果検証"""
-        self.logger.info("📊 パフォーマンス改善効果検証")
+        self.logger.info("[CHART] パフォーマンス改善効果検証")
         
         performance_validation = {
             'timestamp': datetime.now().isoformat(),
@@ -164,7 +164,7 @@ class IntegrationEffectValidator:
     
     def validate_ranking_accuracy(self) -> Dict[str, Any]:
         """ランキング精度検証"""
-        self.logger.info("🎯 ランキング精度検証")
+        self.logger.info("[TARGET] ランキング精度検証")
         
         accuracy_validation = {
             'timestamp': datetime.now().isoformat(),
@@ -355,7 +355,7 @@ class IntegrationEffectValidator:
     
     def assess_overall_integration_quality(self, validation_results: Dict[str, Any]) -> Dict[str, Any]:
         """総合統合品質評価"""
-        self.logger.info("🔍 総合統合品質評価")
+        self.logger.info("[SEARCH] 総合統合品質評価")
         
         try:
             # 各検証結果からスコア算出
@@ -547,7 +547,7 @@ def main():
     validator = IntegrationEffectValidator()
     results = validator.run_comprehensive_validation()
     
-    print("\n🎯 統合効果検証結果サマリー:")
+    print("\n[TARGET] 統合効果検証結果サマリー:")
     
     # 総合評価表示
     overall = results.get('overall_assessment', {})
@@ -557,12 +557,12 @@ def main():
         recommendation = overall.get('recommendation', 'N/A')
         
         print(f"  🏆 総合品質レベル: {quality_level.upper()}")
-        print(f"  📊 総合スコア: {overall_score:.3f}/1.000")
-        print(f"  💡 推奨事項: {recommendation}")
+        print(f"  [CHART] 総合スコア: {overall_score:.3f}/1.000")
+        print(f"  [IDEA] 推奨事項: {recommendation}")
         
         # コンポーネント別スコア
         component_scores = overall.get('component_scores', {})
-        print(f"  📈 コンポーネント別スコア:")
+        print(f"  [UP] コンポーネント別スコア:")
         for component, score in component_scores.items():
             print(f"    - {component}: {score:.3f}")
     
@@ -573,24 +573,24 @@ def main():
         exec_time = opt_perf.get('execution_time_ms', 0)
         selected = opt_perf.get('selected_symbol', 'N/A')
         print(f"  ⚡ 統合最適化実行時間: {exec_time:.2f}ms")
-        print(f"  🎯 最適化選択結果: {selected}")
+        print(f"  [TARGET] 最適化選択結果: {selected}")
     
     # 成功基準達成状況
     success_criteria = overall.get('success_criteria', {})
     if success_criteria:
-        print(f"  ✅ 成功基準達成状況:")
+        print(f"  [OK] 成功基準達成状況:")
         for criterion, achieved in success_criteria.items():
-            status = "✅" if achieved else "❌"
+            status = "[OK]" if achieved else "[ERROR]"
             print(f"    {status} {criterion}")
     
-    print(f"\n🎉 TODO-DSSMS-004.2 統合効果検証完了!")
+    print(f"\n[SUCCESS] TODO-DSSMS-004.2 統合効果検証完了!")
     
     # 最終実装状況サマリー
     implementation = overall.get('implementation_completeness', {})
     if implementation:
-        print(f"\n📋 実装完了状況:")
+        print(f"\n[LIST] 実装完了状況:")
         for stage, status in implementation.items():
-            print(f"  ✅ {stage}: {status}")
+            print(f"  [OK] {stage}: {status}")
 
 
 if __name__ == "__main__":

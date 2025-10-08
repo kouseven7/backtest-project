@@ -85,7 +85,7 @@ def test_task_1_2_data_integration_enhancer():
         logger.info(f"日次リターン: {valuation_result['daily_return']:+.4f}")
         logger.info(f"品質スコア: {valuation_result['quality_score']:.3f}")
         
-        logger.info("✅ データ統合強化システムテスト完了")
+        logger.info("[OK] データ統合強化システムテスト完了")
         return True
         
     except ImportError as e:
@@ -151,7 +151,7 @@ def test_task_1_2_simulation_quality_manager():
         logger.info(f"リアリズム強化後価値: {len(enhanced_data['enhanced_portfolio_values'])}件")
         logger.info(f"強化要因適用数: {enhanced_data['applied_factors']}")
         
-        logger.info("✅ シミュレーション品質管理システムテスト完了")
+        logger.info("[OK] シミュレーション品質管理システムテスト完了")
         return True
         
     except ImportError as e:
@@ -241,7 +241,7 @@ def test_task_1_2_enhanced_reporter():
             logger.warning(f"メトリクス計算エラー: {e}")
             logger.info("メトリクス計算は部分的に成功")
         
-        logger.info("✅ 強化レポートシステムテスト完了")
+        logger.info("[OK] 強化レポートシステムテスト完了")
         return True
         
     except ImportError as e:
@@ -314,7 +314,7 @@ def test_task_1_2_backtester_integration():
         logger.info(f"シャープレシオ: {performance.sharpe_ratio:.4f}")
         logger.info(f"最大ドローダウン: {performance.max_drawdown:.4f}")
         
-        logger.info("✅ バックテスター統合テスト完了")
+        logger.info("[OK] バックテスター統合テスト完了")
         return True
         
     except ImportError as e:
@@ -354,16 +354,16 @@ def run_comprehensive_task_1_2_demo():
     passed_tests = sum(test_results.values())
     
     for test_name, result in test_results.items():
-        status = "✅ PASS" if result else "❌ FAIL"
+        status = "[OK] PASS" if result else "[ERROR] FAIL"
         logger.info(f"{test_name:<25}: {status}")
     
     logger.info(f"\nテスト結果: {passed_tests}/{total_tests} PASSED")
     
     if passed_tests == total_tests:
-        logger.info("🎉 Task 1.2 全システム正常動作確認完了!")
+        logger.info("[SUCCESS] Task 1.2 全システム正常動作確認完了!")
         logger.info("シミュレーションデータ問題の修正が成功しました。")
     else:
-        logger.warning(f"⚠️  {total_tests - passed_tests}個のシステムに問題があります。")
+        logger.warning(f"[WARNING]  {total_tests - passed_tests}個のシステムに問題があります。")
     
     logger.info("=" * 80)
 

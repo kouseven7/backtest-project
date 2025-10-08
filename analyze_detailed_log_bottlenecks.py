@@ -28,7 +28,7 @@ class DetailedLogBottleneckAnalyzer:
         
     def analyze_detailed_log_timings(self):
         """提供されたログの詳細タイミング分析"""
-        print("🔍 詳細ログタイミング分析")
+        print("[SEARCH] 詳細ログタイミング分析")
         
         # ログタイムスタンプ解析
         log_events = [
@@ -116,18 +116,18 @@ class DetailedLogBottleneckAnalyzer:
         
         self.log_analysis["detailed_timing_analysis"] = timing_analysis
         
-        print("  📊 Screener処理詳細分析:")
+        print("  [CHART] Screener処理詳細分析:")
         for phase_name, phase_data in screener_phases.items():
             print(f"    - {phase_name}: {phase_data['duration_seconds']:.1f}秒 - {phase_data['description']}")
         
-        print(f"  📋 Screener総時間: {total_screener_time:.1f}秒 ({timing_analysis['screener_total_minutes']}分)")
-        print(f"  🎯 システム全体初期化: {total_initialization_time:.1f}秒 ({timing_analysis['total_initialization']['duration_minutes']}分)")
+        print(f"  [LIST] Screener総時間: {total_screener_time:.1f}秒 ({timing_analysis['screener_total_minutes']}分)")
+        print(f"  [TARGET] システム全体初期化: {total_initialization_time:.1f}秒 ({timing_analysis['total_initialization']['duration_minutes']}分)")
         
         return timing_analysis
     
     def identify_critical_bottlenecks(self):
         """重要ボトルネックの特定と分類"""
-        print("\n🔍 重要ボトルネック特定")
+        print("\n[SEARCH] 重要ボトルネック特定")
         
         bottlenecks = {
             "critical_level_1": {
@@ -189,24 +189,24 @@ class DetailedLogBottleneckAnalyzer:
             "summary": bottleneck_summary
         }
         
-        print("  🚨 Critical Level 1:")
+        print("  [ALERT] Critical Level 1:")
         for name, data in bottlenecks["critical_level_1"].items():
             print(f"    - {name}: {data['duration']:.1f}秒 - {data['impact']}")
             print(f"      原因: {data['cause']}")
             print(f"      改善可能性: {data['optimization_potential']}")
             
-        print("  ⚠️ Critical Level 2-3:")
+        print("  [WARNING] Critical Level 2-3:")
         for level in ["critical_level_2", "critical_level_3"]:
             for name, data in bottlenecks[level].items():
                 print(f"    - {name}: {data['duration']:.1f}秒 - {data['impact']}")
                 
-        print(f"  📊 Top 3ボトルネック合計: {total_critical_time:.1f}秒 (Screenerの{bottleneck_summary['percentage_of_screener']}%)")
+        print(f"  [CHART] Top 3ボトルネック合計: {total_critical_time:.1f}秒 (Screenerの{bottleneck_summary['percentage_of_screener']}%)")
         
         return bottlenecks, bottleneck_summary
     
     def assess_improvement_opportunities(self):
         """改善機会の技術的評価"""
-        print("\n🔍 改善機会評価")
+        print("\n[SEARCH] 改善機会評価")
         
         improvement_plans = {
             "phase_1_high_impact": {
@@ -271,15 +271,15 @@ class DetailedLogBottleneckAnalyzer:
             "roi_analysis": roi_analysis
         }
         
-        print("  🚀 Phase 1 (高インパクト):")
+        print("  [ROCKET] Phase 1 (高インパクト):")
         for plan_name, plan_data in improvement_plans["phase_1_high_impact"].items():
             print(f"    - {plan_name}:")
             print(f"      現在: {plan_data['current_time']:.1f}秒 → 改善後: {plan_data['expected_time']:.1f}秒")
             print(f"      効果: {plan_data['improvement']}")
             print(f"      工数: {plan_data['effort']}")
             
-        print(f"  💡 Phase 1 総効果: {phase_1_total_improvement:.1f}秒削減 ({phase_1_percentage}%改善)")
-        print("  📈 ROI分析:")
+        print(f"  [IDEA] Phase 1 総効果: {phase_1_total_improvement:.1f}秒削減 ({phase_1_percentage}%改善)")
+        print("  [UP] ROI分析:")
         print(f"    - 開発時間: {roi_analysis['phase_1_roi']['development_time']}")
         print(f"    - 削減効果: {roi_analysis['phase_1_roi']['time_reduction']}")
         print(f"    - ユーザー体験: {roi_analysis['phase_1_roi']['user_impact']}")
@@ -288,7 +288,7 @@ class DetailedLogBottleneckAnalyzer:
     
     def assess_todo_perf_007_necessity(self):
         """TODO-PERF-007の必要性と内容評価"""
-        print("\n🔍 TODO-PERF-007必要性評価")
+        print("\n[SEARCH] TODO-PERF-007必要性評価")
         
         # 現状評価
         current_situation = {
@@ -355,13 +355,13 @@ class DetailedLogBottleneckAnalyzer:
             "necessity_assessment": necessity_assessment
         }
         
-        print("  ✅ TODO-PERF-007必要性: 確実に必要")
-        print("  🎯 緊急度: 最高レベル")
-        print("  💡 主要理由:")
+        print("  [OK] TODO-PERF-007必要性: 確実に必要")
+        print("  [TARGET] 緊急度: 最高レベル")
+        print("  [IDEA] 主要理由:")
         for reason in necessity_assessment["justification"]:
             print(f"    - {reason}")
             
-        print("  📋 推奨TODO内容:")
+        print("  [LIST] 推奨TODO内容:")
         print(f"    - タイトル: {todo_perf_007_content['title']}")
         print(f"    - 優先度: {todo_perf_007_content['priority']}")
         print(f"    - Phase 1目標: {todo_perf_007_content['target_improvements']['phase_1']}")
@@ -400,7 +400,7 @@ class DetailedLogBottleneckAnalyzer:
         print(f"\n📄 詳細分析レポート保存: {report_file}")
         
         # 最終推奨事項表示
-        print("\n🎯 最終推奨事項:")
+        print("\n[TARGET] 最終推奨事項:")
         print(f"  即座のアクション: {final_recommendations['immediate_action']}")
         print("  実装順序:")
         for order in final_recommendations['implementation_order']:
@@ -414,7 +414,7 @@ class DetailedLogBottleneckAnalyzer:
 
 def main():
     """メイン実行関数"""
-    print("🔍 詳細ログボトルネック分析開始")
+    print("[SEARCH] 詳細ログボトルネック分析開始")
     print("=" * 60)
     
     analyzer = DetailedLogBottleneckAnalyzer()
@@ -435,12 +435,12 @@ def main():
         # 最終レポート生成
         results = analyzer.generate_comprehensive_report()
         
-        print("\n✅ 詳細ログボトルネック分析完了")
-        print("\n🚨 結論: TODO-PERF-007の追加が強く推奨されます")
+        print("\n[OK] 詳細ログボトルネック分析完了")
+        print("\n[ALERT] 結論: TODO-PERF-007の追加が強く推奨されます")
         return results
         
     except Exception as e:
-        print(f"\n❌ 分析中にエラーが発生: {e}")
+        print(f"\n[ERROR] 分析中にエラーが発生: {e}")
         import traceback
         traceback.print_exc()
         return None

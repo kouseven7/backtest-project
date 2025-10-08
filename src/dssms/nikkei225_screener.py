@@ -229,7 +229,7 @@ class Nikkei225Screener:
     def _parallel_market_cap_filter(self, symbols: List[str], min_cap: float) -> List[str]:
         """並列市場キャップフィルタ（TODO-PERF-007 Stage 2統合）"""
         
-        self.logger.info(f"🔧 並列市場キャップフィルタ: {len(symbols)}銘柄処理開始")
+        self.logger.info(f"[TOOL] 並列市場キャップフィルタ: {len(symbols)}銘柄処理開始")
         start_time = time.perf_counter()
         
         try:
@@ -251,17 +251,17 @@ class Nikkei225Screener:
                         if is_valid:
                             filtered_symbols.append(symbol)
                     except Exception as e:
-                        self.logger.debug(f"  ⚠️ {symbol} 処理エラー: {e}")
+                        self.logger.debug(f"  [WARNING] {symbol} 処理エラー: {e}")
                         # エラー時は除外（保守的判断）
             
             execution_time = time.perf_counter() - start_time
-            self.logger.info(f"  ✅ 並列処理完了: {len(symbols)} → {len(filtered_symbols)}銘柄 ({execution_time:.1f}秒)")
+            self.logger.info(f"  [OK] 並列処理完了: {len(symbols)} → {len(filtered_symbols)}銘柄 ({execution_time:.1f}秒)")
             
             return filtered_symbols
             
         except Exception as e:
             execution_time = time.perf_counter() - start_time
-            self.logger.warning(f"  ❌ 並列処理エラー ({execution_time:.1f}秒): {e}")
+            self.logger.warning(f"  [ERROR] 並列処理エラー ({execution_time:.1f}秒): {e}")
             # フォールバック：逐次処理
             return self._sequential_market_cap_filter(symbols, min_cap)
     

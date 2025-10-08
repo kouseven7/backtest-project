@@ -55,7 +55,7 @@ class DSSMSTradeHistoryFixer:
         
     def fix_dssms_backtester(self, file_path: str = "src/dssms/dssms_backtester.py"):
         """DSSMSバックテスターの取引履歴生成を修正"""
-        self.logger.info(f"🔧 DSSMS取引履歴修正開始: {file_path}")
+        self.logger.info(f"[TOOL] DSSMS取引履歴修正開始: {file_path}")
         
         try:
             # ファイルを読み込み
@@ -190,9 +190,9 @@ class DSSMSTradeHistoryFixer:
             # 文字列を置換
             if old_trade_generation in content:
                 content = content.replace(old_trade_generation, new_trade_generation)
-                self.logger.info("✅ 取引履歴生成ロジックを修正しました")
+                self.logger.info("[OK] 取引履歴生成ロジックを修正しました")
             else:
-                self.logger.warning("⚠️  取引履歴生成ロジックが見つかりませんでした")
+                self.logger.warning("[WARNING]  取引履歴生成ロジックが見つかりませんでした")
             
             # 修正2: デフォルト取引データの修正
             old_default_trades = """            # デフォルト取引データ（switch_historyが空の場合）
@@ -251,22 +251,22 @@ class DSSMSTradeHistoryFixer:
             
             if old_default_trades in content:
                 content = content.replace(old_default_trades, new_default_trades)
-                self.logger.info("✅ デフォルト取引データ生成を修正しました")
+                self.logger.info("[OK] デフォルト取引データ生成を修正しました")
             
             # ファイルに書き戻し
             with open(file_path, 'w', encoding='utf-8') as f:
                 f.write(content)
             
-            self.logger.info(f"🎉 DSSMS取引履歴修正完了: {file_path}")
+            self.logger.info(f"[SUCCESS] DSSMS取引履歴修正完了: {file_path}")
             return True
             
         except Exception as e:
-            self.logger.error(f"❌ 修正中にエラー: {e}")
+            self.logger.error(f"[ERROR] 修正中にエラー: {e}")
             return False
     
     def fix_unified_output_engine(self, file_path: str = "src/dssms/unified_output_engine.py"):
         """統一出力エンジンのExcel出力を修正"""
-        self.logger.info(f"🔧 統一出力エンジンExcel出力修正: {file_path}")
+        self.logger.info(f"[TOOL] 統一出力エンジンExcel出力修正: {file_path}")
         
         try:
             # ファイルを読み込み
@@ -329,7 +329,7 @@ class DSSMSTradeHistoryFixer:
                         class_end = len(content)
                     
                     content = content[:class_end] + excel_enhancement + content[class_end:]
-                    self.logger.info("✅ Excel強化メソッドを追加しました")
+                    self.logger.info("[OK] Excel強化メソッドを追加しました")
             
             # ファイルに書き戻し
             with open(file_path, 'w', encoding='utf-8') as f:
@@ -338,7 +338,7 @@ class DSSMSTradeHistoryFixer:
             return True
             
         except Exception as e:
-            self.logger.error(f"❌ 統一出力エンジン修正エラー: {e}")
+            self.logger.error(f"[ERROR] 統一出力エンジン修正エラー: {e}")
             return False
     
     def create_enhanced_excel_exporter(self):
@@ -519,12 +519,12 @@ if __name__ == "__main__":
         with open(enhanced_path, 'w', encoding='utf-8') as f:
             f.write(enhanced_exporter_content)
         
-        self.logger.info(f"✅ 強化Excelエクスポーター作成: {enhanced_path}")
+        self.logger.info(f"[OK] 強化Excelエクスポーター作成: {enhanced_path}")
         return enhanced_path
     
     def run_comprehensive_fix(self):
         """包括的修正の実行"""
-        self.logger.info("🚀 DSSMS取引履歴包括的修正開始")
+        self.logger.info("[ROCKET] DSSMS取引履歴包括的修正開始")
         
         results = {
             'dssms_backtester': False,
@@ -543,25 +543,25 @@ if __name__ == "__main__":
         results['enhanced_exporter'] = bool(enhanced_path)
         
         # 結果レポート
-        self.logger.info("📋 修正結果サマリー:")
+        self.logger.info("[LIST] 修正結果サマリー:")
         for component, success in results.items():
-            status = "✅ 成功" if success else "❌ 失敗"
+            status = "[OK] 成功" if success else "[ERROR] 失敗"
             self.logger.info(f"  {component}: {status}")
         
         if all(results.values()):
-            self.logger.info("🎉 すべての修正が正常に完了しました！")
+            self.logger.info("[SUCCESS] すべての修正が正常に完了しました！")
             self.logger.info("📝 次のステップ:")
             self.logger.info("  1. python src/dssms/dssms_backtester.py でテスト実行")
             self.logger.info("  2. python dssms_enhanced_excel_exporter.py でExcelファイル強化")
             self.logger.info("  3. 取引履歴シートの内容を確認")
         else:
-            self.logger.warning("⚠️  一部の修正が失敗しました。ログを確認してください。")
+            self.logger.warning("[WARNING]  一部の修正が失敗しました。ログを確認してください。")
         
         return results
 
 def main():
     """メイン実行"""
-    print("🔧 DSSMS取引履歴問題修正システム")
+    print("[TOOL] DSSMS取引履歴問題修正システム")
     print("=" * 60)
     
     fixer = DSSMSTradeHistoryFixer()
@@ -571,7 +571,7 @@ def main():
     print("修正完了！")
     
     if all(results.values()):
-        print("\n📋 推奨テスト手順:")
+        print("\n[LIST] 推奨テスト手順:")
         print("1. python src/dssms/dssms_backtester.py")
         print("2. python dssms_enhanced_excel_exporter.py")
         print("3. Excelファイルの取引履歴シートを確認")

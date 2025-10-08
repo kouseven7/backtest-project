@@ -770,14 +770,14 @@ if __name__ == "__main__":
     try:
         # テストアダプター作成
         adapter = create_test_adapter()
-        print(f"✅ アダプター初期化成功")
+        print(f"[OK] アダプター初期化成功")
         
         # データ検証テスト
         test_symbol = '7203'
         test_date = datetime(2023, 6, 15)
         
         is_valid = adapter.validate_symbol_data(test_symbol, test_date)
-        print(f"✅ データ検証テスト: {test_symbol} = {'有効' if is_valid else '無効'}")
+        print(f"[OK] データ検証テスト: {test_symbol} = {'有効' if is_valid else '無効'}")
         
         # 戦略実行テスト
         result = adapter.execute_strategies(
@@ -786,7 +786,7 @@ if __name__ == "__main__":
             portfolio_value=1000000
         )
         
-        print(f"✅ 戦略実行テスト成功")
+        print(f"[OK] 戦略実行テスト成功")
         print(f"  - ステータス: {result['status']}")
         print(f"  - 戦略: {result['strategy']}")
         print(f"  - エントリーシグナル: {result['entry_signal']}")
@@ -795,11 +795,11 @@ if __name__ == "__main__":
         
         # 統計取得テスト
         stats = adapter.get_strategy_stats()
-        print(f"✅ 統計取得成功: 総実行回数 {stats['total_executions']}")
+        print(f"[OK] 統計取得成功: 総実行回数 {stats['total_executions']}")
         
-        print("\n🎉 MultiStrategyAdapter 実装完了！")
+        print("\n[SUCCESS] MultiStrategyAdapter 実装完了！")
         
     except Exception as e:
-        print(f"❌ テストエラー: {e}")
+        print(f"[ERROR] テストエラー: {e}")
         import traceback
         traceback.print_exc()

@@ -66,34 +66,34 @@ def test_phase4b_improvements():
         
         # 切替回数チェック（目標: 3-7回）
         if 3 <= switch_count <= 7:
-            success_criteria['switch_count'] = "✅"
-            print(f"✅ 切替回数: {switch_count}回 (目標: 3-7回)")
+            success_criteria['switch_count'] = "[OK]"
+            print(f"[OK] 切替回数: {switch_count}回 (目標: 3-7回)")
         else:
-            success_criteria['switch_count'] = "❌"
-            print(f"❌ 切替回数: {switch_count}回 (目標: 3-7回)")
+            success_criteria['switch_count'] = "[ERROR]"
+            print(f"[ERROR] 切替回数: {switch_count}回 (目標: 3-7回)")
         
         # パフォーマンスチェック（目標: >-50%）
         if total_return > -50:
-            success_criteria['performance'] = "✅"
-            print(f"✅ パフォーマンス: {total_return:.2f}% (目標: >-50%)")
+            success_criteria['performance'] = "[OK]"
+            print(f"[OK] パフォーマンス: {total_return:.2f}% (目標: >-50%)")
         else:
-            success_criteria['performance'] = "❌"
-            print(f"❌ パフォーマンス: {total_return:.2f}% (目標: >-50%)")
+            success_criteria['performance'] = "[ERROR]"
+            print(f"[ERROR] パフォーマンス: {total_return:.2f}% (目標: >-50%)")
         
         # 動的計算確認（ログから信頼度変動確認）
-        success_criteria['dynamic_calculation'] = "✅"
-        print("✅ 動的計算: Phase 4B修正実装済み")
+        success_criteria['dynamic_calculation'] = "[OK]"
+        print("[OK] 動的計算: Phase 4B修正実装済み")
         
         # 総合評価
-        success_count = sum(1 for v in success_criteria.values() if v == "✅")
+        success_count = sum(1 for v in success_criteria.values() if v == "[OK]")
         total_count = len(success_criteria)
         
         if success_count >= 2:
             phase4b_success = True
-            print(f"\n⚡ Phase 4B修正効果: ✅ 達成 ({success_count}/{total_count})")
+            print(f"\n⚡ Phase 4B修正効果: [OK] 達成 ({success_count}/{total_count})")
         else:
             phase4b_success = False
-            print(f"\n⚡ Phase 4B修正効果: ❌ 未達成 ({success_count}/{total_count})")
+            print(f"\n⚡ Phase 4B修正効果: [ERROR] 未達成 ({success_count}/{total_count})")
             print("   - Phase 4Cで追加修正が必要")
         
         # 詳細結果

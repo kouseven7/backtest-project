@@ -598,7 +598,7 @@ class DSSMSStagedValidator:
         try:
             for result in stage_results:
                 if result.result == ValidationResult.PASS:
-                    recommendations.append(f"✅ {result.stage.value.title()} Stage: 正常動作確認済み")
+                    recommendations.append(f"[OK] {result.stage.value.title()} Stage: 正常動作確認済み")
                 elif result.result == ValidationResult.FAIL:
                     recommendations.append(f"🔴 {result.stage.value.title()} Stage: 修正が必要 (成功率: {result.success_rate:.1%})")
                 
@@ -609,13 +609,13 @@ class DSSMSStagedValidator:
                     elif "統合" in error:
                         recommendations.append("🔗 統合システムの依存関係を確認してください")
                     elif "バックテスト" in error:
-                        recommendations.append("📊 バックテストシステムの設定を確認してください")
+                        recommendations.append("[CHART] バックテストシステムの設定を確認してください")
             
             # 全体的な推奨事項
             overall_success_rate = sum(r.success_rate for r in stage_results) / len(stage_results) if stage_results else 0.0
             
             if overall_success_rate >= 0.80:
-                recommendations.append("🎉 システム全体が良好に動作しています - Phase 2移行準備完了")
+                recommendations.append("[SUCCESS] システム全体が良好に動作しています - Phase 2移行準備完了")
             elif overall_success_rate >= 0.60:
                 recommendations.append("⚡ 主要機能は動作中 - 部分的な修正でPhase 2移行可能")
             else:
@@ -636,18 +636,18 @@ class DSSMSStagedValidator:
             
             if not failed_stages:
                 next_actions.extend([
-                    "🚀 Phase 2: Task 2.1 既存戦略システム統合の準備",
-                    "📋 詳細パフォーマンス分析の実行",
+                    "[ROCKET] Phase 2: Task 2.1 既存戦略システム統合の準備",
+                    "[LIST] 詳細パフォーマンス分析の実行",
                     "🔄 定期的な品質監視の設定"
                 ])
             else:
                 for failed_stage in failed_stages:
                     if failed_stage.stage == ValidationStage.BASIC:
-                        next_actions.append("🔧 基本システムの修正を最優先で実行")
+                        next_actions.append("[TOOL] 基本システムの修正を最優先で実行")
                     elif failed_stage.stage == ValidationStage.INTEGRATION:
                         next_actions.append("🔗 統合システムの個別コンポーネント修正")
                     elif failed_stage.stage == ValidationStage.PERFORMANCE:
-                        next_actions.append("📈 パフォーマンス問題の詳細調査")
+                        next_actions.append("[UP] パフォーマンス問題の詳細調査")
                 
                 next_actions.append("🔄 修正後の再検証実行")
                 
@@ -668,14 +668,14 @@ def demo_staged_validation():
         # 包括的段階検証実行
         result = validator.run_comprehensive_validation()
         
-        print(f"\n📊 検証結果サマリー:")
+        print(f"\n[CHART] 検証結果サマリー:")
         print(f"全体成功: {result.overall_success}")
         print(f"全体スコア: {result.overall_score:.2f}")
         print(f"実行時間: {result.total_execution_time:.2f}秒")
         
-        print(f"\n📋 段階別結果:")
+        print(f"\n[LIST] 段階別結果:")
         for stage_result in result.stage_results:
-            status_icon = "✅" if stage_result.result == ValidationResult.PASS else "❌"
+            status_icon = "[OK]" if stage_result.result == ValidationResult.PASS else "[ERROR]"
             print(f"  {status_icon} {stage_result.stage.value.title()}: {stage_result.success_rate:.1%} ({stage_result.tests_passed}/{stage_result.tests_total})")
             
             if stage_result.errors:
@@ -684,20 +684,20 @@ def demo_staged_validation():
             
             if stage_result.warnings:
                 for warning in stage_result.warnings[:2]:  # 最初の2つの警告を表示
-                    print(f"    ⚠️ {warning}")
+                    print(f"    [WARNING] {warning}")
         
-        print(f"\n💡 推奨事項:")
+        print(f"\n[IDEA] 推奨事項:")
         for rec in result.recommendations[:5]:  # 最初の5つを表示
             print(f"  {rec}")
         
-        print(f"\n🎯 次のアクション:")
+        print(f"\n[TARGET] 次のアクション:")
         for action in result.next_actions[:3]:  # 最初の3つを表示
             print(f"  {action}")
         
         return result.overall_success
         
     except Exception as e:
-        print(f"❌ デモ実行エラー: {e}")
+        print(f"[ERROR] デモ実行エラー: {e}")
         return False
 
 if __name__ == "__main__":

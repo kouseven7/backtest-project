@@ -33,27 +33,27 @@ def main():
     
     try:
         # 1. フレームワーク初期化
-        print("🔧 フレームワーク初期化中...")
+        print("[TOOL] フレームワーク初期化中...")
         config_path = project_root / "config" / "validation" / "validation_config.json"
         framework = DSSMSValidationFramework(str(config_path))
-        print("✅ フレームワーク初期化完了")
+        print("[OK] フレームワーク初期化完了")
         print()
         
         # 2. 基本検証レベルテスト
-        print("📋 基本検証レベルテスト実行...")
+        print("[LIST] 基本検証レベルテスト実行...")
         basic_results = framework.run_validation([ValidationLevel.BASIC])
-        print(f"✅ 基本検証完了: {len(basic_results)}件の結果")
+        print(f"[OK] 基本検証完了: {len(basic_results)}件の結果")
         _print_level_summary("BASIC", basic_results)
         print()
         
         # 3. 単体検証レベルテスト
-        print("🔍 単体検証レベルテスト実行...")
+        print("[SEARCH] 単体検証レベルテスト実行...")
         try:
             unit_results = framework.run_validation([ValidationLevel.UNIT])
-            print(f"✅ 単体検証完了: {len(unit_results)}件の結果")
+            print(f"[OK] 単体検証完了: {len(unit_results)}件の結果")
             _print_level_summary("UNIT", unit_results)
         except Exception as e:
-            print(f"⚠️ 単体検証スキップ: {e}")
+            print(f"[WARNING] 単体検証スキップ: {e}")
             unit_results = []
         print()
         
@@ -61,24 +61,24 @@ def main():
         print("🔗 統合検証レベルテスト実行...")
         try:
             integration_results = framework.run_validation([ValidationLevel.INTEGRATION])
-            print(f"✅ 統合検証完了: {len(integration_results)}件の結果")
+            print(f"[OK] 統合検証完了: {len(integration_results)}件の結果")
             _print_level_summary("INTEGRATION", integration_results)
         except Exception as e:
-            print(f"⚠️ 統合検証スキップ: {e}")
+            print(f"[WARNING] 統合検証スキップ: {e}")
             integration_results = []
         print()
         
         # 5. パフォーマンス検証レベルテスト
-        print("🚀 パフォーマンス検証レベルテスト実行...")
+        print("[ROCKET] パフォーマンス検証レベルテスト実行...")
         performance_results = framework.run_validation([ValidationLevel.PERFORMANCE])
-        print(f"✅ パフォーマンス検証完了: {len(performance_results)}件の結果")
+        print(f"[OK] パフォーマンス検証完了: {len(performance_results)}件の結果")
         _print_level_summary("PERFORMANCE", performance_results)
         print()
         
         # 6. 本番環境検証レベルテスト
         print("🏭 本番環境検証レベルテスト実行...")
         production_results = framework.run_validation([ValidationLevel.PRODUCTION])
-        print(f"✅ 本番環境検証完了: {len(production_results)}件の結果")
+        print(f"[OK] 本番環境検証完了: {len(production_results)}件の結果")
         _print_level_summary("PRODUCTION", production_results)
         print()
         
@@ -86,7 +86,7 @@ def main():
         all_results = basic_results + unit_results + integration_results + performance_results + production_results
         
         if all_results:
-            print("📊 全体結果サマリー")
+            print("[CHART] 全体結果サマリー")
             print("-" * 50)
             
             overall_score = framework.get_overall_score(all_results)
@@ -107,7 +107,7 @@ def main():
             print("📝 検証レポート生成中...")
             report_path = framework.generate_report(all_results)
             if report_path:
-                print(f"✅ レポート生成完了: {report_path}")
+                print(f"[OK] レポート生成完了: {report_path}")
                 
                 # JSON版とExcel版のパスも表示
                 json_path = report_path.replace('.html', '.json')
@@ -116,16 +116,16 @@ def main():
                 if Path(json_path).exists():
                     print(f"📄 JSON レポート: {json_path}")
                 if Path(excel_path).exists():
-                    print(f"📊 Excel レポート: {excel_path}")
+                    print(f"[CHART] Excel レポート: {excel_path}")
             print()
             
             # 9. 修正提案生成
-            print("🔧 自動修正提案生成中...")
+            print("[TOOL] 自動修正提案生成中...")
             try:
                 suggestions = framework.suggest_fixes(all_results)
                 if suggestions:
-                    print(f"✅ 修正提案生成完了: {len(suggestions)}件")
-                    print("\n🎯 主要な修正提案:")
+                    print(f"[OK] 修正提案生成完了: {len(suggestions)}件")
+                    print("\n[TARGET] 主要な修正提案:")
                     for i, suggestion in enumerate(suggestions[:5], 1):
                         print(f"  {i}. [{suggestion.priority.value.upper()}] {suggestion.title}")
                         print(f"     カテゴリ: {suggestion.category}")
@@ -135,13 +135,13 @@ def main():
                     if len(suggestions) > 5:
                         print(f"     ... 他 {len(suggestions) - 5} 件の提案")
                 else:
-                    print("✅ 修正が必要な問題は見つかりませんでした")
+                    print("[OK] 修正が必要な問題は見つかりませんでした")
             except Exception as e:
-                print(f"⚠️ 修正提案生成スキップ: {e}")
+                print(f"[WARNING] 修正提案生成スキップ: {e}")
             print()
             
             # 10. 最終評価
-            print("🎯 最終評価")
+            print("[TARGET] 最終評価")
             print("-" * 50)
             
             if overall_score >= 0.90:
@@ -149,27 +149,27 @@ def main():
                 emoji = "🌟"
             elif overall_score >= 0.80:
                 status = "良好"
-                emoji = "✅"
+                emoji = "[OK]"
             elif overall_score >= 0.70:
                 status = "合格"
                 emoji = "👍"
             elif overall_score >= 0.60:
                 status = "要改善"
-                emoji = "⚠️"
+                emoji = "[WARNING]"
             else:
                 status = "要修正"
-                emoji = "❌"
+                emoji = "[ERROR]"
             
             print(f"{emoji} 総合評価: {status}")
             print(f"スコア: {overall_score:.1%}")
             
             if production_ready:
-                print("🚀 本番環境でのデプロイが可能です")
+                print("[ROCKET] 本番環境でのデプロイが可能です")
             else:
-                print("🔧 本番環境デプロイ前に修正が必要です")
+                print("[TOOL] 本番環境デプロイ前に修正が必要です")
             
         else:
-            print("❌ 検証結果が取得できませんでした")
+            print("[ERROR] 検証結果が取得できませんでした")
         
         print()
         print("="*80)
@@ -178,7 +178,7 @@ def main():
         
     except Exception as e:
         logger.error(f"デモ実行エラー: {e}")
-        print(f"❌ デモ実行エラー: {e}")
+        print(f"[ERROR] デモ実行エラー: {e}")
         return 1
     
     return 0
@@ -191,7 +191,7 @@ def _print_level_summary(level_name: str, results: List[ValidationResult]):
     
     result = results[0]  # 各レベル1つの結果と仮定
     
-    status = "✅ 成功" if result.success else "❌ 失敗"
+    status = "[OK] 成功" if result.success else "[ERROR] 失敗"
     score = result.score
     execution_time = result.execution_time
     
@@ -246,14 +246,14 @@ def run_specific_level_demo(level: ValidationLevel):
                 for suggestion in result.suggestions:
                     print(f"  - {suggestion}")
         else:
-            print("❌ 結果を取得できませんでした")
+            print("[ERROR] 結果を取得できませんでした")
     
     except Exception as e:
-        print(f"❌ {level.value}レベルテストエラー: {e}")
+        print(f"[ERROR] {level.value}レベルテストエラー: {e}")
 
 def test_individual_components():
     """個別コンポーネントテスト"""
-    print("\n🧪 個別コンポーネントテスト")
+    print("\n[TEST] 個別コンポーネントテスト")
     print("="*50)
     
     # テストデータ管理システム
@@ -266,11 +266,11 @@ def test_individual_components():
         regression_data = manager.get_test_data("regression", "basic_regression")
         stress_data = manager.get_test_data("stress", "market_crash")
         
-        print("✅ テストデータ管理システム正常")
+        print("[OK] テストデータ管理システム正常")
         print(f"   回帰テストデータ: {len(regression_data)} 項目")
         print(f"   ストレステストデータ: {len(stress_data)} 項目")
     except Exception as e:
-        print(f"❌ テストデータ管理システムエラー: {e}")
+        print(f"[ERROR] テストデータ管理システムエラー: {e}")
     
     # 検証レポーター
     print("\n2. 検証レポーター")
@@ -289,9 +289,9 @@ def test_individual_components():
         )
         
         reporter = ValidationReporter(config)
-        print("✅ 検証レポーター正常")
+        print("[OK] 検証レポーター正常")
     except Exception as e:
-        print(f"❌ 検証レポーターエラー: {e}")
+        print(f"[ERROR] 検証レポーターエラー: {e}")
     
     # 自動修正提案システム
     print("\n3. 自動修正提案システム")
@@ -299,9 +299,9 @@ def test_individual_components():
         from src.testing.automated_fix_suggestions import AutoFixSuggestions
         
         fixer = AutoFixSuggestions(config)
-        print("✅ 自動修正提案システム正常")
+        print("[OK] 自動修正提案システム正常")
     except Exception as e:
-        print(f"❌ 自動修正提案システムエラー: {e}")
+        print(f"[ERROR] 自動修正提案システムエラー: {e}")
 
 if __name__ == "__main__":
     # 引数による実行モード切替

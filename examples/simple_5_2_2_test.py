@@ -120,8 +120,8 @@ def test_individual_components():
 if __name__ == "__main__":
     success = test_individual_components()
     if success:
-        print("\n🎉 5-2-2 システム検証成功！")
+        print("\n[SUCCESS] 5-2-2 システム検証成功！")
         print("すべてのコンポーネントが正常に動作しています。")
     else:
-        print("\n❌ 5-2-2 システム検証失敗")
+        print("\n[ERROR] 5-2-2 システム検証失敗")
         print("一部のコンポーネントに問題があります。")

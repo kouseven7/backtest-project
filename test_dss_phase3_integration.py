@@ -44,15 +44,15 @@ def test_phase3_integration():
         
         # パフォーマンス検証
         if result['execution_time_ms'] < 10000:  # 10秒以内
-            print(f"✅ パフォーマンス: OK ({result['execution_time_ms']:.1f}ms)")
+            print(f"[OK] パフォーマンス: OK ({result['execution_time_ms']:.1f}ms)")
         else:
             print(f"⚠ パフォーマンス: やや遅い ({result['execution_time_ms']:.1f}ms)")
         
-        print(f"\n🎉 Phase 3 統合テスト成功！")
+        print(f"\n[SUCCESS] Phase 3 統合テスト成功！")
         return True
         
     except Exception as e:
-        print(f"❌ Phase 3 統合テストエラー: {e}")
+        print(f"[ERROR] Phase 3 統合テストエラー: {e}")
         import traceback
         traceback.print_exc()
         return False

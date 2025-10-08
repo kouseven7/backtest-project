@@ -35,7 +35,7 @@ def test_dssms_integrated_main_performance():
         
         total_time = time.time() - start_time
         
-        print(f"✅ dssms_integrated_main.py:")
+        print(f"[OK] dssms_integrated_main.py:")
         print(f"   Import時間: {import_time*1000:.1f}ms")
         print(f"   初期化時間: {init_time*1000:.1f}ms")
         print(f"   合計時間: {total_time*1000:.1f}ms")
@@ -43,7 +43,7 @@ def test_dssms_integrated_main_performance():
         return total_time * 1000
         
     except Exception as e:
-        print(f"❌ dssms_integrated_main.py エラー: {e}")
+        print(f"[ERROR] dssms_integrated_main.py エラー: {e}")
         return None
 
 def test_main_py_performance():
@@ -60,14 +60,14 @@ def test_main_py_performance():
         
         total_time = time.time() - start_time
         
-        print(f"✅ main.py:")
+        print(f"[OK] main.py:")
         print(f"   Import時間: {import_time*1000:.1f}ms")
         print(f"   合計時間: {total_time*1000:.1f}ms")
         
         return total_time * 1000
         
     except Exception as e:
-        print(f"❌ main.py エラー: {e}")
+        print(f"[ERROR] main.py エラー: {e}")
         return None
 
 def analyze_symbol_switch_manager_dependency():
@@ -77,19 +77,19 @@ def analyze_symbol_switch_manager_dependency():
     # dssms_integrated_main.pyでの使用確認
     try:
         from src.dssms.dssms_integrated_main import DSSMSIntegratedBacktester
-        print("✅ dssms_integrated_main.py: SymbolSwitchManager使用確認")
+        print("[OK] dssms_integrated_main.py: SymbolSwitchManager使用確認")
         backtester = DSSMSIntegratedBacktester()
         if hasattr(backtester, 'switch_manager'):
             print("   - switch_manager属性存在")
         else:
             print("   - switch_manager属性なし")
     except Exception as e:
-        print(f"❌ dssms_integrated_main.py: {e}")
+        print(f"[ERROR] dssms_integrated_main.py: {e}")
     
     # main.pyでの使用確認
     try:
         import main
-        print("✅ main.py: SymbolSwitchManager使用確認")
+        print("[OK] main.py: SymbolSwitchManager使用確認")
         # main.pyのソースコードをチェック
         main_file = os.path.join(project_root, "main.py")
         with open(main_file, 'r', encoding='utf-8') as f:
@@ -99,7 +99,7 @@ def analyze_symbol_switch_manager_dependency():
             else:
                 print("   - SymbolSwitchManager文字列なし")
     except Exception as e:
-        print(f"❌ main.py: {e}")
+        print(f"[ERROR] main.py: {e}")
 
 def test_symbol_switch_manager_fast_loading():
     """高速版SymbolSwitchManagerの遅延ロード効果測定"""
@@ -151,7 +151,7 @@ def analyze_phase2_optimization_target():
     # main.pyの実行時間測定
     main_time = test_main_py_performance()
     
-    print(f"\n🎯 Phase 2最適化対象分析結果:")
+    print(f"\n[TARGET] Phase 2最適化対象分析結果:")
     if dssms_time is not None and main_time is not None:
         if dssms_time > main_time:
             print(f"   主要ボトルネック: dssms_integrated_main.py ({dssms_time:.1f}ms)")
@@ -161,14 +161,14 @@ def analyze_phase2_optimization_target():
             print(f"   副次的: dssms_integrated_main.py ({dssms_time:.1f}ms)")
     
     # Phase 2の成果確認
-    print(f"\n📊 Phase 2成果確認:")
+    print(f"\n[CHART] Phase 2成果確認:")
     print(f"   目標: 1500ms")
     if dssms_time is not None:
         print(f"   dssms_integrated_main.py: {dssms_time:.1f}ms")
         if dssms_time <= 1500:
-            print(f"   ✅ 目標達成")
+            print(f"   [OK] 目標達成")
         else:
-            print(f"   ❌ 目標未達 (残り{dssms_time-1500:.1f}ms)")
+            print(f"   [ERROR] 目標未達 (残り{dssms_time-1500:.1f}ms)")
 
 def main():
     print("=== TODO-PERF-001 Phase 2 最適化対象分離分析 ===")

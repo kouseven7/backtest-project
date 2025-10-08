@@ -1074,7 +1074,7 @@ def main():
         accuracy_results = analyzer.analyze_symbol_selection_accuracy()
         
         if 'error' not in accuracy_results:
-            logger.info("✅ 銘柄選択精度分析完了")
+            logger.info("[OK] 銘柄選択精度分析完了")
             logger.info(f"   - 分析レベル数: {len([k for k in accuracy_results.keys() if k.startswith('level')])}")
             
             # レベル別結果表示
@@ -1084,14 +1084,14 @@ def main():
                     total = level_data.get('total_selections', 0)
                     logger.info(f"   - {level_key}: 精度{accuracy:.1%} ({total}件)")
         else:
-            logger.warning(f"   ⚠️ 精度分析エラー: {accuracy_results.get('error')}")
+            logger.warning(f"   [WARNING] 精度分析エラー: {accuracy_results.get('error')}")
         
         # 2. 切替パラメータ最適化
         logger.info("2. 切替パラメータ最適化実行中...")
         optimization_results = analyzer.optimize_switching_parameters()
         
         if 'error' not in optimization_results:
-            logger.info("✅ 切替パラメータ最適化完了")
+            logger.info("[OK] 切替パラメータ最適化完了")
             
             # 最適化結果表示
             for param_name, result in optimization_results.items():
@@ -1103,14 +1103,14 @@ def main():
                     total_improvement = result['expected_improvement']
                     logger.info(f"   - 統合最適化: 総合改善予測{total_improvement:+.2%}")
         else:
-            logger.warning(f"   ⚠️ 最適化エラー: {optimization_results.get('error')}")
+            logger.warning(f"   [WARNING] 最適化エラー: {optimization_results.get('error')}")
         
         # 3. 総合レポート生成
         logger.info("3. 総合パフォーマンスレポート生成中...")
         report_results = analyzer.generate_performance_report()
         
         if 'error' not in report_results:
-            logger.info("✅ 総合レポート生成完了")
+            logger.info("[OK] 総合レポート生成完了")
             
             output_formats = report_results.get('output_formats', {})
             for format_name, format_data in output_formats.items():
@@ -1124,18 +1124,18 @@ def main():
                 health = summary.get('system_health', 'Unknown')
                 logger.info(f"   - 総合スコア: {score:.1f}点 (システム状態: {health})")
         else:
-            logger.warning(f"   ⚠️ レポート生成エラー: {report_results.get('error')}")
+            logger.warning(f"   [WARNING] レポート生成エラー: {report_results.get('error')}")
         
         # 結果サマリー表示
         logger.info("=" * 60)
         logger.info("DSSMSAnalyzer実行完了サマリー")
         logger.info("=" * 60)
-        logger.info("✅ 3つの核心機能すべて実行完了:")
+        logger.info("[OK] 3つの核心機能すべて実行完了:")
         logger.info("   1. analyze_symbol_selection_accuracy - 階層的精度分析")
         logger.info("   2. optimize_switching_parameters - 統計ベース最適化")
         logger.info("   3. generate_performance_report - マルチフォーマット出力")
         logger.info(f"📁 出力ディレクトリ: {analyzer.output_dir}")
-        logger.info("🎯 システム統合準備完了")
+        logger.info("[TARGET] システム統合準備完了")
         logger.info("=" * 60)
         
     except Exception as e:

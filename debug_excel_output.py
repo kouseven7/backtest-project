@@ -16,7 +16,7 @@ warnings.filterwarnings('ignore')
 try:
     import pandas as pd
 except ImportError:
-    print("❌ pandasがインストールされていません")
+    print("[ERROR] pandasがインストールされていません")
     sys.exit(1)
 
 def test_engine_output(engine_name, engine_path):
@@ -34,7 +34,7 @@ def test_engine_output(engine_name, engine_path):
             from dssms_unified_output_engine_fixed import DSSMSUnifiedOutputEngine
             engine = DSSMSUnifiedOutputEngine()
         else:
-            print(f"❌ 未知のエンジン: {engine_name}")
+            print(f"[ERROR] 未知のエンジン: {engine_name}")
             return None
         
         # バックテスト実行
@@ -47,7 +47,7 @@ def test_engine_output(engine_name, engine_path):
                 # Excelファイルの内容確認
                 excel_analysis = analyze_excel_file(excel_path)
                 
-                print(f"✅ {engine_name} 成功")
+                print(f"[OK] {engine_name} 成功")
                 print(f"   Excel: {excel_path}")
                 print(f"   シート数: {excel_analysis['sheet_count']}")
                 print(f"   シート名: {excel_analysis['sheet_names']}")
@@ -59,14 +59,14 @@ def test_engine_output(engine_name, engine_path):
                     'engine': engine
                 }
             else:
-                print(f"❌ {engine_name} Excel生成失敗")
+                print(f"[ERROR] {engine_name} Excel生成失敗")
                 return {'success': False, 'error': 'Excel生成失敗'}
         else:
-            print(f"❌ {engine_name} バックテスト失敗")
+            print(f"[ERROR] {engine_name} バックテスト失敗")
             return {'success': False, 'error': 'バックテスト失敗'}
             
     except Exception as e:
-        print(f"❌ {engine_name} エラー: {e}")
+        print(f"[ERROR] {engine_name} エラー: {e}")
         return {'success': False, 'error': str(e)}
 
 def analyze_excel_file(excel_path):
@@ -107,7 +107,7 @@ def analyze_excel_file(excel_path):
 
 def main():
     """診断メイン実行"""
-    print("🔍 Excel出力問題診断開始")
+    print("[SEARCH] Excel出力問題診断開始")
     print("=" * 60)
     
     # 利用可能エンジンをテスト
@@ -122,12 +122,12 @@ def main():
         if Path(engine_file).exists():
             results[engine_name] = test_engine_output(engine_name, engine_file)
         else:
-            print(f"❌ {engine_name}: ファイル {engine_file} が見つかりません")
+            print(f"[ERROR] {engine_name}: ファイル {engine_file} が見つかりません")
             results[engine_name] = {'success': False, 'error': 'ファイル未発見'}
     
     # 結果サマリー
     print("\n" + "=" * 60)
-    print("📊 診断結果サマリー")
+    print("[CHART] 診断結果サマリー")
     print("=" * 60)
     
     successful_engines = []
@@ -135,7 +135,7 @@ def main():
     for engine_name, result in results.items():
         if result.get('success'):
             successful_engines.append(engine_name)
-            print(f"✅ {engine_name}: 正常動作")
+            print(f"[OK] {engine_name}: 正常動作")
             
             analysis = result.get('analysis', {})
             required_sheets = ['サマリー', 'パフォーマンス指標', '取引履歴', '損益推移', '戦略別統計', '切替分析']
@@ -143,23 +143,23 @@ def main():
             
             missing_sheets = [s for s in required_sheets if s not in existing_sheets]
             if missing_sheets:
-                print(f"   ⚠️ 不足シート: {missing_sheets}")
+                print(f"   [WARNING] 不足シート: {missing_sheets}")
             else:
-                print(f"   ✅ 全シート存在")
+                print(f"   [OK] 全シート存在")
                 
             # データ品質チェック
             sheet_details = analysis.get('sheet_details', {})
             for sheet_name in existing_sheets:
                 detail = sheet_details.get(sheet_name, {})
                 if detail.get('has_data'):
-                    print(f"   ✅ {sheet_name}: {detail['rows']}行のデータ")
+                    print(f"   [OK] {sheet_name}: {detail['rows']}行のデータ")
                 else:
-                    print(f"   ❌ {sheet_name}: データなし")
+                    print(f"   [ERROR] {sheet_name}: データなし")
         else:
-            print(f"❌ {engine_name}: {result.get('error', '不明なエラー')}")
+            print(f"[ERROR] {engine_name}: {result.get('error', '不明なエラー')}")
     
     # 推奨アクション
-    print(f"\n🎯 推奨アクション:")
+    print(f"\n[TARGET] 推奨アクション:")
     if successful_engines:
         best_engine = successful_engines[0]
         print(f"   1. '{best_engine}' エンジンを基準に修正を進める")

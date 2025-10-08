@@ -188,7 +188,7 @@ class LoadTestRunner:
                 self.test_results.append(validation_result)
                 
                 # 個別結果ログ
-                status = "✅ PASS" if validation_result.passed else "❌ FAIL"
+                status = "[OK] PASS" if validation_result.passed else "[ERROR] FAIL"
                 self.logger.info(f"{test_name}: {status} (スコア: {validation_result.score:.1f}/100)")
                 
                 # クリーンアップ
@@ -247,7 +247,7 @@ class LoadTestRunner:
                 self.test_results.append(validation_result)
                 
                 # 結果ログ
-                status = "✅ PASS" if validation_result.passed else "❌ FAIL"
+                status = "[OK] PASS" if validation_result.passed else "[ERROR] FAIL"
                 self.logger.info(f"{scenario_name}: {status} (時間: {elapsed:.1f}s)")
                 
             except Exception as e:
@@ -459,13 +459,13 @@ def main():
         runner = LoadTestRunner(config_file)
         runner.run_all_tests()
         
-        print("\n✅ 負荷テスト完了")
+        print("\n[OK] 負荷テスト完了")
         print(f"結果は {runner.output_dir} に保存されました")
         
     except KeyboardInterrupt:
-        print("\n❌ ユーザーによる中断")
+        print("\n[ERROR] ユーザーによる中断")
     except Exception as e:
-        print(f"\n❌ 実行エラー: {e}")
+        print(f"\n[ERROR] 実行エラー: {e}")
         traceback.print_exc()
         return 1
     

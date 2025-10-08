@@ -570,10 +570,10 @@ class ProductionReadyConverter:
         # Production Ready判定
         if validation_results['fallback_usage_count'] == 0:
             validation_results['overall_status'] = 'PRODUCTION_READY'
-            self.logger.info("✅ Production Ready状態確認完了")
+            self.logger.info("[OK] Production Ready状態確認完了")
         else:
             validation_results['overall_status'] = 'PENDING_FALLBACK_REMOVAL'
-            self.logger.warning(f"⚠️ Production Ready要件未達成: フォールバック使用量={validation_results['fallback_usage_count']}")
+            self.logger.warning(f"[WARNING] Production Ready要件未達成: フォールバック使用量={validation_results['fallback_usage_count']}")
         
         return validation_results
     
@@ -663,10 +663,10 @@ def execute_phase3_fallback_removal():
     
     # 成功判定
     if validation['overall_status'] == 'PRODUCTION_READY':
-        print("✅ Phase 3完了: Production Ready状態達成")
+        print("[OK] Phase 3完了: Production Ready状態達成")
         return True
     else:
-        print("⚠️ Phase 3未完了: 追加作業が必要")
+        print("[WARNING] Phase 3未完了: 追加作業が必要")
         return False
 
 
@@ -675,9 +675,9 @@ if __name__ == "__main__":
     success = execute_phase3_fallback_removal()
     
     if success:
-        print("\n🎉 Phase 3: フォールバック完全除去 - 完全成功!")
+        print("\n[SUCCESS] Phase 3: フォールバック完全除去 - 完全成功!")
         print("   → Production Ready状態移行完了")
         print("   → SystemFallbackPolicy依存完全解消")
     else:
-        print("\n⚠️ Phase 3: 部分完了 - 追加作業継続")
+        print("\n[WARNING] Phase 3: 部分完了 - 追加作業継続")
         print("   → 残存フォールバック依存関係の確認が必要")

@@ -147,7 +147,7 @@ class DSSMSQuickFixIntegrationManager:
                 from src.dssms.dssms_data_diagnostics import DSSMSDataDiagnostics
                 self.task_1_1_components['data_diagnostics'] = DSSMSDataDiagnostics()
                 self.integration_status['data_diagnostics'] = True
-                self.logger.info("✅ データ診断システム初期化完了")
+                self.logger.info("[OK] データ診断システム初期化完了")
             except ImportError as e:
                 self.logger.warning(f"データ診断システム初期化失敗: {e}")
             
@@ -156,7 +156,7 @@ class DSSMSQuickFixIntegrationManager:
                 from src.dssms.dssms_data_bridge import DSSMSDataBridge
                 self.task_1_1_components['data_bridge'] = DSSMSDataBridge()
                 self.integration_status['data_bridge'] = True
-                self.logger.info("✅ データブリッジ初期化完了")
+                self.logger.info("[OK] データブリッジ初期化完了")
             except ImportError as e:
                 self.logger.warning(f"データブリッジ初期化失敗: {e}")
             
@@ -165,7 +165,7 @@ class DSSMSQuickFixIntegrationManager:
                 from src.dssms.dssms_integration_patch import DSSMSIntegrationPatch
                 self.task_1_1_components['integration_patch'] = DSSMSIntegrationPatch()
                 self.integration_status['integration_patch'] = True
-                self.logger.info("✅ 統合パッチ初期化完了")
+                self.logger.info("[OK] 統合パッチ初期化完了")
             except ImportError as e:
                 self.logger.warning(f"統合パッチ初期化失敗: {e}")
             
@@ -190,7 +190,7 @@ class DSSMSQuickFixIntegrationManager:
                 from src.dssms.dssms_data_integration_enhancer import DSSMSDataIntegrationEnhancer
                 self.task_1_2_components['data_integration_enhancer'] = DSSMSDataIntegrationEnhancer()
                 self.integration_status['data_integration_enhancer'] = True
-                self.logger.info("✅ データ統合強化初期化完了")
+                self.logger.info("[OK] データ統合強化初期化完了")
             except ImportError as e:
                 self.logger.warning(f"データ統合強化初期化失敗: {e}")
             
@@ -199,7 +199,7 @@ class DSSMSQuickFixIntegrationManager:
                 from src.dssms.dssms_simulation_quality_manager import DSSMSSimulationQualityManager
                 self.task_1_2_components['simulation_quality_manager'] = DSSMSSimulationQualityManager()
                 self.integration_status['simulation_quality_manager'] = True
-                self.logger.info("✅ シミュレーション品質管理初期化完了")
+                self.logger.info("[OK] シミュレーション品質管理初期化完了")
             except ImportError as e:
                 self.logger.warning(f"シミュレーション品質管理初期化失敗: {e}")
             
@@ -208,7 +208,7 @@ class DSSMSQuickFixIntegrationManager:
                 from src.dssms.dssms_enhanced_reporter import DSSMSEnhancedReporter
                 self.task_1_2_components['enhanced_reporter'] = DSSMSEnhancedReporter()
                 self.integration_status['enhanced_reporter'] = True
-                self.logger.info("✅ 強化レポート初期化完了")
+                self.logger.info("[OK] 強化レポート初期化完了")
             except ImportError as e:
                 self.logger.warning(f"強化レポート初期化失敗: {e}")
             
@@ -350,19 +350,19 @@ class DSSMSQuickFixIntegrationManager:
             # 統合レベル別推奨事項
             if integration_level == IntegrationLevel.FULL:
                 recommendations.extend([
-                    "✅ 全コンポーネント統合完了 - Phase 2移行準備完了",
-                    "📊 詳細パフォーマンス分析の実行を推奨",
+                    "[OK] 全コンポーネント統合完了 - Phase 2移行準備完了",
+                    "[CHART] 詳細パフォーマンス分析の実行を推奨",
                     "🔄 定期的な品質監視の設定を推奨"
                 ])
             elif integration_level == IntegrationLevel.ENHANCED:
                 recommendations.extend([
                     "⚡ 強化統合完了 - 主要機能は動作可能",
-                    "🔧 未統合コンポーネントの個別修正を推奨",
-                    "📈 段階的なPhase 2移行を推奨"
+                    "[TOOL] 未統合コンポーネントの個別修正を推奨",
+                    "[UP] 段階的なPhase 2移行を推奨"
                 ])
             else:
                 recommendations.extend([
-                    "⚠️ 基本統合レベル - 最小限動作確保",
+                    "[WARNING] 基本統合レベル - 最小限動作確保",
                     "🛠️ コンポーネント初期化エラーの調査が必要",
                     "🔄 Task 1.1/1.2の再実装を検討"
                 ])
@@ -412,28 +412,28 @@ def demo_quick_fix_integration():
         # ハイブリッド統合実行
         result = manager.perform_hybrid_integration()
         
-        print(f"\n📊 統合結果:")
+        print(f"\n[CHART] 統合結果:")
         print(f"成功: {result.success}")
         print(f"統合レベル: {result.integration_level.value}")
         print(f"実行時間: {result.execution_time:.2f}秒")
         print(f"パフォーマンス改善: {result.performance_improvement:.1%}")
         
-        print(f"\n🔧 実行された修正:")
+        print(f"\n[TOOL] 実行された修正:")
         for fix in result.error_fixes:
             print(f"  - {fix}")
         
-        print(f"\n💡 推奨事項:")
+        print(f"\n[IDEA] 推奨事項:")
         for rec in result.recommendations:
             print(f"  {rec}")
         
-        print(f"\n📋 コンポーネント状態:")
+        print(f"\n[LIST] コンポーネント状態:")
         for component, status in result.components_status.items():
-            status_icon = "✅" if status else "❌"
+            status_icon = "[OK]" if status else "[ERROR]"
             print(f"  {status_icon} {component}")
         
         # 統合サマリー表示
         summary = manager.get_integration_summary()
-        print(f"\n📈 統合サマリー:")
+        print(f"\n[UP] 統合サマリー:")
         print(f"統合成功率: {summary.get('integration_success_rate', 0):.1%}")
         print(f"Task 1.1準備度: {summary.get('task_1_1_readiness', 0):.1%}")
         print(f"Task 1.2準備度: {summary.get('task_1_2_readiness', 0):.1%}")
@@ -441,7 +441,7 @@ def demo_quick_fix_integration():
         return result.success
         
     except Exception as e:
-        print(f"❌ デモ実行エラー: {e}")
+        print(f"[ERROR] デモ実行エラー: {e}")
         return False
 
     def run_comprehensive_integration(self) -> Dict[str, Any]:

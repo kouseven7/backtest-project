@@ -62,18 +62,18 @@ class Phase2Stage2SyntaxOptimizer:
                     backup_path = self.backup_dir / target
                     backup_path.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(source_path, backup_path)
-                    print(f"  ✅ バックアップ: {target}")
+                    print(f"  [OK] バックアップ: {target}")
             
             print(f"  📁 バックアップ場所: {self.backup_dir}")
             return True
             
         except Exception as e:
-            print(f"  ❌ バックアップエラー: {e}")
+            print(f"  [ERROR] バックアップエラー: {e}")
             return False
     
     def optimize_dssms_report_generator_imports(self) -> Dict[str, Any]:
         """dssms_report_generator インポート最適化"""
-        print("🔧 dssms_report_generator インポート最適化中...")
+        print("[TOOL] dssms_report_generator インポート最適化中...")
         
         optimization_result = {
             'optimized': False,
@@ -216,8 +216,8 @@ _lazy_imports = LazyDSSMSImports()
                 optimization_result['optimized'] = True
                 optimization_result['changes_made'] = changes_made
                 
-                print(f"  ✅ 最適化完了: {len(changes_made)}箇所修正")
-                print(f"  📊 推定削減: {optimization_result['estimated_reduction_ms']}ms")
+                print(f"  [OK] 最適化完了: {len(changes_made)}箇所修正")
+                print(f"  [CHART] 推定削減: {optimization_result['estimated_reduction_ms']}ms")
                 
                 self.processed_files.append(str(report_gen_path))
             else:
@@ -225,13 +225,13 @@ _lazy_imports = LazyDSSMSImports()
                 
         except Exception as e:
             optimization_result['error'] = str(e)
-            print(f"  ❌ 最適化エラー: {e}")
+            print(f"  [ERROR] 最適化エラー: {e}")
         
         return optimization_result
     
     def optimize_config_init_imports(self) -> Dict[str, Any]:
         """config/__init__.py インポート最適化"""
-        print("🔧 config/__init__.py インポート最適化中...")
+        print("[TOOL] config/__init__.py インポート最適化中...")
         
         optimization_result = {
             'optimized': False,
@@ -330,8 +330,8 @@ _lazy_config = LazyConfigImporter()
                 optimization_result['optimized'] = True
                 optimization_result['changes_made'] = changes_made
                 
-                print(f"  ✅ 最適化完了: {len(changes_made)}箇所修正")
-                print(f"  📊 推定削減: {optimization_result['estimated_reduction_ms']}ms")
+                print(f"  [OK] 最適化完了: {len(changes_made)}箇所修正")
+                print(f"  [CHART] 推定削減: {optimization_result['estimated_reduction_ms']}ms")
                 
                 self.processed_files.append(str(config_init_path))
             else:
@@ -339,13 +339,13 @@ _lazy_config = LazyConfigImporter()
                 
         except Exception as e:
             optimization_result['error'] = str(e)
-            print(f"  ❌ 最適化エラー: {e}")
+            print(f"  [ERROR] 最適化エラー: {e}")
         
         return optimization_result
     
     def optimize_correlation_init_imports(self) -> Dict[str, Any]:
         """config/correlation/__init__.py インポート最適化"""
-        print("🔧 config/correlation/__init__.py インポート最適化中...")
+        print("[TOOL] config/correlation/__init__.py インポート最適化中...")
         
         optimization_result = {
             'optimized': False,
@@ -436,8 +436,8 @@ _lazy_correlation = LazyCorrelationImporter()
                 optimization_result['optimized'] = True
                 optimization_result['changes_made'] = changes_made
                 
-                print(f"  ✅ 最適化完了: {len(changes_made)}箇所修正")
-                print(f"  📊 推定削減: {optimization_result['estimated_reduction_ms']}ms")
+                print(f"  [OK] 最適化完了: {len(changes_made)}箇所修正")
+                print(f"  [CHART] 推定削減: {optimization_result['estimated_reduction_ms']}ms")
                 
                 self.processed_files.append(str(correlation_init_path))
             else:
@@ -445,13 +445,13 @@ _lazy_correlation = LazyCorrelationImporter()
                 
         except Exception as e:
             optimization_result['error'] = str(e)
-            print(f"  ❌ 最適化エラー: {e}")
+            print(f"  [ERROR] 最適化エラー: {e}")
         
         return optimization_result
     
     def optimize_heavy_config_modules(self) -> Dict[str, Any]:
         """重いconfigモジュール最適化"""
-        print("🔧 重いconfigモジュール最適化中...")
+        print("[TOOL] 重いconfigモジュール最適化中...")
         
         optimization_result = {
             'optimized_modules': [],
@@ -554,7 +554,7 @@ def get_scipy():
                     
                     optimization_result['total_estimated_reduction_ms'] += estimated_reduction
                     
-                    print(f"  ✅ {module_path}: {len(changes_made)}箇所最適化 ({estimated_reduction:.0f}ms削減予想)")
+                    print(f"  [OK] {module_path}: {len(changes_made)}箇所最適化 ({estimated_reduction:.0f}ms削減予想)")
                     
                     self.processed_files.append(str(module_full_path))
                 else:
@@ -563,13 +563,13 @@ def get_scipy():
             except Exception as e:
                 error_msg = f"{module_path}: {str(e)}"
                 optimization_result['errors'].append(error_msg)
-                print(f"  ❌ {error_msg}")
+                print(f"  [ERROR] {error_msg}")
         
         return optimization_result
     
     def validate_optimizations(self) -> Dict[str, Any]:
         """最適化結果検証"""
-        print("🔍 最適化結果検証中...")
+        print("[SEARCH] 最適化結果検証中...")
         
         validation_result = {
             'syntax_valid': 0,
@@ -617,7 +617,7 @@ def get_scipy():
             
             validation_result['validation_details'].append(file_validation)
             
-            status = "✅" if file_validation['syntax_ok'] else "❌"
+            status = "[OK]" if file_validation['syntax_ok'] else "[ERROR]"
             print(f"  {status} {Path(file_path).name}: 構文={'OK' if file_validation['syntax_ok'] else 'NG'}")
         
         return validation_result
@@ -679,7 +679,7 @@ def _handle_lazy_import_failure(component_name: str, error: Exception, fallback_
                             f.write(content)
                         
                         integration_result['integrated_files'].append(file_path)
-                        print(f"  ✅ 統合完了: {Path(file_path).name}")
+                        print(f"  [OK] 統合完了: {Path(file_path).name}")
                     else:
                         print(f"  ℹ️ 統合スキップ: {Path(file_path).name} (TODO-PERF-001なし)")
                 else:
@@ -688,13 +688,13 @@ def _handle_lazy_import_failure(component_name: str, error: Exception, fallback_
             except Exception as e:
                 error_msg = f"{file_path}: {str(e)}"
                 integration_result['integration_errors'].append(error_msg)
-                print(f"  ❌ 統合エラー: {error_msg}")
+                print(f"  [ERROR] 統合エラー: {error_msg}")
         
         return integration_result
     
     def generate_stage2_report(self) -> Dict[str, Any]:
         """Stage 2実装レポート生成"""
-        print("📋 Stage 2実装レポート生成中...")
+        print("[LIST] Stage 2実装レポート生成中...")
         
         stage2_report = {
             'stage': 'Stage 2: Stage 2構文エラー根本修正実装',
@@ -714,7 +714,7 @@ def _handle_lazy_import_failure(component_name: str, error: Exception, fallback_
     
     def run_stage2_optimization(self) -> bool:
         """Stage 2完全最適化実行"""
-        print("🚀 TODO-PERF-001 Phase 2 Stage 2: Stage 2構文エラー根本修正実装開始")
+        print("[ROCKET] TODO-PERF-001 Phase 2 Stage 2: Stage 2構文エラー根本修正実装開始")
         print("="*80)
         
         start_time = time.time()
@@ -723,7 +723,7 @@ def _handle_lazy_import_failure(component_name: str, error: Exception, fallback_
             # 1. バックアップ作成
             print("\n1️⃣ バックアップ作成")
             if not self.create_backup():
-                print("⚠️ バックアップ失敗 - リスク承知で続行")
+                print("[WARNING] バックアップ失敗 - リスク承知で続行")
             
             # 2. dssms_report_generator最適化
             print("\n2️⃣ dssms_report_generator インポート最適化")
@@ -767,24 +767,24 @@ def _handle_lazy_import_failure(component_name: str, error: Exception, fallback_
             print("🏆 TODO-PERF-001 Phase 2 Stage 2完了サマリー")
             print("="*80)
             print(f"⏱️ 実行時間: {execution_time:.1f}秒")
-            print(f"🔧 最適化ファイル数: {len(self.processed_files)}")
-            print(f"✅ 構文検証成功: {validation_result['syntax_valid']}")
-            print(f"❌ 構文エラー: {validation_result['syntax_errors']}")
-            print(f"📊 推定総削減: {stage2_report['total_estimated_reduction_ms']:.0f}ms")
+            print(f"[TOOL] 最適化ファイル数: {len(self.processed_files)}")
+            print(f"[OK] 構文検証成功: {validation_result['syntax_valid']}")
+            print(f"[ERROR] 構文エラー: {validation_result['syntax_errors']}")
+            print(f"[CHART] 推定総削減: {stage2_report['total_estimated_reduction_ms']:.0f}ms")
             print(f"💾 バックアップ: {self.backup_dir}")
             print(f"📄 実装レポート: {report_path}")
             
             success_rate = validation_result['syntax_valid'] / max(1, len(self.processed_files)) * 100
             
             if success_rate >= 80:
-                print(f"\n✅ Stage 2最適化成功 ({success_rate:.1f}%) - Stage 3 dssms_report_generator最適化に進行可能")
+                print(f"\n[OK] Stage 2最適化成功 ({success_rate:.1f}%) - Stage 3 dssms_report_generator最適化に進行可能")
                 return True
             else:
-                print(f"\n⚠️ Stage 2部分成功 ({success_rate:.1f}%) - 問題解決後に Stage 3進行を推奨")
+                print(f"\n[WARNING] Stage 2部分成功 ({success_rate:.1f}%) - 問題解決後に Stage 3進行を推奨")
                 return False
                 
         except Exception as e:
-            print(f"❌ Stage 2最適化エラー: {e}")
+            print(f"[ERROR] Stage 2最適化エラー: {e}")
             traceback.print_exc()
             return False
 
@@ -796,9 +796,9 @@ def main():
     success = optimizer.run_stage2_optimization()
     
     if success:
-        print("\n🎉 Stage 2完成 - 次は Stage 3 dssms_report_generator最適化実装に進行")
+        print("\n[SUCCESS] Stage 2完成 - 次は Stage 3 dssms_report_generator最適化実装に進行")
     else:
-        print("\n⚠️ Stage 2部分完了 - 問題解決後に Stage 3進行を推奨")
+        print("\n[WARNING] Stage 2部分完了 - 問題解決後に Stage 3進行を推奨")
     
     return success
 

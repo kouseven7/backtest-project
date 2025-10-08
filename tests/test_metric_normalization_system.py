@@ -327,9 +327,9 @@ def main():
     
     # 終了メッセージ
     if all(test_results.values()):
-        logger.info("\n🎉 All tests passed! Metric Normalization System is working correctly.")
+        logger.info("\n[SUCCESS] All tests passed! Metric Normalization System is working correctly.")
     else:
-        logger.warning("\n⚠️ Some tests failed. Please review the detailed results above.")
+        logger.warning("\n[WARNING] Some tests failed. Please review the detailed results above.")
 
 if __name__ == "__main__":
     main()

@@ -647,28 +647,28 @@ def main():
         }
         
         dcm = DataCacheManager(config)
-        print("✅ DataCacheManager初期化成功")
+        print("[OK] DataCacheManager初期化成功")
         
         # 2. データ取得テスト（キャッシュミス）
         test_date_start = datetime(2023, 1, 1)
         test_date_end = datetime(2023, 6, 30)
         
-        print(f"\n📊 データ取得テスト:")
+        print(f"\n[CHART] データ取得テスト:")
         stock_data, index_data = dcm.get_cached_data('7203', test_date_start, test_date_end)
         
         if stock_data is not None:
-            print(f"✅ データ取得成功: 7203 ({len(stock_data)}日分)")
+            print(f"[OK] データ取得成功: 7203 ({len(stock_data)}日分)")
         else:
-            print("⚠️  データ取得失敗 (yfinanceエラーの可能性)")
+            print("[WARNING]  データ取得失敗 (yfinanceエラーの可能性)")
         
         # 3. キャッシュヒットテスト
-        print(f"\n🎯 キャッシュヒットテスト:")
+        print(f"\n[TARGET] キャッシュヒットテスト:")
         stock_data2, index_data2 = dcm.get_cached_data('7203', test_date_start, test_date_end)
-        print("✅ 2回目データ取得（キャッシュヒット予定）")
+        print("[OK] 2回目データ取得（キャッシュヒット予定）")
         
         # 4. 統計情報テスト
         stats = dcm.get_cache_statistics()
-        print(f"\n📈 統計情報:")
+        print(f"\n[UP] 統計情報:")
         print(f"  - ヒット率: {stats['performance']['hit_rate']:.1%}")
         print(f"  - 総リクエスト数: {stats['performance']['total_requests']}")
         print(f"  - メモリ使用量: {stats['memory']['usage_mb']:.2f}MB")
@@ -682,19 +682,19 @@ def main():
             try:
                 data, _ = dcm.get_cached_data(symbol, test_date_start, test_date_end)
                 if data is not None:
-                    print(f"✅ {symbol}: {len(data)}日分取得")
+                    print(f"[OK] {symbol}: {len(data)}日分取得")
                 else:
-                    print(f"⚠️  {symbol}: データ取得失敗")
+                    print(f"[WARNING]  {symbol}: データ取得失敗")
             except Exception as e:
-                print(f"❌ {symbol}: エラー - {e}")
+                print(f"[ERROR] {symbol}: エラー - {e}")
         
         # 6. 事前ロードテスト
-        print(f"\n🚀 事前ロードテスト:")
+        print(f"\n[ROCKET] 事前ロードテスト:")
         preload_symbols = ['4503', '8411', '7974']
         preload_results = dcm.preload_popular_symbols(preload_symbols, date_range_days=180)
         
         for symbol, success in preload_results.items():
-            status = "✅" if success else "❌"
+            status = "[OK]" if success else "[ERROR]"
             print(f"  {status} {symbol}: {'成功' if success else '失敗'}")
         
         # 7. キャッシュクリアテスト
@@ -702,24 +702,24 @@ def main():
         
         # 期限切れクリア（存在しない場合）
         cleared_old = dcm.clear_cache(older_than_days=1)
-        print(f"✅ 期限切れクリア: {cleared_old}件")
+        print(f"[OK] 期限切れクリア: {cleared_old}件")
         
         # 部分クリア
         cleared_partial = dcm.clear_cache(older_than_days=0)  # 全て期限切れ扱い
-        print(f"✅ 部分クリア: {cleared_partial}件")
+        print(f"[OK] 部分クリア: {cleared_partial}件")
         
         # 最終統計
         final_stats = dcm.get_cache_statistics()
-        print(f"\n📊 最終統計:")
+        print(f"\n[CHART] 最終統計:")
         print(f"  - 最終ヒット率: {final_stats['performance']['hit_rate']:.1%}")
         print(f"  - データ取得回数: {final_stats['performance']['total_requests']}")
         print(f"  - 人気銘柄: {final_stats['popular_symbols']['top_symbols'][:5]}")
         
-        print(f"\n🎉 DataCacheManager テスト完了！")
+        print(f"\n[SUCCESS] DataCacheManager テスト完了！")
         print(f"実装機能: データキャッシュ、LRU削除、統計監視、事前ロード")
         
     except Exception as e:
-        print(f"❌ テスト実行エラー: {e}")
+        print(f"[ERROR] テスト実行エラー: {e}")
         import traceback
         traceback.print_exc()
 

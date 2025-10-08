@@ -386,7 +386,7 @@ class PerformanceMonitor:
             # ポートフォリオサマリー
             portfolio_metrics = portfolio_analysis.get('portfolio_metrics', {})
             if portfolio_metrics:
-                print(f"📊 ポートフォリオサマリー:")
+                print(f"[CHART] ポートフォリオサマリー:")
                 print(f"  総PnL: {portfolio_metrics.get('total_pnl', 0):.2f}")
                 print(f"  シャープレシオ: {portfolio_metrics.get('sharpe_ratio', 0):.3f}")
                 print(f"  最大ドローダウン: {portfolio_metrics.get('max_drawdown', 0):.2%}")
@@ -395,7 +395,7 @@ class PerformanceMonitor:
             # 戦略別パフォーマンス
             strategy_performances = portfolio_analysis.get('strategy_performances', {})
             if strategy_performances:
-                print(f"\n🔍 戦略別パフォーマンス:")
+                print(f"\n[SEARCH] 戦略別パフォーマンス:")
                 for strategy_name, performance in strategy_performances.items():
                     basic_metrics = performance.get('basic_metrics', {})
                     print(f"  {strategy_name}:")
@@ -405,12 +405,12 @@ class PerformanceMonitor:
             
             # アラート表示
             if alerts:
-                print(f"\n🚨 アラート ({len(alerts)}件):")
+                print(f"\n[ALERT] アラート ({len(alerts)}件):")
                 for alert in alerts:
                     severity_icon = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(alert.get('severity', 'low'), "⚪")
                     print(f"  {severity_icon} {alert.get('message', 'Unknown alert')}")
             else:
-                print(f"\n✅ アラートなし")
+                print(f"\n[OK] アラートなし")
             
             print("=" * 80)
             
@@ -980,7 +980,7 @@ def main():
     if args.interval != 900:
         monitor.config['monitoring_settings']['update_interval_seconds'] = args.interval
     
-    print(f"🚀 パフォーマンス監視開始")
+    print(f"[ROCKET] パフォーマンス監視開始")
     print(f"   設定ファイル: {args.config}")
     print(f"   監視間隔: {args.interval}秒")
     print(f"   デーモンモード: {'有効' if args.daemon else '無効'}")
@@ -993,7 +993,7 @@ def main():
         print("\n👋 監視を停止しています...")
         monitor.stop_monitoring()
     except Exception as e:
-        print(f"❌ 監視エラー: {e}")
+        print(f"[ERROR] 監視エラー: {e}")
         monitor.stop_monitoring()
         sys.exit(1)
 

@@ -25,7 +25,7 @@ def setup_logger():
 def fix_unified_return_attribute():
     """統一リターン属性の修正"""
     logger = setup_logger()
-    logger.info("🔧 DSSMS 統一リターン属性修正開始")
+    logger.info("[TOOL] DSSMS 統一リターン属性修正開始")
     
     # DSSMSバックテスターファイル
     dssms_file = Path("src/dssms/dssms_backtester.py")
@@ -39,7 +39,7 @@ def fix_unified_return_attribute():
         with open(dssms_file, 'r', encoding='utf-8') as f:
             content = f.read()
         
-        logger.info("📊 修正内容:")
+        logger.info("[CHART] 修正内容:")
         
         # 1. 統一出力システム内での total_return 保存を確実にする
         logger.info("1. 統一出力システム内でのリターン保存を強化")
@@ -57,9 +57,9 @@ def fix_unified_return_attribute():
         
         if re.search(performance_log_pattern, content):
             content = re.sub(performance_log_pattern, enhance_return_saving, content)
-            logger.info("   ✅ パフォーマンス計算後の保存処理を強化")
+            logger.info("   [OK] パフォーマンス計算後の保存処理を強化")
         else:
-            logger.warning("   ⚠️ パフォーマンス計算ログが見つかりません")
+            logger.warning("   [WARNING] パフォーマンス計算ログが見つかりません")
         
         # 2. 最終表示部分の修正を確実にする
         logger.info("2. 最終表示での統一リターン取得を修正")
@@ -80,9 +80,9 @@ def fix_unified_return_attribute():
         
         if re.search(actual_return_pattern, content):
             content = re.sub(actual_return_pattern, fix_actual_return_retrieval, content)
-            logger.info("   ✅ 最終表示での統一リターン取得を修正")
+            logger.info("   [OK] 最終表示での統一リターン取得を修正")
         else:
-            logger.warning("   ⚠️ actual_return 部分が見つかりません")
+            logger.warning("   [WARNING] actual_return 部分が見つかりません")
         
         # 3. デバッグ用の追加ログを挿入
         logger.info("3. デバッグ用ログを追加")
@@ -116,7 +116,7 @@ def fix_unified_return_attribute():
         with open(dssms_file, 'w', encoding='utf-8') as f:
             f.write(content)
         
-        logger.info("✅ 最終修正完了")
+        logger.info("[OK] 最終修正完了")
         logger.info(f"📁 バックアップ: {backup_file}")
         
         return True
@@ -131,20 +131,20 @@ def main():
     """メイン実行"""
     logger = setup_logger()
     
-    print("🔧 DSSMS リターン計算最終修正ツール")
+    print("[TOOL] DSSMS リターン計算最終修正ツール")
     print("=" * 60)
     print("問題: _unified_total_return 属性が正しく設定されていない")
     print("対象: src/dssms/dssms_backtester.py")
     print("=" * 60)
     
     if fix_unified_return_attribute():
-        print("\n✅ 最終修正完了！")
+        print("\n[OK] 最終修正完了！")
         print("次のステップ:")
         print("1. python src/dssms/dssms_backtester.py  # 最終修正版実行")
         print("2. デバッグログで _unified_total_return の値を確認")
         print("3. 統一リターンの一貫性を確認")
     else:
-        print("\n❌ 修正失敗")
+        print("\n[ERROR] 修正失敗")
         print("手動修正が必要です")
 
 if __name__ == "__main__":

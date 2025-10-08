@@ -341,7 +341,7 @@ class DSSMSDataDiagnostics:
         
         # 各ソースの結果
         for source, result in diagnosis_results['source_results'].items():
-            status = "✅ 正常" if result['available'] else "❌ 異常"
+            status = "[OK] 正常" if result['available'] else "[ERROR] 異常"
             success_rate = result.get('success_rate', 0) * 100
             avg_time = result.get('response_time_avg', 0)
             
@@ -380,11 +380,11 @@ class DSSMSDataDiagnostics:
                     if symbol_result['success']:
                         quality = symbol_result.get('quality_score', 0)
                         report_lines.append(
-                            f"- {symbol}: ✅ 成功 (品質: {quality:.2f}, "
+                            f"- {symbol}: [OK] 成功 (品質: {quality:.2f}, "
                             f"応答: {symbol_result['response_time']:.2f}s)"
                         )
                     else:
-                        report_lines.append(f"- {symbol}: ❌ 失敗 - {symbol_result.get('error', '不明')}")
+                        report_lines.append(f"- {symbol}: [ERROR] 失敗 - {symbol_result.get('error', '不明')}")
                 report_lines.append("")
         
         # レポート保存
@@ -415,12 +415,12 @@ def run_diagnosis_demo():
         results = diagnostics.diagnose_data_sources()
         
         # 結果表示
-        print(f"\n📊 診断結果: {results['overall_status']}")
+        print(f"\n[CHART] 診断結果: {results['overall_status']}")
         print(f"📅 実行時刻: {results['timestamp']}")
         
         for source, result in results['source_results'].items():
             success_rate = result.get('success_rate', 0) * 100
-            status = "✅" if result['available'] else "❌"
+            status = "[OK]" if result['available'] else "[ERROR]"
             print(f"{status} {source}: {success_rate:.1f}% 成功")
         
         # レポート生成
@@ -431,12 +431,12 @@ def run_diagnosis_demo():
         return True
         
     except Exception as e:
-        print(f"❌ 診断エラー: {e}")
+        print(f"[ERROR] 診断エラー: {e}")
         return False
 
 if __name__ == "__main__":
     success = run_diagnosis_demo()
     if success:
-        print("\n✅ 診断完了")
+        print("\n[OK] 診断完了")
     else:
-        print("\n❌ 診断失敗")
+        print("\n[ERROR] 診断失敗")

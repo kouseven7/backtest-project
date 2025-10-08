@@ -21,13 +21,13 @@ from config.logger_config import setup_logger
 logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\multi_strategy_backtest.log")
 logger.info("複数戦略統合バックテストシステム開始")
 
-print("✅ 複数戦略システム - 基本インポート完了")
+print("[OK] 複数戦略システム - 基本インポート完了")
 
 try:
     from data_fetcher import get_parameters_and_data
-    print("✅ data_fetcher インポート完了")
+    print("[OK] data_fetcher インポート完了")
 except Exception as e:
-    print(f"❌ data_fetcherインポートエラー: {e}")
+    print(f"[ERROR] data_fetcherインポートエラー: {e}")
     sys.exit(1)
 
 # 複数戦略を段階的にインポート
@@ -36,36 +36,36 @@ available_strategies = {}
 try:
     from strategies.Breakout import BreakoutStrategy
     available_strategies['Breakout'] = BreakoutStrategy
-    print("✅ BreakoutStrategy インポート完了")
+    print("[OK] BreakoutStrategy インポート完了")
 except Exception as e:
-    print(f"❌ BreakoutStrategy インポートエラー: {e}")
+    print(f"[ERROR] BreakoutStrategy インポートエラー: {e}")
 
 # 追加戦略のインポートを試行（循環インポートを回避）
 try:
     from strategies.Momentum_Investing import MomentumInvestingStrategy
     available_strategies['Momentum'] = MomentumInvestingStrategy
-    print("✅ MomentumInvestingStrategy インポート完了")
+    print("[OK] MomentumInvestingStrategy インポート完了")
 except Exception as e:
-    print(f"⚠️  MomentumInvestingStrategy インポート失敗: {e}")
+    print(f"[WARNING]  MomentumInvestingStrategy インポート失敗: {e}")
 
 try:
     from strategies.Opening_Gap import OpeningGapStrategy
     available_strategies['OpeningGap'] = OpeningGapStrategy
-    print("✅ OpeningGapStrategy インポート完了")
+    print("[OK] OpeningGapStrategy インポート完了")
 except Exception as e:
-    print(f"⚠️  OpeningGapStrategy インポート失敗: {e}")
+    print(f"[WARNING]  OpeningGapStrategy インポート失敗: {e}")
 
-print(f"📊 利用可能な戦略数: {len(available_strategies)}")
+print(f"[CHART] 利用可能な戦略数: {len(available_strategies)}")
 for name in available_strategies.keys():
     print(f"  - {name}")
     
 if not available_strategies:
-    print("❌ 利用可能な戦略がありません")
+    print("[ERROR] 利用可能な戦略がありません")
     sys.exit(1)
 
 def generate_realistic_test_data():
     """現実的なテストデータを生成"""
-    print("📊 現実的なテストデータを生成中...")
+    print("[CHART] 現実的なテストデータを生成中...")
     
     dates = pd.date_range(start="2024-01-01", end="2024-02-29", freq='D')
     np.random.seed(42)  # 再現可能性のためのシード
@@ -123,7 +123,7 @@ def generate_realistic_test_data():
     })
     test_data.set_index('Date', inplace=True)
     
-    print("📈 現実的なテストデータ生成完了")
+    print("[UP] 現実的なテストデータ生成完了")
     print(f"データ期間: {test_data.index[0].strftime('%Y-%m-%d')} ~ {test_data.index[-1].strftime('%Y-%m-%d')}")
     print(f"データ数: {len(test_data)}行")
     
@@ -150,7 +150,7 @@ def run_multi_strategy_backtest(test_data):
     strategy_results = {}
     
     for strategy_name, strategy_class in available_strategies.items():
-        print(f"\n📊 {strategy_name}戦略のテスト中...")
+        print(f"\n[CHART] {strategy_name}戦略のテスト中...")
         
         try:
             # 戦略ごとの最適化パラメータ
@@ -200,7 +200,7 @@ def run_multi_strategy_backtest(test_data):
                     price_column="Adj Close"
                 )
             
-            print(f"✅ {strategy_name}戦略初期化完了")
+            print(f"[OK] {strategy_name}戦略初期化完了")
             
             # バックテスト実行
             result = strategy.backtest()
@@ -209,16 +209,16 @@ def run_multi_strategy_backtest(test_data):
             # 各戦略の基本統計
             if 'Entry_Signal' in result.columns:
                 entry_count = (result['Entry_Signal'] == 1).sum()
-                print(f"  📈 エントリー数: {entry_count}")
+                print(f"  [UP] エントリー数: {entry_count}")
             
             if 'Exit_Signal' in result.columns:
                 exit_count = (result['Exit_Signal'] == 1).sum()
-                print(f"  📉 エグジット数: {exit_count}")
+                print(f"  [DOWN] エグジット数: {exit_count}")
             
-            print(f"  ✅ {strategy_name}戦略バックテスト完了")
+            print(f"  [OK] {strategy_name}戦略バックテスト完了")
             
         except Exception as strategy_error:
-            print(f"  ❌ {strategy_name}戦略エラー: {strategy_error}")
+            print(f"  [ERROR] {strategy_name}戦略エラー: {strategy_error}")
             continue
     
     return strategy_results
@@ -226,7 +226,7 @@ def run_multi_strategy_backtest(test_data):
 def analyze_strategy_comparison(strategy_results, test_data):
     """戦略比較分析を実行"""
     if len(strategy_results) > 1:
-        print(f"\n📊 戦略比較分析 ({len(strategy_results)}戦略)")
+        print(f"\n[CHART] 戦略比較分析 ({len(strategy_results)}戦略)")
         
         comparison_summary = {}
         for name, result in strategy_results.items():
@@ -240,7 +240,7 @@ def analyze_strategy_comparison(strategy_results, test_data):
                 'signal_rate': signal_rate
             }
             
-            print(f"  📋 {name:12} | エントリー: {entry_signals:2}回 | エグジット: {exit_signals:2}回 | 発生率: {signal_rate:5.1f}%")
+            print(f"  [LIST] {name:12} | エントリー: {entry_signals:2}回 | エグジット: {exit_signals:2}回 | 発生率: {signal_rate:5.1f}%")
         
         # 最もアクティブな戦略を特定
         if comparison_summary:
@@ -262,18 +262,18 @@ def analyze_strategy_comparison(strategy_results, test_data):
         if entry_columns:
             combined_signals['Combined_Entry'] = combined_signals[entry_columns].max(axis=1)
             combined_entry_count = (combined_signals['Combined_Entry'] == 1).sum()
-            print(f"  📈 統合エントリーシグナル数: {combined_entry_count}")
+            print(f"  [UP] 統合エントリーシグナル数: {combined_entry_count}")
         
         # 統合エグジットシグナル
         exit_columns = [col for col in combined_signals.columns if col.endswith('_Exit')]
         if exit_columns:
             combined_signals['Combined_Exit'] = combined_signals[exit_columns].max(axis=1)
             combined_exit_count = (combined_signals['Combined_Exit'] == 1).sum()
-            print(f"  📉 統合エグジットシグナル数: {combined_exit_count}")
+            print(f"  [DOWN] 統合エグジットシグナル数: {combined_exit_count}")
         
         # 戦略間の相関分析
         if len(entry_columns) > 1:
-            print(f"\n📊 戦略間シグナル相関分析")
+            print(f"\n[CHART] 戦略間シグナル相関分析")
             signal_correlation = combined_signals[entry_columns].corr()
             print("  エントリーシグナル相関行列:")
             print(signal_correlation.round(3))
@@ -281,13 +281,13 @@ def analyze_strategy_comparison(strategy_results, test_data):
     elif len(strategy_results) == 1:
         strategy_name = list(strategy_results.keys())[0]
         result = strategy_results[strategy_name]
-        print(f"\n📊 {strategy_name}戦略の詳細分析:")
+        print(f"\n[CHART] {strategy_name}戦略の詳細分析:")
         
         # 詳細分析の実行
         analyze_single_strategy_details(result, test_data)
     
     else:
-        print("⚠️  利用可能な戦略結果がありません")
+        print("[WARNING]  利用可能な戦略結果がありません")
 
 def analyze_single_strategy_details(result, test_data):
     """単一戦略の詳細分析"""
@@ -301,8 +301,8 @@ def analyze_single_strategy_details(result, test_data):
             entry_dates = result[entry_signals].index.tolist()
             exit_dates = result[exit_signals].index.tolist()
             
-            print(f"  📈 エントリー回数: {len(entry_dates)}")
-            print(f"  📉 エグジット回数: {len(exit_dates)}")
+            print(f"  [UP] エントリー回数: {len(entry_dates)}")
+            print(f"  [DOWN] エグジット回数: {len(exit_dates)}")
             
             if len(entry_dates) > 0:
                 print(f"  📅 最初のエントリー: {entry_dates[0].strftime('%Y-%m-%d')}")
@@ -325,25 +325,25 @@ def analyze_single_strategy_details(result, test_data):
         # 価格変動との相関分析
         price_changes = test_data['Adj Close'].pct_change().fillna(0)
         significant_moves = (abs(price_changes) > 0.02).sum()
-        print(f"  📊 期間中の大幅変動日数: {significant_moves}日")
+        print(f"  [CHART] 期間中の大幅変動日数: {significant_moves}日")
         
         # 戦略の有効性評価
         if 'Entry_Signal' in result.columns:
             total_signals = (result['Entry_Signal'] == 1).sum()
             if total_signals > 0:
                 signal_rate = (total_signals / len(result)) * 100
-                print(f"  📈 シグナル発生率: {signal_rate:.1f}%")
+                print(f"  [UP] シグナル発生率: {signal_rate:.1f}%")
             
             # 高ボラティリティ期間でのシグナル発生
             high_vol_periods = price_changes.abs() > price_changes.abs().quantile(0.8)
             signals_in_vol = ((result['Entry_Signal'] == 1) & high_vol_periods).sum()
             if total_signals > 0:
                 vol_signal_ratio = (signals_in_vol / total_signals) * 100
-                print(f"  🔥 高ボラティリティ期間でのシグナル割合: {vol_signal_ratio:.1f}%")
+                print(f"  [FIRE] 高ボラティリティ期間でのシグナル割合: {vol_signal_ratio:.1f}%")
         
         # Return列が存在しない場合は簡単な収益率計算を試行
         if 'Return' not in result.columns:
-            print("  💡 Return列が見つからないため、簡易収益率を計算中...")
+            print("  [IDEA] Return列が見つからないため、簡易収益率を計算中...")
             if 'Entry_Signal' in result.columns:
                 entry_signals = (result['Entry_Signal'] == 1)
                 entry_dates = result[entry_signals].index.tolist()
@@ -353,14 +353,14 @@ def analyze_single_strategy_details(result, test_data):
                         avg_entry_price = np.mean(entry_prices)
                         final_price = test_data['Adj Close'].iloc[-1]
                         simple_return = ((final_price / avg_entry_price - 1) * 100)
-                        print(f"  📊 簡易リターン推定: {simple_return:.2f}%")
+                        print(f"  [CHART] 簡易リターン推定: {simple_return:.2f}%")
         
     except Exception as perf_e:
-        print(f"  ⚠️  詳細パフォーマンス分析エラー: {perf_e}")
+        print(f"  [WARNING]  詳細パフォーマンス分析エラー: {perf_e}")
 
 def main():
     """複数戦略統合メイン関数"""
-    print("🚀 複数戦略統合バックテストシステム開始")
+    print("[ROCKET] 複数戦略統合バックテストシステム開始")
     
     # 基本パラメータ
     ticker = "NVDA"
@@ -376,11 +376,11 @@ def main():
         # 戦略比較分析
         analyze_strategy_comparison(strategy_results, test_data)
         
-        print("🎉 複数戦略統合バックテスト完了！")
+        print("[SUCCESS] 複数戦略統合バックテスト完了！")
         return True
         
     except Exception as e:
-        print(f"❌ エラー発生: {e}")
+        print(f"[ERROR] エラー発生: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -393,8 +393,8 @@ if __name__ == "__main__":
     success = main()
     
     if success:
-        print("\n🎯 実行成功！")
+        print("\n[TARGET] 実行成功！")
         logger.info("複数戦略統合バックテスト実行成功")
     else:
-        print("\n❌ 実行失敗")
+        print("\n[ERROR] 実行失敗")
         logger.error("複数戦略統合バックテスト実行失敗")

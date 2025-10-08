@@ -42,10 +42,10 @@ def test_production_mode_configuration():
             print(f"現在のシステムモード: {system_mode}")
             
             if system_mode.lower() == 'production':
-                print("✅ Production mode設定確認済み")
+                print("[OK] Production mode設定確認済み")
                 return True
             else:
-                print("⚠️ Production mode未設定 - 設定変更が必要")
+                print("[WARNING] Production mode未設定 - 設定変更が必要")
                 
                 # Production mode設定への変更
                 config['system_mode'] = 'production'
@@ -53,14 +53,14 @@ def test_production_mode_configuration():
                 with open(config_path, 'w', encoding='utf-8') as f:
                     json.dump(config, f, indent=2, ensure_ascii=False)
                 
-                print("✅ Production mode設定に変更完了")
+                print("[OK] Production mode設定に変更完了")
                 return True
         else:
-            print("⚠️ 設定ファイルが見つかりません")
+            print("[WARNING] 設定ファイルが見つかりません")
             return False
             
     except Exception as e:
-        print(f"❌ Production mode設定確認エラー: {e}")
+        print(f"[ERROR] Production mode設定確認エラー: {e}")
         return False
 
 
@@ -79,7 +79,7 @@ def test_enhanced_error_handling_production():
         fallback_policy = SystemFallbackPolicy(SystemMode.PRODUCTION)
         error_handler = EnhancedErrorHandler(fallback_policy)
         
-        print("✅ Production mode EnhancedErrorHandler初期化成功")
+        print("[OK] Production mode EnhancedErrorHandler初期化成功")
         
         # WARNING レベルテスト (継続動作期待)
         try:
@@ -90,9 +90,9 @@ def test_enhanced_error_handling_production():
                 component_name="TestWarningComponent",
                 error=test_warning
             )
-            print(f"✅ WARNING レベル処理成功: {result}")
+            print(f"[OK] WARNING レベル処理成功: {result}")
         except Exception as e:
-            print(f"⚠️ WARNING レベル処理異常: {e}")
+            print(f"[WARNING] WARNING レベル処理異常: {e}")
         
         # ERROR レベルテスト (重要コンポーネント停止期待)
         try:
@@ -103,11 +103,11 @@ def test_enhanced_error_handling_production():
                 component_name="DSSMS_CORE_TestComponent",
                 error=test_error
             )
-            print(f"⚠️ ERROR レベル処理が継続されました: {result}")
+            print(f"[WARNING] ERROR レベル処理が継続されました: {result}")
         except RuntimeError as e:
-            print(f"✅ ERROR レベル Production停止確認: {e}")
+            print(f"[OK] ERROR レベル Production停止確認: {e}")
         except Exception as e:
-            print(f"⚠️ ERROR レベル予期しない例外: {e}")
+            print(f"[WARNING] ERROR レベル予期しない例外: {e}")
         
         # CRITICAL レベルテスト (即停止期待)
         try:
@@ -118,19 +118,19 @@ def test_enhanced_error_handling_production():
                 component_name="CriticalTestComponent",
                 error=test_critical
             )
-            print(f"❌ CRITICAL レベル処理が継続されました: {result}")
+            print(f"[ERROR] CRITICAL レベル処理が継続されました: {result}")
         except SystemExit as e:
-            print(f"✅ CRITICAL レベル Production即停止確認: {e}")
+            print(f"[OK] CRITICAL レベル Production即停止確認: {e}")
         except Exception as e:
-            print(f"⚠️ CRITICAL レベル予期しない例外: {e}")
+            print(f"[WARNING] CRITICAL レベル予期しない例外: {e}")
         
         return True
         
     except ImportError as e:
-        print(f"❌ インポートエラー: {e}")
+        print(f"[ERROR] インポートエラー: {e}")
         return False
     except Exception as e:
-        print(f"❌ 強化エラーハンドリングテストエラー: {e}")
+        print(f"[ERROR] 強化エラーハンドリングテストエラー: {e}")
         return False
 
 
@@ -149,9 +149,9 @@ def test_multi_strategy_manager_production():
         
         if hasattr(manager, 'initialize_system'):
             result = manager.initialize_system()
-            print(f"✅ MultiStrategyManager初期化結果: {result}")
+            print(f"[OK] MultiStrategyManager初期化結果: {result}")
         else:
-            print("⚠️ initialize_systemメソッドがありません")
+            print("[WARNING] initialize_systemメソッドがありません")
         
         # Production Ready状態確認
         if hasattr(manager, 'get_production_readiness_status'):
@@ -165,27 +165,27 @@ def test_multi_strategy_manager_production():
                 # 初期化失敗シミュレーション (Production停止期待)
                 test_error = RuntimeError("Production init test failure")
                 result = manager.handle_component_failure("initialize_test_component", test_error)
-                print(f"⚠️ 初期化失敗が継続されました: {result}")
+                print(f"[WARNING] 初期化失敗が継続されました: {result}")
             except RuntimeError as e:
-                print(f"✅ Production初期化失敗停止確認: {e}")
+                print(f"[OK] Production初期化失敗停止確認: {e}")
             except Exception as e:
-                print(f"⚠️ 予期しない例外: {e}")
+                print(f"[WARNING] 予期しない例外: {e}")
             
             try:
                 # 実行時エラーシミュレーション (制限動作継続期待)
                 test_error = ValueError("Production runtime test error")  
                 result = manager.handle_component_failure("runtime_test_component", test_error)
-                print(f"✅ 実行時エラー制限動作継続: {result}")
+                print(f"[OK] 実行時エラー制限動作継続: {result}")
             except Exception as e:
-                print(f"⚠️ 実行時エラー例外: {e}")
+                print(f"[WARNING] 実行時エラー例外: {e}")
         
         return True
         
     except ImportError as e:
-        print(f"❌ MultiStrategyManagerインポートエラー: {e}")
+        print(f"[ERROR] MultiStrategyManagerインポートエラー: {e}")
         return False
     except Exception as e:
-        print(f"❌ MultiStrategyManagerテストエラー: {e}")
+        print(f"[ERROR] MultiStrategyManagerテストエラー: {e}")
         return False
 
 
@@ -203,31 +203,31 @@ def test_main_integration_production():
         # データ処理コンポーネント
         try:
             from data_fetcher import DataFetcher
-            print("✅ DataFetcher インポート成功")
+            print("[OK] DataFetcher インポート成功")
         except Exception as e:
-            print(f"⚠️ DataFetcher インポートエラー: {e}")
+            print(f"[WARNING] DataFetcher インポートエラー: {e}")
         
         try:
             from data_processor import DataProcessor  
-            print("✅ DataProcessor インポート成功")
+            print("[OK] DataProcessor インポート成功")
         except Exception as e:
-            print(f"⚠️ DataProcessor インポートエラー: {e}")
+            print(f"[WARNING] DataProcessor インポートエラー: {e}")
         
         # 戦略システム
         try:
             from config.multi_strategy_manager import MultiStrategyManager
-            print("✅ MultiStrategyManager インポート成功")
+            print("[OK] MultiStrategyManager インポート成功")
         except Exception as e:
-            print(f"⚠️ MultiStrategyManager インポートエラー: {e}")
+            print(f"[WARNING] MultiStrategyManager インポートエラー: {e}")
         
         # 出力システム
         try:
             from output.simulation_handler import SimulationHandler
-            print("✅ SimulationHandler インポート成功")
+            print("[OK] SimulationHandler インポート成功")
         except Exception as e:
-            print(f"⚠️ SimulationHandler インポートエラー: {e}")
+            print(f"[WARNING] SimulationHandler インポートエラー: {e}")
         
-        print("✅ main.py基本コンポーネント確認完了")
+        print("[OK] main.py基本コンポーネント確認完了")
         
         # Production mode設定確認
         config_path = Path("config/main_integration_config.json")
@@ -236,14 +236,14 @@ def test_main_integration_production():
                 config = json.load(f)
             
             if config.get('system_mode', '').lower() == 'production':
-                print("✅ main.py Production mode設定確認")
+                print("[OK] main.py Production mode設定確認")
             else:
-                print("⚠️ main.py Production mode未設定")
+                print("[WARNING] main.py Production mode未設定")
         
         return True
         
     except Exception as e:
-        print(f"❌ main.py統合テストエラー: {e}")
+        print(f"[ERROR] main.py統合テストエラー: {e}")
         return False
 
 
@@ -271,10 +271,10 @@ def test_fallback_removal_validation():
                 # handle_component_failure呼び出し検索
                 if 'handle_component_failure(' in content:
                     count = content.count('handle_component_failure(')
-                    print(f"⚠️ {file_path}: handle_component_failure呼び出し {count}件残存")
+                    print(f"[WARNING] {file_path}: handle_component_failure呼び出し {count}件残存")
                     fallback_usage_count += count
                 else:
-                    print(f"✅ {file_path}: handle_component_failure呼び出し除去確認")
+                    print(f"[OK] {file_path}: handle_component_failure呼び出し除去確認")
         
         # TODO(tag:phase2)確認
         todo_phase2_count = 0
@@ -285,10 +285,10 @@ def test_fallback_removal_validation():
                 
                 count = content.count('TODO(tag:phase2')
                 if count > 0:
-                    print(f"⚠️ {file_path}: TODO(tag:phase2) {count}件残存")
+                    print(f"[WARNING] {file_path}: TODO(tag:phase2) {count}件残存")
                     todo_phase2_count += count
                 else:
-                    print(f"✅ {file_path}: TODO(tag:phase2)解決確認")
+                    print(f"[OK] {file_path}: TODO(tag:phase2)解決確認")
         
         # 総合判定
         print(f"\n--- フォールバック除去検証結果 ---")
@@ -296,14 +296,14 @@ def test_fallback_removal_validation():
         print(f"TODO(tag:phase2)残存: {todo_phase2_count}件")
         
         if fallback_usage_count == 0 and todo_phase2_count == 0:
-            print("✅ フォールバック完全除去確認")
+            print("[OK] フォールバック完全除去確認")
             return True
         else:
-            print("⚠️ フォールバック除去未完了")
+            print("[WARNING] フォールバック除去未完了")
             return False
         
     except Exception as e:
-        print(f"❌ フォールバック除去検証エラー: {e}")
+        print(f"[ERROR] フォールバック除去検証エラー: {e}")
         return False
 
 
@@ -312,7 +312,7 @@ def execute_production_mode_verification():
     Production mode動作確認統合実行
     TODO(tag:phase3, rationale:Production mode完全動作確認)
     """
-    print("🚀 Phase 3: Production mode動作確認テスト開始")
+    print("[ROCKET] Phase 3: Production mode動作確認テスト開始")
     print("=" * 60)
     
     test_results = []
@@ -339,12 +339,12 @@ def execute_production_mode_verification():
     
     # 結果サマリー
     print("\n" + "=" * 60)
-    print("🎯 Production mode動作確認結果サマリー")
+    print("[TARGET] Production mode動作確認結果サマリー")
     print("=" * 60)
     
     success_count = 0
     for test_name, result in test_results:
-        status = "✅ PASS" if result else "❌ FAIL"
+        status = "[OK] PASS" if result else "[ERROR] FAIL"
         print(f"{test_name:25} : {status}")
         if result:
             success_count += 1
@@ -354,11 +354,11 @@ def execute_production_mode_verification():
     print(f"\n総合結果: {success_count}/{len(test_results)} テスト成功")
     
     if overall_success:
-        print("🎉 Phase 3: Production mode動作確認 - 完全成功!")
+        print("[SUCCESS] Phase 3: Production mode動作確認 - 完全成功!")
         print("   → Production Ready状態確認完了")
         print("   → フォールバック除去動作確認済み")
     else:
-        print("⚠️ Phase 3: Production mode動作確認 - 部分成功")
+        print("[WARNING] Phase 3: Production mode動作確認 - 部分成功")
         print("   → 一部テストで問題が検出されました")
     
     return overall_success

@@ -119,14 +119,14 @@ class FinalIntegrationTestSuite:
                 }
                 
                 if success:
-                    print(f"✅ {phase_name} - 成功 ({execution_time:.2f}秒)")
+                    print(f"[OK] {phase_name} - 成功 ({execution_time:.2f}秒)")
                 else:
-                    print(f"❌ {phase_name} - 失敗 ({execution_time:.2f}秒)")
+                    print(f"[ERROR] {phase_name} - 失敗 ({execution_time:.2f}秒)")
                     print(f"   エラー詳細: {results.get('error', 'Unknown error')}")
                     overall_success = False
                     
             except Exception as e:
-                print(f"❌ {phase_name} - 例外発生: {str(e)}")
+                print(f"[ERROR] {phase_name} - 例外発生: {str(e)}")
                 self.test_results[phase_name] = {
                     'success': False,
                     'error': str(e),
@@ -231,13 +231,13 @@ class FinalIntegrationTestSuite:
                 results['data_fetch_success'] = True
                 results['data_rows'] = len(data)
                 results['data_columns'] = list(data.columns)
-                print(f"   ✅ データ取得成功: {len(data)}行")
+                print(f"   [OK] データ取得成功: {len(data)}行")
                 
                 # 2. データ前処理テスト
                 processed_data = preprocess_data(data)
                 results['preprocessing_success'] = True
                 results['processed_rows'] = len(processed_data)
-                print(f"   ✅ データ前処理成功: {len(processed_data)}行")
+                print(f"   [OK] データ前処理成功: {len(processed_data)}行")
                 
                 # 3. データ品質チェック
                 quality_checks = {
@@ -295,14 +295,14 @@ class FinalIntegrationTestSuite:
                         'has_required_methods': has_required_methods
                     }
                     
-                    print(f"   ✅ {strategy_name} 戦略初期化成功")
+                    print(f"   [OK] {strategy_name} 戦略初期化成功")
                     
                 except Exception as e:
                     strategy_results[strategy_name] = {
                         'initialization_success': False,
                         'error': str(e)
                     }
-                    print(f"   ❌ {strategy_name} 戦略初期化失敗: {e}")
+                    print(f"   [ERROR] {strategy_name} 戦略初期化失敗: {e}")
             
             results['strategies'] = strategy_results
             
@@ -310,11 +310,11 @@ class FinalIntegrationTestSuite:
             try:
                 # Note: 実際のクラスが存在しない場合はスキップ
                 integration_success = True
-                print(f"   ✅ 戦略統合システム利用可能")
+                print(f"   [OK] 戦略統合システム利用可能")
                 
             except Exception as e:
                 integration_success = False
-                print(f"   ⚠️ 戦略統合マネージャー利用不可: {e}")
+                print(f"   [WARNING] 戦略統合マネージャー利用不可: {e}")
             
             results['integration_manager_success'] = integration_success
             
@@ -368,13 +368,13 @@ class FinalIntegrationTestSuite:
                 results['top_symbol'] = ranked_symbols[0][0]
                 results['top_score'] = ranked_symbols[0][1]['combined_score']
                 
-                print(f"   ✅ ランキング生成成功")
+                print(f"   [OK] ランキング生成成功")
                 print(f"   トップ銘柄: {results['top_symbol']} (スコア: {results['top_score']:.3f})")
                 
             except Exception as e:
                 results['ranking_success'] = False
                 results['ranking_error'] = str(e)
-                print(f"   ❌ ランキングシステムエラー: {e}")
+                print(f"   [ERROR] ランキングシステムエラー: {e}")
             
             # 2. 銘柄選択ロジックテスト
             try:
@@ -383,7 +383,7 @@ class FinalIntegrationTestSuite:
                     results['selection_success'] = True
                     results['selected_symbols'] = selected_symbols
                     
-                    print(f"   ✅ 銘柄選択成功: {len(selected_symbols)}銘柄")
+                    print(f"   [OK] 銘柄選択成功: {len(selected_symbols)}銘柄")
                     print(f"   選択銘柄: {', '.join(selected_symbols)}")
                 else:
                     results['selection_success'] = False
@@ -418,12 +418,12 @@ class FinalIntegrationTestSuite:
             try:
                 backtester = DSSMSBacktester(config)
                 results['backtester_init_success'] = True
-                print(f"   ✅ バックテスター初期化成功")
+                print(f"   [OK] バックテスター初期化成功")
                 
             except Exception as e:
                 results['backtester_init_success'] = False
                 results['backtester_init_error'] = str(e)
-                print(f"   ❌ バックテスター初期化失敗: {e}")
+                print(f"   [ERROR] バックテスター初期化失敗: {e}")
                 return False, results
             
             # 2. 短期間バックテストテスト
@@ -448,7 +448,7 @@ class FinalIntegrationTestSuite:
                     results['switch_count'] = backtest_result.get('switch_count', 0)
                     results['transaction_costs'] = backtest_result.get('transaction_costs', 0)
                     
-                    print(f"   ✅ バックテスト実行成功")
+                    print(f"   [OK] バックテスト実行成功")
                     print(f"   最終価値: {results['final_value']:,.0f}円")
                     print(f"   総リターン: {results['total_return']:.2%}")
                     print(f"   切替回数: {results['switch_count']}回")
@@ -456,12 +456,12 @@ class FinalIntegrationTestSuite:
                 else:
                     results['backtest_success'] = False
                     results['backtest_error'] = backtest_result.get('error', 'Unknown error')
-                    print(f"   ❌ バックテスト失敗: {results['backtest_error']}")
+                    print(f"   [ERROR] バックテスト失敗: {results['backtest_error']}")
                     
             except Exception as e:
                 results['backtest_success'] = False
                 results['backtest_error'] = str(e)
-                print(f"   ❌ バックテスト例外: {e}")
+                print(f"   [ERROR] バックテスト例外: {e}")
             
             # 3. パフォーマンス計算テスト
             if results.get('backtest_success', False):
@@ -472,7 +472,7 @@ class FinalIntegrationTestSuite:
                     results['sharpe_ratio'] = sharpe_ratio
                     results['performance_calc_success'] = True
                     
-                    print(f"   ✅ パフォーマンス計算成功")
+                    print(f"   [OK] パフォーマンス計算成功")
                     print(f"   シャープレシオ: {sharpe_ratio:.3f}")
                     
                 except Exception as e:
@@ -525,14 +525,14 @@ class FinalIntegrationTestSuite:
                 results['html_report_length'] = len(html_report) if html_report else 0
                 
                 if results['html_report_success']:
-                    print(f"   ✅ HTMLレポート生成成功 ({results['html_report_length']}文字)")
+                    print(f"   [OK] HTMLレポート生成成功 ({results['html_report_length']}文字)")
                 else:
-                    print(f"   ❌ HTMLレポート生成失敗")
+                    print(f"   [ERROR] HTMLレポート生成失敗")
                 
             except Exception as e:
                 results['html_report_success'] = False
                 results['html_report_error'] = str(e)
-                print(f"   ❌ レポート生成例外: {e}")
+                print(f"   [ERROR] レポート生成例外: {e}")
             
             # 2. エクスポート機能テスト
             try:
@@ -544,12 +544,12 @@ class FinalIntegrationTestSuite:
                 }
                 
                 results['export_config_success'] = True
-                print(f"   ✅ エクスポート設定成功")
+                print(f"   [OK] エクスポート設定成功")
                 
             except Exception as e:
                 results['export_config_success'] = False
                 results['export_error'] = str(e)
-                print(f"   ❌ エクスポート設定失敗: {e}")
+                print(f"   [ERROR] エクスポート設定失敗: {e}")
             
             # 3. 可視化機能テスト
             try:
@@ -559,12 +559,12 @@ class FinalIntegrationTestSuite:
                 results['visualization_types'] = chart_types
                 results['visualization_success'] = True
                 
-                print(f"   ✅ 可視化機能利用可能 ({len(chart_types)}種類)")
+                print(f"   [OK] 可視化機能利用可能 ({len(chart_types)}種類)")
                 
             except Exception as e:
                 results['visualization_success'] = False
                 results['visualization_error'] = str(e)
-                print(f"   ❌ 可視化機能エラー: {e}")
+                print(f"   [ERROR] 可視化機能エラー: {e}")
             
             success = results.get('html_report_success', False)
             
@@ -825,7 +825,7 @@ class FinalIntegrationTestSuite:
             results['meets_success_criteria'] = all(overall_success_criteria)
             
             print(f"   システム統合スコア: {integration_score:.1%}")
-            print(f"   成功基準達成: {'✅' if results['meets_success_criteria'] else '❌'}")
+            print(f"   成功基準達成: {'[OK]' if results['meets_success_criteria'] else '[ERROR]'}")
             
             success = results['meets_success_criteria']
             
@@ -838,22 +838,22 @@ class FinalIntegrationTestSuite:
         """最終結果サマリー生成"""
         
         print("\n" + "="*80)
-        print("📊 DSSMS 最終統合テスト結果サマリー")
+        print("[CHART] DSSMS 最終統合テスト結果サマリー")
         print("="*80)
         
         # 1. 全体結果
         total_tests = len(self.test_results)
         successful_tests = sum(1 for result in self.test_results.values() if result.get('success', False))
         
-        print(f"\n🎯 総合結果:")
-        print(f"   全体判定: {'✅ 成功' if overall_success else '❌ 失敗'}")
+        print(f"\n[TARGET] 総合結果:")
+        print(f"   全体判定: {'[OK] 成功' if overall_success else '[ERROR] 失敗'}")
         print(f"   テスト成功率: {successful_tests}/{total_tests} ({successful_tests/total_tests:.1%})")
         print(f"   総実行時間: {(datetime.now() - self.start_time).total_seconds():.1f}秒")
         
         # 2. フェーズ別結果
-        print(f"\n📋 フェーズ別結果:")
+        print(f"\n[LIST] フェーズ別結果:")
         for test_name, result in self.test_results.items():
-            status = "✅" if result.get('success', False) else "❌"
+            status = "[OK]" if result.get('success', False) else "[ERROR]"
             execution_time = result.get('execution_time', 0)
             print(f"   {status} {test_name} ({execution_time:.2f}秒)")
         
@@ -861,7 +861,7 @@ class FinalIntegrationTestSuite:
         if 'パフォーマンス改善効果検証' in self.test_results:
             improvement_results = self.test_results['パフォーマンス改善効果検証']['results']
             
-            print(f"\n📈 改善効果サマリー:")
+            print(f"\n[UP] 改善効果サマリー:")
             theoretical_improvements = improvement_results.get('theoretical_improvements', {})
             
             for metric, improvement in theoretical_improvements.items():
@@ -872,32 +872,32 @@ class FinalIntegrationTestSuite:
                     'data_fetch_failure_rate': 'データ取得失敗率改善'
                 }.get(metric, metric)
                 
-                print(f"   📊 {metric_name}: {improvement:.1%}")
+                print(f"   [CHART] {metric_name}: {improvement:.1%}")
         
         # 4. 品質指標
         if '品質・信頼性検証' in self.test_results:
             quality_results = self.test_results['品質・信頼性検証']['results']
             
-            print(f"\n🔍 品質指標:")
+            print(f"\n[SEARCH] 品質指標:")
             print(f"   システム信頼性スコア: {quality_results.get('system_reliability_score', 0):.1%}")
             print(f"   エラーハンドリング品質: {quality_results.get('error_handling_quality', 0):.1%}")
             print(f"   データ整合性: {quality_results.get('data_integrity_score', 0):.1%}")
         
         # 5. 推奨事項
-        print(f"\n💡 推奨事項:")
+        print(f"\n[IDEA] 推奨事項:")
         
         if overall_success:
-            print(f"   ✅ DSSMSシステムは本番運用準備完了")
-            print(f"   ✅ 全ての主要コンポーネントが正常動作")
-            print(f"   ✅ パフォーマンス改善目標を達成")
-            print(f"   📈 次のステップ: 本番データでの長期テスト実行")
+            print(f"   [OK] DSSMSシステムは本番運用準備完了")
+            print(f"   [OK] 全ての主要コンポーネントが正常動作")
+            print(f"   [OK] パフォーマンス改善目標を達成")
+            print(f"   [UP] 次のステップ: 本番データでの長期テスト実行")
         else:
             failed_tests = [name for name, result in self.test_results.items() if not result.get('success', False)]
-            print(f"   ❌ 以下のテストが失敗しました:")
+            print(f"   [ERROR] 以下のテストが失敗しました:")
             for failed_test in failed_tests:
                 print(f"     - {failed_test}")
-            print(f"   🔧 失敗したコンポーネントの修正が必要")
-            print(f"   📋 修正後に再テスト実行を推奨")
+            print(f"   [TOOL] 失敗したコンポーネントの修正が必要")
+            print(f"   [LIST] 修正後に再テスト実行を推奨")
 
     def _calculate_sharpe_ratio(self, total_return: float, risk_free_rate: float = 0.02) -> float:
         """シャープレシオ計算（簡易版）"""
@@ -910,7 +910,7 @@ class FinalIntegrationTestSuite:
 def main():
     """メイン実行関数"""
     
-    print("🚀 DSSMS最終統合テストスイート開始")
+    print("[ROCKET] DSSMS最終統合テストスイート開始")
     print("Phase 1-3完了後の包括的検証を実行します\n")
     
     try:
@@ -926,12 +926,12 @@ def main():
             f.write("DSSMS最終統合テスト結果\n")
             f.write("="*50 + "\n\n")
             f.write(f"実行日時: {datetime.now().strftime('%Y年%m月%d日 %H:%M:%S')}\n")
-            f.write(f"全体成功: {'✅' if final_results['overall_success'] else '❌'}\n")
+            f.write(f"全体成功: {'[OK]' if final_results['overall_success'] else '[ERROR]'}\n")
             f.write(f"総実行時間: {final_results['total_execution_time']:.1f}秒\n\n")
             
             for test_name, result in final_results['test_results'].items():
                 f.write(f"{test_name}:\n")
-                f.write(f"  成功: {'✅' if result.get('success', False) else '❌'}\n")
+                f.write(f"  成功: {'[OK]' if result.get('success', False) else '[ERROR]'}\n")
                 f.write(f"  実行時間: {result.get('execution_time', 0):.2f}秒\n")
                 if not result.get('success', False) and 'error' in result:
                     f.write(f"  エラー: {result['error']}\n")
@@ -941,16 +941,16 @@ def main():
         
         # 最終判定
         if final_results['overall_success']:
-            print("\n🎉 DSSMS最終統合テスト 【成功】")
+            print("\n[SUCCESS] DSSMS最終統合テスト 【成功】")
             print("システムは本番運用準備完了です！")
             return 0
         else:
-            print("\n⚠️ DSSMS最終統合テスト 【失敗】")
+            print("\n[WARNING] DSSMS最終統合テスト 【失敗】")
             print("一部のコンポーネントに問題があります。修正後に再テストしてください。")
             return 1
             
     except Exception as e:
-        print(f"\n❌ 最終統合テスト実行エラー: {e}")
+        print(f"\n[ERROR] 最終統合テスト実行エラー: {e}")
         print(f"詳細: {traceback.format_exc()}")
         return 1
 

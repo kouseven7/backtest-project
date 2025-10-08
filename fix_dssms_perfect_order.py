@@ -8,7 +8,7 @@ def replace_dssms_perfect_order_detector():
     """
     DSSMSのPerfect Order検出器を修正版に置き換える
     """
-    print("🔧 DSSMSのPerfect Order検出器を修正版に置き換えます...")
+    print("[TOOL] DSSMSのPerfect Order検出器を修正版に置き換えます...")
     
     # 元のファイルをバックアップ
     original_file = Path("src/dssms/perfect_order_detector.py")
@@ -16,7 +16,7 @@ def replace_dssms_perfect_order_detector():
     
     if original_file.exists() and not backup_file.exists():
         shutil.copy2(original_file, backup_file)
-        print(f"✅ バックアップ作成: {backup_file}")
+        print(f"[OK] バックアップ作成: {backup_file}")
     
     # 修正版の内容を作成
     fixed_content = '''"""
@@ -443,8 +443,8 @@ if __name__ == "__main__":
     with open(original_file, 'w', encoding='utf-8') as f:
         f.write(fixed_content)
     
-    print(f"✅ 修正版Perfect Order検出器を適用: {original_file}")
-    print("🎯 主な修正点:")
+    print(f"[OK] 修正版Perfect Order検出器を適用: {original_file}")
+    print("[TARGET] 主な修正点:")
     print("   - MultiIndex列の正規化")
     print("   - pandas Series比較エラーの修正")
     print("   - 緩和版Perfect Order検出ロジック")

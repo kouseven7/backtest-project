@@ -51,11 +51,11 @@ class SimpleScreenerProfiler:
                 "duration_seconds": duration,
                 "timestamp": datetime.now().isoformat()
             }
-            print(f"✅ {operation_name} 完了: {duration:.3f}秒")
+            print(f"[OK] {operation_name} 完了: {duration:.3f}秒")
     
     def analyze_screener_simulation(self):
         """Screener処理のシミュレーション分析"""
-        print("🔍 Stage 1: Screener詳細ボトルネック分析開始")
+        print("[SEARCH] Stage 1: Screener詳細ボトルネック分析開始")
         
         try:
             # 実際のログから得られた情報を基に分析
@@ -89,11 +89,11 @@ class SimpleScreenerProfiler:
                 "parallelization_assessment": parallelization_assessment
             }
             
-            print(f"✅ ボトルネック分析完了: 総実行時間 {total_time:.1f}秒")
+            print(f"[OK] ボトルネック分析完了: 総実行時間 {total_time:.1f}秒")
             return self.profile_results["bottleneck_identification"]
             
         except Exception as e:
-            print(f"❌ ボトルネック分析エラー: {e}")
+            print(f"[ERROR] ボトルネック分析エラー: {e}")
             return {"error": str(e)}
     
     def _identify_bottlenecks(self, timing_data: Dict[str, float]) -> Dict[str, Any]:
@@ -225,7 +225,7 @@ class SimpleScreenerProfiler:
     
     def design_optimization_strategy(self):
         """最適化戦略設計"""
-        print("🎯 最適化戦略設計")
+        print("[TARGET] 最適化戦略設計")
         
         strategy = {
             "stage_2_parallel_data_fetching": {
@@ -284,7 +284,7 @@ class SimpleScreenerProfiler:
         }
         
         self.profile_results["optimization_strategy"] = strategy
-        print("✅ 最適化戦略設計完了")
+        print("[OK] 最適化戦略設計完了")
         return strategy
     
     def design_implementation_roadmap(self):
@@ -338,13 +338,13 @@ class SimpleScreenerProfiler:
         }
         
         self.profile_results["implementation_roadmap"] = roadmap
-        print("✅ 実装ロードマップ設計完了")
+        print("[OK] 実装ロードマップ設計完了")
         return roadmap
     
     def generate_stage1_report(self):
         """Stage 1 完了レポート生成"""
         try:
-            print("📊 Stage 1 完了レポート生成中...")
+            print("[CHART] Stage 1 完了レポート生成中...")
             
             # 全ての分析を実行
             bottlenecks = self.analyze_screener_simulation()
@@ -353,7 +353,7 @@ class SimpleScreenerProfiler:
             
             # 総合評価
             stage1_summary = {
-                "analysis_completion": "✅ Complete",
+                "analysis_completion": "[OK] Complete",
                 "execution_time": "20分以内で完了",
                 "major_bottlenecks_identified": [
                     "market_cap_filter: 52.5秒 (28.7%)",
@@ -363,7 +363,7 @@ class SimpleScreenerProfiler:
                 "optimization_potential": "75%削減 (183.1秒 → 45秒)",
                 "technical_feasibility": "高 (ThreadPoolExecutor + キャッシュ)",
                 "risk_assessment": "低 (既存API互換性維持)",
-                "implementation_readiness": "✅ Stage 2実装準備完了",
+                "implementation_readiness": "[OK] Stage 2実装準備完了",
                 "expected_user_impact": "3分3秒 → 45秒 (劇的改善)"
             }
             
@@ -376,36 +376,36 @@ class SimpleScreenerProfiler:
             
             # サマリー表示
             print("\n" + "="*80)
-            print("🎯 TODO-PERF-007 Stage 1: ボトルネック詳細分析完了")
+            print("[TARGET] TODO-PERF-007 Stage 1: ボトルネック詳細分析完了")
             print("="*80)
             
-            print("\n📊 実測ボトルネック分析結果:")
+            print("\n[CHART] 実測ボトルネック分析結果:")
             for bottleneck in stage1_summary["major_bottlenecks_identified"]:
                 print(f"  - {bottleneck}")
             
-            print(f"\n🚀 最適化可能性: {stage1_summary['optimization_potential']}")
-            print(f"🔧 技術的実現可能性: {stage1_summary['technical_feasibility']}")
-            print(f"⚠️ リスク評価: {stage1_summary['risk_assessment']}")
+            print(f"\n[ROCKET] 最適化可能性: {stage1_summary['optimization_potential']}")
+            print(f"[TOOL] 技術的実現可能性: {stage1_summary['technical_feasibility']}")
+            print(f"[WARNING] リスク評価: {stage1_summary['risk_assessment']}")
             print(f"👥 ユーザーインパクト: {stage1_summary['expected_user_impact']}")
             
-            print("\n📋 Stage 2実装準備:")
-            print("  ✅ 並列データ取得アーキテクチャ設計完了")
-            print("  ✅ スマートキャッシュ戦略策定完了")
-            print("  ✅ 技術的実現可能性確認完了")
-            print("  ✅ リスク評価・対策計画完了")
+            print("\n[LIST] Stage 2実装準備:")
+            print("  [OK] 並列データ取得アーキテクチャ設計完了")
+            print("  [OK] スマートキャッシュ戦略策定完了")
+            print("  [OK] 技術的実現可能性確認完了")
+            print("  [OK] リスク評価・対策計画完了")
             
-            print(f"\n✅ Stage 1 完了: {stage1_summary['implementation_readiness']}")
+            print(f"\n[OK] Stage 1 完了: {stage1_summary['implementation_readiness']}")
             print(f"📄 詳細レポート: {report_file}")
             
             return self.profile_results
             
         except Exception as e:
-            print(f"❌ Stage 1 レポート生成エラー: {e}")
+            print(f"[ERROR] Stage 1 レポート生成エラー: {e}")
             return {"error": str(e)}
 
 def main():
     """Stage 1 メイン実行"""
-    print("🚀 TODO-PERF-007 Stage 1: Nikkei225Screener ボトルネック詳細分析開始")
+    print("[ROCKET] TODO-PERF-007 Stage 1: Nikkei225Screener ボトルネック詳細分析開始")
     print("目標: 20分で完了・最適化戦略確定")
     print("="*80)
     
@@ -414,14 +414,14 @@ def main():
         results = profiler.generate_stage1_report()
         
         if "error" not in results:
-            print("\n🎉 Stage 1 完了 - Stage 2 並列データ取得実装の準備完了")
-            print("\n📋 次のステップ:")
+            print("\n[SUCCESS] Stage 1 完了 - Stage 2 並列データ取得実装の準備完了")
+            print("\n[LIST] 次のステップ:")
             print("  1. Stage 2: 並列データ取得・スマートキャッシュ実装 (30分)")
             print("  2. Stage 3: 選択アルゴリズム最適化・計算効率化実装 (25分)")
             print("  3. Stage 4: 統合効果検証・実用レベル達成確認 (15分)")
             return True
         else:
-            print(f"\n❌ Stage 1 失敗: {results['error']}")
+            print(f"\n[ERROR] Stage 1 失敗: {results['error']}")
             return False
             
     except Exception as e:

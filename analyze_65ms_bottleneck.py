@@ -105,7 +105,7 @@ def measure_component_import_times():
 
 def analyze_heavy_components(components):
     """重いコンポーネントの分析"""
-    print("\n📊 コンポーネント別インポート時間:")
+    print("\n[CHART] コンポーネント別インポート時間:")
     
     # 総時間除く
     import_components = components[:-1]
@@ -121,41 +121,41 @@ def analyze_heavy_components(components):
         else:
             print(f"   {name}: {time_ms:.1f}ms")
     
-    print(f"\n📊 測定済み合計: {total_measured:.1f}ms")
-    print(f"📊 実際の総時間: {components[-1][1]:.1f}ms")
+    print(f"\n[CHART] 測定済み合計: {total_measured:.1f}ms")
+    print(f"[CHART] 実際の総時間: {components[-1][1]:.1f}ms")
     
     return sorted_components
 
 def suggest_optimizations(sorted_components):
     """最適化提案"""
-    print("\n🔧 最適化提案:")
+    print("\n[TOOL] 最適化提案:")
     
     heavy_threshold = 5.0  # 5ms以上を重いとする
     heavy_imports = [comp for comp in sorted_components if comp[1] > heavy_threshold]
     
     if not heavy_imports:
-        print("   ✅ すべてのインポートが軽量（5ms未満）")
-        print("   📋 次の最適化候補:")
+        print("   [OK] すべてのインポートが軽量（5ms未満）")
+        print("   [LIST] 次の最適化候補:")
         print("      1. クラス定義の簡素化")
         print("      2. メソッド定義の遅延ロード")
         print("      3. 不要なメソッド・属性の除去")
         return
     
-    print(f"   🔥 重いインポート（{len(heavy_imports)}個）:")
+    print(f"   [FIRE] 重いインポート（{len(heavy_imports)}個）:")
     for name, time_ms in heavy_imports:
         print(f"      - {name}: {time_ms:.1f}ms")
         
         # 個別最適化提案
         if "typing" in name.lower():
-            print(f"        💡 typing最適化: TYPE_CHECKING使用、必要最小限のみインポート")
+            print(f"        [IDEA] typing最適化: TYPE_CHECKING使用、必要最小限のみインポート")
         elif "pathlib" in name.lower():
-            print(f"        💡 pathlib最適化: os.path使用、またはstr操作で代替")
+            print(f"        [IDEA] pathlib最適化: os.path使用、またはstr操作で代替")
         elif "argparse" in name.lower():
-            print(f"        💡 argparse最適化: sys.argv直接解析、または遅延インポート")
+            print(f"        [IDEA] argparse最適化: sys.argv直接解析、または遅延インポート")
         elif "datetime" in name.lower():
-            print(f"        💡 datetime最適化: time.time()使用、または遅延インポート")
+            print(f"        [IDEA] datetime最適化: time.time()使用、または遅延インポート")
         elif "json" in name.lower():
-            print(f"        💡 json最適化: 遅延インポート、またはliteral_eval使用")
+            print(f"        [IDEA] json最適化: 遅延インポート、またはliteral_eval使用")
 
 def main():
     """メイン実行"""
@@ -169,17 +169,17 @@ def main():
         target = 1.2
         remaining = total_measured - target
         
-        print(f"\n🎯 目標達成状況:")
+        print(f"\n[TARGET] 目標達成状況:")
         print(f"   現在: {total_measured:.1f}ms")
         print(f"   目標: {target:.1f}ms")
         print(f"   残り削減必要: {remaining:.1f}ms ({remaining/total_measured*100:.1f}%)")
         
         if remaining <= 0:
-            print("   ✅ 目標達成済み！")
+            print("   [OK] 目標達成済み！")
         elif remaining < 10:
             print("   🔸 あと少しで達成")
         else:
-            print("   ⚠️ さらなる最適化が必要")
+            print("   [WARNING] さらなる最適化が必要")
             
     except Exception as e:
         print(f"分析エラー: {e}")

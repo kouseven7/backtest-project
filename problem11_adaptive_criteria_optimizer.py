@@ -41,7 +41,7 @@ class AdaptiveSwitchCriteriaOptimizer:
         
     def optimize_switch_thresholds(self, historical_switches: List[Dict[str, Any]]) -> SwitchCriteriaConfig:
         """過去パフォーマンスに基づく閾値最適化"""
-        print("\n🎯 切替基準動的最適化")
+        print("\n[TARGET] 切替基準動的最適化")
         print("-" * 50)
         
         if not historical_switches:
@@ -160,7 +160,7 @@ class SwitchQualityLearningSystem:
     def continuous_quality_improvement(self, current_metrics: Dict[str, Any], 
                                      target_metrics: Dict[str, float]) -> Dict[str, Any]:
         """継続的品質改善サイクル"""
-        print("\n📈 継続的品質改善学習")
+        print("\n[UP] 継続的品質改善学習")
         print("-" * 50)
         
         current_unnecessary_rate = current_metrics.get('unnecessary_rate', 0)
@@ -294,7 +294,7 @@ def integrate_with_intelligent_switch_manager(optimized_criteria: SwitchCriteria
         return True
         
     except Exception as e:
-        print(f"❌ ISM統合設定更新エラー: {e}")
+        print(f"[ERROR] ISM統合設定更新エラー: {e}")
         return False
 
 def main():
@@ -314,7 +314,7 @@ def main():
         historical_switches = evaluator.collect_real_switch_data(days_back=30)
         
         if not historical_switches:
-            print("❌ 履歴データ取得失敗")
+            print("[ERROR] 履歴データ取得失敗")
             return False
         
         print(f"✓ 履歴データ取得完了: {len(historical_switches)}件")
@@ -355,14 +355,14 @@ def main():
         
         # 最終結果レポート
         print("\n" + "=" * 70)
-        print("📊 動的最適化結果サマリー")
+        print("[CHART] 動的最適化結果サマリー")
         print("=" * 70)
         
         print("最適化済み切替基準:")
         for param, value in final_criteria.to_dict().items():
             print(f"  {param}: {value:.4f}")
         
-        print(f"\nISM統合更新: {'✓ 成功' if integration_success else '❌ 失敗'}")
+        print(f"\nISM統合更新: {'✓ 成功' if integration_success else '[ERROR] 失敗'}")
         print(f"期待改善効果:")
         print(f"  不要切替率: {current_metrics['unnecessary_rate']:.1%} → <20%")
         print(f"  一貫性率:   {current_metrics['consistency_rate']:.1%} → ≥95%")
@@ -370,7 +370,7 @@ def main():
         return integration_success
         
     except Exception as e:
-        print(f"❌ 動的最適化エラー: {e}")
+        print(f"[ERROR] 動的最適化エラー: {e}")
         import traceback
         traceback.print_exc()
         return False

@@ -37,7 +37,7 @@ class ContrarianParameterValidator:
             "errors": errors,
             "warnings": warnings,
             "valid": valid,
-            "validation_summary": ("✅ 妥当" if valid else "❌ 不正")
+            "validation_summary": ("[OK] 妥当" if valid else "[ERROR] 不正")
         }
 
     def get_latest_parameters(self, ticker: str = None) -> Dict[str, Any]:

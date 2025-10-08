@@ -122,14 +122,14 @@ class DSSPhase4IntegrationTester:
             
             if passed_checks == total_checks:
                 self.test_passed += 1
-                logger.info(f"✅ テスト1成功: 全項目パス ({passed_checks}/{total_checks})")
+                logger.info(f"[OK] テスト1成功: 全項目パス ({passed_checks}/{total_checks})")
             else:
                 logger.warning(f"⚠ テスト1部分成功: ({passed_checks}/{total_checks})")
                 
             self.test_total += 1
             
         except Exception as e:
-            logger.error(f"❌ テスト1失敗: {e}")
+            logger.error(f"[ERROR] テスト1失敗: {e}")
             self.test_results['complete_flow'] = {'error': str(e), 'success': False}
             self.test_total += 1
     
@@ -183,14 +183,14 @@ class DSSPhase4IntegrationTester:
             
             if successful_tests >= total_tests * 0.5:
                 self.test_passed += 1
-                logger.info(f"✅ テスト2成功: エラーハンドリング良好 ({successful_tests}/{total_tests})")
+                logger.info(f"[OK] テスト2成功: エラーハンドリング良好 ({successful_tests}/{total_tests})")
             else:
                 logger.warning(f"⚠ テスト2要改善: エラーハンドリング不十分 ({successful_tests}/{total_tests})")
                 
             self.test_total += 1
             
         except Exception as e:
-            logger.error(f"❌ テスト2失敗: {e}")
+            logger.error(f"[ERROR] テスト2失敗: {e}")
             self.test_results['error_handling'] = {'error': str(e), 'success': False}
             self.test_total += 1
     
@@ -243,14 +243,14 @@ class DSSPhase4IntegrationTester:
             
             if performance_ok:
                 self.test_passed += 1
-                logger.info(f"✅ テスト3成功: パフォーマンス良好 (平均: {avg_time:.1f}ms)")
+                logger.info(f"[OK] テスト3成功: パフォーマンス良好 (平均: {avg_time:.1f}ms)")
             else:
                 logger.warning(f"⚠ テスト3要改善: パフォーマンス改善必要 (平均: {avg_time:.1f}ms)")
                 
             self.test_total += 1
             
         except Exception as e:
-            logger.error(f"❌ テスト3失敗: {e}")
+            logger.error(f"[ERROR] テスト3失敗: {e}")
             self.test_results['performance'] = {'error': str(e), 'success': False}
             self.test_total += 1
     
@@ -282,9 +282,9 @@ class DSSPhase4IntegrationTester:
                 log_analysis = {
                     'total_messages': len(log_messages),
                     'info_messages': len([m for m in log_messages if 'INFO' in str(m) or any(
-                        keyword in m for keyword in ['✓', '===', '🎯', '🏆']
+                        keyword in m for keyword in ['✓', '===', '[TARGET]', '🏆']
                     )]),
-                    'error_messages': len([m for m in log_messages if 'ERROR' in str(m) or '❌' in m]),
+                    'error_messages': len([m for m in log_messages if 'ERROR' in str(m) or '[ERROR]' in m]),
                     'warning_messages': len([m for m in log_messages if 'WARNING' in str(m) or '⚠' in m]),
                     'has_initialization_logs': any('初期化' in m for m in log_messages),
                     'has_data_fetch_logs': any('データ取得' in m for m in log_messages),
@@ -318,14 +318,14 @@ class DSSPhase4IntegrationTester:
             
             if logging_ok:
                 self.test_passed += 1
-                logger.info(f"✅ テスト4成功: ログ出力良好 (品質スコア: {log_quality_score:.1%})")
+                logger.info(f"[OK] テスト4成功: ログ出力良好 (品質スコア: {log_quality_score:.1%})")
             else:
                 logger.warning(f"⚠ テスト4要改善: ログ不十分 (品質スコア: {log_quality_score:.1%})")
                 
             self.test_total += 1
             
         except Exception as e:
-            logger.error(f"❌ テスト4失敗: {e}")
+            logger.error(f"[ERROR] テスト4失敗: {e}")
             self.test_results['logging'] = {'error': str(e), 'success': False}
             self.test_total += 1
     
@@ -364,14 +364,14 @@ class DSSPhase4IntegrationTester:
             
             if config_ok:
                 self.test_passed += 1
-                logger.info(f"✅ テスト5成功: 設定ファイル問題なし ({passed_config_checks}/{total_config_checks})")
+                logger.info(f"[OK] テスト5成功: 設定ファイル問題なし ({passed_config_checks}/{total_config_checks})")
             else:
                 logger.warning(f"⚠ テスト5要確認: 設定に問題あり ({passed_config_checks}/{total_config_checks})")
                 
             self.test_total += 1
             
         except Exception as e:
-            logger.error(f"❌ テスト5失敗: {e}")
+            logger.error(f"[ERROR] テスト5失敗: {e}")
             self.test_results['configuration'] = {'error': str(e), 'success': False}
             self.test_total += 1
 
@@ -387,12 +387,12 @@ def main():
     print(f"\n=== Phase 4 統合テスト結果 ===")
     print(f"成功率: {results['success_rate']:.1f}% ({results['test_passed']}/{results['test_total']})")
     print(f"目標成功率: {results['target_success_rate']:.1f}%")
-    print(f"Phase 4 完了: {'✅ Yes' if results['phase4_completed'] else '❌ No'}")
+    print(f"Phase 4 完了: {'[OK] Yes' if results['phase4_completed'] else '[ERROR] No'}")
     
     # 詳細結果
     print(f"\n=== テスト詳細結果 ===")
     for test_name, test_result in results['test_results'].items():
-        status = "✅" if test_result.get('success', False) else "❌"
+        status = "[OK]" if test_result.get('success', False) else "[ERROR]"
         print(f"{status} {test_name}: {test_result.get('success', False)}")
     
     # 結果保存

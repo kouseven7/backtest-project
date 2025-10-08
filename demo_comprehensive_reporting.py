@@ -293,10 +293,10 @@ if __name__ == "__main__":
         print(f"パフォーマンステスト: {'成功' if perf_success else '失敗'}")
         
         if success and perf_success:
-            print("\n✅ 全てのテストが成功しました！")
+            print("\n[OK] 全てのテストが成功しました！")
             print("包括的レポートシステムの実装が完了しました。")
         else:
-            print("\n❌ 一部のテストが失敗しました。")
+            print("\n[ERROR] 一部のテストが失敗しました。")
             print("ログを確認して問題を解決してください。")
         
         # クリーンアップ確認

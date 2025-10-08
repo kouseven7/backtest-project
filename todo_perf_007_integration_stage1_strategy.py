@@ -67,7 +67,7 @@ class IntegrationTargetAnalyzer:
         
     def analyze_integration_targets(self):
         """統合対象分析実行"""
-        print("🔍 Stage 1: 統合対象確認・統合戦略策定開始")
+        print("[SEARCH] Stage 1: 統合対象確認・統合戦略策定開始")
         print("="*70)
         
         try:
@@ -98,7 +98,7 @@ class IntegrationTargetAnalyzer:
             return self.analysis_results
             
         except Exception as e:
-            print(f"❌ Stage 1 分析エラー: {e}")
+            print(f"[ERROR] Stage 1 分析エラー: {e}")
             return {"error": str(e)}
     
     def _analyze_screener_structure(self) -> Dict[str, Any]:
@@ -257,7 +257,7 @@ class IntegrationTargetAnalyzer:
             found_optimizations[category] = {
                 "found": found,
                 "count": len(found),
-                "status": "✅ 実装済み" if found else "❌ 未実装"
+                "status": "[OK] 実装済み" if found else "[ERROR] 未実装"
             }
         
         return found_optimizations
@@ -272,7 +272,7 @@ class IntegrationTargetAnalyzer:
             
             if not source_path.exists():
                 components_analysis[component_name] = {
-                    "status": "❌ ファイル不存在",
+                    "status": "[ERROR] ファイル不存在",
                     "path": str(source_path)
                 }
                 continue
@@ -290,7 +290,7 @@ class IntegrationTargetAnalyzer:
                     class_analysis = self._analyze_component_class(content, component_name)
                     
                     components_analysis[component_name] = {
-                        "status": "✅ 実装済み",
+                        "status": "[OK] 実装済み",
                         "path": str(source_path),
                         "file_size": len(content),
                         "class_analysis": class_analysis,
@@ -300,14 +300,14 @@ class IntegrationTargetAnalyzer:
                     }
                 else:
                     components_analysis[component_name] = {
-                        "status": "❌ クラス未発見",
+                        "status": "[ERROR] クラス未発見",
                         "path": str(source_path),
                         "search_pattern": class_pattern
                     }
                     
             except Exception as e:
                 components_analysis[component_name] = {
-                    "status": "❌ 分析エラー",
+                    "status": "[ERROR] 分析エラー",
                     "error": str(e)
                 }
         
@@ -542,7 +542,7 @@ class IntegrationTargetAnalyzer:
             strategy_summary = {
                 "stage_1_completion": {
                     "execution_date": datetime.now().isoformat(),
-                    "status": "✅ 完了",
+                    "status": "[OK] 完了",
                     "screener_readiness": analysis_results["screener_analysis"].get("integration_readiness", "要調査"),
                     "components_ready": len([c for c in analysis_results["optimization_components"].values() if c.get("integration_ready", False)]),
                     "total_components": len(self.optimization_components)
@@ -582,12 +582,12 @@ class IntegrationTargetAnalyzer:
             return complete_report, report_file
             
         except Exception as e:
-            print(f"❌ Stage 1 レポート生成エラー: {e}")
+            print(f"[ERROR] Stage 1 レポート生成エラー: {e}")
             return {"error": str(e)}, None
 
 def main():
     """Stage 1 メイン実行"""
-    print("🔍 TODO-PERF-007 Stage 1: 統合対象確認・統合戦略策定開始")
+    print("[SEARCH] TODO-PERF-007 Stage 1: 統合対象確認・統合戦略策定開始")
     print("目標: 20分で統合戦略確定・Stage 2-4実装準備完了")
     print("="*80)
     
@@ -597,44 +597,44 @@ def main():
         
         if "error" not in results:
             print("\n" + "="*80)
-            print("🎯 Stage 1: 統合対象確認・統合戦略策定完了")
+            print("[TARGET] Stage 1: 統合対象確認・統合戦略策定完了")
             print("="*80)
             
             summary = results["summary"]["stage_1_completion"]
             feasibility = results["summary"]["integration_feasibility"]
             
-            print(f"\n🔍 Stage 1完了状況:")
+            print(f"\n[SEARCH] Stage 1完了状況:")
             print(f"  ステータス: {summary['status']}")
             print(f"  Screener準備: {summary['screener_readiness']}")
             print(f"  コンポーネント準備: {summary['components_ready']}/{summary['total_components']}")
             
-            print(f"\n📊 統合実現可能性:")
+            print(f"\n[CHART] 統合実現可能性:")
             print(f"  総合評価: {feasibility['overall_assessment']}")
             print(f"  技術リスク: {feasibility['technical_risk']}")
             print(f"  期待パフォーマンス: {feasibility['expected_performance']}")
             print(f"  実装時間: {feasibility['implementation_time']}")
             
             next_steps = results["summary"]["next_steps"]
-            print(f"\n🚀 次ステップ:")
+            print(f"\n[ROCKET] 次ステップ:")
             for step in next_steps:
-                print(f"  ✅ {step}")
+                print(f"  [OK] {step}")
             
             critical_factors = results["summary"]["critical_success_factors"]
-            print(f"\n⚠️ 重要成功要因:")
+            print(f"\n[WARNING] 重要成功要因:")
             for factor in critical_factors:
-                print(f"  🎯 {factor}")
+                print(f"  [TARGET] {factor}")
             
             print(f"\n📄 詳細戦略レポート: {report_file}")
             
             print("\n" + "="*80)
-            print("✅ Stage 1完了 → Stage 2 ParallelDataFetcher統合実装開始準備完了")
-            print("🎯 次作業: market_cap_filter並列化（52.5秒→15秒目標）")
+            print("[OK] Stage 1完了 → Stage 2 ParallelDataFetcher統合実装開始準備完了")
+            print("[TARGET] 次作業: market_cap_filter並列化（52.5秒→15秒目標）")
             print("⏱️ 予定時間: 25分（ThreadPoolExecutor統合・レート制限・SystemFallbackPolicy）")
             print("="*80)
             
             return True
         else:
-            print(f"\n❌ Stage 1 失敗: {results.get('error', '不明なエラー')}")
+            print(f"\n[ERROR] Stage 1 失敗: {results.get('error', '不明なエラー')}")
             return False
             
     except Exception as e:

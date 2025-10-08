@@ -134,7 +134,7 @@ def detect_enhanced_perfect_order(data: pd.DataFrame, symbol: str) -> dict:
 
 def main():
     """メイン実行"""
-    logger.info("🔍 改良版パーフェクトオーダー検出テスト開始")
+    logger.info("[SEARCH] 改良版パーフェクトオーダー検出テスト開始")
     
     # データ取得
     data = fetch_stock_data("7203", "2023-01-01", "2023-12-31")
@@ -143,7 +143,7 @@ def main():
     result = detect_enhanced_perfect_order(data, "7203")
     
     if "error" in result:
-        logger.error(f"❌ 検出エラー: {result['error']}")
+        logger.error(f"[ERROR] 検出エラー: {result['error']}")
         return
     
     # 結果表示
@@ -167,15 +167,15 @@ def main():
     
     # 月別詳細
     for stat in result['monthly_stats']:
-        status = "✅" if stat['semi_perfect'] else "❌"
+        status = "[OK]" if stat['semi_perfect'] else "[ERROR]"
         logger.info(f"  {stat['month']:2d}月: {status} 価格={stat['price']:.0f}, SMA5={stat['sma5']:.0f}, SMA25={stat['sma25']:.0f}")
     
     # 判定
     if result['semi_perfect_months'] > 0:
-        logger.info(f"\n✅ 準Perfect Order検出成功: {result['semi_perfect_months']}回")
+        logger.info(f"\n[OK] 準Perfect Order検出成功: {result['semi_perfect_months']}回")
         logger.info("これで売買シグナル生成が可能になります")
     else:
-        logger.error("❌ 依然として検出されていません。戦略の見直しが必要です")
+        logger.error("[ERROR] 依然として検出されていません。戦略の見直しが必要です")
 
 if __name__ == "__main__":
     main()

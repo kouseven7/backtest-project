@@ -43,9 +43,9 @@ def analyze_switch_history_structure():
         result = backtester.run_backtest(test_start, test_end)
         
         if result.get('success'):
-            print(f"✅ バックテスト成功")
-            print(f"📊 銘柄切り替え回数: {len(backtester.switch_history)}")
-            print(f"📈 ポートフォリオ履歴: {len(backtester.portfolio_history)}日分")
+            print(f"[OK] バックテスト成功")
+            print(f"[CHART] 銘柄切り替え回数: {len(backtester.switch_history)}")
+            print(f"[UP] ポートフォリオ履歴: {len(backtester.portfolio_history)}日分")
             
             # switch_historyの詳細分析
             analyze_individual_switches(backtester.switch_history)
@@ -55,11 +55,11 @@ def analyze_switch_history_structure():
             
             return backtester
         else:
-            print("❌ バックテスト失敗")
+            print("[ERROR] バックテスト失敗")
             return None
             
     except Exception as e:
-        print(f"❌ エラー: {e}")
+        print(f"[ERROR] エラー: {e}")
         import traceback
         traceback.print_exc()
         return None
@@ -174,7 +174,7 @@ def _prepare_excel_data_improved(self) -> pd.DataFrame:
     with open("improved_excel_converter.py", "w", encoding="utf-8") as f:
         f.write(converter_code)
     
-    print("\n✅ 改善されたExcel変換関数を 'improved_excel_converter.py' に保存しました")
+    print("\n[OK] 改善されたExcel変換関数を 'improved_excel_converter.py' に保存しました")
 
 if __name__ == "__main__":
     print("DSSMS Excel出力修正 - Phase 1 開始")

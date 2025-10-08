@@ -62,7 +62,7 @@ def fix_forced_liquidation_calculation_logic():
         
     except Exception as e:
         logger.error(f"強制決済計算修正エラー: {e}")
-        print(f"❌ 修正エラー: {e}")
+        print(f"[ERROR] 修正エラー: {e}")
         import traceback
         traceback.print_exc()
         return None
@@ -79,7 +79,7 @@ def calculate_corrected_forced_liquidation_metrics(integrated_data: pd.DataFrame
         total_entries = (integrated_data['Entry_Signal'] == 1).sum()
         total_exits = (integrated_data['Exit_Signal'] == -1).sum()
     else:
-        print("⚠️ Entry_Signal/Exit_Signal列が見つかりません")
+        print("[WARNING] Entry_Signal/Exit_Signal列が見つかりません")
         total_entries = 0
         total_exits = 0
     
@@ -271,13 +271,13 @@ def print_correction_results(original_metrics: Dict, corrected_metrics: Dict):
     TODO(tag:forced_liquidation_fix, rationale:comprehensive correction reporting)
     """
     print("\n" + "="*60)
-    print("📊 強制決済計算ロジック修正結果")
+    print("[CHART] 強制決済計算ロジック修正結果")
     print("="*60)
     
     # 修正前後比較
     if 'flawed_calculation' in original_metrics:
         flawed = original_metrics['flawed_calculation']
-        print(f"\n❌ 修正前（間違った計算）:")
+        print(f"\n[ERROR] 修正前（間違った計算）:")
         print(f"  最終日エグジット値（生値）: {flawed['final_day_exit_raw']}")
         print(f"  総エグジット数: {flawed['total_exits']}")
         print(f"  間違った強制決済率: {flawed['flawed_rate']}%")
@@ -287,7 +287,7 @@ def print_correction_results(original_metrics: Dict, corrected_metrics: Dict):
     corrected = corrected_metrics['forced_liquidation_analysis']
     basic = corrected_metrics['basic_stats']
     
-    print(f"\n✅ 修正後（正しい計算）:")
+    print(f"\n[OK] 修正後（正しい計算）:")
     print(f"  総エントリー数: {basic['total_entries']}")
     print(f"  総エグジット数: {basic['total_exits']}")
     print(f"  最終日強制決済数: {corrected['forced_liquidations_final_day']}")
@@ -298,25 +298,25 @@ def print_correction_results(original_metrics: Dict, corrected_metrics: Dict):
     # パターン分析結果
     if 'timing_analysis' in corrected_metrics['liquidation_patterns']:
         timing = corrected_metrics['liquidation_patterns']['timing_analysis']
-        print(f"\n📈 エグジットタイミング分析:")
+        print(f"\n[UP] エグジットタイミング分析:")
         print(f"  前期エグジット: {timing['early_period_exits']}回")
         print(f"  中期エグジット: {timing['middle_period_exits']}回")
         print(f"  後期エグジット: {timing['late_period_exits']}回")
         print(f"  後期集中度: {timing['late_exit_concentration']}%")
     
     # 修正効果の評価
-    print(f"\n🎯 修正効果評価:")
+    print(f"\n[TARGET] 修正効果評価:")
     if corrected['corrected_forced_liquidation_rate'] >= 0 and corrected['corrected_forced_liquidation_rate'] <= 100:
-        print("✅ 数学的に正常な範囲の強制決済率")
+        print("[OK] 数学的に正常な範囲の強制決済率")
     else:
-        print("⚠️ 強制決済率が異常範囲 - さらなる調査が必要")
+        print("[WARNING] 強制決済率が異常範囲 - さらなる調査が必要")
     
     if corrected['corrected_forced_liquidation_rate'] <= 20:
-        print("✅ 健全な強制決済率（20%以下）")
+        print("[OK] 健全な強制決済率（20%以下）")
     elif corrected['corrected_forced_liquidation_rate'] <= 50:
-        print("⚠️ やや高い強制決済率（20-50%）")
+        print("[WARNING] やや高い強制決済率（20-50%）")
     else:
-        print("❌ 高い強制決済率（50%超） - 戦略調整推奨")
+        print("[ERROR] 高い強制決済率（50%超） - 戦略調整推奨")
     
     print("\n" + "="*60)
 
@@ -326,6 +326,6 @@ if __name__ == "__main__":
     corrected_metrics = fix_forced_liquidation_calculation_logic()
     
     if corrected_metrics:
-        print("\n✅ 修正モジュール動作確認完了")
+        print("\n[OK] 修正モジュール動作確認完了")
     else:
-        print("\n❌ 修正モジュール動作エラー")
+        print("\n[ERROR] 修正モジュール動作エラー")

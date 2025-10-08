@@ -29,7 +29,7 @@ def analyze_calculation_logic_implementation():
         "recommendations": []
     }
     
-    print("🔍 Task 4.2: 計算ロジック実装状況の確認を開始")
+    print("[SEARCH] Task 4.2: 計算ロジック実装状況の確認を開始")
     print("=" * 60)
     
     engine_files = [
@@ -83,7 +83,7 @@ def analyze_calculation_logic_implementation():
                 "file_exists": False,
                 "error": "ファイルが存在しない"
             }
-            print(f"❌ {engine_file}: ファイルが見つかりません")
+            print(f"[ERROR] {engine_file}: ファイルが見つかりません")
             continue
             
         with open(engine_path, 'r', encoding='utf-8') as f:
@@ -154,7 +154,7 @@ def analyze_calculation_logic_implementation():
             engine_analysis["calculations"][calc_id] = calc_analysis
             
             # 結果表示
-            status = "✅" if calc_analysis["implemented"] else "❌"
+            status = "[OK]" if calc_analysis["implemented"] else "[ERROR]"
             quality = calc_analysis["implementation_quality"]
             count = len(calc_analysis["found_implementations"])
             print(f"   {status} {calc_info['name']}: {quality} ({count}箇所)")
@@ -192,7 +192,7 @@ def analyze_calculation_logic_implementation():
                     "formula_quality": "一致" if calc_data["formula_matches"] else "不一致"
                 }
                 
-                print(f"   📊 {target_calculations[calc_id]['name']}:")
+                print(f"   [CHART] {target_calculations[calc_id]['name']}:")
                 print(f"      期待式: {target_calculations[calc_id]['expected_formula']}")
                 if actual_formulas:
                     print(f"      実装式: {actual_formulas[0] if actual_formulas else 'なし'}")
@@ -245,7 +245,7 @@ def analyze_calculation_logic_implementation():
     results["implementation_quality"] = quality_summary
     
     # 4. 問題の特定
-    print("\n🎯 Step 4: 実装問題の特定")
+    print("\n[TARGET] Step 4: 実装問題の特定")
     
     problems = []
     
@@ -291,11 +291,11 @@ def analyze_calculation_logic_implementation():
     
     results["recommendations"] = recommendations
     
-    print("\n💡 推奨事項:")
+    print("\n[IDEA] 推奨事項:")
     for i, rec in enumerate(recommendations, 1):
         print(f"{i}. {rec}")
     
-    print("\n❌ 特定された問題:")
+    print("\n[ERROR] 特定された問題:")
     for problem in problems:
         print(f"   {problem}")
     
@@ -306,7 +306,7 @@ def analyze_calculation_logic_implementation():
         sorted_engines = sorted(quality_summary.items(), 
                                key=lambda x: x[1]["total_score"], reverse=True)
         
-        print("📊 総合スコアランキング:")
+        print("[CHART] 総合スコアランキング:")
         for i, (engine, data) in enumerate(sorted_engines, 1):
             rank_icon = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "📍"
             print(f"{rank_icon} {i}位: {engine.replace('dssms_unified_output_engine', 'engine').replace('.py', '')} - {data['total_score']}点")
@@ -318,7 +318,7 @@ def analyze_calculation_logic_implementation():
     
     print(f"\n💾 分析結果を保存: {output_file}")
     print("=" * 60)
-    print("🔍 Task 4.2: 計算ロジック実装状況の確認完了")
+    print("[SEARCH] Task 4.2: 計算ロジック実装状況の確認完了")
     
     return results
 
@@ -327,10 +327,10 @@ if __name__ == "__main__":
         results = analyze_calculation_logic_implementation()
         
         # 重要な発見事項を表示
-        print("\n🎯 重要な発見事項:")
+        print("\n[TARGET] 重要な発見事項:")
         for problem in results["problems_identified"]:
-            print(f"❌ {problem}")
+            print(f"[ERROR] {problem}")
             
     except Exception as e:
-        print(f"❌ Task 4.2実行エラー: {e}")
+        print(f"[ERROR] Task 4.2実行エラー: {e}")
         traceback.print_exc()

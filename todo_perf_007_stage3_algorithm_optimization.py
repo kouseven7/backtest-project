@@ -91,7 +91,7 @@ class OptimizedAlgorithmEngine:
             selected_indices = sorted_indices[:max_symbols]
             selected_symbols = [symbols[i] for i in selected_indices]
             
-            print(f"✅ 最終選択完了: {len(symbols_data)}銘柄 → {len(selected_symbols)}銘柄")
+            print(f"[OK] 最終選択完了: {len(symbols_data)}銘柄 → {len(selected_symbols)}銘柄")
             return selected_symbols
     
     def optimized_affordability_filter(self, symbols_data: Dict[str, Dict[str, Any]], 
@@ -132,7 +132,7 @@ class OptimizedAlgorithmEngine:
             affordable_mask = required_funds_array <= available_funds
             affordable_symbols = [symbols[i] for i in np.where(affordable_mask)[0]]
             
-            print(f"✅ 購入可能性フィルター: {len(symbols)}銘柄 → {len(affordable_symbols)}銘柄")
+            print(f"[OK] 購入可能性フィルター: {len(symbols)}銘柄 → {len(affordable_symbols)}銘柄")
             return affordable_symbols
     
     def optimized_volume_filter(self, symbols_data: Dict[str, Dict[str, Any]], 
@@ -167,7 +167,7 @@ class OptimizedAlgorithmEngine:
             volume_mask = volumes_array >= min_volume
             filtered_symbols = [symbols[i] for i in np.where(volume_mask)[0]]
             
-            print(f"✅ 出来高フィルター: {len(symbols)}銘柄 → {len(filtered_symbols)}銘柄")
+            print(f"[OK] 出来高フィルター: {len(symbols)}銘柄 → {len(filtered_symbols)}銘柄")
             return filtered_symbols
     
     def optimized_market_cap_filter(self, symbols_data: Dict[str, Dict[str, Any]], 
@@ -202,7 +202,7 @@ class OptimizedAlgorithmEngine:
             cap_mask = market_caps_array >= min_market_cap
             filtered_symbols = [symbols[i] for i in np.where(cap_mask)[0]]
             
-            print(f"✅ 時価総額フィルター: {len(symbols)}銘柄 → {len(filtered_symbols)}銘柄")
+            print(f"[OK] 時価総額フィルター: {len(symbols)}銘柄 → {len(filtered_symbols)}銘柄")
             return filtered_symbols
     
     def optimized_price_filter(self, symbols_data: Dict[str, Dict[str, Any]], 
@@ -237,7 +237,7 @@ class OptimizedAlgorithmEngine:
             price_mask = prices_array >= min_price
             filtered_symbols = [symbols[i] for i in np.where(price_mask)[0]]
             
-            print(f"✅ 価格フィルター: {len(symbols)}銘柄 → {len(filtered_symbols)}銘柄")
+            print(f"[OK] 価格フィルター: {len(symbols)}銘柄 → {len(filtered_symbols)}銘柄")
             return filtered_symbols
 
 class OptimizedScreenerPipeline:
@@ -282,7 +282,7 @@ class OptimizedScreenerPipeline:
         print("🔄 最適化スクリーニングパイプライン開始")
         
         current_symbols = list(symbols_data.keys())
-        print(f"📊 初期銘柄数: {len(current_symbols)}")
+        print(f"[CHART] 初期銘柄数: {len(current_symbols)}")
         
         # Stage 1: 価格フィルター（ベクトル化）
         with self.time_pipeline_stage("optimized_price_filter"):
@@ -290,7 +290,7 @@ class OptimizedScreenerPipeline:
             filtered_symbols = self.algorithm_engine.optimized_price_filter(current_symbols_data)
             current_symbols = filtered_symbols
         
-        print(f"📊 価格フィルター後: {len(current_symbols)}銘柄")
+        print(f"[CHART] 価格フィルター後: {len(current_symbols)}銘柄")
         
         # Stage 2: 時価総額フィルター（ベクトル化）
         with self.time_pipeline_stage("optimized_market_cap_filter"):
@@ -298,7 +298,7 @@ class OptimizedScreenerPipeline:
             filtered_symbols = self.algorithm_engine.optimized_market_cap_filter(current_symbols_data)
             current_symbols = filtered_symbols
         
-        print(f"📊 時価総額フィルター後: {len(current_symbols)}銘柄")
+        print(f"[CHART] 時価総額フィルター後: {len(current_symbols)}銘柄")
         
         # Stage 3: 購入可能性フィルター（ベクトル化）
         with self.time_pipeline_stage("optimized_affordability_filter"):
@@ -308,7 +308,7 @@ class OptimizedScreenerPipeline:
             )
             current_symbols = filtered_symbols
         
-        print(f"📊 購入可能性フィルター後: {len(current_symbols)}銘柄")
+        print(f"[CHART] 購入可能性フィルター後: {len(current_symbols)}銘柄")
         
         # Stage 4: 出来高フィルター（ベクトル化）
         with self.time_pipeline_stage("optimized_volume_filter"):
@@ -316,14 +316,14 @@ class OptimizedScreenerPipeline:
             filtered_symbols = self.algorithm_engine.optimized_volume_filter(current_symbols_data)
             current_symbols = filtered_symbols
         
-        print(f"📊 出来高フィルター後: {len(current_symbols)}銘柄")
+        print(f"[CHART] 出来高フィルター後: {len(current_symbols)}銘柄")
         
         # Stage 5: 最終選択（最適化済み・重複排除）
         with self.time_pipeline_stage("optimized_final_selection"):
             current_symbols_data = {s: symbols_data[s] for s in current_symbols if s in symbols_data}
             final_symbols = self.algorithm_engine.optimized_final_selection(current_symbols_data, 50)
         
-        print(f"📊 最終選択完了: {len(final_symbols)}銘柄")
+        print(f"[CHART] 最終選択完了: {len(final_symbols)}銘柄")
         
         # パフォーマンス統計更新
         self.pipeline_performance["total_time"] = sum(
@@ -381,7 +381,7 @@ class OptimizedScreenerPipeline:
 
 def test_stage3_implementation():
     """Stage 3 実装テスト"""
-    print("🧪 Stage 3 アルゴリズム最適化実装テスト開始")
+    print("[TEST] Stage 3 アルゴリズム最適化実装テスト開始")
     
     try:
         # テスト用模擬データ生成
@@ -400,7 +400,7 @@ def test_stage3_implementation():
                 "volume": np.random.randint(50_000, 10_000_000),  # 5万〜1000万株
             }
         
-        print(f"📊 テストデータ: {len(test_symbols_data)}銘柄")
+        print(f"[CHART] テストデータ: {len(test_symbols_data)}銘柄")
         
         # 最適化パイプライン初期化
         pipeline = OptimizedScreenerPipeline()
@@ -424,7 +424,7 @@ def test_stage3_implementation():
         
         # Stage 3レポート生成
         stage3_report = {
-            "stage_3_completion": "✅ Complete",
+            "stage_3_completion": "[OK] Complete",
             "implementation_summary": {
                 "algorithm_optimization": "numpy vectorization + cache reuse",
                 "final_selection_optimization": "eliminate duplicate API calls",
@@ -461,14 +461,14 @@ def test_stage3_implementation():
         return True, stage3_report
         
     except Exception as e:
-        print(f"❌ Stage 3 実装テストエラー: {e}")
+        print(f"[ERROR] Stage 3 実装テストエラー: {e}")
         import traceback
         traceback.print_exc()
         return False, {"error": str(e)}
 
 def main():
     """Stage 3 メイン実行"""
-    print("🚀 TODO-PERF-007 Stage 3: 選択アルゴリズム最適化・計算効率化実装開始")
+    print("[ROCKET] TODO-PERF-007 Stage 3: 選択アルゴリズム最適化・計算効率化実装開始")
     print("目標: 25分で完了・58.8秒削減期待")
     print("="*80)
     
@@ -477,29 +477,29 @@ def main():
         
         if success:
             print("\n" + "="*80)
-            print("🎯 TODO-PERF-007 Stage 3: 選択アルゴリズム最適化・計算効率化実装完了")
+            print("[TARGET] TODO-PERF-007 Stage 3: 選択アルゴリズム最適化・計算効率化実装完了")
             print("="*80)
             
-            print("\n📊 実装成果:")
-            print("  ✅ final_selection重複API呼び出し排除完了")
-            print("  ✅ numpy配列ベクトル化計算実装完了")
-            print("  ✅ affordability_filterベクトル化完了")
-            print("  ✅ 統計計算最適化・メモリ効率化完了")
-            print("  ✅ パイプライン早期終了条件実装完了")
+            print("\n[CHART] 実装成果:")
+            print("  [OK] final_selection重複API呼び出し排除完了")
+            print("  [OK] numpy配列ベクトル化計算実装完了")
+            print("  [OK] affordability_filterベクトル化完了")
+            print("  [OK] 統計計算最適化・メモリ効率化完了")
+            print("  [OK] パイプライン早期終了条件実装完了")
             
             if "test_results" in report:
                 execution_time = report["test_results"]["pipeline_execution_time"]
-                print(f"  📈 テスト実行時間: {execution_time:.3f}秒")
+                print(f"  [UP] テスト実行時間: {execution_time:.3f}秒")
             
-            print("\n🚀 期待効果:")
+            print("\n[ROCKET] 期待効果:")
             print("  - final_selection: 45.7秒 → 5-10秒 (80-90%削減)")
             print("  - affordability_filter: 33.1秒 → 10-12秒 (65-70%削減)")
             print("  - アルゴリズム総効果: 58.8秒削減（32%改善）")
             
-            print(f"\n✅ Stage 3 完了 - Stage 4 統合効果検証の準備完了")
+            print(f"\n[OK] Stage 3 完了 - Stage 4 統合効果検証の準備完了")
             return True
         else:
-            print(f"\n❌ Stage 3 失敗: {report.get('error', '不明なエラー')}")
+            print(f"\n[ERROR] Stage 3 失敗: {report.get('error', '不明なエラー')}")
             return False
             
     except Exception as e:

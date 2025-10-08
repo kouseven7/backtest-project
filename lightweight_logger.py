@@ -182,9 +182,9 @@ def benchmark_logger_performance():
     try:
         logger2.info("軽量版ログテスト")
         logger3.info("超軽量版ログテスト")
-        print("   ✅ 両方とも正常にログ出力")
+        print("   [OK] 両方とも正常にログ出力")
     except Exception as e:
-        print(f"   ❌ ログ出力エラー: {e}")
+        print(f"   [ERROR] ログ出力エラー: {e}")
     
     # 6. 統計情報
     stats = _lightweight_logger_manager.get_performance_stats()

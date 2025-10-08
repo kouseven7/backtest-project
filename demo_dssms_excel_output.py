@@ -45,28 +45,28 @@ sys.path.insert(0, str(project_root))
             ], capture_output=True, text=True, timeout=300)
             
             if result.returncode == 0:
-                print("✅ デモ実行成功")
+                print("[OK] デモ実行成功")
                 print("\n=== 実行ログ ===")
                 print(result.stdout)
                 if result.stderr:
                     print("\n=== 警告/エラー ===")
                     print(result.stderr)
             else:
-                print(f"❌ デモ実行失敗 (終了コード: {result.returncode})")
+                print(f"[ERROR] デモ実行失敗 (終了コード: {result.returncode})")
                 print("\n=== エラー出力 ===")
                 print(result.stderr)
                 
         else:
-            print("❌ 利用可能なDSSMSデモスクリプトが見つかりません")
+            print("[ERROR] 利用可能なDSSMSデモスクリプトが見つかりません")
             print("以下のファイルを確認してください:")
             for script in demo_scripts:
                 print(f"  - {script}")
     
     except subprocess.TimeoutExpired:
-        print("❌ デモ実行がタイムアウトしました（5分）")
+        print("[ERROR] デモ実行がタイムアウトしました（5分）")
         
     except Exception as e:
-        print(f"❌ デモ実行エラー: {e}")
+        print(f"[ERROR] デモ実行エラー: {e}")
 
 if __name__ == "__main__":
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected

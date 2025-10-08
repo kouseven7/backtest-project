@@ -710,7 +710,7 @@ class DrawdownController:
                 return
             
             message = (
-                f"🚨 Drawdown Control Alert\n"
+                f"[ALERT] Drawdown Control Alert\n"
                 f"Severity: {result.event.severity.value.upper()}\n"
                 f"Drawdown: {result.event.drawdown_percentage:.2%}\n"
                 f"Action: {result.action_taken.value}\n"
@@ -816,7 +816,7 @@ if __name__ == "__main__":
         # コントローラー作成
         controller = DrawdownController()
         
-        print(f"✅ Drawdown Controller initialized")
+        print(f"[OK] Drawdown Controller initialized")
         print(f"Control Mode: {controller.control_mode.value}")
         print(f"Thresholds: Warning={controller.thresholds.warning_threshold:.1%}, "
               f"Critical={controller.thresholds.critical_threshold:.1%}, "
@@ -825,7 +825,7 @@ if __name__ == "__main__":
         # 監視開始
         initial_value = 1000000.0
         controller.start_monitoring(initial_value)
-        print(f"📊 Monitoring started with initial value: ${initial_value:,.0f}")
+        print(f"[CHART] Monitoring started with initial value: ${initial_value:,.0f}")
         
         # シミュレーションテスト
         test_values = [
@@ -851,16 +851,16 @@ if __name__ == "__main__":
         # 制御履歴表示
         history = controller.get_control_history()
         if history:
-            print(f"\n📋 Control History ({len(history)} actions):")
+            print(f"\n[LIST] Control History ({len(history)} actions):")
             for i, action in enumerate(history[-3:], 1):  # 最新3件
                 print(f"  {i}. {action['timestamp'][:19]} - "
                       f"{action['action_taken']} (DD: {action['drawdown_percentage']:.2%})")
         
         # 監視停止
         controller.stop_monitoring()
-        print(f"\n✅ Drawdown Controller test completed successfully")
+        print(f"\n[OK] Drawdown Controller test completed successfully")
         
     except Exception as e:
-        print(f"❌ Test failed: {e}")
+        print(f"[ERROR] Test failed: {e}")
         import traceback
         traceback.print_exc()

@@ -446,7 +446,7 @@ def run_comprehensive_test():
                 passed_tests += 1
                 
             except Exception as e:
-                print(f"  ❌ {method_name}: {e}")
+                print(f"  [ERROR] {method_name}: {e}")
                 failed_tests.append(f"{test_class.__name__}.{method_name}: {e}")
     
     # 結果サマリー

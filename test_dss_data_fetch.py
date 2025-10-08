@@ -34,11 +34,11 @@ def test_data_fetch():
             print(f"{symbol}: {len(data)}日分, 最新価格: {data['Close'].iloc[-1]:.2f}")
             print(f"  期間: {data.index[0].strftime('%Y-%m-%d')} ~ {data.index[-1].strftime('%Y-%m-%d')}")
         
-        print(f"\n✅ データ取得テスト成功: {len(market_data)}/{len(test_symbols)}銘柄")
+        print(f"\n[OK] データ取得テスト成功: {len(market_data)}/{len(test_symbols)}銘柄")
         return True
         
     except Exception as e:
-        print(f"❌ データ取得テストエラー: {e}")
+        print(f"[ERROR] データ取得テストエラー: {e}")
         import traceback
         traceback.print_exc()
         return False

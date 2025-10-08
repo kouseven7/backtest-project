@@ -61,11 +61,11 @@ def main():
         if fast_time < original_time:
             improvement = original_time - fast_time
             speed_ratio = original_time / fast_time
-            print(f"✅ 改善: {improvement:.1f}ms ({speed_ratio:.1f}x高速化)")
+            print(f"[OK] 改善: {improvement:.1f}ms ({speed_ratio:.1f}x高速化)")
         else:
-            print(f"❌ 高速版が遅い: {fast_time - original_time:.1f}ms差")
+            print(f"[ERROR] 高速版が遅い: {fast_time - original_time:.1f}ms差")
     else:
-        print("❌ 測定失敗")
+        print("[ERROR] 測定失敗")
         if fast_time:
             print(f"高速版のみ: {fast_time:.1f}ms")
         if original_time:

@@ -26,15 +26,15 @@ def test_parallel_optimization():
         result = optimize_vwap_breakout_strategy(test_data, test_index, use_parallel=True)
         
         if result is not None and not result.empty:
-            print(f"✅ 並列最適化テスト成功: {len(result)}件の結果")
+            print(f"[OK] 並列最適化テスト成功: {len(result)}件の結果")
             print(f"最良スコア: {result.iloc[0]['score']}")
             return True
         else:
-            print("❌ 最適化結果が空です")
+            print("[ERROR] 最適化結果が空です")
             return False
             
     except Exception as e:
-        print(f"❌ 並列最適化テストでエラー: {e}")
+        print(f"[ERROR] 並列最適化テストでエラー: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -42,6 +42,6 @@ def test_parallel_optimization():
 if __name__ == "__main__":
     success = test_parallel_optimization()
     if success:
-        print("\n🎉 すべてのテストが成功しました！")
+        print("\n[SUCCESS] すべてのテストが成功しました！")
     else:
         print("\n💥 テストが失敗しました")

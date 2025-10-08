@@ -215,7 +215,7 @@ def validate_and_review_results(strategy_name: str, results, args) -> None:
             
             if overall_risk == 'low':
                 # 自動承認
-                logger.info("✅ 低リスクのため自動承認されました")
+                logger.info("[OK] 低リスクのため自動承認されました")
                 
                 # 自動承認の記録（param_idは自動生成）
                 import uuid
@@ -225,7 +225,7 @@ def validate_and_review_results(strategy_name: str, results, args) -> None:
                     overfitting_result, validation_result
                 )
             else:
-                logger.info(f"⚠️ リスクレベル: {overall_risk} - 手動レビューが必要です")
+                logger.info(f"[WARNING] リスクレベル: {overall_risk} - 手動レビューが必要です")
                 logger.info("parameter_reviewer.pyを使用して手動レビューを実行してください")
         
     except Exception as e:

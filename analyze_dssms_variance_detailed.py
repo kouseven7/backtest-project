@@ -20,7 +20,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src'))
 def analyze_dssms_variance():
     """DSSMS結果差異の詳細分析"""
     
-    print("🔍 DSSMS結果差異詳細分析開始")
+    print("[SEARCH] DSSMS結果差異詳細分析開始")
     print("=" * 60)
     
     # 複数回実行して差異を分析
@@ -35,11 +35,11 @@ def analyze_dssms_variance():
         end_date = datetime(2023, 12, 31)
         
         print(f"📅 分析期間: {start_date.strftime('%Y-%m-%d')} - {end_date.strftime('%Y-%m-%d')}")
-        print(f"📊 対象銘柄: {symbols}")
+        print(f"[CHART] 対象銘柄: {symbols}")
         
         # 5回連続実行
         for i in range(5):
-            print(f"\n🚀 実行 {i+1}/5...")
+            print(f"\n[ROCKET] 実行 {i+1}/5...")
             
             backtester = DSSMSBacktester(config={
                 'deterministic_mode': True,
@@ -73,7 +73,7 @@ def analyze_dssms_variance():
             print(f"   スイッチ回数: {result.get('total_switches', 0)}回")
         
         # 差異分析
-        print(f"\n📊 結果差異分析:")
+        print(f"\n[CHART] 結果差異分析:")
         print("=" * 40)
         
         df = pd.DataFrame(results)
@@ -91,7 +91,7 @@ def analyze_dssms_variance():
                 print(f"  変動係数: {(values.std() / values.mean() * 100) if values.mean() != 0 else 0:.3f}%")
         
         # 詳細結果表示
-        print(f"\n📋 実行別詳細結果:")
+        print(f"\n[LIST] 実行別詳細結果:")
         print("-" * 80)
         for i, result in enumerate(results):
             print(f"実行{i+1}: 最終価値={result['final_value']:,.0f}円, " +
@@ -101,7 +101,7 @@ def analyze_dssms_variance():
                   f"vs_6758={result['vs_6758']:.2f}%")
         
         # 潜在的原因分析
-        print(f"\n🔍 潜在的原因分析:")
+        print(f"\n[SEARCH] 潜在的原因分析:")
         print("=" * 40)
         
         # 1. データ取得タイミング
@@ -128,19 +128,19 @@ def analyze_dssms_variance():
         max_return_diff = df['total_return'].max() - df['total_return'].min()
         max_final_value_diff = df['final_value'].max() - df['final_value'].min()
         
-        print(f"\n⚠️ 差異深刻度評価:")
+        print(f"\n[WARNING] 差異深刻度評価:")
         print(f"   総リターン差異: {max_return_diff:.6f} ({max_return_diff*100:.4f}%)")
         print(f"   最終価値差異: {max_final_value_diff:,.0f}円")
         
         if max_return_diff > 0.001:  # 0.1%以上
-            print("   🚨 重大: 実取引に影響する可能性があります")
+            print("   [ALERT] 重大: 実取引に影響する可能性があります")
         elif max_return_diff > 0.0001:  # 0.01%以上
-            print("   ⚠️ 中程度: 長期的に影響する可能性があります")
+            print("   [WARNING] 中程度: 長期的に影響する可能性があります")
         else:
-            print("   ✅ 軽微: 許容範囲内の差異です")
+            print("   [OK] 軽微: 許容範囲内の差異です")
         
         # 推奨対策
-        print(f"\n💡 推奨対策:")
+        print(f"\n[IDEA] 推奨対策:")
         print("1. データキャッシュシステム導入")
         print("2. 固定タイムスタンプでのデータ取得")
         print("3. 高精度数値計算ライブラリ使用")
@@ -156,8 +156,8 @@ def analyze_dssms_variance():
         }
         
     except Exception as e:
-        print(f"❌ エラー発生: {str(e)}")
-        print(f"📋 詳細:")
+        print(f"[ERROR] エラー発生: {str(e)}")
+        print(f"[LIST] 詳細:")
         traceback.print_exc()
         return {
             'success': False,
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     analysis_results = analyze_dssms_variance()
     
     if analysis_results['success']:
-        print(f"\n🎉 DSSMS差異分析完了: 成功")
+        print(f"\n[SUCCESS] DSSMS差異分析完了: 成功")
     else:
         print(f"\n💥 DSSMS差異分析完了: 失敗")
         sys.exit(1)

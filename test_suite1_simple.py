@@ -56,9 +56,9 @@ def main():
         result = test_simple_initialization()
         
         if result:
-            logger.info("✅ Test Suite 1 簡単版成功")
+            logger.info("[OK] Test Suite 1 簡単版成功")
         else:
-            logger.error("❌ Test Suite 1 簡単版失敗")
+            logger.error("[ERROR] Test Suite 1 簡単版失敗")
         
         return result
         

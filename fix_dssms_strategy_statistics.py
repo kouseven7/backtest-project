@@ -21,7 +21,7 @@ def fix_dssms_backtester_strategy_issues():
     dssms_file = Path("src/dssms/dssms_backtester.py")
     
     if not dssms_file.exists():
-        print(f"❌ ファイルが見つかりません: {dssms_file}")
+        print(f"[ERROR] ファイルが見つかりません: {dssms_file}")
         return False
     
     # ファイルを読み込み
@@ -124,24 +124,24 @@ def fix_dssms_backtester_strategy_issues():
     if old_strategy_stats_code in content:
         content = content.replace(old_strategy_stats_code, new_strategy_stats_code)
         modifications_made.append("戦略統計生成ロジック（7戦略対応）")
-        print("✅ 戦略統計生成ロジックを7戦略対応に修正")
+        print("[OK] 戦略統計生成ロジックを7戦略対応に修正")
     else:
-        print("⚠️  戦略統計生成ロジックの対象コードが見つかりません")
+        print("[WARNING]  戦略統計生成ロジックの対象コードが見つかりません")
     
     if old_holding_period_code in content:
         content = content.replace(old_holding_period_code, new_holding_period_code)
         modifications_made.append("売却取引の保有期間多様化")
-        print("✅ 売却取引の保有期間を多様化")
+        print("[OK] 売却取引の保有期間を多様化")
     
     if old_default_holding_code in content:
         content = content.replace(old_default_holding_code, new_default_holding_code)
         modifications_made.append("購入取引の保有期間多様化")
-        print("✅ 購入取引の保有期間を多様化")
+        print("[OK] 購入取引の保有期間を多様化")
     
     if old_fallback_holding_code in content:
         content = content.replace(old_fallback_holding_code, new_fallback_holding_code)
         modifications_made.append("フォールバック取引の保有期間多様化")
-        print("✅ フォールバック取引の保有期間を多様化")
+        print("[OK] フォールバック取引の保有期間を多様化")
     
     if modifications_made:
         # バックアップを作成
@@ -156,10 +156,10 @@ def fix_dssms_backtester_strategy_issues():
             f.write(content)
         
         print(f"💾 修正済みファイルを保存: {dssms_file}")
-        print(f"🔧 実施した修正: {', '.join(modifications_made)}")
+        print(f"[TOOL] 実施した修正: {', '.join(modifications_made)}")
         return True
     else:
-        print("❌ 修正対象のコードが見つかりませんでした")
+        print("[ERROR] 修正対象のコードが見つかりませんでした")
         return False
 
 def main():
@@ -174,15 +174,15 @@ def main():
     success = fix_dssms_backtester_strategy_issues()
     
     if success:
-        print("\n✅ 修正完了！")
-        print("📋 次のステップ:")
+        print("\n[OK] 修正完了！")
+        print("[LIST] 次のステップ:")
         print("   1. python \"src\\dssms\\dssms_backtester.py\" で再実行")
         print("   2. 生成されたExcelファイルで戦略統計シートを確認")
         print("   3. 取引履歴シートで保有期間の多様化を確認")
         print("   4. JSONファイルでstrategy_statisticsの7戦略確認")
     else:
-        print("\n❌ 修正に失敗しました")
-        print("💡 手動での修正が必要な可能性があります")
+        print("\n[ERROR] 修正に失敗しました")
+        print("[IDEA] 手動での修正が必要な可能性があります")
     
     return success
 

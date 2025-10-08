@@ -426,7 +426,7 @@ def demo_data_integration_enhancer():
         test_date = datetime.now()
         
         # 強化ランキングテスト
-        print(f"\n📊 強化ランキングテスト: {test_symbols}")
+        print(f"\n[CHART] 強化ランキングテスト: {test_symbols}")
         ranking_result = enhancer.enhance_ranking_with_real_data(test_symbols, test_date)
         
         print(f"   品質スコア: {ranking_result['quality_score']:.3f}")
@@ -436,7 +436,7 @@ def demo_data_integration_enhancer():
             print(f"   {symbol}: {score:+.4f}")
         
         # 強化ポートフォリオ評価テスト
-        print(f"\n💰 強化ポートフォリオ評価テスト")
+        print(f"\n[MONEY] 強化ポートフォリオ評価テスト")
         initial_value = 1000000
         
         for symbol in test_symbols[:2]:
@@ -448,7 +448,7 @@ def demo_data_integration_enhancer():
             print(f"     品質: {valuation_result['quality_score']:.3f}")
         
         # 統計情報表示
-        print(f"\n📈 強化統計情報")
+        print(f"\n[UP] 強化統計情報")
         stats = enhancer.get_enhancement_statistics()
         
         for key, value in stats.items():
@@ -460,12 +460,12 @@ def demo_data_integration_enhancer():
         return True
         
     except Exception as e:
-        print(f"❌ デモエラー: {e}")
+        print(f"[ERROR] デモエラー: {e}")
         return False
 
 if __name__ == "__main__":
     success = demo_data_integration_enhancer()
     if success:
-        print("\n✅ データ統合強化システムデモ完了")
+        print("\n[OK] データ統合強化システムデモ完了")
     else:
-        print("\n❌ データ統合強化システムデモ失敗")
+        print("\n[ERROR] データ統合強化システムデモ失敗")

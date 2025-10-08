@@ -37,7 +37,7 @@ def test_multi_strategy_manager():
         # 初期化テスト
         init_success = manager.initialize_systems()
         assert init_success, "System initialization failed"
-        print("✅ System initialization: PASSED")
+        print("[OK] System initialization: PASSED")
         
         # 実行フローテスト
         test_strategies = ["VWAP_Bounce", "GC_Strategy", "Breakout"]
@@ -48,18 +48,18 @@ def test_multi_strategy_manager():
         assert result is not None, "Execution result is None"
         assert hasattr(result, 'execution_mode'), "Result missing execution_mode"
         assert hasattr(result, 'status'), "Result missing status"
-        print("✅ Multi-strategy execution: PASSED")
+        print("[OK] Multi-strategy execution: PASSED")
         
         # サマリーテスト
         summary = manager.get_execution_summary()
         assert isinstance(summary, dict), "Summary should be dict"
         assert 'current_status' in summary, "Summary missing current_status"
-        print("✅ Summary generation: PASSED")
+        print("[OK] Summary generation: PASSED")
         
         return True
         
     except Exception as e:
-        print(f"❌ MultiStrategyManager test failed: {e}")
+        print(f"[ERROR] MultiStrategyManager test failed: {e}")
         return False
 
 def test_strategy_execution_adapter():
@@ -69,13 +69,13 @@ def test_strategy_execution_adapter():
     try:
         # アダプター初期化
         adapter = StrategyExecutionAdapter()
-        print("✅ Adapter initialization: PASSED")
+        print("[OK] Adapter initialization: PASSED")
         
         # パラメータ取得テスト
         params = adapter.get_strategy_parameters("VWAPBounceStrategy")
         assert isinstance(params, dict), "Parameters should be dict"
         assert len(params) > 0, "Parameters should not be empty"
-        print("✅ Parameter retrieval: PASSED")
+        print("[OK] Parameter retrieval: PASSED")
         
         # 単一戦略実行テスト
         test_market_data = {"price": [100, 101, 99, 102], "volume": [1000, 1100, 900, 1200]}
@@ -84,17 +84,17 @@ def test_strategy_execution_adapter():
         assert result is not None, "Execution result is None"
         assert hasattr(result, 'success'), "Result missing success field"
         assert hasattr(result, 'strategy_name'), "Result missing strategy_name"
-        print("✅ Single strategy execution: PASSED")
+        print("[OK] Single strategy execution: PASSED")
         
         # サマリーテスト
         summary = adapter.get_execution_summary()
         assert isinstance(summary, dict), "Summary should be dict"
-        print("✅ Execution summary: PASSED")
+        print("[OK] Execution summary: PASSED")
         
         return True
         
     except Exception as e:
-        print(f"❌ StrategyExecutionAdapter test failed: {e}")
+        print(f"[ERROR] StrategyExecutionAdapter test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -114,7 +114,7 @@ def test_integration_flow():
         init_success = manager.initialize_systems()
         
         if not init_success:
-            print("⚠️  System initialization failed, but continuing with fallback")
+            print("[WARNING]  System initialization failed, but continuing with fallback")
         
         # テストデータ準備
         test_strategies = ["VWAP_Bounce", "GC_Strategy", "Breakout", "Opening_Gap"]
@@ -135,9 +135,9 @@ def test_integration_flow():
             assert result is not None, f"Result is None for mode {mode.value}"
             assert result.execution_mode == mode, f"Execution mode mismatch"
             
-            print(f"    ✅ {mode.value}: Strategy count = {len(result.selected_strategies)}")
-            print(f"    ✅ {mode.value}: Execution time = {result.execution_time:.3f}s")
-            print(f"    ✅ {mode.value}: Status = {result.status.value}")
+            print(f"    [OK] {mode.value}: Strategy count = {len(result.selected_strategies)}")
+            print(f"    [OK] {mode.value}: Execution time = {result.execution_time:.3f}s")
+            print(f"    [OK] {mode.value}: Status = {result.status.value}")
         
         # 統合サマリーテスト
         final_summary = manager.get_execution_summary()
@@ -148,7 +148,7 @@ def test_integration_flow():
         return True
         
     except Exception as e:
-        print(f"❌ Integration flow test failed: {e}")
+        print(f"[ERROR] Integration flow test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -169,7 +169,7 @@ def test_error_handling_and_fallback():
         
         # エラー時でも結果が返されることを確認
         assert result is not None, "Result should not be None even on error"
-        print("✅ Graceful error handling: PASSED")
+        print("[OK] Graceful error handling: PASSED")
         
         # フォールバック動作確認
         if hasattr(result, 'status'):
@@ -180,7 +180,7 @@ def test_error_handling_and_fallback():
         return True
         
     except Exception as e:
-        print(f"❌ Error handling test failed: {e}")
+        print(f"[ERROR] Error handling test failed: {e}")
         return False
 
 def performance_benchmark():
@@ -215,21 +215,21 @@ def performance_benchmark():
         
         # パフォーマンス基準（1秒以内）
         assert avg_time < 1.0, f"Average execution time too slow: {avg_time:.3f}s"
-        print("✅ Performance benchmark: PASSED")
+        print("[OK] Performance benchmark: PASSED")
         
         return True
         
     except Exception as e:
-        print(f"❌ Performance benchmark failed: {e}")
+        print(f"[ERROR] Performance benchmark failed: {e}")
         return False
 
 def main():
     """メインテスト実行"""
-    print("🚀 4-1-1「main.py への戦略セレクター統合」包括テスト開始")
+    print("[ROCKET] 4-1-1「main.py への戦略セレクター統合」包括テスト開始")
     print("=" * 60)
     
     if not INTEGRATION_AVAILABLE:
-        print("❌ Integration components not available. Exiting.")
+        print("[ERROR] Integration components not available. Exiting.")
         return False
     
     test_results = []
@@ -247,7 +247,7 @@ def main():
     
     # 結果サマリー
     print("\n" + "=" * 60)
-    print("📊 テスト結果サマリー")
+    print("[CHART] テスト結果サマリー")
     
     passed_tests = sum(test_results)
     total_tests = len(test_results)
@@ -255,10 +255,10 @@ def main():
     print(f"成功: {passed_tests}/{total_tests} ({passed_tests/total_tests*100:.1f}%)")
     
     if passed_tests == total_tests:
-        print("🎉 全てのテストが成功しました！")
-        print("✅ 4-1-1「main.py への戦略セレクター統合」実装準備完了")
+        print("[SUCCESS] 全てのテストが成功しました！")
+        print("[OK] 4-1-1「main.py への戦略セレクター統合」実装準備完了")
     else:
-        print("⚠️  一部テストが失敗しました。実装を確認してください。")
+        print("[WARNING]  一部テストが失敗しました。実装を確認してください。")
     
     return passed_tests == total_tests
 

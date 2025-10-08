@@ -49,7 +49,7 @@ def test_multi_strategy_manager():
             'BreakoutStrategy'
         ]
         
-        # ✅ バックテスト基本理念遵守テスト: 実際のbacktest()実行
+        # [OK] バックテスト基本理念遵守テスト: 実際のbacktest()実行
         result = manager.execute_multi_strategy_flow(market_data, available_strategies)
         
         # 結果검증
@@ -73,14 +73,14 @@ def test_multi_strategy_manager():
                 logger.warning("Zero trades detected - potential backtest principle violation")
         
         if success:
-            logger.info("✅ Phase 4-A-3: MultiStrategyManager統合テスト成功")
+            logger.info("[OK] Phase 4-A-3: MultiStrategyManager統合テスト成功")
         else:
-            logger.warning("⚠️ Phase 4-A-3: 一部問題があるが基本動作確認")
+            logger.warning("[WARNING] Phase 4-A-3: 一部問題があるが基本動作確認")
         
         return success
         
     except Exception as e:
-        logger.error(f"❌ Phase 4-A-3: MultiStrategyManager統合テスト失敗: {e}")
+        logger.error(f"[ERROR] Phase 4-A-3: MultiStrategyManager統合テスト失敗: {e}")
         return False
 
 if __name__ == "__main__":

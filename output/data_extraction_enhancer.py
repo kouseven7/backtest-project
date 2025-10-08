@@ -430,7 +430,7 @@ def export_enhanced_results(analysis_results: Dict[str, Any], output_format: str
             'backtest_compliance': True
         }
         
-        logger.info(f"✅ 拡張解析結果の新形式出力完了: {len(exported_files)}ファイル")
+        logger.info(f"[OK] 拡張解析結果の新形式出力完了: {len(exported_files)}ファイル")
         
         return {
             'exported_files': exported_files,
@@ -438,7 +438,7 @@ def export_enhanced_results(analysis_results: Dict[str, Any], output_format: str
         }
         
     except Exception as e:
-        logger.error(f"❌ 拡張解析結果の新形式出力エラー: {e}")
+        logger.error(f"[ERROR] 拡張解析結果の新形式出力エラー: {e}")
         # TODO(tag:excel_deprecated, rationale:error handling for enhanced data export)
         raise
 
@@ -463,7 +463,7 @@ def migrate_enhanced_analysis_from_excel(ticker: str, stock_data: pd.DataFrame) 
     # 新形式出力
     export_results = export_enhanced_results(analysis_results)
     
-    logger.info(f"✅ 拡張解析の新形式移行完了: {ticker}")
+    logger.info(f"[OK] 拡張解析の新形式移行完了: {ticker}")
     
     return {
         'analysis': analysis_results,

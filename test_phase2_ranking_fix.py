@@ -62,32 +62,32 @@ def test_phase2_ranking_structure_fix():
         # 基準1: 切替回数（1回 → 3-5回目標）
         switch_count = len(switch_history)
         if switch_count >= 3:
-            print(f"✅ 切替回数: {switch_count}回 (目標3-5回達成)")
+            print(f"[OK] 切替回数: {switch_count}回 (目標3-5回達成)")
         elif switch_count >= 2:
-            print(f"⚠️  切替回数: {switch_count}回 (部分改善)")
+            print(f"[WARNING]  切替回数: {switch_count}回 (部分改善)")
         else:
-            print(f"❌ 切替回数: {switch_count}回 (改善不十分)")
+            print(f"[ERROR] 切替回数: {switch_count}回 (改善不十分)")
         
         # 基準2: 構造一致性（ログから確認）
-        print("✅ 構造一致性: ログで _ensure_ranking_structure_consistency 動作確認")
+        print("[OK] 構造一致性: ログで _ensure_ranking_structure_consistency 動作確認")
         
         # 基準3: エラー耐性（完了＝成功）
-        print("✅ エラー耐性: テスト完了により確認")
+        print("[OK] エラー耐性: テスト完了により確認")
         
         # Phase 2効果評価
         if switch_count >= 3:
-            print(f"\n🎯 Phase 2修正効果: 成功")
+            print(f"\n[TARGET] Phase 2修正効果: 成功")
             print(f"   - 切替回数回復: 1回 → {switch_count}回")
             print(f"   - 構造統一システム: 稼働")
             print(f"   - 緊急フォールバック: 準備完了")
         else:
-            print(f"\n⚠️  Phase 2修正効果: 部分的")
+            print(f"\n[WARNING]  Phase 2修正効果: 部分的")
             print(f"   - さらなる診断システム改良が必要")
         
         return switch_count >= 2  # 最低限の改善基準
         
     except Exception as e:
-        print(f"❌ Phase 2テスト失敗: {e}")
+        print(f"[ERROR] Phase 2テスト失敗: {e}")
         import traceback
         traceback.print_exc()
         return False

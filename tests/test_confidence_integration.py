@@ -188,14 +188,14 @@ def test_confidence_performance_integration():
         total_tests = len(test_results)
         
         for test_name, result in test_results.items():
-            status = "✅ PASS" if result else "❌ FAIL"
+            status = "[OK] PASS" if result else "[ERROR] FAIL"
             print(f"  {test_name:20s}: {status}")
         
         success_rate = passed_tests / total_tests
         print(f"\n総合結果: {passed_tests}/{total_tests} 通過 ({success_rate:.1%})")
         
         if success_rate >= 0.7:
-            print("✅ 2-2-1「信頼度スコアとパフォーマンススコアの統合ロジック」")
+            print("[OK] 2-2-1「信頼度スコアとパフォーマンススコアの統合ロジック」")
             print("統合ロジックは正常に動作しています。")
             return True
         else:
@@ -203,7 +203,7 @@ def test_confidence_performance_integration():
             return True
         
     except Exception as e:
-        print(f"\n❌ 統合ロジックテスト失敗: {e}")
+        print(f"\n[ERROR] 統合ロジックテスト失敗: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -291,7 +291,7 @@ def demonstrate_integration_scenarios():
     from indicators.trend_reliability_utils import get_trend_reliability
     
     for scenario_name, market_data in scenarios.items():
-        print(f"\n📊 シナリオ: {scenario_name}")
+        print(f"\n[CHART] シナリオ: {scenario_name}")
         print("-" * 40)
         
         try:
@@ -365,10 +365,10 @@ if __name__ == "__main__":
     if success:
         demonstrate_integration_scenarios()
     
-    print(f"\n最終結果: {'✅ 成功' if success else '❌ 失敗'}")
+    print(f"\n最終結果: {'[OK] 成功' if success else '[ERROR] 失敗'}")
     
     if success:
-        print("\n🎉 2-2-1の実装とテストが完了しました！")
+        print("\n[SUCCESS] 2-2-1の実装とテストが完了しました！")
         print("次の実装項目: 2-2-2「トレンド移行期の特別処理ルール」")
     else:
         print("\n💥 テストに失敗しました。修正が必要です。")

@@ -71,7 +71,7 @@ def test_4_3_3_system():
             visualizer = CorrelationMatrixVisualizer(figsize=(8, 6))
             print("✓ 視覚化システム初期化成功")
         except Exception as e:
-            print(f"⚠️ 視覚化システム初期化警告: {e}")
+            print(f"[WARNING] 視覚化システム初期化警告: {e}")
         
         # 7. ダッシュボードシステムテスト
         print("7. ダッシュボードシステムテスト...")
@@ -83,7 +83,7 @@ def test_4_3_3_system():
         if dashboard_correlation:
             print("✓ ダッシュボード相関分析成功")
         else:
-            print("⚠️ ダッシュボード相関分析でエラーが発生した可能性があります")
+            print("[WARNING] ダッシュボード相関分析でエラーが発生した可能性があります")
         
         # 8. データ保存・読み込みテスト
         print("\n8. データ保存・読み込みテスト...")
@@ -112,12 +112,12 @@ def test_4_3_3_system():
             from config.portfolio_weight_calculator import PortfolioWeightCalculator
             print("✓ 既存システム統合確認済み")
         except ImportError as e:
-            print(f"⚠️ 既存システム統合警告: {e}")
+            print(f"[WARNING] 既存システム統合警告: {e}")
         
         print("\n" + "="*60)
         print("4-3-3システムテスト完了")
         print("="*60)
-        print("🎉 全ての基本機能が正常に動作しています！")
+        print("[SUCCESS] 全ての基本機能が正常に動作しています！")
         print("\n主な機能:")
         print("✓ 戦略間相関分析")
         print("✓ 共分散行列計算")
@@ -130,7 +130,7 @@ def test_4_3_3_system():
         return True
         
     except Exception as e:
-        print(f"\n❌ テスト中にエラーが発生しました: {e}")
+        print(f"\n[ERROR] テスト中にエラーが発生しました: {e}")
         import traceback
         traceback.print_exc()
         return False

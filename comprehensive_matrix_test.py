@@ -248,13 +248,13 @@ def run_comprehensive_test():
                 print(f"   {trend_type:12}: {recommendation.get('error', 'N/A')}")
         
         print("\n" + "=" * 80)
-        print("✅ 包括的テスト完了！全機能が正常に動作しました。")
+        print("[OK] 包括的テスト完了！全機能が正常に動作しました。")
         print("=" * 80)
         
         return True
         
     except Exception as e:
-        print(f"\n❌ テスト中にエラーが発生: {e}")
+        print(f"\n[ERROR] テスト中にエラーが発生: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -263,7 +263,7 @@ if __name__ == "__main__":
     success = run_comprehensive_test()
     
     if success:
-        print("\n🎉 TrendStrategyMatrix は完全に実装されており、正常に動作しています！")
-        print("📊 生成されたレポートファイルをreports/およびlogs/フォルダで確認してください。")
+        print("\n[SUCCESS] TrendStrategyMatrix は完全に実装されており、正常に動作しています！")
+        print("[CHART] 生成されたレポートファイルをreports/およびlogs/フォルダで確認してください。")
     else:
         print("\n💥 テストが失敗しました。エラーの詳細を確認してください。")

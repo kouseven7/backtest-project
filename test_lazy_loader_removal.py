@@ -36,7 +36,7 @@ def test_lazy_loader_removal():
             print(f"   SymbolSwitchManager: {direct_import_time:.1f}ms")
             used_version = "Original"
         except ImportError as e:
-            print(f"   ❌ SymbolSwitchManagerインポートエラー: {e}")
+            print(f"   [ERROR] SymbolSwitchManagerインポートエラー: {e}")
             direct_import_time = 0
             used_version = "None"
     
@@ -51,21 +51,21 @@ def test_lazy_loader_removal():
         # 目標との比較
         target_time = 1.2
         if modified_import_time <= target_time:
-            print(f"   ✅ 目標達成! ({target_time}ms以下)")
+            print(f"   [OK] 目標達成! ({target_time}ms以下)")
             improvement_status = "成功"
         else:
             remaining = modified_import_time - target_time
-            print(f"   ⚠️ 目標未達成: 残り{remaining:.1f}ms短縮必要")
+            print(f"   [WARNING] 目標未達成: 残り{remaining:.1f}ms短縮必要")
             improvement_status = "部分的"
         
         # 従来との比較（2826.5msベースライン）
         baseline = 2826.5
         improvement = baseline - modified_import_time
         improvement_rate = (improvement / baseline) * 100
-        print(f"   📊 改善効果: {improvement:.1f}ms削減 ({improvement_rate:.1f}%改善)")
+        print(f"   [CHART] 改善効果: {improvement:.1f}ms削減 ({improvement_rate:.1f}%改善)")
         
     except Exception as e:
-        print(f"   ❌ 修正版インポートエラー: {e}")
+        print(f"   [ERROR] 修正版インポートエラー: {e}")
         modified_import_time = 0
         improvement_status = "失敗"
         
@@ -91,7 +91,7 @@ def test_lazy_loader_removal():
             print(f"   使用中SymbolSwitchManager: {used_version}")
             
         except Exception as e:
-            print(f"   ❌ 初期化エラー: {e}")
+            print(f"   [ERROR] 初期化エラー: {e}")
     
     return {
         'basic_time': basic_time,
@@ -107,20 +107,20 @@ def main():
         results = test_lazy_loader_removal()
         
         print("\n=== lazy_loader除去効果サマリー ===")
-        print(f"📊 基本ライブラリ: {results['basic_time']:.1f}ms")
-        print(f"📊 SymbolSwitchManager直接: {results['direct_import_time']:.1f}ms")
-        print(f"📊 修正版DSSMSIntegratedBacktester: {results['modified_import_time']:.1f}ms")
-        print(f"📊 使用バージョン: {results['used_version']}")
-        print(f"🎯 改善状況: {results['improvement_status']}")
+        print(f"[CHART] 基本ライブラリ: {results['basic_time']:.1f}ms")
+        print(f"[CHART] SymbolSwitchManager直接: {results['direct_import_time']:.1f}ms")
+        print(f"[CHART] 修正版DSSMSIntegratedBacktester: {results['modified_import_time']:.1f}ms")
+        print(f"[CHART] 使用バージョン: {results['used_version']}")
+        print(f"[TARGET] 改善状況: {results['improvement_status']}")
         
         if results['improvement_status'] == "成功":
-            print("\n✅ lazy_loader除去による大幅最適化成功！")
+            print("\n[OK] lazy_loader除去による大幅最適化成功！")
         elif results['improvement_status'] == "部分的":
-            print("\n⚠️ 部分的改善 - 追加最適化が必要")
+            print("\n[WARNING] 部分的改善 - 追加最適化が必要")
         else:
-            print("\n❌ 除去失敗 - 問題修正が必要")
+            print("\n[ERROR] 除去失敗 - 問題修正が必要")
         
-        print("\n📋 次のステップ:")
+        print("\n[LIST] 次のステップ:")
         if results['improvement_status'] != "成功":
             print("1. エラー修正・コンパイル問題解決")
             print("2. lazy_class_import完全除去")

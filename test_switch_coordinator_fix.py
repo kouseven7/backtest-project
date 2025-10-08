@@ -28,9 +28,9 @@ from config.logger_config import setup_logger
 # 修正されたコンポーネントをインポート
 try:
     from src.dssms.dssms_switch_coordinator_v2 import DSSMSSwitchCoordinatorV2
-    print("✅ DSSMS Switch Coordinator V2 インポート成功")
+    print("[OK] DSSMS Switch Coordinator V2 インポート成功")
 except ImportError as e:
-    print(f"❌ インポート失敗: {e}")
+    print(f"[ERROR] インポート失敗: {e}")
     sys.exit(1)
 
 def generate_test_market_data(days=5):
@@ -63,7 +63,7 @@ def generate_test_market_data(days=5):
 def test_emergency_mode_disabled():
     """緊急モード無効化テスト"""
     print("\\n" + "="*60)
-    print("🔧 緊急モード無効化テスト開始")
+    print("[TOOL] 緊急モード無効化テスト開始")
     print("="*60)
     
     # ロガー設定
@@ -72,12 +72,12 @@ def test_emergency_mode_disabled():
     try:
         # Switch Coordinator初期化
         coordinator = DSSMSSwitchCoordinatorV2()
-        print("✅ Switch Coordinator初期化成功")
+        print("[OK] Switch Coordinator初期化成功")
         
         # テストデータ生成
         market_data = generate_test_market_data(days=3)
         test_positions = ['TEST_SYMBOL_1', 'TEST_SYMBOL_2']
-        print("✅ テストデータ生成完了")
+        print("[OK] テストデータ生成完了")
         
         # 実行モード決定テスト（緊急モードが呼ばれないことを確認）
         execution_modes = []
@@ -89,13 +89,13 @@ def test_emergency_mode_disabled():
         
         # 緊急モードが含まれていないことを確認
         if "emergency_mode" in execution_modes:
-            print("❌ 緊急モードが検出されました（修正失敗）")
+            print("[ERROR] 緊急モードが検出されました（修正失敗）")
             return False
         else:
-            print("✅ 緊急モードは検出されませんでした（修正成功）")
+            print("[OK] 緊急モードは検出されませんでした（修正成功）")
         
         # 実際の切替決定実行テスト
-        print("\\n📊 切替決定実行テスト...")
+        print("\\n[CHART] 切替決定実行テスト...")
         
         results = []
         for i in range(5):
@@ -117,13 +117,13 @@ def test_emergency_mode_disabled():
         # 緊急エンジンが使用されていないことを確認
         emergency_usage = [r for r in results if 'emergency' in r['engine_used']]
         if emergency_usage:
-            print(f"❌ 緊急エンジンが {len(emergency_usage)} 回使用されました（修正失敗）")
+            print(f"[ERROR] 緊急エンジンが {len(emergency_usage)} 回使用されました（修正失敗）")
             return False
         else:
-            print("✅ 緊急エンジンは使用されませんでした（修正成功）")
+            print("[OK] 緊急エンジンは使用されませんでした（修正成功）")
         
         # 統計レポート確認
-        print("\\n📈 統計レポート確認...")
+        print("\\n[UP] 統計レポート確認...")
         status_report = coordinator.get_status_report()
         
         print(f"  現在の成功率: {status_report['current_success_rate']:.3f}")
@@ -135,14 +135,14 @@ def test_emergency_mode_disabled():
         return True
         
     except Exception as e:
-        print(f"❌ テスト実行中にエラー: {e}")
+        print(f"[ERROR] テスト実行中にエラー: {e}")
         logger.error(f"Emergency mode test failed: {e}")
         return False
 
 def test_switching_frequency_reduction():
     """切替頻度削減テスト"""
     print("\\n" + "="*60)
-    print("📉 切替頻度削減効果テスト")
+    print("[DOWN] 切替頻度削減効果テスト")
     print("="*60)
     
     try:
@@ -184,7 +184,7 @@ def test_switching_frequency_reduction():
         average_daily_switches = np.mean(switch_counts)
         switch_variance = np.var(switch_counts)
         
-        print(f"\\n📊 切替統計:")
+        print(f"\\n[CHART] 切替統計:")
         print(f"  総切替数: {total_switches}")
         print(f"  1日平均切替数: {average_daily_switches:.2f}")
         print(f"  切替分散: {switch_variance:.3f}")
@@ -194,26 +194,26 @@ def test_switching_frequency_reduction():
         
         # 緊急モード使用の確認
         if engine_usage['emergency'] > 0:
-            print(f"❌ 緊急モードが {engine_usage['emergency']} 回使用されました")
+            print(f"[ERROR] 緊急モードが {engine_usage['emergency']} 回使用されました")
             return False
         else:
-            print("✅ 緊急モードは使用されませんでした")
+            print("[OK] 緊急モードは使用されませんでした")
         
         # 過度な切替の確認（1日1回以上は制限されているべき）
         if average_daily_switches > 5.0:  # 過度な切替の閾値
-            print(f"⚠️ 平均日次切替数が高めです: {average_daily_switches:.2f}")
+            print(f"[WARNING] 平均日次切替数が高めです: {average_daily_switches:.2f}")
         else:
-            print(f"✅ 切替頻度は適切な範囲内です: {average_daily_switches:.2f}")
+            print(f"[OK] 切替頻度は適切な範囲内です: {average_daily_switches:.2f}")
         
         return True
         
     except Exception as e:
-        print(f"❌ 切替頻度テスト中にエラー: {e}")
+        print(f"[ERROR] 切替頻度テスト中にエラー: {e}")
         return False
 
 def main():
     """メインテスト実行"""
-    print("🚀 DSSMS Switch Coordinator V2 修正テスト開始")
+    print("[ROCKET] DSSMS Switch Coordinator V2 修正テスト開始")
     print(f"⏰ 実行時刻: {datetime.now()}")
     
     # テスト結果記録
@@ -227,24 +227,24 @@ def main():
     
     # 結果サマリー
     print("\\n" + "="*60)
-    print("🎯 テスト結果サマリー")
+    print("[TARGET] テスト結果サマリー")
     print("="*60)
     
     all_passed = True
     for test_name, result in test_results.items():
-        status = "✅ PASS" if result else "❌ FAIL"
+        status = "[OK] PASS" if result else "[ERROR] FAIL"
         print(f"  {test_name}: {status}")
         if not result:
             all_passed = False
     
     if all_passed:
-        print("\\n🎉 全テストPASS: 緊急モード無効化が正常に動作しています")
-        print("📈 期待される効果:")
+        print("\\n[SUCCESS] 全テストPASS: 緊急モード無効化が正常に動作しています")
+        print("[UP] 期待される効果:")
         print("  • 不適切な強制切替の除去")
         print("  • 分散係数の削減（13.75% → 5%未満目標）")
         print("  • 最適化ルールの正常動作復旧")
     else:
-        print("\\n⚠️ 一部テストが失敗しました。追加修正が必要です。")
+        print("\\n[WARNING] 一部テストが失敗しました。追加修正が必要です。")
     
     return all_passed
 

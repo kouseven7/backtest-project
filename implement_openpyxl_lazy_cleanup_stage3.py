@@ -29,7 +29,7 @@ class OpenpyxlLazyLoaderCleanup:
         
     def fix_systemfallbackpolicy_issue(self) -> bool:
         """SystemFallbackPolicyエラー修正"""
-        print("🔧 SystemFallbackPolicy get_instance問題修正中...")
+        print("[TOOL] SystemFallbackPolicy get_instance問題修正中...")
         
         wrapper_path = self.project_root / "src" / "utils" / "yfinance_lazy_wrapper.py"
         
@@ -43,7 +43,7 @@ class OpenpyxlLazyLoaderCleanup:
             
             if old_code in content:
                 content = content.replace(old_code, new_code)
-                print("  ✅ get_instance() → SystemFallbackPolicy() 修正")
+                print("  [OK] get_instance() → SystemFallbackPolicy() 修正")
             
             with open(wrapper_path, 'w', encoding='utf-8') as f:
                 f.write(content)
@@ -51,12 +51,12 @@ class OpenpyxlLazyLoaderCleanup:
             return True
             
         except Exception as e:
-            print(f"  ❌ SystemFallbackPolicy修正エラー: {e}")
+            print(f"  [ERROR] SystemFallbackPolicy修正エラー: {e}")
             return False
     
     def identify_openpyxl_files(self) -> List[Path]:
         """openpyxl使用ファイル特定"""
-        print("🔍 openpyxl使用ファイル特定中...")
+        print("[SEARCH] openpyxl使用ファイル特定中...")
         openpyxl_files = []
         
         # 優先対象ファイル（Excel出力系）
@@ -72,7 +72,7 @@ class OpenpyxlLazyLoaderCleanup:
             full_path = self.project_root / file_path
             if full_path.exists():
                 openpyxl_files.append(full_path)
-                print(f"  ✅ 優先ファイル: {file_path}")
+                print(f"  [OK] 優先ファイル: {file_path}")
         
         # その他のopenpyxl使用ファイルを検索
         for file_path in self.project_root.rglob('*.py'):
@@ -96,12 +96,12 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl' in content or
                 continue
         
         self.openpyxl_files = openpyxl_files
-        print(f"  📊 合計 {len(openpyxl_files)} ファイルでopenpyxl使用")
+        print(f"  [CHART] 合計 {len(openpyxl_files)} ファイルでopenpyxl使用")
         return openpyxl_files
     
     def identify_lazy_loader_remnants(self) -> List[Path]:
         """lazy_loader残存参照特定"""
-        print("🔍 lazy_loader残存参照特定中...")
+        print("[SEARCH] lazy_loader残存参照特定中...")
         lazy_loader_files = []
         
         lazy_loader_patterns = [
@@ -130,12 +130,12 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl' in content or
                 continue
         
         self.lazy_loader_files = lazy_loader_files
-        print(f"  📊 合計 {len(lazy_loader_files)} ファイルでlazy_loader残存")
+        print(f"  [CHART] 合計 {len(lazy_loader_files)} ファイルでlazy_loader残存")
         return lazy_loader_files
     
     def create_openpyxl_lazy_wrapper(self) -> Path:
         """openpyxl遅延インポートラッパー作成"""
-        print("🔧 openpyxl遅延インポートラッパー作成中...")
+        print("[TOOL] openpyxl遅延インポートラッパー作成中...")
         
         wrapper_content = '''#!/usr/bin/env python3
 """
@@ -171,11 +171,11 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
                 self._import_time = (time.perf_counter() - start_time) * 1000
                 
                 if self._first_access:
-                    print(f"📊 openpyxl lazy import: {self._import_time:.1f}ms")
+                    print(f"[CHART] openpyxl lazy import: {self._import_time:.1f}ms")
                     self._first_access = False
                     
             except ImportError as e:
-                print(f"❌ openpyxl import error: {e}")
+                print(f"[ERROR] openpyxl import error: {e}")
                 # SystemFallbackPolicy統合
                 try:
                     from src.config.system_modes import SystemFallbackPolicy, ComponentType
@@ -244,7 +244,7 @@ def __getattr__(name: str):
         with open(wrapper_path, 'w', encoding='utf-8') as f:
             f.write(wrapper_content)
         
-        print(f"  ✅ ラッパー作成完了: {wrapper_path}")
+        print(f"  [OK] ラッパー作成完了: {wrapper_path}")
         return wrapper_path
     
     def backup_files(self) -> bool:
@@ -264,16 +264,16 @@ def __getattr__(name: str):
                 shutil.copy2(file_path, backup_path)
                 print(f"  📁 バックアップ: {relative_path}")
             
-            print(f"  ✅ バックアップ完了: {self.backup_dir}")
+            print(f"  [OK] バックアップ完了: {self.backup_dir}")
             return True
             
         except Exception as e:
-            print(f"  ❌ バックアップエラー: {e}")
+            print(f"  [ERROR] バックアップエラー: {e}")
             return False
     
     def implement_openpyxl_lazy_imports(self) -> bool:
         """openpyxl遅延インポート実装"""
-        print("🔧 openpyxl遅延インポート実装中...")
+        print("[TOOL] openpyxl遅延インポート実装中...")
         
         success_count = 0
         total_files = len(self.openpyxl_files)
@@ -306,7 +306,7 @@ from src.utils.openpyxl_lazy_wrapper import", "# openpyxl遅延インポート (
                     
                     success_count += 1
                     relative_path = file_path.relative_to(self.project_root)
-                    print(f"  ✅ {relative_path}: {changes_made}箇所修正")
+                    print(f"  [OK] {relative_path}: {changes_made}箇所修正")
                     
                     self.implementation_log.append({
                         'file': str(relative_path),
@@ -317,7 +317,7 @@ from src.utils.openpyxl_lazy_wrapper import", "# openpyxl遅延インポート (
                 
             except Exception as e:
                 relative_path = file_path.relative_to(self.project_root)
-                print(f"  ❌ {relative_path}: エラー - {e}")
+                print(f"  [ERROR] {relative_path}: エラー - {e}")
                 
                 self.implementation_log.append({
                     'file': str(relative_path),
@@ -326,7 +326,7 @@ from src.utils.openpyxl_lazy_wrapper import", "# openpyxl遅延インポート (
                     'error': str(e)
                 })
         
-        print(f"  📊 openpyxl遅延インポート: {success_count}/{total_files} ファイル成功")
+        print(f"  [CHART] openpyxl遅延インポート: {success_count}/{total_files} ファイル成功")
         return success_count > 0
     
     def remove_lazy_loader_remnants(self) -> bool:
@@ -372,7 +372,7 @@ from src.utils.openpyxl_lazy_wrapper import", "# openpyxl遅延インポート (
                     
                     success_count += 1
                     relative_path = file_path.relative_to(self.project_root)
-                    print(f"  ✅ {relative_path}: {changes_made}パターン除去")
+                    print(f"  [OK] {relative_path}: {changes_made}パターン除去")
                     
                     self.implementation_log.append({
                         'file': str(relative_path),
@@ -383,7 +383,7 @@ from src.utils.openpyxl_lazy_wrapper import", "# openpyxl遅延インポート (
                 
             except Exception as e:
                 relative_path = file_path.relative_to(self.project_root)
-                print(f"  ❌ {relative_path}: エラー - {e}")
+                print(f"  [ERROR] {relative_path}: エラー - {e}")
                 
                 self.implementation_log.append({
                     'file': str(relative_path),
@@ -392,12 +392,12 @@ from src.utils.openpyxl_lazy_wrapper import", "# openpyxl遅延インポート (
                     'error': str(e)
                 })
         
-        print(f"  📊 lazy_loader除去: {success_count}/{total_files} ファイル成功")
+        print(f"  [CHART] lazy_loader除去: {success_count}/{total_files} ファイル成功")
         return success_count > 0
     
     def measure_improvements(self) -> Dict[str, float]:
         """遅延インポート・除去効果測定"""
-        print("📊 openpyxl遅延インポート・lazy_loader除去効果測定中...")
+        print("[CHART] openpyxl遅延インポート・lazy_loader除去効果測定中...")
         
         try:
             # 測定スクリプト作成
@@ -453,23 +453,23 @@ print(f"LAZY_FIRST_ACCESS: {lazy_first_access_time:.1f}")
                 # 効果計算
                 measurements['import_reduction_ms'] = measurements['direct_import_ms'] - measurements['lazy_import_ms']
                 
-                print(f"  📈 openpyxl直接インポート: {measurements['direct_import_ms']:.1f}ms")
-                print(f"  📈 openpyxl遅延インポート: {measurements['lazy_import_ms']:.1f}ms") 
-                print(f"  📈 初回アクセス: {measurements['lazy_first_access_ms']:.1f}ms")
+                print(f"  [UP] openpyxl直接インポート: {measurements['direct_import_ms']:.1f}ms")
+                print(f"  [UP] openpyxl遅延インポート: {measurements['lazy_import_ms']:.1f}ms") 
+                print(f"  [UP] 初回アクセス: {measurements['lazy_first_access_ms']:.1f}ms")
                 print(f"  🏆 インポート削減効果: {measurements['import_reduction_ms']:.1f}ms")
                 
             else:
-                print(f"  ❌ 測定エラー: {result.stderr}")
+                print(f"  [ERROR] 測定エラー: {result.stderr}")
                 
             return measurements
                 
         except Exception as e:
-            print(f"  ❌ 効果測定例外: {e}")
+            print(f"  [ERROR] 効果測定例外: {e}")
             return {}
     
     def run_functionality_test(self) -> bool:
         """機能完全性テスト実行"""
-        print("🧪 openpyxl遅延インポート・除去機能テスト実行中...")
+        print("[TEST] openpyxl遅延インポート・除去機能テスト実行中...")
         
         test_script = '''
 import sys
@@ -479,22 +479,22 @@ sys.path.insert(0, os.getcwd())
 try:
     # 1. openpyxlラッパーインポートテスト
     from src.utils.openpyxl_lazy_wrapper import Workbook, load_workbook, get_openpyxl_import_stats
-    print("✅ openpyxl lazy wrapper import successful")
+    print("[OK] openpyxl lazy wrapper import successful")
     
     # 2. 基本機能テスト
     wb = Workbook()
     ws = wb.active
     ws['A1'] = 'Test'
-    print("✅ Workbook creation and cell writing successful")
+    print("[OK] Workbook creation and cell writing successful")
     
     # 3. 統計情報テスト
     stats = get_openpyxl_import_stats()
-    print(f"✅ Import stats: {stats}")
+    print(f"[OK] Import stats: {stats}")
     
     # 4. yfinanceラッパー修正テスト
     from src.utils.yfinance_lazy_wrapper import get_yfinance_import_stats
     yf_stats = get_yfinance_import_stats()
-    print(f"✅ yfinance wrapper fixed: {yf_stats}")
+    print(f"[OK] yfinance wrapper fixed: {yf_stats}")
     
     print("SUCCESS: All functionality tests passed")
     
@@ -510,7 +510,7 @@ except Exception as e:
                 sys.executable, '-c', test_script
             ], capture_output=True, text=True, cwd=self.project_root)
             
-            print(f"  📋 テスト結果:")
+            print(f"  [LIST] テスト結果:")
             print(f"    Return code: {result.returncode}")
             print(f"    Output: {result.stdout}")
             if result.stderr:
@@ -519,19 +519,19 @@ except Exception as e:
             success = result.returncode == 0 and "SUCCESS" in result.stdout
             
             if success:
-                print(f"  ✅ 機能完全性テスト成功")
+                print(f"  [OK] 機能完全性テスト成功")
             else:
-                print(f"  ❌ 機能完全性テスト失敗")
+                print(f"  [ERROR] 機能完全性テスト失敗")
             
             return success
             
         except Exception as e:
-            print(f"  ❌ テスト実行エラー: {e}")
+            print(f"  [ERROR] テスト実行エラー: {e}")
             return False
     
     def generate_stage3_report(self) -> Dict[str, Any]:
         """Stage 3完了レポート生成"""
-        print("📋 Stage 3完了レポート生成中...")
+        print("[LIST] Stage 3完了レポート生成中...")
         
         report = {
             'stage': 'Stage 3: openpyxl遅延インポート・lazy_loader完全除去',
@@ -549,7 +549,7 @@ except Exception as e:
     
     def run_stage3_implementation(self) -> bool:
         """Stage 3完全実装実行"""
-        print("🚀 TODO-PERF-001 Phase 1 Stage 3: openpyxl遅延インポート・lazy_loader完全除去開始")
+        print("[ROCKET] TODO-PERF-001 Phase 1 Stage 3: openpyxl遅延インポート・lazy_loader完全除去開始")
         print("=" * 80)
         
         start_time = time.time()
@@ -560,48 +560,48 @@ except Exception as e:
             # Task 1: SystemFallbackPolicyエラー修正
             if self.fix_systemfallbackpolicy_issue():
                 success_count += 1
-                print("  ✅ Task 1完了")
+                print("  [OK] Task 1完了")
             
             # Task 2: openpyxl使用ファイル特定
             if self.identify_openpyxl_files():
                 success_count += 1
-                print("  ✅ Task 2完了")
+                print("  [OK] Task 2完了")
             
             # Task 3: lazy_loader残存参照特定
             if self.identify_lazy_loader_remnants():
                 success_count += 1
-                print("  ✅ Task 3完了")
+                print("  [OK] Task 3完了")
             
             # Task 4: openpyxl遅延インポートラッパー作成
             if self.create_openpyxl_lazy_wrapper():
                 success_count += 1
-                print("  ✅ Task 4完了")
+                print("  [OK] Task 4完了")
             
             # Task 5: ファイルバックアップ
             if self.backup_files():
                 success_count += 1
-                print("  ✅ Task 5完了")
+                print("  [OK] Task 5完了")
             
             # Task 6: openpyxl遅延インポート実装
             if self.implement_openpyxl_lazy_imports():
                 success_count += 1
-                print("  ✅ Task 6完了")
+                print("  [OK] Task 6完了")
             
             # Task 7: lazy_loader残存参照除去
             if self.remove_lazy_loader_remnants():
                 success_count += 1
-                print("  ✅ Task 7完了")
+                print("  [OK] Task 7完了")
             
             # Task 8: 効果測定
             measurements = self.measure_improvements()
             if measurements:
                 success_count += 1
-                print("  ✅ Task 8完了")
+                print("  [OK] Task 8完了")
             
             # Task 9: 機能完全性テスト
             if self.run_functionality_test():
                 success_count += 1
-                print("  ✅ Task 9完了")
+                print("  [OK] Task 9完了")
             
             # レポート生成
             report = self.generate_stage3_report()
@@ -618,26 +618,26 @@ except Exception as e:
             print("\n" + "="*80)
             print("🏆 TODO-PERF-001 Phase 1 Stage 3完了サマリー")
             print("="*80)
-            print(f"📊 タスク成功率: {success_count}/{total_tasks} ({success_count/total_tasks*100:.1f}%)")
+            print(f"[CHART] タスク成功率: {success_count}/{total_tasks} ({success_count/total_tasks*100:.1f}%)")
             print(f"⏱️ 実行時間: {time.time() - start_time:.1f}秒")
             print(f"🧹 lazy_loader除去: {len(self.lazy_loader_files)}ファイル処理")
             print(f"📄 openpyxl最適化: {len(self.openpyxl_files)}ファイル処理")
             
             if measurements:
                 reduction = measurements.get('import_reduction_ms', 0)
-                print(f"🎯 openpyxlインポート削減: {reduction:.1f}ms")
+                print(f"[TARGET] openpyxlインポート削減: {reduction:.1f}ms")
                 
             print(f"📄 完了レポート: {report_path}")
             
             if success_count >= 7:  # 78%以上成功で合格
-                print("✅ Stage 3合格: openpyxl遅延インポート・lazy_loader完全除去成功")
+                print("[OK] Stage 3合格: openpyxl遅延インポート・lazy_loader完全除去成功")
                 return True
             else:
-                print("❌ Stage 3不合格: 重要タスク失敗")
+                print("[ERROR] Stage 3不合格: 重要タスク失敗")
                 return False
                 
         except Exception as e:
-            print(f"❌ Stage 3実装エラー: {e}")
+            print(f"[ERROR] Stage 3実装エラー: {e}")
             import traceback
             traceback.print_exc()
             return False
@@ -650,9 +650,9 @@ def main():
     success = implementer.run_stage3_implementation()
     
     if success:
-        print("\n🎉 Stage 3完了 - 次は Stage 4 統合効果検証・実用性確認に進行")
+        print("\n[SUCCESS] Stage 3完了 - 次は Stage 4 統合効果検証・実用性確認に進行")
     else:
-        print("\n⚠️ Stage 3部分成功 - 問題解決後に Stage 4進行を推奨")
+        print("\n[WARNING] Stage 3部分成功 - 問題解決後に Stage 4進行を推奨")
     
     return success
 

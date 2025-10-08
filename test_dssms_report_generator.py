@@ -30,17 +30,17 @@ except ImportError as e:
 
 def test_dssms_report_generator():
     """DSSMSReportGenerator包括的テスト"""
-    print("🔧 TODO-REPORT-001: DSSMSReportGenerator動作テスト・エラー調査")
+    print("[TOOL] TODO-REPORT-001: DSSMSReportGenerator動作テスト・エラー調査")
     print("=" * 80)
     
     try:
         # インスタンス作成テスト
-        print("\n📋 Stage 2.1: インスタンス初期化テスト")
+        print("\n[LIST] Stage 2.1: インスタンス初期化テスト")
         generator = DSSMSReportGenerator()
-        print("✅ DSSMSReportGenerator初期化成功")
+        print("[OK] DSSMSReportGenerator初期化成功")
         
         # テストデータ準備
-        print("\n📋 Stage 2.2: テストデータ準備")
+        print("\n[LIST] Stage 2.2: テストデータ準備")
         test_switch_history = [
             {'selected_symbol': '7203', 'date': '2025-01-01'},
             {'selected_symbol': '6758', 'date': '2025-01-02'},  
@@ -68,53 +68,53 @@ def test_dssms_report_generator():
                 {'portfolio_value': 1150000, 'date': '2025-01-05'}
             ]
         }
-        print("✅ テストデータ準備完了")
+        print("[OK] テストデータ準備完了")
         
         # メソッド動作テスト
-        print("\n📋 Stage 2.3: 各メソッド動作テスト")
+        print("\n[LIST] Stage 2.3: 各メソッド動作テスト")
         
         # 1. 集中リスク分析テスト
-        print("  🔍 _analyze_concentration_risk テスト中...")
+        print("  [SEARCH] _analyze_concentration_risk テスト中...")
         risk_result = generator._analyze_concentration_risk(test_switch_history)
-        print(f"    ✅ リスクレベル: {risk_result.get('risk_level', 'error')}")
-        print(f"    ✅ 集中スコア: {risk_result.get('concentration_score', 0.0):.3f}")
-        print(f"    ✅ 推奨事項数: {len(risk_result.get('recommendations', []))}")
+        print(f"    [OK] リスクレベル: {risk_result.get('risk_level', 'error')}")
+        print(f"    [OK] 集中スコア: {risk_result.get('concentration_score', 0.0):.3f}")
+        print(f"    [OK] 推奨事項数: {len(risk_result.get('recommendations', []))}")
         
         # 2. 戦略組合せ分析テスト
-        print("  🔍 _analyze_strategy_combinations テスト中...")
+        print("  [SEARCH] _analyze_strategy_combinations テスト中...")
         strategy_result = generator._analyze_strategy_combinations(test_backtest_results)
-        print(f"    ✅ 組合せ効果: {strategy_result.get('combination_effectiveness', 0.0):.3f}")
-        print(f"    ✅ シナジースコア: {strategy_result.get('synergy_score', 0.0):.3f}")
-        print(f"    ✅ 推奨事項数: {len(strategy_result.get('recommendations', []))}")
+        print(f"    [OK] 組合せ効果: {strategy_result.get('combination_effectiveness', 0.0):.3f}")
+        print(f"    [OK] シナジースコア: {strategy_result.get('synergy_score', 0.0):.3f}")
+        print(f"    [OK] 推奨事項数: {len(strategy_result.get('recommendations', []))}")
         
         # 3. 高度パフォーマンス指標テスト
-        print("  🔍 _calculate_advanced_performance_metrics テスト中...")
+        print("  [SEARCH] _calculate_advanced_performance_metrics テスト中...")
         perf_result = generator._calculate_advanced_performance_metrics(test_backtest_results)
-        print(f"    ✅ メトリクス状態: {perf_result.get('advanced_metrics_status', 'error')}")
-        print(f"    ✅ シャープレシオ: {perf_result.get('sharpe_ratio', 0.0):.3f}")
-        print(f"    ✅ 最大ドローダウン: {perf_result.get('max_drawdown', 0.0):.3f}%")
-        print(f"    ✅ トータルリターン: {perf_result.get('total_return_percent', 0.0):.2f}%")
+        print(f"    [OK] メトリクス状態: {perf_result.get('advanced_metrics_status', 'error')}")
+        print(f"    [OK] シャープレシオ: {perf_result.get('sharpe_ratio', 0.0):.3f}")
+        print(f"    [OK] 最大ドローダウン: {perf_result.get('max_drawdown', 0.0):.3f}%")
+        print(f"    [OK] トータルリターン: {perf_result.get('total_return_percent', 0.0):.2f}%")
         
         # 統合テスト
-        print("\n📋 Stage 2.4: 統合レポート生成テスト")
+        print("\n[LIST] Stage 2.4: 統合レポート生成テスト")
         if hasattr(generator, 'generate_comprehensive_report'):
             try:
                 comprehensive_report = generator.generate_comprehensive_report(test_backtest_results)
-                print("✅ 包括的レポート生成成功")
+                print("[OK] 包括的レポート生成成功")
                 print(f"    レポートセクション数: {len(comprehensive_report) if isinstance(comprehensive_report, dict) else 'N/A'}")
             except Exception as e:
-                print(f"⚠️ 包括的レポート生成エラー: {e}")
+                print(f"[WARNING] 包括的レポート生成エラー: {e}")
         else:
             print("ℹ️ generate_comprehensive_report メソッドが見つかりません")
         
         # SystemFallbackPolicy統合テスト
-        print("\n📋 Stage 2.5: SystemFallbackPolicy統合確認")
+        print("\n[LIST] Stage 2.5: SystemFallbackPolicy統合確認")
         if hasattr(generator, 'fallback_policy'):
-            print("✅ SystemFallbackPolicy統合済み")
+            print("[OK] SystemFallbackPolicy統合済み")
         else:
-            print("⚠️ SystemFallbackPolicy未統合 - 改善が必要")
+            print("[WARNING] SystemFallbackPolicy未統合 - 改善が必要")
         
-        print("\n🎉 Stage 2完了: 全メソッドが正常動作しています！")
+        print("\n[SUCCESS] Stage 2完了: 全メソッドが正常動作しています！")
         
         # 分析結果サマリー
         analysis_summary = {
@@ -130,14 +130,14 @@ def test_dssms_report_generator():
         
     except Exception as e:
         logger.error(f"DSSMSReportGenerator テストエラー: {e}")
-        print(f"❌ エラー発生: {e}")
+        print(f"[ERROR] エラー発生: {e}")
         import traceback
         traceback.print_exc()
         return {'status': 'error', 'error': str(e)}
 
 def identify_improvement_areas():
     """改善すべき領域特定"""
-    print("\n📋 Stage 2.6: 改善領域特定")
+    print("\n[LIST] Stage 2.6: 改善領域特定")
     
     improvement_areas = [
         "SystemFallbackPolicy統合によるエラーハンドリング強化",
@@ -147,7 +147,7 @@ def identify_improvement_areas():
         "キャッシュ戦略実装による処理速度向上"
     ]
     
-    print("🔍 特定された改善領域:")
+    print("[SEARCH] 特定された改善領域:")
     for i, area in enumerate(improvement_areas, 1):
         print(f"  {i}. {area}")
     
@@ -159,16 +159,16 @@ def main():
     improvement_areas = identify_improvement_areas()
     
     print("\n" + "=" * 80)
-    print("📊 TODO-REPORT-001 Stage 2 分析結果サマリー")
+    print("[CHART] TODO-REPORT-001 Stage 2 分析結果サマリー")
     print("=" * 80)
     
     if analysis_result.get('status') != 'error':
-        print("✅ 重要発見: 全未実装メソッドが既に実装済み！")
-        print("✅ 主要機能: 正常動作確認完了")
-        print("⚠️ 改善必要: SystemFallbackPolicy統合・レポート生成最適化")
-        print("\n🎯 次段階: Stage 3パフォーマンス最適化・品質向上へ移行")
+        print("[OK] 重要発見: 全未実装メソッドが既に実装済み！")
+        print("[OK] 主要機能: 正常動作確認完了")
+        print("[WARNING] 改善必要: SystemFallbackPolicy統合・レポート生成最適化")
+        print("\n[TARGET] 次段階: Stage 3パフォーマンス最適化・品質向上へ移行")
     else:
-        print("❌ 深刻なエラーが発見されました - 詳細調査が必要")
+        print("[ERROR] 深刻なエラーが発見されました - 詳細調査が必要")
     
     return analysis_result, improvement_areas
 

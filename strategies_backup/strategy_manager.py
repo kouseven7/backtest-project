@@ -39,7 +39,7 @@ def apply_strategies(stock_data: pd.DataFrame, index_data: pd.DataFrame = None):
     """
     複数の戦略を適用し、シグナルを生成します。
     
-    ⚠️ 警告: この関数はレガシーです。
+    [WARNING] 警告: この関数はレガシーです。
     新しいmain.pyでは承認済み最適化パラメータを使用した
     apply_strategies_with_optimized_params() を使用してください。
     
@@ -50,7 +50,7 @@ def apply_strategies(stock_data: pd.DataFrame, index_data: pd.DataFrame = None):
     Returns:
         pd.DataFrame: シグナルを追加した株価データ
     """
-    logger.warning("⚠️ apply_strategies() はレガシー関数です。新しいmain.pyを使用してください。")
+    logger.warning("[WARNING] apply_strategies() はレガシー関数です。新しいmain.pyを使用してください。")
     
     # VWAPBreakoutStrategy は index_data が必要なので、なければダミーデータを作成
     if index_data is None:

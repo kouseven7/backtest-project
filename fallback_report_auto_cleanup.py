@@ -138,11 +138,11 @@ class FallbackReportAutoCleanup:
                 'overall_status': 'success'
             }
             
-            self.logger.info("✅ 自動削除機能実行完了")
+            self.logger.info("[OK] 自動削除機能実行完了")
             return final_results
             
         except Exception as e:
-            self.logger.error(f"❌ 自動削除機能実行エラー: {e}")
+            self.logger.error(f"[ERROR] 自動削除機能実行エラー: {e}")
             return {
                 'cleanup_timestamp': cleanup_start.isoformat(),
                 'overall_status': 'error',
@@ -151,7 +151,7 @@ class FallbackReportAutoCleanup:
     
     def _execute_staged_cleanup_strategy(self) -> Dict[str, Any]:
         """段階的削除戦略実行"""
-        self.logger.info("📋 段階的削除戦略実行中...")
+        self.logger.info("[LIST] 段階的削除戦略実行中...")
         
         # 1. 段階的削除戦略定義
         cleanup_strategy = {
@@ -169,7 +169,7 @@ class FallbackReportAutoCleanup:
             strategy_result = self._execute_strategy_by_type(strategy_type, file_patterns)
             strategy_results[strategy_type] = strategy_result
             
-            self.logger.info(f"✅ {strategy_type}削除戦略完了: {strategy_result['files_processed']}ファイル処理")
+            self.logger.info(f"[OK] {strategy_type}削除戦略完了: {strategy_result['files_processed']}ファイル処理")
         
         return {
             'strategy_results': strategy_results,
@@ -287,7 +287,7 @@ class FallbackReportAutoCleanup:
                 self.logger.info(f"🗑️ 削除完了: {file_path} ({file_size} bytes)")
                 
             except Exception as e:
-                self.logger.error(f"❌ 削除失敗: {file_path} - {e}")
+                self.logger.error(f"[ERROR] 削除失敗: {file_path} - {e}")
         
         return {
             'deleted_files': deleted_files,
@@ -314,7 +314,7 @@ class FallbackReportAutoCleanup:
             return str(backup_path)
             
         except Exception as e:
-            self.logger.error(f"❌ バックアップ作成失敗: {file_path} - {e}")
+            self.logger.error(f"[ERROR] バックアップ作成失敗: {file_path} - {e}")
             return None
     
     def _execute_safe_deletion(self, cleanup_results: Dict[str, Any]) -> Dict[str, Any]:
@@ -404,7 +404,7 @@ class FallbackReportAutoCleanup:
                 }
                 
         except Exception as e:
-            self.logger.error(f"❌ 週次レポートアーカイブ作成失敗: {e}")
+            self.logger.error(f"[ERROR] 週次レポートアーカイブ作成失敗: {e}")
             return {
                 'archive_created': False,
                 'error': str(e)
@@ -446,7 +446,7 @@ class FallbackReportAutoCleanup:
             }
             
         except Exception as e:
-            self.logger.error(f"❌ 削除ログ保存失敗: {e}")
+            self.logger.error(f"[ERROR] 削除ログ保存失敗: {e}")
             return {
                 'log_created': False,
                 'error': str(e)
@@ -470,7 +470,7 @@ class FallbackReportAutoCleanup:
             if original_location:
                 # ファイル復旧
                 shutil.copy2(backup_path, original_location)
-                self.logger.info(f"✅ ファイル復旧完了: {original_location}")
+                self.logger.info(f"[OK] ファイル復旧完了: {original_location}")
                 
                 return {
                     'restore_success': True,
@@ -484,7 +484,7 @@ class FallbackReportAutoCleanup:
                 }
                 
         except Exception as e:
-            self.logger.error(f"❌ 復旧失敗: {backup_file} - {e}")
+            self.logger.error(f"[ERROR] 復旧失敗: {backup_file} - {e}")
             return {
                 'restore_success': False,
                 'error': str(e)
@@ -587,17 +587,17 @@ def main():
     
     try:
         # 現在の状況確認
-        print("\n📊 現在の状況:")
+        print("\n[CHART] 現在の状況:")
         stats = cleanup_system.get_cleanup_statistics()
         for dir_name, dir_stats in stats['directories'].items():
             print(f"  {dir_name}: {dir_stats['total_files']}ファイル ({dir_stats['total_size_mb']}MB)")
         
         # 自動削除実行
-        print("\n🚀 自動削除実行中...")
+        print("\n[ROCKET] 自動削除実行中...")
         results = cleanup_system.implement_auto_cleanup()
         
         # 結果表示
-        print("\n📋 実行結果:")
+        print("\n[LIST] 実行結果:")
         print(f"  実行時間: {results.get('execution_duration', 0):.2f}秒")
         print(f"  処理ファイル数: {results.get('cleanup_results', {}).get('total_files_processed', 0)}")
         print(f"  削除ファイル数: {results.get('cleanup_results', {}).get('total_files_deleted', 0)}")
@@ -607,7 +607,7 @@ def main():
         return True
         
     except Exception as e:
-        print(f"❌ デモ実行エラー: {e}")
+        print(f"[ERROR] デモ実行エラー: {e}")
         return False
 
 

@@ -32,7 +32,7 @@ class AsyncRankingSystem:
                 self._integrator = AsyncSystemIntegrator(enable_fallback_policy=True)
                 self._initialized = True
             except ImportError:
-                print("  ⚠️ AsyncSystemIntegrator インポート失敗 - 基本モード")
+                print("  [WARNING] AsyncSystemIntegrator インポート失敗 - 基本モード")
                 self._integrator = None
                 self._initialized = True
     

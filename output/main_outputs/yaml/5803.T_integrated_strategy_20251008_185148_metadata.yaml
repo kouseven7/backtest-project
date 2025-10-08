@@ -1,0 +1,18 @@
+execution_metadata:
+  backtest_compliance_verified: true
+  data_period:
+    end: '2024-12-30 00:00:00'
+    start: '2024-01-04 00:00:00'
+  execution_date: '2025-10-08T18:51:48.882961'
+  strategy: integrated_strategy
+  ticker: 5803.T
+key_metrics:
+  max_drawdown: 0
+  num_trades: 277
+  sharpe_ratio: 0
+  signal_integrity:
+    entry_signals: 110
+    exit_signals: 0
+    integrity_verified: true
+    signal_ratio: 0.0
+  total_return: 0

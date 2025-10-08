@@ -1,543 +1,543 @@
-"""
-Module: Main
-File: main.py
-Description: 
-  マルチ戦略バックテストシステムのメインエントリーポイント。
-  承認済みの最適化パラメータを使用して複数の戦略を実行し、
-  統合されたバックテスト結果を生成します。
-
-Author: imega
-Created: 2023-04-01
-Modified: 2025-12-30
-
-Features:
-  - 承認済み最適化パラメータの自動読み込み
-  - マルチ戦略シミュレーション（優先度順）
-  - 統合されたExcel結果出力
-  - 戦略別エントリー/エグジット統計
-"""
-
-import sys
-import os
-import logging
-import pandas as pd
-from datetime import datetime
-from typing import Dict, Any, List
-
-# プロジェクトのルートディレクトリを sys.path に追加
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, project_root)
-
-from src.config.logger_config import setup_logger
-from src.config.risk_management import RiskManagement
-from src.config.optimized_parameters import OptimizedParameterManager
-
-# ロガーの設定
-logger = setup_logger(__name__, log_file=os.path.join(project_root, "logs", "backtest.log"))
-
-# 新統合システムのインポート
-try:
-    from config.multi_strategy_manager import MultiStrategyManager, ExecutionMode
-    from config.strategy_execution_adapter import StrategyExecutionAdapter
-    integrated_system_available = True
-    logger.info("統合マルチ戦略システムが利用可能です")
-except ImportError as e:
-    integrated_system_available = False
-    logger.warning(f"統合システムが利用できません: {e}。従来システムを使用します。")
-from src.indicators.unified_trend_detector import detect_unified_trend, detect_unified_trend_with_confidence
-from src.strategies.VWAP_Breakout import VWAPBreakoutStrategy
-from src.strategies.Momentum_Investing import MomentumInvestingStrategy
-from src.strategies.Breakout import BreakoutStrategy
-from src.strategies.VWAP_Bounce import VWAPBounceStrategy
-from src.strategies.Opening_Gap import OpeningGapStrategy
-from src.strategies.contrarian_strategy import ContrarianStrategy
-from src.strategies.gc_strategy_signal import GCStrategy
-from data_processor import preprocess_data
-from src.indicators.indicator_calculator import compute_indicators
-from data_fetcher import get_parameters_and_data
-from output.simple_simulation_handler import simulate_and_save
-
-# リスク管理の初期化
-risk_manager = RiskManagement(total_assets=1000000)  # 総資産100万円
-
-# パラメータマネージャーの初期化
-param_manager = OptimizedParameterManager()
-
-
-def load_optimized_parameters(ticker: str) -> Dict[str, Dict[str, Any]]:
-    """
-    各戦略の承認済み最適化パラメータを読み込みます。
-    
-    Parameters:
-        ticker (str): 銘柄シンボル
-        
-    Returns:
-        Dict[str, Dict[str, Any]]: 戦略名をキーとするパラメータ辞書
-    """
-    strategies = [
-        'VWAPBreakoutStrategy',
-        'MomentumInvestingStrategy', 
-        'BreakoutStrategy',
-        'VWAPBounceStrategy',
-        'OpeningGapStrategy',
-        'ContrarianStrategy',
-        'GCStrategy'
-    ]
-    
-    optimized_params = {}
-    
-    for strategy_name in strategies:
-        try:
-            params = param_manager.load_approved_params(strategy_name, ticker)
-            if params:
-                optimized_params[strategy_name] = params
-                logger.info(f"承認済みパラメータを読み込み - {strategy_name}: {params}")
-            else:
-                logger.warning(f"承認済みパラメータが見つかりません - {strategy_name}")
-                # デフォルトパラメータを使用
-                optimized_params[strategy_name] = get_default_parameters(strategy_name)
-        except Exception as e:
-            logger.error(f"パラメータ読み込みエラー - {strategy_name}: {e}")
-            # デフォルトパラメータを使用
-            optimized_params[strategy_name] = get_default_parameters(strategy_name)
-    
-    return optimized_params
-
-
-def get_default_parameters(strategy_name: str) -> Dict[str, Any]:
-    """
-    戦略のデフォルトパラメータを取得します。
-    
-    Parameters:
-        strategy_name (str): 戦略名
-        
-    Returns:
-        Dict[str, Any]: デフォルトパラメータ
-    """
-    defaults = {
-        'VWAPBreakoutStrategy': {
-            'vwap_period': 20,
-            'volume_threshold_multiplier': 1.5,
-            'breakout_threshold': 0.02,
-            'stop_loss_pct': 0.05,
-            'take_profit_pct': 0.10
-        },
-        'MomentumInvestingStrategy': {
-            'momentum_period': 14,
-            'rsi_period': 14,
-            'rsi_overbought': 70,
-            'rsi_oversold': 30,
-            'stop_loss_pct': 0.05,
-            'take_profit_pct': 0.10
-        },
-        'BreakoutStrategy': {
-            'lookback_period': 20,
-            'volume_threshold': 1.5,
-            'breakout_threshold': 0.02,
-            'stop_loss_pct': 0.05,
-            'take_profit_pct': 0.10
-        },
-        'VWAPBounceStrategy': {
-            'vwap_period': 20,
-            'deviation_threshold': 0.02,
-            'volume_threshold': 1.2,
-            'stop_loss_pct': 0.03,
-            'take_profit_pct': 0.06
-        },
-        'OpeningGapStrategy': {
-            'gap_threshold': 0.02,
-            'volume_threshold': 1.5,
-            'confirmation_period': 3,
-            'stop_loss_pct': 0.05,
-            'take_profit_pct': 0.10
-        },
-        'ContrarianStrategy': {
-            'rsi_period': 14,
-            'rsi_oversold': 30,
-            'rsi_overbought': 70,
-            'stop_loss_pct': 0.05,
-            'take_profit_pct': 0.08
-        },
-        'GCStrategy': {
-            'short_window': 5,
-            'long_window': 25,
-            'stop_loss': 0.05,
-            'take_profit': 0.10
-        }
-    }
-    
-    return defaults.get(strategy_name, {})
-
-
-def check_for_series_signal(signal) -> int:
-    """シグナルがSeriesの場合の処理を行うヘルパー関数"""
-    if isinstance(signal, pd.Series):
-        # Seriesの場合、最初の値を取り出す
-        if signal.empty:
-            return 0  # 空のSeriesの場合は0を返す
-        first_val = signal.iloc[0]
-        return 1 if first_val == 1 else (-1 if first_val == -1 else 0)
-    # NaNの場合は0を返す
-    try:
-        if pd.isna(signal):
-            return 0
-    except:
-        pass
-    # 通常の場合はint型に変換
-    try:
-        return int(signal)
-    except:
-        return 0
-
-
-def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data: pd.DataFrame, 
-                                         optimized_params: Dict[str, Dict[str, Any]]) -> pd.DataFrame:
-    """
-    最適化されたパラメータを使用して戦略を適用します。
-    
-    Parameters:
-        stock_data (pd.DataFrame): 株価データ
-        index_data (pd.DataFrame): 市場インデックスデータ
-        optimized_params (Dict): 戦略別最適化パラメータ
-        
-    Returns:
-        pd.DataFrame: シグナルを追加した株価データ
-    """
-    logger.info("最適化パラメータを使用した戦略適用を開始")
-    
-    # 戦略の優先順位（高優先度から）
-    strategy_priority = [
-        ('VWAPBreakoutStrategy', VWAPBreakoutStrategy),
-        ('MomentumInvestingStrategy', MomentumInvestingStrategy),
-        ('BreakoutStrategy', BreakoutStrategy),
-        ('VWAPBounceStrategy', VWAPBounceStrategy),
-        ('OpeningGapStrategy', OpeningGapStrategy),
-        ('ContrarianStrategy', ContrarianStrategy),
-        ('GCStrategy', GCStrategy)
-    ]
-    
-    # エントリー/エグジット統計
-    strategy_stats = {}
-    
-    # 統合されたシグナル列を初期化
-    stock_data['Entry_Signal'] = 0
-    stock_data['Exit_Signal'] = 0
-    stock_data['Strategy'] = ''
-    stock_data['Position_Size'] = 1.0
-    stock_data['Position'] = 0  # ポジション状態を追跡する列を追加
-    
-    # 各日付でどの戦略がアクティブかを追跡
-    active_positions = {}  # {日付: 戦略名}
-    
-    for strategy_name, strategy_class in strategy_priority:
-        try:
-            params = optimized_params.get(strategy_name, {})
-            logger.info(f"戦略適用開始: {strategy_name} with params: {params}")
-            
-            # 戦略ごとに必要なパラメータを渡す
-            if strategy_name == 'VWAPBreakoutStrategy':
-                try:
-                    strategy = strategy_class(
-                        data=stock_data.copy(),  # コピーを使用して相互影響を避ける
-                        index_data=index_data,  # index_dataを最初の引数に移動
-                        params=params,
-                        price_column="Adj Close"
-                    )
-                except Exception as e:
-                    logger.error(f"VWAPBreakoutStrategy初期化エラー: {e}")
-                    continue
-            elif strategy_name == 'OpeningGapStrategy':
-                strategy = strategy_class(
-                    data=stock_data.copy(),
-                    params=params,
-                    price_column="Adj Close",
-                    dow_data=index_data  # OpeningGapStrategyはdow_dataが必要
-                )
-            else:
-                # その他の戦略は共通パラメータで初期化
-                strategy = strategy_class(
-                    data=stock_data.copy(),
-                    params=params,
-                    price_column="Adj Close"
-                )
-            
-            # 戦略を実行してバックテスト結果を取得
-            try:
-                result = strategy.backtest()
-                
-                # インデックスをstock_dataと同じ型に変換して整合性を確保
-                if not isinstance(result.index, type(stock_data.index)):
-                    logger.warning(f"インデックスタイプ不一致: result={type(result.index)}, stock_data={type(stock_data.index)}. 変換を試みます。")
-                    try:
-                        result.index = pd.DatetimeIndex(result.index)
-                    except Exception as e:
-                        logger.error(f"インデックス変換エラー: {e}")
-            except Exception as e:
-                logger.error(f"バックテストエラー: {e}")
-                result = pd.DataFrame(index=stock_data.index)  # 空のデータフレームを返す
-            
-            # エントリー/エグジット数を統計
-            entry_signal_col = 'Entry_Signal'
-            exit_signal_col = 'Exit_Signal'
-            
-            entry_count = 0
-            exit_count = 0
-            
-            if entry_signal_col in result.columns:
-                # Series型を安全に扱うための変換
-                try:
-                    if not pd.api.types.is_integer_dtype(result[entry_signal_col]):
-                        # 0以外の値を持つエントリーをカウント
-                        entry_signals = result[entry_signal_col].fillna(0)
-                        entry_count = (entry_signals == 1).sum()
-                    else:
-                        entry_count = (result[entry_signal_col] == 1).sum()
-                except Exception as e:
-                    logger.error(f"エントリーカウントエラー: {e}")
-                    entry_count = 0
-                    
-            if exit_signal_col in result.columns:
-                # Series型を安全に扱うための変換
-                try:
-                    if not pd.api.types.is_integer_dtype(result[exit_signal_col]):
-                        # -1の値を持つエグジットをカウント
-                        exit_signals = result[exit_signal_col].fillna(0)
-                        exit_count = (exit_signals == -1).sum()
-                    else:
-                        exit_count = (result[exit_signal_col] == -1).sum()
-                except Exception as e:
-                    logger.error(f"エグジットカウントエラー: {e}")
-                    exit_count = 0
-            
-            # 優先度順にシグナルを統合（既存シグナルがない場合のみ追加）
-            # エントリーとエグジットのシグナル処理を単純化
-            # データフレームのチェック
-            if not isinstance(result, pd.DataFrame):
-                logger.warning(f"{strategy_name}: 結果がDataFrameではありません")
-                continue
-                
-            if result.empty:
-                logger.warning(f"{strategy_name}: 結果データフレームが空です")
-                continue
-                
-            # 安全でシンプルな方法でシグナルを取得
-            entry_dates = []
-            exit_dates = []
-            
-            # columnsチェック
-            if not isinstance(result, pd.DataFrame) or not hasattr(result, 'columns'):
-                logger.error(f"{strategy_name}: データフレームが不正です")
-                continue
-            
-            # エントリーシグナルを収集
-            try:
-                if entry_signal_col in result.columns:
-                    # エントリー日を取得
-                    entry_mask = result[entry_signal_col] == 1
-                    entry_dates = result[entry_mask].index.tolist()
-            except Exception as e:
-                logger.error(f"{strategy_name} エントリーシグナル抽出エラー: {e}")
-                entry_dates = []
-                
-            # エグジットシグナルを収集
-            try:
-                if exit_signal_col in result.columns:
-                    # エグジット日を取得
-                    exit_mask = result[exit_signal_col] == -1
-                    exit_dates = result[exit_mask].index.tolist()
-            except Exception as e:
-                logger.error(f"{strategy_name} エグジットシグナル抽出エラー: {e}")
-                exit_dates = []
-            
-            # シグナル統合
-            for date in entry_dates:
-                try:
-                    if date in stock_data.index:
-                        # リスク管理モジュールを使用してポジション制限をチェック
-                        # 短期取引を促進するため、リスク管理を緩和
-                        if risk_manager.check_position_size(strategy_name) and date not in active_positions:
-                            # エントリーシグナルを追加
-                            stock_data.loc[date, 'Entry_Signal'] = 1
-                            stock_data.loc[date, 'Strategy'] = strategy_name
-                            stock_data.loc[date, 'Position'] = 1  # ポジション状態を更新
-                            active_positions[date] = strategy_name
-                            # リスク管理モジュールのポジション情報も更新
-                            risk_manager.update_position(strategy_name, 1)
-                            logger.info(f"戦略統合: {strategy_name} エントリー: 日付={date}, 全ポジション数={risk_manager.get_total_positions()}")
-                except Exception as e:
-                    logger.error(f"エントリー統合エラー ({strategy_name}, 日付={date}): {e}")
-                    
-            for date in exit_dates:
-                try:
-                    if date in stock_data.index:
-                        # このシグナルに対応するエントリー日を探す（同じ戦略からのもの）
-                        matching_entries = [d for d, s in active_positions.items() 
-                                          if s == strategy_name and d < date]
-                        if matching_entries:
-                            # 最も古いエントリーに対してイグジット（FIFO方式）
-                            oldest_entry = sorted(matching_entries)[0]
-                            stock_data.loc[date, 'Exit_Signal'] = -1
-                            stock_data.loc[date, 'Position'] = 0  # ポジション状態を更新
-                            logger.info(f"戦略統合: {strategy_name} イグジット: 日付={date}, エントリー日={oldest_entry}")
-                            
-                            # ポジションを削除
-                            del active_positions[oldest_entry]
-                            
-                            # リスク管理モジュールのポジション情報も更新
-                            risk_manager.update_position(strategy_name, -1)
-                except Exception as e:
-                    logger.error(f"エグジット統合エラー ({strategy_name}, 日付={date}): {e}")
-                
-# このブロック全体を削除（重複しているため）
-# 代わりに、前のブロックに統合された修正が使用されます
-            
-            # 正確なカウントのために数値を変換
-            # より安全な方法でカウント
-            integrated_entries = sum(1 for _ in stock_data[stock_data['Strategy'] == strategy_name].index)
-            integrated_exits = sum(1 for _ in stock_data[(stock_data['Exit_Signal'] == -1) & (stock_data['Strategy'] == strategy_name)].index)
-            
-            strategy_stats[strategy_name] = {
-                'entries': int(entry_count),
-                'exits': int(exit_count),
-                'integrated_entries': integrated_entries,
-                'integrated_exits': integrated_exits
-            }
-            
-            logger.info(f"戦略完了: {strategy_name} - エントリー: {entry_count}, エグジット: {exit_count}")
-            logger.info(f"  統合後: エントリー: {strategy_stats[strategy_name]['integrated_entries']}, エグジット: {strategy_stats[strategy_name]['integrated_exits']}")
-            
-        except Exception as e:
-            logger.error(f"戦略適用エラー - {strategy_name}: {e}")
-            strategy_stats[strategy_name] = {'entries': 0, 'exits': 0, 'error': str(e)}
-    
-    # 統計をログ出力
-    logger.info("=== 戦略別エントリー/エグジット統計 ===")
-    total_entries = 0
-    total_exits = 0
-    
-    for strategy_name, stats in strategy_stats.items():
-        if 'error' not in stats:
-            logger.info(f"{strategy_name}: エントリー {stats['entries']}, エグジット {stats['exits']}")
-            logger.info(f"  統合後: エントリー {stats.get('integrated_entries', 0)}, エグジット {stats.get('integrated_exits', 0)}")
-            total_entries += stats.get('integrated_entries', 0)
-            total_exits += stats.get('integrated_exits', 0)
-        else:
-            logger.error(f"{strategy_name}: エラー - {stats['error']}")
-    
-    logger.info(f"統合後合計: エントリー {total_entries}, エグジット {total_exits}")
-    
-    # 未処理のオープンポジションを最終日でクローズ
-    # これにより、エントリーとエグジット回数の不均衡を修正
-    if active_positions:
-        logger.warning(f"バックテスト終了時に {len(active_positions)} 件の未決済ポジションがあります。最終日に強制決済します。")
-        last_date = stock_data.index[-1]
-        
-        # 未決済ポジションを戦略ごとに集計
-        positions_by_strategy = {}
-        for entry_date, strategy_name in active_positions.items():
-            if strategy_name not in positions_by_strategy:
-                positions_by_strategy[strategy_name] = []
-            positions_by_strategy[strategy_name].append(entry_date)
-        
-        # 戦略ごとの未決済ポジション数をログ出力
-        for strategy_name, entry_dates in positions_by_strategy.items():
-            logger.warning(f"戦略 {strategy_name} に {len(entry_dates)} 件の未決済ポジションがあります")
-        
-        # 未決済ポジションをすべて最終日で決済
-        for entry_idx, strategy_name in active_positions.items():
-            # 最終日に強制決済
-            stock_data.loc[last_date, 'Exit_Signal'] = -1
-            stock_data.loc[last_date, 'Position'] = 0  # ポジション状態を更新
-            logger.info(f"強制決済: 戦略={strategy_name}, エントリー日={entry_idx}, 決済日={last_date}")
-    
-    return stock_data
-
-
-def main():
-    try:
-        logger.info("マルチ戦略バックテストシステムを開始")
-        
-        # データ取得と前処理
-        ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data()
-        stock_data = preprocess_data(stock_data)
-        stock_data = compute_indicators(stock_data)
-        
-        logger.info(f"データ期間: {start_date} から {end_date}")
-        logger.info(f"データ行数: {len(stock_data)}")
-        
-        # 承認済み最適化パラメータを読み込み
-        optimized_params = load_optimized_parameters(ticker)
-        logger.info(f"読み込み完了: {len(optimized_params)} 戦略のパラメータ")
-        
-        # 統合システム利用可能性をローカル変数として設定
-        use_integrated_system = integrated_system_available
-        
-        # 統合システム利用可能性をチェック
-        if use_integrated_system:
-            try:
-                logger.info("統合マルチ戦略システムを使用してバックテストを実行します")
-                
-                # MultiStrategyManager を初期化
-                manager = MultiStrategyManager()
-                
-                # 戦略実行アダプターを設定（必要に応じて使用）
-                # adapter = StrategyExecutionAdapter()
-                
-                # システム初期化
-                if manager.initialize_system():
-                    logger.info("統合システムの初期化に成功しました")
-                    
-                    # マルチ戦略実行
-                    available_strategies = list(optimized_params.keys())
-                    results = manager.execute_multi_strategy_flow(stock_data, available_strategies)
-                    
-                    if results:
-                        logger.info("統合システムでのバックテスト実行が完了しました")
-                        # MultiStrategyResultから結果データを取得
-                        result_data = results.combined_signals if hasattr(results, 'combined_signals') else stock_data
-                        backtest_results = simulate_and_save(result_data, ticker)
-                    else:
-                        logger.warning("統合システムの実行結果が空でした。従来システムにフォールバックします。")
-                        raise Exception("統合システムの実行に失敗")
-                else:
-                    logger.warning("統合システムの初期化に失敗しました。従来システムにフォールバックします。")
-                    raise Exception("統合システムの初期化失敗")
-                    
-            except Exception as e:
-                logger.error(f"統合システム実行中にエラー: {e}")
-                logger.info("従来のマルチ戦略システムにフォールバックします")
-                use_integrated_system = False
-        
-        if not use_integrated_system:
-            logger.info("従来のマルチ戦略システムを使用してバックテストを実行します")
-            
-            # index_dataがNoneの場合は、同じ期間の日経平均などのインデックスを取得するか、
-            # ダミーのindex_dataを作成する
-            if index_data is None or index_data.empty:
-                logger.warning("市場インデックスデータが取得できませんでした。ダミーデータを作成します。")
-                # ダミーのindex_dataを作成（stock_dataと同じインデックスを使用）
-                index_data = pd.DataFrame(index=stock_data.index)
-                
-                # 必要な列を追加
-                for col in ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']:
-                    if col in stock_data.columns:
-                        index_data[col] = stock_data[col] * 0.9  # 適当な値を設定
-                
-                # データの完全性を確保
-                index_data = index_data.fillna(method='ffill').fillna(method='bfill')
-            
-            # 最適化パラメータを使用して戦略を適用
-            stock_data = apply_strategies_with_optimized_params(stock_data, index_data, optimized_params)
-            
-        # バックテスト結果をExcelに出力（新Excel出力モジュール使用）
-        backtest_results = simulate_and_save(stock_data, ticker)
-        logger.info(f"改良版Excel出力: {backtest_results}")
-        
-        logger.info("マルチ戦略バックテストシステムが正常に完了しました")
-        
-    except Exception as e:
-        logger.exception(f"バックテスト処理中にエラーが発生: {e}")
-        sys.exit(1)
-
-if __name__ == "__main__":
-    main()
+[UP]"[UP]"[UP]"[UP]
+[UP]M[UP]o[UP]d[UP]u[UP]l[UP]e[UP]:[UP] [UP]M[UP]a[UP]i[UP]n[UP]
+[UP]F[UP]i[UP]l[UP]e[UP]:[UP] [UP]m[UP]a[UP]i[UP]n[UP].[UP]p[UP]y[UP]
+[UP]D[UP]e[UP]s[UP]c[UP]r[UP]i[UP]p[UP]t[UP]i[UP]o[UP]n[UP]:[UP] [UP]
+[UP] [UP] [UP]マ[UP]ル[UP]チ[UP]戦[UP]略[UP]バ[UP]ッ[UP]ク[UP]テ[UP]ス[UP]ト[UP]シ[UP]ス[UP]テ[UP]ム[UP]の[UP]メ[UP]イ[UP]ン[UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]ポ[UP]イ[UP]ン[UP]ト[UP]。[UP]
+[UP] [UP] [UP]承[UP]認[UP]済[UP]み[UP]の[UP]最[UP]適[UP]化[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]を[UP]使[UP]用[UP]し[UP]て[UP]複[UP]数[UP]の[UP]戦[UP]略[UP]を[UP]実[UP]行[UP]し[UP]、[UP]
+[UP] [UP] [UP]統[UP]合[UP]さ[UP]れ[UP]た[UP]バ[UP]ッ[UP]ク[UP]テ[UP]ス[UP]ト[UP]結[UP]果[UP]を[UP]生[UP]成[UP]し[UP]ま[UP]す[UP]。[UP]
+[UP]
+[UP]A[UP]u[UP]t[UP]h[UP]o[UP]r[UP]:[UP] [UP]i[UP]m[UP]e[UP]g[UP]a[UP]
+[UP]C[UP]r[UP]e[UP]a[UP]t[UP]e[UP]d[UP]:[UP] [UP]2[UP]0[UP]2[UP]3[UP]-[UP]0[UP]4[UP]-[UP]0[UP]1[UP]
+[UP]M[UP]o[UP]d[UP]i[UP]f[UP]i[UP]e[UP]d[UP]:[UP] [UP]2[UP]0[UP]2[UP]5[UP]-[UP]1[UP]2[UP]-[UP]3[UP]0[UP]
+[UP]
+[UP]F[UP]e[UP]a[UP]t[UP]u[UP]r[UP]e[UP]s[UP]:[UP]
+[UP] [UP] [UP]-[UP] [UP]承[UP]認[UP]済[UP]み[UP]最[UP]適[UP]化[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]の[UP]自[UP]動[UP]読[UP]み[UP]込[UP]み[UP]
+[UP] [UP] [UP]-[UP] [UP]マ[UP]ル[UP]チ[UP]戦[UP]略[UP]シ[UP]ミ[UP]ュ[UP]レ[UP]ー[UP]シ[UP]ョ[UP]ン[UP]（[UP]優[UP]先[UP]度[UP]順[UP]）[UP]
+[UP] [UP] [UP]-[UP] [UP]統[UP]合[UP]さ[UP]れ[UP]た[UP]E[UP]x[UP]c[UP]e[UP]l[UP]結[UP]果[UP]出[UP]力[UP]
+[UP] [UP] [UP]-[UP] [UP]戦[UP]略[UP]別[UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]/[UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]統[UP]計[UP]
+[UP]"[UP]"[UP]"[UP]
+[UP]
+[UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]s[UP]y[UP]s[UP]
+[UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]o[UP]s[UP]
+[UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]l[UP]o[UP]g[UP]g[UP]i[UP]n[UP]g[UP]
+[UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]p[UP]a[UP]n[UP]d[UP]a[UP]s[UP] [UP]a[UP]s[UP] [UP]p[UP]d[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]d[UP]a[UP]t[UP]e[UP]t[UP]i[UP]m[UP]e[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]d[UP]a[UP]t[UP]e[UP]t[UP]i[UP]m[UP]e[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]t[UP]y[UP]p[UP]i[UP]n[UP]g[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]D[UP]i[UP]c[UP]t[UP],[UP] [UP]A[UP]n[UP]y[UP],[UP] [UP]L[UP]i[UP]s[UP]t[UP]
+[UP]
+[UP]#[UP] [UP]プ[UP]ロ[UP]ジ[UP]ェ[UP]ク[UP]ト[UP]の[UP]ル[UP]ー[UP]ト[UP]デ[UP]ィ[UP]レ[UP]ク[UP]ト[UP]リ[UP]を[UP] [UP]s[UP]y[UP]s[UP].[UP]p[UP]a[UP]t[UP]h[UP] [UP]に[UP]追[UP]加[UP]
+[UP]p[UP]r[UP]o[UP]j[UP]e[UP]c[UP]t[UP]_[UP]r[UP]o[UP]o[UP]t[UP] [UP]=[UP] [UP]o[UP]s[UP].[UP]p[UP]a[UP]t[UP]h[UP].[UP]d[UP]i[UP]r[UP]n[UP]a[UP]m[UP]e[UP]([UP]o[UP]s[UP].[UP]p[UP]a[UP]t[UP]h[UP].[UP]d[UP]i[UP]r[UP]n[UP]a[UP]m[UP]e[UP]([UP]o[UP]s[UP].[UP]p[UP]a[UP]t[UP]h[UP].[UP]a[UP]b[UP]s[UP]p[UP]a[UP]t[UP]h[UP]([UP]_[UP]_[UP]f[UP]i[UP]l[UP]e[UP]_[UP]_[UP])[UP])[UP])[UP]
+[UP]s[UP]y[UP]s[UP].[UP]p[UP]a[UP]t[UP]h[UP].[UP]i[UP]n[UP]s[UP]e[UP]r[UP]t[UP]([UP]0[UP],[UP] [UP]p[UP]r[UP]o[UP]j[UP]e[UP]c[UP]t[UP]_[UP]r[UP]o[UP]o[UP]t[UP])[UP]
+[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]s[UP]r[UP]c[UP].[UP]c[UP]o[UP]n[UP]f[UP]i[UP]g[UP].[UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP]_[UP]c[UP]o[UP]n[UP]f[UP]i[UP]g[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]s[UP]e[UP]t[UP]u[UP]p[UP]_[UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]s[UP]r[UP]c[UP].[UP]c[UP]o[UP]n[UP]f[UP]i[UP]g[UP].[UP]r[UP]i[UP]s[UP]k[UP]_[UP]m[UP]a[UP]n[UP]a[UP]g[UP]e[UP]m[UP]e[UP]n[UP]t[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]R[UP]i[UP]s[UP]k[UP]M[UP]a[UP]n[UP]a[UP]g[UP]e[UP]m[UP]e[UP]n[UP]t[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]s[UP]r[UP]c[UP].[UP]c[UP]o[UP]n[UP]f[UP]i[UP]g[UP].[UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]e[UP]t[UP]e[UP]r[UP]s[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]O[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]P[UP]a[UP]r[UP]a[UP]m[UP]e[UP]t[UP]e[UP]r[UP]M[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP]
+[UP]
+[UP]#[UP] [UP]ロ[UP]ガ[UP]ー[UP]の[UP]設[UP]定[UP]
+[UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP] [UP]=[UP] [UP]s[UP]e[UP]t[UP]u[UP]p[UP]_[UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP]([UP]_[UP]_[UP]n[UP]a[UP]m[UP]e[UP]_[UP]_[UP],[UP] [UP]l[UP]o[UP]g[UP]_[UP]f[UP]i[UP]l[UP]e[UP]=[UP]o[UP]s[UP].[UP]p[UP]a[UP]t[UP]h[UP].[UP]j[UP]o[UP]i[UP]n[UP]([UP]p[UP]r[UP]o[UP]j[UP]e[UP]c[UP]t[UP]_[UP]r[UP]o[UP]o[UP]t[UP],[UP] [UP]"[UP]l[UP]o[UP]g[UP]s[UP]"[UP],[UP] [UP]"[UP]b[UP]a[UP]c[UP]k[UP]t[UP]e[UP]s[UP]t[UP].[UP]l[UP]o[UP]g[UP]"[UP])[UP])[UP]
+[UP]
+[UP]#[UP] [UP]新[UP]統[UP]合[UP]シ[UP]ス[UP]テ[UP]ム[UP]の[UP]イ[UP]ン[UP]ポ[UP]ー[UP]ト[UP]
+[UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP]f[UP]r[UP]o[UP]m[UP] [UP]c[UP]o[UP]n[UP]f[UP]i[UP]g[UP].[UP]m[UP]u[UP]l[UP]t[UP]i[UP]_[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]m[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]M[UP]u[UP]l[UP]t[UP]i[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]M[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP],[UP] [UP]E[UP]x[UP]e[UP]c[UP]u[UP]t[UP]i[UP]o[UP]n[UP]M[UP]o[UP]d[UP]e[UP]
+[UP] [UP] [UP] [UP] [UP]f[UP]r[UP]o[UP]m[UP] [UP]c[UP]o[UP]n[UP]f[UP]i[UP]g[UP].[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]e[UP]x[UP]e[UP]c[UP]u[UP]t[UP]i[UP]o[UP]n[UP]_[UP]a[UP]d[UP]a[UP]p[UP]t[UP]e[UP]r[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]E[UP]x[UP]e[UP]c[UP]u[UP]t[UP]i[UP]o[UP]n[UP]A[UP]d[UP]a[UP]p[UP]t[UP]e[UP]r[UP]
+[UP] [UP] [UP] [UP] [UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]s[UP]y[UP]s[UP]t[UP]e[UP]m[UP]_[UP]a[UP]v[UP]a[UP]i[UP]l[UP]a[UP]b[UP]l[UP]e[UP] [UP]=[UP] [UP]T[UP]r[UP]u[UP]e[UP]
+[UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]"[UP]統[UP]合[UP]マ[UP]ル[UP]チ[UP]戦[UP]略[UP]シ[UP]ス[UP]テ[UP]ム[UP]が[UP]利[UP]用[UP]可[UP]能[UP]で[UP]す[UP]"[UP])[UP]
+[UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP] [UP]I[UP]m[UP]p[UP]o[UP]r[UP]t[UP]E[UP]r[UP]r[UP]o[UP]r[UP] [UP]a[UP]s[UP] [UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]s[UP]y[UP]s[UP]t[UP]e[UP]m[UP]_[UP]a[UP]v[UP]a[UP]i[UP]l[UP]a[UP]b[UP]l[UP]e[UP] [UP]=[UP] [UP]F[UP]a[UP]l[UP]s[UP]e[UP]
+[UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]w[UP]a[UP]r[UP]n[UP]i[UP]n[UP]g[UP]([UP]f[UP]"[UP]統[UP]合[UP]シ[UP]ス[UP]テ[UP]ム[UP]が[UP]利[UP]用[UP]で[UP]き[UP]ま[UP]せ[UP]ん[UP]:[UP] [UP]{[UP]e[UP]}[UP]。[UP]従[UP]来[UP]シ[UP]ス[UP]テ[UP]ム[UP]を[UP]使[UP]用[UP]し[UP]ま[UP]す[UP]。[UP]"[UP])[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]s[UP]r[UP]c[UP].[UP]i[UP]n[UP]d[UP]i[UP]c[UP]a[UP]t[UP]o[UP]r[UP]s[UP].[UP]u[UP]n[UP]i[UP]f[UP]i[UP]e[UP]d[UP]_[UP]t[UP]r[UP]e[UP]n[UP]d[UP]_[UP]d[UP]e[UP]t[UP]e[UP]c[UP]t[UP]o[UP]r[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]d[UP]e[UP]t[UP]e[UP]c[UP]t[UP]_[UP]u[UP]n[UP]i[UP]f[UP]i[UP]e[UP]d[UP]_[UP]t[UP]r[UP]e[UP]n[UP]d[UP],[UP] [UP]d[UP]e[UP]t[UP]e[UP]c[UP]t[UP]_[UP]u[UP]n[UP]i[UP]f[UP]i[UP]e[UP]d[UP]_[UP]t[UP]r[UP]e[UP]n[UP]d[UP]_[UP]w[UP]i[UP]t[UP]h[UP]_[UP]c[UP]o[UP]n[UP]f[UP]i[UP]d[UP]e[UP]n[UP]c[UP]e[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]s[UP]r[UP]c[UP].[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]i[UP]e[UP]s[UP].[UP]V[UP]W[UP]A[UP]P[UP]_[UP]B[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]V[UP]W[UP]A[UP]P[UP]B[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]s[UP]r[UP]c[UP].[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]i[UP]e[UP]s[UP].[UP]M[UP]o[UP]m[UP]e[UP]n[UP]t[UP]u[UP]m[UP]_[UP]I[UP]n[UP]v[UP]e[UP]s[UP]t[UP]i[UP]n[UP]g[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]M[UP]o[UP]m[UP]e[UP]n[UP]t[UP]u[UP]m[UP]I[UP]n[UP]v[UP]e[UP]s[UP]t[UP]i[UP]n[UP]g[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]s[UP]r[UP]c[UP].[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]i[UP]e[UP]s[UP].[UP]B[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]B[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]s[UP]r[UP]c[UP].[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]i[UP]e[UP]s[UP].[UP]V[UP]W[UP]A[UP]P[UP]_[UP]B[UP]o[UP]u[UP]n[UP]c[UP]e[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]V[UP]W[UP]A[UP]P[UP]B[UP]o[UP]u[UP]n[UP]c[UP]e[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]s[UP]r[UP]c[UP].[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]i[UP]e[UP]s[UP].[UP]O[UP]p[UP]e[UP]n[UP]i[UP]n[UP]g[UP]_[UP]G[UP]a[UP]p[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]O[UP]p[UP]e[UP]n[UP]i[UP]n[UP]g[UP]G[UP]a[UP]p[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]s[UP]r[UP]c[UP].[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]i[UP]e[UP]s[UP].[UP]c[UP]o[UP]n[UP]t[UP]r[UP]a[UP]r[UP]i[UP]a[UP]n[UP]_[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]C[UP]o[UP]n[UP]t[UP]r[UP]a[UP]r[UP]i[UP]a[UP]n[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]s[UP]r[UP]c[UP].[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]i[UP]e[UP]s[UP].[UP]g[UP]c[UP]_[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]G[UP]C[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]d[UP]a[UP]t[UP]a[UP]_[UP]p[UP]r[UP]o[UP]c[UP]e[UP]s[UP]s[UP]o[UP]r[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]p[UP]r[UP]e[UP]p[UP]r[UP]o[UP]c[UP]e[UP]s[UP]s[UP]_[UP]d[UP]a[UP]t[UP]a[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]s[UP]r[UP]c[UP].[UP]i[UP]n[UP]d[UP]i[UP]c[UP]a[UP]t[UP]o[UP]r[UP]s[UP].[UP]i[UP]n[UP]d[UP]i[UP]c[UP]a[UP]t[UP]o[UP]r[UP]_[UP]c[UP]a[UP]l[UP]c[UP]u[UP]l[UP]a[UP]t[UP]o[UP]r[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]c[UP]o[UP]m[UP]p[UP]u[UP]t[UP]e[UP]_[UP]i[UP]n[UP]d[UP]i[UP]c[UP]a[UP]t[UP]o[UP]r[UP]s[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]d[UP]a[UP]t[UP]a[UP]_[UP]f[UP]e[UP]t[UP]c[UP]h[UP]e[UP]r[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]g[UP]e[UP]t[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]e[UP]t[UP]e[UP]r[UP]s[UP]_[UP]a[UP]n[UP]d[UP]_[UP]d[UP]a[UP]t[UP]a[UP]
+[UP]f[UP]r[UP]o[UP]m[UP] [UP]o[UP]u[UP]t[UP]p[UP]u[UP]t[UP].[UP]s[UP]i[UP]m[UP]p[UP]l[UP]e[UP]_[UP]s[UP]i[UP]m[UP]u[UP]l[UP]a[UP]t[UP]i[UP]o[UP]n[UP]_[UP]h[UP]a[UP]n[UP]d[UP]l[UP]e[UP]r[UP] [UP]i[UP]m[UP]p[UP]o[UP]r[UP]t[UP] [UP]s[UP]i[UP]m[UP]u[UP]l[UP]a[UP]t[UP]e[UP]_[UP]a[UP]n[UP]d[UP]_[UP]s[UP]a[UP]v[UP]e[UP]
+[UP]
+[UP]#[UP] [UP]リ[UP]ス[UP]ク[UP]管[UP]理[UP]の[UP]初[UP]期[UP]化[UP]
+[UP]r[UP]i[UP]s[UP]k[UP]_[UP]m[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP] [UP]=[UP] [UP]R[UP]i[UP]s[UP]k[UP]M[UP]a[UP]n[UP]a[UP]g[UP]e[UP]m[UP]e[UP]n[UP]t[UP]([UP]t[UP]o[UP]t[UP]a[UP]l[UP]_[UP]a[UP]s[UP]s[UP]e[UP]t[UP]s[UP]=[UP]1[UP]0[UP]0[UP]0[UP]0[UP]0[UP]0[UP])[UP] [UP] [UP]#[UP] [UP]総[UP]資[UP]産[UP]1[UP]0[UP]0[UP]万[UP]円[UP]
+[UP]
+[UP]#[UP] [UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]マ[UP]ネ[UP]ー[UP]ジ[UP]ャ[UP]ー[UP]の[UP]初[UP]期[UP]化[UP]
+[UP]p[UP]a[UP]r[UP]a[UP]m[UP]_[UP]m[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP] [UP]=[UP] [UP]O[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]P[UP]a[UP]r[UP]a[UP]m[UP]e[UP]t[UP]e[UP]r[UP]M[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP]([UP])[UP]
+[UP]
+[UP]
+[UP]d[UP]e[UP]f[UP] [UP]l[UP]o[UP]a[UP]d[UP]_[UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]e[UP]t[UP]e[UP]r[UP]s[UP]([UP]t[UP]i[UP]c[UP]k[UP]e[UP]r[UP]:[UP] [UP]s[UP]t[UP]r[UP])[UP] [UP]-[UP]>[UP] [UP]D[UP]i[UP]c[UP]t[UP][[UP]s[UP]t[UP]r[UP],[UP] [UP]D[UP]i[UP]c[UP]t[UP][[UP]s[UP]t[UP]r[UP],[UP] [UP]A[UP]n[UP]y[UP]][UP]][UP]:[UP]
+[UP] [UP] [UP] [UP] [UP]"[UP]"[UP]"[UP]
+[UP] [UP] [UP] [UP] [UP]各[UP]戦[UP]略[UP]の[UP]承[UP]認[UP]済[UP]み[UP]最[UP]適[UP]化[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]を[UP]読[UP]み[UP]込[UP]み[UP]ま[UP]す[UP]。[UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]P[UP]a[UP]r[UP]a[UP]m[UP]e[UP]t[UP]e[UP]r[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]i[UP]c[UP]k[UP]e[UP]r[UP] [UP]([UP]s[UP]t[UP]r[UP])[UP]:[UP] [UP]銘[UP]柄[UP]シ[UP]ン[UP]ボ[UP]ル[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]R[UP]e[UP]t[UP]u[UP]r[UP]n[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]D[UP]i[UP]c[UP]t[UP][[UP]s[UP]t[UP]r[UP],[UP] [UP]D[UP]i[UP]c[UP]t[UP][[UP]s[UP]t[UP]r[UP],[UP] [UP]A[UP]n[UP]y[UP]][UP]][UP]:[UP] [UP]戦[UP]略[UP]名[UP]を[UP]キ[UP]ー[UP]と[UP]す[UP]る[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]辞[UP]書[UP]
+[UP] [UP] [UP] [UP] [UP]"[UP]"[UP]"[UP]
+[UP] [UP] [UP] [UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]i[UP]e[UP]s[UP] [UP]=[UP] [UP][[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]V[UP]W[UP]A[UP]P[UP]B[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]M[UP]o[UP]m[UP]e[UP]n[UP]t[UP]u[UP]m[UP]I[UP]n[UP]v[UP]e[UP]s[UP]t[UP]i[UP]n[UP]g[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP],[UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]B[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]V[UP]W[UP]A[UP]P[UP]B[UP]o[UP]u[UP]n[UP]c[UP]e[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]O[UP]p[UP]e[UP]n[UP]i[UP]n[UP]g[UP]G[UP]a[UP]p[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]C[UP]o[UP]n[UP]t[UP]r[UP]a[UP]r[UP]i[UP]a[UP]n[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]G[UP]C[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP]
+[UP] [UP] [UP] [UP] [UP]][UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP] [UP]=[UP] [UP]{[UP]}[UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]f[UP]o[UP]r[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP] [UP]i[UP]n[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]i[UP]e[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP] [UP]=[UP] [UP]p[UP]a[UP]r[UP]a[UP]m[UP]_[UP]m[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP].[UP]l[UP]o[UP]a[UP]d[UP]_[UP]a[UP]p[UP]p[UP]r[UP]o[UP]v[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP]([UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP],[UP] [UP]t[UP]i[UP]c[UP]k[UP]e[UP]r[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP][[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]][UP] [UP]=[UP] [UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]f[UP]"[UP]承[UP]認[UP]済[UP]み[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]を[UP]読[UP]み[UP]込[UP]み[UP] [UP]-[UP] [UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP]:[UP] [UP]{[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]l[UP]s[UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]w[UP]a[UP]r[UP]n[UP]i[UP]n[UP]g[UP]([UP]f[UP]"[UP]承[UP]認[UP]済[UP]み[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]が[UP]見[UP]つ[UP]か[UP]り[UP]ま[UP]せ[UP]ん[UP] [UP]-[UP] [UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]デ[UP]フ[UP]ォ[UP]ル[UP]ト[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]を[UP]使[UP]用[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP][[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]][UP] [UP]=[UP] [UP]g[UP]e[UP]t[UP]_[UP]d[UP]e[UP]f[UP]a[UP]u[UP]l[UP]t[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]e[UP]t[UP]e[UP]r[UP]s[UP]([UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP] [UP]E[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP] [UP]a[UP]s[UP] [UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]e[UP]r[UP]r[UP]o[UP]r[UP]([UP]f[UP]"[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]読[UP]み[UP]込[UP]み[UP]エ[UP]ラ[UP]ー[UP] [UP]-[UP] [UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP]:[UP] [UP]{[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]デ[UP]フ[UP]ォ[UP]ル[UP]ト[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]を[UP]使[UP]用[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP][[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]][UP] [UP]=[UP] [UP]g[UP]e[UP]t[UP]_[UP]d[UP]e[UP]f[UP]a[UP]u[UP]l[UP]t[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]e[UP]t[UP]e[UP]r[UP]s[UP]([UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP])[UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]r[UP]e[UP]t[UP]u[UP]r[UP]n[UP] [UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP]
+[UP]
+[UP]
+[UP]d[UP]e[UP]f[UP] [UP]g[UP]e[UP]t[UP]_[UP]d[UP]e[UP]f[UP]a[UP]u[UP]l[UP]t[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]e[UP]t[UP]e[UP]r[UP]s[UP]([UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]:[UP] [UP]s[UP]t[UP]r[UP])[UP] [UP]-[UP]>[UP] [UP]D[UP]i[UP]c[UP]t[UP][[UP]s[UP]t[UP]r[UP],[UP] [UP]A[UP]n[UP]y[UP]][UP]:[UP]
+[UP] [UP] [UP] [UP] [UP]"[UP]"[UP]"[UP]
+[UP] [UP] [UP] [UP] [UP]戦[UP]略[UP]の[UP]デ[UP]フ[UP]ォ[UP]ル[UP]ト[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]を[UP]取[UP]得[UP]し[UP]ま[UP]す[UP]。[UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]P[UP]a[UP]r[UP]a[UP]m[UP]e[UP]t[UP]e[UP]r[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP] [UP]([UP]s[UP]t[UP]r[UP])[UP]:[UP] [UP]戦[UP]略[UP]名[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]R[UP]e[UP]t[UP]u[UP]r[UP]n[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]D[UP]i[UP]c[UP]t[UP][[UP]s[UP]t[UP]r[UP],[UP] [UP]A[UP]n[UP]y[UP]][UP]:[UP] [UP]デ[UP]フ[UP]ォ[UP]ル[UP]ト[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]
+[UP] [UP] [UP] [UP] [UP]"[UP]"[UP]"[UP]
+[UP] [UP] [UP] [UP] [UP]d[UP]e[UP]f[UP]a[UP]u[UP]l[UP]t[UP]s[UP] [UP]=[UP] [UP]{[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]V[UP]W[UP]A[UP]P[UP]B[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP]:[UP] [UP]{[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]v[UP]w[UP]a[UP]p[UP]_[UP]p[UP]e[UP]r[UP]i[UP]o[UP]d[UP]'[UP]:[UP] [UP]2[UP]0[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]v[UP]o[UP]l[UP]u[UP]m[UP]e[UP]_[UP]t[UP]h[UP]r[UP]e[UP]s[UP]h[UP]o[UP]l[UP]d[UP]_[UP]m[UP]u[UP]l[UP]t[UP]i[UP]p[UP]l[UP]i[UP]e[UP]r[UP]'[UP]:[UP] [UP]1[UP].[UP]5[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]b[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP]_[UP]t[UP]h[UP]r[UP]e[UP]s[UP]h[UP]o[UP]l[UP]d[UP]'[UP]:[UP] [UP]0[UP].[UP]0[UP]2[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]s[UP]t[UP]o[UP]p[UP]_[UP]l[UP]o[UP]s[UP]s[UP]_[UP]p[UP]c[UP]t[UP]'[UP]:[UP] [UP]0[UP].[UP]0[UP]5[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]t[UP]a[UP]k[UP]e[UP]_[UP]p[UP]r[UP]o[UP]f[UP]i[UP]t[UP]_[UP]p[UP]c[UP]t[UP]'[UP]:[UP] [UP]0[UP].[UP]1[UP]0[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]}[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]M[UP]o[UP]m[UP]e[UP]n[UP]t[UP]u[UP]m[UP]I[UP]n[UP]v[UP]e[UP]s[UP]t[UP]i[UP]n[UP]g[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP]:[UP] [UP]{[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]m[UP]o[UP]m[UP]e[UP]n[UP]t[UP]u[UP]m[UP]_[UP]p[UP]e[UP]r[UP]i[UP]o[UP]d[UP]'[UP]:[UP] [UP]1[UP]4[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]r[UP]s[UP]i[UP]_[UP]p[UP]e[UP]r[UP]i[UP]o[UP]d[UP]'[UP]:[UP] [UP]1[UP]4[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]r[UP]s[UP]i[UP]_[UP]o[UP]v[UP]e[UP]r[UP]b[UP]o[UP]u[UP]g[UP]h[UP]t[UP]'[UP]:[UP] [UP]7[UP]0[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]r[UP]s[UP]i[UP]_[UP]o[UP]v[UP]e[UP]r[UP]s[UP]o[UP]l[UP]d[UP]'[UP]:[UP] [UP]3[UP]0[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]s[UP]t[UP]o[UP]p[UP]_[UP]l[UP]o[UP]s[UP]s[UP]_[UP]p[UP]c[UP]t[UP]'[UP]:[UP] [UP]0[UP].[UP]0[UP]5[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]t[UP]a[UP]k[UP]e[UP]_[UP]p[UP]r[UP]o[UP]f[UP]i[UP]t[UP]_[UP]p[UP]c[UP]t[UP]'[UP]:[UP] [UP]0[UP].[UP]1[UP]0[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]}[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]B[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP]:[UP] [UP]{[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]l[UP]o[UP]o[UP]k[UP]b[UP]a[UP]c[UP]k[UP]_[UP]p[UP]e[UP]r[UP]i[UP]o[UP]d[UP]'[UP]:[UP] [UP]2[UP]0[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]v[UP]o[UP]l[UP]u[UP]m[UP]e[UP]_[UP]t[UP]h[UP]r[UP]e[UP]s[UP]h[UP]o[UP]l[UP]d[UP]'[UP]:[UP] [UP]1[UP].[UP]5[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]b[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP]_[UP]t[UP]h[UP]r[UP]e[UP]s[UP]h[UP]o[UP]l[UP]d[UP]'[UP]:[UP] [UP]0[UP].[UP]0[UP]2[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]s[UP]t[UP]o[UP]p[UP]_[UP]l[UP]o[UP]s[UP]s[UP]_[UP]p[UP]c[UP]t[UP]'[UP]:[UP] [UP]0[UP].[UP]0[UP]5[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]t[UP]a[UP]k[UP]e[UP]_[UP]p[UP]r[UP]o[UP]f[UP]i[UP]t[UP]_[UP]p[UP]c[UP]t[UP]'[UP]:[UP] [UP]0[UP].[UP]1[UP]0[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]}[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]V[UP]W[UP]A[UP]P[UP]B[UP]o[UP]u[UP]n[UP]c[UP]e[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP]:[UP] [UP]{[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]v[UP]w[UP]a[UP]p[UP]_[UP]p[UP]e[UP]r[UP]i[UP]o[UP]d[UP]'[UP]:[UP] [UP]2[UP]0[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]d[UP]e[UP]v[UP]i[UP]a[UP]t[UP]i[UP]o[UP]n[UP]_[UP]t[UP]h[UP]r[UP]e[UP]s[UP]h[UP]o[UP]l[UP]d[UP]'[UP]:[UP] [UP]0[UP].[UP]0[UP]2[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]v[UP]o[UP]l[UP]u[UP]m[UP]e[UP]_[UP]t[UP]h[UP]r[UP]e[UP]s[UP]h[UP]o[UP]l[UP]d[UP]'[UP]:[UP] [UP]1[UP].[UP]2[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]s[UP]t[UP]o[UP]p[UP]_[UP]l[UP]o[UP]s[UP]s[UP]_[UP]p[UP]c[UP]t[UP]'[UP]:[UP] [UP]0[UP].[UP]0[UP]3[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]t[UP]a[UP]k[UP]e[UP]_[UP]p[UP]r[UP]o[UP]f[UP]i[UP]t[UP]_[UP]p[UP]c[UP]t[UP]'[UP]:[UP] [UP]0[UP].[UP]0[UP]6[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]}[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]O[UP]p[UP]e[UP]n[UP]i[UP]n[UP]g[UP]G[UP]a[UP]p[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP]:[UP] [UP]{[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]g[UP]a[UP]p[UP]_[UP]t[UP]h[UP]r[UP]e[UP]s[UP]h[UP]o[UP]l[UP]d[UP]'[UP]:[UP] [UP]0[UP].[UP]0[UP]2[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]v[UP]o[UP]l[UP]u[UP]m[UP]e[UP]_[UP]t[UP]h[UP]r[UP]e[UP]s[UP]h[UP]o[UP]l[UP]d[UP]'[UP]:[UP] [UP]1[UP].[UP]5[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]c[UP]o[UP]n[UP]f[UP]i[UP]r[UP]m[UP]a[UP]t[UP]i[UP]o[UP]n[UP]_[UP]p[UP]e[UP]r[UP]i[UP]o[UP]d[UP]'[UP]:[UP] [UP]3[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]s[UP]t[UP]o[UP]p[UP]_[UP]l[UP]o[UP]s[UP]s[UP]_[UP]p[UP]c[UP]t[UP]'[UP]:[UP] [UP]0[UP].[UP]0[UP]5[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]t[UP]a[UP]k[UP]e[UP]_[UP]p[UP]r[UP]o[UP]f[UP]i[UP]t[UP]_[UP]p[UP]c[UP]t[UP]'[UP]:[UP] [UP]0[UP].[UP]1[UP]0[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]}[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]C[UP]o[UP]n[UP]t[UP]r[UP]a[UP]r[UP]i[UP]a[UP]n[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP]:[UP] [UP]{[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]r[UP]s[UP]i[UP]_[UP]p[UP]e[UP]r[UP]i[UP]o[UP]d[UP]'[UP]:[UP] [UP]1[UP]4[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]r[UP]s[UP]i[UP]_[UP]o[UP]v[UP]e[UP]r[UP]s[UP]o[UP]l[UP]d[UP]'[UP]:[UP] [UP]3[UP]0[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]r[UP]s[UP]i[UP]_[UP]o[UP]v[UP]e[UP]r[UP]b[UP]o[UP]u[UP]g[UP]h[UP]t[UP]'[UP]:[UP] [UP]7[UP]0[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]s[UP]t[UP]o[UP]p[UP]_[UP]l[UP]o[UP]s[UP]s[UP]_[UP]p[UP]c[UP]t[UP]'[UP]:[UP] [UP]0[UP].[UP]0[UP]5[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]t[UP]a[UP]k[UP]e[UP]_[UP]p[UP]r[UP]o[UP]f[UP]i[UP]t[UP]_[UP]p[UP]c[UP]t[UP]'[UP]:[UP] [UP]0[UP].[UP]0[UP]8[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]}[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]G[UP]C[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP]:[UP] [UP]{[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]s[UP]h[UP]o[UP]r[UP]t[UP]_[UP]w[UP]i[UP]n[UP]d[UP]o[UP]w[UP]'[UP]:[UP] [UP]5[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]l[UP]o[UP]n[UP]g[UP]_[UP]w[UP]i[UP]n[UP]d[UP]o[UP]w[UP]'[UP]:[UP] [UP]2[UP]5[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]s[UP]t[UP]o[UP]p[UP]_[UP]l[UP]o[UP]s[UP]s[UP]'[UP]:[UP] [UP]0[UP].[UP]0[UP]5[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]t[UP]a[UP]k[UP]e[UP]_[UP]p[UP]r[UP]o[UP]f[UP]i[UP]t[UP]'[UP]:[UP] [UP]0[UP].[UP]1[UP]0[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]}[UP]
+[UP] [UP] [UP] [UP] [UP]}[UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]r[UP]e[UP]t[UP]u[UP]r[UP]n[UP] [UP]d[UP]e[UP]f[UP]a[UP]u[UP]l[UP]t[UP]s[UP].[UP]g[UP]e[UP]t[UP]([UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP],[UP] [UP]{[UP]}[UP])[UP]
+[UP]
+[UP]
+[UP]d[UP]e[UP]f[UP] [UP]c[UP]h[UP]e[UP]c[UP]k[UP]_[UP]f[UP]o[UP]r[UP]_[UP]s[UP]e[UP]r[UP]i[UP]e[UP]s[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]([UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP])[UP] [UP]-[UP]>[UP] [UP]i[UP]n[UP]t[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP]"[UP]"[UP]"[UP]シ[UP]グ[UP]ナ[UP]ル[UP]が[UP]S[UP]e[UP]r[UP]i[UP]e[UP]s[UP]の[UP]場[UP]合[UP]の[UP]処[UP]理[UP]を[UP]行[UP]う[UP]ヘ[UP]ル[UP]パ[UP]ー[UP]関[UP]数[UP]"[UP]"[UP]"[UP]
+[UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]i[UP]s[UP]i[UP]n[UP]s[UP]t[UP]a[UP]n[UP]c[UP]e[UP]([UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP],[UP] [UP]p[UP]d[UP].[UP]S[UP]e[UP]r[UP]i[UP]e[UP]s[UP])[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]S[UP]e[UP]r[UP]i[UP]e[UP]s[UP]の[UP]場[UP]合[UP]、[UP]最[UP]初[UP]の[UP]値[UP]を[UP]取[UP]り[UP]出[UP]す[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP].[UP]e[UP]m[UP]p[UP]t[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]r[UP]e[UP]t[UP]u[UP]r[UP]n[UP] [UP]0[UP] [UP] [UP]#[UP] [UP]空[UP]の[UP]S[UP]e[UP]r[UP]i[UP]e[UP]s[UP]の[UP]場[UP]合[UP]は[UP]0[UP]を[UP]返[UP]す[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]f[UP]i[UP]r[UP]s[UP]t[UP]_[UP]v[UP]a[UP]l[UP] [UP]=[UP] [UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP].[UP]i[UP]l[UP]o[UP]c[UP][[UP]0[UP]][UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]r[UP]e[UP]t[UP]u[UP]r[UP]n[UP] [UP]1[UP] [UP]i[UP]f[UP] [UP]f[UP]i[UP]r[UP]s[UP]t[UP]_[UP]v[UP]a[UP]l[UP] [UP]=[UP]=[UP] [UP]1[UP] [UP]e[UP]l[UP]s[UP]e[UP] [UP]([UP]-[UP]1[UP] [UP]i[UP]f[UP] [UP]f[UP]i[UP]r[UP]s[UP]t[UP]_[UP]v[UP]a[UP]l[UP] [UP]=[UP]=[UP] [UP]-[UP]1[UP] [UP]e[UP]l[UP]s[UP]e[UP] [UP]0[UP])[UP]
+[UP] [UP] [UP] [UP] [UP]#[UP] [UP]N[UP]a[UP]N[UP]の[UP]場[UP]合[UP]は[UP]0[UP]を[UP]返[UP]す[UP]
+[UP] [UP] [UP] [UP] [UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]p[UP]d[UP].[UP]i[UP]s[UP]n[UP]a[UP]([UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP])[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]r[UP]e[UP]t[UP]u[UP]r[UP]n[UP] [UP]0[UP]
+[UP] [UP] [UP] [UP] [UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]p[UP]a[UP]s[UP]s[UP]
+[UP] [UP] [UP] [UP] [UP]#[UP] [UP]通[UP]常[UP]の[UP]場[UP]合[UP]は[UP]i[UP]n[UP]t[UP]型[UP]に[UP]変[UP]換[UP]
+[UP] [UP] [UP] [UP] [UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]r[UP]e[UP]t[UP]u[UP]r[UP]n[UP] [UP]i[UP]n[UP]t[UP]([UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP])[UP]
+[UP] [UP] [UP] [UP] [UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]r[UP]e[UP]t[UP]u[UP]r[UP]n[UP] [UP]0[UP]
+[UP]
+[UP]
+[UP]d[UP]e[UP]f[UP] [UP]a[UP]p[UP]p[UP]l[UP]y[UP]_[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]i[UP]e[UP]s[UP]_[UP]w[UP]i[UP]t[UP]h[UP]_[UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP]([UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP]:[UP] [UP]p[UP]d[UP].[UP]D[UP]a[UP]t[UP]a[UP]F[UP]r[UP]a[UP]m[UP]e[UP],[UP] [UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP]:[UP] [UP]p[UP]d[UP].[UP]D[UP]a[UP]t[UP]a[UP]F[UP]r[UP]a[UP]m[UP]e[UP],[UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP]:[UP] [UP]D[UP]i[UP]c[UP]t[UP][[UP]s[UP]t[UP]r[UP],[UP] [UP]D[UP]i[UP]c[UP]t[UP][[UP]s[UP]t[UP]r[UP],[UP] [UP]A[UP]n[UP]y[UP]][UP]][UP])[UP] [UP]-[UP]>[UP] [UP]p[UP]d[UP].[UP]D[UP]a[UP]t[UP]a[UP]F[UP]r[UP]a[UP]m[UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP]"[UP]"[UP]"[UP]
+[UP] [UP] [UP] [UP] [UP]最[UP]適[UP]化[UP]さ[UP]れ[UP]た[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]を[UP]使[UP]用[UP]し[UP]て[UP]戦[UP]略[UP]を[UP]適[UP]用[UP]し[UP]ま[UP]す[UP]。[UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]P[UP]a[UP]r[UP]a[UP]m[UP]e[UP]t[UP]e[UP]r[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP] [UP]([UP]p[UP]d[UP].[UP]D[UP]a[UP]t[UP]a[UP]F[UP]r[UP]a[UP]m[UP]e[UP])[UP]:[UP] [UP]株[UP]価[UP]デ[UP]ー[UP]タ[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP] [UP]([UP]p[UP]d[UP].[UP]D[UP]a[UP]t[UP]a[UP]F[UP]r[UP]a[UP]m[UP]e[UP])[UP]:[UP] [UP]市[UP]場[UP]イ[UP]ン[UP]デ[UP]ッ[UP]ク[UP]ス[UP]デ[UP]ー[UP]タ[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP] [UP]([UP]D[UP]i[UP]c[UP]t[UP])[UP]:[UP] [UP]戦[UP]略[UP]別[UP]最[UP]適[UP]化[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]R[UP]e[UP]t[UP]u[UP]r[UP]n[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]p[UP]d[UP].[UP]D[UP]a[UP]t[UP]a[UP]F[UP]r[UP]a[UP]m[UP]e[UP]:[UP] [UP]シ[UP]グ[UP]ナ[UP]ル[UP]を[UP]追[UP]加[UP]し[UP]た[UP]株[UP]価[UP]デ[UP]ー[UP]タ[UP]
+[UP] [UP] [UP] [UP] [UP]"[UP]"[UP]"[UP]
+[UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]"[UP]最[UP]適[UP]化[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]を[UP]使[UP]用[UP]し[UP]た[UP]戦[UP]略[UP]適[UP]用[UP]を[UP]開[UP]始[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]#[UP] [UP]戦[UP]略[UP]の[UP]優[UP]先[UP]順[UP]位[UP]（[UP]高[UP]優[UP]先[UP]度[UP]か[UP]ら[UP]）[UP]
+[UP] [UP] [UP] [UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]p[UP]r[UP]i[UP]o[UP]r[UP]i[UP]t[UP]y[UP] [UP]=[UP] [UP][[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]([UP]'[UP]V[UP]W[UP]A[UP]P[UP]B[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP],[UP] [UP]V[UP]W[UP]A[UP]P[UP]B[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP])[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]([UP]'[UP]M[UP]o[UP]m[UP]e[UP]n[UP]t[UP]u[UP]m[UP]I[UP]n[UP]v[UP]e[UP]s[UP]t[UP]i[UP]n[UP]g[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP],[UP] [UP]M[UP]o[UP]m[UP]e[UP]n[UP]t[UP]u[UP]m[UP]I[UP]n[UP]v[UP]e[UP]s[UP]t[UP]i[UP]n[UP]g[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP])[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]([UP]'[UP]B[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP],[UP] [UP]B[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP])[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]([UP]'[UP]V[UP]W[UP]A[UP]P[UP]B[UP]o[UP]u[UP]n[UP]c[UP]e[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP],[UP] [UP]V[UP]W[UP]A[UP]P[UP]B[UP]o[UP]u[UP]n[UP]c[UP]e[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP])[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]([UP]'[UP]O[UP]p[UP]e[UP]n[UP]i[UP]n[UP]g[UP]G[UP]a[UP]p[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP],[UP] [UP]O[UP]p[UP]e[UP]n[UP]i[UP]n[UP]g[UP]G[UP]a[UP]p[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP])[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]([UP]'[UP]C[UP]o[UP]n[UP]t[UP]r[UP]a[UP]r[UP]i[UP]a[UP]n[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP],[UP] [UP]C[UP]o[UP]n[UP]t[UP]r[UP]a[UP]r[UP]i[UP]a[UP]n[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP])[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]([UP]'[UP]G[UP]C[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP],[UP] [UP]G[UP]C[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP])[UP]
+[UP] [UP] [UP] [UP] [UP]][UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]#[UP] [UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]/[UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]統[UP]計[UP]
+[UP] [UP] [UP] [UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]s[UP]t[UP]a[UP]t[UP]s[UP] [UP]=[UP] [UP]{[UP]}[UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]#[UP] [UP]統[UP]合[UP]さ[UP]れ[UP]た[UP]シ[UP]グ[UP]ナ[UP]ル[UP]列[UP]を[UP]初[UP]期[UP]化[UP]
+[UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP][[UP]'[UP]E[UP]n[UP]t[UP]r[UP]y[UP]_[UP]S[UP]i[UP]g[UP]n[UP]a[UP]l[UP]'[UP]][UP] [UP]=[UP] [UP]0[UP]
+[UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP][[UP]'[UP]E[UP]x[UP]i[UP]t[UP]_[UP]S[UP]i[UP]g[UP]n[UP]a[UP]l[UP]'[UP]][UP] [UP]=[UP] [UP]0[UP]
+[UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP][[UP]'[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP]][UP] [UP]=[UP] [UP]'[UP]'[UP]
+[UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP][[UP]'[UP]P[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]_[UP]S[UP]i[UP]z[UP]e[UP]'[UP]][UP] [UP]=[UP] [UP]1[UP].[UP]0[UP]
+[UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP][[UP]'[UP]P[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]'[UP]][UP] [UP]=[UP] [UP]0[UP] [UP] [UP]#[UP] [UP]ポ[UP]ジ[UP]シ[UP]ョ[UP]ン[UP]状[UP]態[UP]を[UP]追[UP]跡[UP]す[UP]る[UP]列[UP]を[UP]追[UP]加[UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]#[UP] [UP]各[UP]日[UP]付[UP]で[UP]ど[UP]の[UP]戦[UP]略[UP]が[UP]ア[UP]ク[UP]テ[UP]ィ[UP]ブ[UP]か[UP]を[UP]追[UP]跡[UP]
+[UP] [UP] [UP] [UP] [UP]a[UP]c[UP]t[UP]i[UP]v[UP]e[UP]_[UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]s[UP] [UP]=[UP] [UP]{[UP]}[UP] [UP] [UP]#[UP] [UP]{[UP]日[UP]付[UP]:[UP] [UP]戦[UP]略[UP]名[UP]}[UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]f[UP]o[UP]r[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP],[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]c[UP]l[UP]a[UP]s[UP]s[UP] [UP]i[UP]n[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]p[UP]r[UP]i[UP]o[UP]r[UP]i[UP]t[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP] [UP]=[UP] [UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP].[UP]g[UP]e[UP]t[UP]([UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP],[UP] [UP]{[UP]}[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]f[UP]"[UP]戦[UP]略[UP]適[UP]用[UP]開[UP]始[UP]:[UP] [UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP] [UP]w[UP]i[UP]t[UP]h[UP] [UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP]:[UP] [UP]{[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]戦[UP]略[UP]ご[UP]と[UP]に[UP]必[UP]要[UP]な[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]を[UP]渡[UP]す[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP] [UP]=[UP]=[UP] [UP]'[UP]V[UP]W[UP]A[UP]P[UP]B[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP] [UP]=[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]c[UP]l[UP]a[UP]s[UP]s[UP]([UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]d[UP]a[UP]t[UP]a[UP]=[UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]c[UP]o[UP]p[UP]y[UP]([UP])[UP],[UP] [UP] [UP]#[UP] [UP]コ[UP]ピ[UP]ー[UP]を[UP]使[UP]用[UP]し[UP]て[UP]相[UP]互[UP]影[UP]響[UP]を[UP]避[UP]け[UP]る[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP]=[UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP],[UP] [UP] [UP]#[UP] [UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP]を[UP]最[UP]初[UP]の[UP]引[UP]数[UP]に[UP]移[UP]動[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP]=[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]p[UP]r[UP]i[UP]c[UP]e[UP]_[UP]c[UP]o[UP]l[UP]u[UP]m[UP]n[UP]=[UP]"[UP]A[UP]d[UP]j[UP] [UP]C[UP]l[UP]o[UP]s[UP]e[UP]"[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP] [UP]E[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP] [UP]a[UP]s[UP] [UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]e[UP]r[UP]r[UP]o[UP]r[UP]([UP]f[UP]"[UP]V[UP]W[UP]A[UP]P[UP]B[UP]r[UP]e[UP]a[UP]k[UP]o[UP]u[UP]t[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]初[UP]期[UP]化[UP]エ[UP]ラ[UP]ー[UP]:[UP] [UP]{[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]c[UP]o[UP]n[UP]t[UP]i[UP]n[UP]u[UP]e[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]l[UP]i[UP]f[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP] [UP]=[UP]=[UP] [UP]'[UP]O[UP]p[UP]e[UP]n[UP]i[UP]n[UP]g[UP]G[UP]a[UP]p[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP] [UP]=[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]c[UP]l[UP]a[UP]s[UP]s[UP]([UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]d[UP]a[UP]t[UP]a[UP]=[UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]c[UP]o[UP]p[UP]y[UP]([UP])[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP]=[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]p[UP]r[UP]i[UP]c[UP]e[UP]_[UP]c[UP]o[UP]l[UP]u[UP]m[UP]n[UP]=[UP]"[UP]A[UP]d[UP]j[UP] [UP]C[UP]l[UP]o[UP]s[UP]e[UP]"[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]d[UP]o[UP]w[UP]_[UP]d[UP]a[UP]t[UP]a[UP]=[UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP] [UP] [UP]#[UP] [UP]O[UP]p[UP]e[UP]n[UP]i[UP]n[UP]g[UP]G[UP]a[UP]p[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]は[UP]d[UP]o[UP]w[UP]_[UP]d[UP]a[UP]t[UP]a[UP]が[UP]必[UP]要[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]l[UP]s[UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]そ[UP]の[UP]他[UP]の[UP]戦[UP]略[UP]は[UP]共[UP]通[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]で[UP]初[UP]期[UP]化[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP] [UP]=[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]c[UP]l[UP]a[UP]s[UP]s[UP]([UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]d[UP]a[UP]t[UP]a[UP]=[UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]c[UP]o[UP]p[UP]y[UP]([UP])[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP]=[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]p[UP]r[UP]i[UP]c[UP]e[UP]_[UP]c[UP]o[UP]l[UP]u[UP]m[UP]n[UP]=[UP]"[UP]A[UP]d[UP]j[UP] [UP]C[UP]l[UP]o[UP]s[UP]e[UP]"[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]戦[UP]略[UP]を[UP]実[UP]行[UP]し[UP]て[UP]バ[UP]ッ[UP]ク[UP]テ[UP]ス[UP]ト[UP]結[UP]果[UP]を[UP]取[UP]得[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP] [UP]=[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP].[UP]b[UP]a[UP]c[UP]k[UP]t[UP]e[UP]s[UP]t[UP]([UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]イ[UP]ン[UP]デ[UP]ッ[UP]ク[UP]ス[UP]を[UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP]と[UP]同[UP]じ[UP]型[UP]に[UP]変[UP]換[UP]し[UP]て[UP]整[UP]合[UP]性[UP]を[UP]確[UP]保[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]n[UP]o[UP]t[UP] [UP]i[UP]s[UP]i[UP]n[UP]s[UP]t[UP]a[UP]n[UP]c[UP]e[UP]([UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP].[UP]i[UP]n[UP]d[UP]e[UP]x[UP],[UP] [UP]t[UP]y[UP]p[UP]e[UP]([UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]i[UP]n[UP]d[UP]e[UP]x[UP])[UP])[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]w[UP]a[UP]r[UP]n[UP]i[UP]n[UP]g[UP]([UP]f[UP]"[UP]イ[UP]ン[UP]デ[UP]ッ[UP]ク[UP]ス[UP]タ[UP]イ[UP]プ[UP]不[UP]一[UP]致[UP]:[UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP]=[UP]{[UP]t[UP]y[UP]p[UP]e[UP]([UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP].[UP]i[UP]n[UP]d[UP]e[UP]x[UP])[UP]}[UP],[UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP]=[UP]{[UP]t[UP]y[UP]p[UP]e[UP]([UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]i[UP]n[UP]d[UP]e[UP]x[UP])[UP]}[UP].[UP] [UP]変[UP]換[UP]を[UP]試[UP]み[UP]ま[UP]す[UP]。[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP].[UP]i[UP]n[UP]d[UP]e[UP]x[UP] [UP]=[UP] [UP]p[UP]d[UP].[UP]D[UP]a[UP]t[UP]e[UP]t[UP]i[UP]m[UP]e[UP]I[UP]n[UP]d[UP]e[UP]x[UP]([UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP].[UP]i[UP]n[UP]d[UP]e[UP]x[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP] [UP]E[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP] [UP]a[UP]s[UP] [UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]e[UP]r[UP]r[UP]o[UP]r[UP]([UP]f[UP]"[UP]イ[UP]ン[UP]デ[UP]ッ[UP]ク[UP]ス[UP]変[UP]換[UP]エ[UP]ラ[UP]ー[UP]:[UP] [UP]{[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP] [UP]E[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP] [UP]a[UP]s[UP] [UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]e[UP]r[UP]r[UP]o[UP]r[UP]([UP]f[UP]"[UP]バ[UP]ッ[UP]ク[UP]テ[UP]ス[UP]ト[UP]エ[UP]ラ[UP]ー[UP]:[UP] [UP]{[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP] [UP]=[UP] [UP]p[UP]d[UP].[UP]D[UP]a[UP]t[UP]a[UP]F[UP]r[UP]a[UP]m[UP]e[UP]([UP]i[UP]n[UP]d[UP]e[UP]x[UP]=[UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]i[UP]n[UP]d[UP]e[UP]x[UP])[UP] [UP] [UP]#[UP] [UP]空[UP]の[UP]デ[UP]ー[UP]タ[UP]フ[UP]レ[UP]ー[UP]ム[UP]を[UP]返[UP]す[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]/[UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]数[UP]を[UP]統[UP]計[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]_[UP]c[UP]o[UP]l[UP] [UP]=[UP] [UP]'[UP]E[UP]n[UP]t[UP]r[UP]y[UP]_[UP]S[UP]i[UP]g[UP]n[UP]a[UP]l[UP]'[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]i[UP]t[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]_[UP]c[UP]o[UP]l[UP] [UP]=[UP] [UP]'[UP]E[UP]x[UP]i[UP]t[UP]_[UP]S[UP]i[UP]g[UP]n[UP]a[UP]l[UP]'[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]c[UP]o[UP]u[UP]n[UP]t[UP] [UP]=[UP] [UP]0[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]i[UP]t[UP]_[UP]c[UP]o[UP]u[UP]n[UP]t[UP] [UP]=[UP] [UP]0[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]_[UP]c[UP]o[UP]l[UP] [UP]i[UP]n[UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP].[UP]c[UP]o[UP]l[UP]u[UP]m[UP]n[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]S[UP]e[UP]r[UP]i[UP]e[UP]s[UP]型[UP]を[UP]安[UP]全[UP]に[UP]扱[UP]う[UP]た[UP]め[UP]の[UP]変[UP]換[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]n[UP]o[UP]t[UP] [UP]p[UP]d[UP].[UP]a[UP]p[UP]i[UP].[UP]t[UP]y[UP]p[UP]e[UP]s[UP].[UP]i[UP]s[UP]_[UP]i[UP]n[UP]t[UP]e[UP]g[UP]e[UP]r[UP]_[UP]d[UP]t[UP]y[UP]p[UP]e[UP]([UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP][[UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]_[UP]c[UP]o[UP]l[UP]][UP])[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]0[UP]以[UP]外[UP]の[UP]値[UP]を[UP]持[UP]つ[UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]を[UP]カ[UP]ウ[UP]ン[UP]ト[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]s[UP] [UP]=[UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP][[UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]_[UP]c[UP]o[UP]l[UP]][UP].[UP]f[UP]i[UP]l[UP]l[UP]n[UP]a[UP]([UP]0[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]c[UP]o[UP]u[UP]n[UP]t[UP] [UP]=[UP] [UP]([UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]s[UP] [UP]=[UP]=[UP] [UP]1[UP])[UP].[UP]s[UP]u[UP]m[UP]([UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]l[UP]s[UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]c[UP]o[UP]u[UP]n[UP]t[UP] [UP]=[UP] [UP]([UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP][[UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]_[UP]c[UP]o[UP]l[UP]][UP] [UP]=[UP]=[UP] [UP]1[UP])[UP].[UP]s[UP]u[UP]m[UP]([UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP] [UP]E[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP] [UP]a[UP]s[UP] [UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]e[UP]r[UP]r[UP]o[UP]r[UP]([UP]f[UP]"[UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]カ[UP]ウ[UP]ン[UP]ト[UP]エ[UP]ラ[UP]ー[UP]:[UP] [UP]{[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]c[UP]o[UP]u[UP]n[UP]t[UP] [UP]=[UP] [UP]0[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]e[UP]x[UP]i[UP]t[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]_[UP]c[UP]o[UP]l[UP] [UP]i[UP]n[UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP].[UP]c[UP]o[UP]l[UP]u[UP]m[UP]n[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]S[UP]e[UP]r[UP]i[UP]e[UP]s[UP]型[UP]を[UP]安[UP]全[UP]に[UP]扱[UP]う[UP]た[UP]め[UP]の[UP]変[UP]換[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]n[UP]o[UP]t[UP] [UP]p[UP]d[UP].[UP]a[UP]p[UP]i[UP].[UP]t[UP]y[UP]p[UP]e[UP]s[UP].[UP]i[UP]s[UP]_[UP]i[UP]n[UP]t[UP]e[UP]g[UP]e[UP]r[UP]_[UP]d[UP]t[UP]y[UP]p[UP]e[UP]([UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP][[UP]e[UP]x[UP]i[UP]t[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]_[UP]c[UP]o[UP]l[UP]][UP])[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]-[UP]1[UP]の[UP]値[UP]を[UP]持[UP]つ[UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]を[UP]カ[UP]ウ[UP]ン[UP]ト[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]i[UP]t[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]s[UP] [UP]=[UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP][[UP]e[UP]x[UP]i[UP]t[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]_[UP]c[UP]o[UP]l[UP]][UP].[UP]f[UP]i[UP]l[UP]l[UP]n[UP]a[UP]([UP]0[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]i[UP]t[UP]_[UP]c[UP]o[UP]u[UP]n[UP]t[UP] [UP]=[UP] [UP]([UP]e[UP]x[UP]i[UP]t[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]s[UP] [UP]=[UP]=[UP] [UP]1[UP])[UP].[UP]s[UP]u[UP]m[UP]([UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]l[UP]s[UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]i[UP]t[UP]_[UP]c[UP]o[UP]u[UP]n[UP]t[UP] [UP]=[UP] [UP]([UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP][[UP]e[UP]x[UP]i[UP]t[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]_[UP]c[UP]o[UP]l[UP]][UP] [UP]=[UP]=[UP] [UP]1[UP])[UP].[UP]s[UP]u[UP]m[UP]([UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP] [UP]E[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP] [UP]a[UP]s[UP] [UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]e[UP]r[UP]r[UP]o[UP]r[UP]([UP]f[UP]"[UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]カ[UP]ウ[UP]ン[UP]ト[UP]エ[UP]ラ[UP]ー[UP]:[UP] [UP]{[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]i[UP]t[UP]_[UP]c[UP]o[UP]u[UP]n[UP]t[UP] [UP]=[UP] [UP]0[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]優[UP]先[UP]度[UP]順[UP]に[UP]シ[UP]グ[UP]ナ[UP]ル[UP]を[UP]統[UP]合[UP]（[UP]既[UP]存[UP]シ[UP]グ[UP]ナ[UP]ル[UP]が[UP]な[UP]い[UP]場[UP]合[UP]の[UP]み[UP]追[UP]加[UP]）[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]と[UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]の[UP]シ[UP]グ[UP]ナ[UP]ル[UP]処[UP]理[UP]を[UP]単[UP]純[UP]化[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]デ[UP]ー[UP]タ[UP]フ[UP]レ[UP]ー[UP]ム[UP]の[UP]チ[UP]ェ[UP]ッ[UP]ク[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]n[UP]o[UP]t[UP] [UP]i[UP]s[UP]i[UP]n[UP]s[UP]t[UP]a[UP]n[UP]c[UP]e[UP]([UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP],[UP] [UP]p[UP]d[UP].[UP]D[UP]a[UP]t[UP]a[UP]F[UP]r[UP]a[UP]m[UP]e[UP])[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]w[UP]a[UP]r[UP]n[UP]i[UP]n[UP]g[UP]([UP]f[UP]"[UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP]:[UP] [UP]結[UP]果[UP]が[UP]D[UP]a[UP]t[UP]a[UP]F[UP]r[UP]a[UP]m[UP]e[UP]で[UP]は[UP]あ[UP]り[UP]ま[UP]せ[UP]ん[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]c[UP]o[UP]n[UP]t[UP]i[UP]n[UP]u[UP]e[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP].[UP]e[UP]m[UP]p[UP]t[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]w[UP]a[UP]r[UP]n[UP]i[UP]n[UP]g[UP]([UP]f[UP]"[UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP]:[UP] [UP]結[UP]果[UP]デ[UP]ー[UP]タ[UP]フ[UP]レ[UP]ー[UP]ム[UP]が[UP]空[UP]で[UP]す[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]c[UP]o[UP]n[UP]t[UP]i[UP]n[UP]u[UP]e[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]安[UP]全[UP]で[UP]シ[UP]ン[UP]プ[UP]ル[UP]な[UP]方[UP]法[UP]で[UP]シ[UP]グ[UP]ナ[UP]ル[UP]を[UP]取[UP]得[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]d[UP]a[UP]t[UP]e[UP]s[UP] [UP]=[UP] [UP][[UP]][UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]i[UP]t[UP]_[UP]d[UP]a[UP]t[UP]e[UP]s[UP] [UP]=[UP] [UP][[UP]][UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]c[UP]o[UP]l[UP]u[UP]m[UP]n[UP]s[UP]チ[UP]ェ[UP]ッ[UP]ク[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]n[UP]o[UP]t[UP] [UP]i[UP]s[UP]i[UP]n[UP]s[UP]t[UP]a[UP]n[UP]c[UP]e[UP]([UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP],[UP] [UP]p[UP]d[UP].[UP]D[UP]a[UP]t[UP]a[UP]F[UP]r[UP]a[UP]m[UP]e[UP])[UP] [UP]o[UP]r[UP] [UP]n[UP]o[UP]t[UP] [UP]h[UP]a[UP]s[UP]a[UP]t[UP]t[UP]r[UP]([UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP],[UP] [UP]'[UP]c[UP]o[UP]l[UP]u[UP]m[UP]n[UP]s[UP]'[UP])[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]e[UP]r[UP]r[UP]o[UP]r[UP]([UP]f[UP]"[UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP]:[UP] [UP]デ[UP]ー[UP]タ[UP]フ[UP]レ[UP]ー[UP]ム[UP]が[UP]不[UP]正[UP]で[UP]す[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]c[UP]o[UP]n[UP]t[UP]i[UP]n[UP]u[UP]e[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]シ[UP]グ[UP]ナ[UP]ル[UP]を[UP]収[UP]集[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]_[UP]c[UP]o[UP]l[UP] [UP]i[UP]n[UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP].[UP]c[UP]o[UP]l[UP]u[UP]m[UP]n[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]日[UP]を[UP]取[UP]得[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]m[UP]a[UP]s[UP]k[UP] [UP]=[UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP][[UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]_[UP]c[UP]o[UP]l[UP]][UP] [UP]=[UP]=[UP] [UP]1[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]d[UP]a[UP]t[UP]e[UP]s[UP] [UP]=[UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP][[UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]m[UP]a[UP]s[UP]k[UP]][UP].[UP]i[UP]n[UP]d[UP]e[UP]x[UP].[UP]t[UP]o[UP]l[UP]i[UP]s[UP]t[UP]([UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP] [UP]E[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP] [UP]a[UP]s[UP] [UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]e[UP]r[UP]r[UP]o[UP]r[UP]([UP]f[UP]"[UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP] [UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]シ[UP]グ[UP]ナ[UP]ル[UP]抽[UP]出[UP]エ[UP]ラ[UP]ー[UP]:[UP] [UP]{[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]d[UP]a[UP]t[UP]e[UP]s[UP] [UP]=[UP] [UP][[UP]][UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]シ[UP]グ[UP]ナ[UP]ル[UP]を[UP]収[UP]集[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]e[UP]x[UP]i[UP]t[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]_[UP]c[UP]o[UP]l[UP] [UP]i[UP]n[UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP].[UP]c[UP]o[UP]l[UP]u[UP]m[UP]n[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]日[UP]を[UP]取[UP]得[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]i[UP]t[UP]_[UP]m[UP]a[UP]s[UP]k[UP] [UP]=[UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP][[UP]e[UP]x[UP]i[UP]t[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]_[UP]c[UP]o[UP]l[UP]][UP] [UP]=[UP]=[UP] [UP]1[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]i[UP]t[UP]_[UP]d[UP]a[UP]t[UP]e[UP]s[UP] [UP]=[UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP][[UP]e[UP]x[UP]i[UP]t[UP]_[UP]m[UP]a[UP]s[UP]k[UP]][UP].[UP]i[UP]n[UP]d[UP]e[UP]x[UP].[UP]t[UP]o[UP]l[UP]i[UP]s[UP]t[UP]([UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP] [UP]E[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP] [UP]a[UP]s[UP] [UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]e[UP]r[UP]r[UP]o[UP]r[UP]([UP]f[UP]"[UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP] [UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]シ[UP]グ[UP]ナ[UP]ル[UP]抽[UP]出[UP]エ[UP]ラ[UP]ー[UP]:[UP] [UP]{[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]i[UP]t[UP]_[UP]d[UP]a[UP]t[UP]e[UP]s[UP] [UP]=[UP] [UP][[UP]][UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]シ[UP]グ[UP]ナ[UP]ル[UP]統[UP]合[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]f[UP]o[UP]r[UP] [UP]d[UP]a[UP]t[UP]e[UP] [UP]i[UP]n[UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]d[UP]a[UP]t[UP]e[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]d[UP]a[UP]t[UP]e[UP] [UP]i[UP]n[UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]i[UP]n[UP]d[UP]e[UP]x[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]リ[UP]ス[UP]ク[UP]管[UP]理[UP]モ[UP]ジ[UP]ュ[UP]ー[UP]ル[UP]を[UP]使[UP]用[UP]し[UP]て[UP]ポ[UP]ジ[UP]シ[UP]ョ[UP]ン[UP]制[UP]限[UP]を[UP]チ[UP]ェ[UP]ッ[UP]ク[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]短[UP]期[UP]取[UP]引[UP]を[UP]促[UP]進[UP]す[UP]る[UP]た[UP]め[UP]、[UP]リ[UP]ス[UP]ク[UP]管[UP]理[UP]を[UP]緩[UP]和[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]r[UP]i[UP]s[UP]k[UP]_[UP]m[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP].[UP]c[UP]h[UP]e[UP]c[UP]k[UP]_[UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]_[UP]s[UP]i[UP]z[UP]e[UP]([UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP])[UP] [UP]a[UP]n[UP]d[UP] [UP]d[UP]a[UP]t[UP]e[UP] [UP]n[UP]o[UP]t[UP] [UP]i[UP]n[UP] [UP]a[UP]c[UP]t[UP]i[UP]v[UP]e[UP]_[UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]シ[UP]グ[UP]ナ[UP]ル[UP]を[UP]追[UP]加[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]l[UP]o[UP]c[UP][[UP]d[UP]a[UP]t[UP]e[UP],[UP] [UP]'[UP]E[UP]n[UP]t[UP]r[UP]y[UP]_[UP]S[UP]i[UP]g[UP]n[UP]a[UP]l[UP]'[UP]][UP] [UP]=[UP] [UP]1[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]l[UP]o[UP]c[UP][[UP]d[UP]a[UP]t[UP]e[UP],[UP] [UP]'[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP]][UP] [UP]=[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]l[UP]o[UP]c[UP][[UP]d[UP]a[UP]t[UP]e[UP],[UP] [UP]'[UP]P[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]'[UP]][UP] [UP]=[UP] [UP]1[UP] [UP] [UP]#[UP] [UP]ポ[UP]ジ[UP]シ[UP]ョ[UP]ン[UP]状[UP]態[UP]を[UP]更[UP]新[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]a[UP]c[UP]t[UP]i[UP]v[UP]e[UP]_[UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]s[UP][[UP]d[UP]a[UP]t[UP]e[UP]][UP] [UP]=[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]リ[UP]ス[UP]ク[UP]管[UP]理[UP]モ[UP]ジ[UP]ュ[UP]ー[UP]ル[UP]の[UP]ポ[UP]ジ[UP]シ[UP]ョ[UP]ン[UP]情[UP]報[UP]も[UP]更[UP]新[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]r[UP]i[UP]s[UP]k[UP]_[UP]m[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP].[UP]u[UP]p[UP]d[UP]a[UP]t[UP]e[UP]_[UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]([UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP],[UP] [UP]1[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]f[UP]"[UP]戦[UP]略[UP]統[UP]合[UP]:[UP] [UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP] [UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]:[UP] [UP]日[UP]付[UP]=[UP]{[UP]d[UP]a[UP]t[UP]e[UP]}[UP],[UP] [UP]全[UP]ポ[UP]ジ[UP]シ[UP]ョ[UP]ン[UP]数[UP]=[UP]{[UP]r[UP]i[UP]s[UP]k[UP]_[UP]m[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP].[UP]g[UP]e[UP]t[UP]_[UP]t[UP]o[UP]t[UP]a[UP]l[UP]_[UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]s[UP]([UP])[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP] [UP]E[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP] [UP]a[UP]s[UP] [UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]e[UP]r[UP]r[UP]o[UP]r[UP]([UP]f[UP]"[UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]統[UP]合[UP]エ[UP]ラ[UP]ー[UP] [UP]([UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP],[UP] [UP]日[UP]付[UP]=[UP]{[UP]d[UP]a[UP]t[UP]e[UP]}[UP])[UP]:[UP] [UP]{[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]f[UP]o[UP]r[UP] [UP]d[UP]a[UP]t[UP]e[UP] [UP]i[UP]n[UP] [UP]e[UP]x[UP]i[UP]t[UP]_[UP]d[UP]a[UP]t[UP]e[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]d[UP]a[UP]t[UP]e[UP] [UP]i[UP]n[UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]i[UP]n[UP]d[UP]e[UP]x[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]こ[UP]の[UP]シ[UP]グ[UP]ナ[UP]ル[UP]に[UP]対[UP]応[UP]す[UP]る[UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]日[UP]を[UP]探[UP]す[UP]（[UP]同[UP]じ[UP]戦[UP]略[UP]か[UP]ら[UP]の[UP]も[UP]の[UP]）[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]m[UP]a[UP]t[UP]c[UP]h[UP]i[UP]n[UP]g[UP]_[UP]e[UP]n[UP]t[UP]r[UP]i[UP]e[UP]s[UP] [UP]=[UP] [UP][[UP]d[UP] [UP]f[UP]o[UP]r[UP] [UP]d[UP],[UP] [UP]s[UP] [UP]i[UP]n[UP] [UP]a[UP]c[UP]t[UP]i[UP]v[UP]e[UP]_[UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]s[UP].[UP]i[UP]t[UP]e[UP]m[UP]s[UP]([UP])[UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]s[UP] [UP]=[UP]=[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP] [UP]a[UP]n[UP]d[UP] [UP]d[UP] [UP]<[UP] [UP]d[UP]a[UP]t[UP]e[UP]][UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]m[UP]a[UP]t[UP]c[UP]h[UP]i[UP]n[UP]g[UP]_[UP]e[UP]n[UP]t[UP]r[UP]i[UP]e[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]最[UP]も[UP]古[UP]い[UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]に[UP]対[UP]し[UP]て[UP]イ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]（[UP]F[UP]I[UP]F[UP]O[UP]方[UP]式[UP]）[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]o[UP]l[UP]d[UP]e[UP]s[UP]t[UP]_[UP]e[UP]n[UP]t[UP]r[UP]y[UP] [UP]=[UP] [UP]s[UP]o[UP]r[UP]t[UP]e[UP]d[UP]([UP]m[UP]a[UP]t[UP]c[UP]h[UP]i[UP]n[UP]g[UP]_[UP]e[UP]n[UP]t[UP]r[UP]i[UP]e[UP]s[UP])[UP][[UP]0[UP]][UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]l[UP]o[UP]c[UP][[UP]d[UP]a[UP]t[UP]e[UP],[UP] [UP]'[UP]E[UP]x[UP]i[UP]t[UP]_[UP]S[UP]i[UP]g[UP]n[UP]a[UP]l[UP]'[UP]][UP] [UP]=[UP] [UP]-[UP]1[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]l[UP]o[UP]c[UP][[UP]d[UP]a[UP]t[UP]e[UP],[UP] [UP]'[UP]P[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]'[UP]][UP] [UP]=[UP] [UP]0[UP] [UP] [UP]#[UP] [UP]ポ[UP]ジ[UP]シ[UP]ョ[UP]ン[UP]状[UP]態[UP]を[UP]更[UP]新[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]f[UP]"[UP]戦[UP]略[UP]統[UP]合[UP]:[UP] [UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP] [UP]イ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]:[UP] [UP]日[UP]付[UP]=[UP]{[UP]d[UP]a[UP]t[UP]e[UP]}[UP],[UP] [UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]日[UP]=[UP]{[UP]o[UP]l[UP]d[UP]e[UP]s[UP]t[UP]_[UP]e[UP]n[UP]t[UP]r[UP]y[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]ポ[UP]ジ[UP]シ[UP]ョ[UP]ン[UP]を[UP]削[UP]除[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]d[UP]e[UP]l[UP] [UP]a[UP]c[UP]t[UP]i[UP]v[UP]e[UP]_[UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]s[UP][[UP]o[UP]l[UP]d[UP]e[UP]s[UP]t[UP]_[UP]e[UP]n[UP]t[UP]r[UP]y[UP]][UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]リ[UP]ス[UP]ク[UP]管[UP]理[UP]モ[UP]ジ[UP]ュ[UP]ー[UP]ル[UP]の[UP]ポ[UP]ジ[UP]シ[UP]ョ[UP]ン[UP]情[UP]報[UP]も[UP]更[UP]新[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]r[UP]i[UP]s[UP]k[UP]_[UP]m[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP].[UP]u[UP]p[UP]d[UP]a[UP]t[UP]e[UP]_[UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]([UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP],[UP] [UP]-[UP]1[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP] [UP]E[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP] [UP]a[UP]s[UP] [UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]e[UP]r[UP]r[UP]o[UP]r[UP]([UP]f[UP]"[UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]統[UP]合[UP]エ[UP]ラ[UP]ー[UP] [UP]([UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP],[UP] [UP]日[UP]付[UP]=[UP]{[UP]d[UP]a[UP]t[UP]e[UP]}[UP])[UP]:[UP] [UP]{[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP]#[UP] [UP]こ[UP]の[UP]ブ[UP]ロ[UP]ッ[UP]ク[UP]全[UP]体[UP]を[UP]削[UP]除[UP]（[UP]重[UP]複[UP]し[UP]て[UP]い[UP]る[UP]た[UP]め[UP]）[UP]
+[UP]#[UP] [UP]代[UP]わ[UP]り[UP]に[UP]、[UP]前[UP]の[UP]ブ[UP]ロ[UP]ッ[UP]ク[UP]に[UP]統[UP]合[UP]さ[UP]れ[UP]た[UP]修[UP]正[UP]が[UP]使[UP]用[UP]さ[UP]れ[UP]ま[UP]す[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]正[UP]確[UP]な[UP]カ[UP]ウ[UP]ン[UP]ト[UP]の[UP]た[UP]め[UP]に[UP]数[UP]値[UP]を[UP]変[UP]換[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]よ[UP]り[UP]安[UP]全[UP]な[UP]方[UP]法[UP]で[UP]カ[UP]ウ[UP]ン[UP]ト[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]e[UP]n[UP]t[UP]r[UP]i[UP]e[UP]s[UP] [UP]=[UP] [UP]s[UP]u[UP]m[UP]([UP]1[UP] [UP]f[UP]o[UP]r[UP] [UP]_[UP] [UP]i[UP]n[UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP][[UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP][[UP]'[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP]][UP] [UP]=[UP]=[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]][UP].[UP]i[UP]n[UP]d[UP]e[UP]x[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]e[UP]x[UP]i[UP]t[UP]s[UP] [UP]=[UP] [UP]s[UP]u[UP]m[UP]([UP]1[UP] [UP]f[UP]o[UP]r[UP] [UP]_[UP] [UP]i[UP]n[UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP][[UP]([UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP][[UP]'[UP]E[UP]x[UP]i[UP]t[UP]_[UP]S[UP]i[UP]g[UP]n[UP]a[UP]l[UP]'[UP]][UP] [UP]=[UP]=[UP] [UP]1[UP])[UP] [UP]&[UP] [UP]([UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP][[UP]'[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]'[UP]][UP] [UP]=[UP]=[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP])[UP]][UP].[UP]i[UP]n[UP]d[UP]e[UP]x[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]s[UP]t[UP]a[UP]t[UP]s[UP][[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]][UP] [UP]=[UP] [UP]{[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]e[UP]n[UP]t[UP]r[UP]i[UP]e[UP]s[UP]'[UP]:[UP] [UP]i[UP]n[UP]t[UP]([UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]c[UP]o[UP]u[UP]n[UP]t[UP])[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]e[UP]x[UP]i[UP]t[UP]s[UP]'[UP]:[UP] [UP]i[UP]n[UP]t[UP]([UP]e[UP]x[UP]i[UP]t[UP]_[UP]c[UP]o[UP]u[UP]n[UP]t[UP])[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]e[UP]n[UP]t[UP]r[UP]i[UP]e[UP]s[UP]'[UP]:[UP] [UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]e[UP]n[UP]t[UP]r[UP]i[UP]e[UP]s[UP],[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]'[UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]e[UP]x[UP]i[UP]t[UP]s[UP]'[UP]:[UP] [UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]e[UP]x[UP]i[UP]t[UP]s[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]}[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]f[UP]"[UP]戦[UP]略[UP]完[UP]了[UP]:[UP] [UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP] [UP]-[UP] [UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]:[UP] [UP]{[UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]c[UP]o[UP]u[UP]n[UP]t[UP]}[UP],[UP] [UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]:[UP] [UP]{[UP]e[UP]x[UP]i[UP]t[UP]_[UP]c[UP]o[UP]u[UP]n[UP]t[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]f[UP]"[UP] [UP] [UP]統[UP]合[UP]後[UP]:[UP] [UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]:[UP] [UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]s[UP]t[UP]a[UP]t[UP]s[UP][[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]][UP][[UP]'[UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]e[UP]n[UP]t[UP]r[UP]i[UP]e[UP]s[UP]'[UP]][UP]}[UP],[UP] [UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]:[UP] [UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]s[UP]t[UP]a[UP]t[UP]s[UP][[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]][UP][[UP]'[UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]e[UP]x[UP]i[UP]t[UP]s[UP]'[UP]][UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP] [UP]E[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP] [UP]a[UP]s[UP] [UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]e[UP]r[UP]r[UP]o[UP]r[UP]([UP]f[UP]"[UP]戦[UP]略[UP]適[UP]用[UP]エ[UP]ラ[UP]ー[UP] [UP]-[UP] [UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP]:[UP] [UP]{[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]s[UP]t[UP]a[UP]t[UP]s[UP][[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]][UP] [UP]=[UP] [UP]{[UP]'[UP]e[UP]n[UP]t[UP]r[UP]i[UP]e[UP]s[UP]'[UP]:[UP] [UP]0[UP],[UP] [UP]'[UP]e[UP]x[UP]i[UP]t[UP]s[UP]'[UP]:[UP] [UP]0[UP],[UP] [UP]'[UP]e[UP]r[UP]r[UP]o[UP]r[UP]'[UP]:[UP] [UP]s[UP]t[UP]r[UP]([UP]e[UP])[UP]}[UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]#[UP] [UP]統[UP]計[UP]を[UP]ロ[UP]グ[UP]出[UP]力[UP]
+[UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]"[UP]=[UP]=[UP]=[UP] [UP]戦[UP]略[UP]別[UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]/[UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]統[UP]計[UP] [UP]=[UP]=[UP]=[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP]t[UP]o[UP]t[UP]a[UP]l[UP]_[UP]e[UP]n[UP]t[UP]r[UP]i[UP]e[UP]s[UP] [UP]=[UP] [UP]0[UP]
+[UP] [UP] [UP] [UP] [UP]t[UP]o[UP]t[UP]a[UP]l[UP]_[UP]e[UP]x[UP]i[UP]t[UP]s[UP] [UP]=[UP] [UP]0[UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]f[UP]o[UP]r[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP],[UP] [UP]s[UP]t[UP]a[UP]t[UP]s[UP] [UP]i[UP]n[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]s[UP]t[UP]a[UP]t[UP]s[UP].[UP]i[UP]t[UP]e[UP]m[UP]s[UP]([UP])[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]'[UP]e[UP]r[UP]r[UP]o[UP]r[UP]'[UP] [UP]n[UP]o[UP]t[UP] [UP]i[UP]n[UP] [UP]s[UP]t[UP]a[UP]t[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]f[UP]"[UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP]:[UP] [UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP] [UP]{[UP]s[UP]t[UP]a[UP]t[UP]s[UP][[UP]'[UP]e[UP]n[UP]t[UP]r[UP]i[UP]e[UP]s[UP]'[UP]][UP]}[UP],[UP] [UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP] [UP]{[UP]s[UP]t[UP]a[UP]t[UP]s[UP][[UP]'[UP]e[UP]x[UP]i[UP]t[UP]s[UP]'[UP]][UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]f[UP]"[UP] [UP] [UP]統[UP]合[UP]後[UP]:[UP] [UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP] [UP]{[UP]s[UP]t[UP]a[UP]t[UP]s[UP].[UP]g[UP]e[UP]t[UP]([UP]'[UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]e[UP]n[UP]t[UP]r[UP]i[UP]e[UP]s[UP]'[UP],[UP] [UP]0[UP])[UP]}[UP],[UP] [UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP] [UP]{[UP]s[UP]t[UP]a[UP]t[UP]s[UP].[UP]g[UP]e[UP]t[UP]([UP]'[UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]e[UP]x[UP]i[UP]t[UP]s[UP]'[UP],[UP] [UP]0[UP])[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]o[UP]t[UP]a[UP]l[UP]_[UP]e[UP]n[UP]t[UP]r[UP]i[UP]e[UP]s[UP] [UP]+[UP]=[UP] [UP]s[UP]t[UP]a[UP]t[UP]s[UP].[UP]g[UP]e[UP]t[UP]([UP]'[UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]e[UP]n[UP]t[UP]r[UP]i[UP]e[UP]s[UP]'[UP],[UP] [UP]0[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]o[UP]t[UP]a[UP]l[UP]_[UP]e[UP]x[UP]i[UP]t[UP]s[UP] [UP]+[UP]=[UP] [UP]s[UP]t[UP]a[UP]t[UP]s[UP].[UP]g[UP]e[UP]t[UP]([UP]'[UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]e[UP]x[UP]i[UP]t[UP]s[UP]'[UP],[UP] [UP]0[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]l[UP]s[UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]e[UP]r[UP]r[UP]o[UP]r[UP]([UP]f[UP]"[UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP]:[UP] [UP]エ[UP]ラ[UP]ー[UP] [UP]-[UP] [UP]{[UP]s[UP]t[UP]a[UP]t[UP]s[UP][[UP]'[UP]e[UP]r[UP]r[UP]o[UP]r[UP]'[UP]][UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]f[UP]"[UP]統[UP]合[UP]後[UP]合[UP]計[UP]:[UP] [UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP] [UP]{[UP]t[UP]o[UP]t[UP]a[UP]l[UP]_[UP]e[UP]n[UP]t[UP]r[UP]i[UP]e[UP]s[UP]}[UP],[UP] [UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP] [UP]{[UP]t[UP]o[UP]t[UP]a[UP]l[UP]_[UP]e[UP]x[UP]i[UP]t[UP]s[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]#[UP] [UP]未[UP]処[UP]理[UP]の[UP]オ[UP]ー[UP]プ[UP]ン[UP]ポ[UP]ジ[UP]シ[UP]ョ[UP]ン[UP]を[UP]最[UP]終[UP]日[UP]で[UP]ク[UP]ロ[UP]ー[UP]ズ[UP]
+[UP] [UP] [UP] [UP] [UP]#[UP] [UP]こ[UP]れ[UP]に[UP]よ[UP]り[UP]、[UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]と[UP]エ[UP]グ[UP]ジ[UP]ッ[UP]ト[UP]回[UP]数[UP]の[UP]不[UP]均[UP]衡[UP]を[UP]修[UP]正[UP]
+[UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]a[UP]c[UP]t[UP]i[UP]v[UP]e[UP]_[UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]w[UP]a[UP]r[UP]n[UP]i[UP]n[UP]g[UP]([UP]f[UP]"[UP]バ[UP]ッ[UP]ク[UP]テ[UP]ス[UP]ト[UP]終[UP]了[UP]時[UP]に[UP] [UP]{[UP]l[UP]e[UP]n[UP]([UP]a[UP]c[UP]t[UP]i[UP]v[UP]e[UP]_[UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]s[UP])[UP]}[UP] [UP]件[UP]の[UP]未[UP]決[UP]済[UP]ポ[UP]ジ[UP]シ[UP]ョ[UP]ン[UP]が[UP]あ[UP]り[UP]ま[UP]す[UP]。[UP]最[UP]終[UP]日[UP]に[UP]強[UP]制[UP]決[UP]済[UP]し[UP]ま[UP]す[UP]。[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]a[UP]s[UP]t[UP]_[UP]d[UP]a[UP]t[UP]e[UP] [UP]=[UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]i[UP]n[UP]d[UP]e[UP]x[UP][[UP]-[UP]1[UP]][UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]未[UP]決[UP]済[UP]ポ[UP]ジ[UP]シ[UP]ョ[UP]ン[UP]を[UP]戦[UP]略[UP]ご[UP]と[UP]に[UP]集[UP]計[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]s[UP]_[UP]b[UP]y[UP]_[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP] [UP]=[UP] [UP]{[UP]}[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]f[UP]o[UP]r[UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]d[UP]a[UP]t[UP]e[UP],[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP] [UP]i[UP]n[UP] [UP]a[UP]c[UP]t[UP]i[UP]v[UP]e[UP]_[UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]s[UP].[UP]i[UP]t[UP]e[UP]m[UP]s[UP]([UP])[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP] [UP]n[UP]o[UP]t[UP] [UP]i[UP]n[UP] [UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]s[UP]_[UP]b[UP]y[UP]_[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]s[UP]_[UP]b[UP]y[UP]_[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP][[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]][UP] [UP]=[UP] [UP][[UP]][UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]s[UP]_[UP]b[UP]y[UP]_[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP][[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]][UP].[UP]a[UP]p[UP]p[UP]e[UP]n[UP]d[UP]([UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]d[UP]a[UP]t[UP]e[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]戦[UP]略[UP]ご[UP]と[UP]の[UP]未[UP]決[UP]済[UP]ポ[UP]ジ[UP]シ[UP]ョ[UP]ン[UP]数[UP]を[UP]ロ[UP]グ[UP]出[UP]力[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]f[UP]o[UP]r[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP],[UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]d[UP]a[UP]t[UP]e[UP]s[UP] [UP]i[UP]n[UP] [UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]s[UP]_[UP]b[UP]y[UP]_[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP].[UP]i[UP]t[UP]e[UP]m[UP]s[UP]([UP])[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]w[UP]a[UP]r[UP]n[UP]i[UP]n[UP]g[UP]([UP]f[UP]"[UP]戦[UP]略[UP] [UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP] [UP]に[UP] [UP]{[UP]l[UP]e[UP]n[UP]([UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]d[UP]a[UP]t[UP]e[UP]s[UP])[UP]}[UP] [UP]件[UP]の[UP]未[UP]決[UP]済[UP]ポ[UP]ジ[UP]シ[UP]ョ[UP]ン[UP]が[UP]あ[UP]り[UP]ま[UP]す[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]未[UP]決[UP]済[UP]ポ[UP]ジ[UP]シ[UP]ョ[UP]ン[UP]を[UP]す[UP]べ[UP]て[UP]最[UP]終[UP]日[UP]で[UP]決[UP]済[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]f[UP]o[UP]r[UP] [UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]i[UP]d[UP]x[UP],[UP] [UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP] [UP]i[UP]n[UP] [UP]a[UP]c[UP]t[UP]i[UP]v[UP]e[UP]_[UP]p[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]s[UP].[UP]i[UP]t[UP]e[UP]m[UP]s[UP]([UP])[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]最[UP]終[UP]日[UP]に[UP]強[UP]制[UP]決[UP]済[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]l[UP]o[UP]c[UP][[UP]l[UP]a[UP]s[UP]t[UP]_[UP]d[UP]a[UP]t[UP]e[UP],[UP] [UP]'[UP]E[UP]x[UP]i[UP]t[UP]_[UP]S[UP]i[UP]g[UP]n[UP]a[UP]l[UP]'[UP]][UP] [UP]=[UP] [UP]-[UP]1[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]l[UP]o[UP]c[UP][[UP]l[UP]a[UP]s[UP]t[UP]_[UP]d[UP]a[UP]t[UP]e[UP],[UP] [UP]'[UP]P[UP]o[UP]s[UP]i[UP]t[UP]i[UP]o[UP]n[UP]'[UP]][UP] [UP]=[UP] [UP]0[UP] [UP] [UP]#[UP] [UP]ポ[UP]ジ[UP]シ[UP]ョ[UP]ン[UP]状[UP]態[UP]を[UP]更[UP]新[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]f[UP]"[UP]強[UP]制[UP]決[UP]済[UP]:[UP] [UP]戦[UP]略[UP]=[UP]{[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]n[UP]a[UP]m[UP]e[UP]}[UP],[UP] [UP]エ[UP]ン[UP]ト[UP]リ[UP]ー[UP]日[UP]=[UP]{[UP]e[UP]n[UP]t[UP]r[UP]y[UP]_[UP]i[UP]d[UP]x[UP]}[UP],[UP] [UP]決[UP]済[UP]日[UP]=[UP]{[UP]l[UP]a[UP]s[UP]t[UP]_[UP]d[UP]a[UP]t[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]r[UP]e[UP]t[UP]u[UP]r[UP]n[UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP]
+[UP]
+[UP]
+[UP]d[UP]e[UP]f[UP] [UP]m[UP]a[UP]i[UP]n[UP]([UP])[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]"[UP]マ[UP]ル[UP]チ[UP]戦[UP]略[UP]バ[UP]ッ[UP]ク[UP]テ[UP]ス[UP]ト[UP]シ[UP]ス[UP]テ[UP]ム[UP]を[UP]開[UP]始[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]デ[UP]ー[UP]タ[UP]取[UP]得[UP]と[UP]前[UP]処[UP]理[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]i[UP]c[UP]k[UP]e[UP]r[UP],[UP] [UP]s[UP]t[UP]a[UP]r[UP]t[UP]_[UP]d[UP]a[UP]t[UP]e[UP],[UP] [UP]e[UP]n[UP]d[UP]_[UP]d[UP]a[UP]t[UP]e[UP],[UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP],[UP] [UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP] [UP]=[UP] [UP]g[UP]e[UP]t[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]e[UP]t[UP]e[UP]r[UP]s[UP]_[UP]a[UP]n[UP]d[UP]_[UP]d[UP]a[UP]t[UP]a[UP]([UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP] [UP]=[UP] [UP]p[UP]r[UP]e[UP]p[UP]r[UP]o[UP]c[UP]e[UP]s[UP]s[UP]_[UP]d[UP]a[UP]t[UP]a[UP]([UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP] [UP]=[UP] [UP]c[UP]o[UP]m[UP]p[UP]u[UP]t[UP]e[UP]_[UP]i[UP]n[UP]d[UP]i[UP]c[UP]a[UP]t[UP]o[UP]r[UP]s[UP]([UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]f[UP]"[UP]デ[UP]ー[UP]タ[UP]期[UP]間[UP]:[UP] [UP]{[UP]s[UP]t[UP]a[UP]r[UP]t[UP]_[UP]d[UP]a[UP]t[UP]e[UP]}[UP] [UP]か[UP]ら[UP] [UP]{[UP]e[UP]n[UP]d[UP]_[UP]d[UP]a[UP]t[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]f[UP]"[UP]デ[UP]ー[UP]タ[UP]行[UP]数[UP]:[UP] [UP]{[UP]l[UP]e[UP]n[UP]([UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP])[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]承[UP]認[UP]済[UP]み[UP]最[UP]適[UP]化[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]を[UP]読[UP]み[UP]込[UP]み[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP] [UP]=[UP] [UP]l[UP]o[UP]a[UP]d[UP]_[UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]e[UP]t[UP]e[UP]r[UP]s[UP]([UP]t[UP]i[UP]c[UP]k[UP]e[UP]r[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]f[UP]"[UP]読[UP]み[UP]込[UP]み[UP]完[UP]了[UP]:[UP] [UP]{[UP]l[UP]e[UP]n[UP]([UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP])[UP]}[UP] [UP]戦[UP]略[UP]の[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]統[UP]合[UP]シ[UP]ス[UP]テ[UP]ム[UP]利[UP]用[UP]可[UP]能[UP]性[UP]を[UP]ロ[UP]ー[UP]カ[UP]ル[UP]変[UP]数[UP]と[UP]し[UP]て[UP]設[UP]定[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]u[UP]s[UP]e[UP]_[UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]s[UP]y[UP]s[UP]t[UP]e[UP]m[UP] [UP]=[UP] [UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]s[UP]y[UP]s[UP]t[UP]e[UP]m[UP]_[UP]a[UP]v[UP]a[UP]i[UP]l[UP]a[UP]b[UP]l[UP]e[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]統[UP]合[UP]シ[UP]ス[UP]テ[UP]ム[UP]利[UP]用[UP]可[UP]能[UP]性[UP]を[UP]チ[UP]ェ[UP]ッ[UP]ク[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]u[UP]s[UP]e[UP]_[UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]s[UP]y[UP]s[UP]t[UP]e[UP]m[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]t[UP]r[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]"[UP]統[UP]合[UP]マ[UP]ル[UP]チ[UP]戦[UP]略[UP]シ[UP]ス[UP]テ[UP]ム[UP]を[UP]使[UP]用[UP]し[UP]て[UP]バ[UP]ッ[UP]ク[UP]テ[UP]ス[UP]ト[UP]を[UP]実[UP]行[UP]し[UP]ま[UP]す[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]M[UP]u[UP]l[UP]t[UP]i[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]M[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP] [UP]を[UP]初[UP]期[UP]化[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]m[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP] [UP]=[UP] [UP]M[UP]u[UP]l[UP]t[UP]i[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]M[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP]([UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]戦[UP]略[UP]実[UP]行[UP]ア[UP]ダ[UP]プ[UP]タ[UP]ー[UP]を[UP]設[UP]定[UP]（[UP]必[UP]要[UP]に[UP]応[UP]じ[UP]て[UP]使[UP]用[UP]）[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]a[UP]d[UP]a[UP]p[UP]t[UP]e[UP]r[UP] [UP]=[UP] [UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]E[UP]x[UP]e[UP]c[UP]u[UP]t[UP]i[UP]o[UP]n[UP]A[UP]d[UP]a[UP]p[UP]t[UP]e[UP]r[UP]([UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]シ[UP]ス[UP]テ[UP]ム[UP]初[UP]期[UP]化[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]m[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]i[UP]t[UP]i[UP]a[UP]l[UP]i[UP]z[UP]e[UP]_[UP]s[UP]y[UP]s[UP]t[UP]e[UP]m[UP]([UP])[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]"[UP]統[UP]合[UP]シ[UP]ス[UP]テ[UP]ム[UP]の[UP]初[UP]期[UP]化[UP]に[UP]成[UP]功[UP]し[UP]ま[UP]し[UP]た[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]マ[UP]ル[UP]チ[UP]戦[UP]略[UP]実[UP]行[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]a[UP]v[UP]a[UP]i[UP]l[UP]a[UP]b[UP]l[UP]e[UP]_[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]i[UP]e[UP]s[UP] [UP]=[UP] [UP]l[UP]i[UP]s[UP]t[UP]([UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP].[UP]k[UP]e[UP]y[UP]s[UP]([UP])[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP]s[UP] [UP]=[UP] [UP]m[UP]a[UP]n[UP]a[UP]g[UP]e[UP]r[UP].[UP]e[UP]x[UP]e[UP]c[UP]u[UP]t[UP]e[UP]_[UP]m[UP]u[UP]l[UP]t[UP]i[UP]_[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]_[UP]f[UP]l[UP]o[UP]w[UP]([UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP],[UP] [UP]a[UP]v[UP]a[UP]i[UP]l[UP]a[UP]b[UP]l[UP]e[UP]_[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]i[UP]e[UP]s[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]"[UP]統[UP]合[UP]シ[UP]ス[UP]テ[UP]ム[UP]で[UP]の[UP]バ[UP]ッ[UP]ク[UP]テ[UP]ス[UP]ト[UP]実[UP]行[UP]が[UP]完[UP]了[UP]し[UP]ま[UP]し[UP]た[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]M[UP]u[UP]l[UP]t[UP]i[UP]S[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]y[UP]R[UP]e[UP]s[UP]u[UP]l[UP]t[UP]か[UP]ら[UP]結[UP]果[UP]デ[UP]ー[UP]タ[UP]を[UP]取[UP]得[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP]_[UP]d[UP]a[UP]t[UP]a[UP] [UP]=[UP] [UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP]s[UP].[UP]c[UP]o[UP]m[UP]b[UP]i[UP]n[UP]e[UP]d[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]s[UP] [UP]i[UP]f[UP] [UP]h[UP]a[UP]s[UP]a[UP]t[UP]t[UP]r[UP]([UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP]s[UP],[UP] [UP]'[UP]c[UP]o[UP]m[UP]b[UP]i[UP]n[UP]e[UP]d[UP]_[UP]s[UP]i[UP]g[UP]n[UP]a[UP]l[UP]s[UP]'[UP])[UP] [UP]e[UP]l[UP]s[UP]e[UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]b[UP]a[UP]c[UP]k[UP]t[UP]e[UP]s[UP]t[UP]_[UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP]s[UP] [UP]=[UP] [UP]s[UP]i[UP]m[UP]u[UP]l[UP]a[UP]t[UP]e[UP]_[UP]a[UP]n[UP]d[UP]_[UP]s[UP]a[UP]v[UP]e[UP]([UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP]_[UP]d[UP]a[UP]t[UP]a[UP],[UP] [UP]t[UP]i[UP]c[UP]k[UP]e[UP]r[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]l[UP]s[UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]w[UP]a[UP]r[UP]n[UP]i[UP]n[UP]g[UP]([UP]"[UP]統[UP]合[UP]シ[UP]ス[UP]テ[UP]ム[UP]の[UP]実[UP]行[UP]結[UP]果[UP]が[UP]空[UP]で[UP]し[UP]た[UP]。[UP]従[UP]来[UP]シ[UP]ス[UP]テ[UP]ム[UP]に[UP]フ[UP]ォ[UP]ー[UP]ル[UP]バ[UP]ッ[UP]ク[UP]し[UP]ま[UP]す[UP]。[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]r[UP]a[UP]i[UP]s[UP]e[UP] [UP]E[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP]([UP]"[UP]統[UP]合[UP]シ[UP]ス[UP]テ[UP]ム[UP]の[UP]実[UP]行[UP]に[UP]失[UP]敗[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]l[UP]s[UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]w[UP]a[UP]r[UP]n[UP]i[UP]n[UP]g[UP]([UP]"[UP]統[UP]合[UP]シ[UP]ス[UP]テ[UP]ム[UP]の[UP]初[UP]期[UP]化[UP]に[UP]失[UP]敗[UP]し[UP]ま[UP]し[UP]た[UP]。[UP]従[UP]来[UP]シ[UP]ス[UP]テ[UP]ム[UP]に[UP]フ[UP]ォ[UP]ー[UP]ル[UP]バ[UP]ッ[UP]ク[UP]し[UP]ま[UP]す[UP]。[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]r[UP]a[UP]i[UP]s[UP]e[UP] [UP]E[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP]([UP]"[UP]統[UP]合[UP]シ[UP]ス[UP]テ[UP]ム[UP]の[UP]初[UP]期[UP]化[UP]失[UP]敗[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP] [UP]E[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP] [UP]a[UP]s[UP] [UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]e[UP]r[UP]r[UP]o[UP]r[UP]([UP]f[UP]"[UP]統[UP]合[UP]シ[UP]ス[UP]テ[UP]ム[UP]実[UP]行[UP]中[UP]に[UP]エ[UP]ラ[UP]ー[UP]:[UP] [UP]{[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]"[UP]従[UP]来[UP]の[UP]マ[UP]ル[UP]チ[UP]戦[UP]略[UP]シ[UP]ス[UP]テ[UP]ム[UP]に[UP]フ[UP]ォ[UP]ー[UP]ル[UP]バ[UP]ッ[UP]ク[UP]し[UP]ま[UP]す[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]u[UP]s[UP]e[UP]_[UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]s[UP]y[UP]s[UP]t[UP]e[UP]m[UP] [UP]=[UP] [UP]F[UP]a[UP]l[UP]s[UP]e[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]n[UP]o[UP]t[UP] [UP]u[UP]s[UP]e[UP]_[UP]i[UP]n[UP]t[UP]e[UP]g[UP]r[UP]a[UP]t[UP]e[UP]d[UP]_[UP]s[UP]y[UP]s[UP]t[UP]e[UP]m[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]"[UP]従[UP]来[UP]の[UP]マ[UP]ル[UP]チ[UP]戦[UP]略[UP]シ[UP]ス[UP]テ[UP]ム[UP]を[UP]使[UP]用[UP]し[UP]て[UP]バ[UP]ッ[UP]ク[UP]テ[UP]ス[UP]ト[UP]を[UP]実[UP]行[UP]し[UP]ま[UP]す[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP]が[UP]N[UP]o[UP]n[UP]e[UP]の[UP]場[UP]合[UP]は[UP]、[UP]同[UP]じ[UP]期[UP]間[UP]の[UP]日[UP]経[UP]平[UP]均[UP]な[UP]ど[UP]の[UP]イ[UP]ン[UP]デ[UP]ッ[UP]ク[UP]ス[UP]を[UP]取[UP]得[UP]す[UP]る[UP]か[UP]、[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]ダ[UP]ミ[UP]ー[UP]の[UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP]を[UP]作[UP]成[UP]す[UP]る[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP] [UP]i[UP]s[UP] [UP]N[UP]o[UP]n[UP]e[UP] [UP]o[UP]r[UP] [UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]e[UP]m[UP]p[UP]t[UP]y[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]w[UP]a[UP]r[UP]n[UP]i[UP]n[UP]g[UP]([UP]"[UP]市[UP]場[UP]イ[UP]ン[UP]デ[UP]ッ[UP]ク[UP]ス[UP]デ[UP]ー[UP]タ[UP]が[UP]取[UP]得[UP]で[UP]き[UP]ま[UP]せ[UP]ん[UP]で[UP]し[UP]た[UP]。[UP]ダ[UP]ミ[UP]ー[UP]デ[UP]ー[UP]タ[UP]を[UP]作[UP]成[UP]し[UP]ま[UP]す[UP]。[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]ダ[UP]ミ[UP]ー[UP]の[UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP]を[UP]作[UP]成[UP]（[UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP]と[UP]同[UP]じ[UP]イ[UP]ン[UP]デ[UP]ッ[UP]ク[UP]ス[UP]を[UP]使[UP]用[UP]）[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP] [UP]=[UP] [UP]p[UP]d[UP].[UP]D[UP]a[UP]t[UP]a[UP]F[UP]r[UP]a[UP]m[UP]e[UP]([UP]i[UP]n[UP]d[UP]e[UP]x[UP]=[UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]i[UP]n[UP]d[UP]e[UP]x[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]必[UP]要[UP]な[UP]列[UP]を[UP]追[UP]加[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]f[UP]o[UP]r[UP] [UP]c[UP]o[UP]l[UP] [UP]i[UP]n[UP] [UP][[UP]'[UP]O[UP]p[UP]e[UP]n[UP]'[UP],[UP] [UP]'[UP]H[UP]i[UP]g[UP]h[UP]'[UP],[UP] [UP]'[UP]L[UP]o[UP]w[UP]'[UP],[UP] [UP]'[UP]C[UP]l[UP]o[UP]s[UP]e[UP]'[UP],[UP] [UP]'[UP]A[UP]d[UP]j[UP] [UP]C[UP]l[UP]o[UP]s[UP]e[UP]'[UP],[UP] [UP]'[UP]V[UP]o[UP]l[UP]u[UP]m[UP]e[UP]'[UP]][UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]f[UP] [UP]c[UP]o[UP]l[UP] [UP]i[UP]n[UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]c[UP]o[UP]l[UP]u[UP]m[UP]n[UP]s[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP][[UP]c[UP]o[UP]l[UP]][UP] [UP]=[UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP][[UP]c[UP]o[UP]l[UP]][UP] [UP]*[UP] [UP]0[UP].[UP]9[UP] [UP] [UP]#[UP] [UP]適[UP]当[UP]な[UP]値[UP]を[UP]設[UP]定[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]デ[UP]ー[UP]タ[UP]の[UP]完[UP]全[UP]性[UP]を[UP]確[UP]保[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP] [UP]=[UP] [UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP].[UP]f[UP]i[UP]l[UP]l[UP]n[UP]a[UP]([UP]m[UP]e[UP]t[UP]h[UP]o[UP]d[UP]=[UP]'[UP]f[UP]f[UP]i[UP]l[UP]l[UP]'[UP])[UP].[UP]f[UP]i[UP]l[UP]l[UP]n[UP]a[UP]([UP]m[UP]e[UP]t[UP]h[UP]o[UP]d[UP]=[UP]'[UP]b[UP]f[UP]i[UP]l[UP]l[UP]'[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]最[UP]適[UP]化[UP]パ[UP]ラ[UP]メ[UP]ー[UP]タ[UP]を[UP]使[UP]用[UP]し[UP]て[UP]戦[UP]略[UP]を[UP]適[UP]用[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP] [UP]=[UP] [UP]a[UP]p[UP]p[UP]l[UP]y[UP]_[UP]s[UP]t[UP]r[UP]a[UP]t[UP]e[UP]g[UP]i[UP]e[UP]s[UP]_[UP]w[UP]i[UP]t[UP]h[UP]_[UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP]([UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP],[UP] [UP]i[UP]n[UP]d[UP]e[UP]x[UP]_[UP]d[UP]a[UP]t[UP]a[UP],[UP] [UP]o[UP]p[UP]t[UP]i[UP]m[UP]i[UP]z[UP]e[UP]d[UP]_[UP]p[UP]a[UP]r[UP]a[UP]m[UP]s[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]#[UP] [UP]バ[UP]ッ[UP]ク[UP]テ[UP]ス[UP]ト[UP]結[UP]果[UP]を[UP]E[UP]x[UP]c[UP]e[UP]l[UP]に[UP]出[UP]力[UP]（[UP]新[UP]E[UP]x[UP]c[UP]e[UP]l[UP]出[UP]力[UP]モ[UP]ジ[UP]ュ[UP]ー[UP]ル[UP]使[UP]用[UP]）[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]b[UP]a[UP]c[UP]k[UP]t[UP]e[UP]s[UP]t[UP]_[UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP]s[UP] [UP]=[UP] [UP]s[UP]i[UP]m[UP]u[UP]l[UP]a[UP]t[UP]e[UP]_[UP]a[UP]n[UP]d[UP]_[UP]s[UP]a[UP]v[UP]e[UP]([UP]s[UP]t[UP]o[UP]c[UP]k[UP]_[UP]d[UP]a[UP]t[UP]a[UP],[UP] [UP]t[UP]i[UP]c[UP]k[UP]e[UP]r[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]f[UP]"[UP]改[UP]良[UP]版[UP]E[UP]x[UP]c[UP]e[UP]l[UP]出[UP]力[UP]:[UP] [UP]{[UP]b[UP]a[UP]c[UP]k[UP]t[UP]e[UP]s[UP]t[UP]_[UP]r[UP]e[UP]s[UP]u[UP]l[UP]t[UP]s[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]i[UP]n[UP]f[UP]o[UP]([UP]"[UP]マ[UP]ル[UP]チ[UP]戦[UP]略[UP]バ[UP]ッ[UP]ク[UP]テ[UP]ス[UP]ト[UP]シ[UP]ス[UP]テ[UP]ム[UP]が[UP]正[UP]常[UP]に[UP]完[UP]了[UP]し[UP]ま[UP]し[UP]た[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]
+[UP] [UP] [UP] [UP] [UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP] [UP]E[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP] [UP]a[UP]s[UP] [UP]e[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]l[UP]o[UP]g[UP]g[UP]e[UP]r[UP].[UP]e[UP]x[UP]c[UP]e[UP]p[UP]t[UP]i[UP]o[UP]n[UP]([UP]f[UP]"[UP]バ[UP]ッ[UP]ク[UP]テ[UP]ス[UP]ト[UP]処[UP]理[UP]中[UP]に[UP]エ[UP]ラ[UP]ー[UP]が[UP]発[UP]生[UP]:[UP] [UP]{[UP]e[UP]}[UP]"[UP])[UP]
+[UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP] [UP]s[UP]y[UP]s[UP].[UP]e[UP]x[UP]i[UP]t[UP]([UP]1[UP])[UP]
+[UP]
+[UP]i[UP]f[UP] [UP]_[UP]_[UP]n[UP]a[UP]m[UP]e[UP]_[UP]_[UP] [UP]=[UP]=[UP] [UP]"[UP]_[UP]_[UP]m[UP]a[UP]i[UP]n[UP]_[UP]_[UP]"[UP]:[UP]
+[UP] [UP] [UP] [UP] [UP]m[UP]a[UP]i[UP]n[UP]([UP])[UP]

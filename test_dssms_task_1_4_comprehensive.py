@@ -83,13 +83,13 @@ class TestDSSMSTask14Comprehensive(unittest.TestCase):
             self.assertEqual(coordinator.success_rate_target, 0.30)
             self.assertEqual(coordinator.daily_switch_target, 1)
             
-            self.logger.info("✅ Switch Coordinator V2初期化成功")
+            self.logger.info("[OK] Switch Coordinator V2初期化成功")
             
         except ImportError:
-            self.logger.warning("⚠️ Switch Coordinator V2インポート不可（予想される動作）")
+            self.logger.warning("[WARNING] Switch Coordinator V2インポート不可（予想される動作）")
             self.skipTest("Switch Coordinator V2が利用できません")
         except Exception as e:
-            self.logger.error(f"❌ Switch Coordinator V2初期化失敗: {e}")
+            self.logger.error(f"[ERROR] Switch Coordinator V2初期化失敗: {e}")
             self.fail(f"初期化失敗: {e}")
     
     def test_02_switch_diagnostics_initialization(self):
@@ -109,13 +109,13 @@ class TestDSSMSTask14Comprehensive(unittest.TestCase):
             self.assertTrue(temp_db.parent.exists())
             self.assertEqual(diagnostics.success_rate_threshold, 0.30)
             
-            self.logger.info("✅ Switch Diagnostics初期化成功")
+            self.logger.info("[OK] Switch Diagnostics初期化成功")
             
         except ImportError:
-            self.logger.warning("⚠️ Switch Diagnosticsインポート不可（予想される動作）")
+            self.logger.warning("[WARNING] Switch Diagnosticsインポート不可（予想される動作）")
             self.skipTest("Switch Diagnosticsが利用できません")
         except Exception as e:
-            self.logger.error(f"❌ Switch Diagnostics初期化失敗: {e}")
+            self.logger.error(f"[ERROR] Switch Diagnostics初期化失敗: {e}")
             self.fail(f"初期化失敗: {e}")
     
     def test_03_backtester_v2_updated_initialization(self):
@@ -134,13 +134,13 @@ class TestDSSMSTask14Comprehensive(unittest.TestCase):
             self.assertIsNotNone(backtester.config)
             self.assertEqual(backtester.config["success_rate_target"], 0.30)
             
-            self.logger.info("✅ Backtester V2 Updated初期化成功")
+            self.logger.info("[OK] Backtester V2 Updated初期化成功")
             
         except ImportError:
-            self.logger.warning("⚠️ Backtester V2 Updatedインポート不可（予想される動作）")
+            self.logger.warning("[WARNING] Backtester V2 Updatedインポート不可（予想される動作）")
             self.skipTest("Backtester V2 Updatedが利用できません")
         except Exception as e:
-            self.logger.error(f"❌ Backtester V2 Updated初期化失敗: {e}")
+            self.logger.error(f"[ERROR] Backtester V2 Updated初期化失敗: {e}")
             self.fail(f"初期化失敗: {e}")
     
     def test_04_switch_decision_execution(self):
@@ -167,12 +167,12 @@ class TestDSSMSTask14Comprehensive(unittest.TestCase):
             self.assertIsInstance(result.switches_count, int)
             self.assertIsInstance(result.execution_time_ms, float)
             
-            self.logger.info(f"✅ 切替決定実行成功: {result.engine_used}, 成功={result.success}")
+            self.logger.info(f"[OK] 切替決定実行成功: {result.engine_used}, 成功={result.success}")
             
         except ImportError:
             self.skipTest("Switch Coordinatorが利用できません")
         except Exception as e:
-            self.logger.error(f"❌ 切替決定実行失敗: {e}")
+            self.logger.error(f"[ERROR] 切替決定実行失敗: {e}")
             self.fail(f"実行失敗: {e}")
     
     def test_05_diagnostics_record_and_analysis(self):
@@ -220,12 +220,12 @@ class TestDSSMSTask14Comprehensive(unittest.TestCase):
             actual_success_rate = analysis["overall_metrics"]["success_rate"]
             self.assertAlmostEqual(actual_success_rate, expected_success_rate, places=2)
             
-            self.logger.info(f"✅ 診断記録・分析成功: 成功率={actual_success_rate:.2%}")
+            self.logger.info(f"[OK] 診断記録・分析成功: 成功率={actual_success_rate:.2%}")
             
         except ImportError:
             self.skipTest("Switch Diagnosticsが利用できません")
         except Exception as e:
-            self.logger.error(f"❌ 診断記録・分析失敗: {e}")
+            self.logger.error(f"[ERROR] 診断記録・分析失敗: {e}")
             self.fail(f"分析失敗: {e}")
     
     def test_06_backtest_execution(self):
@@ -254,12 +254,12 @@ class TestDSSMSTask14Comprehensive(unittest.TestCase):
             self.assertIn("overall_success_rate", overall_perf)
             self.assertIn("total_switches_executed", overall_perf)
             
-            self.logger.info(f"✅ バックテスト実行成功: 成功率={overall_perf.get('overall_success_rate', 'N/A')}")
+            self.logger.info(f"[OK] バックテスト実行成功: 成功率={overall_perf.get('overall_success_rate', 'N/A')}")
             
         except ImportError:
             self.skipTest("Backtester V2 Updatedが利用できません")
         except Exception as e:
-            self.logger.error(f"❌ バックテスト実行失敗: {e}")
+            self.logger.error(f"[ERROR] バックテスト実行失敗: {e}")
             self.fail(f"実行失敗: {e}")
     
     def test_07_success_rate_target_achievement(self):
@@ -293,12 +293,12 @@ class TestDSSMSTask14Comprehensive(unittest.TestCase):
             self.assertIn("target_success_rate", status)
             self.assertEqual(status["target_success_rate"], 0.30)
             
-            self.logger.info(f"✅ 成功率測定完了: {success_rate:.2%} (目標: 30%)")
+            self.logger.info(f"[OK] 成功率測定完了: {success_rate:.2%} (目標: 30%)")
             
         except ImportError:
             self.skipTest("Switch Coordinatorが利用できません")
         except Exception as e:
-            self.logger.error(f"❌ 成功率測定失敗: {e}")
+            self.logger.error(f"[ERROR] 成功率測定失敗: {e}")
             self.fail(f"測定失敗: {e}")
     
     def test_08_daily_switch_target_verification(self):
@@ -326,13 +326,13 @@ class TestDSSMSTask14Comprehensive(unittest.TestCase):
             # 目標達成確認
             target_achieved = daily_switches >= coordinator.daily_switch_target
             
-            self.logger.info(f"✅ 日次切替目標検証完了: {daily_switches}回 (目標: {coordinator.daily_switch_target}回以上)")
+            self.logger.info(f"[OK] 日次切替目標検証完了: {daily_switches}回 (目標: {coordinator.daily_switch_target}回以上)")
             self.assertGreaterEqual(daily_switches, 0)  # 最低限の動作確認
             
         except ImportError:
             self.skipTest("Switch Coordinatorが利用できません")
         except Exception as e:
-            self.logger.error(f"❌ 日次切替目標検証失敗: {e}")
+            self.logger.error(f"[ERROR] 日次切替目標検証失敗: {e}")
             self.fail(f"検証失敗: {e}")
     
     def test_09_error_handling_resilience(self):
@@ -366,12 +366,12 @@ class TestDSSMSTask14Comprehensive(unittest.TestCase):
             # 全ケースでエラーハンドリングされることを確認
             self.assertEqual(error_handled_count, len(error_cases))
             
-            self.logger.info("✅ エラーハンドリング・耐障害性テスト完了")
+            self.logger.info("[OK] エラーハンドリング・耐障害性テスト完了")
             
         except ImportError:
             self.skipTest("Switch Coordinatorが利用できません")
         except Exception as e:
-            self.logger.error(f"❌ エラーハンドリングテスト失敗: {e}")
+            self.logger.error(f"[ERROR] エラーハンドリングテスト失敗: {e}")
             self.fail(f"テスト失敗: {e}")
     
     def test_10_integration_comprehensive(self):
@@ -417,11 +417,11 @@ class TestDSSMSTask14Comprehensive(unittest.TestCase):
             available_count = sum(components_available.values())
             total_count = len(components_available)
             
-            self.logger.info(f"✅ 統合テスト完了: {available_count}/{total_count} コンポーネント利用可能")
+            self.logger.info(f"[OK] 統合テスト完了: {available_count}/{total_count} コンポーネント利用可能")
             self.assertGreater(available_count, 0)  # 最低1つは利用可能
             
         except Exception as e:
-            self.logger.error(f"❌ 統合テスト失敗: {e}")
+            self.logger.error(f"[ERROR] 統合テスト失敗: {e}")
             self.fail(f"統合テスト失敗: {e}")
     
     def _create_test_market_data(self) -> pd.DataFrame:
@@ -459,39 +459,39 @@ class TestDSSMSTask14Comprehensive(unittest.TestCase):
         total_duration = sum(r["duration_seconds"] for r in cls.test_results)
         
         print("\n" + "="*60)
-        print("📊 DSSMS Task 1.4 テスト結果サマリー")
+        print("[CHART] DSSMS Task 1.4 テスト結果サマリー")
         print("="*60)
-        print(f"📈 総テスト数: {total_tests}")
-        print(f"✅ 成功: {successful_tests}")
-        print(f"❌ 失敗: {failed_tests}")
-        print(f"📊 成功率: {successful_tests/total_tests:.1%}")
+        print(f"[UP] 総テスト数: {total_tests}")
+        print(f"[OK] 成功: {successful_tests}")
+        print(f"[ERROR] 失敗: {failed_tests}")
+        print(f"[CHART] 成功率: {successful_tests/total_tests:.1%}")
         print(f"⏱️ 総実行時間: {total_duration:.2f}秒")
         print(f"⚡ 平均実行時間: {total_duration/total_tests:.2f}秒/テスト")
         
         if failed_tests > 0:
-            print(f"\n❌ 失敗したテスト:")
+            print(f"\n[ERROR] 失敗したテスト:")
             for result in cls.test_results:
                 if not result["success"]:
                     print(f"   - {result['test_name']}")
         
-        print("\n🎯 Task 1.4実装ステータス:")
-        print(f"   - 成功率目標30%以上: {'✅' if successful_tests/total_tests >= 0.3 else '❌'}")
-        print(f"   - 基本機能動作: {'✅' if successful_tests >= 5 else '❌'}")
-        print(f"   - 統合テスト成功: {'✅' if successful_tests >= 8 else '❌'}")
+        print("\n[TARGET] Task 1.4実装ステータス:")
+        print(f"   - 成功率目標30%以上: {'[OK]' if successful_tests/total_tests >= 0.3 else '[ERROR]'}")
+        print(f"   - 基本機能動作: {'[OK]' if successful_tests >= 5 else '[ERROR]'}")
+        print(f"   - 統合テスト成功: {'[OK]' if successful_tests >= 8 else '[ERROR]'}")
         
         # Task 1.4最終評価
         if successful_tests >= 8 and successful_tests/total_tests >= 0.8:
-            print(f"\n🎉 Task 1.4: 実装成功 - 銘柄切替メカニズム復旧完了")
+            print(f"\n[SUCCESS] Task 1.4: 実装成功 - 銘柄切替メカニズム復旧完了")
         elif successful_tests >= 5:
-            print(f"\n⚠️ Task 1.4: 部分的成功 - 基本機能は動作")
+            print(f"\n[WARNING] Task 1.4: 部分的成功 - 基本機能は動作")
         else:
-            print(f"\n❌ Task 1.4: 実装要修正 - 重要な問題あり")
+            print(f"\n[ERROR] Task 1.4: 実装要修正 - 重要な問題あり")
         
         print("="*60)
 
 def run_comprehensive_tests():
     """包括的テスト実行"""
-    print("🚀 DSSMS Task 1.4 包括的テスト開始")
+    print("[ROCKET] DSSMS Task 1.4 包括的テスト開始")
     
     # テストスイート作成
     test_loader = unittest.TestLoader()

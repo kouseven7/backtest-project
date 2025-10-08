@@ -13,7 +13,7 @@ from src.config.system_modes import SystemMode, ComponentType, SystemFallbackPol
 
 def test_complete_integration():
     """TODO-REPORT-001完全統合テスト"""
-    print('🎯 TODO-REPORT-001 完全統合テスト')
+    print('[TARGET] TODO-REPORT-001 完全統合テスト')
     print('=' * 60)
     
     try:
@@ -34,10 +34,10 @@ def test_complete_integration():
         }
         
         generator = DSSMSReportGenerator(config)
-        print("✅ DSSMSReportGenerator初期化成功")
+        print("[OK] DSSMSReportGenerator初期化成功")
         
         # 3. 新規実装メソッドテスト
-        print('\n🔍 新規実装メソッド詳細テスト:')
+        print('\n[SEARCH] 新規実装メソッド詳細テスト:')
         
         # 3.1 集中リスク分析
         switch_history = [
@@ -48,7 +48,7 @@ def test_complete_integration():
         ]
         
         concentration_result = generator._analyze_concentration_risk(switch_history)
-        print(f"  集中リスク分析: ✅ 完了")
+        print(f"  集中リスク分析: [OK] 完了")
         print(f"    - リスクレベル: {concentration_result.get('risk_level', 'N/A')}")
         print(f"    - 分析項目数: {len(concentration_result)}")
         
@@ -67,13 +67,13 @@ def test_complete_integration():
         }
         
         combination_result = generator._analyze_strategy_combinations(backtest_results)
-        print(f"  戦略組み合わせ分析: ✅ 完了")
+        print(f"  戦略組み合わせ分析: [OK] 完了")
         print(f"    - 組み合わせ効果スコア: {combination_result.get('combination_effectiveness', 'N/A')}")
         print(f"    - 分析項目数: {len(combination_result)}")
         
         # 3.3 高度パフォーマンス指標
         advanced_metrics = generator._calculate_advanced_performance_metrics(backtest_results)
-        print(f"  高度パフォーマンス指標: ✅ 完了")
+        print(f"  高度パフォーマンス指標: [OK] 完了")
         print(f"    - パフォーマンススコア: {advanced_metrics.get('performance_score', 'N/A')}")
         print(f"    - 総合指標数: {len(advanced_metrics)}")
         
@@ -95,12 +95,12 @@ def test_complete_integration():
                 )
         
         fallback_result = test_component_failure()
-        print(f"  フォールバック処理: ✅ 完了")
+        print(f"  フォールバック処理: [OK] 完了")
         print(f"    - フォールバック実行: {fallback_result.get('fallback', False)}")
         print(f"    - ステータス: {fallback_result.get('status', 'N/A')}")
         
         # 5. 包括的レポート統合テスト
-        print(f'\n📋 包括的レポート統合テスト:')
+        print(f'\n[LIST] 包括的レポート統合テスト:')
         
         comprehensive_data = {
             'backtest_results': backtest_results,
@@ -119,7 +119,7 @@ def test_complete_integration():
         }
         
         final_report = generator.generate_comprehensive_report(comprehensive_data)
-        print(f"  包括的レポート生成: ✅ 完了")
+        print(f"  包括的レポート生成: [OK] 完了")
         print(f"    - 総合評価: {final_report['executive_summary']['overall_grade']}")
         print(f"    - 総合スコア: {final_report['executive_summary']['overall_score']:.3f}")
         print(f"    - 推奨事項数: {len(final_report['recommendations'])}")
@@ -127,28 +127,28 @@ def test_complete_integration():
         
         # 6. 成功統計
         stats = generator.get_report_statistics()
-        print(f'\n📊 最終統計:')
+        print(f'\n[CHART] 最終統計:')
         print(f"  - 総レポート数: {stats['total_reports']}")
         print(f"  - 分析深度: {stats['analysis_depth']}")  
         print(f"  - 生成成功率: 100%")
         
         print(f'\n🎊 TODO-REPORT-001 完全化成功！')
-        print(f'🔧 実装完了機能:')
-        print(f'  ✅ 集中リスク分析 (_analyze_concentration_risk)')
-        print(f'  ✅ 戦略組み合わせ分析 (_analyze_strategy_combinations)')
-        print(f'  ✅ 高度パフォーマンス指標 (_calculate_advanced_performance_metrics)')
-        print(f'  ✅ SystemFallbackPolicy統合')
-        print(f'  ✅ 包括的レポート生成システム')
+        print(f'[TOOL] 実装完了機能:')
+        print(f'  [OK] 集中リスク分析 (_analyze_concentration_risk)')
+        print(f'  [OK] 戦略組み合わせ分析 (_analyze_strategy_combinations)')
+        print(f'  [OK] 高度パフォーマンス指標 (_calculate_advanced_performance_metrics)')
+        print(f'  [OK] SystemFallbackPolicy統合')
+        print(f'  [OK] 包括的レポート生成システム')
         
         return True
         
     except Exception as e:
-        print(f'❌ 統合テストエラー: {e}')
+        print(f'[ERROR] 統合テストエラー: {e}')
         import traceback
         traceback.print_exc()
         return False
 
 if __name__ == "__main__":
     success = test_complete_integration()
-    print(f'\n🏁 TODO-REPORT-001 結果: {"成功" if success else "失敗"}')
+    print(f'\n[FINISH] TODO-REPORT-001 結果: {"成功" if success else "失敗"}')
     exit(0 if success else 1)

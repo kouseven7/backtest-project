@@ -21,7 +21,7 @@ sys.path.append(str(PROJECT_ROOT))
 def run_task_2_3():
     """Task 2.3の実行"""
     try:
-        print("\n🚀 DSSMS Task 2.3: パフォーマンス最適化と検証 開始")
+        print("\n[ROCKET] DSSMS Task 2.3: パフォーマンス最適化と検証 開始")
         print("=" * 60)
         
         # メインコントローラーをインポート・実行
@@ -30,16 +30,16 @@ def run_task_2_3():
             controller = DSSMSTask23Controller()
             results = controller.execute_task_2_3_complete()
             
-            print("\n✅ Task 2.3 実行完了")
+            print("\n[OK] Task 2.3 実行完了")
             return results
             
         except ImportError as e:
-            print(f"❌ メインコントローラーのインポートに失敗: {e}")
+            print(f"[ERROR] メインコントローラーのインポートに失敗: {e}")
             print("個別コンポーネントで実行を試みます...")
             return run_task_2_3_individual_components()
             
     except Exception as e:
-        print(f"❌ Task 2.3 実行エラー: {e}")
+        print(f"[ERROR] Task 2.3 実行エラー: {e}")
         return None
 
 def run_task_2_3_individual_components():
@@ -52,58 +52,58 @@ def run_task_2_3_individual_components():
     
     # 1. パフォーマンス最適化
     try:
-        print("\n📈 パフォーマンス最適化実行中...")
+        print("\n[UP] パフォーマンス最適化実行中...")
         from dssms_task_2_3_performance_optimizer import DSSMSPerformanceOptimizer
         optimizer = DSSMSPerformanceOptimizer()
         perf_results = optimizer.run_performance_benchmark()
         results['performance_optimization'] = perf_results
-        print("✅ パフォーマンス最適化完了")
+        print("[OK] パフォーマンス最適化完了")
     except Exception as e:
-        print(f"❌ パフォーマンス最適化エラー: {e}")
+        print(f"[ERROR] パフォーマンス最適化エラー: {e}")
     
     # 2. 統合テスト
     try:
-        print("\n🧪 統合テスト実行中...")
+        print("\n[TEST] 統合テスト実行中...")
         from dssms_task_2_3_integration_test_suite import DSSMSIntegrationTestSuite
         test_suite = DSSMSIntegrationTestSuite()
         test_results = test_suite.run_all_tests()
         results['integration_testing'] = test_results
-        print(f"✅ 統合テスト完了: {test_results['tests_passed']}/{test_results['tests_passed'] + test_results['tests_failed']} 成功")
+        print(f"[OK] 統合テスト完了: {test_results['tests_passed']}/{test_results['tests_passed'] + test_results['tests_failed']} 成功")
     except Exception as e:
-        print(f"❌ 統合テストエラー: {e}")
+        print(f"[ERROR] 統合テストエラー: {e}")
     
     # 3. 品質保証
     try:
-        print("\n🔍 品質保証実行中...")
+        print("\n[SEARCH] 品質保証実行中...")
         from dssms_task_2_3_quality_assurance import DSSMSQualityAssuranceSystem
         qa_system = DSSMSQualityAssuranceSystem()
         qa_report = qa_system.run_comprehensive_quality_assurance()
         results['quality_assurance'] = qa_report
-        print(f"✅ 品質保証完了: スコア {qa_report.overall_score:.1f}/100")
+        print(f"[OK] 品質保証完了: スコア {qa_report.overall_score:.1f}/100")
     except Exception as e:
-        print(f"❌ 品質保証エラー: {e}")
+        print(f"[ERROR] 品質保証エラー: {e}")
     
     return results
 
 def main():
     """メイン実行関数"""
-    print("🚀 DSSMS Task 2.3: パフォーマンス最適化と検証")
+    print("[ROCKET] DSSMS Task 2.3: パフォーマンス最適化と検証")
     print("=" * 60)
     
     # Task 2.3の実行
     results = run_task_2_3()
     
     if results:
-        print("\n🎉 Task 2.3 実行完了!")
+        print("\n[SUCCESS] Task 2.3 実行完了!")
         print("=" * 60)
-        print("📋 成果物:")
+        print("[LIST] 成果物:")
         print("  • 最適化済みシステム")
         print("  • 統合テストスイート") 
         print("  • パフォーマンスベンチマーク")
         print("  • 品質保証レポート")
         print("=" * 60)
     else:
-        print("\n❌ Task 2.3 実行に問題が発生しました")
+        print("\n[ERROR] Task 2.3 実行に問題が発生しました")
         print("ログファイルを確認してください:")
         print(f"  {PROJECT_ROOT / 'logs' / 'dssms_task_2_3_main.log'}")
 

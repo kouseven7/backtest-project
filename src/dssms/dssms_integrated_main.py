@@ -219,7 +219,7 @@ class DSSMSIntegratedBacktester:
                 # SymbolSwitchManager直接初期化（軽量版優先）
                 switch_config = self.config.get('symbol_switch', {})
                 self.switch_manager = SymbolSwitchManager(switch_config)
-                self.logger.info(f"✅ SymbolSwitchManager初期化完了: {type(self.switch_manager).__name__}")
+                self.logger.info(f"[OK] SymbolSwitchManager初期化完了: {type(self.switch_manager).__name__}")
                 
                 # 他のコンポーネントを個別に初期化
                 self._initialize_data_cache()
@@ -485,7 +485,7 @@ class DSSMSIntegratedBacktester:
         start_time = time.time()
         
         try:
-            self.logger.info(f"🚀 統合最適化ランキング開始: {len(filtered_symbols)}銘柄")
+            self.logger.info(f"[ROCKET] 統合最適化ランキング開始: {len(filtered_symbols)}銘柄")
             
             # Step 1: HierarchicalRankingSystem基盤計算（重複排除の基準）
             hierarchical_results = self._get_hierarchical_ranking_base(filtered_symbols)
@@ -505,7 +505,7 @@ class DSSMSIntegratedBacktester:
             )
             
             execution_time = (time.time() - start_time) * 1000
-            self.logger.info(f"✅ 統合最適化完了: {execution_time:.2f}ms, 選択: {final_selection}")
+            self.logger.info(f"[OK] 統合最適化完了: {execution_time:.2f}ms, 選択: {final_selection}")
             
             return final_selection
             
@@ -547,7 +547,7 @@ class DSSMSIntegratedBacktester:
                     'symbols_count': len(filtered_symbols)
                 }
                 
-                self.logger.info(f"📊 基盤計算完了: {len(priority_groups)}優先度グループ")
+                self.logger.info(f"[CHART] 基盤計算完了: {len(priority_groups)}優先度グループ")
                 return base_results
             
             return None
@@ -598,7 +598,7 @@ class DSSMSIntegratedBacktester:
                     'timestamp': time.time()
                 }
                 
-                self.logger.info(f"🔥 高度分析完了: {len(ranking_results)}結果 (基盤統合)")
+                self.logger.info(f"[FIRE] 高度分析完了: {len(ranking_results)}結果 (基盤統合)")
                 return advanced_results
             
             return None
@@ -707,7 +707,7 @@ class DSSMSIntegratedBacktester:
                 enhanced['composite_score'] = base_candidate.get('base_score', 0.0)
                 enhanced_candidates.append(enhanced)
         
-        self.logger.info(f"🔥 高度分析強化完了: {len(enhanced_candidates)}候補")
+        self.logger.info(f"[FIRE] 高度分析強化完了: {len(enhanced_candidates)}候補")
         return enhanced_candidates
     
     def _get_enhanced_technical_analysis(self, symbol: str) -> Dict[str, Any]:
@@ -1056,7 +1056,7 @@ class DSSMSIntegratedBacktester:
             priority_level = best_candidate.get('priority_level', 3)
             
             self.logger.info(
-                f"🎯 高度分析統合選択: {symbol} "
+                f"[TARGET] 高度分析統合選択: {symbol} "
                 f"(複合スコア: {composite_score:.4f}, 優先度: {priority_level})"
             )
             
@@ -2150,7 +2150,7 @@ class DSSMSIntegratedBacktester:
             # TODO-DSSMS-004.2: 基盤結果統合処理
             if analysis_params.get('base_ranking_results') and analysis_params.get('reuse_calculations'):
                 # 基盤結果がある場合は重複計算回避モードで実行
-                self.logger.info(f"🚀 統合最適化分析実行: 基盤結果再利用モード")
+                self.logger.info(f"[ROCKET] 統合最適化分析実行: 基盤結果再利用モード")
                 analysis_params['optimization_mode'] = 'integrated'
                 analysis_params['base_calculations_reuse'] = True
             
@@ -2260,7 +2260,7 @@ def main():
             start_date = datetime.strptime(args.start_date, '%Y-%m-%d')
             end_date = datetime.strptime(args.end_date, '%Y-%m-%d')
         except ValueError as e:
-            print(f"❌ 日付形式エラー: {e}")
+            print(f"[ERROR] 日付形式エラー: {e}")
             print("正しい形式: YYYY-MM-DD (例: 2023-01-01)")
             return
         target_symbols = None  # 全銘柄（日経225自動選択）
@@ -2269,7 +2269,7 @@ def main():
         
         # エラー結果チェック
         if 'error' in results:
-            print(f"❌ バックテスト実行エラー: {results['error']}")
+            print(f"[ERROR] バックテスト実行エラー: {results['error']}")
             print(f"  - 生成時刻: {results['execution_metadata'].get('generated_at', 'N/A')}")
             return
         

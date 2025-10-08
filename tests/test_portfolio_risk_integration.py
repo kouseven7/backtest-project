@@ -243,7 +243,7 @@ class TestIntegratedRiskManagementSystem(unittest.TestCase):
 
 def run_performance_test():
     """パフォーマンステスト"""
-    print("\n🚀 Performance Test")
+    print("\n[ROCKET] Performance Test")
     print("=" * 30)
     
     # 大規模データでのテスト
@@ -276,7 +276,7 @@ def run_performance_test():
     )
     end_time = time.time()
     
-    print(f"📊 Large dataset performance:")
+    print(f"[CHART] Large dataset performance:")
     print(f"  Data size: {large_returns.shape}")
     print(f"  Strategies: {len(large_weights)}")
     print(f"  Processing time: {end_time - start_time:.3f} seconds")
@@ -285,7 +285,7 @@ def run_performance_test():
 
 def main():
     """テスト実行"""
-    print("🧪 Portfolio Risk Management Integration Tests")
+    print("[TEST] Portfolio Risk Management Integration Tests")
     print("=" * 60)
     
     # 単体テスト実行
@@ -305,17 +305,17 @@ def main():
     run_performance_test()
     
     # 結果サマリー
-    print(f"\n📊 Test Results Summary:")
+    print(f"\n[CHART] Test Results Summary:")
     print(f"  Tests run: {result.testsRun}")
     print(f"  Failures: {len(result.failures)}")
     print(f"  Errors: {len(result.errors)}")
     print(f"  Skipped: {len(result.skipped) if hasattr(result, 'skipped') else 0}")
     
     if result.wasSuccessful():
-        print("✅ All tests passed!")
+        print("[OK] All tests passed!")
         return True
     else:
-        print("❌ Some tests failed!")
+        print("[ERROR] Some tests failed!")
         for failure in result.failures:
             print(f"  FAIL: {failure[0]}")
         for error in result.errors:

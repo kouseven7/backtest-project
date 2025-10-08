@@ -614,7 +614,7 @@ def demo_simulation_quality_manager():
         test_simulation_state['performance_history']['daily_returns'][3] = 0.25  # 25%のリターン
         
         # 異常検出テスト
-        print(f"\n🔍 異常検出テスト")
+        print(f"\n[SEARCH] 異常検出テスト")
         anomaly_result = manager.detect_simulation_anomalies(test_simulation_state)
         
         print(f"   検出された異常: {anomaly_result['anomalies_found']}件")
@@ -625,7 +625,7 @@ def demo_simulation_quality_manager():
             print(f"   - {anomaly['type']}: {anomaly['description']}")
         
         # データ整合性補正テスト
-        print(f"\n🔧 データ整合性補正テスト")
+        print(f"\n[TOOL] データ整合性補正テスト")
         correction_result = manager.correct_data_inconsistencies(test_simulation_state['portfolio_history'])
         
         print(f"   適用された補正: {correction_result['corrections_count']}件")
@@ -634,7 +634,7 @@ def demo_simulation_quality_manager():
             print(f"   - {correction['type']}: {correction.get('description', 'N/A')}")
         
         # リアリズム要因強化テスト
-        print(f"\n🎯 リアリズム要因強化テスト")
+        print(f"\n[TARGET] リアリズム要因強化テスト")
         test_market_data = {
             'execution_price': 1000,
             'transaction_size': 2000000,
@@ -652,7 +652,7 @@ def demo_simulation_quality_manager():
             print(f"   取引コスト: {enhanced['transaction_cost']:.0f}円")
         
         # 品質レポート表示
-        print(f"\n📊 品質レポート")
+        print(f"\n[CHART] 品質レポート")
         quality_report = manager.get_quality_report()
         
         for key, value in quality_report['quality_metrics'].items():
@@ -661,12 +661,12 @@ def demo_simulation_quality_manager():
         return True
         
     except Exception as e:
-        print(f"❌ デモエラー: {e}")
+        print(f"[ERROR] デモエラー: {e}")
         return False
 
 if __name__ == "__main__":
     success = demo_simulation_quality_manager()
     if success:
-        print("\n✅ シミュレーション品質管理システムデモ完了")
+        print("\n[OK] シミュレーション品質管理システムデモ完了")
     else:
-        print("\n❌ シミュレーション品質管理システムデモ失敗")
+        print("\n[ERROR] シミュレーション品質管理システムデモ失敗")

@@ -1,9 +1,9 @@
 # Phase 2: ランキングパイプライン診断修正分析ドキュメント
 
-## 🎯 **概要**
+## [TARGET] **概要**
 `deterministic_removal_test_report.md`で発見された新問題「ランキングパイプライン診断の不安定性」の詳細分析と修正実装計画
 
-## 📊 **問題詳細分析**
+## [CHART] **問題詳細分析**
 
 ### **症状: 構造不一致問題**
 ```log
@@ -21,7 +21,7 @@
 - ISM信頼度低下: 0.8 → 0.4
 - 切替回数激減: 目標30回 → 実際1回
 
-## 🔍 **技術的根本原因**
+## [SEARCH] **技術的根本原因**
 
 ### **疑われる問題箇所**
 ```python
@@ -29,11 +29,11 @@
 def _update_symbol_ranking(self, current_date: datetime, symbols: List[str]) -> Optional[Dict]:
     """Resolution 19: ランキング診断・修復システム"""
     
-    # 🚨 問題箇所1: 診断結果の構造不整合
+    # [ALERT] 問題箇所1: 診断結果の構造不整合
     diagnostic_result = self._diagnose_ranking_pipeline(current_date, symbols)
     
     if not diagnostic_result.get('success', False):
-        # 🚨 問題箇所2: 修復処理の不完全性
+        # [ALERT] 問題箇所2: 修復処理の不完全性
         return self._repair_failed_diagnostics(current_date, symbols)
     
     return diagnostic_result
@@ -62,7 +62,7 @@ def _ensure_ranking_structure_consistency(self, ranking_result: Dict) -> Dict:
     
     # 構造検証
     if not all(key in ranking_result for key in required_keys):
-        logger.warning(f"🔧 構造不整合検出: 欠如キー={set(required_keys) - set(ranking_result.keys())}")
+        logger.warning(f"[TOOL] 構造不整合検出: 欠如キー={set(required_keys) - set(ranking_result.keys())}")
         return self._repair_ranking_structure(ranking_result)
     
     return ranking_result
@@ -98,7 +98,7 @@ def _repair_ranking_structure(self, partial_result: Dict) -> Dict:
                 base_structure['top_symbol'] = top_symbol[0]
                 base_structure['top_score'] = top_symbol[1]
     
-    logger.info(f"🔧 構造修復完了: top_symbol={base_structure['top_symbol']}")
+    logger.info(f"[TOOL] 構造修復完了: top_symbol={base_structure['top_symbol']}")
     return base_structure
 ```
 
@@ -119,18 +119,18 @@ def _stabilize_ranking_diagnostics(self, current_date: datetime, symbols: List[s
         try:
             result = diagnostic_func(current_date, symbols)
             if self._validate_ranking_structure(result):
-                logger.info(f"🔍 診断成功: {attempt_name} - 構造完全性確認")
+                logger.info(f"[SEARCH] 診断成功: {attempt_name} - 構造完全性確認")
                 return result
             else:
-                logger.warning(f"🔍 診断部分成功: {attempt_name} - 構造修復が必要")
+                logger.warning(f"[SEARCH] 診断部分成功: {attempt_name} - 構造修復が必要")
                 return self._ensure_ranking_structure_consistency(result)
                 
         except Exception as e:
-            logger.warning(f"🔍 診断失敗: {attempt_name} - {str(e)}")
+            logger.warning(f"[SEARCH] 診断失敗: {attempt_name} - {str(e)}")
             continue
     
     # 全診断失敗時の緊急フォールバック
-    logger.error("🚨 全診断失敗 - 緊急フォールバック実行")
+    logger.error("[ALERT] 全診断失敗 - 緊急フォールバック実行")
     return self._emergency_ranking_fallback(current_date, symbols)
 
 def _emergency_ranking_fallback(self, current_date: datetime, symbols: List[str]) -> Dict:
@@ -166,10 +166,10 @@ def _emergency_ranking_fallback(self, current_date: datetime, symbols: List[str]
             emergency_result['top_symbol'] = top_symbol[0]
             emergency_result['top_score'] = top_symbol[1]
             
-        logger.info(f"🚨 緊急フォールバック成功: top_symbol={emergency_result['top_symbol']}")
+        logger.info(f"[ALERT] 緊急フォールバック成功: top_symbol={emergency_result['top_symbol']}")
         
     except Exception as e:
-        logger.error(f"🚨 緊急フォールバック失敗: {str(e)}")
+        logger.error(f"[ALERT] 緊急フォールバック失敗: {str(e)}")
         # 最後の手段: ランダム選択
         if symbols:
             import random
@@ -222,7 +222,7 @@ def _validate_ranking_structure(self, result: Dict) -> bool:
     return all(validations)
 ```
 
-## 📈 **期待効果**
+## [UP] **期待効果**
 
 ### **診断成功率改善**
 - **現在**: 10% (1/10日)
@@ -240,7 +240,7 @@ def _validate_ranking_structure(self, result: Dict) -> bool:
 - **現在**: top_symbol=None による機能停止
 - **目標**: 継続的な切替判定機能維持
 
-## 🧪 **テスト戦略**
+## [TEST] **テスト戦略**
 
 ### **Phase 2 テストケース**
 ```python
@@ -260,7 +260,7 @@ def test_fallback_functionality():
     pass
 ```
 
-## 🚀 **実装順序**
+## [ROCKET] **実装順序**
 
 ### **Step 1**: 構造統一システム実装
 - `_ensure_ranking_structure_consistency`
@@ -290,7 +290,7 @@ def test_fallback_functionality():
 - ComprehensiveScoringEngine の実データ分析は保持
 - ISM統合切替システムとの互換性確保
 
-## 🎯 **成功基準**
+## [TARGET] **成功基準**
 
 1. **診断成功率**: 90%以上達成
 2. **構造一致性**: 全日程で統一構造確保

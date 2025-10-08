@@ -3,7 +3,7 @@ DSSMS 戦略別統計問題分析レポート
 ======================================================================
 実行日時: 2025年09月08日 15:24:41
 
-🚨 発見された問題:
+[ALERT] 発見された問題:
 ----------------------------------------
 1. [HIGH] 期待される7つの戦略のうち5つが不足
    詳細: {'found_strategies': ['DSSMSStrategy', '合計'], 'expected_strategies': ['VWAPBreakoutStrategy', 'MeanReversionStrategy', 'TrendFollowingStrategy', 'MomentumStrategy', 'ContrarianStrategy', 'VolatilityBreakoutStrategy', 'RSIStrategy'], 'missing_count': 5}
@@ -11,7 +11,7 @@ DSSMS 戦略別統計問題分析レポート
 2. [HIGH] すべての戦略の勝率が0%になっている
    詳細: {'win_rate_column': 2, 'win_rates': [0.0], 'unique_win_rates': [0.0], 'all_zero': True}
 
-📊 Excel戦略別統計分析:
+[CHART] Excel戦略別統計分析:
 ----------------------------------------
 戦略別統計シート: 発見
 シート名: 戦略別統計
@@ -33,13 +33,13 @@ DSSMS 戦略別統計問題分析レポート
   ContrarianStrategy: 勝率32.4% (取引34件)
   MeanReversionStrategy: 勝率41.2% (取引34件)
 
-🔧 統一出力エンジン分析:
+[TOOL] 統一出力エンジン分析:
 ----------------------------------------
 エンジンファイル: 存在
 戦略処理メソッド: ['_generate_strategy_statistics', 'strategy_statistics_処理', '戦略別統計_処理']
 Excel生成機能: あり
 
-🔧 修正提案:
+[TOOL] 修正提案:
 ----------------------------------------
 1. 戦略別統計データ生成の修正
    - 統一出力エンジンで7つの戦略ごとの統計を生成

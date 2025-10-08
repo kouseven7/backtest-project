@@ -380,9 +380,9 @@ def main():
         all_passed = all(success for _, success in components_tested)
         
         if all_passed:
-            logger.info("\n🎉 All tests passed! Enhanced Risk Management System is working correctly.")
+            logger.info("\n[SUCCESS] All tests passed! Enhanced Risk Management System is working correctly.")
         else:
-            logger.warning("\n⚠️  Some tests failed. Please check the logs for details.")
+            logger.warning("\n[WARNING]  Some tests failed. Please check the logs for details.")
         
         logger.info("Demo completed successfully!")
         

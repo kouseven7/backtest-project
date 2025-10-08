@@ -212,15 +212,15 @@ def demo_risk_monitoring():
             
             if alerts:
                 risk_alerts.extend([(strategy, alert) for alert in alerts])
-                logger.warning(f"⚠️  {strategy}: {', '.join(alerts)}")
+                logger.warning(f"[WARNING]  {strategy}: {', '.join(alerts)}")
             else:
-                logger.info(f"✅ {strategy}: All risk checks passed")
+                logger.info(f"[OK] {strategy}: All risk checks passed")
         
         if risk_alerts:
             logger.warning(f"\nTotal risk alerts: {len(risk_alerts)}")
             logger.warning("Recommended actions: Review strategy parameters, increase monitoring frequency")
         else:
-            logger.info("\n✅ No risk alerts - Portfolio within acceptable risk levels")
+            logger.info("\n[OK] No risk alerts - Portfolio within acceptable risk levels")
         
         return True
         
@@ -253,7 +253,7 @@ def demo_performance_tracking():
             scores = [daily_scores[strategy] for daily_scores in historical_performance.values()]
             
             avg_score = np.mean(scores)
-            trend = "📈 Improving" if scores[-1] > scores[0] else "📉 Declining" if scores[-1] < scores[0] else "➡️ Stable"
+            trend = "[UP] Improving" if scores[-1] > scores[0] else "[DOWN] Declining" if scores[-1] < scores[0] else "➡️ Stable"
             volatility = np.std(scores)
             
             logger.info(f"{strategy}:")
@@ -306,7 +306,7 @@ def main():
     
     success_count = 0
     for scenario_name, result in results:
-        status_icon = "✅" if result == "SUCCESS" else "❌"
+        status_icon = "[OK]" if result == "SUCCESS" else "[ERROR]"
         logger.info(f"{status_icon} {scenario_name}: {result}")
         if result == "SUCCESS":
             success_count += 1

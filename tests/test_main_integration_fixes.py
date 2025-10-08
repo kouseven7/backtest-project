@@ -56,7 +56,7 @@ def test_main_strategy_execution():
             print(f"   エグジットシグナル: {exit_count} 回")
             
             if entry_count > 0 or exit_count > 0:
-                print("   ✅ 戦略がシグナルを生成しています")
+                print("   [OK] 戦略がシグナルを生成しています")
                 
                 # trade_simulationでの処理テスト
                 print("\n2. trade_simulationでの処理テスト...")
@@ -74,15 +74,15 @@ def test_main_strategy_execution():
                     
                     # リスク状態列が削除されているか
                     if 'リスク状態' not in trade_history.columns:
-                        print("   ✅ リスク状態列が削除されています")
+                        print("   [OK] リスク状態列が削除されています")
                     else:
-                        print("   ❌ リスク状態列が残っています")
+                        print("   [ERROR] リスク状態列が残っています")
                     
                     # 取引量(株)列があるか
                     if '取引量(株)' in trade_history.columns:
-                        print("   ✅ 取引量(株)列があります")
+                        print("   [OK] 取引量(株)列があります")
                     else:
-                        print("   ❌ 取引量(株)列がありません")
+                        print("   [ERROR] 取引量(株)列がありません")
                 
                 # パフォーマンス指標の確認
                 performance_metrics = trade_result['パフォーマンス指標']
@@ -91,21 +91,21 @@ def test_main_strategy_execution():
                 advanced_metrics = ['シャープレシオ', 'ソルティノレシオ', '期待値']
                 for metric in advanced_metrics:
                     if metric in metrics_list:
-                        print(f"   ✅ {metric}が含まれています")
+                        print(f"   [OK] {metric}が含まれています")
                     else:
-                        print(f"   ❌ {metric}が含まれていません")
+                        print(f"   [ERROR] {metric}が含まれていません")
                 
-                print("   ✅ trade_simulationテスト成功")
+                print("   [OK] trade_simulationテスト成功")
                 return True
             else:
-                print("   ⚠️ シグナルが生成されませんでした（データ不足の可能性）")
+                print("   [WARNING] シグナルが生成されませんでした（データ不足の可能性）")
                 return True  # エラーではない
         else:
-            print("   ❌ Entry_SignalまたはExit_Signalカラムがありません")
+            print("   [ERROR] Entry_SignalまたはExit_Signalカラムがありません")
             return False
             
     except Exception as e:
-        print(f"❌ main.py戦略実行テストでエラー: {e}")
+        print(f"[ERROR] main.py戦略実行テストでエラー: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -125,7 +125,7 @@ def test_output_integration():
         
         if output_path and os.path.exists(output_path):
             file_size = os.path.getsize(output_path) / 1024
-            print(f"   ✅ Excel出力成功: {output_path}")
+            print(f"   [OK] Excel出力成功: {output_path}")
             print(f"   ファイルサイズ: {file_size:.1f} KB")
             
             # Excelファイルの確認
@@ -138,9 +138,9 @@ def test_output_integration():
                 if "取引履歴" in sheet_names:
                     trade_df = pd.read_excel(output_path, sheet_name="取引履歴")
                     if '取引量(株)' in trade_df.columns:
-                        print("   ✅ 取引量(株)列がExcelに出力されています")
+                        print("   [OK] 取引量(株)列がExcelに出力されています")
                     if 'リスク状態' not in trade_df.columns:
-                        print("   ✅ リスク状態列がExcelから削除されています")
+                        print("   [OK] リスク状態列がExcelから削除されています")
                 
                 # パフォーマンス指標シートの確認
                 if "パフォーマンス指標" in sheet_names:
@@ -148,25 +148,25 @@ def test_output_integration():
                     if len(perf_df) > 0 and '指標' in perf_df.columns:
                         metrics_in_excel = perf_df['指標'].tolist()
                         if 'シャープレシオ' in metrics_in_excel:
-                            print("   ✅ 高度なパフォーマンス指標がExcelに出力されています")
+                            print("   [OK] 高度なパフォーマンス指標がExcelに出力されています")
                 
                 return True
                 
             except Exception as e:
-                print(f"   ❌ Excelファイル確認エラー: {e}")
+                print(f"   [ERROR] Excelファイル確認エラー: {e}")
                 return False
         else:
-            print("   ❌ Excel出力に失敗しました")
+            print("   [ERROR] Excel出力に失敗しました")
             return False
             
     except Exception as e:
-        print(f"❌ Excel出力統合テストでエラー: {e}")
+        print(f"[ERROR] Excel出力統合テストでエラー: {e}")
         import traceback
         traceback.print_exc()
         return False
 
 if __name__ == "__main__":
-    print("🔍 main.py統合修正確認テスト開始")
+    print("[SEARCH] main.py統合修正確認テスト開始")
     
     # 戦略実行テスト
     strategy_success = test_main_strategy_execution()
@@ -176,22 +176,22 @@ if __name__ == "__main__":
     
     print("\n=== 最終結果 ===")
     if strategy_success:
-        print("✅ main.py戦略実行: 成功")
+        print("[OK] main.py戦略実行: 成功")
     else:
-        print("❌ main.py戦略実行: 失敗")
+        print("[ERROR] main.py戦略実行: 失敗")
         
     if output_success:
-        print("✅ Excel出力統合: 成功")
+        print("[OK] Excel出力統合: 成功")
     else:
-        print("❌ Excel出力統合: 失敗")
+        print("[ERROR] Excel出力統合: 失敗")
     
     if strategy_success and output_success:
-        print("\n🎉 すべてのテストが成功しました！")
+        print("\n[SUCCESS] すべてのテストが成功しました！")
         print("trade_simulation.pyの修正がmain.py経由で正しく動作しています。")
         print("\n📝 修正内容の確認:")
-        print("1. ✅ リスク状態列が削除されています")
-        print("2. ✅ 取引量が株数単位で表示されています")
-        print("3. ✅ 日次累積損益が正しく計算されています")
-        print("4. ✅ 高度なパフォーマンス指標が統合されています")
+        print("1. [OK] リスク状態列が削除されています")
+        print("2. [OK] 取引量が株数単位で表示されています")
+        print("3. [OK] 日次累積損益が正しく計算されています")
+        print("4. [OK] 高度なパフォーマンス指標が統合されています")
     else:
-        print("\n⚠️ 一部のテストで問題が見つかりました。")
+        print("\n[WARNING] 一部のテストで問題が見つかりました。")

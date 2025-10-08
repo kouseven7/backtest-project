@@ -110,7 +110,7 @@ def demo_basic_time_decay():
         return True
         
     except Exception as e:
-        print(f"❌ 基本デモエラー: {e}")
+        print(f"[ERROR] 基本デモエラー: {e}")
         return False
 
 def demo_multiple_decay_models():
@@ -163,7 +163,7 @@ def demo_multiple_decay_models():
         return True
         
     except Exception as e:
-        print(f"❌ モデル比較デモエラー: {e}")
+        print(f"[ERROR] モデル比較デモエラー: {e}")
         return False
 
 def demo_strategy_specific_decay():
@@ -222,7 +222,7 @@ def demo_strategy_specific_decay():
         return True
         
     except Exception as e:
-        print(f"❌ 戦略別デモエラー: {e}")
+        print(f"[ERROR] 戦略別デモエラー: {e}")
         return False
 
 def demo_weighted_score_calculation():
@@ -282,7 +282,7 @@ def demo_weighted_score_calculation():
         weighted_avg = weighted_scores["weighted_mean"]
         effective_size = weighted_scores["effective_sample_size"]
         
-        print(f"📊 スコア統計（30日間のデータ）:")
+        print(f"[CHART] スコア統計（30日間のデータ）:")
         print(f"  - データ数: {len(scores)}")
         print(f"  - 単純平均: {simple_avg:.2f}")
         print(f"  - 重み付き平均: {weighted_avg:.2f}")
@@ -293,14 +293,14 @@ def demo_weighted_score_calculation():
         recent_scores = scores[:7]  # 直近7日
         recent_avg = np.mean(recent_scores)
         
-        print(f"\n🔍 直近7日の影響:")
+        print(f"\n[SEARCH] 直近7日の影響:")
         print(f"  - 直近7日平均: {recent_avg:.2f}")
         print(f"  - 重み付き平均との差: {(weighted_avg - recent_avg):+.2f}")
         
         return True
         
     except Exception as e:
-        print(f"❌ 重み付きスコア計算デモエラー: {e}")
+        print(f"[ERROR] 重み付きスコア計算デモエラー: {e}")
         return False
 
 def demo_visualization_data():
@@ -328,7 +328,7 @@ def demo_visualization_data():
             print(f"  - 日数範囲: 0-{viz_data['days_ago'].max()}日")
             
             # サンプルデータ表示
-            print(f"\n📈 減衰曲線サンプル:")
+            print(f"\n[UP] 減衰曲線サンプル:")
             print(f"{'日数':<6} {'重み':<10} {'相対重み%':<12}")
             print("-" * 30)
             
@@ -347,13 +347,13 @@ def demo_visualization_data():
             print(f"\n💾 可視化データ保存: {output_file}")
             
         else:
-            print("❌ 可視化データ生成失敗")
+            print("[ERROR] 可視化データ生成失敗")
             return False
         
         return True
         
     except Exception as e:
-        print(f"❌ 可視化データデモエラー: {e}")
+        print(f"[ERROR] 可視化データデモエラー: {e}")
         return False
 
 # =============================================================================
@@ -362,7 +362,7 @@ def demo_visualization_data():
 
 def run_all_demos():
     """全デモ実行"""
-    print("🚀 時間減衰システム デモ実行開始")
+    print("[ROCKET] 時間減衰システム デモ実行開始")
     print(f"実行時刻: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     demos = [
@@ -379,33 +379,33 @@ def run_all_demos():
         try:
             print(f"\n🔄 {demo_name} 実行中...")
             success = demo_func()
-            results[demo_name] = "✅ 成功" if success else "❌ 失敗"
+            results[demo_name] = "[OK] 成功" if success else "[ERROR] 失敗"
             
         except Exception as e:
-            results[demo_name] = f"❌ エラー: {e}"
+            results[demo_name] = f"[ERROR] エラー: {e}"
             logger.error(f"Demo {demo_name} failed: {e}")
     
     # 結果サマリー
     print("\n" + "="*80)
-    print("📋 デモ実行結果サマリー")
+    print("[LIST] デモ実行結果サマリー")
     print("="*80)
     
     for demo_name, result in results.items():
         print(f"{demo_name:<20} {result}")
     
     # 成功率計算
-    success_count = sum(1 for r in results.values() if "✅" in r)
+    success_count = sum(1 for r in results.values() if "[OK]" in r)
     total_count = len(results)
     success_rate = (success_count / total_count) * 100
     
-    print(f"\n📊 成功率: {success_count}/{total_count} ({success_rate:.1f}%)")
+    print(f"\n[CHART] 成功率: {success_count}/{total_count} ({success_rate:.1f}%)")
     
     if success_rate == 100:
-        print("🎉 全デモ成功！時間減衰システムは正常に動作しています。")
+        print("[SUCCESS] 全デモ成功！時間減衰システムは正常に動作しています。")
     elif success_rate >= 80:
-        print("⚠️ 大部分のデモが成功しました。一部に問題がある可能性があります。")
+        print("[WARNING] 大部分のデモが成功しました。一部に問題がある可能性があります。")
     else:
-        print("🚨 複数のデモが失敗しました。システム設定を確認してください。")
+        print("[ALERT] 複数のデモが失敗しました。システム設定を確認してください。")
 
 if __name__ == "__main__":
     run_all_demos()

@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 def analyze_data_fetching_bottleneck():
     """データ取得ボトルネック分析"""
     print("=== Phase 3最適化候補分析 ===")
-    print("📊 1. データ取得コンポーネント分析")
+    print("[CHART] 1. データ取得コンポーネント分析")
     
     # yfinance インポート時間
     start = time.perf_counter()
@@ -23,7 +23,7 @@ def analyze_data_fetching_bottleneck():
         yf_time = (time.perf_counter() - start) * 1000
         print(f"   yfinance インポート: {yf_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ yfinance エラー: {e}")
+        print(f"   [ERROR] yfinance エラー: {e}")
     
     # データフェッチャー類
     start = time.perf_counter()
@@ -32,7 +32,7 @@ def analyze_data_fetching_bottleneck():
         fetcher_time = (time.perf_counter() - start) * 1000
         print(f"   DataFetcher インポート: {fetcher_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ DataFetcher エラー: {e}")
+        print(f"   [ERROR] DataFetcher エラー: {e}")
     
     # データ処理
     start = time.perf_counter()
@@ -41,11 +41,11 @@ def analyze_data_fetching_bottleneck():
         processor_time = (time.perf_counter() - start) * 1000
         print(f"   DataProcessor インポート: {processor_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ DataProcessor エラー: {e}")
+        print(f"   [ERROR] DataProcessor エラー: {e}")
 
 def analyze_strategy_execution_bottleneck():
     """戦略実行ボトルネック分析"""
-    print("\n📈 2. 戦略実行コンポーネント分析")
+    print("\n[UP] 2. 戦略実行コンポーネント分析")
     
     # 主要戦略
     strategies = [
@@ -65,9 +65,9 @@ def analyze_strategy_execution_bottleneck():
             print(f"   {class_name}: {load_time:.1f}ms")
             total_strategy_time += load_time
         except Exception as e:
-            print(f"   ❌ {class_name}: エラー - {e}")
+            print(f"   [ERROR] {class_name}: エラー - {e}")
     
-    print(f"   📊 戦略合計: {total_strategy_time:.1f}ms")
+    print(f"   [CHART] 戦略合計: {total_strategy_time:.1f}ms")
 
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: def analyze_excel_output_bottleneck():
@@ -82,7 +82,7 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
         openpyxl_time = (time.perf_counter() - start) * 1000
         print(f"   openpyxl インポート: {openpyxl_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ openpyxl エラー: {e}")
+        print(f"   [ERROR] openpyxl エラー: {e}")
     
     # Excelエクスポーター
     start = time.perf_counter()
@@ -91,7 +91,7 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
         exporter_time = (time.perf_counter() - start) * 1000
         print(f"   ExcelExporter インポート: {exporter_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ ExcelExporter エラー: {e}")
+        print(f"   [ERROR] ExcelExporter エラー: {e}")
     
     # シミュレーションハンドラー
     start = time.perf_counter()
@@ -100,7 +100,7 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
         handler_time = (time.perf_counter() - start) * 1000
         print(f"   SimulationHandler インポート: {handler_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ SimulationHandler エラー: {e}")
+        print(f"   [ERROR] SimulationHandler エラー: {e}")
 
 def analyze_heavy_libraries():
     """重いライブラリ分析"""
@@ -126,13 +126,13 @@ def analyze_heavy_libraries():
             print(f"   {lib_name}: {load_time:.1f}ms")
             total_heavy_time += load_time
         except Exception as e:
-            print(f"   ❌ {lib_name}: エラー - {e}")
+            print(f"   [ERROR] {lib_name}: エラー - {e}")
     
-    print(f"   📊 重いライブラリ合計: {total_heavy_time:.1f}ms")
+    print(f"   [CHART] 重いライブラリ合計: {total_heavy_time:.1f}ms")
 
 def analyze_dssms_specific_bottlenecks():
     """DSSMS固有ボトルネック分析"""
-    print("\n🎯 5. DSSMS固有コンポーネント分析")
+    print("\n[TARGET] 5. DSSMS固有コンポーネント分析")
     
     dssms_components = [
         ('src.dssms.dssms_backtester', 'DSSMSBacktester'),
@@ -151,17 +151,17 @@ def analyze_dssms_specific_bottlenecks():
             print(f"   {class_name}: {load_time:.1f}ms")
             total_dssms_time += load_time
         except Exception as e:
-            print(f"   ❌ {class_name}: エラー - {e}")
+            print(f"   [ERROR] {class_name}: エラー - {e}")
     
-    print(f"   📊 DSSMS固有合計: {total_dssms_time:.1f}ms")
+    print(f"   [CHART] DSSMS固有合計: {total_dssms_time:.1f}ms")
 
 def calculate_optimization_priorities():
     """最適化優先度計算"""
-    print("\n📋 6. Phase 3最適化優先度まとめ")
-    print("⚠️ 注意: 実際の実行時間6780msとインポート時間は異なります")
+    print("\n[LIST] 6. Phase 3最適化優先度まとめ")
+    print("[WARNING] 注意: 実際の実行時間6780msとインポート時間は異なります")
     print("   実行時間 = インポート時間 + 初期化時間 + 処理実行時間")
     print()
-    print("🎯 推奨Phase 3最適化順序:")
+    print("[TARGET] 推奨Phase 3最適化順序:")
     print("   1. 【高優先】重いライブラリ遅延ローディング（pandas, numpy等）")
     print("   2. 【高優先】DSSMS固有コンポーネント最適化")
     print("   3. 【中優先】戦略実行処理の軽量化")

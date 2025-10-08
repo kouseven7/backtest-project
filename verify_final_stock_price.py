@@ -76,9 +76,9 @@ if __name__ == "__main__":
         print()
         print("=== 結論 ===")
         if result['is_match']:
-            print(f"✅ 6438.89は最終日の{result['price_type_matched']}価格と一致")
+            print(f"[OK] 6438.89は最終日の{result['price_type_matched']}価格と一致")
             print("→ 強制決済ロジック自体は最終日価格を正しく取得")
             print("→ 問題は「全取引が強制決済されている」こと")
         else:
-            print("❌ 6438.89は最終日の価格と不一致")
+            print("[ERROR] 6438.89は最終日の価格と不一致")
             print("→ 価格取得ロジックに問題あり")

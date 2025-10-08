@@ -13,7 +13,7 @@ import re
 
 def analyze_unified_engine_impact():
     """統一エンジンの影響度分析"""
-    print("🔍 Task 1.3: 統一エンジン影響度分析")
+    print("[SEARCH] Task 1.3: 統一エンジン影響度分析")
     print("=" * 60)
     
     engines_to_analyze = [
@@ -27,11 +27,11 @@ def analyze_unified_engine_impact():
     
     for engine_name in engines_to_analyze:
         if Path(engine_name).exists():
-            print(f"\n📋 {engine_name} の分析:")
+            print(f"\n[LIST] {engine_name} の分析:")
             result = analyze_single_engine(engine_name)
             analysis_results[engine_name] = result
         else:
-            print(f"❌ {engine_name} が見つかりません")
+            print(f"[ERROR] {engine_name} が見つかりません")
             analysis_results[engine_name] = {'exists': False}
     
     return analysis_results
@@ -75,11 +75,11 @@ def analyze_single_engine(engine_path):
         analysis['holding_period_calculation'] = holding_matches[:3]  # 最初の3件
         
         # 詳細情報表示
-        print(f"  📊 ファイルサイズ: {analysis['file_size']} 文字")
+        print(f"  [CHART] ファイルサイズ: {analysis['file_size']} 文字")
         print(f"  🔄 switch_history使用箇所: {len(analysis['switch_history_usage'])}件")
-        print(f"  📈 データ変換メソッド: {len(analysis['data_conversion_methods'])}件")
+        print(f"  [UP] データ変換メソッド: {len(analysis['data_conversion_methods'])}件")
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
-# ORIGINAL: print(f"  📊 Excel出力メソッド: {len(analysis['excel_output_methods'])}件")
+# ORIGINAL: print(f"  [CHART] Excel出力メソッド: {len(analysis['excel_output_methods'])}件")
         print(f"  📅 日付修正メソッド: {len(analysis['date_fixing_methods'])}件")
         print(f"  ⏱️ 保有期間計算: {len(analysis['holding_period_calculation'])}件")
         
@@ -94,7 +94,7 @@ def analyze_single_engine(engine_path):
         return analysis
         
     except Exception as e:
-        print(f"    ❌ 分析エラー: {e}")
+        print(f"    [ERROR] 分析エラー: {e}")
         return {'exists': True, 'error': str(e)}
 
 def trace_data_flow():
@@ -104,7 +104,7 @@ def trace_data_flow():
     
     try:
         # 1. DSSMSBacktesterのswitch_history生成確認
-        print("📋 1. DSSMSBacktester.switch_history 生成過程:")
+        print("[LIST] 1. DSSMSBacktester.switch_history 生成過程:")
         with open('src/dssms/dssms_backtester.py', 'r', encoding='utf-8') as f:
             backtester_content = f.read()
         
@@ -115,7 +115,7 @@ def trace_data_flow():
             print(f"    → {match.strip()}")
         
         # 2. 各エンジンでのswitch_history取得方法確認
-        print(f"\n📋 2. 統一エンジンでのswitch_history取得:")
+        print(f"\n[LIST] 2. 統一エンジンでのswitch_history取得:")
         engines = ['dssms_unified_output_engine.py', 'dssms_unified_output_engine_fixed.py']
         
         for engine in engines:
@@ -133,12 +133,12 @@ def trace_data_flow():
         return True
         
     except Exception as e:
-        print(f"❌ データフロー追跡エラー: {e}")
+        print(f"[ERROR] データフロー追跡エラー: {e}")
         return False
 
 def identify_switching_logic_changes():
     """切替判定ロジックの変更点特定"""
-    print(f"\n🔧 切替判定ロジック変更点特定")
+    print(f"\n[TOOL] 切替判定ロジック変更点特定")
     print("-" * 40)
     
     try:
@@ -174,7 +174,7 @@ def identify_switching_logic_changes():
                 if len(method_lines) > 100:  # 安全装置
                     break
             
-            print(f"📋 _evaluate_switch_decision メソッド詳細:")
+            print(f"[LIST] _evaluate_switch_decision メソッド詳細:")
             print("=" * 50)
             for i, line in enumerate(method_lines[:30]):  # 最初の30行
                 print(f"{i+1:2d}: {line}")
@@ -185,22 +185,22 @@ def identify_switching_logic_changes():
                 if any(keyword in line.lower() for keyword in ['if ', 'return false', 'return true', 'min_holding']):
                     critical_conditions.append(line.strip())
             
-            print(f"\n🎯 重要な判定条件:")
+            print(f"\n[TARGET] 重要な判定条件:")
             for condition in critical_conditions[:10]:
                 print(f"  → {condition}")
                 
         else:
-            print("❌ _evaluate_switch_decision メソッドが見つかりません")
+            print("[ERROR] _evaluate_switch_decision メソッドが見つかりません")
         
         return True
         
     except Exception as e:
-        print(f"❌ 切替ロジック分析エラー: {e}")
+        print(f"[ERROR] 切替ロジック分析エラー: {e}")
         return False
 
 def check_current_engine_usage():
     """現在使用されているエンジンの確認"""
-    print(f"\n📋 現在使用エンジンの確認")
+    print(f"\n[LIST] 現在使用エンジンの確認")
     print("-" * 40)
     
     try:
@@ -214,31 +214,31 @@ def check_current_engine_usage():
             if 'import' in line.lower() and any(keyword in line.lower() for keyword in ['excel', 'exporter', 'output', 'unified']):
                 import_lines.append(line.strip())
         
-        print("📊 検出されたインポート文:")
+        print("[CHART] 検出されたインポート文:")
         for line in import_lines:
             print(f"  → {line}")
         
         # DSSMSExcelExporterV2の使用箇所確認
         v2_usage = re.findall(r'.*DSSMSExcelExporterV2.*', content)
-        print(f"\n📊 DSSMSExcelExporterV2使用箇所: {len(v2_usage)}件")
+        print(f"\n[CHART] DSSMSExcelExporterV2使用箇所: {len(v2_usage)}件")
         for usage in v2_usage[:3]:
             print(f"  → {usage.strip()}")
         
         # output実行箇所の確認
         output_calls = re.findall(r'.*\.export.*\(.*\)', content)
-        print(f"\n📊 export呼び出し箇所: {len(output_calls)}件")
+        print(f"\n[CHART] export呼び出し箇所: {len(output_calls)}件")
         for call in output_calls[:3]:
             print(f"  → {call.strip()}")
             
         return True
         
     except Exception as e:
-        print(f"❌ エンジン使用確認エラー: {e}")
+        print(f"[ERROR] エンジン使用確認エラー: {e}")
         return False
 
 def main():
     """Task 1.3 メイン実行"""
-    print("🚀 Task 1.3: 統一エンジン影響度分析 開始")
+    print("[ROCKET] Task 1.3: 統一エンジン影響度分析 開始")
     print("=" * 80)
     
     # 1. 統一エンジン分析
@@ -254,25 +254,25 @@ def main():
     engine_usage_success = check_current_engine_usage()
     
     # 結果サマリー
-    print(f"\n📊 Task 1.3 実行結果サマリー")
+    print(f"\n[CHART] Task 1.3 実行結果サマリー")
     print("=" * 50)
     
     existing_engines = [name for name, result in engine_results.items() if result.get('exists', False)]
-    print(f"✅ 分析完了エンジン数: {len(existing_engines)}")
-    print(f"✅ データフロー追跡: {'成功' if flow_success else '失敗'}")
-    print(f"✅ 切替ロジック分析: {'成功' if logic_success else '失敗'}")
-    print(f"✅ エンジン使用確認: {'成功' if engine_usage_success else '失敗'}")
+    print(f"[OK] 分析完了エンジン数: {len(existing_engines)}")
+    print(f"[OK] データフロー追跡: {'成功' if flow_success else '失敗'}")
+    print(f"[OK] 切替ロジック分析: {'成功' if logic_success else '失敗'}")
+    print(f"[OK] エンジン使用確認: {'成功' if engine_usage_success else '失敗'}")
     
     # 重要な発見事項を特定
-    print(f"\n🎯 重要な発見事項:")
+    print(f"\n[TARGET] 重要な発見事項:")
     for engine_name, result in engine_results.items():
         if result.get('exists') and not result.get('error'):
             switch_count = len(result.get('switch_history_usage', []))
             if switch_count > 0:
-                print(f"  📋 {engine_name}: switch_history処理 {switch_count}件")
+                print(f"  [LIST] {engine_name}: switch_history処理 {switch_count}件")
     
     # 次のタスクへの推奨事項
-    print(f"\n🎯 次のアクション（Task 1.2完了→Task 2へ）:")
+    print(f"\n[TARGET] 次のアクション（Task 1.2完了→Task 2へ）:")
     print("1. Task 1.2: データ永続化・キャッシュ問題調査の完了")
     print("2. Task 1.3の結果をroadmap2.mdに記録")
     print("3. Task 2.1: 日付処理ロジック検証の実行")

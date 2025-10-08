@@ -376,7 +376,7 @@ class PortfolioCalculationFixer:
         emergency_count = sum(1 for r in fix_results if r.get("emergency_triggered", False))
         
         report_lines.extend([
-            "📊 修正サマリー",
+            "[CHART] 修正サマリー",
             "-" * 20,
             f"修正実行回数: {total_fixes}",
             f"成功: {success_count} ({success_count/total_fixes*100:.1f}%)",

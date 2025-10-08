@@ -23,7 +23,7 @@ class DSSMSHiddenBottleneckEliminator:
         
     def investigate_hidden_bottleneck(self) -> Dict[str, Any]:
         """隠れた1243msボトルネック詳細調査"""
-        print("🔍 隠れた1243msボトルネック詳細調査開始...")
+        print("[SEARCH] 隠れた1243msボトルネック詳細調査開始...")
         
         # より詳細なコンポーネント分析
         detailed_analysis = self._detailed_component_analysis()
@@ -47,7 +47,7 @@ class DSSMSHiddenBottleneckEliminator:
     
     def _detailed_component_analysis(self) -> Dict[str, Any]:
         """詳細コンポーネント分析"""
-        print("📊 詳細コンポーネント分析中...")
+        print("[CHART] 詳細コンポーネント分析中...")
         
         # より細かいコンポーネント分析
         fine_grained_components = [
@@ -81,10 +81,10 @@ class DSSMSHiddenBottleneckEliminator:
                 cumulative_time += import_time
                 
                 severity = 'critical' if import_time > 500 else 'high' if import_time > 200 else 'medium' if import_time > 50 else 'low'
-                print(f"  📊 {component}: {import_time:.1f}ms ({severity})")
+                print(f"  [CHART] {component}: {import_time:.1f}ms ({severity})")
                 
             except Exception as e:
-                print(f"  ❌ {component}: 測定エラー ({e})")
+                print(f"  [ERROR] {component}: 測定エラー ({e})")
                 component_times[component] = 0
         
         return {
@@ -159,7 +159,7 @@ except Exception as e:
                 print(f"  🔗 {module}: {len(dependencies)}依存, 総コスト{sum(dependency_costs.values()):.1f}ms")
                 
             except Exception as e:
-                print(f"  ❌ {module}: 連鎖分析エラー ({e})")
+                print(f"  [ERROR] {module}: 連鎖分析エラー ({e})")
         
         return chain_analysis
     
@@ -232,7 +232,7 @@ except Exception as e:
                     print(f"  📦 {init_file}: {import_time:.1f}ms ({severity})")
                     
                 except Exception as e:
-                    print(f"  ❌ {init_file}: 分析エラー ({e})")
+                    print(f"  [ERROR] {init_file}: 分析エラー ({e})")
         
         return init_costs
     
@@ -268,7 +268,7 @@ except Exception as e:
             return complexity_indicators
             
         except Exception as e:
-            print(f"  ❌ クラス定義分析エラー: {e}")
+            print(f"  [ERROR] クラス定義分析エラー: {e}")
             return {}
     
     def _calculate_total_hidden_cost(self) -> float:
@@ -279,7 +279,7 @@ except Exception as e:
     
     def implement_targeted_optimizations(self, bottleneck_analysis: Dict[str, Any]) -> Dict[str, Any]:
         """ターゲット最適化実装"""
-        print("🎯 ターゲット最適化実装中...")
+        print("[TARGET] ターゲット最適化実装中...")
         
         optimization_results = {}
         
@@ -287,7 +287,7 @@ except Exception as e:
         top_bottlenecks = bottleneck_analysis['detailed_components']['top_bottlenecks']
         
         for component, time_ms in top_bottlenecks[:3]:  # Top 3に集中
-            print(f"🔧 {component} 最適化中 ({time_ms:.1f}ms)...")
+            print(f"[TOOL] {component} 最適化中 ({time_ms:.1f}ms)...")
             
             optimization_result = self._optimize_specific_component(component, time_ms)
             optimization_results[component] = optimization_result
@@ -318,7 +318,7 @@ except Exception as e:
     
     def _optimize_hierarchical_ranking_system(self) -> Dict[str, Any]:
         """hierarchical_ranking_system最適化"""
-        print("  🔧 hierarchical_ranking_system 軽量化実装中...")
+        print("  [TOOL] hierarchical_ranking_system 軽量化実装中...")
         
         # より安全な最適化アプローチ
         try:
@@ -390,7 +390,7 @@ except Exception as e:
             return optimizations
             
         except Exception as e:
-            print(f"    ⚠️ 安全最適化適用エラー: {e}")
+            print(f"    [WARNING] 安全最適化適用エラー: {e}")
             return []
     
     def _optimize_dssms_integrated_main(self) -> Dict[str, Any]:
@@ -429,13 +429,13 @@ except Exception as e:
                         optimizations[init_file] = ['empty_lines_removed']
                     
                 except Exception as e:
-                    print(f"    ⚠️ {init_file} 最適化エラー: {e}")
+                    print(f"    [WARNING] {init_file} 最適化エラー: {e}")
         
         return optimizations
 
 def main():
     """メイン実行関数"""
-    print("🚀 TODO-PERF-001 Stage 3: DSSMS隠れたボトルネック撲滅開始")
+    print("[ROCKET] TODO-PERF-001 Stage 3: DSSMS隠れたボトルネック撲滅開始")
     print("=" * 80)
     
     eliminator = DSSMSHiddenBottleneckEliminator()
@@ -472,36 +472,36 @@ def main():
             json.dump(comprehensive_results, f, indent=2, ensure_ascii=False)
         
         print("\n" + "=" * 80)
-        print("📊 Stage 3 隠れたボトルネック撲滅結果")
+        print("[CHART] Stage 3 隠れたボトルネック撲滅結果")
         print("=" * 80)
         
-        print(f"🎯 最終測定結果:")
+        print(f"[TARGET] 最終測定結果:")
         print(f"  hierarchical_ranking_system: {final_measurement:.1f}ms")
-        print(f"  50ms目標: {'✅ 達成' if final_measurement <= 50 else '❌ 未達成'}")
+        print(f"  50ms目標: {'[OK] 達成' if final_measurement <= 50 else '[ERROR] 未達成'}")
         
         if bottleneck_analysis['detailed_components']['top_bottlenecks']:
-            print(f"\n🔍 特定されたボトルネック:")
+            print(f"\n[SEARCH] 特定されたボトルネック:")
             for component, time_ms in bottleneck_analysis['detailed_components']['top_bottlenecks'][:3]:
                 print(f"  - {component}: {time_ms:.1f}ms")
         
         applied_optimizations = len(eliminator.optimization_applied)
-        print(f"\n🔧 適用された最適化: {applied_optimizations}個")
+        print(f"\n[TOOL] 適用された最適化: {applied_optimizations}個")
         
         print(f"\n📄 詳細レポート: {report_path}")
         
         # Stage 4準備状況
         print("\n" + "=" * 80)
         if final_measurement <= 50:
-            print("🎉 Stage 3で50ms目標達成 - Stage 4で総合検証・文書更新")
+            print("[SUCCESS] Stage 3で50ms目標達成 - Stage 4で総合検証・文書更新")
         else:
-            print("⚠️ Stage 3で50ms目標未達成 - Stage 4で追加調査・代替案検討")
-        print("🚀 Stage 4: 最終統合・実用性検証 準備完了")
+            print("[WARNING] Stage 3で50ms目標未達成 - Stage 4で追加調査・代替案検討")
+        print("[ROCKET] Stage 4: 最終統合・実用性検証 準備完了")
         print("=" * 80)
         
         return True
         
     except Exception as e:
-        print(f"❌ Stage 3 実行エラー: {e}")
+        print(f"[ERROR] Stage 3 実行エラー: {e}")
         import traceback
         traceback.print_exc()
         return False

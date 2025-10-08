@@ -130,9 +130,9 @@ class RealMarketDataFetcher:
             if is_empty:
                 self.cache_stats['errors'] += 1
                 raise ValueError(
-                    f"❌ Failed to fetch real market data for {data_type} ({symbol})\n"
+                    f"[ERROR] Failed to fetch real market data for {data_type} ({symbol})\n"
                     f"📅 Period: {start_date} to {end_date}\n"
-                    f"🔧 Solutions:\n"
+                    f"[TOOL] Solutions:\n"
                     f"  1. Check network connection\n"
                     f"  2. Verify market data availability for the period\n"
                     f"  3. Consider using alternative data source\n"
@@ -151,10 +151,10 @@ class RealMarketDataFetcher:
         except Exception as e:
             self.cache_stats['errors'] += 1
             error_msg = (
-                f"❌ Real market data fetch failed: {data_type} ({symbol})\n"
-                f"📋 Error: {str(e)}\n"
+                f"[ERROR] Real market data fetch failed: {data_type} ({symbol})\n"
+                f"[LIST] Error: {str(e)}\n"
                 f"📅 Period: {start_date} to {end_date}\n"
-                f"🔧 Troubleshooting:\n"
+                f"[TOOL] Troubleshooting:\n"
                 f"  1. Network connectivity check\n"
                 f"  2. Yahoo Finance service status\n"
                 f"  3. Date range validity (weekends/holidays)\n"
@@ -183,9 +183,9 @@ class RealMarketDataFetcher:
         for data_type in ['index_data', 'dow_data']:
             try:
                 market_data[data_type] = self.fetch_required_market_data(data_type, start_date, end_date)
-                logger.info(f"✅ {data_type}: {len(market_data[data_type])} rows fetched")
+                logger.info(f"[OK] {data_type}: {len(market_data[data_type])} rows fetched")
             except Exception as e:
-                logger.error(f"❌ {data_type}: fetch failed - {e}")
+                logger.error(f"[ERROR] {data_type}: fetch failed - {e}")
                 market_data[data_type] = None
         
         return market_data
@@ -283,10 +283,10 @@ class RealMarketDataFetcher:
         
         if issues:
             warning_msg = (
-                f"⚠️ Data quality issues detected for {data_type} ({symbol}):\n" + 
+                f"[WARNING] Data quality issues detected for {data_type} ({symbol}):\n" + 
                 "\n".join(f"  - {issue}" for issue in issues) +
-                f"\n📊 Data summary: {len(data)} rows, period {data.index.min()} to {data.index.max()}\n"
-                f"🔧 Recommendation: Verify data source and consider alternative periods"
+                f"\n[CHART] Data summary: {len(data)} rows, period {data.index.min()} to {data.index.max()}\n"
+                f"[TOOL] Recommendation: Verify data source and consider alternative periods"
             )
             logger.warning(warning_msg)
     
@@ -385,7 +385,7 @@ def fetch_strategy_required_data(strategy_name: str,
         try:
             # Phase 3: データ取得
             raw_data = fetcher.fetch_required_market_data(data_type, start_date, end_date)
-            logger.info(f"✅ {strategy_name}: {data_type} fetched successfully ({len(raw_data)} rows)")
+            logger.info(f"[OK] {strategy_name}: {data_type} fetched successfully ({len(raw_data)} rows)")
             
             # TODO #14 Phase 4: 品質検証・修正統合
             if enable_quality_validation:
@@ -400,14 +400,14 @@ def fetch_strategy_required_data(strategy_name: str,
                     )
                     
                     # 品質検証結果ログ
-                    logger.info(f"🔍 {strategy_name} {data_type} 品質検証: {quality_report.quality_level.value} ({quality_report.quality_score:.1f}%)")
+                    logger.info(f"[SEARCH] {strategy_name} {data_type} 品質検証: {quality_report.quality_level.value} ({quality_report.quality_score:.1f}%)")
                     
                     if quality_report.fixed_issues:
-                        logger.info(f"🔧 {strategy_name} {data_type}: {len(quality_report.fixed_issues)}個の問題を自動修正")
+                        logger.info(f"[TOOL] {strategy_name} {data_type}: {len(quality_report.fixed_issues)}個の問題を自動修正")
                     
                     # バックテスト基本理念遵守確認
                     if not quality_report.backtest_compliance:
-                        logger.warning(f"⚠️ {strategy_name} {data_type}: バックテスト基本理念違反の可能性")
+                        logger.warning(f"[WARNING] {strategy_name} {data_type}: バックテスト基本理念違反の可能性")
                     
                     strategy_data[data_type] = validated_data
                     
@@ -422,7 +422,7 @@ def fetch_strategy_required_data(strategy_name: str,
                 strategy_data[data_type] = raw_data
                 
         except Exception as e:
-            logger.error(f"❌ {strategy_name}: {data_type} fetch failed - {e}")
+            logger.error(f"[ERROR] {strategy_name}: {data_type} fetch failed - {e}")
             strategy_data[data_type] = None
     
     return strategy_data
@@ -442,17 +442,17 @@ if __name__ == "__main__":
     try:
         # index_dataテスト
         index_data = fetcher.fetch_required_market_data('index_data', '2023-01-01', '2023-01-31')
-        print(f"✅ index_data取得成功: {len(index_data)} rows")
+        print(f"[OK] index_data取得成功: {len(index_data)} rows")
         
         # dow_dataテスト  
         dow_data = fetcher.fetch_required_market_data('dow_data', '2023-01-01', '2023-01-31')
-        print(f"✅ dow_data取得成功: {len(dow_data)} rows")
+        print(f"[OK] dow_data取得成功: {len(dow_data)} rows")
         
         # キャッシュ統計
         stats = fetcher.get_cache_statistics()
-        print(f"📊 キャッシュ統計: {stats}")
+        print(f"[CHART] キャッシュ統計: {stats}")
         
-        print("✅ RealMarketDataFetcher テスト完了")
+        print("[OK] RealMarketDataFetcher テスト完了")
         
     except Exception as e:
-        print(f"❌ テストエラー: {e}")
+        print(f"[ERROR] テストエラー: {e}")

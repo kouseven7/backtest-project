@@ -87,7 +87,7 @@ def test_risk_reward_calculation():
     logger.info(f"期待値（概算）: {expected_ratio:.3f}")
     
     assert abs(risk_reward - 2.368) < 0.1, f"リスクリワード比が期待値と異なります: {risk_reward}"
-    logger.info("✅ リスクリワード比計算テスト成功")
+    logger.info("[OK] リスクリワード比計算テスト成功")
 
 def test_expected_value_calculation():
     """期待値計算テスト"""
@@ -116,7 +116,7 @@ def test_expected_value_calculation():
     
     assert abs(expected_yen - 282.5) < 5, f"期待値（円）が期待値と異なります: {expected_yen}"
     assert abs(expected_pct - 0.02825) < 0.001, f"期待値（％）が期待値と異なります: {expected_pct}"
-    logger.info("✅ 期待値計算テスト成功")
+    logger.info("[OK] 期待値計算テスト成功")
 
 def test_excel_export_with_new_metrics():
     """新指標を含むExcel出力テスト"""
@@ -140,7 +140,7 @@ def test_excel_export_with_new_metrics():
     )
     
     assert os.path.exists(output_path), f"Excelファイルが作成されませんでした: {output_path}"
-    logger.info(f"✅ Excel出力テスト成功: {output_path}")
+    logger.info(f"[OK] Excel出力テスト成功: {output_path}")
     
     return output_path
 
@@ -177,8 +177,8 @@ def main():
 if __name__ == "__main__":
     success = main()
     if success:
-        print("\n🎉 テスト完了！新しい指標が正常に追加されました。")
-        print("📊 パフォーマンス指標シートにリスクリワード比と期待値が表示されます。")
-        print("📈 戦略別統計シートにも同様の指標が追加されています。")
+        print("\n[SUCCESS] テスト完了！新しい指標が正常に追加されました。")
+        print("[CHART] パフォーマンス指標シートにリスクリワード比と期待値が表示されます。")
+        print("[UP] 戦略別統計シートにも同様の指標が追加されています。")
     else:
-        print("\n❌ テストに失敗しました。")
+        print("\n[ERROR] テストに失敗しました。")

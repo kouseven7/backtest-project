@@ -114,7 +114,7 @@ def main():
     components = analyze_ultimate_bottleneck()
     complex_class_time = test_minimal_class_import()
     
-    print("\n📊 詳細分析結果:")
+    print("\n[CHART] 詳細分析結果:")
     total = sum(c[1] for c in components)
     
     for name, time_ms in components:
@@ -124,27 +124,27 @@ def main():
         else:
             print(f"   {name}: {time_ms:.1f}ms")
     
-    print(f"\n📊 測定合計: {total:.1f}ms")
-    print(f"📊 複雑クラス定義: {complex_class_time:.1f}ms")
+    print(f"\n[CHART] 測定合計: {total:.1f}ms")
+    print(f"[CHART] 複雑クラス定義: {complex_class_time:.1f}ms")
     
     # 15.4msの未説明部分を推定
     estimated_unexplained = 15.4 - total - complex_class_time
-    print(f"📊 未説明時間（推定）: {estimated_unexplained:.1f}ms")
+    print(f"[CHART] 未説明時間（推定）: {estimated_unexplained:.1f}ms")
     
-    print(f"\n🎯 1.2ms目標まで:")
+    print(f"\n[TARGET] 1.2ms目標まで:")
     remaining = 15.4 - 1.2
     print(f"   削減必要: {remaining:.1f}ms ({remaining/15.4*100:.1f}%)")
     
     # 最終提案
-    print(f"\n💡 最終最適化提案:")
+    print(f"\n[IDEA] 最終最適化提案:")
     if estimated_unexplained > 10:
-        print("   🔥 主要ボトルネック: 未特定の隠れた処理")
-        print("   💡 対策: モジュールレベル処理の完全除去")
-        print("   💡 対策: 関数定義のさらなる簡素化")
+        print("   [FIRE] 主要ボトルネック: 未特定の隠れた処理")
+        print("   [IDEA] 対策: モジュールレベル処理の完全除去")
+        print("   [IDEA] 対策: 関数定義のさらなる簡素化")
     else:
-        print("   ✅ 主要ボトルネック特定済み")
-        print("   💡 対策: クラス定義の段階的簡素化")
-        print("   💡 対策: プロパティ・メソッド削減")
+        print("   [OK] 主要ボトルネック特定済み")
+        print("   [IDEA] 対策: クラス定義の段階的簡素化")
+        print("   [IDEA] 対策: プロパティ・メソッド削減")
 
 if __name__ == "__main__":
     main()

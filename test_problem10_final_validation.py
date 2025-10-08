@@ -146,7 +146,7 @@ class TestProblem10FinalValidation(unittest.TestCase):
         self.assertLess(error_rate, self.kpi_targets['error_rate_threshold'], 
                        f"エラー率が目標を超過: {error_rate:.1f}% >= {self.kpi_targets['error_rate_threshold']}%")
         
-        logger.info("✅ Test 1: エラー率改善 - 合格")
+        logger.info("[OK] Test 1: エラー率改善 - 合格")
     
     def test_2_quality_score_achievement(self):
         """Test 2: 品質スコア85.0達成検証 (82.2 → ≥85.0)"""
@@ -185,7 +185,7 @@ class TestProblem10FinalValidation(unittest.TestCase):
             self.assertGreaterEqual(min_quality_score, 80.0,
                                    f"最低品質スコアが基準未達: {min_quality_score:.2f} < 80.0")
         
-        logger.info("✅ Test 2: 品質スコア達成 - 合格")
+        logger.info("[OK] Test 2: 品質スコア達成 - 合格")
     
     def test_3_statistical_indicators_success(self):
         """Test 3: 統計指標100%成功維持検証"""
@@ -215,7 +215,7 @@ class TestProblem10FinalValidation(unittest.TestCase):
         self.assertEqual(success_rate, self.kpi_targets['statistical_indicators_success'],
                         f"統計指標成功率が目標未達: {success_rate:.1f}% < {self.kpi_targets['statistical_indicators_success']}%")
         
-        logger.info("✅ Test 3: 統計指標成功維持 - 合格")
+        logger.info("[OK] Test 3: 統計指標成功維持 - 合格")
     
     def test_4_zero_division_elimination(self):
         """Test 4: ゼロ除算エラー完全除去維持検証"""
@@ -249,7 +249,7 @@ class TestProblem10FinalValidation(unittest.TestCase):
         self.assertEqual(zero_division_free_rate, self.kpi_targets['zero_division_elimination'],
                         f"ゼロ除算除去率が目標未達: {zero_division_free_rate:.1f}% < {self.kpi_targets['zero_division_elimination']}%")
         
-        logger.info("✅ Test 4: ゼロ除算除去維持 - 合格")
+        logger.info("[OK] Test 4: ゼロ除算除去維持 - 合格")
     
     def test_5_phase4_integration_effectiveness(self):
         """Test 5: Phase 4統合効果検証"""
@@ -277,7 +277,7 @@ class TestProblem10FinalValidation(unittest.TestCase):
         self.assertGreaterEqual(output_quality, 85.0, "Phase 4.2出力品質不足")
         self.assertIn(quality_tier, ['STANDARD', 'PREMIUM'], "品質ティア不適切")
         
-        logger.info("✅ Test 5: Phase 4統合効果 - 合格")
+        logger.info("[OK] Test 5: Phase 4統合効果 - 合格")
     
     def test_6_comprehensive_kpi_validation(self):
         """Test 6: 包括的KPI検証"""
@@ -325,19 +325,19 @@ class TestProblem10FinalValidation(unittest.TestCase):
         
         all_passed = True
         for kpi_name, result in kpi_results.items():
-            status = "✅ PASS" if result['passed'] else "❌ FAIL"
+            status = "[OK] PASS" if result['passed'] else "[ERROR] FAIL"
             logger.info(f"{kpi_name}: {result['value']:.2f} (target: {result['target']:.2f}) {status}")
             if not result['passed']:
                 all_passed = False
         
         logger.info("=" * 50)
-        final_status = "✅ ALL KPI TARGETS ACHIEVED" if all_passed else "❌ KPI TARGETS NOT MET"
+        final_status = "[OK] ALL KPI TARGETS ACHIEVED" if all_passed else "[ERROR] KPI TARGETS NOT MET"
         logger.info(final_status)
         logger.info("=" * 50)
         
         self.assertTrue(all_passed, "包括的KPI検証: 一部目標未達成")
         
-        logger.info("✅ Test 6: 包括的KPI検証 - 完全合格")
+        logger.info("[OK] Test 6: 包括的KPI検証 - 完全合格")
     
     # ヘルパーメソッド
     def _generate_test_simulation_result(self, portfolio_values: List[float], 

@@ -72,7 +72,7 @@ class AsyncDataProvider:
             
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
-                    print(f"  ⚠️ データソース{data_sources[i]}取得失敗: {result}")
+                    print(f"  [WARNING] データソース{data_sources[i]}取得失敗: {result}")
                 else:
                     integrated_data.update(result)
                     successful_sources.append(data_sources[i])
@@ -89,7 +89,7 @@ class AsyncDataProvider:
             }
             
         except Exception as e:
-            print(f"  ❌ 非同期データ取得エラー: {e}")
+            print(f"  [ERROR] 非同期データ取得エラー: {e}")
             return {'data': {}, 'error': str(e)}
     
     async def _fetch_single_source_async(self, source: str, 
@@ -236,7 +236,7 @@ class ParallelCalculator:
             return final_results
             
         except Exception as e:
-            print(f"  ❌ 並列計算エラー: {e}")
+            print(f"  [ERROR] 並列計算エラー: {e}")
             # フォールバック: 逐次処理
             return await self._sequential_fallback(data, config)
     
@@ -276,7 +276,7 @@ class ParallelCalculator:
             processed_results = []
             for result in results:
                 if isinstance(result, Exception):
-                    print(f"  ⚠️ チャンク処理エラー: {result}")
+                    print(f"  [WARNING] チャンク処理エラー: {result}")
                     processed_results.append([])  # 空の結果
                 else:
                     processed_results.append(result)
@@ -307,7 +307,7 @@ class ParallelCalculator:
             processed_results = []
             for result in results:
                 if isinstance(result, Exception):
-                    print(f"  ⚠️ スレッド処理エラー: {result}")
+                    print(f"  [WARNING] スレッド処理エラー: {result}")
                     processed_results.append([])
                 else:
                     processed_results.append(result)
@@ -384,7 +384,7 @@ def _process_chunk_static(chunk: List[Dict[str, Any]],
         return processed_chunk
         
     except Exception as e:
-        print(f"  ❌ チャンク処理エラー: {e}")
+        print(f"  [ERROR] チャンク処理エラー: {e}")
         return chunk  # エラー時は元データを返す
 
 class AsyncSystemIntegrator:
@@ -418,9 +418,9 @@ class AsyncSystemIntegrator:
                 self.fallback_policy = SystemFallbackPolicy()
                 self.component_type = ComponentType.DSSMS_CORE if hasattr(ComponentType, 'DSSMS_CORE') else 'DSSMS_CORE'
                 self.has_fallback_policy = True
-                print("  ✅ AsyncSystemIntegrator: SystemFallbackPolicy統合成功")
+                print("  [OK] AsyncSystemIntegrator: SystemFallbackPolicy統合成功")
             except Exception:
-                print("  ⚠️ AsyncSystemIntegrator: SystemFallbackPolicy統合スキップ")
+                print("  [WARNING] AsyncSystemIntegrator: SystemFallbackPolicy統合スキップ")
         
         # 統合統計
         self._integration_stats = {
@@ -459,7 +459,7 @@ class AsyncSystemIntegrator:
                 return comprehensive_result
             
             raw_data = list(data_fetch_result['data'].values())
-            print(f"  ✅ データ取得完了: {len(raw_data)}件")
+            print(f"  [OK] データ取得完了: {len(raw_data)}件")
             
             # 2. 並列スコア計算
             print("  🔄 並列スコア計算中...")
@@ -474,10 +474,10 @@ class AsyncSystemIntegrator:
                 scored_data = await self.parallel_calculator.calculate_parallel_scores(raw_data, scoring_config)
                 processing_mode = 'parallel_calculator'
             
-            print(f"  ✅ スコア計算完了: {len(scored_data)}件 ({processing_mode})")
+            print(f"  [OK] スコア計算完了: {len(scored_data)}件 ({processing_mode})")
             
             # 3. 高速ランキング
-            print("  📊 高速ランキング中...")
+            print("  [CHART] 高速ランキング中...")
             if self.has_fast_core:
                 ranked_data = self.fast_core.rank_symbols_hierarchical(
                     scored_data, 
@@ -493,7 +493,7 @@ class AsyncSystemIntegrator:
                 for i, item in enumerate(ranked_data):
                     item['ranking_position'] = i + 1
             
-            print(f"  ✅ ランキング完了: {len(ranked_data)}件")
+            print(f"  [OK] ランキング完了: {len(ranked_data)}件")
             
             # 4. 結果統合・統計計算
             overall_execution_time = time.perf_counter() - overall_start_time
@@ -537,7 +537,7 @@ class AsyncSystemIntegrator:
             return comprehensive_result
             
         except Exception as e:
-            print(f"  ❌ 包括的ランキング処理エラー: {e}")
+            print(f"  [ERROR] 包括的ランキング処理エラー: {e}")
             
             # フォールバック処理
             if self.has_fallback_policy:
@@ -619,7 +619,7 @@ class Phase3Stage3Implementer:
     
     async def implement_async_architecture(self) -> bool:
         """非同期アーキテクチャ実装"""
-        print("🚀 非同期アーキテクチャ実装中...")
+        print("[ROCKET] 非同期アーキテクチャ実装中...")
         
         try:
             # 非同期システム統合ファイル作成
@@ -632,20 +632,20 @@ class Phase3Stage3Implementer:
             with open(async_module_path, 'w', encoding='utf-8') as f:
                 f.write(async_module_content)
             
-            print(f"  ✅ 非同期ランキングシステム作成: {async_module_path}")
+            print(f"  [OK] 非同期ランキングシステム作成: {async_module_path}")
             
             # 統合テスト実行
             integration_success = await self._test_async_integration()
             
             if integration_success:
-                print("  ✅ 非同期アーキテクチャ統合テスト成功")
+                print("  [OK] 非同期アーキテクチャ統合テスト成功")
                 return True
             else:
-                print("  ⚠️ 非同期アーキテクチャ統合テストに課題あり")
+                print("  [WARNING] 非同期アーキテクチャ統合テストに課題あり")
                 return False
                 
         except Exception as e:
-            print(f"  ❌ 非同期アーキテクチャ実装エラー: {e}")
+            print(f"  [ERROR] 非同期アーキテクチャ実装エラー: {e}")
             return False
     
     def _generate_async_module_content(self) -> str:
@@ -684,7 +684,7 @@ class AsyncRankingSystem:
                 self._integrator = AsyncSystemIntegrator(enable_fallback_policy=True)
                 self._initialized = True
             except ImportError:
-                print("  ⚠️ AsyncSystemIntegrator インポート失敗 - 基本モード")
+                print("  [WARNING] AsyncSystemIntegrator インポート失敗 - 基本モード")
                 self._integrator = None
                 self._initialized = True
     
@@ -774,7 +774,7 @@ async def create_async_ranking_system():
             }
             
             # 非同期処理テスト
-            print("  📊 非同期統合テスト実行中...")
+            print("  [CHART] 非同期統合テスト実行中...")
             start_time = time.perf_counter()
             
             result = await self.async_integrator.process_comprehensive_ranking(
@@ -795,22 +795,22 @@ async def create_async_ranking_system():
             success_count = sum(success_criteria)
             success_rate = (success_count / len(success_criteria)) * 100
             
-            print(f"  📊 テスト結果: {success_count}/{len(success_criteria)} ({success_rate:.1f}%)")
-            print(f"  📊 実行時間: {execution_time * 1000:.2f}ms")
+            print(f"  [CHART] テスト結果: {success_count}/{len(success_criteria)} ({success_rate:.1f}%)")
+            print(f"  [CHART] 実行時間: {execution_time * 1000:.2f}ms")
             
             # スループット改善確認
             throughput_improvement = result.get('performance_metrics', {}).get('throughput_improvement_percent', 0)
-            print(f"  📊 スループット改善: {throughput_improvement:.1f}%")
+            print(f"  [CHART] スループット改善: {throughput_improvement:.1f}%")
             
             return success_rate >= 75.0  # 75%以上で成功
             
         except Exception as e:
-            print(f"  ❌ 非同期統合テストエラー: {e}")
+            print(f"  [ERROR] 非同期統合テストエラー: {e}")
             return False
     
     async def run_comprehensive_benchmarks(self) -> Dict[str, Any]:
         """包括的ベンチマーク実行"""
-        print("📊 包括的ベンチマーク実行中...")
+        print("[CHART] 包括的ベンチマーク実行中...")
         
         benchmark_results = {
             'async_vs_sync_comparison': {},
@@ -826,12 +826,12 @@ async def create_async_ranking_system():
             benchmark_results['async_vs_sync_comparison'] = async_sync_comparison
             
             # スループット測定
-            print("  📈 スループット測定...")
+            print("  [UP] スループット測定...")
             throughput_measurements = await self._benchmark_throughput()
             benchmark_results['throughput_measurements'] = throughput_measurements
             
             # スケーラビリティ分析
-            print("  📊 スケーラビリティ分析...")
+            print("  [CHART] スケーラビリティ分析...")
             scalability_analysis = await self._benchmark_scalability()
             benchmark_results['scalability_analysis'] = scalability_analysis
             
@@ -839,11 +839,11 @@ async def create_async_ranking_system():
             comprehensive_stats = await self.async_integrator.get_comprehensive_stats()
             benchmark_results['comprehensive_stats'] = comprehensive_stats
             
-            print(f"  ✅ ベンチマーク完了")
+            print(f"  [OK] ベンチマーク完了")
             return benchmark_results
             
         except Exception as e:
-            print(f"  ❌ ベンチマークエラー: {e}")
+            print(f"  [ERROR] ベンチマークエラー: {e}")
             benchmark_results['error'] = str(e)
             return benchmark_results
     
@@ -1021,7 +1021,7 @@ async def create_async_ranking_system():
     
     async def run_stage3_comprehensive_implementation(self) -> bool:
         """Stage 3包括的実装実行"""
-        print("🚀 TODO-PERF-001 Phase 3 Stage 3: 非同期処理・並列化アーキテクチャ実装開始")
+        print("[ROCKET] TODO-PERF-001 Phase 3 Stage 3: 非同期処理・並列化アーキテクチャ実装開始")
         print("="*80)
         
         stage3_start_time = time.time()
@@ -1062,7 +1062,7 @@ async def create_async_ranking_system():
             print("🏆 TODO-PERF-001 Phase 3 Stage 3完了サマリー")
             print("="*80)
             print(f"⏱️ 実行時間: {execution_time:.1f}秒")
-            print(f"📊 成功ステップ: {success_steps}/{total_steps} ({success_rate:.1f}%)")
+            print(f"[CHART] 成功ステップ: {success_steps}/{total_steps} ({success_rate:.1f}%)")
             
             # スループット結果
             achievements = implementation_report.get('achievements', {})
@@ -1070,8 +1070,8 @@ async def create_async_ranking_system():
             current_improvement = throughput_achievement.get('current_improvement_percent', 0)
             achievement_rate = throughput_achievement.get('achievement_rate', 0)
             
-            print(f"🚀 スループット改善: {current_improvement:.1f}% (目標30%)")
-            print(f"🎯 目標達成率: {achievement_rate:.1f}%")
+            print(f"[ROCKET] スループット改善: {current_improvement:.1f}% (目標30%)")
+            print(f"[TARGET] 目標達成率: {achievement_rate:.1f}%")
             
             # 非同期処理結果
             async_achievement = achievements.get('async_processing_achievement', {})
@@ -1084,7 +1084,7 @@ async def create_async_ranking_system():
             concurrent_efficiency = scalability_achievement.get('max_concurrent_efficiency', 0)
             scalability_rating = scalability_achievement.get('scalability_rating', 'unknown')
             
-            print(f"📈 並行処理効率: {concurrent_efficiency:.1f}% ({scalability_rating})")
+            print(f"[UP] 並行処理効率: {concurrent_efficiency:.1f}% ({scalability_rating})")
             
             print(f"📄 実装レポート: {report_path}")
             
@@ -1092,17 +1092,17 @@ async def create_async_ranking_system():
             overall_success_rate = achievements.get('overall_success_rate', 0)
             
             if overall_success_rate >= 70:
-                print(f"\n✅ Stage 3実装成功 ({overall_success_rate:.1f}%) - Stage 4統合効果検証に進行可能")
+                print(f"\n[OK] Stage 3実装成功 ({overall_success_rate:.1f}%) - Stage 4統合効果検証に進行可能")
                 return True
             elif overall_success_rate >= 50:
-                print(f"\n⚠️ Stage 3部分的成功 ({overall_success_rate:.1f}%) - Stage 4進行可能、改善推奨")
+                print(f"\n[WARNING] Stage 3部分的成功 ({overall_success_rate:.1f}%) - Stage 4進行可能、改善推奨")
                 return True
             else:
-                print(f"\n❌ Stage 3実装課題 ({overall_success_rate:.1f}%) - Stage 3見直し推奨")
+                print(f"\n[ERROR] Stage 3実装課題 ({overall_success_rate:.1f}%) - Stage 3見直し推奨")
                 return False
                 
         except Exception as e:
-            print(f"❌ Stage 3実装エラー: {e}")
+            print(f"[ERROR] Stage 3実装エラー: {e}")
             traceback.print_exc()
             return False
 
@@ -1114,9 +1114,9 @@ async def main():
     success = await implementer.run_stage3_comprehensive_implementation()
     
     if success:
-        print("\n🎉 Stage 3完成 - 次は Stage 4 統合効果検証・超高性能レベル達成確認に進行")
+        print("\n[SUCCESS] Stage 3完成 - 次は Stage 4 統合効果検証・超高性能レベル達成確認に進行")
     else:
-        print("\n⚠️ Stage 3実装課題 - 改善後に Stage 4進行を推奨")
+        print("\n[WARNING] Stage 3実装課題 - 改善後に Stage 4進行を推奨")
     
     return success
 

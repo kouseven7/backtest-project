@@ -66,12 +66,12 @@ def test_import_time(version_name):
         
         from symbol_switch_manager_test import SymbolSwitchManager
         import_time = (time.time() - start_time) * 1000
-        print(f"✅ {version_name}: {import_time:.1f}ms")
+        print(f"[OK] {version_name}: {import_time:.1f}ms")
         return import_time
         
     except Exception as e:
         import_time = (time.time() - start_time) * 1000
-        print(f"❌ {version_name} エラー: {e}")
+        print(f"[ERROR] {version_name} エラー: {e}")
         print(f"   時間: {import_time:.1f}ms")
         return import_time
 
@@ -108,7 +108,7 @@ def main():
         diff = results[-1][1] - results[0][1] 
         print(f"\n重い処理: {diff:.1f}ms")
         if diff > 1000:
-            print("⚠️ メソッド定義に1秒以上の重い処理があります！")
+            print("[WARNING] メソッド定義に1秒以上の重い処理があります！")
 
 if __name__ == "__main__":
     main()

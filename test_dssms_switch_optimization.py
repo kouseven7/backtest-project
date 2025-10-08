@@ -45,7 +45,7 @@ def test_switch_optimization():
             avg_holding = result.get('average_holding_period_hours', 0)
             total_return = result.get('total_return', 0)
             
-            print(f"\n📊 修正後の結果:")
+            print(f"\n[CHART] 修正後の結果:")
             print(f"切替回数: {switch_count}回 (3ヶ月)")
             print(f"平均保有期間: {avg_holding:.1f}時間")
             print(f"総リターン: {total_return:.2%}")
@@ -54,29 +54,29 @@ def test_switch_optimization():
             yearly_switches = switch_count * 4  # 年間換算
             
             if yearly_switches < 100:
-                print("✅ 切替頻度: 良好（年間100回未満）")
+                print("[OK] 切替頻度: 良好（年間100回未満）")
             elif yearly_switches < 200:
-                print("⚠️ 切替頻度: 改善余地あり")
+                print("[WARNING] 切替頻度: 改善余地あり")
             else:
-                print("❌ 切替頻度: まだ高すぎる")
+                print("[ERROR] 切替頻度: まだ高すぎる")
             
             if avg_holding > 48:
-                print("✅ 保有期間: 良好（48時間以上）")
+                print("[OK] 保有期間: 良好（48時間以上）")
             else:
-                print("⚠️ 保有期間: 短い（さらに改善推奨）")
+                print("[WARNING] 保有期間: 短い（さらに改善推奨）")
             
             return True
         else:
-            print(f"❌ テスト失敗: {result.get('error')}")
+            print(f"[ERROR] テスト失敗: {result.get('error')}")
             return False
             
     except Exception as e:
-        print(f"❌ テストエラー: {e}")
+        print(f"[ERROR] テストエラー: {e}")
         return False
 
 if __name__ == "__main__":
     success = test_switch_optimization()
     if success:
-        print("\n🎉 修正テスト完了")
+        print("\n[SUCCESS] 修正テスト完了")
     else:
-        print("\n❌ 修正が必要です")
+        print("\n[ERROR] 修正が必要です")

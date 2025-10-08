@@ -54,14 +54,14 @@ def test_improved_vwap_bounce():
         print(f"イグジット: {exit_count}回")
         
         if entry_count > 0:
-            print("✅ 改善されたパラメータで取引が発生しました")
+            print("[OK] 改善されたパラメータで取引が発生しました")
             return True
         else:
-            print("❌ まだ取引が発生していません")
+            print("[ERROR] まだ取引が発生していません")
             return False
             
     except Exception as e:
-        print(f"❌ テストでエラー: {e}")
+        print(f"[ERROR] テストでエラー: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -88,20 +88,20 @@ def run_improved_optimization():
         
         if result is not None and not result.empty:
             best_score = result.iloc[0]['score']
-            print(f"✅ 改善された最適化完了: 最良スコア = {best_score}")
+            print(f"[OK] 改善された最適化完了: 最良スコア = {best_score}")
             
             if best_score > -100:  # スコア改善の確認
-                print("🎉 スコアが改善されました！")
+                print("[SUCCESS] スコアが改善されました！")
                 return True
             else:
-                print("⚠️ スコアはまだマイナスですが、改善の兆しがあります")
+                print("[WARNING] スコアはまだマイナスですが、改善の兆しがあります")
                 return True
         else:
-            print("❌ 最適化結果が空です")
+            print("[ERROR] 最適化結果が空です")
             return False
             
     except Exception as e:
-        print(f"❌ 最適化でエラー: {e}")
+        print(f"[ERROR] 最適化でエラー: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -117,10 +117,10 @@ if __name__ == "__main__":
         optimization_success = run_improved_optimization()
         
         if optimization_success:
-            print("\\n🎉 全てのテストが成功しました！")
+            print("\\n[SUCCESS] 全てのテストが成功しました！")
             print("改善されたパラメータで本格的な最適化を実行してください：")
             print("python optimize_strategy.py --strategy vwap_bounce --parallel --save-results --validate --auto-approve")
         else:
-            print("\\n⚠️ 最適化で問題が発生しました")
+            print("\\n[WARNING] 最適化で問題が発生しました")
     else:
         print("\\n💥 基本テストが失敗しました。パラメータをさらに調整する必要があります")

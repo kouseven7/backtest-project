@@ -132,13 +132,13 @@ def test_performance_metrics_integration():
         print(f"   Alpha: {advanced_result['alpha']:.4f}")
         
         print("\n" + "=" * 60)
-        print("Phase 4 Performance Metrics Integration: ✅ SUCCESS")
+        print("Phase 4 Performance Metrics Integration: [OK] SUCCESS")
         print("=" * 60)
         
         return True
         
     except Exception as e:
-        print(f"\n❌ Integration Test Failed: {e}")
+        print(f"\n[ERROR] Integration Test Failed: {e}")
         logger.error(f"Integration test error: {e}")
         return False
 
@@ -151,7 +151,7 @@ def main():
     success = test_performance_metrics_integration()
     
     if success:
-        print("\n🎉 All Phase 4 tests completed successfully!")
+        print("\n[SUCCESS] All Phase 4 tests completed successfully!")
         return 0
     else:
         print("\n💥 Phase 4 tests failed!")

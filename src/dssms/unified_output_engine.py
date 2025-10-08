@@ -831,7 +831,7 @@ class UnifiedOutputEngine:
     </div>
 
     <div class="section">
-        <h2>📊 パフォーマンス概要</h2>
+        <h2>[CHART] パフォーマンス概要</h2>
         <div class="metrics-grid">
             <div class="metric-card">
                 <div class="metric-value {'positive' if unified_model.performance.total_return > 0 else 'negative'}">
@@ -869,7 +869,7 @@ class UnifiedOutputEngine:
         if unified_model.dssms_metrics:
             html_content += f"""
     <div class="section">
-        <h2>🎯 DSSMS分析</h2>
+        <h2>[TARGET] DSSMS分析</h2>
         <div class="metrics-grid">
             <div class="metric-card">
                 <div class="metric-value">{unified_model.dssms_metrics.switch_success_rate:.1%}</div>
@@ -904,7 +904,7 @@ class UnifiedOutputEngine:
             
             html_content += f"""
     <div class="section">
-        <h2>✅ 品質保証情報</h2>
+        <h2>[OK] 品質保証情報</h2>
         <p>信頼性スコア: <span class="quality-score {score_class}">{qa.reliability_score:.1%}</span></p>
         <p>データ品質向上: {'適用済み' if qa.enhancement_applied else '未適用'}</p>
         
@@ -925,7 +925,7 @@ class UnifiedOutputEngine:
         if unified_model.trades:
             html_content += """
     <div class="section">
-        <h2>📋 取引履歴（最初の10取引）</h2>
+        <h2>[LIST] 取引履歴（最初の10取引）</h2>
         <table>
             <thead>
                 <tr>

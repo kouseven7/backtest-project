@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 async def test_full_integration():
     """完全統合テスト"""
     print("=" * 70)
-    print("🚀 2-3-3 Score Update Trigger System - Final Integration Test")
+    print("[ROCKET] 2-3-3 Score Update Trigger System - Final Integration Test")
     print("=" * 70)
     print(f"Started at: {datetime.now()}")
     print()
@@ -35,7 +35,7 @@ async def test_full_integration():
         print("   ✓ All systems imported successfully")
         
         # 2. システム初期化
-        print("\n🔧 2. Initializing systems...")
+        print("\n[TOOL] 2. Initializing systems...")
         trigger_system = ScoreUpdateTriggerSystem()
         realtime_engine = RealtimeUpdateEngine(trigger_system=trigger_system)
         print("   ✓ Trigger system and realtime engine created")
@@ -46,7 +46,7 @@ async def test_full_integration():
         print("   ✓ Trigger system started")
         
         # 4. 手動トリガーテスト
-        print("\n🎯 4. Testing manual triggers...")
+        print("\n[TARGET] 4. Testing manual triggers...")
         
         # 複数の手動トリガー
         test_triggers = []
@@ -90,7 +90,7 @@ async def test_full_integration():
         print("   ✓ Custom trigger condition added")
         
         # 7. 最近のイベント確認
-        print("\n📋 7. Checking recent events...")
+        print("\n[LIST] 7. Checking recent events...")
         events = trigger_system.get_recent_events(limit=10)
         print(f"   ✓ Found {len(events)} recent events:")
         
@@ -115,25 +115,25 @@ async def test_full_integration():
         print("   ✓ All systems stopped")
         
         # 10. 最終結果
-        print("\n✅ 10. Final Results:")
-        print("   🎯 2-3-3 Score Update Trigger Design - IMPLEMENTED")
-        print("   ✅ Trigger system operational")
-        print("   ✅ Realtime engine integrated")
-        print("   ✅ Manual triggers working")
-        print("   ✅ Custom conditions supported")
-        print("   ✅ Event monitoring functional")
+        print("\n[OK] 10. Final Results:")
+        print("   [TARGET] 2-3-3 Score Update Trigger Design - IMPLEMENTED")
+        print("   [OK] Trigger system operational")
+        print("   [OK] Realtime engine integrated")
+        print("   [OK] Manual triggers working")
+        print("   [OK] Custom conditions supported")
+        print("   [OK] Event monitoring functional")
         
         return True
         
     except Exception as e:
-        print(f"\n❌ Integration test failed: {e}")
+        print(f"\n[ERROR] Integration test failed: {e}")
         logger.error(f"Integration test error: {e}")
         return False
 
 def run_sync_test():
     """同期版テスト"""
     print("=" * 70)
-    print("🔧 2-3-3 Score Update Trigger System - Synchronous Test")
+    print("[TOOL] 2-3-3 Score Update Trigger System - Synchronous Test")
     print("=" * 70)
     print(f"Started at: {datetime.now()}")
     print()
@@ -171,11 +171,11 @@ def run_sync_test():
         trigger_system.stop()
         print("✓ System stopped")
         
-        print("\n🎉 Synchronous test completed successfully!")
+        print("\n[SUCCESS] Synchronous test completed successfully!")
         return True
         
     except Exception as e:
-        print(f"\n❌ Sync test failed: {e}")
+        print(f"\n[ERROR] Sync test failed: {e}")
         return False
 
 def main():
@@ -200,7 +200,7 @@ def main():
         print("\n🎊 2-3-3「スコアアップデートトリガー設計」実装完了!")
         print("   ✨ トリガーシステムが正常に動作しています")
     else:
-        print("\n⚠️ テストで問題が発生しました")
+        print("\n[WARNING] テストで問題が発生しました")
     
     return success
 

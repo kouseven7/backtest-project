@@ -108,7 +108,7 @@ def demo_simple_excel_export():
         )
         
         if output_path and os.path.exists(output_path):
-            logger.info(f"✅ Excel出力成功: {output_path}")
+            logger.info(f"[OK] Excel出力成功: {output_path}")
             
             # ファイルサイズの確認
             file_size = os.path.getsize(output_path)
@@ -119,7 +119,7 @@ def demo_simple_excel_export():
 # ORIGINAL: verify_excel_output(output_path)
             
         else:
-            logger.error("❌ Excel出力に失敗しました")
+            logger.error("[ERROR] Excel出力に失敗しました")
             
     except Exception as e:
         logger.error(f"デモ実行エラー: {e}")
@@ -167,7 +167,7 @@ def demo_simple_excel_export():
             except Exception as e:
                 logger.warning(f"シート '{sheet_name}' の読み込みエラー: {e}")
         
-        logger.info("✅ Excel出力結果の検証完了")
+        logger.info("[OK] Excel出力結果の検証完了")
         
     except Exception as e:
         logger.error(f"Excel出力結果の検証エラー: {e}")
@@ -192,7 +192,7 @@ def compare_with_old_module():
             if new_output and old_output:
                 logger.info(f"新モジュール出力: {new_output}")
                 logger.info(f"既存モジュール出力: {old_output}")
-                logger.info("✅ 両方の出力が完了しました")
+                logger.info("[OK] 両方の出力が完了しました")
             else:
                 logger.warning("一方または両方の出力に問題がありました")
                 

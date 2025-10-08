@@ -285,9 +285,9 @@ def main():
         logger.info(f"総合結果: {'✓ 成功' if overall_success else '✗ 失敗'}")
         
         if overall_success:
-            logger.info("\n🎉 DSSMS Phase 3 Task 3.2 実装完了!")
+            logger.info("\n[SUCCESS] DSSMS Phase 3 Task 3.2 実装完了!")
             logger.info("インテリジェント銘柄切替管理システムが正常に動作しています。")
-            logger.info("\n📋 主要機能:")
+            logger.info("\n[LIST] 主要機能:")
             logger.info("  ✓ ハイブリッド切替判定 (パーフェクトオーダー + スコア差)")
             logger.info("  ✓ リスク制御統合 (切替頻度・ドローダウン制限)")
             logger.info("  ✓ 定期資金更新システム")

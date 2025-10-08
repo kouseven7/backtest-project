@@ -569,7 +569,7 @@ class Problem10KPIValidator:
             recommendations.append(f"品質スコア{quality_score:.1f}が目標85.0未達 - 品質管理システムの改善が必要")
         
         if all(kpi_achievement.values()):
-            recommendations.append("🎉 Problem 10: 数学的エラー修正 - 全KPI達成完了！")
+            recommendations.append("[SUCCESS] Problem 10: 数学的エラー修正 - 全KPI達成完了！")
         
         return recommendations
 
@@ -587,11 +587,11 @@ def main():
     print(f"成功テスト数: {results['problem_10_phase_3_results']['successful_tests']}")
     print(f"総合エラー率: {results['problem_10_phase_3_results']['overall_error_rate']:.1%}")
     print(f"平均品質スコア: {results['problem_10_phase_3_results']['average_quality_score']:.1f}")
-    print(f"全KPI達成: {'✅' if results['problem_10_phase_3_results']['all_kpis_achieved'] else '❌'}")
+    print(f"全KPI達成: {'[OK]' if results['problem_10_phase_3_results']['all_kpis_achieved'] else '[ERROR]'}")
     
     print("\n=== KPI達成状況 ===")
     for kpi, achieved in results['kpi_achievement'].items():
-        print(f"{kpi}: {'✅' if achieved else '❌'}")
+        print(f"{kpi}: {'[OK]' if achieved else '[ERROR]'}")
     
     print("\n=== 推奨事項 ===")
     for rec in results['recommendations']:

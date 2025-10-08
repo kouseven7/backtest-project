@@ -9,7 +9,7 @@
 
 ---
 
-## 🎯 **改善目標**
+## [TARGET] **改善目標**
 
 ### **現在の問題点**
 - ✗ 空のレポートファイル生成（`dssms_detailed_report_20250821_054237.txt`）
@@ -19,18 +19,18 @@
 - ✗ 取引回数・損益の改善なし
 
 ### **改善後の期待成果**
-- ✅ 動作する実データベースDSSMSバックテスター
-- ✅ 既存戦略システムとの完全統合
-- ✅ 年間スイッチング回数: 3,600回 → 432回（88%削減）
-- ✅ 年間取引コスト: 27.5万円 → 5.4万円（79%削減）
-- ✅ 詳細なパフォーマンスレポート生成
+- [OK] 動作する実データベースDSSMSバックテスター
+- [OK] 既存戦略システムとの完全統合
+- [OK] 年間スイッチング回数: 3,600回 → 432回（88%削減）
+- [OK] 年間取引コスト: 27.5万円 → 5.4万円（79%削減）
+- [OK] 詳細なパフォーマンスレポート生成
 
 ---
 
-## 📋 **Phase 1: 即座実行可能（クイック修正）**
+## [LIST] **Phase 1: 即座実行可能（クイック修正）**
 *推定所要時間: 4-5時間*
 
-### **🔧 Task 1.1: データ取得問題の診断と修正**
+### **[TOOL] Task 1.1: データ取得問題の診断と修正**
 **優先度**: 🔴 最高  
 **所要時間**: 1-2時間  
 **依存関係**: なし
@@ -151,7 +151,7 @@ def _update_portfolio_value(self, date: datetime, position: Optional[str],
 
 ---
 
-### **🚀 Task 1.3: クイック修正版の作成と動作確認**
+### **[ROCKET] Task 1.3: クイック修正版の作成と動作確認**
 **優先度**: 🟡 高  
 **所要時間**: 1時間  
 **依存関係**: Task 1.1, 1.2
@@ -227,18 +227,18 @@ def run_quick_fix_demo():
         )
         
         if result.get('success'):
-            print(f"✅ クイック修正版シミュレーション成功")
-            print(f"📊 最終価値: {result.get('final_value', 0):,.0f}円")
-            print(f"📈 総リターン: {result.get('total_return', 0):.2%}")
+            print(f"[OK] クイック修正版シミュレーション成功")
+            print(f"[CHART] 最終価値: {result.get('final_value', 0):,.0f}円")
+            print(f"[UP] 総リターン: {result.get('total_return', 0):.2%}")
             print(f"🔄 切替回数: {result.get('switch_count', 0)}")
-            print(f"💰 取引コスト: {result.get('transaction_costs', 0):,.0f}円")
+            print(f"[MONEY] 取引コスト: {result.get('transaction_costs', 0):,.0f}円")
             return True
         else:
-            print(f"❌ シミュレーション失敗: {result.get('error', 'Unknown error')}")
+            print(f"[ERROR] シミュレーション失敗: {result.get('error', 'Unknown error')}")
             return False
             
     except Exception as e:
-        print(f"❌ デモ実行エラー: {e}")
+        print(f"[ERROR] デモ実行エラー: {e}")
         return False
 
 if __name__ == "__main__":
@@ -251,7 +251,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🔧 **Phase 2: ハイブリッド実装（1-2週間）**
+## [TOOL] **Phase 2: ハイブリッド実装（1-2週間）**
 *推定所要時間: 6-9日*
 
 ### **🔗 Task 2.1: 既存戦略システム統合**
@@ -311,7 +311,7 @@ class StrategyIntegrationManager:
 
 ---
 
-### **📊 Task 2.2: ハイブリッドランキングシステム実装**
+### **[CHART] Task 2.2: ハイブリッドランキングシステム実装**
 **優先度**: 🟡 高  
 **所要時間**: 2-3日  
 **依存関係**: Task 2.1
@@ -341,7 +341,7 @@ class StrategyIntegrationManager:
 
 ---
 
-### **🧪 Task 2.3: パフォーマンス最適化と検証**
+### **[TEST] Task 2.3: パフォーマンス最適化と検証**
 **優先度**: 🟢 中  
 **所要時間**: 2-3日  
 **依存関係**: Task 2.1, 2.2
@@ -374,7 +374,7 @@ class StrategyIntegrationManager:
 ## 🏗️ **Phase 3: 完全統合（1ヶ月）**
 *推定所要時間: 3-4週間*
 
-### **🎯 Task 3.1: 高度なランキングシステム実装**
+### **[TARGET] Task 3.1: 高度なランキングシステム実装**
 **優先度**: 🟢 中  
 **所要時間**: 1週間  
 **依存関係**: Phase 2完了
@@ -434,7 +434,7 @@ class StrategyIntegrationManager:
 
 ---
 
-### **📈 Task 3.3: 包括的レポートシステム**
+### **[UP] Task 3.3: 包括的レポートシステム**
 **優先度**: 🟢 中  
 **所要時間**: 1週間  
 **依存関係**: Task 3.1, 3.2
@@ -486,7 +486,7 @@ graph TD
 
 ---
 
-## 📊 **成功指標・KPI**
+## [CHART] **成功指標・KPI**
 
 ### **Phase 1 KPI**
 - [ ] データ取得成功率 > 95%

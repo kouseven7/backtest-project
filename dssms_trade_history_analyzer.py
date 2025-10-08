@@ -41,7 +41,7 @@ class DSSMSTradeHistoryAnalyzer:
         
     def analyze_excel_trade_history(self, excel_path: str) -> Dict[str, Any]:
         """Excelファイルの取引履歴シートを分析"""
-        self.logger.info(f"📊 Excel取引履歴分析開始: {excel_path}")
+        self.logger.info(f"[CHART] Excel取引履歴分析開始: {excel_path}")
         
         try:
             # Excelファイルを読み込み
@@ -337,7 +337,7 @@ class DSSMSTradeHistoryAnalyzer:
     
     def generate_issue_report(self, excel_path: str, json_path: str, text_path: str) -> str:
         """総合問題レポート生成"""
-        self.logger.info("🔍 総合問題分析開始")
+        self.logger.info("[SEARCH] 総合問題分析開始")
         
         # 各ファイルを分析
         excel_analysis = self.analyze_excel_trade_history(excel_path)
@@ -365,7 +365,7 @@ class DSSMSTradeHistoryAnalyzer:
         with open(summary_path, 'w', encoding='utf-8') as f:
             f.write(summary)
         
-        self.logger.info(f"📋 詳細レポート: {report_path}")
+        self.logger.info(f"[LIST] 詳細レポート: {report_path}")
         self.logger.info(f"📝 サマリーレポート: {summary_path}")
         
         return summary_path
@@ -380,7 +380,7 @@ class DSSMSTradeHistoryAnalyzer:
         report.append("")
         
         # 問題サマリー
-        report.append("🚨 発見された問題:")
+        report.append("[ALERT] 発見された問題:")
         report.append("-" * 40)
         if self.issues:
             for i, issue in enumerate(self.issues, 1):
@@ -394,7 +394,7 @@ class DSSMSTradeHistoryAnalyzer:
         # Excel分析結果
         excel_data = self.analysis_results.get('excel_analysis', {})
         if excel_data:
-            report.append("📊 Excel取引履歴分析:")
+            report.append("[CHART] Excel取引履歴分析:")
             report.append("-" * 40)
             report.append(f"総取引数: {excel_data.get('total_trades', 0)}件")
             
@@ -431,14 +431,14 @@ class DSSMSTradeHistoryAnalyzer:
                 report.append(f"テキスト平均保有期間: {text_avg:.1f}時間")
                 
                 if abs(json_avg - text_avg) > 1.0:
-                    report.append("⚠️ 保有期間に不整合があります")
+                    report.append("[WARNING] 保有期間に不整合があります")
                 else:
-                    report.append("✅ 保有期間は整合しています")
+                    report.append("[OK] 保有期間は整合しています")
             
             report.append("")
         
         # 修正提案
-        report.append("🔧 修正提案:")
+        report.append("[TOOL] 修正提案:")
         report.append("-" * 40)
         
         if any(issue['category'] == 'strategy_naming' for issue in self.issues):
@@ -475,7 +475,7 @@ def main():
     json_path = "backtest_results/dssms_results/dssms_unified_data_20250908_150951.json"
     text_path = "backtest_results/dssms_results/dssms_unified_report_20250908_150951.txt"
     
-    print("🔍 DSSMS取引履歴問題特定システム")
+    print("[SEARCH] DSSMS取引履歴問題特定システム")
     print("=" * 60)
     print("対象ファイル:")
     print(f"Excel: {excel_path}")
@@ -486,8 +486,8 @@ def main():
     # 総合分析実行
     summary_path = analyzer.generate_issue_report(excel_path, json_path, text_path)
     
-    print(f"\n✅ 分析完了")
-    print(f"📋 サマリーレポート: {summary_path}")
+    print(f"\n[OK] 分析完了")
+    print(f"[LIST] サマリーレポート: {summary_path}")
     print("\n次のステップ:")
     print("1. サマリーレポートで問題を確認")
     print("2. 統一出力システムの修正")

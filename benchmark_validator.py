@@ -197,7 +197,7 @@ class BenchmarkValidator:
         avg_score = sum(r.score for r in results) / len(results)
         
         report_lines.extend([
-            "📊 実行サマリー",
+            "[CHART] 実行サマリー",
             "-" * 40,
             f"合格: {passed_count}/{len(results)} ({passed_count/len(results)*100:.1f}%)",
             f"平均スコア: {avg_score:.1f}/100",
@@ -205,11 +205,11 @@ class BenchmarkValidator:
         ])
         
         # 個別テスト結果
-        report_lines.append("📋 個別テスト結果")
+        report_lines.append("[LIST] 個別テスト結果")
         report_lines.append("-" * 40)
         
         for result in results:
-            status_emoji = "✅" if result.passed else "❌"
+            status_emoji = "[OK]" if result.passed else "[ERROR]"
             report_lines.extend([
                 f"{status_emoji} {result.test_name} (スコア: {result.score:.1f}/100)",
                 f"   実行時間: {result.metrics.execution_time:.2f}s",
@@ -220,7 +220,7 @@ class BenchmarkValidator:
             ])
             
             if result.violations:
-                report_lines.append("   ⚠️ 違反項目:")
+                report_lines.append("   [WARNING] 違反項目:")
                 for violation in result.violations:
                     report_lines.append(f"     - {violation}")
                 report_lines.append("")
@@ -228,7 +228,7 @@ class BenchmarkValidator:
         # パフォーマンス傾向分析
         if len(results) > 1:
             report_lines.extend([
-                "📈 パフォーマンス傾向分析",
+                "[UP] パフォーマンス傾向分析",
                 "-" * 40
             ])
             
@@ -244,7 +244,7 @@ class BenchmarkValidator:
         
         # 推奨事項
         report_lines.extend([
-            "💡 推奨事項",
+            "[IDEA] 推奨事項",
             "-" * 40
         ])
         
@@ -262,7 +262,7 @@ class BenchmarkValidator:
                 
             report_lines.extend([
                 "",
-                "🔧 対策案:",
+                "[TOOL] 対策案:",
                 "  - アルゴリズムの最適化",
                 "  - メモリ使用量の削減",
                 "  - 並列処理の改善",

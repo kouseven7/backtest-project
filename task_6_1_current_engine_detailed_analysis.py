@@ -26,7 +26,7 @@ class CurrentEngineDetailedQualityAnalyzer:
         
     def analyze_current_engine_detailed_quality(self):
         """現在使用中エンジンの詳細品質・正確性分析"""
-        print("🚨 Task 6.1: 現在使用中エンジンの詳細品質分析開始")
+        print("[ALERT] Task 6.1: 現在使用中エンジンの詳細品質分析開始")
         print("=" * 80)
         
         # 1. 現在使用中エンジンの計算式実装状況調査
@@ -49,7 +49,7 @@ class CurrentEngineDetailedQualityAnalyzer:
     
     def _analyze_calculation_implementation(self):
         """1. 現在使用中エンジンの計算式実装状況調査"""
-        print("\n🔍 1. 現在使用中エンジンの計算式実装状況調査")
+        print("\n[SEARCH] 1. 現在使用中エンジンの計算式実装状況調査")
         print("-" * 60)
         
         try:
@@ -64,7 +64,7 @@ class CurrentEngineDetailedQualityAnalyzer:
             }
             
             if file_info['is_empty']:
-                print("❌ ファイルが空です - これが0点評価の原因")
+                print("[ERROR] ファイルが空です - これが0点評価の原因")
                 self.analysis_results['calculation_analysis'] = {
                     'status': 'empty_file',
                     'file_info': file_info,
@@ -121,18 +121,18 @@ class CurrentEngineDetailedQualityAnalyzer:
                 'implementation_completeness': len(implemented_calculations) / len(calculation_methods) * 100
             }
             
-            print(f"📊 ファイル情報: {file_info['file_size']:,} bytes, {file_info['line_count']} lines")
-            print(f"📈 実装済み計算: {len(implemented_calculations)}/{len(calculation_methods)} ({self.analysis_results['calculation_analysis']['implementation_completeness']:.1f}%)")
-            print(f"❌ 未実装計算: {', '.join(missing_calculations)}")
+            print(f"[CHART] ファイル情報: {file_info['file_size']:,} bytes, {file_info['line_count']} lines")
+            print(f"[UP] 実装済み計算: {len(implemented_calculations)}/{len(calculation_methods)} ({self.analysis_results['calculation_analysis']['implementation_completeness']:.1f}%)")
+            print(f"[ERROR] 未実装計算: {', '.join(missing_calculations)}")
             print(f"🔢 数学公式パターン: 除算{formula_patterns['division_operations']}個, sum{formula_patterns['sum_operations']}個")
             
         except Exception as e:
-            print(f"❌ 分析エラー: {e}")
+            print(f"[ERROR] 分析エラー: {e}")
             self.analysis_results['calculation_analysis'] = {'error': str(e)}
     
     def _compare_with_task42_v1_engine(self):
         """2. Task 4.2のv1エンジンとの詳細比較分析"""
-        print("\n🔍 2. Task 4.2のv1エンジンとの詳細比較分析")
+        print("\n[SEARCH] 2. Task 4.2のv1エンジンとの詳細比較分析")
         print("-" * 60)
         
         try:
@@ -144,9 +144,9 @@ class CurrentEngineDetailedQualityAnalyzer:
                 current_engine_quality = task42_data.get('implementation_quality', {}).get('dssms_unified_output_engine.py', {})
                 current_engine_score = current_engine_quality.get('total_score', 0)
                 
-                print(f"✅ Task 4.2での現在エンジンスコア: {current_engine_score}点")
-                print(f"📊 実装率: {current_engine_quality.get('implementation_percentage', 0)}%")
-                print(f"🎯 品質率: {current_engine_quality.get('quality_percentage', 0)}%")
+                print(f"[OK] Task 4.2での現在エンジンスコア: {current_engine_score}点")
+                print(f"[CHART] 実装率: {current_engine_quality.get('implementation_percentage', 0)}%")
+                print(f"[TARGET] 品質率: {current_engine_quality.get('quality_percentage', 0)}%")
                 
                 # 現在のエンジンとの比較
                 current_analysis = self.analysis_results.get('calculation_analysis', {})
@@ -171,30 +171,30 @@ class CurrentEngineDetailedQualityAnalyzer:
                 
                 self.analysis_results['task42_comparison'] = comparison
                 
-                print(f"📊 品質スコア比較:")
+                print(f"[CHART] 品質スコア比較:")
                 print(f"   Task 4.2 v1エンジン: {v1_quality}点")
                 print(f"   現在使用中エンジン: 0点")
                 print(f"   格差: {comparison['quality_scores']['score_gap']}点")
                 print(f"🔄 ファイル関係: {comparison['file_relationship']['relationship_type']}")
-                print(f"⚠️ 混乱の原因: {comparison['file_relationship']['confusion_source']}")
+                print(f"[WARNING] 混乱の原因: {comparison['file_relationship']['confusion_source']}")
                 
             else:
-                print("❌ Task 4.2結果ファイルが見つかりません")
+                print("[ERROR] Task 4.2結果ファイルが見つかりません")
                 self.analysis_results['task42_comparison'] = {'error': 'Task 4.2結果ファイル未発見'}
                 
         except Exception as e:
-            print(f"❌ 比較分析エラー: {e}")
+            print(f"[ERROR] 比較分析エラー: {e}")
             self.analysis_results['task42_comparison'] = {'error': str(e)}
     
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: def _verify_excel_output_accuracy(self):
         """3. 実際のExcel出力内容の数学的正確性検証"""
-        print("\n🔍 3. Excel出力内容の数学的正確性検証")
+        print("\n[SEARCH] 3. Excel出力内容の数学的正確性検証")
         print("-" * 60)
         
         try:
             if not os.path.exists(self.latest_excel_file):
-                print(f"❌ Excel出力ファイルが見つかりません: {self.latest_excel_file}")
+                print(f"[ERROR] Excel出力ファイルが見つかりません: {self.latest_excel_file}")
                 self.analysis_results['excel_accuracy'] = {'error': 'Excel出力ファイル未発見'}
                 return
             
@@ -229,19 +229,19 @@ class CurrentEngineDetailedQualityAnalyzer:
             
             self.analysis_results['excel_accuracy'] = accuracy_analysis
             
-            print(f"📊 Excel構造: {len(sheet_names)}シート発見")
-            print(f"📋 シート名: {', '.join(sheet_names)}")
+            print(f"[CHART] Excel構造: {len(sheet_names)}シート発見")
+            print(f"[LIST] シート名: {', '.join(sheet_names)}")
             
             error_count = len(accuracy_analysis['mathematical_errors'])
             if error_count > 0:
-                print(f"❌ 数学的エラー: {error_count}件発見")
+                print(f"[ERROR] 数学的エラー: {error_count}件発見")
                 for error in accuracy_analysis['mathematical_errors'][:3]:  # 最初の3件のみ表示
                     print(f"   - {error}")
             else:
-                print("✅ 明らかな数学的エラーは検出されませんでした")
+                print("[OK] 明らかな数学的エラーは検出されませんでした")
             
         except Exception as e:
-            print(f"❌ Excel検証エラー: {e}")
+            print(f"[ERROR] Excel検証エラー: {e}")
             self.analysis_results['excel_accuracy'] = {'error': str(e)}
     
     def _analyze_sheet_accuracy(self, sheet, sheet_name):
@@ -329,9 +329,9 @@ class CurrentEngineDetailedQualityAnalyzer:
                 if holding_periods:
                     unique_periods = set(holding_periods)
                     if len(unique_periods) == 1 and '24' in list(unique_periods)[0]:
-                        verification['trade_specific_checks'].append("❌ 24時間固定問題を検出")
+                        verification['trade_specific_checks'].append("[ERROR] 24時間固定問題を検出")
                     else:
-                        verification['trade_specific_checks'].append(f"✅ 保有期間の多様性: {len(unique_periods)}種類")
+                        verification['trade_specific_checks'].append(f"[OK] 保有期間の多様性: {len(unique_periods)}種類")
             
         except Exception as e:
             verification['trade_specific_checks'].append(f"取引履歴検証エラー: {e}")
@@ -355,11 +355,11 @@ class CurrentEngineDetailedQualityAnalyzer:
             # 日付ループ問題の検出
             if len(date_values) >= 3:
                 if date_values[0] == date_values[-1]:
-                    verification['pnl_specific_checks'].append("❌ 日付ループ問題の可能性を検出")
+                    verification['pnl_specific_checks'].append("[ERROR] 日付ループ問題の可能性を検出")
                 elif '2023-01-01' in date_values and '2023-12-31' in date_values:
-                    verification['pnl_specific_checks'].append("✅ 正常な年間日付範囲")
+                    verification['pnl_specific_checks'].append("[OK] 正常な年間日付範囲")
                 else:
-                    verification['pnl_specific_checks'].append("⚠️ 日付範囲要確認")
+                    verification['pnl_specific_checks'].append("[WARNING] 日付範囲要確認")
             
         except Exception as e:
             verification['pnl_specific_checks'].append(f"損益推移検証エラー: {e}")
@@ -396,7 +396,7 @@ class CurrentEngineDetailedQualityAnalyzer:
     
     def _analyze_excel_structure_completeness(self):
         """4. 24KB出力データの構造・完全性確認"""
-        print("\n🔍 4. Excel出力データの構造・完全性確認")
+        print("\n[SEARCH] 4. Excel出力データの構造・完全性確認")
         print("-" * 60)
         
         try:
@@ -458,23 +458,23 @@ class CurrentEngineDetailedQualityAnalyzer:
                 self.analysis_results['structure_analysis'] = structure_analysis
                 
                 print(f"📁 ファイル情報: {structure_analysis['file_info']['size_kb']:.1f}KB")
-                print(f"📊 シート数: {len(workbook.sheetnames)}")
-                print(f"📈 推定データセル数: {total_data_cells:,}")
-                print(f"📋 未実装シート: {', '.join(missing_sheets) if missing_sheets else 'なし'}")
-                print(f"🔍 データ密度: {bytes_per_cell:.1f} bytes/cell ({structure_analysis['data_density']['density_assessment']})")
+                print(f"[CHART] シート数: {len(workbook.sheetnames)}")
+                print(f"[UP] 推定データセル数: {total_data_cells:,}")
+                print(f"[LIST] 未実装シート: {', '.join(missing_sheets) if missing_sheets else 'なし'}")
+                print(f"[SEARCH] データ密度: {bytes_per_cell:.1f} bytes/cell ({structure_analysis['data_density']['density_assessment']})")
                 
             else:
-                print("❌ Excel出力ファイルが存在しません")
+                print("[ERROR] Excel出力ファイルが存在しません")
                 structure_analysis['error'] = 'ファイル未存在'
                 self.analysis_results['structure_analysis'] = structure_analysis
                 
         except Exception as e:
-            print(f"❌ 構造分析エラー: {e}")
+            print(f"[ERROR] 構造分析エラー: {e}")
             self.analysis_results['structure_analysis'] = {'error': str(e)}
     
     def _identify_zero_score_root_cause(self):
         """5. 0点評価の具体的原因特定"""
-        print("\n🔍 5. 0点評価の具体的原因特定")
+        print("\n[SEARCH] 5. 0点評価の具体的原因特定")
         print("-" * 60)
         
         root_cause_analysis = {
@@ -538,15 +538,15 @@ class CurrentEngineDetailedQualityAnalyzer:
             
             self.analysis_results['root_cause_analysis'] = root_cause_analysis
             
-            print(f"🎯 特定された原因: {len(root_cause_analysis['potential_causes'])}件")
+            print(f"[TARGET] 特定された原因: {len(root_cause_analysis['potential_causes'])}件")
             for i, cause in enumerate(root_cause_analysis['potential_causes'], 1):
                 print(f"   {i}. {cause}")
             
-            print(f"⚠️ 重要度評価: {root_cause_analysis['severity_assessment']}")
-            print(f"💡 推奨アクション: {len(root_cause_analysis['recommended_actions'])}件")
+            print(f"[WARNING] 重要度評価: {root_cause_analysis['severity_assessment']}")
+            print(f"[IDEA] 推奨アクション: {len(root_cause_analysis['recommended_actions'])}件")
             
         except Exception as e:
-            print(f"❌ 原因特定エラー: {e}")
+            print(f"[ERROR] 原因特定エラー: {e}")
             root_cause_analysis['error'] = str(e)
             self.analysis_results['root_cause_analysis'] = root_cause_analysis
     
@@ -583,12 +583,12 @@ class CurrentEngineDetailedQualityAnalyzer:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(self.analysis_results, f, ensure_ascii=False, indent=2, default=str)
         
-        print(f"\n✅ 詳細分析結果保存: {output_file}")
+        print(f"\n[OK] 詳細分析結果保存: {output_file}")
         return output_file
 
 def main():
     """Task 6.1メイン実行"""
-    print("🚨 Task 6.1: 現在使用中エンジンの詳細品質分析（Critical）")
+    print("[ALERT] Task 6.1: 現在使用中エンジンの詳細品質分析（Critical）")
     print("=" * 80)
     
     analyzer = CurrentEngineDetailedQualityAnalyzer()
@@ -603,15 +603,15 @@ def main():
     output_file = analyzer.save_results()
     
     print("\n" + "=" * 80)
-    print("📋 Task 6.1 完了サマリー")
+    print("[LIST] Task 6.1 完了サマリー")
     print("=" * 80)
-    print(f"🎯 Problem 16定義: {problem16['title']}")
-    print(f"⚠️ 重要度: {problem16['severity']}")
-    print(f"📊 発見された問題: {len(problem16['discovered_issues'])}件")
-    print(f"📈 実装完全性: {problem16['impact_assessment']['implementation_completeness']:.1f}%")
+    print(f"[TARGET] Problem 16定義: {problem16['title']}")
+    print(f"[WARNING] 重要度: {problem16['severity']}")
+    print(f"[CHART] 発見された問題: {len(problem16['discovered_issues'])}件")
+    print(f"[UP] 実装完全性: {problem16['impact_assessment']['implementation_completeness']:.1f}%")
     print(f"📄 品質格差: {problem16['impact_assessment']['quality_gap']}点")
     
-    print(f"\n💡 次のアクション:")
+    print(f"\n[IDEA] 次のアクション:")
     print(f"1. Problem 16をroadmap2.mdに追加")
     print(f"2. 科学的効率分析への統合")
     print(f"3. 85.0点エンジンへの切り替え検討")

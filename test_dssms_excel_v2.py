@@ -25,36 +25,36 @@ from output.dssms_excel_exporter_v2 import DSSMSExcelExporterV2, test_dssms_exce
 def test_dssms_v2_integration():
     """DSSMS V2システム統合テスト"""
     print("=" * 80)
-    print("🔧 DSSMS Excel出力システム V2 統合テスト")
+    print("[TOOL] DSSMS Excel出力システム V2 統合テスト")
     print("=" * 80)
     
     try:
         # 1. 基本機能テスト
-        print("\n📋 Step 1: 基本機能テスト")
+        print("\n[LIST] Step 1: 基本機能テスト")
         success = test_dssms_excel_exporter()
         
         if success:
-            print("✅ 基本機能テスト: PASS")
+            print("[OK] 基本機能テスト: PASS")
         else:
-            print("❌ 基本機能テスト: FAIL")
+            print("[ERROR] 基本機能テスト: FAIL")
             return False
         
         # 2. 詳細テストデータでのテスト
-        print("\n📋 Step 2: 詳細テストデータテスト")
+        print("\n[LIST] Step 2: 詳細テストデータテスト")
         detailed_test_result = create_detailed_test_data()
         
         exporter = DSSMSExcelExporterV2(initial_capital=1000000.0)
         output_path = exporter.export_dssms_results(detailed_test_result)
         
         if Path(output_path).exists():
-            print(f"✅ 詳細テスト: PASS - {output_path}")
-            print(f"📊 ファイルサイズ: {Path(output_path).stat().st_size:,} bytes")
+            print(f"[OK] 詳細テスト: PASS - {output_path}")
+            print(f"[CHART] ファイルサイズ: {Path(output_path).stat().st_size:,} bytes")
         else:
-            print("❌ 詳細テスト: FAIL - ファイルが作成されませんでした")
+            print("[ERROR] 詳細テスト: FAIL - ファイルが作成されませんでした")
             return False
         
         # 3. パフォーマンステスト
-        print("\n📋 Step 3: パフォーマンステスト")
+        print("\n[LIST] Step 3: パフォーマンステスト")
         start_time = datetime.now()
         
         # 大量データでのテスト
@@ -65,36 +65,36 @@ def test_dssms_v2_integration():
         processing_time = (end_time - start_time).total_seconds()
         
         if Path(output_path_large).exists():
-            print(f"✅ パフォーマンステスト: PASS")
+            print(f"[OK] パフォーマンステスト: PASS")
             print(f"⏱️ 処理時間: {processing_time:.2f}秒")
-            print(f"📊 大容量ファイルサイズ: {Path(output_path_large).stat().st_size:,} bytes")
+            print(f"[CHART] 大容量ファイルサイズ: {Path(output_path_large).stat().st_size:,} bytes")
         else:
-            print("❌ パフォーマンステスト: FAIL")
+            print("[ERROR] パフォーマンステスト: FAIL")
             return False
         
         # 4. エラーハンドリングテスト
-        print("\n📋 Step 4: エラーハンドリングテスト")
+        print("\n[LIST] Step 4: エラーハンドリングテスト")
         error_test_results = test_error_handling(exporter)
         
         if error_test_results:
-            print("✅ エラーハンドリングテスト: PASS")
+            print("[OK] エラーハンドリングテスト: PASS")
         else:
-            print("❌ エラーハンドリングテスト: FAIL")
+            print("[ERROR] エラーハンドリングテスト: FAIL")
             return False
         
         # 5. 最終レポート
         print("\n" + "=" * 80)
-        print("🎉 DSSMS Excel出力システム V2 統合テスト完了")
+        print("[SUCCESS] DSSMS Excel出力システム V2 統合テスト完了")
         print("=" * 80)
-        print("✅ 全てのテストがPASSしました")
+        print("[OK] 全てのテストがPASSしました")
         print(f"📁 出力ファイル1: {output_path}")
         print(f"📁 出力ファイル2: {output_path_large}")
-        print("🚀 新しいV2システムの実装が完了しました")
+        print("[ROCKET] 新しいV2システムの実装が完了しました")
         
         return True
         
     except Exception as e:
-        print(f"❌ 統合テストエラー: {e}")
+        print(f"[ERROR] 統合テストエラー: {e}")
         import traceback
         print(traceback.format_exc())
         return False
@@ -239,9 +239,9 @@ def test_error_handling(exporter):
         empty_data = {}
         try:
             exporter.export_dssms_results(empty_data)
-            print("✅ 空データハンドリング: OK")
+            print("[OK] 空データハンドリング: OK")
         except Exception as e:
-            print(f"⚠️ 空データでエラー（想定内）: {type(e).__name__}")
+            print(f"[WARNING] 空データでエラー（想定内）: {type(e).__name__}")
         
         # 2. 不正データテスト
         invalid_data = {
@@ -250,9 +250,9 @@ def test_error_handling(exporter):
         }
         try:
             exporter.export_dssms_results(invalid_data)
-            print("✅ 不正データハンドリング: OK")
+            print("[OK] 不正データハンドリング: OK")
         except Exception as e:
-            print(f"⚠️ 不正データでエラー（想定内）: {type(e).__name__}")
+            print(f"[WARNING] 不正データでエラー（想定内）: {type(e).__name__}")
         
         # 3. 最小データテスト
         minimal_data = {
@@ -267,24 +267,24 @@ def test_error_handling(exporter):
         try:
             output_path = exporter.export_dssms_results(minimal_data)
             if Path(output_path).exists():
-                print("✅ 最小データテスト: OK")
+                print("[OK] 最小データテスト: OK")
                 return True
             else:
-                print("❌ 最小データテスト: ファイル作成失敗")
+                print("[ERROR] 最小データテスト: ファイル作成失敗")
                 return False
         except Exception as e:
-            print(f"❌ 最小データテストエラー: {e}")
+            print(f"[ERROR] 最小データテストエラー: {e}")
             return False
         
     except Exception as e:
-        print(f"❌ エラーハンドリングテストエラー: {e}")
+        print(f"[ERROR] エラーハンドリングテストエラー: {e}")
         return False
 
 if __name__ == "__main__":
     success = test_dssms_v2_integration()
     if success:
-        print("\n🎯 テスト結果: 全てのテストが成功しました！")
+        print("\n[TARGET] テスト結果: 全てのテストが成功しました！")
         print("📝 次のステップ: 実際のDSSMSバックテストで新しいV2システムをテストしてください")
     else:
         print("\n💥 テスト結果: 一部のテストが失敗しました")
-        print("🔍 ログを確認してエラーを修正してください")
+        print("[SEARCH] ログを確認してエラーを修正してください")

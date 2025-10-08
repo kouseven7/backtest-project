@@ -40,7 +40,7 @@ class Phase3ArchitecturalAnalyzer:
         
     def analyze_hierarchical_ranking_system_deep(self) -> Dict[str, Any]:
         """hierarchical_ranking_system詳細プロファイリング・コア機能抽出分析"""
-        print("🔍 hierarchical_ranking_system詳細プロファイリング・コア機能抽出分析中...")
+        print("[SEARCH] hierarchical_ranking_system詳細プロファイリング・コア機能抽出分析中...")
         
         analysis_result = {
             'file_analysis': {},
@@ -55,7 +55,7 @@ class Phase3ArchitecturalAnalyzer:
         
         if not hrs_path.exists():
             analysis_result['error'] = f"ファイルが存在しません: {hrs_path}"
-            print(f"  ❌ ファイル未発見: {hrs_path}")
+            print(f"  [ERROR] ファイル未発見: {hrs_path}")
             return analysis_result
         
         try:
@@ -74,8 +74,8 @@ class Phase3ArchitecturalAnalyzer:
                 'async_potential': len(re.findall(r'(for|while)\s+.*in.*:', content))
             }
             
-            print(f"  📊 ファイル分析: {analysis_result['file_analysis']['total_lines']}行, {analysis_result['file_analysis']['class_definitions']}クラス, {analysis_result['file_analysis']['function_definitions']}関数")
-            print(f"  📊 依存関係: pandas使用{analysis_result['file_analysis']['pandas_usage']}箇所, numpy使用{analysis_result['file_analysis']['numpy_usage']}箇所")
+            print(f"  [CHART] ファイル分析: {analysis_result['file_analysis']['total_lines']}行, {analysis_result['file_analysis']['class_definitions']}クラス, {analysis_result['file_analysis']['function_definitions']}関数")
+            print(f"  [CHART] 依存関係: pandas使用{analysis_result['file_analysis']['pandas_usage']}箇所, numpy使用{analysis_result['file_analysis']['numpy_usage']}箇所")
             
             # 2. 依存関係分析
             import_lines = [l.strip() for l in lines if l.strip().startswith(('import ', 'from '))]
@@ -159,13 +159,13 @@ class Phase3ArchitecturalAnalyzer:
                 ]
             }
             
-            print(f"  📊 コア機能: {len(core_functions)}個特定")
-            print(f"  📊 最適化ポテンシャル: {total_optimization_potential}ms削減可能")
-            print(f"  📊 実現可能性: {analysis_result['optimization_potential']['feasibility']}")
+            print(f"  [CHART] コア機能: {len(core_functions)}個特定")
+            print(f"  [CHART] 最適化ポテンシャル: {total_optimization_potential}ms削減可能")
+            print(f"  [CHART] 実現可能性: {analysis_result['optimization_potential']['feasibility']}")
             
         except Exception as e:
             analysis_result['error'] = str(e)
-            print(f"  ❌ 分析エラー: {e}")
+            print(f"  [ERROR] 分析エラー: {e}")
         
         return analysis_result
     
@@ -200,7 +200,7 @@ class Phase3ArchitecturalAnalyzer:
     
     def analyze_pandas_numpy_bottlenecks(self) -> Dict[str, Any]:
         """pandas/numpy重い処理特定・軽量化可能性分析"""
-        print("🔍 pandas/numpy重い処理特定・軽量化可能性分析中...")
+        print("[SEARCH] pandas/numpy重い処理特定・軽量化可能性分析中...")
         
         bottleneck_analysis = {
             'pandas_bottlenecks': [],
@@ -320,19 +320,19 @@ class Phase3ArchitecturalAnalyzer:
                 'total_expected_reduction_ms': (pandas_total_cost * 0.7) + (numpy_total_cost * 0.6)
             }
             
-            print(f"  📊 pandas総コスト: {pandas_total_cost}ms")
-            print(f"  📊 numpy総コスト: {numpy_total_cost}ms")
-            print(f"  📊 期待削減効果: {bottleneck_analysis['expected_improvements']['total_expected_reduction_ms']:.0f}ms")
+            print(f"  [CHART] pandas総コスト: {pandas_total_cost}ms")
+            print(f"  [CHART] numpy総コスト: {numpy_total_cost}ms")
+            print(f"  [CHART] 期待削減効果: {bottleneck_analysis['expected_improvements']['total_expected_reduction_ms']:.0f}ms")
             
         except Exception as e:
             bottleneck_analysis['error'] = str(e)
-            print(f"  ❌ ボトルネック分析エラー: {e}")
+            print(f"  [ERROR] ボトルネック分析エラー: {e}")
         
         return bottleneck_analysis
     
     def design_async_parallel_architecture(self) -> Dict[str, Any]:
         """非同期処理導入ポイント特定・並列化設計"""
-        print("🚀 非同期処理導入ポイント特定・並列化設計中...")
+        print("[ROCKET] 非同期処理導入ポイント特定・並列化設計中...")
         
         async_design = {
             'async_opportunities': [],
@@ -468,19 +468,19 @@ class Phase3ArchitecturalAnalyzer:
                 'risk_level': 'medium-high'
             }
             
-            print(f"  📊 非同期機会: {len(async_opportunities)}項目")
-            print(f"  📊 並列化ポイント: {len(parallel_points)}項目")
-            print(f"  📊 期待改善: {total_async_improvement:.0f}%")
+            print(f"  [CHART] 非同期機会: {len(async_opportunities)}項目")
+            print(f"  [CHART] 並列化ポイント: {len(parallel_points)}項目")
+            print(f"  [CHART] 期待改善: {total_async_improvement:.0f}%")
             
         except Exception as e:
             async_design['error'] = str(e)
-            print(f"  ❌ 非同期設計エラー: {e}")
+            print(f"  [ERROR] 非同期設計エラー: {e}")
         
         return async_design
     
     def create_migration_strategy(self) -> Dict[str, Any]:
         """アーキテクチャ再設計戦略・段階的移行計画策定"""
-        print("📋 アーキテクチャ再設計戦略・段階的移行計画策定中...")
+        print("[LIST] アーキテクチャ再設計戦略・段階的移行計画策定中...")
         
         migration_strategy = {
             'core_extraction_plan': {},
@@ -600,13 +600,13 @@ class Phase3ArchitecturalAnalyzer:
                 }
             }
             
-            print(f"  📊 移行ステップ: {len(migration_strategy['core_extraction_plan'])}段階")
-            print(f"  📊 依存関係移行: pandas + numpy最適化")
-            print(f"  📊 非同期統合: 3層アーキテクチャ")
+            print(f"  [CHART] 移行ステップ: {len(migration_strategy['core_extraction_plan'])}段階")
+            print(f"  [CHART] 依存関係移行: pandas + numpy最適化")
+            print(f"  [CHART] 非同期統合: 3層アーキテクチャ")
             
         except Exception as e:
             migration_strategy['error'] = str(e)
-            print(f"  ❌ 移行戦略策定エラー: {e}")
+            print(f"  [ERROR] 移行戦略策定エラー: {e}")
         
         return migration_strategy
     
@@ -726,20 +726,20 @@ class Phase3ArchitecturalAnalyzer:
                 }
             }
             
-            print(f"  📊 Phase 1成果保護: lazy import wrappers等")
-            print(f"  📊 Phase 2成果保護: 1780ms削減維持")
-            print(f"  📊 SystemFallbackPolicy: 非同期対応拡張")
-            print(f"  📊 期待累積効果: 5785ms+削減")
+            print(f"  [CHART] Phase 1成果保護: lazy import wrappers等")
+            print(f"  [CHART] Phase 2成果保護: 1780ms削減維持")
+            print(f"  [CHART] SystemFallbackPolicy: 非同期対応拡張")
+            print(f"  [CHART] 期待累積効果: 5785ms+削減")
             
         except Exception as e:
             protection_strategy['error'] = str(e)
-            print(f"  ❌ 保護戦略策定エラー: {e}")
+            print(f"  [ERROR] 保護戦略策定エラー: {e}")
         
         return protection_strategy
     
     def generate_stage1_comprehensive_report(self) -> Dict[str, Any]:
         """Stage 1総合分析レポート生成"""
-        print("📋 Stage 1総合分析レポート生成中...")
+        print("[LIST] Stage 1総合分析レポート生成中...")
         
         comprehensive_report = {
             'stage': 'Stage 1: アーキテクチャ分析・コア抽出戦略策定',
@@ -803,7 +803,7 @@ class Phase3ArchitecturalAnalyzer:
     
     def run_stage1_comprehensive_analysis(self) -> bool:
         """Stage 1総合分析実行"""
-        print("🚀 TODO-PERF-001 Phase 3 Stage 1: アーキテクチャ分析・コア抽出戦略策定開始")
+        print("[ROCKET] TODO-PERF-001 Phase 3 Stage 1: アーキテクチャ分析・コア抽出戦略策定開始")
         print("="*80)
         
         start_time = time.time()
@@ -848,16 +848,16 @@ class Phase3ArchitecturalAnalyzer:
             
             if hasattr(self, 'hrs_analysis'):
                 opt_potential = self.hrs_analysis.get('optimization_potential', {})
-                print(f"🎯 hierarchical_ranking_system最適化ポテンシャル: {opt_potential.get('total_estimated_reduction_ms', 0)}ms")
-                print(f"🎯 実現可能性: {opt_potential.get('feasibility', 'unknown')}")
+                print(f"[TARGET] hierarchical_ranking_system最適化ポテンシャル: {opt_potential.get('total_estimated_reduction_ms', 0)}ms")
+                print(f"[TARGET] 実現可能性: {opt_potential.get('feasibility', 'unknown')}")
             
             if hasattr(self, 'pn_analysis'):
                 expected_imp = self.pn_analysis.get('expected_improvements', {})
-                print(f"📊 pandas/numpy期待削減: {expected_imp.get('total_expected_reduction_ms', 0):.0f}ms")
+                print(f"[CHART] pandas/numpy期待削減: {expected_imp.get('total_expected_reduction_ms', 0):.0f}ms")
             
             if hasattr(self, 'async_design'):
                 impl_strategy = self.async_design.get('implementation_strategy', {})
-                print(f"🚀 非同期処理期待改善: {impl_strategy.get('expected_total_improvement', 'N/A')}")
+                print(f"[ROCKET] 非同期処理期待改善: {impl_strategy.get('expected_total_improvement', 'N/A')}")
             
             print(f"📄 総合分析レポート: {report_path}")
             
@@ -866,14 +866,14 @@ class Phase3ArchitecturalAnalyzer:
             overall_feasibility = feasibility.get('overall_feasibility', 'unknown')
             
             if overall_feasibility in ['high', 'medium']:
-                print(f"\n✅ Stage 1分析成功 ({overall_feasibility} feasibility) - Stage 2コア抽出実装に進行可能")
+                print(f"\n[OK] Stage 1分析成功 ({overall_feasibility} feasibility) - Stage 2コア抽出実装に進行可能")
                 return True
             else:
-                print(f"\n⚠️ Stage 1分析課題あり ({overall_feasibility} feasibility) - 戦略見直し推奨")
+                print(f"\n[WARNING] Stage 1分析課題あり ({overall_feasibility} feasibility) - 戦略見直し推奨")
                 return False
                 
         except Exception as e:
-            print(f"❌ Stage 1分析エラー: {e}")
+            print(f"[ERROR] Stage 1分析エラー: {e}")
             traceback.print_exc()
             return False
 
@@ -885,9 +885,9 @@ def main():
     success = analyzer.run_stage1_comprehensive_analysis()
     
     if success:
-        print("\n🎉 Stage 1完成 - 次は Stage 2 hierarchical_ranking_systemコア抽出実装に進行")
+        print("\n[SUCCESS] Stage 1完成 - 次は Stage 2 hierarchical_ranking_systemコア抽出実装に進行")
     else:
-        print("\n⚠️ Stage 1分析課題 - 戦略見直し後に Stage 2進行を推奨")
+        print("\n[WARNING] Stage 1分析課題 - 戦略見直し後に Stage 2進行を推奨")
     
     return success
 

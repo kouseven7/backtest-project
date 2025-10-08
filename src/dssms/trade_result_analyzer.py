@@ -827,11 +827,11 @@ def main():
         
         # 取引データの追加
         added_count = analyzer.add_trades_from_dataframe(sample_trades)
-        print(f"\n📊 サンプル取引データ追加: {added_count}件")
+        print(f"\n[CHART] サンプル取引データ追加: {added_count}件")
         
         # 統計の計算
         statistics = analyzer.calculate_comprehensive_statistics()
-        print(f"\n📈 基本統計:")
+        print(f"\n[UP] 基本統計:")
         print(f"  総取引数: {statistics.total_trades}")
         print(f"  勝率: {statistics.win_rate:.2%}")
         print(f"  プロフィットファクター: {statistics.profit_factor:.2f}")
@@ -841,28 +841,28 @@ def main():
         
         # パフォーマンス内訳の生成
         breakdown = analyzer.generate_performance_breakdown()
-        print(f"\n🎯 戦略別パフォーマンス:")
+        print(f"\n[TARGET] 戦略別パフォーマンス:")
         for strategy, stats in breakdown.by_strategy.items():
             print(f"  {strategy}: 勝率 {stats.win_rate:.2%}, P&L ¥{stats.total_pnl:,.0f}")
         
         # リスク指標の計算
         risk_metrics = analyzer.calculate_risk_metrics()
-        print(f"\n⚠️  リスク指標:")
+        print(f"\n[WARNING]  リスク指標:")
         print(f"  VaR(95%): ¥{risk_metrics.value_at_risk_95:,.0f}")
         print(f"  最大ドローダウン: ¥{risk_metrics.maximum_drawdown:,.0f}")
         print(f"  ソルティノレシオ: {risk_metrics.sortino_ratio:.3f}")
         
         # 分析レポートの出力
         report = analyzer.export_analysis_report()
-        print(f"\n📋 分析レポート生成完了")
+        print(f"\n[LIST] 分析レポート生成完了")
         print(f"  分析レベル: {report['analysis_level']}")
         print(f"  レポート作成時刻: {report['report_timestamp']}")
         
-        print(f"\n✅ 取引結果分析システム: 正常動作確認")
+        print(f"\n[OK] 取引結果分析システム: 正常動作確認")
         return True
         
     except Exception as e:
-        print(f"\n❌ エラー: {e}")
+        print(f"\n[ERROR] エラー: {e}")
         traceback.print_exc()
         return False
 

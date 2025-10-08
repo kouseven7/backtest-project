@@ -114,13 +114,13 @@ class StrategyParameterStandardizer:
         lines.append("")
         
         for strategy_name, rules in self.standardization_rules.items():
-            lines.append(f"📋 {strategy_name}:")
+            lines.append(f"[LIST] {strategy_name}:")
             for rule in rules:
                 lines.append(f"  • {rule.old_name} → {rule.new_name}")
                 lines.append(f"    {rule.description}")
             lines.append("")
         
-        lines.append("✅ 期待効果:")
+        lines.append("[OK] 期待効果:")
         lines.append("  • 開発効率: 戦略追加時60分 → 10分")
         lines.append("  • コード品質: パラメータ名統一によるバグ防止")
         lines.append("  • 保守性: 統一インターフェース")

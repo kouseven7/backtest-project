@@ -87,7 +87,7 @@ def test_basic_functionality():
         return True
         
     except Exception as e:
-        print(f"❌ Test failed: {e}")
+        print(f"[ERROR] Test failed: {e}")
         return False
         
     finally:
@@ -121,19 +121,19 @@ def test_directory_structure():
             if os.path.exists(dir_path):
                 print(f"✓ Directory exists: {dir_name}")
             else:
-                print(f"❌ Directory missing: {dir_name}")
+                print(f"[ERROR] Directory missing: {dir_name}")
         
         # メタデータファイルの確認
         metadata_file = os.path.join(test_dir, "metadata", "persistence_metadata.json")
         if os.path.exists(metadata_file):
             print("✓ Metadata file created")
         else:
-            print("❌ Metadata file missing")
+            print("[ERROR] Metadata file missing")
         
         return True
         
     except Exception as e:
-        print(f"❌ Directory structure test failed: {e}")
+        print(f"[ERROR] Directory structure test failed: {e}")
         return False
         
     finally:
@@ -183,7 +183,7 @@ def test_json_operations():
         return True
         
     except Exception as e:
-        print(f"❌ JSON operations test failed: {e}")
+        print(f"[ERROR] JSON operations test failed: {e}")
         return False
         
     finally:
@@ -208,7 +208,7 @@ if __name__ == "__main__":
             result = test()
             results.append(result)
         except Exception as e:
-            print(f"❌ Test execution failed: {e}")
+            print(f"[ERROR] Test execution failed: {e}")
             results.append(False)
     
     # 結果サマリー
@@ -221,6 +221,6 @@ if __name__ == "__main__":
     print(f"Success rate: {passed/total*100:.1f}%")
     
     if all(results):
-        print("✅ ALL TESTS PASSED - Implementation ready for use!")
+        print("[OK] ALL TESTS PASSED - Implementation ready for use!")
     else:
-        print("⚠️  Some tests failed - Check implementation")
+        print("[WARNING]  Some tests failed - Check implementation")

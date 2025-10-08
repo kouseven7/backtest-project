@@ -103,7 +103,7 @@ python scripts/file_cleanup.py --aggressive --careful --live
 
 ---
 
-## 🎯 KPI 指標・目標
+## [TARGET] KPI 指標・目標
 
 ### 現在のベースライン (2025-09-22測定)
 
@@ -132,7 +132,7 @@ python scripts/file_cleanup.py --aggressive --careful --live
 
 ---
 
-## 🔧 運用手順
+## [TOOL] 運用手順
 
 ### 基本整理手順
 
@@ -175,7 +175,7 @@ python scripts/file_cleanup.py --aggressive --careful --live
 
 ---
 
-## 🚨 トラブルシューティング
+## [ALERT] トラブルシューティング
 
 ### 保護ファイル誤削除防止
 
@@ -206,7 +206,7 @@ python scripts/file_cleanup.py --aggressive --careful --live
 
 ---
 
-## 📈 継続的改善
+## [UP] 継続的改善
 
 ### パターン追加・更新
 

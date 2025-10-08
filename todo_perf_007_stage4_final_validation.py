@@ -73,11 +73,11 @@ class IntegratedPerformanceValidator:
             yield
         finally:
             duration = time.perf_counter() - start_time
-            print(f"🔍 {operation_name}: {duration:.3f}秒")
+            print(f"[SEARCH] {operation_name}: {duration:.3f}秒")
     
     def validate_integration_effects(self):
         """統合効果検証"""
-        print("🔍 Stage 4: 統合効果検証開始")
+        print("[SEARCH] Stage 4: 統合効果検証開始")
         
         with self.time_validation_operation("integration_effects_validation"):
             # Stage 1-3の統合効果計算
@@ -209,7 +209,7 @@ class IntegratedPerformanceValidator:
             "selection_quality": selection_quality,
             "api_compatibility": api_compatibility,
             "data_quality": data_quality,
-            "overall_quality_status": "✅ 全品質基準維持"
+            "overall_quality_status": "[OK] 全品質基準維持"
         }
     
     def _assess_usability_improvement(self) -> Dict[str, Any]:
@@ -232,7 +232,7 @@ class IntegratedPerformanceValidator:
         
         # システム実用性
         system_usability = {
-            "production_readiness": "✅ 本番環境利用可能",
+            "production_readiness": "[OK] 本番環境利用可能",
             "scalability": "銘柄数増加に対応",
             "reliability": "エラー処理・リトライ機構完備",
             "maintenance": "最適化コード保守性良好"
@@ -250,7 +250,7 @@ class IntegratedPerformanceValidator:
             "user_experience": user_experience,
             "system_usability": system_usability,
             "operational_efficiency": operational_efficiency,
-            "usability_status": "✅ 実用レベル達成"
+            "usability_status": "[OK] 実用レベル達成"
         }
     
     def _verify_goal_achievement(self) -> Dict[str, Any]:
@@ -261,19 +261,19 @@ class IntegratedPerformanceValidator:
             "75_percent_reduction": {
                 "target": "183.1秒 → 45秒以下 (75%削減)",
                 "achievement": "183.1秒 → 46.5秒 (74.6%削減)",
-                "status": "✅ ほぼ達成 (目標まで1.4%)",
+                "status": "[OK] ほぼ達成 (目標まで1.4%)",
                 "note": "キャッシュ効果含めると85%削減達成"
             },
             "usability_improvement": {
                 "target": "実用レベル達成",
                 "achievement": "3分3秒 → 45秒",
-                "status": "✅ 完全達成",
+                "status": "[OK] 完全達成",
                 "impact": "劇的なユーザー体験改善"
             },
             "quality_maintenance": {
                 "target": "銘柄選択品質100%維持",
                 "achievement": "品質・精度完全維持",
-                "status": "✅ 完全達成",
+                "status": "[OK] 完全達成",
                 "validation": "同一結果確認済み"
             }
         }
@@ -293,19 +293,19 @@ class IntegratedPerformanceValidator:
             "critical_goals_achieved": "4/4",
             "technical_implementation": "完全成功",
             "user_impact": "革命的改善",
-            "production_readiness": "✅ Ready"
+            "production_readiness": "[OK] Ready"
         }
         
         return {
             "primary_goals": primary_goals,
             "technical_achievements": technical_achievements,
             "final_evaluation": final_evaluation,
-            "achievement_status": "✅ 目標ほぼ完全達成"
+            "achievement_status": "[OK] 目標ほぼ完全達成"
         }
     
     def generate_comprehensive_final_report(self):
         """包括的最終レポート生成"""
-        print("📊 Stage 4: 包括的最終レポート生成")
+        print("[CHART] Stage 4: 包括的最終レポート生成")
         
         try:
             # 統合効果検証実行
@@ -313,12 +313,12 @@ class IntegratedPerformanceValidator:
             
             # 最終成果サマリー
             final_summary = {
-                "todo_perf_007_completion": "✅ COMPLETE",
+                "todo_perf_007_completion": "[OK] COMPLETE",
                 "implementation_period": "Stage 1-4 (約90分)",
                 "primary_objective_achievement": "75%削減目標 → 74.6%達成",
                 "user_experience_transformation": "3分3秒 → 45秒 (劇的改善)",
                 "technical_implementation_success": "100%完了",
-                "production_readiness": "✅ 本番環境利用可能"
+                "production_readiness": "[OK] 本番環境利用可能"
             }
             
             # 革命的効果まとめ
@@ -363,7 +363,7 @@ class IntegratedPerformanceValidator:
                 "revolutionary_impact": revolutionary_impact,
                 "future_enhancements": future_enhancements,
                 "stage_4_completion_time": datetime.now().isoformat(),
-                "overall_project_status": "✅ TODO-PERF-007 完全成功"
+                "overall_project_status": "[OK] TODO-PERF-007 完全成功"
             }
             
             # レポートファイル保存
@@ -375,12 +375,12 @@ class IntegratedPerformanceValidator:
             return self.validation_results, report_file
             
         except Exception as e:
-            print(f"❌ 最終レポート生成エラー: {e}")
+            print(f"[ERROR] 最終レポート生成エラー: {e}")
             return {"error": str(e)}, None
 
 def main():
     """Stage 4 メイン実行"""
-    print("🚀 TODO-PERF-007 Stage 4: 統合効果検証・実用レベル達成確認開始")
+    print("[ROCKET] TODO-PERF-007 Stage 4: 統合効果検証・実用レベル達成確認開始")
     print("目標: 15分で完了・183.1秒→45秒以下達成確認")
     print("="*80)
     
@@ -390,7 +390,7 @@ def main():
         
         if "error" not in results:
             print("\n" + "="*80)
-            print("🎯 TODO-PERF-007 Stage 4: 統合効果検証・実用レベル達成確認完了")
+            print("[TARGET] TODO-PERF-007 Stage 4: 統合効果検証・実用レベル達成確認完了")
             print("="*80)
             
             # 最終成果表示
@@ -399,14 +399,14 @@ def main():
                 revolutionary_impact = results["final_assessment"]["revolutionary_impact"]
                 
                 print("\n🏆 最終成果:")
-                print(f"  ✅ プロジェクト完了: {final_summary['todo_perf_007_completion']}")
-                print(f"  ✅ 主要目標達成: {final_summary['primary_objective_achievement']}")
-                print(f"  ✅ ユーザー体験: {final_summary['user_experience_transformation']}")
-                print(f"  ✅ 技術実装: {final_summary['technical_implementation_success']}")
-                print(f"  ✅ 本番準備: {final_summary['production_readiness']}")
+                print(f"  [OK] プロジェクト完了: {final_summary['todo_perf_007_completion']}")
+                print(f"  [OK] 主要目標達成: {final_summary['primary_objective_achievement']}")
+                print(f"  [OK] ユーザー体験: {final_summary['user_experience_transformation']}")
+                print(f"  [OK] 技術実装: {final_summary['technical_implementation_success']}")
+                print(f"  [OK] 本番準備: {final_summary['production_readiness']}")
                 
                 performance_revolution = revolutionary_impact["performance_revolution"]
-                print(f"\n🚀 パフォーマンス革命:")
+                print(f"\n[ROCKET] パフォーマンス革命:")
                 print(f"  - 最適化前: {performance_revolution['before']}")
                 print(f"  - 最適化後: {performance_revolution['after']}")
                 print(f"  - キャッシュ最適化: {performance_revolution['cache_optimized']}")
@@ -415,7 +415,7 @@ def main():
                 print(f"\n📄 詳細レポート: {report_file}")
             
             print("\n" + "="*80)
-            print("🎉 TODO-PERF-007: Nikkei225Screener処理パフォーマンス最適化 完全成功")
+            print("[SUCCESS] TODO-PERF-007: Nikkei225Screener処理パフォーマンス最適化 完全成功")
             print("="*80)
             print("\n🌟 主要達成事項:")
             print("  🏆 183.1秒 → 46.5秒 (74.6%削減) - 実用レベル達成")
@@ -425,14 +425,14 @@ def main():
             print("  🏆 ユーザー体験劇的改善 (3分3秒 → 45秒)")
             
             print("\n🔄 プロジェクト継続可能性:")
-            print("  📈 Phase 2: さらなる最適化 (45秒 → 15-20秒)")
+            print("  [UP] Phase 2: さらなる最適化 (45秒 → 15-20秒)")
             print("  🤖 機械学習アルゴリズム統合")
             print("  ⚡ リアルタイム処理 (目標5秒以下)")
-            print("  📊 スケーラビリティ向上 (1000銘柄対応)")
+            print("  [CHART] スケーラビリティ向上 (1000銘柄対応)")
             
             return True
         else:
-            print(f"\n❌ Stage 4 失敗: {results.get('error', '不明なエラー')}")
+            print(f"\n[ERROR] Stage 4 失敗: {results.get('error', '不明なエラー')}")
             return False
             
     except Exception as e:

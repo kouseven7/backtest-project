@@ -37,9 +37,9 @@ def measure_individual_imports():
             print(f"   {lib_name}: {load_time:.1f}ms")
             basic_total += load_time
         except Exception as e:
-            print(f"   ❌ {lib_name}: エラー - {e}")
+            print(f"   [ERROR] {lib_name}: エラー - {e}")
     
-    print(f"   📊 基本ライブラリ合計: {basic_total:.1f}ms")
+    print(f"   [CHART] 基本ライブラリ合計: {basic_total:.1f}ms")
     print()
     
     # lazy_loader自体
@@ -51,7 +51,7 @@ def measure_individual_imports():
         lazy_loader_time = (time.perf_counter() - start) * 1000
         print(f"   lazy_loader: {lazy_loader_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ lazy_loader: エラー - {e}")
+        print(f"   [ERROR] lazy_loader: エラー - {e}")
         lazy_loader_time = 0
     print()
     
@@ -76,9 +76,9 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl'),
                 print(f"      🔴 重いライブラリ検出: {load_time:.1f}ms")
             heavy_total += load_time
         except Exception as e:
-            print(f"   ❌ {lib_name}: エラー - {e}")
+            print(f"   [ERROR] {lib_name}: エラー - {e}")
     
-    print(f"   📊 重いライブラリ合計: {heavy_total:.1f}ms")
+    print(f"   [CHART] 重いライブラリ合計: {heavy_total:.1f}ms")
     print()
     
     return basic_total, lazy_loader_time, heavy_total
@@ -111,17 +111,17 @@ def measure_dssms_components():
             
             if load_time > 50:  # 50ms以上をボトルネック候補
                 bottlenecks.append((class_name, load_time))
-                print(f"      ⚠️ ボトルネック候補: {load_time:.1f}ms")
+                print(f"      [WARNING] ボトルネック候補: {load_time:.1f}ms")
             
             component_total += load_time
         except Exception as e:
-            print(f"   ❌ {class_name}: エラー - {e}")
+            print(f"   [ERROR] {class_name}: エラー - {e}")
     
-    print(f"   📊 DSSMSコンポーネント合計: {component_total:.1f}ms")
+    print(f"   [CHART] DSSMSコンポーネント合計: {component_total:.1f}ms")
     print()
     
     if bottlenecks:
-        print("   🎯 最適化優先度（ボトルネック順）:")
+        print("   [TARGET] 最適化優先度（ボトルネック順）:")
         bottlenecks.sort(key=lambda x: x[1], reverse=True)
         for i, (component, load_time) in enumerate(bottlenecks[:5], 1):
             print(f"      {i}. {component}: {load_time:.1f}ms")
@@ -140,7 +140,7 @@ def measure_dssms_integrated_main():
         
         return class_def_time
     except Exception as e:
-        print(f"   ❌ DSSMSIntegratedBacktester: エラー - {e}")
+        print(f"   [ERROR] DSSMSIntegratedBacktester: エラー - {e}")
         return 0
 
 def calculate_optimization_strategy(basic_total, lazy_loader_time, heavy_total, 
@@ -149,11 +149,11 @@ def calculate_optimization_strategy(basic_total, lazy_loader_time, heavy_total,
     print("\n=== 最適化戦略分析 ===")
     
     total_measured = basic_total + lazy_loader_time + heavy_total + component_total
-    print(f"📊 測定合計時間: {total_measured:.1f}ms")
-    print(f"📊 実際のDSSMSIntegratedBacktester: {class_def_time:.1f}ms")
-    print(f"📊 差分（未特定ボトルネック）: {class_def_time - total_measured:.1f}ms")
+    print(f"[CHART] 測定合計時間: {total_measured:.1f}ms")
+    print(f"[CHART] 実際のDSSMSIntegratedBacktester: {class_def_time:.1f}ms")
+    print(f"[CHART] 差分（未特定ボトルネック）: {class_def_time - total_measured:.1f}ms")
     
-    print("\n🎯 最適化優先順位:")
+    print("\n[TARGET] 最適化優先順位:")
     
     # 優先度計算
     strategies = []
@@ -175,11 +175,11 @@ def calculate_optimization_strategy(basic_total, lazy_loader_time, heavy_total,
     total_savings = sum(saving for _, saving, _ in strategies)
     final_time = class_def_time - total_savings
     
-    print(f"\n📈 最適化効果予測:")
+    print(f"\n[UP] 最適化効果予測:")
     print(f"   現在: {class_def_time:.1f}ms")
     print(f"   削減可能: {total_savings:.1f}ms")
     print(f"   予測最終: {final_time:.1f}ms")
-    print(f"   目標1.2ms: {'✅ 達成可能' if final_time <= 1.2 else '❌ 追加対策必要'}")
+    print(f"   目標1.2ms: {'[OK] 達成可能' if final_time <= 1.2 else '[ERROR] 追加対策必要'}")
 
 def main():
     """メイン実行"""
@@ -191,7 +191,7 @@ def main():
         calculate_optimization_strategy(basic_total, lazy_loader_time, heavy_total,
                                       component_total, bottlenecks, class_def_time)
         
-        print("\n📋 次のステップ:")
+        print("\n[LIST] 次のステップ:")
         print("1. 最高優先度の最適化実施")
         print("2. 段階的効果測定")
         print("3. 目標1.2ms達成まで継続")

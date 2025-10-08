@@ -645,9 +645,9 @@ class DSSMSIssueDetectorFixer:
         try:
             if not remaining_issues:
                 recommendations.extend([
-                    "✅ 検出された問題はすべて修正済みです",
-                    "🚀 Phase 2への移行準備が完了しています",
-                    "📊 定期的な健全性チェックの設定を推奨します"
+                    "[OK] 検出された問題はすべて修正済みです",
+                    "[ROCKET] Phase 2への移行準備が完了しています",
+                    "[CHART] 定期的な健全性チェックの設定を推奨します"
                 ])
             else:
                 # 残存問題別推奨事項
@@ -688,34 +688,34 @@ def demo_issue_detection_fix():
         # 包括的問題検出・修正実行
         report = detector_fixer.run_comprehensive_issue_detection()
         
-        print(f"\n📊 システム健全性レポート:")
+        print(f"\n[CHART] システム健全性レポート:")
         print(f"全体健全性: {report.overall_health:.1%}")
         print(f"検出問題数: {len(report.detected_issues)}")
         print(f"修正完了数: {len([f for f in report.applied_fixes if f.status == FixStatus.FIXED])}")
         print(f"残存問題数: {len(report.remaining_issues)}")
         
-        print(f"\n🔍 検出された問題:")
+        print(f"\n[SEARCH] 検出された問題:")
         for issue in report.detected_issues[:5]:  # 最初の5つ
             level_icon = {"critical": "🔴", "high": "🟡", "medium": "🟠", "low": "🟢"}.get(issue.level.value, "⚪")
-            fix_icon = "🔧" if issue.auto_fixable else "👤"
+            fix_icon = "[TOOL]" if issue.auto_fixable else "👤"
             print(f"  {level_icon} {fix_icon} [{issue.component}] {issue.description}")
         
-        print(f"\n✅ 適用された修正:")
+        print(f"\n[OK] 適用された修正:")
         for fix in report.applied_fixes:
-            status_icon = {"fixed": "✅", "partial": "⚡", "failed": "❌", "skipped": "⏭️"}.get(fix.status.value, "❓")
+            status_icon = {"fixed": "[OK]", "partial": "⚡", "failed": "[ERROR]", "skipped": "⏭️"}.get(fix.status.value, "❓")
             print(f"  {status_icon} {fix.description} ({fix.execution_time:.2f}s)")
         
         if report.remaining_issues:
-            print(f"\n⚠️ 残存問題:")
+            print(f"\n[WARNING] 残存問題:")
             for issue in report.remaining_issues[:3]:  # 最初の3つ
                 level_icon = {"critical": "🔴", "high": "🟡", "medium": "🟠", "low": "🟢"}.get(issue.level.value, "⚪")
                 print(f"  {level_icon} {issue.description}")
         
-        print(f"\n💡 推奨事項:")
+        print(f"\n[IDEA] 推奨事項:")
         for rec in report.recommendations[:5]:  # 最初の5つ
             print(f"  {rec}")
         
-        print(f"\n📈 実行サマリー:")
+        print(f"\n[UP] 実行サマリー:")
         summary = report.execution_summary
         print(f"実行時間: {summary.get('execution_time', 0):.2f}秒")
         print(f"自動修正: {'有効' if summary.get('auto_fix_enabled', False) else '無効'}")
@@ -723,7 +723,7 @@ def demo_issue_detection_fix():
         return report.overall_health >= 0.7
         
     except Exception as e:
-        print(f"❌ デモ実行エラー: {e}")
+        print(f"[ERROR] デモ実行エラー: {e}")
         return False
 
 if __name__ == "__main__":

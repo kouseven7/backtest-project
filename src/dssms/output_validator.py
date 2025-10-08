@@ -487,7 +487,7 @@ class DSSMSOutputValidator:
             self.logger.info(f"最大ドローダウン: {metrics.max_drawdown:.3f}")
             self.logger.info(f"シャープレシオ: {metrics.sharpe_ratio:.3f}")
             self.logger.info(f"検証スコア: {metrics.validation_score:.3f}")
-            self.logger.info(f"出力妥当性: {'✅ 有効' if metrics.is_valid_output else '❌ 無効'}")
+            self.logger.info(f"出力妥当性: {'[OK] 有効' if metrics.is_valid_output else '[ERROR] 無効'}")
             
             if metrics.validation_errors:
                 self.logger.warning("検証エラー:")

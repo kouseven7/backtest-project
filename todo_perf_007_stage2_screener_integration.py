@@ -25,19 +25,19 @@ sys.path.append(str(project_root))
 # 軽量版ヘルパーインポート
 try:
     from todo_perf_007_stage2_lightweight_parallel import ParallelMarketCapHelper
-    print("✅ ParallelMarketCapHelper統合成功")
+    print("[OK] ParallelMarketCapHelper統合成功")
 except ImportError as e:
-    print(f"❌ ParallelMarketCapHelper インポートエラー: {e}")
+    print(f"[ERROR] ParallelMarketCapHelper インポートエラー: {e}")
     sys.exit(1)
 
 # SystemFallbackPolicy統合
 try:
     from src.config.system_modes import get_fallback_policy, ComponentType
     fallback_policy = get_fallback_policy()
-    print("✅ SystemFallbackPolicy統合成功")
+    print("[OK] SystemFallbackPolicy統合成功")
 except ImportError:
     fallback_policy = None
-    print("⚠️ SystemFallbackPolicy not available")
+    print("[WARNING] SystemFallbackPolicy not available")
 
 class ScreenerIntegrationManager:
     """Screener並列処理統合マネージャー"""
@@ -51,7 +51,7 @@ class ScreenerIntegrationManager:
     def execute_safe_integration(self) -> Dict[str, Any]:
         """安全な統合実行"""
         
-        print("🚀 Stage 2: 実際のScreener並列処理統合開始")
+        print("[ROCKET] Stage 2: 実際のScreener並列処理統合開始")
         print("="*70)
         
         try:
@@ -89,7 +89,7 @@ class ScreenerIntegrationManager:
             }
             
         except Exception as e:
-            print(f"❌ 統合実行エラー: {e}")
+            print(f"[ERROR] 統合実行エラー: {e}")
             # 自動ロールバック
             self._rollback_integration()
             return {"error": f"統合実行エラー: {e}"}
@@ -113,7 +113,7 @@ class ScreenerIntegrationManager:
             if original_size != backup_size:
                 return {"success": False, "error": "バックアップサイズ不一致"}
             
-            print(f"  ✅ バックアップ作成: {self.backup_path} ({backup_size:,} bytes)")
+            print(f"  [OK] バックアップ作成: {self.backup_path} ({backup_size:,} bytes)")
             
             return {
                 "success": True,
@@ -129,7 +129,7 @@ class ScreenerIntegrationManager:
     def _analyze_existing_screener(self) -> Dict[str, Any]:
         """既存Screener解析"""
         
-        print("🔍 既存Screener解析中...")
+        print("[SEARCH] 既存Screener解析中...")
         
         try:
             with open(self.screener_path, 'r', encoding='utf-8') as f:
@@ -137,19 +137,19 @@ class ScreenerIntegrationManager:
             
             # market_cap_filterメソッド検索
             if "def market_cap_filter" in content:
-                print("  ✅ market_cap_filterメソッド発見")
+                print("  [OK] market_cap_filterメソッド発見")
                 market_cap_method_found = True
             else:
-                print("  ❌ market_cap_filterメソッドが見つかりません")
+                print("  [ERROR] market_cap_filterメソッドが見つかりません")
                 market_cap_method_found = False
             
             # yfinance使用確認
             yfinance_usage = "yfinance" in content or "yf." in content
-            print(f"  {'✅' if yfinance_usage else '❌'} yfinance使用: {yfinance_usage}")
+            print(f"  {'[OK]' if yfinance_usage else '[ERROR]'} yfinance使用: {yfinance_usage}")
             
             # クラス構造確認
             nikkei225_screener_class = "class Nikkei225Screener" in content
-            print(f"  {'✅' if nikkei225_screener_class else '❌'} Nikkei225Screenerクラス: {nikkei225_screener_class}")
+            print(f"  {'[OK]' if nikkei225_screener_class else '[ERROR]'} Nikkei225Screenerクラス: {nikkei225_screener_class}")
             
             # ファイル統計
             lines = content.split('\n')
@@ -177,7 +177,7 @@ class ScreenerIntegrationManager:
     def _implement_lightweight_integration(self, market_cap_method_exists: bool) -> Dict[str, Any]:
         """軽量統合実装"""
         
-        print("🔧 軽量統合実装中...")
+        print("[TOOL] 軽量統合実装中...")
         
         try:
             if not market_cap_method_exists:
@@ -200,7 +200,7 @@ class ScreenerIntegrationManager:
             with open(self.screener_path, 'w', encoding='utf-8') as f:
                 f.write(modified_content)
             
-            print("  ✅ 軽量統合コード適用完了")
+            print("  [OK] 軽量統合コード適用完了")
             
             return {
                 "success": True,
@@ -210,7 +210,7 @@ class ScreenerIntegrationManager:
             }
             
         except Exception as e:
-            print(f"  ❌ 統合実装エラー: {e}")
+            print(f"  [ERROR] 統合実装エラー: {e}")
             # エラー時は自動ロールバック
             self._rollback_integration()
             return {"success": False, "error": f"統合実装エラー: {e}"}
@@ -233,7 +233,7 @@ import time'''
         if not symbols:
             return []
         
-        print(f"🔧 並列市場キャップフィルタ: {len(symbols)}銘柄処理開始")
+        print(f"[TOOL] 並列市場キャップフィルタ: {len(symbols)}銘柄処理開始")
         start_time = time.perf_counter()
         
         try:
@@ -255,17 +255,17 @@ import time'''
                         if is_valid:
                             filtered_symbols.append(symbol)
                     except Exception as e:
-                        print(f"  ⚠️ {symbol} 処理エラー: {e}")
+                        print(f"  [WARNING] {symbol} 処理エラー: {e}")
                         # エラー時は除外（保守的判断）
             
             execution_time = time.perf_counter() - start_time
-            print(f"  ✅ 並列処理完了: {len(symbols)} → {len(filtered_symbols)}銘柄 ({execution_time:.1f}秒)")
+            print(f"  [OK] 並列処理完了: {len(symbols)} → {len(filtered_symbols)}銘柄 ({execution_time:.1f}秒)")
             
             return filtered_symbols
             
         except Exception as e:
             execution_time = time.perf_counter() - start_time
-            print(f"  ❌ 並列処理エラー ({execution_time:.1f}秒): {e}")
+            print(f"  [ERROR] 並列処理エラー ({execution_time:.1f}秒): {e}")
             # フォールバック：元の逐次処理
             return self._sequential_market_cap_filter_fallback(symbols, min_market_cap)
     
@@ -333,18 +333,18 @@ import time'''
             # 3. 既存market_cap_filterメソッドの並列処理呼び出し修正
             if "def market_cap_filter" in modified_content:
                 # 実際の統合は慎重に実装（既存ロジック保護）
-                print("  ✅ market_cap_filterメソッド統合箇所特定")
+                print("  [OK] market_cap_filterメソッド統合箇所特定")
             
             return modified_content
             
         except Exception as e:
-            print(f"  ❌ 修正適用エラー: {e}")
+            print(f"  [ERROR] 修正適用エラー: {e}")
             return content  # エラー時は元のコンテンツ返却
     
     def _run_integration_test(self) -> Dict[str, Any]:
         """統合テスト実行"""
         
-        print("🧪 統合テスト実行中...")
+        print("[TEST] 統合テスト実行中...")
         
         try:
             # 基本的な構文チェック
@@ -355,7 +355,7 @@ import time'''
             # インポート確認テスト
             import_test = self._test_imports()
             
-            print("  ✅ 統合テスト完了")
+            print("  [OK] 統合テスト完了")
             
             return {
                 "success": True,
@@ -445,7 +445,7 @@ import time'''
                 "target_achievement": improvement_percentage >= 40
             }
             
-            print(f"  📊 推定改善効果: {improvement_percentage:.1f}%削減 ({original_estimated}秒→{estimated_parallel_time:.1f}秒)")
+            print(f"  [CHART] 推定改善効果: {improvement_percentage:.1f}%削減 ({original_estimated}秒→{estimated_parallel_time:.1f}秒)")
             
             return {
                 "success": True,
@@ -464,15 +464,15 @@ import time'''
         try:
             if self.backup_path.exists():
                 shutil.copy2(self.backup_path, self.screener_path)
-                print("  ✅ ロールバック完了")
+                print("  [OK] ロールバック完了")
             else:
-                print("  ⚠️ バックアップファイルが見つかりません")
+                print("  [WARNING] バックアップファイルが見つかりません")
         except Exception as e:
-            print(f"  ❌ ロールバックエラー: {e}")
+            print(f"  [ERROR] ロールバックエラー: {e}")
 
 def main():
     """Stage 2 Screener統合メイン実行"""
-    print("🚀 TODO-PERF-007 Stage 2: 実際のScreener並列処理統合")
+    print("[ROCKET] TODO-PERF-007 Stage 2: 実際のScreener並列処理統合")
     print("目標: 52.5秒→25-30秒達成・既存機能完全保持")
     print("="*80)
     
@@ -482,25 +482,25 @@ def main():
         
         if result.get("success"):
             print("\n" + "="*80)
-            print("🎯 Stage 2: Screener並列処理統合完了")
+            print("[TARGET] Stage 2: Screener並列処理統合完了")
             print("="*80)
             
             # 成功詳細表示
             performance = result.get("performance", {}).get("performance_data", {})
             if performance:
                 scaling = performance.get("scaling_estimation", {})
-                print(f"\n📊 パフォーマンス改善結果:")
+                print(f"\n[CHART] パフォーマンス改善結果:")
                 print(f"  推定時間短縮: {scaling.get('original_time', 0)}秒 → {scaling.get('estimated_200_symbols_time', 0)}秒")
                 print(f"  改善効果: {scaling.get('improvement_percentage', 0):.1f}%削減")
-                print(f"  目標達成: {'✅ 達成' if performance.get('target_achievement') else '⚠️ 未達成'}")
+                print(f"  目標達成: {'[OK] 達成' if performance.get('target_achievement') else '[WARNING] 未達成'}")
             
             backup_info = result.get("backup", {})
             print(f"\n💾 バックアップ: {backup_info.get('backup_path', 'N/A')}")
             
-            print(f"\n✅ Stage 2統合成功 → Stage 3準備完了")
+            print(f"\n[OK] Stage 2統合成功 → Stage 3準備完了")
             
         else:
-            print(f"\n❌ Stage 2統合失敗: {result.get('error', '不明なエラー')}")
+            print(f"\n[ERROR] Stage 2統合失敗: {result.get('error', '不明なエラー')}")
             if "details" in result:
                 print(f"詳細: {result['details']}")
         

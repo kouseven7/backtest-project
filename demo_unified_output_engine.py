@@ -475,7 +475,7 @@ def demo_config_validation():
 
 def run_comprehensive_demo():
     """包括的なデモ実行"""
-    print("🚀 DSSMS統一出力エンジン包括デモ開始")
+    print("[ROCKET] DSSMS統一出力エンジン包括デモ開始")
     print("=" * 80)
     
     # ログ設定
@@ -503,7 +503,7 @@ def run_comprehensive_demo():
         
         # 結果サマリー
         print("\n" + "=" * 80)
-        print("🎯 デモ実行結果サマリー")
+        print("[TARGET] デモ実行結果サマリー")
         print("=" * 80)
         
         total_demos = len(demo_results)
@@ -515,7 +515,7 @@ def run_comprehensive_demo():
         
         print(f"\n詳細結果:")
         for demo_name, result in demo_results.items():
-            status = "✅ 成功" if result else "❌ 失敗"
+            status = "[OK] 成功" if result else "[ERROR] 失敗"
             print(f"  {demo_name}: {status}")
         
         # 出力ディレクトリの確認
@@ -530,15 +530,15 @@ def run_comprehensive_demo():
         logger.info(f"デモ完了: {successful_demos}/{total_demos} 成功")
         
         if successful_demos == total_demos:
-            print(f"\n🎉 全デモが正常に完了しました！")
+            print(f"\n[SUCCESS] 全デモが正常に完了しました！")
             print(f"Phase 2.3 Task 2.3.2 「多形式出力エンジン構築」実装完了")
         else:
-            print(f"\n⚠️ 一部デモに問題がありました。ログを確認してください。")
+            print(f"\n[WARNING] 一部デモに問題がありました。ログを確認してください。")
         
         return successful_demos == total_demos
         
     except Exception as e:
-        print(f"\n❌ デモ実行中に予期しないエラーが発生しました: {e}")
+        print(f"\n[ERROR] デモ実行中に予期しないエラーが発生しました: {e}")
         logger.error(f"デモ実行エラー: {e}")
         return False
 

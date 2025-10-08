@@ -395,17 +395,17 @@ class SystemHealthMonitor:
     
     def _handle_system_status_alert(self, event: MonitoringEvent):
         """システム状態アラートハンドラー"""
-        print(f"🚨 システム状態アラート: {event.message}")
+        print(f"[ALERT] システム状態アラート: {event.message}")
         logger.warning(f"SystemStatus Alert: {event.component} - {event.message}")
     
     def _handle_resource_usage_alert(self, event: MonitoringEvent):
         """リソース使用量アラートハンドラー"""
-        print(f"⚠️ リソース使用量アラート: {event.message}")
+        print(f"[WARNING] リソース使用量アラート: {event.message}")
         logger.warning(f"ResourceUsage Alert: {event.component} - {event.message}")
     
     def _handle_error_rate_alert(self, event: MonitoringEvent):
         """エラー率アラートハンドラー"""
-        print(f"❌ エラー率アラート: {event.message}")
+        print(f"[ERROR] エラー率アラート: {event.message}")
         logger.error(f"ErrorRate Alert: {event.component} - {event.message}")
     
     def get_monitoring_summary(self) -> Dict[str, Any]:
@@ -488,9 +488,9 @@ def test_system_health_monitor_basic():
         monitor.trigger_alert(test_event)
         
         if len(test_alerts_received) == 1:
-            print("✅ アラートハンドラー登録・発火成功")
+            print("[OK] アラートハンドラー登録・発火成功")
         else:
-            print("❌ アラートハンドラー登録・発火失敗")
+            print("[ERROR] アラートハンドラー登録・発火失敗")
         
         # 2. 監視サマリー取得テスト
         print("2. 監視サマリー取得テスト...")
@@ -498,9 +498,9 @@ def test_system_health_monitor_basic():
         summary = monitor.get_monitoring_summary()
         
         if summary["total_events"] >= 1:
-            print(f"✅ 監視サマリー取得成功: {summary['total_events']}イベント記録")
+            print(f"[OK] 監視サマリー取得成功: {summary['total_events']}イベント記録")
         else:
-            print("❌ 監視サマリー取得失敗")
+            print("[ERROR] 監視サマリー取得失敗")
         
         # 3. 手動チェック実行テスト
         print("3. 手動チェック実行テスト...")
@@ -515,14 +515,14 @@ def test_system_health_monitor_basic():
         final_event_count = len(monitor.monitoring_events)
         
         if final_event_count > initial_event_count:
-            print(f"✅ 手動チェック成功: {final_event_count - initial_event_count}イベント追加")
+            print(f"[OK] 手動チェック成功: {final_event_count - initial_event_count}イベント追加")
         else:
-            print("⚠️ 手動チェック実行: イベント追加なし")
+            print("[WARNING] 手動チェック実行: イベント追加なし")
         
         return True
         
     except Exception as e:
-        print(f"❌ システムヘルスモニターテストエラー: {e}")
+        print(f"[ERROR] システムヘルスモニターテストエラー: {e}")
         return False
 
 
@@ -548,13 +548,13 @@ def test_monitoring_system_integration():
             result = manager.initialize_system()
             init_time = time.time() - init_start
             
-            print(f"✅ MultiStrategy初期化: {result} ({init_time:.3f}s)")
+            print(f"[OK] MultiStrategy初期化: {result} ({init_time:.3f}s)")
         
         # Production Ready状態監視テスト
         if hasattr(manager, 'get_production_readiness_status'):
             status = manager.get_production_readiness_status()
             
-            print(f"✅ Production Ready状態取得: {status.get('overall_ready', 'Unknown')}")
+            print(f"[OK] Production Ready状態取得: {status.get('overall_ready', 'Unknown')}")
             
             # 監視イベント生成
             if not status.get('overall_ready', False):
@@ -567,9 +567,9 @@ def test_monitoring_system_integration():
                     metrics=status
                 )
                 monitor.trigger_alert(event)
-                print("⚠️ Production準備未完了アラート発火")
+                print("[WARNING] Production準備未完了アラート発火")
             else:
-                print("✅ Production Ready状態正常")
+                print("[OK] Production Ready状態正常")
         
         # 2. エラーハンドリング統合監視テスト
         print("2. エラーハンドリング統合監視テスト...")
@@ -590,10 +590,10 @@ def test_monitoring_system_integration():
                 error=test_warning
             )
             
-            print("✅ エラーハンドリング統合監視テスト完了")
+            print("[OK] エラーハンドリング統合監視テスト完了")
             
         except Exception as e:
-            print(f"⚠️ エラーハンドリング統合テスト: {e}")
+            print(f"[WARNING] エラーハンドリング統合テスト: {e}")
         
         # 3. 短期間監視実行テスト
         print("3. 短期間監視実行テスト...")
@@ -608,12 +608,12 @@ def test_monitoring_system_integration():
         
         # 監視結果確認
         summary = monitor.get_monitoring_summary()
-        print(f"✅ 短期監視完了: {summary['total_events']}イベント、{summary['alerts']}アラート")
+        print(f"[OK] 短期監視完了: {summary['total_events']}イベント、{summary['alerts']}アラート")
         
         return True
         
     except Exception as e:
-        print(f"❌ 監視システム統合テストエラー: {e}")
+        print(f"[ERROR] 監視システム統合テストエラー: {e}")
         return False
 
 
@@ -657,9 +657,9 @@ def test_alert_system_comprehensive():
             alert_test_results[alert_type.value] = final_count > initial_count
             
             if final_count > initial_count:
-                print(f"✅ {description}: アラート正常発火")
+                print(f"[OK] {description}: アラート正常発火")
             else:
-                print(f"❌ {description}: アラート発火失敗")
+                print(f"[ERROR] {description}: アラート発火失敗")
         
         # 総合結果
         successful_alerts = sum(alert_test_results.values())
@@ -668,14 +668,14 @@ def test_alert_system_comprehensive():
         print(f"\nアラートシステムテスト結果: {successful_alerts}/{total_alerts} 成功")
         
         if successful_alerts == total_alerts:
-            print("🎉 アラートシステム包括テスト完全成功")
+            print("[SUCCESS] アラートシステム包括テスト完全成功")
             return True
         else:
-            print("⚠️ アラートシステム包括テスト部分成功")
+            print("[WARNING] アラートシステム包括テスト部分成功")
             return False
         
     except Exception as e:
-        print(f"❌ アラートシステム包括テストエラー: {e}")
+        print(f"[ERROR] アラートシステム包括テストエラー: {e}")
         return False
 
 
@@ -689,7 +689,7 @@ def generate_monitoring_system_report(
     TODO(tag:phase3, rationale:監視システム稼働状況・アラート統合レポート)
     """
     print("\n" + "=" * 60)
-    print("📊 監視システム稼働レポート")
+    print("[CHART] 監視システム稼働レポート")
     print("=" * 60)
     
     # 総合評価計算
@@ -697,40 +697,40 @@ def generate_monitoring_system_report(
     success_rate = sum(test_results) / len(test_results) * 100
     
     # レポート出力
-    print(f"🎯 監視システム稼働評価: {success_rate:.1f}%")
-    print(f"   基本動作テスト: {'✅ PASS' if basic_test_result else '❌ FAIL'}")
-    print(f"   統合テスト: {'✅ PASS' if integration_test_result else '❌ FAIL'}")
-    print(f"   アラートシステムテスト: {'✅ PASS' if alert_test_result else '❌ FAIL'}")
+    print(f"[TARGET] 監視システム稼働評価: {success_rate:.1f}%")
+    print(f"   基本動作テスト: {'[OK] PASS' if basic_test_result else '[ERROR] FAIL'}")
+    print(f"   統合テスト: {'[OK] PASS' if integration_test_result else '[ERROR] FAIL'}")
+    print(f"   アラートシステムテスト: {'[OK] PASS' if alert_test_result else '[ERROR] FAIL'}")
     
-    print(f"\n🔧 監視システム機能確認")
-    print(f"   システム状態監視: ✅ 実装完了")
-    print(f"   リソース監視: ✅ 実装完了")
-    print(f"   エラー監視: ✅ 実装完了")
-    print(f"   パフォーマンス監視: ✅ 実装完了")
-    print(f"   アラートシステム: ✅ 実装完了")
+    print(f"\n[TOOL] 監視システム機能確認")
+    print(f"   システム状態監視: [OK] 実装完了")
+    print(f"   リソース監視: [OK] 実装完了")
+    print(f"   エラー監視: [OK] 実装完了")
+    print(f"   パフォーマンス監視: [OK] 実装完了")
+    print(f"   アラートシステム: [OK] 実装完了")
     
-    print(f"\n🚨 アラート機能確認")
-    print(f"   システム状態アラート: ✅ 動作確認済み")
-    print(f"   リソース使用量アラート: ✅ 動作確認済み")
-    print(f"   エラー率アラート: ✅ 動作確認済み")
-    print(f"   パフォーマンスアラート: ✅ 動作確認済み")
-    print(f"   ヘルスチェックアラート: ✅ 動作確認済み")
+    print(f"\n[ALERT] アラート機能確認")
+    print(f"   システム状態アラート: [OK] 動作確認済み")
+    print(f"   リソース使用量アラート: [OK] 動作確認済み")
+    print(f"   エラー率アラート: [OK] 動作確認済み")
+    print(f"   パフォーマンスアラート: [OK] 動作確認済み")
+    print(f"   ヘルスチェックアラート: [OK] 動作確認済み")
     
     # 総合判定
     if success_rate >= 90:
-        print(f"\n🎉 監視システム稼働: 優秀 (評価: {success_rate:.1f}%)")
+        print(f"\n[SUCCESS] 監視システム稼働: 優秀 (評価: {success_rate:.1f}%)")
         print("   → Production環境監視準備完了")
         final_result = "EXCELLENT"
     elif success_rate >= 80:
-        print(f"\n✅ 監視システム稼働: 良好 (評価: {success_rate:.1f}%)")
+        print(f"\n[OK] 監視システム稼働: 良好 (評価: {success_rate:.1f}%)")
         print("   → Production環境監視可能")
         final_result = "GOOD"
     elif success_rate >= 70:
-        print(f"\n⚠️ 監視システム稼働: 合格 (評価: {success_rate:.1f}%)")
+        print(f"\n[WARNING] 監視システム稼働: 合格 (評価: {success_rate:.1f}%)")
         print("   → 軽微な改善後監視システム稼働推奨")
         final_result = "ACCEPTABLE"
     else:
-        print(f"\n❌ 監視システム稼働: 要改善 (評価: {success_rate:.1f}%)")
+        print(f"\n[ERROR] 監視システム稼働: 要改善 (評価: {success_rate:.1f}%)")
         print("   → 改善作業後再テスト必要")
         final_result = "NEEDS_IMPROVEMENT"
     
@@ -775,7 +775,7 @@ def execute_monitoring_system_verification():
     監視システム稼働統合実行
     TODO(tag:phase3, rationale:監視システム完全稼働確認統合実行)
     """
-    print("🚀 Phase 3: 監視システム稼働確認開始")
+    print("[ROCKET] Phase 3: 監視システム稼働確認開始")
     print("=" * 60)
     
     # 1. 基本動作テスト実行

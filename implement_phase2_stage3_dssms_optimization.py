@@ -60,18 +60,18 @@ class Phase2Stage3DSSMSOptimizer:
                     backup_path = self.backup_dir / target
                     backup_path.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(source_path, backup_path)
-                    print(f"  ✅ バックアップ: {target}")
+                    print(f"  [OK] バックアップ: {target}")
             
             print(f"  📁 バックアップ場所: {self.backup_dir}")
             return True
             
         except Exception as e:
-            print(f"  ❌ バックアップエラー: {e}")
+            print(f"  [ERROR] バックアップエラー: {e}")
             return False
     
     def analyze_dssms_report_generator_structure(self) -> Dict[str, Any]:
         """dssms_report_generator構造詳細分析"""
-        print("🔍 dssms_report_generator構造詳細分析中...")
+        print("[SEARCH] dssms_report_generator構造詳細分析中...")
         
         analysis_result = {
             'file_structure': {},
@@ -138,11 +138,11 @@ class Phase2Stage3DSSMSOptimizer:
             
         except Exception as e:
             analysis_result['error'] = str(e)
-            print(f"  ❌ 分析エラー: {e}")
+            print(f"  [ERROR] 分析エラー: {e}")
         
-        print(f"  📊 ファイル行数: {analysis_result.get('file_structure', {}).get('total_lines', 0)}")
-        print(f"  📊 メソッド数: {len(analysis_result.get('method_analysis', {}))}")
-        print(f"  📊 最適化ターゲット: {len(analysis_result.get('optimization_targets', []))}")
+        print(f"  [CHART] ファイル行数: {analysis_result.get('file_structure', {}).get('total_lines', 0)}")
+        print(f"  [CHART] メソッド数: {len(analysis_result.get('method_analysis', {}))}")
+        print(f"  [CHART] 最適化ターゲット: {len(analysis_result.get('optimization_targets', []))}")
         
         return analysis_result
     
@@ -171,7 +171,7 @@ class Phase2Stage3DSSMSOptimizer:
     
     def optimize_report_generation_algorithm(self) -> Dict[str, Any]:
         """レポート生成アルゴリズム最適化"""
-        print("🚀 レポート生成アルゴリズム最適化中...")
+        print("[ROCKET] レポート生成アルゴリズム最適化中...")
         
         optimization_result = {
             'optimized': False,
@@ -335,8 +335,8 @@ def lazy_report_generation(func):
                 optimization_result['optimized'] = True
                 optimization_result['changes_made'] = changes_made
                 
-                print(f"  ✅ アルゴリズム最適化完了: {len(changes_made)}箇所修正")
-                print(f"  📊 推定削減: {optimization_result['estimated_reduction_ms']}ms")
+                print(f"  [OK] アルゴリズム最適化完了: {len(changes_made)}箇所修正")
+                print(f"  [CHART] 推定削減: {optimization_result['estimated_reduction_ms']}ms")
                 
                 self.processed_files.append(str(report_gen_path))
             else:
@@ -344,7 +344,7 @@ def lazy_report_generation(func):
                 
         except Exception as e:
             optimization_result['error'] = str(e)
-            print(f"  ❌ 最適化エラー: {e}")
+            print(f"  [ERROR] 最適化エラー: {e}")
         
         return optimization_result
     
@@ -434,7 +434,7 @@ def performance_monitor(operation_name: str):
     finally:
         elapsed = (time.time() - start_time) * 1000
         if elapsed > 100:  # 100ms以上の処理を監視
-            print(f"⚠️ Performance: {operation_name} took {elapsed:.1f}ms")
+            print(f"[WARNING] Performance: {operation_name} took {elapsed:.1f}ms")
 
 '''
                 
@@ -456,7 +456,7 @@ def performance_monitor(operation_name: str):
                     
                     optimization_result['total_estimated_reduction_ms'] += estimated_reduction
                     
-                    print(f"  ✅ {Path(file_path).name}: {len(changes_made)}箇所最適化 ({estimated_reduction}ms削減予想)")
+                    print(f"  [OK] {Path(file_path).name}: {len(changes_made)}箇所最適化 ({estimated_reduction}ms削減予想)")
                     
                     self.processed_files.append(str(full_path))
                 else:
@@ -465,7 +465,7 @@ def performance_monitor(operation_name: str):
             except Exception as e:
                 error_msg = f"{file_path}: {str(e)}"
                 optimization_result['errors'].append(error_msg)
-                print(f"  ❌ {error_msg}")
+                print(f"  [ERROR] {error_msg}")
         
         return optimization_result
     
@@ -566,8 +566,8 @@ _lazy_manager = LazyExecutionManager()
                 with open(report_gen_path, 'w', encoding='utf-8') as f:
                     f.write(optimized_content)
                 
-                print(f"  ✅ キャッシュ機能追加完了: {len(caching_result['cached_methods'])}メソッド")
-                print(f"  📊 推定削減: {caching_result['estimated_reduction_ms']}ms")
+                print(f"  [OK] キャッシュ機能追加完了: {len(caching_result['cached_methods'])}メソッド")
+                print(f"  [CHART] 推定削減: {caching_result['estimated_reduction_ms']}ms")
                 
                 if str(report_gen_path) not in self.processed_files:
                     self.processed_files.append(str(report_gen_path))
@@ -576,13 +576,13 @@ _lazy_manager = LazyExecutionManager()
                 
         except Exception as e:
             caching_result['error'] = str(e)
-            print(f"  ❌ キャッシュ機能追加エラー: {e}")
+            print(f"  [ERROR] キャッシュ機能追加エラー: {e}")
         
         return caching_result
     
     def validate_optimizations(self) -> Dict[str, Any]:
         """最適化結果検証"""
-        print("🔍 Stage 3最適化結果検証中...")
+        print("[SEARCH] Stage 3最適化結果検証中...")
         
         validation_result = {
             'syntax_valid': 0,
@@ -630,14 +630,14 @@ _lazy_manager = LazyExecutionManager()
             
             validation_result['validation_details'].append(file_validation)
             
-            status = "✅" if file_validation['syntax_ok'] else "❌"
+            status = "[OK]" if file_validation['syntax_ok'] else "[ERROR]"
             print(f"  {status} {Path(file_path).name}: 構文={'OK' if file_validation['syntax_ok'] else 'NG'}")
         
         return validation_result
     
     def generate_stage3_report(self) -> Dict[str, Any]:
         """Stage 3実装レポート生成"""
-        print("📋 Stage 3実装レポート生成中...")
+        print("[LIST] Stage 3実装レポート生成中...")
         
         stage3_report = {
             'stage': 'Stage 3: dssms_report_generator最適化実装',
@@ -661,7 +661,7 @@ _lazy_manager = LazyExecutionManager()
     
     def run_stage3_optimization(self) -> bool:
         """Stage 3完全最適化実行"""
-        print("🚀 TODO-PERF-001 Phase 2 Stage 3: dssms_report_generator最適化実装開始")
+        print("[ROCKET] TODO-PERF-001 Phase 2 Stage 3: dssms_report_generator最適化実装開始")
         print("="*80)
         
         start_time = time.time()
@@ -670,7 +670,7 @@ _lazy_manager = LazyExecutionManager()
             # 1. バックアップ作成
             print("\n1️⃣ バックアップ作成")
             if not self.create_backup():
-                print("⚠️ バックアップ失敗 - リスク承知で続行")
+                print("[WARNING] バックアップ失敗 - リスク承知で続行")
             
             # 2. dssms_report_generator構造分析
             print("\n2️⃣ dssms_report_generator構造詳細分析")
@@ -710,10 +710,10 @@ _lazy_manager = LazyExecutionManager()
             print("🏆 TODO-PERF-001 Phase 2 Stage 3完了サマリー")
             print("="*80)
             print(f"⏱️ 実行時間: {execution_time:.1f}秒")
-            print(f"🔧 最適化ファイル数: {len(self.processed_files)}")
-            print(f"✅ 構文検証成功: {validation_result['syntax_valid']}")
-            print(f"❌ 構文エラー: {validation_result['syntax_errors']}")
-            print(f"📊 推定総削減: {stage3_report['total_estimated_reduction_ms']:.0f}ms")
+            print(f"[TOOL] 最適化ファイル数: {len(self.processed_files)}")
+            print(f"[OK] 構文検証成功: {validation_result['syntax_valid']}")
+            print(f"[ERROR] 構文エラー: {validation_result['syntax_errors']}")
+            print(f"[CHART] 推定総削減: {stage3_report['total_estimated_reduction_ms']:.0f}ms")
             print(f"💾 バックアップ: {self.backup_dir}")
             print(f"📄 実装レポート: {report_path}")
             
@@ -722,17 +722,17 @@ _lazy_manager = LazyExecutionManager()
             achieved_reduction = stage3_report['total_estimated_reduction_ms']
             reduction_rate = (achieved_reduction / reduction_target) * 100
             
-            print(f"🎯 削減目標達成率: {reduction_rate:.1f}% ({achieved_reduction:.0f}ms / {reduction_target}ms)")
+            print(f"[TARGET] 削減目標達成率: {reduction_rate:.1f}% ({achieved_reduction:.0f}ms / {reduction_target}ms)")
             
             if success_rate >= 80 and achieved_reduction >= reduction_target * 0.8:
-                print(f"\n✅ Stage 3最適化成功 (構文{success_rate:.1f}%, 削減{reduction_rate:.1f}%) - Stage 4統合検証に進行可能")
+                print(f"\n[OK] Stage 3最適化成功 (構文{success_rate:.1f}%, 削減{reduction_rate:.1f}%) - Stage 4統合検証に進行可能")
                 return True
             else:
-                print(f"\n⚠️ Stage 3部分成功 (構文{success_rate:.1f}%, 削減{reduction_rate:.1f}%) - 改善後に Stage 4進行を推奨")
+                print(f"\n[WARNING] Stage 3部分成功 (構文{success_rate:.1f}%, 削減{reduction_rate:.1f}%) - 改善後に Stage 4進行を推奨")
                 return False
                 
         except Exception as e:
-            print(f"❌ Stage 3最適化エラー: {e}")
+            print(f"[ERROR] Stage 3最適化エラー: {e}")
             traceback.print_exc()
             return False
 
@@ -744,9 +744,9 @@ def main():
     success = optimizer.run_stage3_optimization()
     
     if success:
-        print("\n🎉 Stage 3完成 - 次は Stage 4統合効果検証・隠れたギャップ解消に進行")
+        print("\n[SUCCESS] Stage 3完成 - 次は Stage 4統合効果検証・隠れたギャップ解消に進行")
     else:
-        print("\n⚠️ Stage 3部分完了 - 改善後に Stage 4進行を推奨")
+        print("\n[WARNING] Stage 3部分完了 - 改善後に Stage 4進行を推奨")
     
     return success
 

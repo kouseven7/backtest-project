@@ -33,11 +33,11 @@ class DSSMSCorrector:
             from src.dssms.dssms_backtester import DSSMSBacktester
             
             backtester = DSSMSBacktester()
-            logger.info("✅ DSSMSBacktester初期化完了")
+            logger.info("[OK] DSSMSBacktester初期化完了")
             
             # simulate_dynamic_selectionメソッドの詳細調査
             if hasattr(backtester, 'simulate_dynamic_selection'):
-                logger.info("✅ simulate_dynamic_selection メソッド存在確認")
+                logger.info("[OK] simulate_dynamic_selection メソッド存在確認")
                 
                 # メソッドの引数を調査
                 import inspect
@@ -45,12 +45,12 @@ class DSSMSCorrector:
                 logger.info(f"メソッドシグネチャ: {sig}")
                 
                 # テスト実行
-                logger.info("🔧 simulate_dynamic_selection テスト実行開始")
+                logger.info("[TOOL] simulate_dynamic_selection テスト実行開始")
                 
                 try:
                     # 最小限の引数でテスト
                     result = backtester.simulate_dynamic_selection()
-                    logger.info("✅ 引数なしでの実行成功")
+                    logger.info("[OK] 引数なしでの実行成功")
                     
                     return {
                         'status': 'success',
@@ -87,7 +87,7 @@ class DSSMSCorrector:
                                         end_date='2024-01-15'
                                     )
                                 
-                                logger.info(f"✅ 試行{attempt+1}で実行成功")
+                                logger.info(f"[OK] 試行{attempt+1}で実行成功")
                                 return {
                                     'status': 'success',
                                     'method_signature': str(sig),
@@ -116,7 +116,7 @@ class DSSMSCorrector:
                         }
                         
             else:
-                logger.error("❌ simulate_dynamic_selection メソッドが存在しません")
+                logger.error("[ERROR] simulate_dynamic_selection メソッドが存在しません")
                 return {
                     'status': 'method_not_found',
                     'available_methods': [method for method in dir(backtester) 
@@ -210,7 +210,7 @@ class DSSMSCorrector:
 def main():
     """修正版メイン実行"""
     
-    print("🔧 DSSMS 正しい銘柄選択ロジック修正版")
+    print("[TOOL] DSSMS 正しい銘柄選択ロジック修正版")
     print("=" * 55)
     print(f"実行時刻: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("目的: simulate_dynamic_selectionを使用したNone問題解決")
@@ -223,17 +223,17 @@ def main():
         results = corrector.run_corrected_dssms_test()
         
         # 結果表示
-        print("📊 修正版テスト結果:")
+        print("[CHART] 修正版テスト結果:")
         print("-" * 35)
         
         # UltraSimple結果（ベースライン）
         ultra = results['ultra_simple_results']
-        print(f"✅ Ultra Simple: {ultra['switches']}回切替 (期待: {ultra['expected']}回)")
+        print(f"[OK] Ultra Simple: {ultra['switches']}回切替 (期待: {ultra['expected']}回)")
         print(f"   Status: {ultra['success']}")
         
         # DSSMSメソッドテスト結果
         method_test = results['dssms_method_test']
-        print(f"\n🔍 DSSMS Method Test: {method_test['status']}")
+        print(f"\n[SEARCH] DSSMS Method Test: {method_test['status']}")
         
         if method_test['status'] == 'success':
             print(f"   Method Signature: {method_test.get('method_signature', 'N/A')}")
@@ -255,7 +255,7 @@ def main():
         
         # 次のステップ
         next_steps = results['comparison_status']
-        print(f"\n🎯 次のステップ:")
+        print(f"\n[TARGET] 次のステップ:")
         print(f"   Status: {next_steps['status']}")
         print(f"   Message: {next_steps['message']}")
         print(f"   Action: {next_steps['next_action']}")
@@ -264,7 +264,7 @@ def main():
         return results
         
     except Exception as e:
-        print(f"❌ 修正版テストエラー: {e}")
+        print(f"[ERROR] 修正版テストエラー: {e}")
         logger.error(f"修正版テスト失敗: {e}")
         return None
 

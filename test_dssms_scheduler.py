@@ -44,7 +44,7 @@ def test_dssms_scheduler():
         test_performance(scheduler, logger)
         
         logger.info("\n" + "="*60)
-        logger.info("✅ 全テスト成功")
+        logger.info("[OK] 全テスト成功")
         logger.info("="*60)
         return True
         
@@ -343,13 +343,13 @@ def main():
         passed_tests = sum(test_results.values())
         
         for test_name, result in test_results.items():
-            status = "✅ 成功" if result else "❌ 失敗"
+            status = "[OK] 成功" if result else "[ERROR] 失敗"
             logger.info(f"{test_name}: {status}")
         
         logger.info(f"\n合計: {passed_tests}/{total_tests} テスト成功")
         
         if passed_tests == total_tests:
-            logger.info("🎉 全テスト成功！DSSMSScheduler実装完了")
+            logger.info("[SUCCESS] 全テスト成功！DSSMSScheduler実装完了")
             return True
         else:
             logger.warning("⚠ 一部テスト失敗")

@@ -33,9 +33,9 @@ def test_phase45_type_safety():
     
     try:
         exporter = DSSMSExcelExporter(config=dict_config, logger=logger)
-        print(f"✅ dict型config初期化成功: initial_capital = {exporter.initial_capital:,.0f}円")
+        print(f"[OK] dict型config初期化成功: initial_capital = {exporter.initial_capital:,.0f}円")
     except Exception as e:
-        print(f"❌ dict型config初期化失敗: {e}")
+        print(f"[ERROR] dict型config初期化失敗: {e}")
         return False
     
     # Phase 4.5.2: 問題のあるresult データでのテスト
@@ -63,7 +63,7 @@ def test_phase45_type_safety():
         success = exporter.export_dssms_results(problematic_result, temp_path)
         
         if success and os.path.exists(temp_path):
-            print("✅ 問題データでのExcel出力成功")
+            print("[OK] 問題データでのExcel出力成功")
             print(f"   出力ファイル: {temp_path}")
             
             # ファイルサイズ確認
@@ -71,15 +71,15 @@ def test_phase45_type_safety():
             print(f"   ファイルサイズ: {file_size:,} bytes")
             
             if file_size > 1000:  # 最低限のサイズチェック
-                print("✅ Excel出力内容確認OK")
+                print("[OK] Excel出力内容確認OK")
             else:
-                print("⚠️ Excel出力ファイルが小さすぎる可能性")
+                print("[WARNING] Excel出力ファイルが小さすぎる可能性")
         else:
-            print("❌ Excel出力失敗")
+            print("[ERROR] Excel出力失敗")
             return False
     
     except Exception as e:
-        print(f"❌ Excel出力でエラー: {e}")
+        print(f"[ERROR] Excel出力でエラー: {e}")
         return False
     finally:
         # クリーンアップ
@@ -106,20 +106,20 @@ def test_phase45_type_safety():
         try:
             result = exporter._ensure_numeric(input_val)
             if abs(result - expected) < 0.001:
-                print(f"✅ {desc}: {input_val} → {result}")
+                print(f"[OK] {desc}: {input_val} → {result}")
             else:
-                print(f"❌ {desc}: {input_val} → {result} (期待値: {expected})")
+                print(f"[ERROR] {desc}: {input_val} → {result} (期待値: {expected})")
                 all_passed = False
         except Exception as e:
-            print(f"❌ {desc}でエラー: {e}")
+            print(f"[ERROR] {desc}でエラー: {e}")
             all_passed = False
     
     print("\n=== Phase 4.5.4 テスト結果 ===")
     if all_passed:
-        print("✅ 全テスト通過 - Phase 4.5 修正は成功です！")
+        print("[OK] 全テスト通過 - Phase 4.5 修正は成功です！")
         return True
     else:
-        print("❌ 一部テスト失敗 - 追加修正が必要です")
+        print("[ERROR] 一部テスト失敗 - 追加修正が必要です")
         return False
 
 if __name__ == "__main__":

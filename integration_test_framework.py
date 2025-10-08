@@ -72,7 +72,7 @@ class IntegrationTestFramework:
         self.base_test_available = False
         self.emergency_diagnostics = None
         
-        self.logger.info("🧪 統合テストフレームワーク初期化開始")
+        self.logger.info("[TEST] 統合テストフレームワーク初期化開始")
         self._initialize_test_framework()
     
     def _initialize_test_framework(self):
@@ -87,10 +87,10 @@ class IntegrationTestFramework:
             # 緊急診断システム統合
             self._integrate_emergency_diagnostics()
             
-            self.logger.info("✅ 統合テストフレームワーク初期化完了")
+            self.logger.info("[OK] 統合テストフレームワーク初期化完了")
             
         except Exception as e:
-            self.logger.error(f"❌ テストフレームワーク初期化失敗: {e}")
+            self.logger.error(f"[ERROR] テストフレームワーク初期化失敗: {e}")
             self.logger.error(traceback.format_exc())
     
     def _setup_test_environment(self):
@@ -116,7 +116,7 @@ class IntegrationTestFramework:
             self.logger.info(f"📁 テスト環境準備完了: {self.temp_dir}")
             
         except Exception as e:
-            self.logger.error(f"❌ テスト環境準備失敗: {e}")
+            self.logger.error(f"[ERROR] テスト環境準備失敗: {e}")
             raise
     
     def _integrate_existing_systems(self):
@@ -126,39 +126,39 @@ class IntegrationTestFramework:
             try:
                 from test_dssms_task_1_4_comprehensive import TestDSSMSTask14Comprehensive
                 self.base_test_available = True
-                self.logger.info("✅ 基盤テストシステム統合成功")
+                self.logger.info("[OK] 基盤テストシステム統合成功")
             except ImportError as e:
-                self.logger.warning(f"⚠️ 基盤テストシステム統合失敗: {e}")
+                self.logger.warning(f"[WARNING] 基盤テストシステム統合失敗: {e}")
                 self.base_test_available = False
             
             # Switch Coordinator V2統合確認
             try:
                 from src.dssms.dssms_switch_coordinator_v2 import DSSMSSwitchCoordinatorV2
-                self.logger.info("✅ Switch Coordinator V2統合成功")
+                self.logger.info("[OK] Switch Coordinator V2統合成功")
             except ImportError as e:
-                self.logger.warning(f"⚠️ Switch Coordinator V2統合失敗: {e}")
+                self.logger.warning(f"[WARNING] Switch Coordinator V2統合失敗: {e}")
             
             # Switch Diagnostics統合確認
             try:
                 from src.dssms.switch_diagnostics import SwitchDiagnostics
-                self.logger.info("✅ Switch Diagnostics統合成功")
+                self.logger.info("[OK] Switch Diagnostics統合成功")
             except ImportError as e:
-                self.logger.warning(f"⚠️ Switch Diagnostics統合失敗: {e}")
+                self.logger.warning(f"[WARNING] Switch Diagnostics統合失敗: {e}")
                 
         except Exception as e:
-            self.logger.error(f"❌ 既存システム統合失敗: {e}")
+            self.logger.error(f"[ERROR] 既存システム統合失敗: {e}")
     
     def _integrate_emergency_diagnostics(self):
         """緊急診断システム統合"""
         try:
             self.emergency_diagnostics = CriticalSwitchDiagnostics()
-            self.logger.info("✅ 緊急診断システム統合成功")
+            self.logger.info("[OK] 緊急診断システム統合成功")
         except Exception as e:
-            self.logger.error(f"❌ 緊急診断システム統合失敗: {e}")
+            self.logger.error(f"[ERROR] 緊急診断システム統合失敗: {e}")
     
     def run_comprehensive_integration_tests(self) -> Dict[str, Any]:
         """包括的統合テスト実行"""
-        self.logger.info("🚀 包括的統合テスト開始")
+        self.logger.info("[ROCKET] 包括的統合テスト開始")
         
         start_time = datetime.now()
         overall_success = True
@@ -175,7 +175,7 @@ class IntegrationTestFramework:
         
         try:
             # 1. 緊急診断システム統合テスト
-            self.logger.info("🔍 1. 緊急診断システム統合テスト")
+            self.logger.info("[SEARCH] 1. 緊急診断システム統合テスト")
             emergency_result = self._test_emergency_diagnostics_integration()
             self.test_results.append(emergency_result)
             test_summary["tests_executed"] += 1
@@ -197,7 +197,7 @@ class IntegrationTestFramework:
                 overall_success = False
             
             # 3. データフロー統合テスト
-            self.logger.info("📊 3. データフロー統合テスト")
+            self.logger.info("[CHART] 3. データフロー統合テスト")
             dataflow_result = self._test_data_flow_integration()
             self.test_results.append(dataflow_result)
             test_summary["tests_executed"] += 1
@@ -208,7 +208,7 @@ class IntegrationTestFramework:
                 overall_success = False
             
             # 4. パフォーマンス・成功率テスト
-            self.logger.info("📈 4. パフォーマンス・成功率テスト")
+            self.logger.info("[UP] 4. パフォーマンス・成功率テスト")
             performance_result = self._test_performance_and_success_rate()
             self.test_results.append(performance_result)
             test_summary["tests_executed"] += 1
@@ -257,12 +257,12 @@ class IntegrationTestFramework:
             # 結果保存
             self._save_test_results(test_summary)
             
-            self.logger.info(f"✅ 包括的統合テスト完了: {test_summary['tests_passed']}/{test_summary['tests_executed']} 成功")
+            self.logger.info(f"[OK] 包括的統合テスト完了: {test_summary['tests_passed']}/{test_summary['tests_executed']} 成功")
             
         except Exception as e:
             test_summary["error"] = str(e)
             overall_success = False
-            self.logger.error(f"❌ 包括的統合テスト失敗: {e}")
+            self.logger.error(f"[ERROR] 包括的統合テスト失敗: {e}")
             self.logger.error(traceback.format_exc())
         
         return test_summary
@@ -275,7 +275,7 @@ class IntegrationTestFramework:
         performance_metrics = {}
         
         try:
-            self.logger.info("🔍 緊急診断システム統合テスト開始")
+            self.logger.info("[SEARCH] 緊急診断システム統合テスト開始")
             
             if self.emergency_diagnostics is None:
                 raise Exception("緊急診断システムが利用できません")
@@ -314,12 +314,12 @@ class IntegrationTestFramework:
             performance_metrics["diagnostic_time"] = diagnostic_time
             
             success = len(errors) == 0
-            self.logger.info(f"🔍 緊急診断システム統合テスト完了: {'成功' if success else '失敗'}")
+            self.logger.info(f"[SEARCH] 緊急診断システム統合テスト完了: {'成功' if success else '失敗'}")
             
         except Exception as e:
             errors.append(str(e))
             success = False
-            self.logger.error(f"❌ 緊急診断システム統合テスト失敗: {e}")
+            self.logger.error(f"[ERROR] 緊急診断システム統合テスト失敗: {e}")
         
         execution_time = time.time() - start_time
         
@@ -408,7 +408,7 @@ class IntegrationTestFramework:
         except Exception as e:
             errors.append(str(e))
             success = False
-            self.logger.error(f"❌ 切替エンジン動作検証テスト失敗: {e}")
+            self.logger.error(f"[ERROR] 切替エンジン動作検証テスト失敗: {e}")
         
         execution_time = time.time() - start_time
         
@@ -430,7 +430,7 @@ class IntegrationTestFramework:
         performance_metrics = {}
         
         try:
-            self.logger.info("📊 データフロー統合テスト開始")
+            self.logger.info("[CHART] データフロー統合テスト開始")
             
             # テストデータ作成・検証
             data_creation_start = time.time()
@@ -485,12 +485,12 @@ class IntegrationTestFramework:
                 performance_metrics["max_processing_time"] = max(processing_times)
             
             success = len(errors) == 0
-            self.logger.info(f"📊 データフロー統合テスト完了: {'成功' if success else '失敗'}")
+            self.logger.info(f"[CHART] データフロー統合テスト完了: {'成功' if success else '失敗'}")
             
         except Exception as e:
             errors.append(str(e))
             success = False
-            self.logger.error(f"❌ データフロー統合テスト失敗: {e}")
+            self.logger.error(f"[ERROR] データフロー統合テスト失敗: {e}")
         
         execution_time = time.time() - start_time
         
@@ -512,7 +512,7 @@ class IntegrationTestFramework:
         performance_metrics = {}
         
         try:
-            self.logger.info("📈 パフォーマンス・成功率テスト開始")
+            self.logger.info("[UP] パフォーマンス・成功率テスト開始")
             
             # 長期パフォーマンステスト
             performance_test_count = 20
@@ -558,12 +558,12 @@ class IntegrationTestFramework:
                 errors.append("緊急診断システム利用不可")
             
             success = len(errors) == 0
-            self.logger.info(f"📈 パフォーマンス・成功率テスト完了: {'成功' if success else '失敗'}")
+            self.logger.info(f"[UP] パフォーマンス・成功率テスト完了: {'成功' if success else '失敗'}")
             
         except Exception as e:
             errors.append(str(e))
             success = False
-            self.logger.error(f"❌ パフォーマンス・成功率テスト失敗: {e}")
+            self.logger.error(f"[ERROR] パフォーマンス・成功率テスト失敗: {e}")
         
         execution_time = time.time() - start_time
         
@@ -641,7 +641,7 @@ class IntegrationTestFramework:
         except Exception as e:
             errors.append(str(e))
             success = False
-            self.logger.error(f"❌ エラーハンドリング・回復テスト失敗: {e}")
+            self.logger.error(f"[ERROR] エラーハンドリング・回復テスト失敗: {e}")
         
         execution_time = time.time() - start_time
         
@@ -716,7 +716,7 @@ class IntegrationTestFramework:
         except Exception as e:
             errors.append(str(e))
             success = False
-            self.logger.error(f"❌ 既存テストシステム統合テスト失敗: {e}")
+            self.logger.error(f"[ERROR] 既存テストシステム統合テスト失敗: {e}")
         
         execution_time = time.time() - start_time
         
@@ -768,7 +768,7 @@ class IntegrationTestFramework:
             return data
             
         except Exception as e:
-            self.logger.error(f"❌ テスト市場データ作成失敗: {e}")
+            self.logger.error(f"[ERROR] テスト市場データ作成失敗: {e}")
             return pd.DataFrame()
     
     def _simulate_error_scenario(self, scenario: str) -> Dict[str, Any]:
@@ -868,7 +868,7 @@ class IntegrationTestFramework:
             
             summary_df = pd.DataFrame([{
                 "テスト名": result.test_name,
-                "成功": "✅" if result.success else "❌",
+                "成功": "[OK]" if result.success else "[ERROR]",
                 "実行時間(秒)": f"{result.execution_time:.2f}",
                 "エラー数": len(result.errors),
                 "詳細": str(result.details)[:100] + "..." if len(str(result.details)) > 100 else str(result.details)
@@ -885,17 +885,17 @@ class IntegrationTestFramework:
 # ORIGINAL: config_df.to_excel(writer, sheet_name='テスト設定', index=False)
             
             self.logger.info(f"💾 テスト結果保存完了: {results_file}")
-            self.logger.info(f"📊 テスト結果Excel保存: {excel_file}")
+            self.logger.info(f"[CHART] テスト結果Excel保存: {excel_file}")
             
         except Exception as e:
-            self.logger.error(f"❌ テスト結果保存失敗: {e}")
+            self.logger.error(f"[ERROR] テスト結果保存失敗: {e}")
     
     def generate_integration_test_report(self) -> str:
         """統合テストレポート生成"""
         try:
             report_lines = [
                 "=" * 80,
-                "🧪 DSSMS 統合テストレポート",
+                "[TEST] DSSMS 統合テストレポート",
                 "=" * 80,
                 f"テストセッションID: {self.test_session_id}",
                 f"レポート生成時刻: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
@@ -909,7 +909,7 @@ class IntegrationTestFramework:
                 total_execution_time = sum(result.execution_time for result in self.test_results)
                 
                 report_lines.extend([
-                    "📊 テスト実行統計:",
+                    "[CHART] テスト実行統計:",
                     f"- 成功テスト: {successful_tests}/{len(self.test_results)} ({successful_tests/len(self.test_results):.1%})",
                     f"- 総実行時間: {total_execution_time:.2f}秒",
                     f"- 平均実行時間: {total_execution_time/len(self.test_results):.2f}秒",
@@ -917,9 +917,9 @@ class IntegrationTestFramework:
                 ])
                 
                 # 個別テスト結果
-                report_lines.append("🔍 個別テスト結果:")
+                report_lines.append("[SEARCH] 個別テスト結果:")
                 for i, result in enumerate(self.test_results, 1):
-                    status = "✅ 成功" if result.success else "❌ 失敗"
+                    status = "[OK] 成功" if result.success else "[ERROR] 失敗"
                     report_lines.append(f"  {i}. {result.test_name}: {status} ({result.execution_time:.2f}秒)")
                     
                     if result.errors:
@@ -933,7 +933,7 @@ class IntegrationTestFramework:
                 performance_results = [result for result in self.test_results if result.performance_metrics]
                 if performance_results:
                     report_lines.extend([
-                        "📈 パフォーマンス指標:",
+                        "[UP] パフォーマンス指標:",
                         *[f"  - {result.test_name}: {result.performance_metrics}" for result in performance_results[:3]],
                         ""
                     ])
@@ -964,7 +964,7 @@ class IntegrationTestFramework:
             return report_content
             
         except Exception as e:
-            self.logger.error(f"❌ レポート生成失敗: {e}")
+            self.logger.error(f"[ERROR] レポート生成失敗: {e}")
             return f"レポート生成エラー: {str(e)}"
     
     def cleanup(self):
@@ -974,12 +974,12 @@ class IntegrationTestFramework:
                 shutil.rmtree(self.temp_dir)
                 self.logger.info(f"🧹 一時ディレクトリクリーンアップ: {self.temp_dir}")
         except Exception as e:
-            self.logger.error(f"❌ クリーンアップ失敗: {e}")
+            self.logger.error(f"[ERROR] クリーンアップ失敗: {e}")
 
 
 def run_integration_tests():
     """統合テスト実行関数"""
-    print("🧪 DSSMS 統合テスト実行開始")
+    print("[TEST] DSSMS 統合テスト実行開始")
     print("=" * 60)
     
     framework = None
@@ -988,15 +988,15 @@ def run_integration_tests():
         framework = IntegrationTestFramework()
         
         # 包括的統合テスト実行
-        print("🚀 包括的統合テスト実行中...")
+        print("[ROCKET] 包括的統合テスト実行中...")
         test_results = framework.run_comprehensive_integration_tests()
         
         # 結果表示
-        print(f"\n📊 統合テスト結果:")
+        print(f"\n[CHART] 統合テスト結果:")
         print(f"実行テスト数: {test_results['tests_executed']}")
         print(f"成功テスト数: {test_results['tests_passed']}")
         print(f"失敗テスト数: {test_results['tests_failed']}")
-        print(f"総合成功: {'✅' if test_results['overall_success'] else '❌'}")
+        print(f"総合成功: {'[OK]' if test_results['overall_success'] else '[ERROR]'}")
         print(f"実行時間: {test_results['execution_time']:.2f}秒")
         
         if 'final_success_rate' in test_results:
@@ -1005,12 +1005,12 @@ def run_integration_tests():
         # レポート生成
         print("\n📄 統合テストレポート生成中...")
         report = framework.generate_integration_test_report()
-        print("✅ 統合テスト完了")
+        print("[OK] 統合テスト完了")
         
         return test_results['overall_success']
         
     except Exception as e:
-        print(f"❌ 統合テスト失敗: {e}")
+        print(f"[ERROR] 統合テスト失敗: {e}")
         return False
     
     finally:

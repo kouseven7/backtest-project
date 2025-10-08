@@ -100,21 +100,21 @@ LAST_QUALITY_IMPROVEMENT = "{timestamp}"
                 if result['success']:
                     improvement_results['improved'] += 1
                     improvement_results['improvements_applied'].extend(result['improvements'])
-                    logger.info(f"✅ {engine_name}: 品質改善完了 ({len(result['improvements'])}項目)")
+                    logger.info(f"[OK] {engine_name}: 品質改善完了 ({len(result['improvements'])}項目)")
                 else:
                     improvement_results['failed'] += 1
-                    logger.error(f"❌ {engine_name}: 品質改善失敗 - {result['error']}")
+                    logger.error(f"[ERROR] {engine_name}: 品質改善失敗 - {result['error']}")
                     
             except Exception as e:
                 improvement_results['failed'] += 1
-                logger.error(f"❌ {engine_name}: 改善エラー - {str(e)}")
+                logger.error(f"[ERROR] {engine_name}: 改善エラー - {str(e)}")
         
         # 結果保存
         self._save_improvement_results(improvement_results)
         
         logger.info("=== 実際品質改善実行完了 ===")
-        logger.info(f"✅ 改善完了: {improvement_results['improved']}個")
-        logger.info(f"❌ 失敗: {improvement_results['failed']}個")
+        logger.info(f"[OK] 改善完了: {improvement_results['improved']}個")
+        logger.info(f"[ERROR] 失敗: {improvement_results['failed']}個")
         
         return improvement_results
     
@@ -326,23 +326,23 @@ def main():
         results = improver.improve_all_engines()
         
         if results['failed'] == 0:
-            logger.info("🎉 全エンジンの品質改善完了")
+            logger.info("[SUCCESS] 全エンジンの品質改善完了")
         else:
-            logger.warning(f"⚠️ {results['failed']}個のエンジンで改善失敗")
+            logger.warning(f"[WARNING] {results['failed']}個のエンジンで改善失敗")
             
         return results
         
     except Exception as e:
-        logger.error(f"❌ 品質改善実行エラー: {str(e)}")
+        logger.error(f"[ERROR] 品質改善実行エラー: {str(e)}")
         return None
 
 if __name__ == "__main__":
     result = main()
     if result:
-        print(f"\n✅ 実際品質改善実行完了")
-        print(f"🔧 改善完了: {result['improved']}個")
-        print(f"❌ 失敗: {result['failed']}個")
-        print(f"📈 改善率: {result['improved']/result['total_engines']*100:.1f}%")
+        print(f"\n[OK] 実際品質改善実行完了")
+        print(f"[TOOL] 改善完了: {result['improved']}個")
+        print(f"[ERROR] 失敗: {result['failed']}個")
+        print(f"[UP] 改善率: {result['improved']/result['total_engines']*100:.1f}%")
     else:
-        print("❌ 品質改善実行失敗")
+        print("[ERROR] 品質改善実行失敗")
         sys.exit(1)

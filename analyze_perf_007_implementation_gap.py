@@ -73,7 +73,7 @@ class PERF007ImplementationGapAnalyzer:
         
     def analyze_implementation_gap(self):
         """実装ギャップ分析実行"""
-        print("🔍 TODO-PERF-007 実装ギャップ分析開始")
+        print("[SEARCH] TODO-PERF-007 実装ギャップ分析開始")
         print("="*70)
         
         # 1. パフォーマンス乖離分析
@@ -101,7 +101,7 @@ class PERF007ImplementationGapAnalyzer:
     def _analyze_performance_discrepancy(self) -> Dict[str, Any]:
         """パフォーマンス乖離詳細分析"""
         
-        print("\n📊 パフォーマンス乖離分析:")
+        print("\n[CHART] パフォーマンス乖離分析:")
         
         # 報告値vs実測値比較
         reported_final = 46.5  # 報告された最終改善後時間
@@ -127,7 +127,7 @@ class PERF007ImplementationGapAnalyzer:
         print(f"  報告値: {reported_final}秒")
         print(f"  実測1回目: {actual_first_run}秒 (差分: +{actual_first_run - reported_final:.1f}秒)")
         print(f"  実測2回目: {actual_second_run}秒 (差分: +{actual_second_run - reported_final:.1f}秒)")
-        print(f"  ❌ 乖離度: 実測値が報告値の4-5倍の実行時間")
+        print(f"  [ERROR] 乖離度: 実測値が報告値の4-5倍の実行時間")
         
         # ボトルネック分析継続性
         bottleneck_persistence = {
@@ -135,36 +135,36 @@ class PERF007ImplementationGapAnalyzer:
                 "reported_optimized": "10.5秒 (並列処理により70%削減)",
                 "actual_first_run": "54.9秒",
                 "actual_second_run": "54.3秒",
-                "status": "❌ 最適化未適用（並列処理実装されていない）"
+                "status": "[ERROR] 最適化未適用（並列処理実装されていない）"
             },
             "final_selection": {
                 "reported_optimized": "8.0秒 (重複排除により82%削減)",
                 "actual_first_run": "46.6秒",
                 "actual_second_run": "47.2秒",
-                "status": "❌ 最適化未適用（アルゴリズム最適化実装されていない）"
+                "status": "[ERROR] 最適化未適用（アルゴリズム最適化実装されていない）"
             },
             "affordability_filter": {
                 "reported_optimized": "10.0秒 (並列処理により70%削減)",
                 "actual_first_run": "31.5秒",
                 "actual_second_run": "31.9秒",
-                "status": "❌ 最適化未適用（並列処理実装されていない）"
+                "status": "[ERROR] 最適化未適用（並列処理実装されていない）"
             }
         }
         
-        print(f"\n📈 主要ボトルネック継続状況:")
+        print(f"\n[UP] 主要ボトルネック継続状況:")
         for component, data in bottleneck_persistence.items():
             print(f"  {component}: {data['actual_first_run']} vs 報告値{data['reported_optimized']} - {data['status']}")
         
         return {
             "discrepancy_analysis": discrepancy_analysis,
             "bottleneck_persistence": bottleneck_persistence,
-            "overall_assessment": "❌ 報告された最適化は実際のシステムに適用されていない"
+            "overall_assessment": "[ERROR] 報告された最適化は実際のシステムに適用されていない"
         }
     
     def _verify_implementation_status(self) -> Dict[str, Any]:
         """実装状況検証"""
         
-        print("\n🔧 実装状況検証:")
+        print("\n[TOOL] 実装状況検証:")
         
         # Stage別実装ファイル存在確認
         stage_files = {
@@ -182,7 +182,7 @@ class PERF007ImplementationGapAnalyzer:
             implementation_verification[stage] = {
                 "file_exists": exists,
                 "file_path": str(file_path),
-                "status": "✅ ファイル存在" if exists else "❌ ファイル不存在"
+                "status": "[OK] ファイル存在" if exists else "[ERROR] ファイル不存在"
             }
             print(f"  {stage}: {implementation_verification[stage]['status']}")
         
@@ -205,7 +205,7 @@ class PERF007ImplementationGapAnalyzer:
         main_file_path = project_root / "src" / "dssms" / "dssms_integrated_main.py"
         
         if not main_file_path.exists():
-            return {"status": "❌ ファイル不存在", "analysis": "dssms_integrated_main.py が見つからない"}
+            return {"status": "[ERROR] ファイル不存在", "analysis": "dssms_integrated_main.py が見つからない"}
         
         try:
             with open(main_file_path, 'r', encoding='utf-8') as f:
@@ -257,21 +257,21 @@ class PERF007ImplementationGapAnalyzer:
                 "file_exists": True,
                 "parallel_processing": {
                     "indicators_found": parallel_found,
-                    "status": "✅ 実装済み" if parallel_found else "❌ 未実装"
+                    "status": "[OK] 実装済み" if parallel_found else "[ERROR] 未実装"
                 },
                 "cache_system": {
                     "indicators_found": cache_found,
-                    "status": "✅ 実装済み" if cache_found else "❌ 未実装"
+                    "status": "[OK] 実装済み" if cache_found else "[ERROR] 未実装"
                 },
                 "numpy_optimization": {
                     "indicators_found": numpy_found,
-                    "status": "✅ 実装済み" if numpy_found else "❌ 未実装"
+                    "status": "[OK] 実装済み" if numpy_found else "[ERROR] 未実装"
                 },
-                "overall_integration": "❌ TODO-PERF-007最適化が統合されていない"
+                "overall_integration": "[ERROR] TODO-PERF-007最適化が統合されていない"
             }
             
         except Exception as e:
-            return {"status": "❌ ファイル読み込みエラー", "error": str(e)}
+            return {"status": "[ERROR] ファイル読み込みエラー", "error": str(e)}
     
     def _analyze_screener_implementation(self) -> Dict[str, Any]:
         """Screenerファイルの最適化実装確認"""
@@ -312,7 +312,7 @@ class PERF007ImplementationGapAnalyzer:
                     file_analysis.update({
                         "content_length": len(content),
                         "optimizations_found": found_optimizations,
-                        "optimization_status": "✅ 最適化実装あり" if found_optimizations else "❌ 最適化未実装"
+                        "optimization_status": "[OK] 最適化実装あり" if found_optimizations else "[ERROR] 最適化未実装"
                     })
                     
                 except Exception as e:
@@ -327,7 +327,7 @@ class PERF007ImplementationGapAnalyzer:
             if file_data["exists"]
         )
         
-        screener_analysis["overall_status"] = "✅ 最適化実装済み" if has_optimization else "❌ 最適化未実装"
+        screener_analysis["overall_status"] = "[OK] 最適化実装済み" if has_optimization else "[ERROR] 最適化未実装"
         
         return screener_analysis
     
@@ -376,7 +376,7 @@ class PERF007ImplementationGapAnalyzer:
     def _propose_solutions(self) -> Dict[str, Any]:
         """解決策提案"""
         
-        print("\n💡 解決策提案:")
+        print("\n[IDEA] 解決策提案:")
         
         solutions = {
             "immediate_actions": [
@@ -431,7 +431,7 @@ class PERF007ImplementationGapAnalyzer:
             "effort_assessment": {
                 "immediate_fix": "4-8時間（統合確認+実装適用）",
                 "complete_solution": "3-5日（統合+テスト+監視）",
-                "high_impact_quick_win": "✅ 可能（実装済みコンポーネントの統合のみ）"
+                "high_impact_quick_win": "[OK] 可能（実装済みコンポーネントの統合のみ）"
             }
         }
         
@@ -488,12 +488,12 @@ class PERF007ImplementationGapAnalyzer:
             return complete_results, report_file
             
         except Exception as e:
-            print(f"❌ 分析エラー: {e}")
+            print(f"[ERROR] 分析エラー: {e}")
             return {"error": str(e)}, None
 
 def main():
     """メイン分析実行"""
-    print("🔍 TODO-PERF-007 実装ギャップ分析開始")
+    print("[SEARCH] TODO-PERF-007 実装ギャップ分析開始")
     print("目標: 報告された74.6%削減 vs 実際3分実行時間の乖離原因特定")
     print("="*80)
     
@@ -503,11 +503,11 @@ def main():
         
         if "error" not in results:
             print("\n" + "="*80)
-            print("🎯 TODO-PERF-007 実装ギャップ分析完了")
+            print("[TARGET] TODO-PERF-007 実装ギャップ分析完了")
             print("="*80)
             
             summary = results["summary"]["analysis_summary"]
-            print(f"\n🔍 主要発見:")
+            print(f"\n[SEARCH] 主要発見:")
             print(f"  問題: {summary['primary_finding']}")
             print(f"  パフォーマンス乖離: {summary['performance_gap']}")
             print(f"  根本原因: {summary['root_cause']}")
@@ -515,26 +515,26 @@ def main():
             print(f"  推定修正時間: {summary['estimated_fix_time']}")
             
             critical_findings = results["summary"]["critical_findings"]
-            print(f"\n⚠️ 重要発見事項:")
+            print(f"\n[WARNING] 重要発見事項:")
             for finding in critical_findings:
                 print(f"  • {finding}")
             
             immediate_recs = results["summary"]["immediate_recommendations"]
-            print(f"\n💡 即座対応推奨:")
+            print(f"\n[IDEA] 即座対応推奨:")
             for rec in immediate_recs:
-                print(f"  ✅ {rec}")
+                print(f"  [OK] {rec}")
             
             print(f"\n📄 詳細レポート: {report_file}")
             
             print("\n" + "="*80)
-            print("🚨 結論: TODO-PERF-007は「分析・設計完了」だが「実システム統合未完了」")
-            print("✅ 解決策: 実装済みコンポーネントの統合作業（高効果・短時間）")
+            print("[ALERT] 結論: TODO-PERF-007は「分析・設計完了」だが「実システム統合未完了」")
+            print("[OK] 解決策: 実装済みコンポーネントの統合作業（高効果・短時間）")
             print("⏱️ 推定工数: 4-8時間（統合）+ 3-5日（完全解決・テスト・監視）")
             print("="*80)
             
             return True
         else:
-            print(f"\n❌ 分析失敗: {results.get('error', '不明なエラー')}")
+            print(f"\n[ERROR] 分析失敗: {results.get('error', '不明なエラー')}")
             return False
             
     except Exception as e:

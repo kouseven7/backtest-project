@@ -282,12 +282,12 @@ def main():
     
     for demo_name, demo_func in demos:
         try:
-            print(f"\n🚀 Starting {demo_name}...")
+            print(f"\n[ROCKET] Starting {demo_name}...")
             result = demo_func()
             results.append(result)
-            print(f"✅ {demo_name} completed successfully!")
+            print(f"[OK] {demo_name} completed successfully!")
         except Exception as e:
-            print(f"❌ {demo_name} failed: {e}")
+            print(f"[ERROR] {demo_name} failed: {e}")
             results.append(False)
     
     # 最終結果
@@ -302,15 +302,15 @@ def main():
     print(f"Success rate: {passed/total*100:.1f}%")
     
     if all(results):
-        print("\n🎉 ALL DEMOS SUCCESSFUL!")
-        print("✅ Strategy Data Persistence is ready for production use!")
-        print("\n📋 Next Steps:")
+        print("\n[SUCCESS] ALL DEMOS SUCCESSFUL!")
+        print("[OK] Strategy Data Persistence is ready for production use!")
+        print("\n[LIST] Next Steps:")
         print("   1. Review generated files in logs/strategy_persistence/")
         print("   2. Integrate with existing optimization workflows")
         print("   3. Set up regular data backup procedures")
         print("   4. Configure monitoring and alerting")
     else:
-        print("\n⚠️ Some demos encountered issues")
+        print("\n[WARNING] Some demos encountered issues")
         print("Please review the error messages and check the implementation")
     
     return all(results)

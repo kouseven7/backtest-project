@@ -38,20 +38,20 @@ def test_perfect_order_calculation():
         for symbol, score in scores.items():
             print(f"{symbol}: スコア = {score:.2f}")
             if score >= 0.75:
-                print(f"  → 🎯 高スコア銘柄！")
+                print(f"  → [TARGET] 高スコア銘柄！")
             elif score >= 0.5:
-                print(f"  → ✅ 中スコア")
+                print(f"  → [OK] 中スコア")
             else:
                 print(f"  → ⚠ 低スコア")
         
         best_symbol = max(scores.items(), key=lambda x: x[1])
         print(f"\n最高スコア: {best_symbol[0]} ({best_symbol[1]:.2f})")
         
-        print(f"\n✅ パーフェクトオーダー計算テスト成功")
+        print(f"\n[OK] パーフェクトオーダー計算テスト成功")
         return True
         
     except Exception as e:
-        print(f"❌ パーフェクトオーダー計算テストエラー: {e}")
+        print(f"[ERROR] パーフェクトオーダー計算テストエラー: {e}")
         import traceback
         traceback.print_exc()
         return False

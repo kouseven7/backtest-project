@@ -69,10 +69,10 @@ def analyze_randomness_impact():
             print(f"          {pattern_info['code']}")
             total_random_elements += 1
     
-    print(f"\n📊 総ランダム要素数: {total_random_elements}")
+    print(f"\n[CHART] 総ランダム要素数: {total_random_elements}")
     
     # 影響度分析
-    print("\n🎯 影響度分析:")
+    print("\n[TARGET] 影響度分析:")
     
     # コンテキスト別の影響度評価
     contexts = {}
@@ -114,7 +114,7 @@ def measure_variance_by_runs():
         results = []
         num_runs = 5
         
-        print(f"🧪 {num_runs}回実行テスト開始...")
+        print(f"[TEST] {num_runs}回実行テスト開始...")
         
         for run in range(num_runs):
             print(f"   実行 {run + 1}/{num_runs}...")
@@ -143,12 +143,12 @@ def measure_variance_by_runs():
                     })
                 
             except Exception as e:
-                print(f"     ❌ 実行{run + 1}エラー: {e}")
+                print(f"     [ERROR] 実行{run + 1}エラー: {e}")
         
         if results:
             df = pd.DataFrame(results)
             
-            print(f"\n📊 {len(results)}回実行の分散分析:")
+            print(f"\n[CHART] {len(results)}回実行の分散分析:")
             
             metrics = ['final_value', 'total_return', 'switches', 'success_rate']
             variance_analysis = {}
@@ -180,19 +180,19 @@ def measure_variance_by_runs():
                     
                     # 許容範囲判定
                     if metric == 'total_return' and cv > 30:
-                        print(f"     ⚠️ 変動係数{cv:.1f}%は過大（推奨: <20%）")
+                        print(f"     [WARNING] 変動係数{cv:.1f}%は過大（推奨: <20%）")
                     elif metric == 'switches' and cv > 15:
-                        print(f"     ⚠️ 切替回数の変動{cv:.1f}%は過大（推奨: <10%）")
+                        print(f"     [WARNING] 切替回数の変動{cv:.1f}%は過大（推奨: <10%）")
                     else:
-                        print(f"     ✅ 変動は許容範囲内")
+                        print(f"     [OK] 変動は許容範囲内")
             
             return variance_analysis
         else:
-            print("❌ 有効な結果が得られませんでした")
+            print("[ERROR] 有効な結果が得られませんでした")
             return None
             
     except Exception as e:
-        print(f"❌ テスト実行エラー: {e}")
+        print(f"[ERROR] テスト実行エラー: {e}")
         import traceback
         traceback.print_exc()
         return None

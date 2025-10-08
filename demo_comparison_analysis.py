@@ -546,14 +546,14 @@ def main():
     logger.info(f"全体成功率: {successful_tests}/{total_tests} ({success_rate:.1f}%)")
     
     if successful_tests == total_tests:
-        logger.info("🎉 全てのデモが正常に完了しました！")
-        print("\n🎉 DSSMS Phase 3 Task 3.2 比較分析機能向上デモ 正常完了！")
+        logger.info("[SUCCESS] 全てのデモが正常に完了しました！")
+        print("\n[SUCCESS] DSSMS Phase 3 Task 3.2 比較分析機能向上デモ 正常完了！")
     elif successful_tests > 0:
-        logger.info("⚠️  一部のデモで問題が発生しました")
-        print(f"\n⚠️  デモ部分完了: {successful_tests}/{total_tests}")
+        logger.info("[WARNING]  一部のデモで問題が発生しました")
+        print(f"\n[WARNING]  デモ部分完了: {successful_tests}/{total_tests}")
     else:
-        logger.error("❌ 全てのデモが失敗しました")
-        print("\n❌ デモ実行失敗")
+        logger.error("[ERROR] 全てのデモが失敗しました")
+        print("\n[ERROR] デモ実行失敗")
     
     # 生成されたファイルの確認
     logger.info("=== 生成されたファイル ===")

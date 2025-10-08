@@ -322,7 +322,7 @@ def run_comprehensive_test():
     print(f"\n総合結果: {passed}/{total} 合格 ({passed/total*100:.1f}%)")
     
     if passed == total:
-        print("🎉 すべてのテストが合格しました！")
+        print("[SUCCESS] すべてのテストが合格しました！")
         print("Phase 2.3 Task 2.3.3 品質保証システム実装完了")
     else:
         print("⚠ 一部のテストが失敗しました。詳細を確認してください。")

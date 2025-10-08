@@ -38,16 +38,16 @@ def analyze_module_import_times():
             module = importlib.import_module(module_name)
             import_time = (time.perf_counter() - start_time) * 1000
             import_times[module_name] = import_time
-            print(f"✅ {module_name}: {import_time:.1f}ms")
+            print(f"[OK] {module_name}: {import_time:.1f}ms")
             
         except ImportError as e:
             import_time = 0
             import_times[module_name] = import_time
-            print(f"⚠️  {module_name}: FAILED ({e})")
+            print(f"[WARNING]  {module_name}: FAILED ({e})")
         except Exception as e:
             import_time = 0
             import_times[module_name] = import_time
-            print(f"❌ {module_name}: ERROR ({e})")
+            print(f"[ERROR] {module_name}: ERROR ({e})")
     
     # 結果ソート
     sorted_imports = sorted(import_times.items(), key=lambda x: x[1], reverse=True)
@@ -63,7 +63,7 @@ def analyze_module_import_times():
     # 最適化推奨
     heavy_modules = [m for m, t in sorted_imports if t > 100]  # 100ms以上
     if heavy_modules:
-        print(f"\n📋 最適化推奨モジュール (100ms+): {len(heavy_modules)}個")
+        print(f"\n[LIST] 最適化推奨モジュール (100ms+): {len(heavy_modules)}個")
         for module, time_ms in [(m, import_times[m]) for m in heavy_modules]:
             print(f"  - {module}: {time_ms:.1f}ms")
     
@@ -97,12 +97,12 @@ def calculate_optimization_potential():
     print("\n改善履歴:")
     for desc, imp in improvements:
         if imp > 0:
-            print(f"  ✅ {desc}: -{imp}ms")
+            print(f"  [OK] {desc}: -{imp}ms")
         else:
-            print(f"  ❌ {desc}: +{abs(imp)}ms (逆効果)")
+            print(f"  [ERROR] {desc}: +{abs(imp)}ms (逆効果)")
     
     # 最適化戦略提案
-    print(f"\n📋 残り{remaining_optimization}ms最適化戦略:")
+    print(f"\n[LIST] 残り{remaining_optimization}ms最適化戦略:")
     print("  1. Import文の条件分岐最適化 (~200ms)")
     print("  2. 重いモジュールの完全遅延化 (~250ms)")  
     print("  3. モジュール依存関係の最適化 (~150ms)")

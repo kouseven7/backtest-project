@@ -962,10 +962,10 @@ class DSSMSBacktester:
             self.ranking_diagnostics and 
             not getattr(self, '_in_diagnostic_mode', False)):  # 無限再帰回避フラグ
             try:
-                self.logger.info(f"🔍 Resolution 19: ランキング診断開始 - {date}")
+                self.logger.info(f"[SEARCH] Resolution 19: ランキング診断開始 - {date}")
                 self._in_diagnostic_mode = True  # 診断開始フラグ
                 ranking_diagnostic = self.ranking_diagnostics.diagnose_ranking_pipeline(date, symbols, self)
-                self.logger.info(f"🔍 診断完了: 成功={ranking_diagnostic.final_ranking_valid}, top_symbol={ranking_diagnostic.top_symbol}")
+                self.logger.info(f"[SEARCH] 診断完了: 成功={ranking_diagnostic.final_ranking_valid}, top_symbol={ranking_diagnostic.top_symbol}")
             except Exception as e:
                 self.logger.error(f"ランキング診断エラー: {e}")
             finally:
@@ -981,16 +981,16 @@ class DSSMSBacktester:
                     self.logger.debug(f"ランキング計算（キャッシュ）: {execution_time:.2f}s")
                     # Phase 4A: キャッシュ結果も構造修復を強制実行
                     cached_result = self._ensure_ranking_structure_consistency(cached_result)
-                    self.logger.info(f"🔧 Phase 4A: キャッシュ結果構造修復完了 - top_symbol={cached_result.get('top_symbol')}")
+                    self.logger.info(f"[TOOL] Phase 4A: キャッシュ結果構造修復完了 - top_symbol={cached_result.get('top_symbol')}")
                     return cached_result
             
             # � 決定論的計算完全除去: ComprehensiveScoringEngineによる実データ分析
             # TODO(tag:phase1, rationale:決定論除去): 実データベースの動的スコア計算復活
-            use_integration_patch = True  # 🔧 統合パッチを強制有効化
-            use_deterministic_scoring = False  # 🔧 決定論的計算を完全無効化
+            use_integration_patch = True  # [TOOL] 統合パッチを強制有効化
+            use_deterministic_scoring = False  # [TOOL] 決定論的計算を完全無効化
             ranking_scores = {}  # 初期化
             
-            self.logger.info("🔧 決定論的計算除去: ComprehensiveScoringEngine実データ分析開始")
+            self.logger.info("[TOOL] 決定論的計算除去: ComprehensiveScoringEngine実データ分析開始")
             
             # ComprehensiveScoringEngineによる実データスコア計算
             if self.scoring_engine:
@@ -1050,10 +1050,10 @@ class DSSMSBacktester:
                 }
                 # 診断失敗時の警告 + 実際のtop_symbolを診断に反映
                 if not ranking_diagnostic.final_ranking_valid:
-                    self.logger.warning(f"🔍 Resolution 19: ランキング診断失敗 - 修復が必要です")
+                    self.logger.warning(f"[SEARCH] Resolution 19: ランキング診断失敗 - 修復が必要です")
                     # 実際に生成されたtop_symbolを診断結果に反映
                     ranking_diagnostic.top_symbol = result['top_symbol']
-                    self.logger.info(f"🔧 診断結果修正: top_symbol={result['top_symbol']}")
+                    self.logger.info(f"[TOOL] 診断結果修正: top_symbol={result['top_symbol']}")
             
             self.logger.info(f"安定ランキング更新: 上位={result['top_symbol']} ({result['top_score']:.3f})")
             return result
@@ -1069,7 +1069,7 @@ class DSSMSBacktester:
         """改善版: 切替判定（ISM統合対応 - Problem 11）+ Phase 1診断強化"""
         
         # TODO(tag:phase1, rationale:DSSMS Core focus): 切替判定診断ログ強化
-        self.logger.critical(f"🔍 SWITCH DECISION CALLED: date={date}, current={current_position}, has_ranking={bool(ranking_result)}")
+        self.logger.critical(f"[SEARCH] SWITCH DECISION CALLED: date={date}, current={current_position}, has_ranking={bool(ranking_result)}")
         
         try:
             # 診断ログ: 基本状態確認
@@ -1083,14 +1083,14 @@ class DSSMSBacktester:
                 'market_condition_keys': list(market_condition.keys()) if market_condition else []
             }
             
-            self.logger.critical(f"🔍 SWITCH DEBUG INFO: {debug_info}")
+            self.logger.critical(f"[SEARCH] SWITCH DEBUG INFO: {debug_info}")
             
             # Problem 11: ISM統合切替判定の使用
             if self.use_unified_switching and self.switch_manager:
-                self.logger.critical(f"🔍 USING ISM UNIFIED SWITCHING")
+                self.logger.critical(f"[SEARCH] USING ISM UNIFIED SWITCHING")
                 return self._ism_unified_switch_decision(date, current_position, ranking_result, market_condition)
             else:
-                self.logger.critical(f"🔍 USING LEGACY SWITCHING")
+                self.logger.critical(f"[SEARCH] USING LEGACY SWITCHING")
                 return self._legacy_switch_decision(date, current_position, ranking_result, market_condition)
                 
         except Exception as e:
@@ -1108,23 +1108,23 @@ class DSSMSBacktester:
         # TODO(tag:phase1, rationale:ISM統合カバレッジ向上): 完全統合実装
         
         # TODO(tag:phase1, rationale:DSSMS Core focus): ISM診断ログ追加
-        self.logger.critical(f"🔍 ISM UNIFIED SWITCH: date={date}, current={current_position}")
+        self.logger.critical(f"[SEARCH] ISM UNIFIED SWITCH: date={date}, current={current_position}")
         
         try:
-            # 🔧 Problem 1修復: ランキング結果の詳細診断
+            # [TOOL] Problem 1修復: ランキング結果の詳細診断
             if ranking_result:
-                self.logger.critical(f"🔍 RANKING RESULT STRUCTURE: keys={list(ranking_result.keys())}")
-                self.logger.critical(f"🔍 RANKING TOP_SYMBOL: {ranking_result.get('top_symbol')}")
+                self.logger.critical(f"[SEARCH] RANKING RESULT STRUCTURE: keys={list(ranking_result.keys())}")
+                self.logger.critical(f"[SEARCH] RANKING TOP_SYMBOL: {ranking_result.get('top_symbol')}")
                 rankings = ranking_result.get('rankings', {})
                 if rankings:
                     if isinstance(rankings, dict):
                         first_symbol = next(iter(rankings.keys())) if rankings else None
-                        self.logger.critical(f"🔍 RANKINGS DICT FIRST: {first_symbol}")
+                        self.logger.critical(f"[SEARCH] RANKINGS DICT FIRST: {first_symbol}")
                     else:
-                        self.logger.critical(f"🔍 RANKINGS TYPE: {type(rankings)}")
+                        self.logger.critical(f"[SEARCH] RANKINGS TYPE: {type(rankings)}")
             
             # ポートフォリオデータ準備（Problem 1修復版）
-            # 🎯 top_symbol修復: ランキング結果から確実に取得
+            # [TARGET] top_symbol修復: ランキング結果から確実に取得
             top_symbol = None
             if ranking_result:
                 # 方法1: 直接取得
@@ -1135,19 +1135,19 @@ class DSSMSBacktester:
                     rankings = ranking_result.get('rankings', {})
                     if isinstance(rankings, dict) and rankings:
                         top_symbol = next(iter(rankings.keys()))
-                        self.logger.critical(f"🔍 FALLBACK TOP_SYMBOL: {top_symbol}")
+                        self.logger.critical(f"[SEARCH] FALLBACK TOP_SYMBOL: {top_symbol}")
                 
                 # 方法3: best_symbolフィールドを確認
                 if not top_symbol:
                     top_symbol = ranking_result.get('best_symbol') or ranking_result.get('recommended_symbol')
                     if top_symbol:
-                        self.logger.critical(f"🔍 ALTERNATIVE TOP_SYMBOL: {top_symbol}")
+                        self.logger.critical(f"[SEARCH] ALTERNATIVE TOP_SYMBOL: {top_symbol}")
             
             portfolio_data = {
                 'current_position': current_position,
-                'current_symbol': current_position,  # 🔧 追加: ISMが必要とするフィールド
+                'current_symbol': current_position,  # [TOOL] 追加: ISMが必要とするフィールド
                 'rankings': ranking_result.get('rankings', {}),
-                'top_symbol': top_symbol,  # 🎯 修復済み
+                'top_symbol': top_symbol,  # [TARGET] 修復済み
                 'daily_performance': self._calculate_daily_performance(current_position),
                 'weekly_performance': self._calculate_weekly_performance(current_position),
                 'volatility': market_condition.get('volatility', 0.0),
@@ -1157,7 +1157,7 @@ class DSSMSBacktester:
                 'volatility_spike': market_condition.get('volatility_spike', False)
             }
             
-            self.logger.critical(f"🔍 ISM PORTFOLIO DATA: top_symbol={portfolio_data.get('top_symbol')}, daily_perf={portfolio_data.get('daily_performance')}")
+            self.logger.critical(f"[SEARCH] ISM PORTFOLIO DATA: top_symbol={portfolio_data.get('top_symbol')}, daily_perf={portfolio_data.get('daily_performance')}")
             
             # マーケットコンテキスト準備 - Phase 4B-2動的計算実装
             market_context = {
@@ -1169,17 +1169,17 @@ class DSSMSBacktester:
                 'volume_change': self._calculate_volume_change(current_position or 'default', date)
             }
             
-            self.logger.critical(f"🔍 ISM MARKET CONTEXT: {market_context}")
+            self.logger.critical(f"[SEARCH] ISM MARKET CONTEXT: {market_context}")
             
             # switch_manager存在確認
             if not self.switch_manager:
-                self.logger.error(f"🔍 ERROR: switch_manager is None!")
+                self.logger.error(f"[SEARCH] ERROR: switch_manager is None!")
                 raise AttributeError("switch_manager is None")
                 
             # ISM統合切替判定実行
-            self.logger.critical(f"🔍 CALLING switch_manager.evaluate_all_switches")
+            self.logger.critical(f"[SEARCH] CALLING switch_manager.evaluate_all_switches")
             switch_decision = self.switch_manager.evaluate_all_switches(portfolio_data, market_context)
-            self.logger.critical(f"🔍 ISM DECISION RESULT: {switch_decision}")
+            self.logger.critical(f"[SEARCH] ISM DECISION RESULT: {switch_decision}")
             
             # DSSMSBacktester形式に変換
             target_symbol = ranking_result.get('top_symbol') if switch_decision['should_switch'] else current_position
@@ -1193,12 +1193,12 @@ class DSSMSBacktester:
                 'quality_metrics': switch_decision.get('quality_metrics', {})
             }
             
-            self.logger.critical(f"🔍 ISM FINAL RESULT: {result}")
+            self.logger.critical(f"[SEARCH] ISM FINAL RESULT: {result}")
             return result
             
         except Exception as e:
-            self.logger.error(f"🔍 ISM統合切替判定エラー {date}: {e}")
-            self.logger.critical(f"🔍 FALLING BACK TO LEGACY SWITCH DECISION")
+            self.logger.error(f"[SEARCH] ISM統合切替判定エラー {date}: {e}")
+            self.logger.critical(f"[SEARCH] FALLING BACK TO LEGACY SWITCH DECISION")
             # フォールバック: 従来ロジック
             return self._legacy_switch_decision(date, current_position, ranking_result, market_condition)
 
@@ -1573,7 +1573,7 @@ class DSSMSBacktester:
         """従来切替判定（ISM統合フォールバック）+ Phase 1診断強化"""
         
         # TODO(tag:phase1, rationale:DSSMS Core focus): Legacy診断ログ追加
-        self.logger.critical(f"🔍 LEGACY SWITCH: date={date}, current={current_position}")
+        self.logger.critical(f"[SEARCH] LEGACY SWITCH: date={date}, current={current_position}")
         
         try:
             should_switch = False
@@ -1581,14 +1581,14 @@ class DSSMSBacktester:
             target_symbol = None
             
             top_symbol = ranking_result.get('top_symbol')
-            self.logger.critical(f"🔍 LEGACY: top_symbol={top_symbol}, rankings_count={len(ranking_result.get('rankings', {}))}")
+            self.logger.critical(f"[SEARCH] LEGACY: top_symbol={top_symbol}, rankings_count={len(ranking_result.get('rankings', {}))}")
             
             # 初回ポジション設定
             if current_position is None and top_symbol:
                 should_switch = True
                 reason = "初期ポジション設定"
                 target_symbol = top_symbol
-                self.logger.critical(f"🔍 LEGACY INITIAL POSITION: switching to {target_symbol}")
+                self.logger.critical(f"[SEARCH] LEGACY INITIAL POSITION: switching to {target_symbol}")
                 return {
                     'should_switch': should_switch,
                     'target_symbol': target_symbol,
@@ -1601,13 +1601,13 @@ class DSSMSBacktester:
                 current_score = ranking_result.get('rankings', {}).get(current_position, 0)
                 top_score = ranking_result.get('rankings', {}).get(top_symbol, 0)
                 
-                self.logger.critical(f"🔍 LEGACY SCORE CHECK: current={current_position}({current_score}) vs top={top_symbol}({top_score})")
+                self.logger.critical(f"[SEARCH] LEGACY SCORE CHECK: current={current_position}({current_score}) vs top={top_symbol}({top_score})")
                 
                 # 1. 最小保有期間チェック（24時間未満なら切替しない）
                 if len(self.switch_history) > 0:
                     last_switch = self.switch_history[-1]
                     hours_since_last_switch = (date - last_switch.timestamp).total_seconds() / 3600
-                    self.logger.critical(f"🔍 LEGACY HOLDING PERIOD: {hours_since_last_switch:.1f} hours since last switch")
+                    self.logger.critical(f"[SEARCH] LEGACY HOLDING PERIOD: {hours_since_last_switch:.1f} hours since last switch")
                     if hours_since_last_switch < 24.0:  # 最小24時間保有
                         return {
                             'should_switch': False,
@@ -3902,11 +3902,11 @@ class DSSMSBacktester:
         
         # Phase 4A: 構造修復を常に実行（条件分岐廃止）
         missing_keys = set(required_keys) - set(ranking_result.keys())
-        self.logger.debug(f"🔧 Phase 4A: 日次構造修復実行 - 欠如キー={missing_keys}, 現在キー数={len(ranking_result)}")
+        self.logger.debug(f"[TOOL] Phase 4A: 日次構造修復実行 - 欠如キー={missing_keys}, 現在キー数={len(ranking_result)}")
         
         # Phase 4A修正: 欠如キーがある場合は即座に修復
         if missing_keys or len(ranking_result) < len(required_keys):
-            self.logger.warning(f"🔧 Phase 4A構造不整合検出: 欠如キー={missing_keys}")
+            self.logger.warning(f"[TOOL] Phase 4A構造不整合検出: 欠如キー={missing_keys}")
             # Phase 4A修復: ranking_diagnostics.pyの完全構造生成を利用
             if hasattr(self, 'ranking_diagnostics') and self.ranking_diagnostics:
                 try:
@@ -3936,7 +3936,7 @@ class DSSMSBacktester:
                         
                         # 完全構造検証
                         if all(key in complete_structure for key in required_keys):
-                            self.logger.info(f"🔧 Phase 4A修復成功: top_symbol={complete_structure.get('top_symbol')}, キー数={len(complete_structure)}")
+                            self.logger.info(f"[TOOL] Phase 4A修復成功: top_symbol={complete_structure.get('top_symbol')}, キー数={len(complete_structure)}")
                             return complete_structure
                 except Exception as e:
                     self.logger.warning(f"Phase 4A修復エラー: {str(e)}")
@@ -3945,7 +3945,7 @@ class DSSMSBacktester:
             return self._repair_ranking_structure(ranking_result)
         else:
             # Phase 4A: 構造完全でも日次検証を実行
-            self.logger.debug(f"🔧 Phase 4A構造完全性確認: top_symbol={ranking_result.get('top_symbol')}, キー数={len(ranking_result)}")
+            self.logger.debug(f"[TOOL] Phase 4A構造完全性確認: top_symbol={ranking_result.get('top_symbol')}, キー数={len(ranking_result)}")
             # diagnostic_info強化
             if 'diagnostic_info' not in ranking_result or not ranking_result['diagnostic_info']:
                 ranking_result['diagnostic_info'] = {
@@ -3965,11 +3965,11 @@ class DSSMSBacktester:
         ]
         
         if not all(validations):
-            self.logger.warning("🔧 Phase 3データ型不整合検出: 修復実行")
+            self.logger.warning("[TOOL] Phase 3データ型不整合検出: 修復実行")
             return self._repair_ranking_structure(ranking_result)
         
         # Phase 3成功ログ
-        self.logger.debug(f"🔧 Phase 3構造検証合格: top_symbol={ranking_result.get('top_symbol')}, キー数={len(ranking_result)}")
+        self.logger.debug(f"[TOOL] Phase 3構造検証合格: top_symbol={ranking_result.get('top_symbol')}, キー数={len(ranking_result)}")
         return ranking_result
 
     def _repair_ranking_structure(self, partial_result: Dict[str, Any]) -> Dict[str, Any]:
@@ -4031,7 +4031,7 @@ class DSSMSBacktester:
                 base_structure['top_symbol'] = top_item[0]
                 base_structure['top_score'] = top_item[1]
         
-        self.logger.info(f"🔧 構造修復完了: top_symbol={base_structure['top_symbol']}, total_symbols={base_structure['total_symbols']}")
+        self.logger.info(f"[TOOL] 構造修復完了: top_symbol={base_structure['top_symbol']}, total_symbols={base_structure['total_symbols']}")
         return base_structure
 
     def _emergency_ranking_fallback(self, date: datetime, symbols: List[str], error_msg: str = "") -> Dict[str, Any]:
@@ -4039,7 +4039,7 @@ class DSSMSBacktester:
         Phase 2: 全診断失敗時の緊急フォールバック
         ComprehensiveScoringEngine 直接利用による最低限ランキング生成
         """
-        self.logger.error(f"🚨 緊急フォールバック実行: {error_msg}")
+        self.logger.error(f"[ALERT] 緊急フォールバック実行: {error_msg}")
         
         emergency_result = {
             'date': date,
@@ -4077,7 +4077,7 @@ class DSSMSBacktester:
                     emergency_result['top_symbol'] = top_item[0]
                     emergency_result['top_score'] = top_item[1]
                     
-                self.logger.info(f"🚨 緊急フォールバック成功: top_symbol={emergency_result['top_symbol']}")
+                self.logger.info(f"[ALERT] 緊急フォールバック成功: top_symbol={emergency_result['top_symbol']}")
                 
             else:
                 # ComprehensiveScoringEngine 利用不可時: ランダム選択
@@ -4087,10 +4087,10 @@ class DSSMSBacktester:
                     emergency_result['top_score'] = 0.5
                     emergency_result['rankings'] = {symbol: 0.5 for symbol in symbols}
                     emergency_result['diagnostic_info']['random_selection'] = True
-                    self.logger.warning("🚨 緊急フォールバック: ランダム選択実行")
+                    self.logger.warning("[ALERT] 緊急フォールバック: ランダム選択実行")
                 
         except Exception as e:
-            self.logger.error(f"🚨 緊急フォールバック失敗: {str(e)}")
+            self.logger.error(f"[ALERT] 緊急フォールバック失敗: {str(e)}")
             # 最後の手段: 最小構造
             if symbols:
                 emergency_result['top_symbol'] = symbols[0]

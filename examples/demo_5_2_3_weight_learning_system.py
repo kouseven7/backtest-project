@@ -569,10 +569,10 @@ def main():
         print(f"  {test_name.replace('_', ' ').title()}: {status}")
     
     if passed_tests == total_tests:
-        print("\n🎉 すべてのテストに成功しました！")
+        print("\n[SUCCESS] すべてのテストに成功しました！")
         print("5-2-3 最適な重み付け比率の学習アルゴリズムが正常に動作しています。")
     else:
-        print(f"\n⚠️  {total_tests - passed_tests}件のテストが失敗しました。")
+        print(f"\n[WARNING]  {total_tests - passed_tests}件のテストが失敗しました。")
         print("ログファイルで詳細を確認してください。")
     
     print(f"\n詳細ログ: demo_5_2_3_weight_learning.log")

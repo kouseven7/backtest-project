@@ -5,13 +5,13 @@ DSSMS Task 1.3: クイック修正版 包括デモレポート
 総実行時間: 0.71秒
 
 🔄 フェーズ実行結果:
-  ✅ setup: 0.00s
-  ✅ issue_detection: 0.68s
-  ❌ integration: 0.00s
+  [OK] setup: 0.00s
+  [OK] issue_detection: 0.68s
+  [ERROR] integration: 0.00s
     エラー: 'DSSMSQuickFixIntegrationManager' object has no attribute 'run_comprehensive_integration'
-  ✅ validation: 0.03s
+  [OK] validation: 0.03s
 
-📊 詳細結果:
+[CHART] 詳細結果:
 
 [SETUP]
   directories_created: 4
@@ -37,13 +37,13 @@ DSSMS Task 1.3: クイック修正版 包括デモレポート
   recommendation_count: 2
   execution_time: 0.025579
 
-💡 推奨事項:
-  ⚠️ 以下のフェーズで問題が発生しました:
+[IDEA] 推奨事項:
+  [WARNING] 以下のフェーズで問題が発生しました:
     - integration: 'DSSMSQuickFixIntegrationManager' object has no attribute 'run_comprehensive_integration'
-  🔧 問題検出・修正システムが実行されました
+  [TOOL] 問題検出・修正システムが実行されました
   🔗 ハイブリッド統合が実行されました
-  ✅ 段階的検証が実行されました
-  📊 詳細レポートを確認してください
+  [OK] 段階的検証が実行されました
+  [CHART] 詳細レポートを確認してください
 
 ================================================================================
 レポート終了

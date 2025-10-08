@@ -12,7 +12,7 @@ def test_lite_import():
     from symbol_switch_manager_lite import SymbolSwitchManagerLite
     
     import_time = (time.time() - start_time) * 1000
-    print(f"✅ 軽量版インポート: {import_time:.1f}ms")
+    print(f"[OK] 軽量版インポート: {import_time:.1f}ms")
     
     return import_time
 
@@ -24,7 +24,7 @@ def test_full_import():
     from src.dssms.symbol_switch_manager import SymbolSwitchManager
     
     import_time = (time.time() - start_time) * 1000
-    print(f"✅ 完全版インポート: {import_time:.1f}ms")
+    print(f"[OK] 完全版インポート: {import_time:.1f}ms")
     
     return import_time
 
@@ -40,4 +40,4 @@ if __name__ == "__main__":
     print(f"差異: {full_time - lite_time:.1f}ms ({(full_time/lite_time):.1f}x)")
     
     if full_time > lite_time * 10:
-        print("⚠️ 完全版に重い処理があります！")
+        print("[WARNING] 完全版に重い処理があります！")

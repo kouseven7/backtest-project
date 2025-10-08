@@ -56,7 +56,7 @@ def test_simulate_trades():
     try:
         result = simulate_trades(test_data, ticker)
         
-        print("✅ simulate_trades 実行成功")
+        print("[OK] simulate_trades 実行成功")
         print(f"結果のキー: {list(result.keys())}")
         print()
         
@@ -66,9 +66,9 @@ def test_simulate_trades():
         print(f"   取引履歴の列: {list(trade_history.columns)}")
         
         if 'リスク状態' not in trade_history.columns:
-            print("   ✅ リスク状態列が正しく削除されています")
+            print("   [OK] リスク状態列が正しく削除されています")
         else:
-            print("   ❌ リスク状態列が残っています")
+            print("   [ERROR] リスク状態列が残っています")
         print()
         
         # 2. 取引量が株数単位で表示されているかチェック
@@ -80,10 +80,10 @@ def test_simulate_trades():
             # 取引量が整数（株数）になっているかチェック
             if '取引量(株)' in trade_history.columns:
                 shares_values = trade_history['取引量(株)'].values
-                print(f"   ✅ 取引量(株)列が追加されています")
+                print(f"   [OK] 取引量(株)列が追加されています")
                 print(f"   株数の例: {shares_values}")
             else:
-                print("   ❌ 取引量(株)列がありません")
+                print("   [ERROR] 取引量(株)列がありません")
         else:
             print("   取引データがありません")
         print()
@@ -97,10 +97,10 @@ def test_simulate_trades():
         # 累積損益が正しく計算されているかチェック
         if '累積損益' in performance_summary.columns:
             cumulative_pnl = performance_summary['累積損益']
-            print(f"   ✅ 累積損益が計算されています")
+            print(f"   [OK] 累積損益が計算されています")
             print(f"   最終累積損益: {cumulative_pnl.iloc[-1]:.2f}円")
         else:
-            print("   ❌ 累積損益列がありません")
+            print("   [ERROR] 累積損益列がありません")
         print()
         
         # 4. 高度なパフォーマンス指標の統合チェック
@@ -116,15 +116,15 @@ def test_simulate_trades():
         missing_metrics = []
         for metric in advanced_metrics:
             if metric in metrics_list:
-                print(f"   ✅ {metric}が追加されています")
+                print(f"   [OK] {metric}が追加されています")
             else:
                 missing_metrics.append(metric)
-                print(f"   ❌ {metric}がありません")
+                print(f"   [ERROR] {metric}がありません")
         
         if not missing_metrics:
-            print("   ✅ すべての高度なパフォーマンス指標が統合されています")
+            print("   [OK] すべての高度なパフォーマンス指標が統合されています")
         else:
-            print(f"   ❌ 不足している指標: {missing_metrics}")
+            print(f"   [ERROR] 不足している指標: {missing_metrics}")
         print()
         
         # 5. リスク管理設定の表示チェック
@@ -132,14 +132,14 @@ def test_simulate_trades():
         risk_summary = result['リスク管理設定']
         print(f"   リスク管理設定:")
         print(risk_summary)
-        print("   ✅ リスク管理設定が正しく表示されています")
+        print("   [OK] リスク管理設定が正しく表示されています")
         print()
         
         print("=== 修正確認完了 ===")
         return True
         
     except Exception as e:
-        print(f"❌ エラーが発生しました: {e}")
+        print(f"[ERROR] エラーが発生しました: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -161,7 +161,7 @@ def test_edge_cases():
     
     try:
         result = simulate_trades(no_trade_data, "TEST")
-        print("✅ 取引なしケースの処理成功")
+        print("[OK] 取引なしケースの処理成功")
         
         # パフォーマンス指標が適切にゼロ値を表示するかチェック
         performance_metrics = result['パフォーマンス指標']
@@ -169,7 +169,7 @@ def test_edge_cases():
         print(performance_metrics)
         
     except Exception as e:
-        print(f"❌ 取引なしケースでエラー: {e}")
+        print(f"[ERROR] 取引なしケースでエラー: {e}")
     
     print("=== エッジケーステスト完了 ===")
 
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     test_edge_cases()
     
     if success:
-        print("\n🎉 すべてのテストが成功しました！")
+        print("\n[SUCCESS] すべてのテストが成功しました！")
         print("trade_simulation.py の修正が正しく適用されています。")
     else:
-        print("\n⚠️ 一部のテストで問題が見つかりました。")
+        print("\n[WARNING] 一部のテストで問題が見つかりました。")

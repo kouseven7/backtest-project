@@ -12,7 +12,7 @@ def check_dssms_calculation_methods():
     backtester_file = "src/dssms/dssms_backtester.py"
     
     if not os.path.exists(backtester_file):
-        print(f"❌ {backtester_file} が見つかりません")
+        print(f"[ERROR] {backtester_file} が見つかりません")
         return
     
     with open(backtester_file, 'r', encoding='utf-8') as f:
@@ -21,7 +21,7 @@ def check_dssms_calculation_methods():
     lines = content.split('\n')
     
     # vs_戦略計算の箇所を検索
-    print("🔍 vs_戦略計算ロジックの検索:")
+    print("[SEARCH] vs_戦略計算ロジックの検索:")
     
     vs_calculation_lines = []
     for i, line in enumerate(lines):
@@ -31,7 +31,7 @@ def check_dssms_calculation_methods():
     print(f"   発見された関連行数: {len(vs_calculation_lines)}")
     
     if vs_calculation_lines:
-        print("\n📋 vs_戦略計算関連コード:")
+        print("\n[LIST] vs_戦略計算関連コード:")
         for line in vs_calculation_lines[:15]:  # 最初の15行を表示
             print(f"   {line}")
     
@@ -43,11 +43,11 @@ def check_dssms_calculation_methods():
             random_lines.append(f"{i+1:4d}: {line.strip()}")
     
     if random_lines:
-        print("   ⚠️ ランダム要素発見:")
+        print("   [WARNING] ランダム要素発見:")
         for line in random_lines[:10]:
             print(f"   {line}")
     else:
-        print("   ✅ ランダム要素なし")
+        print("   [OK] ランダム要素なし")
     
     # 日時・時刻関連の処理確認
     print("\n📅 日時処理の確認:")
@@ -62,7 +62,7 @@ def check_dssms_calculation_methods():
             print(f"   {line}")
     
     # データ取得の一貫性確認
-    print("\n📊 データ取得の確認:")
+    print("\n[CHART] データ取得の確認:")
     data_fetch_lines = []
     for i, line in enumerate(lines):
         if any(pattern in line.lower() for pattern in ['yfinance', 'download', 'fetch_stock_data', '.get_data']):
@@ -103,11 +103,11 @@ def check_dssms_calculation_methods():
         print(f"   サイズ: {latest_file['size']:,} bytes")
         
         if latest_file['size'] < 10000:  # 10KB未満は異常に小さい
-            print("   ⚠️ ファイルサイズが異常に小さい（データが正しく出力されていない可能性）")
+            print("   [WARNING] ファイルサイズが異常に小さい（データが正しく出力されていない可能性）")
         else:
-            print("   ✅ ファイルサイズは正常")
+            print("   [OK] ファイルサイズは正常")
     else:
-        print("❌ v2 Excelファイルが見つかりません")
+        print("[ERROR] v2 Excelファイルが見つかりません")
 
 def find_error_source():
     """エラーの原因を特定"""
@@ -119,7 +119,7 @@ def find_error_source():
     backtester_file = "src/dssms/dssms_backtester.py"
     
     if not os.path.exists(backtester_file):
-        print(f"❌ {backtester_file} が見つかりません")
+        print(f"[ERROR] {backtester_file} が見つかりません")
         return
     
     with open(backtester_file, 'r', encoding='utf-8') as f:
@@ -128,7 +128,7 @@ def find_error_source():
     lines = content.split('\n')
     
     # エラーメッセージに関連する箇所を検索
-    print("🚨 エラー関連コードの検索:")
+    print("[ALERT] エラー関連コードの検索:")
     print("   エラー: 'unsupported operand type(s) for -: 'dict' and 'int'")
     
     error_lines = []
@@ -168,18 +168,18 @@ def find_error_source():
             else:
                 break
         
-        print("\n📋 メソッド全体:")
+        print("\n[LIST] メソッド全体:")
         for line in method_lines:
             print(f"   {line}")
             
         # 特にエラーが発生しやすい計算部分を強調
-        print("\n⚠️ エラー発生可能性の高い行:")
+        print("\n[WARNING] エラー発生可能性の高い行:")
         for line in method_lines:
             if any(pattern in line for pattern in [' - ', 'portfolio_value', 'initial_capital', 'dict']):
                 print(f"   >>> {line}")
     
     else:
-        print("   ❌ _prepare_dssms_results_for_excel_v2 メソッドが見つかりません")
+        print("   [ERROR] _prepare_dssms_results_for_excel_v2 メソッドが見つかりません")
 
 if __name__ == "__main__":
     check_dssms_calculation_methods()

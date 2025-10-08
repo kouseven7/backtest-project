@@ -148,10 +148,10 @@ def run_minimal_dssms_test():
     
     # 成功判定
     if total_return > -50:  # -50%以上なら成功
-        print("\n✅ DSSMSシステムは正常に動作しています！")
+        print("\n[OK] DSSMSシステムは正常に動作しています！")
         print(f"正常動作確認: {total_return:+.1f}%のリターンを達成")
     else:
-        print("\n❌ DSSMSシステムに問題があります")
+        print("\n[ERROR] DSSMSシステムに問題があります")
         print(f"パフォーマンス不良: {total_return:+.1f}%の損失")
     
     return {

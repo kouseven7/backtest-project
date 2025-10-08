@@ -28,11 +28,11 @@ class HierarchicalRankingOptimizer:
             if original_path.exists():
                 backup_path.write_text(original_path.read_text(encoding='utf-8'), encoding='utf-8')
                 self.backup_files[file_path] = str(backup_path)
-                print(f"✅ バックアップ作成: {backup_path}")
+                print(f"[OK] バックアップ作成: {backup_path}")
                 return True
             return False
         except Exception as e:
-            print(f"❌ バックアップ作成エラー: {e}")
+            print(f"[ERROR] バックアップ作成エラー: {e}")
             return False
     
     def implement_lazy_imports(self) -> Dict[str, Any]:
@@ -42,12 +42,12 @@ class HierarchicalRankingOptimizer:
         target_file = 'src/dssms/hierarchical_ranking_system.py'
         
         if not Path(target_file).exists():
-            print(f"❌ {target_file} が見つかりません")
+            print(f"[ERROR] {target_file} が見つかりません")
             return {}
         
         # バックアップ作成
         if not self.create_backup(target_file):
-            print("❌ バックアップ作成に失敗しました")
+            print("[ERROR] バックアップ作成に失敗しました")
             return {}
         
         try:
@@ -62,7 +62,7 @@ class HierarchicalRankingOptimizer:
             with open(target_file, 'w', encoding='utf-8') as f:
                 f.write(optimized_content)
             
-            print("✅ 遅延インポート最適化実装完了")
+            print("[OK] 遅延インポート最適化実装完了")
             
             # 効果測定
             optimization_results = self._measure_optimization_effects(target_file)
@@ -70,14 +70,14 @@ class HierarchicalRankingOptimizer:
             return optimization_results
             
         except Exception as e:
-            print(f"❌ 遅延インポート実装エラー: {e}")
+            print(f"[ERROR] 遅延インポート実装エラー: {e}")
             # エラー時はバックアップから復元
             self._restore_from_backup(target_file)
             return {}
     
     def _apply_lazy_import_optimizations(self, content: str) -> str:
         """遅延インポート最適化の適用"""
-        print("🔧 pandas/numpy遅延インポート変換中...")
+        print("[TOOL] pandas/numpy遅延インポート変換中...")
         
         # Step 1: pandas/numpy インポートをコメントアウト
         optimized_content = content.replace(
@@ -176,14 +176,14 @@ def get_np():
             replaced = before_count - after_count
             if replaced > 0:
                 replacement_count += replaced
-                print(f"  ✅ {old} → {new}: {replaced}箇所")
+                print(f"  [OK] {old} → {new}: {replaced}箇所")
         
-        print(f"  📊 総置換箇所: {replacement_count}箇所")
+        print(f"  [CHART] 総置換箇所: {replacement_count}箇所")
         return optimized_content
     
     def _measure_optimization_effects(self, target_file: str) -> Dict[str, Any]:
         """最適化効果の測定"""
-        print("📊 最適化効果測定中...")
+        print("[CHART] 最適化効果測定中...")
         
         try:
             # 最適化後のインポート時間測定
@@ -205,7 +205,7 @@ def get_np():
                 optimized_import_time = (end_time - start_time) * 1000
                 success = True
             except Exception as e:
-                print(f"⚠️ 最適化後インポートエラー: {e}")
+                print(f"[WARNING] 最適化後インポートエラー: {e}")
                 optimized_import_time = float('inf')
                 success = False
             
@@ -226,11 +226,11 @@ def get_np():
                     'remaining_optimization_needed': max(0, optimized_import_time - 50)
                 }
                 
-                print(f"  ✅ 最適化成功")
-                print(f"  📊 元時間: {original_time:.1f}ms")
-                print(f"  📊 最適化後: {optimized_import_time:.1f}ms")
-                print(f"  📈 改善: {improvement:.1f}ms ({improvement_percentage:.1f}%)")
-                print(f"  🎯 50ms目標: {'達成' if results['meets_target_50ms'] else f'未達成（残り{results['remaining_optimization_needed']:.1f}ms）'}")
+                print(f"  [OK] 最適化成功")
+                print(f"  [CHART] 元時間: {original_time:.1f}ms")
+                print(f"  [CHART] 最適化後: {optimized_import_time:.1f}ms")
+                print(f"  [UP] 改善: {improvement:.1f}ms ({improvement_percentage:.1f}%)")
+                print(f"  [TARGET] 50ms目標: {'達成' if results['meets_target_50ms'] else f'未達成（残り{results['remaining_optimization_needed']:.1f}ms）'}")
                 
             else:
                 results = {
@@ -238,17 +238,17 @@ def get_np():
                     'error': '最適化後のインポートに失敗',
                     'rollback_required': True
                 }
-                print(f"  ❌ 最適化失敗: インポートエラー")
+                print(f"  [ERROR] 最適化失敗: インポートエラー")
             
             return results
             
         except Exception as e:
-            print(f"❌ 効果測定エラー: {e}")
+            print(f"[ERROR] 効果測定エラー: {e}")
             return {'optimization_success': False, 'error': str(e)}
     
     def investigate_additional_bottlenecks(self) -> Dict[str, Any]:
         """追加ボトルネック調査（実測2422msとの差分1200ms調査）"""
-        print("🔍 追加ボトルネック調査中（実測2422ms vs 分析1228msの差分調査）...")
+        print("[SEARCH] 追加ボトルネック調査中（実測2422ms vs 分析1228msの差分調査）...")
         
         # DSSMS全体のインポート時間を再測定
         dssms_components = [
@@ -276,10 +276,10 @@ def get_np():
                 component_times[component] = import_time
                 total_time += import_time
                 
-                print(f"  📊 {component}: {import_time:.1f}ms")
+                print(f"  [CHART] {component}: {import_time:.1f}ms")
                 
             except Exception as e:
-                print(f"  ❌ {component}: インポートエラー ({e})")
+                print(f"  [ERROR] {component}: インポートエラー ({e})")
                 component_times[component] = 0
         
         # 差分分析
@@ -296,7 +296,7 @@ def get_np():
         }
         
         if discrepancy_analysis['unexplained_difference_ms'] > 100:
-            print(f"  🚨 未説明差分発見: {discrepancy_analysis['unexplained_difference_ms']:.1f}ms")
+            print(f"  [ALERT] 未説明差分発見: {discrepancy_analysis['unexplained_difference_ms']:.1f}ms")
             discrepancy_analysis['analysis']['hidden_bottleneck'] = True
             discrepancy_analysis['analysis']['investigation_needed'] = [
                 'src/dssms/__init__.py の隠れたインポート',
@@ -338,16 +338,16 @@ def get_np():
                 
                 if backup_path.exists():
                     original_path.write_text(backup_path.read_text(encoding='utf-8'), encoding='utf-8')
-                    print(f"✅ バックアップから復元: {file_path}")
+                    print(f"[OK] バックアップから復元: {file_path}")
                     return True
             return False
         except Exception as e:
-            print(f"❌ バックアップ復元エラー: {e}")
+            print(f"[ERROR] バックアップ復元エラー: {e}")
             return False
 
 def main():
     """メイン実行関数"""
-    print("🚀 TODO-PERF-001 Stage 2: 重いライブラリ遅延インポート実装開始")
+    print("[ROCKET] TODO-PERF-001 Stage 2: 重いライブラリ遅延インポート実装開始")
     print("=" * 80)
     
     optimizer = HierarchicalRankingOptimizer()
@@ -376,19 +376,19 @@ def main():
             json.dump(comprehensive_results, f, indent=2, ensure_ascii=False)
         
         print("\\n" + "=" * 80)
-        print("📊 Stage 2 最適化結果サマリー")
+        print("[CHART] Stage 2 最適化結果サマリー")
         print("=" * 80)
         
         if optimization_results.get('optimization_success', False):
-            print(f"✅ 遅延インポート最適化: 成功")
-            print(f"📈 改善効果: {optimization_results['improvement_ms']:.1f}ms ({optimization_results['improvement_percentage']:.1f}%)")
-            print(f"🎯 50ms目標: {optimization_results['meets_target_50ms']}")
+            print(f"[OK] 遅延インポート最適化: 成功")
+            print(f"[UP] 改善効果: {optimization_results['improvement_ms']:.1f}ms ({optimization_results['improvement_percentage']:.1f}%)")
+            print(f"[TARGET] 50ms目標: {optimization_results['meets_target_50ms']}")
         else:
-            print(f"❌ 遅延インポート最適化: 失敗")
+            print(f"[ERROR] 遅延インポート最適化: 失敗")
         
         additional_targets = additional_analysis['additional_optimization_targets']
         if additional_targets:
-            print(f"\\n🔍 追加最適化対象: {len(additional_targets)}個")
+            print(f"\\n[SEARCH] 追加最適化対象: {len(additional_targets)}個")
             for target in additional_targets[:3]:
                 print(f"  - {target['component']}: {target['time_ms']:.1f}ms ({target['severity']})")
         
@@ -397,16 +397,16 @@ def main():
         # Stage 3準備状況
         print("\\n" + "=" * 80)
         if optimization_results.get('meets_target_50ms', False):
-            print("🎉 Stage 2で50ms目標達成 - Stage 3でクラス最適化による更なる改善")
+            print("[SUCCESS] Stage 2で50ms目標達成 - Stage 3でクラス最適化による更なる改善")
         else:
-            print("⚠️ Stage 2で50ms目標未達成 - Stage 3でクラス最適化による追加改善必須")
-        print("🚀 Stage 3: クラス構造・初期化最適化 準備完了")
+            print("[WARNING] Stage 2で50ms目標未達成 - Stage 3でクラス最適化による追加改善必須")
+        print("[ROCKET] Stage 3: クラス構造・初期化最適化 準備完了")
         print("=" * 80)
         
         return True
         
     except Exception as e:
-        print(f"❌ Stage 2 実行エラー: {e}")
+        print(f"[ERROR] Stage 2 実行エラー: {e}")
         import traceback
         traceback.print_exc()
         return False

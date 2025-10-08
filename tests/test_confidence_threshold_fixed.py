@@ -301,9 +301,9 @@ def main():
     print("\n" + "=" * 60)
     print(f"テスト結果: {success_count}/{total_tests} 成功")
     if success_count == total_tests:
-        print("✅ 全テスト成功 - 2-2-3実装完了")
+        print("[OK] 全テスト成功 - 2-2-3実装完了")
     else:
-        print("⚠️  一部テスト失敗 - 要修正")
+        print("[WARNING]  一部テスト失敗 - 要修正")
     print("=" * 60)
 
 

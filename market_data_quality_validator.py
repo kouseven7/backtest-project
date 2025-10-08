@@ -113,7 +113,7 @@ class MarketDataQualityValidator:
         Returns:
             DataQualityReport: 品質検証レポート
         """
-        self.logger.info(f"🔍 データ品質検証開始: {data_type} ({len(data)} rows)")
+        self.logger.info(f"[SEARCH] データ品質検証開始: {data_type} ({len(data)} rows)")
         
         issues = []
         fixed_issues = []
@@ -165,7 +165,7 @@ class MarketDataQualityValidator:
             backtest_compliance=backtest_compliance
         )
         
-        self.logger.info(f"✅ データ品質検証完了: {data_type} - {quality_level.value} ({quality_score:.1f}%)")
+        self.logger.info(f"[OK] データ品質検証完了: {data_type} - {quality_level.value} ({quality_score:.1f}%)")
         
         return report
     
@@ -322,9 +322,9 @@ class MarketDataQualityValidator:
         compliance = has_essential_data and has_sufficient_data
         
         if compliance:
-            self.logger.info("✅ バックテスト基本理念遵守: 実データでのシグナル生成・取引実行可能")
+            self.logger.info("[OK] バックテスト基本理念遵守: 実データでのシグナル生成・取引実行可能")
         else:
-            self.logger.warning("❌ バックテスト基本理念違反: 実データ不足でシグナル生成不可")
+            self.logger.warning("[ERROR] バックテスト基本理念違反: 実データ不足でシグナル生成不可")
         
         return compliance
     
@@ -352,7 +352,7 @@ class MarketDataQualityValidator:
                         remaining_missing = data_fixed[column_with_missing].isna().sum()
                         if remaining_missing < original_missing:
                             fixed_issues.append(issue)
-                            self.logger.info(f"🔧 自動修正: {column_with_missing}の欠損値を補完 ({original_missing} → {remaining_missing})")
+                            self.logger.info(f"[TOOL] 自動修正: {column_with_missing}の欠損値を補完 ({original_missing} → {remaining_missing})")
                 
                 elif issue.issue_type == DataIssueType.NEGATIVE_VALUES:
                     # 負の出来高を0で置換
@@ -361,7 +361,7 @@ class MarketDataQualityValidator:
                         data_fixed.loc[data_fixed['Volume'] < 0, 'Volume'] = 0
                         if negative_count > 0:
                             fixed_issues.append(issue)
-                            self.logger.info(f"🔧 自動修正: 負の出来高を0で置換 ({negative_count}個)")
+                            self.logger.info(f"[TOOL] 自動修正: 負の出来高を0で置換 ({negative_count}個)")
         
         return data_fixed, fixed_issues
     
@@ -405,20 +405,20 @@ class MarketDataQualityValidator:
         recommendations = []
         
         if quality_level == QualityLevel.UNUSABLE:
-            recommendations.append("❌ データ品質が使用不可レベルです。データソースを確認してください")
+            recommendations.append("[ERROR] データ品質が使用不可レベルです。データソースを確認してください")
         elif quality_level == QualityLevel.POOR:
-            recommendations.append("⚠️ データ品質が低いです。重要な問題を修正してください")
+            recommendations.append("[WARNING] データ品質が低いです。重要な問題を修正してください")
         
         critical_issues = [i for i in issues if i.severity == "critical"]
         if critical_issues:
-            recommendations.append(f"🚨 重要な問題が{len(critical_issues)}個あります。即座に対処してください")
+            recommendations.append(f"[ALERT] 重要な問題が{len(critical_issues)}個あります。即座に対処してください")
         
         warning_issues = [i for i in issues if i.severity == "warning"]
         if warning_issues:
-            recommendations.append(f"⚠️ 警告レベルの問題が{len(warning_issues)}個あります。確認を推奨します")
+            recommendations.append(f"[WARNING] 警告レベルの問題が{len(warning_issues)}個あります。確認を推奨します")
         
         if quality_level in [QualityLevel.EXCELLENT, QualityLevel.GOOD]:
-            recommendations.append("✅ データ品質は良好です。バックテスト実行に適しています")
+            recommendations.append("[OK] データ品質は良好です。バックテスト実行に適しています")
         
         return recommendations
     
@@ -426,38 +426,38 @@ class MarketDataQualityValidator:
         """品質レポートのテキスト形式生成"""
         lines = []
         lines.append("=" * 80)
-        lines.append(f"📊 MarketDataQualityValidator レポート - {report.data_type}")
+        lines.append(f"[CHART] MarketDataQualityValidator レポート - {report.data_type}")
         lines.append("=" * 80)
         lines.append(f"🕐 検証時刻: {report.validation_timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
-        lines.append(f"📈 データ行数: {report.total_rows}")
-        lines.append(f"🎯 品質レベル: {report.quality_level.value.upper()}")
-        lines.append(f"📊 品質スコア: {report.quality_score:.1f}%")
-        lines.append(f"🔍 バックテスト基本理念遵守: {'✅ YES' if report.backtest_compliance else '❌ NO'}")
+        lines.append(f"[UP] データ行数: {report.total_rows}")
+        lines.append(f"[TARGET] 品質レベル: {report.quality_level.value.upper()}")
+        lines.append(f"[CHART] 品質スコア: {report.quality_score:.1f}%")
+        lines.append(f"[SEARCH] バックテスト基本理念遵守: {'[OK] YES' if report.backtest_compliance else '[ERROR] NO'}")
         lines.append("")
         
         if report.issues:
-            lines.append("🚨 検出された問題:")
+            lines.append("[ALERT] 検出された問題:")
             for i, issue in enumerate(report.issues, 1):
-                severity_icon = {"critical": "🚨", "warning": "⚠️", "info": "ℹ️"}
+                severity_icon = {"critical": "[ALERT]", "warning": "[WARNING]", "info": "ℹ️"}
                 icon = severity_icon.get(issue.severity, "❓")
                 lines.append(f"  {i}. {icon} {issue.description}")
                 lines.append(f"     影響行数: {len(issue.affected_rows)}")
                 lines.append(f"     推奨対応: {issue.suggested_action}")
                 if issue.auto_fixable:
-                    lines.append("     ✅ 自動修正可能")
+                    lines.append("     [OK] 自動修正可能")
                 lines.append("")
         else:
-            lines.append("✅ 問題は検出されませんでした")
+            lines.append("[OK] 問題は検出されませんでした")
             lines.append("")
         
         if report.fixed_issues:
-            lines.append("🔧 自動修正された問題:")
+            lines.append("[TOOL] 自動修正された問題:")
             for i, issue in enumerate(report.fixed_issues, 1):
-                lines.append(f"  {i}. ✅ {issue.description}")
+                lines.append(f"  {i}. [OK] {issue.description}")
             lines.append("")
         
         if report.recommendations:
-            lines.append("💡 推奨事項:")
+            lines.append("[IDEA] 推奨事項:")
             for i, rec in enumerate(report.recommendations, 1):
                 lines.append(f"  {i}. {rec}")
             lines.append("")

@@ -21,7 +21,7 @@ class EngineFilesRelationshipAnalyzer:
         
     def analyze_complete_engine_relationships(self):
         """全エンジンファイル関係性の完全整理"""
-        print("🔍 Task 6.2: エンジンファイル関係性の完全整理")
+        print("[SEARCH] Task 6.2: エンジンファイル関係性の完全整理")
         print("=" * 80)
         
         # 1. 全エンジンファイルの発見・分類
@@ -47,7 +47,7 @@ class EngineFilesRelationshipAnalyzer:
     
     def _discover_all_engine_files(self):
         """1. 全エンジンファイルの発見・分類"""
-        print("\n🔍 1. 全エンジンファイルの発見・分類")
+        print("\n[SEARCH] 1. 全エンジンファイルの発見・分類")
         print("-" * 60)
         
         # エンジン関連ファイルのパターン
@@ -108,26 +108,26 @@ class EngineFilesRelationshipAnalyzer:
             self.analysis_results['discovered_files'] = discovered_files
             self.analysis_results['important_engines'] = engine_analysis
             
-            print(f"📊 発見されたファイル:")
+            print(f"[CHART] 発見されたファイル:")
             print(f"   エンジンファイル: {len(discovered_files['engine_files'])}個")
             print(f"   出力ファイル: {len(discovered_files['output_files'])}個")
             print(f"   統一ファイル: {len(discovered_files['unified_files'])}個")
             
-            print(f"\n📋 重要エンジンファイルの状況:")
+            print(f"\n[LIST] 重要エンジンファイルの状況:")
             for engine, info in engine_analysis.items():
-                status = "✅ 存在" if info['exists'] else "❌ 不存在"
+                status = "[OK] 存在" if info['exists'] else "[ERROR] 不存在"
                 if info['exists']:
                     print(f"   {status} {engine}: {info['size']:,} bytes, {info['location']}")
                 else:
                     print(f"   {status} {engine}")
             
         except Exception as e:
-            print(f"❌ ファイル発見エラー: {e}")
+            print(f"[ERROR] ファイル発見エラー: {e}")
             self.analysis_results['discovered_files'] = {'error': str(e)}
     
     def _analyze_task42_engine_relationship(self):
         """2. Task 4.2調査対象エンジンとの関係性特定"""
-        print("\n🔍 2. Task 4.2調査対象エンジンとの関係性特定")
+        print("\n[SEARCH] 2. Task 4.2調査対象エンジンとの関係性特定")
         print("-" * 60)
         
         try:
@@ -186,22 +186,22 @@ class EngineFilesRelationshipAnalyzer:
                     }
                 }
                 
-                print(f"📊 Task 4.2調査対象エンジン: {len(task42_engines)}個")
+                print(f"[CHART] Task 4.2調査対象エンジン: {len(task42_engines)}個")
                 for engine, analysis in relationship_analysis.items():
-                    exists = "✅" if analysis['exists_now'] else "❌"
+                    exists = "[OK]" if analysis['exists_now'] else "[ERROR]"
                     relation = analysis['relationship_type']
                     print(f"   {exists} {engine}: {relation}")
                 
-                print(f"🎯 最高スコアエンジン: dssms_unified_output_engine.py (85.0点)")
+                print(f"[TARGET] 最高スコアエンジン: dssms_unified_output_engine.py (85.0点)")
                 print(f"🔄 現在使用中: {current_engine}")
-                print(f"✅ 同一性: {'同じ' if current_engine == 'dssms_unified_output_engine.py' else '異なる'}")
+                print(f"[OK] 同一性: {'同じ' if current_engine == 'dssms_unified_output_engine.py' else '異なる'}")
                 
             else:
-                print("❌ Task 4.2結果ファイルが見つかりません")
+                print("[ERROR] Task 4.2結果ファイルが見つかりません")
                 self.analysis_results['task42_relationship'] = {'error': 'task42_results_not_found'}
                 
         except Exception as e:
-            print(f"❌ Task 4.2関係性分析エラー: {e}")
+            print(f"[ERROR] Task 4.2関係性分析エラー: {e}")
             self.analysis_results['task42_relationship'] = {'error': str(e)}
     
     def _identify_currently_used_engine(self):
@@ -235,7 +235,7 @@ class EngineFilesRelationshipAnalyzer:
     
     def _trace_actual_engine_usage(self):
         """3. 実際の使用状況・呼び出し関係の追跡"""
-        print("\n🔍 3. 実際の使用状況・呼び出し関係の追跡")
+        print("\n[SEARCH] 3. 実際の使用状況・呼び出し関係の追跡")
         print("-" * 60)
         
         usage_analysis = {
@@ -273,7 +273,7 @@ class EngineFilesRelationshipAnalyzer:
                 else:
                     usage_analysis['actual_execution_flow']['primary_engine'] = 'unknown'
                 
-                print(f"📋 バックテスターからのインポート:")
+                print(f"[LIST] バックテスターからのインポート:")
                 for import_line in import_lines:
                     print(f"   {import_line}")
                 
@@ -281,21 +281,21 @@ class EngineFilesRelationshipAnalyzer:
                 for call in set(usage_analysis['engine_calls']):
                     print(f"   {call}")
                 
-                print(f"🎯 主要エンジン: {usage_analysis['actual_execution_flow']['primary_engine']}")
+                print(f"[TARGET] 主要エンジン: {usage_analysis['actual_execution_flow']['primary_engine']}")
                 
             else:
-                print("❌ dssms_backtester.py が見つかりません")
+                print("[ERROR] dssms_backtester.py が見つかりません")
                 usage_analysis['error'] = 'backtester_not_found'
             
             self.analysis_results['usage_analysis'] = usage_analysis
             
         except Exception as e:
-            print(f"❌ 使用状況追跡エラー: {e}")
+            print(f"[ERROR] 使用状況追跡エラー: {e}")
             self.analysis_results['usage_analysis'] = {'error': str(e)}
     
     def _analyze_engine_dependencies(self):
         """4. エンジン間の継承・依存関係分析"""
-        print("\n🔍 4. エンジン間の継承・依存関係分析")
+        print("\n[SEARCH] 4. エンジン間の継承・依存関係分析")
         print("-" * 60)
         
         dependencies = {
@@ -338,7 +338,7 @@ class EngineFilesRelationshipAnalyzer:
                         dependencies['version_evolution'][engine_file] = 'original_version'
             
             # 依存関係の可視化
-            print(f"📊 エンジン依存関係:")
+            print(f"[CHART] エンジン依存関係:")
             for engine, imports in dependencies['import_dependencies'].items():
                 print(f"   {engine}:")
                 relevant_imports = [imp for imp in imports if 'engine' in imp.lower() or 'output' in imp.lower()]
@@ -352,13 +352,13 @@ class EngineFilesRelationshipAnalyzer:
             self.analysis_results['dependencies'] = dependencies
             
         except Exception as e:
-            print(f"❌ 依存関係分析エラー: {e}")
+            print(f"[ERROR] 依存関係分析エラー: {e}")
             self.analysis_results['dependencies'] = {'error': str(e)}
     
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: def _identify_excel_output_responsible_engine(self):
         """5. Excel出力責任エンジンの最終特定"""
-        print("\n🔍 5. Excel出力責任エンジンの最終特定")
+        print("\n[SEARCH] 5. Excel出力責任エンジンの最終特定")
         print("-" * 60)
         
         excel_responsibility = {
@@ -420,23 +420,23 @@ class EngineFilesRelationshipAnalyzer:
             excel_responsibility['responsible_engine'] = responsible_engine
             excel_responsibility['confidence_score'] = max_excel_capability
             
-            print(f"📊 Excel出力機能分析:")
+            print(f"[CHART] Excel出力機能分析:")
             for engine, capabilities in excel_responsibility['excel_generation_methods'].items():
-                has_excel = "✅" if capabilities['has_excel_capability'] else "❌"
+                has_excel = "[OK]" if capabilities['has_excel_capability'] else "[ERROR]"
                 print(f"   {has_excel} {engine}: {len(capabilities['excel_methods'])}メソッド, {capabilities['xlsx_references']}個xlsx参照")
             
-            print(f"\n🎯 Excel出力責任エンジン: {responsible_engine}")
-            print(f"📊 信頼度スコア: {max_excel_capability}")
+            print(f"\n[TARGET] Excel出力責任エンジン: {responsible_engine}")
+            print(f"[CHART] 信頼度スコア: {max_excel_capability}")
             
             self.analysis_results['excel_responsibility'] = excel_responsibility
             
         except Exception as e:
-            print(f"❌ Excel責任分析エラー: {e}")
+            print(f"[ERROR] Excel責任分析エラー: {e}")
             self.analysis_results['excel_responsibility'] = {'error': str(e)}
     
     def _identify_confusion_problems(self):
         """6. 混乱状況の整理・問題特定"""
-        print("\n🔍 6. 混乱状況の整理・問題特定")
+        print("\n[SEARCH] 6. 混乱状況の整理・問題特定")
         print("-" * 60)
         
         confusion_problems = {
@@ -512,20 +512,20 @@ class EngineFilesRelationshipAnalyzer:
                 else:
                     confusion_problems['resolution_priorities'][problem['problem']] = 3
             
-            print(f"🚨 特定された問題: {len(confusion_problems['identified_problems'])}件")
+            print(f"[ALERT] 特定された問題: {len(confusion_problems['identified_problems'])}件")
             for i, problem in enumerate(confusion_problems['identified_problems'], 1):
                 severity_icon = "🔴" if problem['severity'] == 'critical' else "🟡" if problem['severity'] == 'high' else "🟢"
                 print(f"   {i}. {severity_icon} {problem['description']}")
             
-            print(f"\n🔍 混乱の根本原因:")
+            print(f"\n[SEARCH] 混乱の根本原因:")
             for source, exists in confusion_problems['confusion_sources'].items():
-                status = "✅" if exists else "❌"
+                status = "[OK]" if exists else "[ERROR]"
                 print(f"   {status} {source}")
             
             self.analysis_results['confusion_problems'] = confusion_problems
             
         except Exception as e:
-            print(f"❌ 混乱問題特定エラー: {e}")
+            print(f"[ERROR] 混乱問題特定エラー: {e}")
             self.analysis_results['confusion_problems'] = {'error': str(e)}
     
     def generate_engine_relationship_summary(self):
@@ -541,11 +541,11 @@ class EngineFilesRelationshipAnalyzer:
             task42_relation = self.analysis_results.get('task42_relationship', {})
             if task42_relation.get('task42_highest_score', {}).get('same_as_current', False):
                 summary['critical_findings'].append(
-                    "✅ Task 4.2の最高スコアエンジン(85.0点)と現在使用中エンジンが同一"
+                    "[OK] Task 4.2の最高スコアエンジン(85.0点)と現在使用中エンジンが同一"
                 )
             else:
                 summary['critical_findings'].append(
-                    "🚨 Task 4.2の最高スコアエンジン(85.0点)と現在使用中エンジンが異なる"
+                    "[ALERT] Task 4.2の最高スコアエンジン(85.0点)と現在使用中エンジンが異なる"
                 )
             
             # エンジンステータス
@@ -603,12 +603,12 @@ class EngineFilesRelationshipAnalyzer:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(complete_results, f, ensure_ascii=False, indent=2, default=str)
         
-        print(f"\n✅ エンジン関係性分析結果保存: {output_file}")
+        print(f"\n[OK] エンジン関係性分析結果保存: {output_file}")
         return output_file
 
 def main():
     """メイン実行"""
-    print("🔍 Task 6.2: エンジンファイル関係性の完全整理")
+    print("[SEARCH] Task 6.2: エンジンファイル関係性の完全整理")
     print("=" * 80)
     
     analyzer = EngineFilesRelationshipAnalyzer()
@@ -623,19 +623,19 @@ def main():
     output_file = analyzer.save_results()
     
     print("\n" + "=" * 80)
-    print("📋 Task 6.2完了サマリー")
+    print("[LIST] Task 6.2完了サマリー")
     print("=" * 80)
     
-    print("🔍 重要な発見:")
+    print("[SEARCH] 重要な発見:")
     for finding in summary.get('critical_findings', []):
         print(f"   {finding}")
     
-    print(f"\n📊 エンジンステータス:")
+    print(f"\n[CHART] エンジンステータス:")
     for engine, status in summary.get('engine_status', {}).items():
-        status_icon = "✅" if status['status'] == 'active' else "❌"
+        status_icon = "[OK]" if status['status'] == 'active' else "[ERROR]"
         print(f"   {status_icon} {engine}: {status['status']}")
     
-    print(f"\n💡 推奨事項:")
+    print(f"\n[IDEA] 推奨事項:")
     for recommendation in summary.get('recommendations', []):
         print(f"   {recommendation}")
     

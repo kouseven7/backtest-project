@@ -177,7 +177,7 @@ def assess_additional_optimization_needs(comprehensive_effect):
     print("\n=== 追加最適化必要性判定 ===")
     
     if comprehensive_effect.get('error'):
-        print("❌ 効果計算エラーのため判定不可")
+        print("[ERROR] 効果計算エラーのため判定不可")
         return {'needs_additional': True, 'reason': 'calculation_error'}
     
     achievement_rate = comprehensive_effect.get('achievement_rate_pct', 0)
@@ -189,21 +189,21 @@ def assess_additional_optimization_needs(comprehensive_effect):
     
     # 判定ロジック
     if achievement_rate >= 100.0:
-        print("✅ Phase 3目標完全達成 - 追加最適化不要")
+        print("[OK] Phase 3目標完全達成 - 追加最適化不要")
         return {
             'needs_additional': False, 
             'status': 'complete',
             'reason': f'目標超過達成({achievement_rate:.1f}%)'
         }
     elif achievement_rate >= 80.0:
-        print("✅ Phase 3目標概ね達成 - 追加最適化任意")
+        print("[OK] Phase 3目標概ね達成 - 追加最適化任意")
         return {
             'needs_additional': False, 
             'status': 'acceptable',
             'reason': f'十分な達成率({achievement_rate:.1f}%)'
         }
     elif achievement_rate >= 50.0:
-        print("⚠️ Phase 3部分達成 - 軽微な追加最適化推奨")
+        print("[WARNING] Phase 3部分達成 - 軽微な追加最適化推奨")
         return {
             'needs_additional': True, 
             'status': 'partial',
@@ -211,7 +211,7 @@ def assess_additional_optimization_needs(comprehensive_effect):
             'suggestions': ['型注釈最適化', 'キャッシュ機構改善', 'インポート順序最適化']
         }
     else:
-        print("❌ Phase 3目標未達 - 本格的追加最適化必要")
+        print("[ERROR] Phase 3目標未達 - 本格的追加最適化必要")
         return {
             'needs_additional': True, 
             'status': 'insufficient',
@@ -242,14 +242,14 @@ def main():
     print("=" * 70)
     
     if not comprehensive_effect.get('error'):
-        print(f"✅ Phase 3統合最適化結果:")
+        print(f"[OK] Phase 3統合最適化結果:")
         print(f"   削減時間: {comprehensive_effect['time_saved_ms']:.1f}ms")
         print(f"   改善率: {comprehensive_effect['improvement_rate_pct']:.1f}%")
         print(f"   目標達成率: {comprehensive_effect['achievement_rate_pct']:.1f}%")
-        print(f"   Phase 3成功: {'✅ YES' if comprehensive_effect['phase3_success'] else '❌ NO'}")
+        print(f"   Phase 3成功: {'[OK] YES' if comprehensive_effect['phase3_success'] else '[ERROR] NO'}")
     
-    print(f"\n✅ 追加最適化判定:")
-    print(f"   必要性: {'❗ 必要' if optimization_assessment['needs_additional'] else '✅ 不要'}")
+    print(f"\n[OK] 追加最適化判定:")
+    print(f"   必要性: {'❗ 必要' if optimization_assessment['needs_additional'] else '[OK] 不要'}")
     print(f"   状況: {optimization_assessment['status']}")
     print(f"   理由: {optimization_assessment['reason']}")
     
@@ -259,7 +259,7 @@ def main():
             print(f"     - {suggestion}")
     
     # 次段階への提言
-    print(f"\n📋 次段階提言:")
+    print(f"\n[LIST] 次段階提言:")
     if optimization_assessment['status'] == 'complete':
         print("   • TODO-PERF-003 Phase 3完了宣言")
         print("   • 次のボトルネック特定・Phase 4計画立案")

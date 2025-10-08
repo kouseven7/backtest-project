@@ -688,12 +688,12 @@ if __name__ == "__main__":
         # デモ戦略
         demo_strategies = create_demo_strategies()
         
-        print(f"\n🎯 Testing dependency resolution for strategies: {demo_strategies}")
+        print(f"\n[TARGET] Testing dependency resolution for strategies: {demo_strategies}")
         
         # 依存関係解決
         resolution = resolver.resolve_dependencies(demo_strategies)
         
-        print(f"\n📊 Dependency Resolution Results:")
+        print(f"\n[CHART] Dependency Resolution Results:")
         print("-" * 50)
         print(f"Execution Order: {resolution.execution_order}")
         print(f"Parallel Groups: {resolution.parallel_groups}")
@@ -702,7 +702,7 @@ if __name__ == "__main__":
         
         # 最適化提案
         if resolution.optimization_suggestions:
-            print(f"\n💡 Optimization Suggestions:")
+            print(f"\n[IDEA] Optimization Suggestions:")
             for i, suggestion in enumerate(resolution.optimization_suggestions, 1):
                 print(f"  {i}. {suggestion}")
         
@@ -710,20 +710,20 @@ if __name__ == "__main__":
         data_flow = resolution.data_flow_optimization
         if data_flow.get('shared_data_optimization'):
             shared_opt = data_flow['shared_data_optimization']
-            print(f"\n📈 Data Flow Optimization:")
+            print(f"\n[UP] Data Flow Optimization:")
             print(f"  Shared Data Keys: {shared_opt.get('total_shared_data_keys', 0)}")
             print(f"  High Usage Keys: {shared_opt.get('high_usage_data_keys', 0)}")
             print(f"  Est. Memory Usage: {shared_opt.get('estimated_total_memory_mb', 0)}MB")
         
         # 実行準備検証
-        print(f"\n🔍 Testing execution readiness validation...")
+        print(f"\n[SEARCH] Testing execution readiness validation...")
         validation = resolver.validate_execution_readiness(demo_strategies)
         
-        print(f"Execution Ready: {'✅ Yes' if validation['ready'] else '❌ No'}")
+        print(f"Execution Ready: {'[OK] Yes' if validation['ready'] else '[ERROR] No'}")
         if validation['issues']:
             print(f"Issues: {len(validation['issues'])}")
             for issue in validation['issues']:
-                print(f"  ⚠️ {issue}")
+                print(f"  [WARNING] {issue}")
         
         if validation['warnings']:
             print(f"Warnings: {len(validation['warnings'])}")
@@ -732,16 +732,16 @@ if __name__ == "__main__":
         
         # 統計情報
         stats = resolver.get_dependency_stats()
-        print(f"\n📊 Dependency Statistics:")
+        print(f"\n[CHART] Dependency Statistics:")
         print(f"  Total Resolutions: {stats['total_resolutions']}")
         print(f"  Cache Entries: {stats['cache_entries']}")
         print(f"  Graph Nodes: {stats['graph_stats']['nodes']}")
         print(f"  Graph Edges: {stats['graph_stats']['edges']}")
-        print(f"  Graph is Acyclic: {'✅' if stats['graph_stats']['is_acyclic'] else '❌'}")
+        print(f"  Graph is Acyclic: {'[OK]' if stats['graph_stats']['is_acyclic'] else '[ERROR]'}")
         
-        print("\n✅ Strategy Dependency Resolver demo completed successfully!")
+        print("\n[OK] Strategy Dependency Resolver demo completed successfully!")
         
     except Exception as e:
-        print(f"\n❌ Demo failed: {e}")
+        print(f"\n[ERROR] Demo failed: {e}")
         import traceback
         traceback.print_exc()

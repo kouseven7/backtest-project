@@ -720,10 +720,10 @@ if __name__ == "__main__":
     result = run_engine_quality_standardization()
     
     if result['success']:
-        print(f"✅ エンジン品質統一完了")
-        print(f"📊 対象エンジン: {result['summary']['total_engines']}個")
-        print(f"🔧 改善実行: {result['summary']['improved_engines']}個")
+        print(f"[OK] エンジン品質統一完了")
+        print(f"[CHART] 対象エンジン: {result['summary']['total_engines']}個")
+        print(f"[TOOL] 改善実行: {result['summary']['improved_engines']}個")
         print(f"⏱️ 総工数: {result['summary']['total_effort']:.1f}時間")
-        print(f"📋 レポート: {result['report_path']}")
+        print(f"[LIST] レポート: {result['report_path']}")
     else:
-        print(f"❌ エンジン品質統一失敗: {result['error']}")
+        print(f"[ERROR] エンジン品質統一失敗: {result['error']}")

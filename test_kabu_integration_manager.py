@@ -20,9 +20,9 @@ try:
         KabuIntegrationManager,
         DSSMSKabuIntegrator
     )
-    print("✅ モジュールインポート成功")
+    print("[OK] モジュールインポート成功")
 except ImportError as e:
-    print(f"❌ インポートエラー: {e}")
+    print(f"[ERROR] インポートエラー: {e}")
     sys.exit(1)
 
 def test_kabu_integration_manager():
@@ -186,7 +186,7 @@ def main():
     """メインテスト実行"""
     logger = setup_logger("kabu_integration_main_test")
     
-    logger.info("🚀 DSSMS Phase 4 Task 4.1 kabu API統合マネージャー 総合テスト開始")
+    logger.info("[ROCKET] DSSMS Phase 4 Task 4.1 kabu API統合マネージャー 総合テスト開始")
     logger.info(f"テスト開始時刻: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     test_results = []
@@ -218,16 +218,16 @@ def main():
     ]
     
     for i, (name, result) in enumerate(zip(test_names, test_results)):
-        status = "✅ 成功" if result else "❌ 失敗"
+        status = "[OK] 成功" if result else "[ERROR] 失敗"
         logger.info(f"{name}: {status}")
     
     overall_success = all(test_results)
-    logger.info(f"\n総合結果: {'✅ 全テスト成功' if overall_success else '❌ 一部テスト失敗'}")
+    logger.info(f"\n総合結果: {'[OK] 全テスト成功' if overall_success else '[ERROR] 一部テスト失敗'}")
     
     if overall_success:
-        logger.info("\n🎉 DSSMS Phase 4 Task 4.1 実装完了!")
+        logger.info("\n[SUCCESS] DSSMS Phase 4 Task 4.1 実装完了!")
         logger.info("kabu API統合マネージャーが正常に動作しています。")
-        logger.info("\n📋 主要機能:")
+        logger.info("\n[LIST] 主要機能:")
         logger.info("  ✓ ハイブリッド認証システム (開発/本番環境対応)")
         logger.info("  ✓ 階層化優先度管理による50銘柄登録")
         logger.info("  ✓ 適応的頻度調整リアルタイムデータ取得")

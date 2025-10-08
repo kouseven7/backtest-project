@@ -915,13 +915,13 @@ def test_dssms_excel_exporter():
         exporter = DSSMSExcelExporterV2()
         output_path = exporter.export_dssms_results(test_result)
         
-        print(f"✅ Excel出力成功: {output_path}")
-        print(f"📊 ファイルサイズ: {Path(output_path).stat().st_size:,} bytes")
+        print(f"[OK] Excel出力成功: {output_path}")
+        print(f"[CHART] ファイルサイズ: {Path(output_path).stat().st_size:,} bytes")
         
         return True
         
     except Exception as e:
-        print(f"❌ テスト失敗: {e}")
+        print(f"[ERROR] テスト失敗: {e}")
         return False
 
 if __name__ == "__main__":

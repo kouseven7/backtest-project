@@ -289,7 +289,7 @@ def demonstrate_dashboard_creation():
         if 'integrated' in generated_files:
             integrated_path = generated_files['integrated']
             if os.path.exists(integrated_path):
-                print(f"\n🎯 統合レポートが生成されました:")
+                print(f"\n[TARGET] 統合レポートが生成されました:")
                 print(f"   ファイルパス: {integrated_path}")
                 print(f"   ブラウザで開いて内容を確認してください。")
             else:
@@ -444,13 +444,13 @@ def main():
     print(f"\n総合結果: {success_count}/{total_count} 成功")
     
     if success_count == total_count:
-        print("🎉 全てのデモンストレーションが成功しました！")
+        print("[SUCCESS] 全てのデモンストレーションが成功しました！")
         print("\n次のステップ:")
         print("1. demo_dashboard_5_1_1/integrated_report.html をブラウザで開く")
         print("2. 生成されたレポートファイルを確認")
         print("3. 実際のデータでのテストを実行")
     else:
-        print("⚠️  一部のデモンストレーションが失敗しました。")
+        print("[WARNING]  一部のデモンストレーションが失敗しました。")
         print("ログを確認して問題を解決してください。")
     
     return success_count == total_count

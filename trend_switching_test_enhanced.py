@@ -770,7 +770,7 @@ def main():
         
         # 個別結果出力
         for scenario_id, result in results.items():
-            status = "✅ SUCCESS" if not result.errors else "❌ FAILED"
+            status = "[OK] SUCCESS" if not result.errors else "[ERROR] FAILED"
             print(f"{status} {scenario_id}: {result.execution_time:.2f}s")
             
             if result.overall_performance:
@@ -782,7 +782,7 @@ def main():
         
     except Exception as e:
         logger.error(f"Test system failed: {e}")
-        print(f"\n❌ Test system failed: {e}")
+        print(f"\n[ERROR] Test system failed: {e}")
 
 if __name__ == "__main__":
     main()

@@ -167,9 +167,9 @@ def run_all_tests():
     print(f"総実行時間: {total_time:.3f}秒")
     
     if success_count == len(results):
-        print("\n🎉 全テスト成功！ハイブリッドランキングシステム実装完了")
+        print("\n[SUCCESS] 全テスト成功！ハイブリッドランキングシステム実装完了")
     else:
-        print(f"\n⚠️  {len(results) - success_count}個のテストが失敗しました")
+        print(f"\n[WARNING]  {len(results) - success_count}個のテストが失敗しました")
     
     return success_count == len(results)
 

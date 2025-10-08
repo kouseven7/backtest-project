@@ -101,7 +101,7 @@ class ScoreHistoryDemo:
                         )
                         demo_scores.append((entry_id, demo_score))
         
-        print(f"✅ {len(demo_scores)}件のデモスコアを生成・保存しました")
+        print(f"[OK] {len(demo_scores)}件のデモスコアを生成・保存しました")
         return demo_scores
     
     def _create_demo_score(self, strategy_name: str, ticker: str, 
@@ -283,7 +283,7 @@ class ScoreHistoryDemo:
         
         # イベントリスナーを設定
         def score_change_listener(event_data):
-            print(f"  📊 新しいスコアが保存されました: "
+            print(f"  [CHART] 新しいスコアが保存されました: "
                   f"{event_data['strategy_name']} - {event_data['ticker']} "
                   f"スコア: {event_data['score']:.3f}")
         
@@ -363,16 +363,16 @@ class ScoreHistoryDemo:
             if demo_dir.exists():
                 import shutil
                 shutil.rmtree(demo_dir)
-                print(f"✅ デモディレクトリを削除しました: {demo_dir}")
+                print(f"[OK] デモディレクトリを削除しました: {demo_dir}")
             else:
                 print("削除するデモディレクトリが見つかりません")
                 
         except Exception as e:
-            print(f"❌ クリーンアップエラー: {e}")
+            print(f"[ERROR] クリーンアップエラー: {e}")
     
     def run_full_demo(self):
         """完全なデモを実行"""
-        print("🚀 スコア履歴保存システム (2-3-1) デモンストレーション開始")
+        print("[ROCKET] スコア履歴保存システム (2-3-1) デモンストレーション開始")
         print("=" * 60)
         
         try:
@@ -391,7 +391,7 @@ class ScoreHistoryDemo:
             # 5. キャッシュとパフォーマンス
             self.demonstrate_cache_and_performance()
             
-            print("\n🎉 デモンストレーション完了")
+            print("\n[SUCCESS] デモンストレーション完了")
             print("=" * 60)
             
             # クリーンアップの確認
@@ -402,9 +402,9 @@ class ScoreHistoryDemo:
                 print(f"デモデータは残されました: {self.base_dir / self.history_config.storage_directory}")
             
         except KeyboardInterrupt:
-            print("\n\n⚠️  デモが中断されました")
+            print("\n\n[WARNING]  デモが中断されました")
         except Exception as e:
-            print(f"\n❌ デモ実行エラー: {e}")
+            print(f"\n[ERROR] デモ実行エラー: {e}")
             logger.error(f"Demo execution error: {e}", exc_info=True)
 
 def main():
@@ -417,7 +417,7 @@ def main():
         demo.run_full_demo()
         
     except Exception as e:
-        print(f"❌ 初期化エラー: {e}")
+        print(f"[ERROR] 初期化エラー: {e}")
         logger.error(f"Initialization error: {e}", exc_info=True)
         return 1
     

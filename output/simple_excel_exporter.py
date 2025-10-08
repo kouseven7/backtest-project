@@ -68,23 +68,23 @@ def _validate_numeric_value(value: Any, field_name: str = "unknown", fallback: A
             
         # NaN判定
         if pd.isna(value) or np.isnan(value):
-            logger.warning(f"⚠️ NaN値検出: {field_name} = {value} → {fallback}")
+            logger.warning(f"[WARNING] NaN値検出: {field_name} = {value} → {fallback}")
             return fallback
             
         # 無限大判定
         if np.isinf(value):
-            logger.warning(f"⚠️ 無限大値検出: {field_name} = {value} → {fallback}")
+            logger.warning(f"[WARNING] 無限大値検出: {field_name} = {value} → {fallback}")
             return fallback
             
         # 異常に大きな値判定（1e10以上）
         if abs(value) > 1e10:
-            logger.warning(f"⚠️ 異常値検出: {field_name} = {value} → {fallback}")
+            logger.warning(f"[WARNING] 異常値検出: {field_name} = {value} → {fallback}")
             return fallback
             
         return value
         
     except Exception as e:
-        logger.error(f"❌ 数値検証エラー: {field_name} = {value}, エラー: {e}")
+        logger.error(f"[ERROR] 数値検証エラー: {field_name} = {value}, エラー: {e}")
         return fallback
 
 
@@ -115,15 +115,15 @@ class ExcelDataProcessor:
             return self._get_empty_data(ticker)
         
         # DEBUG: データの内容を確認
-        print(f"🔍 DEBUG: stock_dataの形状: {stock_data.shape}")
-        print(f"🔍 DEBUG: stock_dataの列: {stock_data.columns.tolist()}")
+        print(f"[SEARCH] DEBUG: stock_dataの形状: {stock_data.shape}")
+        print(f"[SEARCH] DEBUG: stock_dataの列: {stock_data.columns.tolist()}")
         
         # Entry_Signal/Exit_Signal列の存在確認
         required_cols = ['Entry_Signal', 'Exit_Signal']
         missing_cols = [col for col in required_cols if col not in stock_data.columns]
         
         if missing_cols:
-            print(f"⚠️ WARNING: 必要な列が不足: {missing_cols}")
+            print(f"[WARNING] WARNING: 必要な列が不足: {missing_cols}")
             print("🔄 フォールバック処理: 基本データのみでExcel出力を実行")
             return self._process_basic_data(stock_data, ticker)
         
@@ -382,16 +382,16 @@ def save_backtest_results_simple(
             strategy_name="simple_excel_migrated"
         )
         
-        print(f"✅ 統一出力エンジン移行完了: {export_result}")
-        print(f"📊 最終ポートフォリオ価値: {performance.get('final_portfolio_value', 0):,.0f}円")
-        print(f"🎯 総取引数: {performance.get('num_trades', 0)}件")
+        print(f"[OK] 統一出力エンジン移行完了: {export_result}")
+        print(f"[CHART] 最終ポートフォリオ価値: {performance.get('final_portfolio_value', 0):,.0f}円")
+        print(f"[TARGET] 総取引数: {performance.get('num_trades', 0)}件")
         return export_result
         
     except Exception as e:
-        print(f"⚠️ Excel出力エラー: {e}")
+        print(f"[WARNING] Excel出力エラー: {e}")
         # TODO(tag:backtest_execution, rationale:Phase 4-B-3-1 pandas dictionary indexing error investigation)
         import traceback
-        print(f"🔍 Phase 4-B-3-1 詳細エラー調査:")
+        print(f"[SEARCH] Phase 4-B-3-1 詳細エラー調査:")
         print(f"   エラーメッセージ: {str(e)}")
         print(f"   エラー型: {type(e).__name__}")
         print(f"   トレースバック:")
@@ -468,11 +468,11 @@ def _normalize_results_data(results: Union[Dict[str, Any], Any]) -> Dict[str, An
         else:
             normalized['raw_data'] = str(results)
             
-        # ✅ Phase 4-B-2-2 メタデータ完全表示・基本情報確実設定
+        # [OK] Phase 4-B-2-2 メタデータ完全表示・基本情報確実設定
         normalized = _ensure_metadata_complete_display(normalized)
             
     except Exception as e:
-        print(f"⚠️ データ正規化エラー: {e}")
+        print(f"[WARNING] データ正規化エラー: {e}")
         normalized['raw_data'] = str(results)
         normalized['error'] = str(e)
         # Emergency metadata fallback - Phase 4-B-2-2対応
@@ -553,7 +553,7 @@ def _create_summary_data(data: Dict[str, Any]) -> List[List[Any]]:
     summary = data.get('summary', {})
     metadata = data.get('metadata', {})
     
-    # ✅ Phase 4-B-2-2: 完全N/A除去・確実データ設定
+    # [OK] Phase 4-B-2-2: 完全N/A除去・確実データ設定
     # メタデータから実際の値を取得、なければ現在値を生成
     timestamp = metadata.get('timestamp')
     if not timestamp or timestamp == 'N/A':
@@ -598,7 +598,7 @@ def _create_summary_data(data: Dict[str, Any]) -> List[List[Any]]:
         except (ValueError, TypeError):
             return f"{default:.2f}%"
     
-    # ✅ N/A完全除去版サマリーデータ（Phase 4-B-2-3: 空行対策版）
+    # [OK] N/A完全除去版サマリーデータ（Phase 4-B-2-3: 空行対策版）
     summary_items = [
         ['項目', '値'],
         ['実行日時', timestamp],  # 確実に値が設定される
@@ -644,7 +644,7 @@ def _create_trades_dataframe(trades_data: List[Dict[str, Any]]) -> pd.DataFrame:
         }
         return pd.DataFrame(empty_data)
     
-    # ✅ Phase 4-B-3-2: 詳細取引データ表示強化
+    # [OK] Phase 4-B-3-2: 詳細取引データ表示強化
     enhanced_trades = []
     for i, trade in enumerate(trades_data):
         try:
@@ -700,7 +700,7 @@ def _create_trades_dataframe(trades_data: List[Dict[str, Any]]) -> pd.DataFrame:
     # Enhanced DataFrameを作成
     df = pd.DataFrame(enhanced_trades)
     
-    # ✅ Phase 4-B-3-1: pandas辞書インデックス問題回避
+    # [OK] Phase 4-B-3-1: pandas辞書インデックス問題回避
     # 列の順序を定義
     preferred_columns = ['取引ID', 'エントリー日', 'エグジット日', 'エントリー価格', 'エグジット価格', 'PnL', 'PnL(%)', '保有日数']
     
@@ -730,7 +730,7 @@ def _create_pnl_dataframe(pnl_data: List[Dict[str, Any]]) -> pd.DataFrame:
     
     df = pd.DataFrame(pnl_data)
     
-    # ✅ Phase 4-B-3-1: pandas辞書インデックス問題修正
+    # [OK] Phase 4-B-3-1: pandas辞書インデックス問題修正
     required_columns = ['日付', '日次損益', '累積損益', '保有銘柄']
     for col in required_columns:
         if col not in df.columns:
@@ -878,7 +878,7 @@ def get_summary_from_results(results: Any) -> Dict[str, Any]:
                 summary[key] = default_value
                 
     except Exception as e:
-        print(f"⚠️ サマリー抽出エラー: {e}")
+        print(f"[WARNING] サマリー抽出エラー: {e}")
         summary = default_summary
     
     return summary
@@ -922,19 +922,19 @@ def _extract_trades_from_signals(df):
     trades = []
     
     try:
-        # ✅ Phase 4-B-1後のDataFrame構造に対応
+        # [OK] Phase 4-B-1後のDataFrame構造に対応
         if df is None or df.empty:
             logger.warning("Empty DataFrame passed to _extract_trades_from_signals")
             return []
             
-        # ✅ Column existence check with better error handling
+        # [OK] Column existence check with better error handling
         if 'Entry_Signal' not in df.columns or 'Exit_Signal' not in df.columns:
             logger.warning(f"Missing signal columns. Available: {list(df.columns)}")
             return []
         
-        # ✅ インデックス形式対応 (DatetimeIndex/RangeIndex両対応)
+        # [OK] インデックス形式対応 (DatetimeIndex/RangeIndex両対応)
         try:
-            # ✅ Phase 4-B-2-3: 辞書インデックス問題修正
+            # [OK] Phase 4-B-2-3: 辞書インデックス問題修正
             entry_signals = df.loc[df['Entry_Signal'] == 1]
             exit_signals = df.loc[df['Exit_Signal'] == 1]
             
@@ -948,7 +948,7 @@ def _extract_trades_from_signals(df):
             logger.error(f"Signal filtering failed: {e}")
             return []
         
-        # ✅ 実際のトレード抽出・41取引データ処理
+        # [OK] 実際のトレード抽出・41取引データ処理
         entry_dates = entry_signals.index.tolist()
         exit_dates = exit_signals.index.tolist()
         
@@ -1024,7 +1024,7 @@ def _extract_trades_from_signals_complete(df):
     logger.info("Phase 4-B-2-1: Starting complete trade extraction from signals")
     
     try:
-        # ✅ Phase 4-B-2-1強化: DataFrame完整性チェック
+        # [OK] Phase 4-B-2-1強化: DataFrame完整性チェック
         if df is None or df.empty:
             logger.error("Phase 4-B-2-1 ERROR: Empty DataFrame passed")
             return []
@@ -1036,7 +1036,7 @@ def _extract_trades_from_signals_complete(df):
             logger.error(f"Phase 4-B-2-1 ERROR: Essential columns missing: {missing_essential}")
             raise ValueError(f"Backtest principle violation: {missing_essential} required")
             
-        # ✅ Phase 4-B-2-1: 詳細ログ出力強化
+        # [OK] Phase 4-B-2-1: 詳細ログ出力強化
         logger.info(f"DataFrame shape: {df.shape}, Available columns: {df.columns.tolist()}")
         entry_count = (df['Entry_Signal'] == 1).sum()  
         exit_count = (df['Exit_Signal'] == 1).sum()
@@ -1057,7 +1057,7 @@ def _extract_trades_from_signals_complete(df):
         
         for i, entry_date in enumerate(entry_dates):
             try:
-                # ✅ Phase 4-B-2-1: エントリー詳細情報収集
+                # [OK] Phase 4-B-2-1: エントリー詳細情報収集
                 entry_price = df.loc[entry_date, 'Close'] if 'Close' in df.columns else 0
                 entry_portfolio_value = df.loc[entry_date, 'Portfolio_Value'] if 'Portfolio_Value' in df.columns else None
                 entry_position = df.loc[entry_date, 'Position'] if 'Position' in df.columns else 'Unknown'
@@ -1079,7 +1079,7 @@ def _extract_trades_from_signals_complete(df):
                     exit_portfolio_value = df.loc[exit_date, 'Portfolio_Value'] if 'Portfolio_Value' in df.columns else None
                     exit_position = df.loc[exit_date, 'Position'] if 'Position' in df.columns else 'Unknown'
                 
-                # ✅ Phase 4-B-2-1: 収益性分析強化
+                # [OK] Phase 4-B-2-1: 収益性分析強化
                 if exit_date and entry_price and exit_price:
                     pnl_percent = (exit_price - entry_price) / entry_price * 100
                     pnl_amount = (exit_price - entry_price) * 100  # 100株想定
@@ -1099,7 +1099,7 @@ def _extract_trades_from_signals_complete(df):
                         logger.warning(f"Date calculation error for trade {i+1}: {date_error}")
                         holding_days = 1
                     
-                    # ✅ Phase 4-B-2-1: 完全取引データ構築
+                    # [OK] Phase 4-B-2-1: 完全取引データ構築
                     trade_data = {
                         'trade_id': i + 1,
                         'entry_date': str(entry_date),
@@ -1118,7 +1118,7 @@ def _extract_trades_from_signals_complete(df):
                     trades.append(trade_data)
                     
                 else:
-                    # ✅ Phase 4-B-2-1: オープン取引も記録
+                    # [OK] Phase 4-B-2-1: オープン取引も記録
                     trade_data = {
                         'trade_id': i + 1,
                         'entry_date': str(entry_date),
@@ -1140,7 +1140,7 @@ def _extract_trades_from_signals_complete(df):
                 logger.error(f"Phase 4-B-2-1 ERROR processing trade {i+1}: {trade_error}")
                 continue
                 
-        # ✅ Phase 4-B-2-1: 完了検証
+        # [OK] Phase 4-B-2-1: 完了検証
         logger.info(f"Phase 4-B-2-1 SUCCESS: Extracted {len(trades)} complete trades from signals")
         
         if len(trades) >= 41:
@@ -1184,23 +1184,23 @@ def _calculate_summary_complete(trades, df):
     
     try:
         if not trades:
-            # ✅ 空trades対応・基本理念違反検出
+            # [OK] 空trades対応・基本理念違反検出
             logger.warning("Phase 4-B-2-2 WARNING: No trades for summary calculation - potential backtest principle violation")
             return _create_zero_summary_complete()
             
-        # ✅ Phase 4-B-2-2: 完全な統計計算実装
+        # [OK] Phase 4-B-2-2: 完全な統計計算実装
         total_pnl = sum([t.get('pnl_amount', 0) for t in trades])
         winning_trades = [t for t in trades if t.get('pnl_percent', 0) > 0]
         losing_trades = [t for t in trades if t.get('pnl_percent', 0) < 0]
         completed_trades = [t for t in trades if t.get('trade_status', '') == 'completed']
         open_trades = [t for t in trades if t.get('trade_status', '') == 'open']
         
-        # ✅ Phase 4-B-2-2: 勝率・平均等の精密計算
+        # [OK] Phase 4-B-2-2: 勝率・平均等の精密計算
         win_rate = len(winning_trades) / len(completed_trades) * 100 if completed_trades else 0
         avg_pnl = total_pnl / len(completed_trades) if completed_trades else 0
         avg_holding_days = sum([t.get('holding_days', 0) for t in completed_trades]) / len(completed_trades) if completed_trades else 0
         
-        # ✅ Phase 4-B-2-2: ポートフォリオ価値の完全計算
+        # [OK] Phase 4-B-2-2: ポートフォリオ価値の完全計算
         initial_capital = 1000000  # デフォルト初期資本
         
         # DataFrameからPortfolio_Valueを取得（可能な場合）
@@ -1222,7 +1222,7 @@ def _calculate_summary_complete(trades, df):
             final_portfolio_value = initial_capital + total_pnl
             total_return = (total_pnl / initial_capital) * 100 if initial_capital > 0 else 0
         
-        # ✅ Phase 4-B-2-2: 期間・年率リターン計算強化
+        # [OK] Phase 4-B-2-2: 期間・年率リターン計算強化
         period_start = df.index[0] if len(df) > 0 else None
         period_end = df.index[-1] if len(df) > 0 else None
         backtest_period = f"{period_start} to {period_end}" if period_start and period_end else "N/A"
@@ -1239,21 +1239,21 @@ def _calculate_summary_complete(trades, df):
                 logger.warning(f"Annual return calculation error: {annual_error}")
                 annual_return = 0
         
-        # ✅ Phase 4-B-2-2: 完全サマリー情報構築
+        # [OK] Phase 4-B-2-2: 完全サマリー情報構築
         summary = {
-            # ✅ 実行情報完全表示
+            # [OK] 実行情報完全表示
             'execution_date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'backtest_period': backtest_period,
             'trading_days': trading_days,
             
-            # ✅ ポートフォリオ価値完全表示
+            # [OK] ポートフォリオ価値完全表示
             'initial_capital': float(initial_capital),
             'final_value': float(final_portfolio_value),
             'total_return': float(total_return),
             'annual_return': float(annual_return),
             'total_pnl': float(total_pnl),
             
-            # ✅ 取引統計完全表示 (41取引反映)
+            # [OK] 取引統計完全表示 (41取引反映)
             'total_trades': len(trades),
             'completed_trades': len(completed_trades),
             'open_trades': len(open_trades),
@@ -1263,17 +1263,17 @@ def _calculate_summary_complete(trades, df):
             'avg_pnl': float(avg_pnl),
             'avg_holding_days': float(avg_holding_days),
             
-            # ✅ Phase 4-B-2-2: 品質指標追加
+            # [OK] Phase 4-B-2-2: 品質指標追加
             'max_drawdown': _calculate_max_drawdown(trades),
             'sharpe_ratio': _calculate_sharpe_ratio(trades, annual_return),
             'profit_factor': _calculate_profit_factor(winning_trades, losing_trades),
             
-            # ✅ Phase 4-B-2-2: DSSMS品質レベル指標
+            # [OK] Phase 4-B-2-2: DSSMS品質レベル指標
             'dssms_quality_level': 'HIGH' if len(trades) >= 41 else 'MEDIUM' if len(trades) >= 10 else 'LOW',
             'quality_achievement': len(trades) >= 41
         }
         
-        # ✅ Phase 4-B-2-2: 完了ログ出力
+        # [OK] Phase 4-B-2-2: 完了ログ出力
         logger.info(f"Phase 4-B-2-2 SUCCESS: Summary calculated with {len(trades)} trades, {total_pnl:.2f} PnL, {win_rate:.1f}% win rate")
         logger.info(f"Phase 4-B-2-2 ACHIEVEMENT: DSSMS Quality Level = {summary['dssms_quality_level']}, Achievement = {summary['quality_achievement']}")
         
@@ -1427,23 +1427,23 @@ def phase4b2_completion_criteria_validation(normalized_data):
     }
     
     try:
-        # ✅ 検証1: Excel出力データ完全表示確認
+        # [OK] 検証1: Excel出力データ完全表示確認
         excel_data_validation = _validate_excel_data_complete_display(normalized_data)
         validation_result['criteria_results']['excel_data_display'] = excel_data_validation
         
-        # ✅ 検証2: サマリー情報正常表示確認
+        # [OK] 検証2: サマリー情報正常表示確認
         summary_validation = _validate_summary_normal_display(normalized_data)
         validation_result['criteria_results']['summary_display'] = summary_validation
         
-        # ✅ 検証3: メタデータ基本情報表示確認
+        # [OK] 検証3: メタデータ基本情報表示確認
         metadata_validation = _validate_metadata_basic_display(normalized_data)
         validation_result['criteria_results']['metadata_display'] = metadata_validation
         
-        # ✅ 検証4: DSSMS品質レベル達成確認（41取引目標）
+        # [OK] 検証4: DSSMS品質レベル達成確認（41取引目標）
         dssms_quality_validation = _validate_dssms_quality_achievement(normalized_data)
         validation_result['criteria_results']['dssms_quality_achievement'] = dssms_quality_validation
         
-        # ✅ 総合評価
+        # [OK] 総合評価
         all_criteria_passed = all([
             excel_data_validation.get('passed', False),
             summary_validation.get('passed', False),
@@ -1454,10 +1454,10 @@ def phase4b2_completion_criteria_validation(normalized_data):
         validation_result['overall_success'] = all_criteria_passed
         validation_result['completion_status'] = 'COMPLETED' if all_criteria_passed else 'PARTIAL'
         
-        # ✅ 品質メトリクス計算
+        # [OK] 品質メトリクス計算
         validation_result['quality_metrics'] = _calculate_phase4b2_quality_metrics(normalized_data)
         
-        # ✅ Phase 4-B-2-3結果ログ出力
+        # [OK] Phase 4-B-2-3結果ログ出力
         if all_criteria_passed:
             logger.info(f"Phase 4-B-2-3 SUCCESS: All completion criteria achieved!")
             logger.info(f"  - Excel Data Display: {excel_data_validation.get('trades_count', 0)} trades")
@@ -1662,13 +1662,13 @@ def _ensure_metadata_complete_display(normalized_data):
     logger.info("Phase 4-B-2-2: Starting complete metadata display setup")
     
     try:
-        # ✅ Phase 4-B-2-2: metadata構造完全確認・アクセス修正
+        # [OK] Phase 4-B-2-2: metadata構造完全確認・アクセス修正
         if 'metadata' not in normalized_data:
             normalized_data['metadata'] = {}
             
         metadata = normalized_data['metadata']
         
-        # ✅ Phase 4-B-2-2: 基本情報完全設定 (timestamp等N/A問題解決)
+        # [OK] Phase 4-B-2-2: 基本情報完全設定 (timestamp等N/A問題解決)
         if 'timestamp' not in metadata or not metadata.get('timestamp'):
             metadata['timestamp'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
@@ -1681,7 +1681,7 @@ def _ensure_metadata_complete_display(normalized_data):
         if 'processing_status' not in metadata:
             metadata['processing_status'] = "正常"
             
-        # ✅ Phase 4-B-2-2: 追加メタデータ情報設定
+        # [OK] Phase 4-B-2-2: 追加メタデータ情報設定
         if 'excel_export_quality' not in metadata:
             metadata['excel_export_quality'] = "Phase 4-B-2-2 Complete"
             
@@ -1696,7 +1696,7 @@ def _ensure_metadata_complete_display(normalized_data):
         if 'generation_timestamp' not in metadata:
             metadata['generation_timestamp'] = datetime.now().isoformat()
             
-        # ✅ Phase 4-B-2-2: 実行環境情報
+        # [OK] Phase 4-B-2-2: 実行環境情報
         if 'execution_environment' not in metadata:
             metadata['execution_environment'] = {
                 'phase': 'Phase 4-B-2-2',

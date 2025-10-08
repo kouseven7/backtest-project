@@ -24,7 +24,7 @@ sys.path.append(str(project_root))
 
 def emergency_patch_dssms():
     """DSSMS緊急修正パッチ実行"""
-    print("🚨 DSSMS緊急修正パッチ開始")
+    print("[ALERT] DSSMS緊急修正パッチ開始")
     print("=" * 60)
     
     patch_results = {
@@ -39,62 +39,62 @@ def emergency_patch_dssms():
         basic_check = check_basic_system()
         if not basic_check['success']:
             patch_results['errors_found'].extend(basic_check['errors'])
-            print(f"❌ 基本システムエラー: {len(basic_check['errors'])}件")
+            print(f"[ERROR] 基本システムエラー: {len(basic_check['errors'])}件")
         else:
-            print("✅ 基本システム動作正常")
+            print("[OK] 基本システム動作正常")
         
         # Step 2: データ接続テスト
         print("\n2️⃣ データ接続テスト...")
         data_check = test_data_connectivity()
         if not data_check['success']:
             patch_results['errors_found'].extend(data_check['errors'])
-            print(f"❌ データ接続エラー: {len(data_check['errors'])}件")
+            print(f"[ERROR] データ接続エラー: {len(data_check['errors'])}件")
         else:
-            print("✅ データ接続正常")
+            print("[OK] データ接続正常")
         
         # Step 3: DSSMSバックテスター修正
         print("\n3️⃣ DSSMSバックテスター緊急修正...")
         backtester_fix = fix_dssms_backtester()
         if backtester_fix['success']:
             patch_results['fixes_applied'].append("DSSMSバックテスター修正")
-            print("✅ バックテスター修正完了")
+            print("[OK] バックテスター修正完了")
         else:
             patch_results['errors_found'].extend(backtester_fix['errors'])
-            print(f"❌ バックテスター修正失敗")
+            print(f"[ERROR] バックテスター修正失敗")
         
         # Step 4: 簡易シミュレーション実行
         print("\n4️⃣ 簡易シミュレーション実行...")
         simulation_test = run_emergency_simulation()
         if simulation_test['success']:
             patch_results['fixes_applied'].append("簡易シミュレーション成功")
-            print("✅ 簡易シミュレーション成功")
+            print("[OK] 簡易シミュレーション成功")
             print(f"   最終価値: {simulation_test.get('final_value', 0):,.0f}円")
             print(f"   リターン: {simulation_test.get('total_return', 0):.2%}")
         else:
             patch_results['errors_found'].extend(simulation_test['errors'])
-            print(f"❌ 簡易シミュレーション失敗")
+            print(f"[ERROR] 簡易シミュレーション失敗")
         
         # Step 5: レポート生成テスト
         print("\n5️⃣ レポート生成テスト...")
         report_test = test_report_generation()
         if report_test['success']:
             patch_results['fixes_applied'].append("レポート生成修正")
-            print("✅ レポート生成成功")
+            print("[OK] レポート生成成功")
             print(f"   レポートサイズ: {report_test.get('size', 0)}文字")
         else:
             patch_results['errors_found'].extend(report_test['errors'])
-            print(f"❌ レポート生成失敗")
+            print(f"[ERROR] レポート生成失敗")
         
         # 総合判定
         if len(patch_results['fixes_applied']) >= 3:
             patch_results['status'] = 'success'
-            print(f"\n🎉 緊急修正パッチ適用成功!")
-            print(f"✅ 修正完了: {len(patch_results['fixes_applied'])}件")
+            print(f"\n[SUCCESS] 緊急修正パッチ適用成功!")
+            print(f"[OK] 修正完了: {len(patch_results['fixes_applied'])}件")
         else:
             patch_results['status'] = 'partial'
-            print(f"\n⚠️ 緊急修正パッチ部分成功")
-            print(f"✅ 修正完了: {len(patch_results['fixes_applied'])}件")
-            print(f"❌ 未解決エラー: {len(patch_results['errors_found'])}件")
+            print(f"\n[WARNING] 緊急修正パッチ部分成功")
+            print(f"[OK] 修正完了: {len(patch_results['fixes_applied'])}件")
+            print(f"[ERROR] 未解決エラー: {len(patch_results['errors_found'])}件")
         
         # 結果保存
         save_patch_results(patch_results)
@@ -281,14 +281,14 @@ class DSSMSEmergencyBacktester:
             lines.append(f"レポート種別: 緊急修正版バックテスト")
             lines.append("")
             
-            lines.append("📊 シミュレーション概要")
+            lines.append("[CHART] シミュレーション概要")
             lines.append("-" * 40)
             lines.append(f"期間: {simulation_result['start_date']} ～ {simulation_result['end_date']}")
             lines.append(f"銘柄数: {len(simulation_result['symbol_universe'])}")
             lines.append(f"シミュレーション日数: {simulation_result['simulation_days']}日")
             lines.append("")
             
-            lines.append("💰 パフォーマンス結果")
+            lines.append("[MONEY] パフォーマンス結果")
             lines.append("-" * 40)
             lines.append(f"初期資本: {simulation_result['initial_capital']:,.0f}円")
             lines.append(f"最終価値: {simulation_result['final_value']:,.0f}円")
@@ -299,7 +299,7 @@ class DSSMSEmergencyBacktester:
             # 日次パフォーマンス（最初と最後の5日）
             portfolio_values = simulation_result['portfolio_values']
             if len(portfolio_values) > 10:
-                lines.append("📈 日次ポートフォリオ価値（抜粋）")
+                lines.append("[UP] 日次ポートフォリオ価値（抜粋）")
                 lines.append("-" * 40)
                 for i in range(min(5, len(portfolio_values))):
                     lines.append(f"Day {i+1}: {portfolio_values[i]:,.0f}円")
@@ -308,14 +308,14 @@ class DSSMSEmergencyBacktester:
                     lines.append(f"Day {i+1}: {portfolio_values[i]:,.0f}円")
                 lines.append("")
             
-            lines.append("🔧 緊急修正版について")
+            lines.append("[TOOL] 緊急修正版について")
             lines.append("-" * 40)
             lines.append("このレポートは緊急修正パッチにより生成されました。")
             lines.append("Task 1.3の実装問題を修正し、基本的な動作を確保しています。")
             lines.append("実際の市場データではなく、統計的モデルを使用しています。")
             lines.append("")
             
-            lines.append("💡 次のステップ")
+            lines.append("[IDEA] 次のステップ")
             lines.append("-" * 40)
             lines.append("1. Task 1.3の構文エラーを完全修正")
             lines.append("2. 実際の市場データ統合の復旧")
@@ -355,18 +355,18 @@ def demo_emergency_backtester():
         result = backtester.simulate_dynamic_selection()
         
         if result['success']:
-            print("✅ 緊急修正版シミュレーション成功")
+            print("[OK] 緊急修正版シミュレーション成功")
             print(f"   最終価値: {result['final_value']:,.0f}円")
             print(f"   総リターン: {result['total_return']:.2%}")
             if 'report_path' in result:
                 print(f"   レポート: {result['report_path']}")
         else:
-            print(f"❌ 緊急修正版シミュレーション失敗: {result.get('error', 'Unknown error')}")
+            print(f"[ERROR] 緊急修正版シミュレーション失敗: {result.get('error', 'Unknown error')}")
         
         return result['success']
         
     except Exception as e:
-        print(f"❌ 緊急修正版バックテスターエラー: {e}")
+        print(f"[ERROR] 緊急修正版バックテスターエラー: {e}")
         return False
 
 if __name__ == "__main__":
@@ -468,15 +468,15 @@ def save_patch_results(patch_results: Dict[str, Any]):
         print(f"📝 パッチ結果保存: {results_file}")
         
     except Exception as e:
-        print(f"⚠️ パッチ結果保存エラー: {e}")
+        print(f"[WARNING] パッチ結果保存エラー: {e}")
 
 if __name__ == "__main__":
     # 緊急修正パッチ実行
     patch_results = emergency_patch_dssms()
     
-    print(f"\n📋 最終結果: {patch_results['status']}")
+    print(f"\n[LIST] 最終結果: {patch_results['status']}")
     if patch_results['status'] == 'success':
-        print("🎉 DSSMSが正常動作するはずです")
+        print("[SUCCESS] DSSMSが正常動作するはずです")
         print("次は以下を実行してください:")
         print("python src/dssms/dssms_emergency_backtester.py")
     else:

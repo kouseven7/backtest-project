@@ -72,7 +72,7 @@ def create_sample_market_data(days: int = 100) -> pd.DataFrame:
 def demo_basic_position_sizing():
     """基本的なポジションサイジングのデモ"""
     print("\n" + "="*60)
-    print("📊 Demo 1: 基本的なポジションサイズ計算")
+    print("[CHART] Demo 1: 基本的なポジションサイズ計算")
     print("="*60)
     
     try:
@@ -95,7 +95,7 @@ def demo_basic_position_sizing():
         )
         
         # 4. 結果の表示
-        print(f"\n📈 Portfolio Position Sizing Results:")
+        print(f"\n[UP] Portfolio Position Sizing Results:")
         print(f"  Total Strategies: {len(result.position_results)}")
         print(f"  Total Allocated: {result.total_allocated_percentage:.2%}")
         print(f"  Remaining Cash: {result.remaining_cash_percentage:.2%}")
@@ -105,7 +105,7 @@ def demo_basic_position_sizing():
         
         # 5. 個別戦略詳細
         if result.position_results:
-            print(f"\n📋 Individual Position Details:")
+            print(f"\n[LIST] Individual Position Details:")
             for strategy_name, pos_result in result.position_results.items():
                 print(f"  {strategy_name}:")
                 print(f"    Position Size: {pos_result.adjusted_size:.2%}")
@@ -118,21 +118,21 @@ def demo_basic_position_sizing():
         
         # 6. 制約違反があれば表示
         if result.constraint_violations:
-            print(f"⚠️ Constraint Violations:")
+            print(f"[WARNING] Constraint Violations:")
             for violation in result.constraint_violations:
                 print(f"    - {violation}")
         
         # 7. レポート生成
         report = adjuster.create_position_sizing_report(result)
         print(f"\n📄 Generated Report Summary:")
-        print(f"  Report Generated: ✅")
+        print(f"  Report Generated: [OK]")
         print(f"  Rebalancing Needed: {'Yes' if result.rebalancing_needed else 'No'}")
         
         return result
         
     except Exception as e:
         logger.error(f"Basic position sizing demo failed: {e}")
-        print(f"❌ Error in basic demo: {e}")
+        print(f"[ERROR] Error in basic demo: {e}")
         return None
 
 def demo_hybrid_adaptive_sizing():
@@ -177,7 +177,7 @@ def demo_hybrid_adaptive_sizing():
         results = {}
         
         for scenario_name, market_data in market_scenarios.items():
-            print(f"\n📊 Scenario: {scenario_name}")
+            print(f"\n[CHART] Scenario: {scenario_name}")
             print(f"  Data Points: {len(market_data)}")
             print(f"  Price Range: ${market_data['low'].min():.2f} - ${market_data['high'].max():.2f}")
             
@@ -203,7 +203,7 @@ def demo_hybrid_adaptive_sizing():
                     print(f"    {strategy_name}: {pos_result.adjusted_size:.2%}")
         
         # 4. シナリオ比較
-        print(f"\n📈 Scenario Comparison:")
+        print(f"\n[UP] Scenario Comparison:")
         print("-" * 60)
         print(f"{'Scenario':<15} {'Allocation':<12} {'Risk':<8} {'Strategies':<10}")
         print("-" * 60)
@@ -214,7 +214,7 @@ def demo_hybrid_adaptive_sizing():
         
     except Exception as e:
         logger.error(f"Hybrid adaptive sizing demo failed: {e}")
-        print(f"❌ Error in hybrid demo: {e}")
+        print(f"[ERROR] Error in hybrid demo: {e}")
         return None
 
 def create_trending_up_data() -> pd.DataFrame:
@@ -350,7 +350,7 @@ def demo_method_comparison():
                 print(f"  Largest Position: {max_position[0]} ({max_position[1].adjusted_size:.2%})")
         
         # 比較サマリー
-        print(f"\n📊 Method Comparison Summary:")
+        print(f"\n[CHART] Method Comparison Summary:")
         print("-" * 80)
         print(f"{'Method':<20} {'Strategies':<10} {'Allocation':<12} {'Risk':<8} {'Diversification':<15}")
         print("-" * 80)
@@ -364,7 +364,7 @@ def demo_method_comparison():
         
     except Exception as e:
         logger.error(f"Method comparison demo failed: {e}")
-        print(f"❌ Error in method comparison: {e}")
+        print(f"[ERROR] Error in method comparison: {e}")
         return None
 
 def demo_integration_with_existing_systems():
@@ -374,7 +374,7 @@ def demo_integration_with_existing_systems():
     print("="*60)
     
     try:
-        print("🎯 Testing Integration with:")
+        print("[TARGET] Testing Integration with:")
         print("  - PortfolioWeightCalculator")
         print("  - StrategyScoreManager") 
         print("  - Risk Management")
@@ -393,7 +393,7 @@ def demo_integration_with_existing_systems():
         market_data = create_sample_market_data(50)
         ticker = "INTEGRATION_TEST"
         
-        print(f"\n📊 Market Data Summary:")
+        print(f"\n[CHART] Market Data Summary:")
         print(f"  Period: {len(market_data)} days")
         print(f"  Price Range: ${market_data['close'].min():.2f} - ${market_data['close'].max():.2f}")
         print(f"  Average Volume: {market_data['volume'].mean():,.0f}")
@@ -411,10 +411,10 @@ def demo_integration_with_existing_systems():
                 print(f"  Expected Risk: {weight_result.expected_risk:.2%}")
                 print(f"  Sharpe Ratio: {weight_result.sharpe_ratio:.3f}")
             except Exception as e:
-                print(f"  ⚠️ Portfolio weight calculation failed: {e}")
+                print(f"  [WARNING] Portfolio weight calculation failed: {e}")
                 weight_result = None
         else:
-            print(f"  ⚠️ Portfolio weight calculator not available")
+            print(f"  [WARNING] Portfolio weight calculator not available")
             weight_result = None
         
         # 4. ポジションサイズ調整
@@ -429,7 +429,7 @@ def demo_integration_with_existing_systems():
         print(f"  Portfolio Risk Estimate: {position_result.portfolio_risk_estimate:.2%}")
         
         # 5. 統合結果の比較
-        print(f"\n🔍 Step 3: Integration Analysis")
+        print(f"\n[SEARCH] Step 3: Integration Analysis")
         if weight_result and weight_result.strategy_weights:
             print(f"  Weight Calculator Found: {len(weight_result.strategy_weights)} strategies")
             print(f"  Position Adjuster Found: {len(position_result.position_results)} strategies")
@@ -463,7 +463,7 @@ def demo_integration_with_existing_systems():
         
     except Exception as e:
         logger.error(f"Integration demo failed: {e}")
-        print(f"❌ Error in integration demo: {e}")
+        print(f"[ERROR] Error in integration demo: {e}")
         return None
 
 def demo_error_handling():
@@ -484,7 +484,7 @@ def demo_error_handling():
     total_tests = len(error_scenarios)
     
     for test_name, test_data in error_scenarios:
-        print(f"\n🧪 Test: {test_name}")
+        print(f"\n[TEST] Test: {test_name}")
         
         try:
             if test_name == "Invalid Config":
@@ -517,18 +517,18 @@ def demo_error_handling():
             # 結果の評価
             if result and hasattr(result, 'constraint_violations'):
                 if result.constraint_violations:
-                    print(f"  ✅ Handled gracefully: {len(result.constraint_violations)} violations")
+                    print(f"  [OK] Handled gracefully: {len(result.constraint_violations)} violations")
                 else:
-                    print(f"  ✅ Processed successfully")
+                    print(f"  [OK] Processed successfully")
                 passed_tests += 1
             else:
-                print(f"  ❌ Unexpected result format")
+                print(f"  [ERROR] Unexpected result format")
                 
         except Exception as e:
-            print(f"  ✅ Caught exception properly: {type(e).__name__}")
+            print(f"  [OK] Caught exception properly: {type(e).__name__}")
             passed_tests += 1  # エラーが適切にキャッチされた場合も成功
     
-    print(f"\n📊 Error Handling Summary:")
+    print(f"\n[CHART] Error Handling Summary:")
     print(f"  Tests Passed: {passed_tests}/{total_tests}")
     print(f"  Success Rate: {(passed_tests/total_tests)*100:.1f}%")
     
@@ -555,7 +555,7 @@ def create_incomplete_data() -> pd.DataFrame:
 
 def main():
     """メインデモ実行"""
-    print("🚀 Position Size Adjuster System - Comprehensive Demo")
+    print("[ROCKET] Position Size Adjuster System - Comprehensive Demo")
     print("=" * 80)
     print("Author: imega")
     print("Created: 2025-07-20")
@@ -585,7 +585,7 @@ def main():
         
         # 総合評価
         print(f"\n" + "="*60)
-        print("📋 Demo Execution Summary")
+        print("[LIST] Demo Execution Summary")
         print("="*60)
         
         successful_demos = sum(1 for result in demo_results.values() if result)
@@ -595,16 +595,16 @@ def main():
         print(f"Successful Demos: {successful_demos}")
         print(f"Success Rate: {(successful_demos/total_demos)*100:.1f}%")
         
-        print(f"\n✅ Demo Results:")
+        print(f"\n[OK] Demo Results:")
         for demo_name, result in demo_results.items():
-            status = "✅ Success" if result else "❌ Failed"
+            status = "[OK] Success" if result else "[ERROR] Failed"
             print(f"  {demo_name.title()}: {status}")
         
         if successful_demos == total_demos:
-            print(f"\n🎉 All demos completed successfully!")
+            print(f"\n[SUCCESS] All demos completed successfully!")
             print("Position Size Adjuster system is ready for production use.")
         else:
-            print(f"\n⚠️ Some demos failed. Please check the error messages above.")
+            print(f"\n[WARNING] Some demos failed. Please check the error messages above.")
         
         return demo_results
         
@@ -613,7 +613,7 @@ def main():
         return demo_results
     except Exception as e:
         logger.error(f"Demo execution failed: {e}")
-        print(f"\n❌ Critical error in demo execution: {e}")
+        print(f"\n[ERROR] Critical error in demo execution: {e}")
         return demo_results
 
 if __name__ == "__main__":

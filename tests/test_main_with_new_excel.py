@@ -75,7 +75,7 @@ def test_with_real_data():
         )
         
         if output_path and os.path.exists(output_path):
-            logger.info(f"✅ 実データでのExcel出力成功: {output_path}")
+            logger.info(f"[OK] 実データでのExcel出力成功: {output_path}")
             
             # ファイルサイズの確認
             file_size = os.path.getsize(output_path)
@@ -86,7 +86,7 @@ def test_with_real_data():
             
             return True
         else:
-            logger.error("❌ 実データでのExcel出力に失敗しました")
+            logger.error("[ERROR] 実データでのExcel出力に失敗しました")
             return False
             
     except Exception as e:
@@ -179,7 +179,7 @@ def verify_real_data_output(output_path: str, ticker: str):
             except Exception as e:
                 logger.warning(f"シート '{sheet_name}' の分析エラー: {e}")
         
-        logger.info("✅ 実データExcel出力結果の詳細検証完了")
+        logger.info("[OK] 実データExcel出力結果の詳細検証完了")
         
     except Exception as e:
         logger.error(f"実データExcel出力結果の検証エラー: {e}")
@@ -297,8 +297,8 @@ def main():
     
     print("\n" + "=" * 80)
     print("テスト結果サマリー:")
-    print(f"  - 実データテスト: {'✅ 成功' if real_data_success else '❌ 失敗'}")
-    print(f"  - 比較テスト: {'✅ 成功' if compare_success else '❌ 失敗'}")
+    print(f"  - 実データテスト: {'[OK] 成功' if real_data_success else '[ERROR] 失敗'}")
+    print(f"  - 比較テスト: {'[OK] 成功' if compare_success else '[ERROR] 失敗'}")
     print("=" * 80)
     
     # 出力ディレクトリの確認

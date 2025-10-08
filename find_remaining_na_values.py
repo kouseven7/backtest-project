@@ -14,11 +14,11 @@ def find_remaining_na_values():
     excel_files = list(excel_dir.glob("improved_backtest_*.xlsx"))
     
     if not excel_files:
-        print("❌ Excelファイルが見つかりません")
+        print("[ERROR] Excelファイルが見つかりません")
         return
     
     latest_file = max(excel_files, key=lambda x: x.stat().st_mtime)
-    print(f"🔍 残存N/A値分析: {latest_file}")
+    print(f"[SEARCH] 残存N/A値分析: {latest_file}")
     
     try:
         # openpyxlで詳細分析
@@ -72,7 +72,7 @@ def find_remaining_na_values():
                     print(f"       行{idx}: 前={prev_val}, 現在=N/A, 次={next_val}")
     
     except Exception as e:
-        print(f"❌ 分析エラー: {e}")
+        print(f"[ERROR] 分析エラー: {e}")
 
 if __name__ == "__main__":
     find_remaining_na_values()

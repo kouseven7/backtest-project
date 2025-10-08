@@ -301,7 +301,7 @@ class PerformanceAchievementReporter:
                     f.write("■ 重要アラート\n")
                     f.write("-" * 40 + "\n")
                     for alert in evaluation_result.alerts:
-                        f.write(f"⚠️  {alert}\n")
+                        f.write(f"[WARNING]  {alert}\n")
                     f.write("\n")
                 
                 # 緊急修正情報
@@ -528,7 +528,7 @@ class PerformanceAchievementReporter:
         if evaluation_result.alerts:
             html += "<h2>重要アラート</h2>"
             for alert in evaluation_result.alerts:
-                html += f'<div class="alert">⚠️ {alert}</div>'
+                html += f'<div class="alert">[WARNING] {alert}</div>'
         
         html += """
 </body>
@@ -551,8 +551,8 @@ class PerformanceAchievementReporter:
         """達成レベル絵文字の取得"""
         emojis = {
             AchievementLevel.STRETCH: "🌟",
-            AchievementLevel.TARGET: "✅",
+            AchievementLevel.TARGET: "[OK]",
             AchievementLevel.MINIMUM: "⚡",
-            AchievementLevel.FAILED: "❌"
+            AchievementLevel.FAILED: "[ERROR]"
         }
         return emojis.get(level, "❓")

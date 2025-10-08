@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 def create_test_data():
     """テスト用のバックテストデータ作成"""
-    logger.info("🔧 テストデータ作成中...")
+    logger.info("[TOOL] テストデータ作成中...")
     
     # 日付範囲
     start_date = datetime(2024, 1, 1)
@@ -95,13 +95,13 @@ def create_test_data():
         }
     }
     
-    logger.info(f"✅ テストデータ作成完了: {len(strategies)}戦略, {len(trades_df)}取引")
+    logger.info(f"[OK] テストデータ作成完了: {len(strategies)}戦略, {len(trades_df)}取引")
     return backtest_results
 
 
 def test_strategy_statistics_calculator():
     """StrategyStatisticsCalculator単体テスト"""
-    logger.info("🧪 StrategyStatisticsCalculator単体テスト開始")
+    logger.info("[TEST] StrategyStatisticsCalculator単体テスト開始")
     
     try:
         from src.dssms.strategy_statistics_calculator import StrategyStatisticsCalculator
@@ -135,20 +135,20 @@ def test_strategy_statistics_calculator():
         assert '取引回数' in formatted
         assert '勝率(%)' in formatted
         
-        logger.info("✅ StrategyStatisticsCalculator単体テスト成功")
+        logger.info("[OK] StrategyStatisticsCalculator単体テスト成功")
         return True
         
     except ImportError as e:
-        logger.error(f"❌ Import失敗: {e}")
+        logger.error(f"[ERROR] Import失敗: {e}")
         return False
     except Exception as e:
-        logger.error(f"❌ 単体テストエラー: {e}")
+        logger.error(f"[ERROR] 単体テストエラー: {e}")
         return False
 
 
 def test_dssms_unified_output_engine():
     """DSSMSUnifiedOutputEngine統合テスト"""
-    logger.info("🧪 DSSMSUnifiedOutputEngine統合テスト開始")
+    logger.info("[TEST] DSSMSUnifiedOutputEngine統合テスト開始")
     
     try:
         from dssms_unified_output_engine import DSSMSUnifiedOutputEngine
@@ -162,15 +162,15 @@ def test_dssms_unified_output_engine():
         # データソース設定
         setup_success = engine.set_data_source(test_data)
         if not setup_success:
-            logger.error("❌ データソース設定失敗")
+            logger.error("[ERROR] データソース設定失敗")
             return False
         
         # 戦略統計計算テスト
-        logger.info("📊 戦略統計計算テスト中...")
+        logger.info("[CHART] 戦略統計計算テスト中...")
         strategy_stats = engine._calculate_strategy_statistics(test_data)
         
         if not strategy_stats:
-            logger.warning("⚠️ 戦略統計が空です")
+            logger.warning("[WARNING] 戦略統計が空です")
             return False
         
         # 結果検証
@@ -183,9 +183,9 @@ def test_dssms_unified_output_engine():
                 missing_keys = [key for key in required_keys if key not in stats]
                 
                 if missing_keys:
-                    logger.warning(f"⚠️ 不足キー [{strategy_name}]: {missing_keys}")
+                    logger.warning(f"[WARNING] 不足キー [{strategy_name}]: {missing_keys}")
                 else:
-                    logger.info(f"  ✅ 必須統計項目完備")
+                    logger.info(f"  [OK] 必須統計項目完備")
                 
                 # 統計値の妥当性確認
                 trade_count = stats.get('取引回数', 0)
@@ -210,11 +210,11 @@ def test_dssms_unified_output_engine():
         stats_sheet = engine._create_strategy_stats_sheet()
         
         if stats_sheet.empty:
-            logger.warning("⚠️ 戦略統計シートが空です")
+            logger.warning("[WARNING] 戦略統計シートが空です")
             return False
         
         # シート内容検証
-        logger.info(f"📊 戦略統計シート: {len(stats_sheet)}行, {len(stats_sheet.columns)}列")
+        logger.info(f"[CHART] 戦略統計シート: {len(stats_sheet)}行, {len(stats_sheet.columns)}列")
         logger.info(f"列名: {list(stats_sheet.columns)}")
         
         # 重要な列の存在確認
@@ -225,15 +225,15 @@ def test_dssms_unified_output_engine():
         # 各戦略行の検証
         for idx, row in stats_sheet.iterrows():
             strategy_name = row.get('戦略名', 'Unknown')
-            if strategy_name not in ['📊 全戦略合計', 'Unknown']:
+            if strategy_name not in ['[CHART] 全戦略合計', 'Unknown']:
                 trade_count = row.get('取引回数', 0)
                 logger.info(f"  {strategy_name}: {trade_count}取引")
         
-        logger.info("✅ DSSMSUnifiedOutputEngine統合テスト成功")
+        logger.info("[OK] DSSMSUnifiedOutputEngine統合テスト成功")
         return True
         
     except Exception as e:
-        logger.error(f"❌ 統合テストエラー: {e}")
+        logger.error(f"[ERROR] 統合テストエラー: {e}")
         import traceback
         logger.error(traceback.format_exc())
         return False
@@ -241,40 +241,40 @@ def test_dssms_unified_output_engine():
 
 def main():
     """メインテスト実行"""
-    logger.info("🚀 Problem 戦略統計 統合テスト開始")
+    logger.info("[ROCKET] Problem 戦略統計 統合テスト開始")
     logger.info("="*60)
     
     test_results = []
     
     # テスト1: StrategyStatisticsCalculator単体テスト
-    logger.info("\n📋 テスト1: StrategyStatisticsCalculator単体テスト")
+    logger.info("\n[LIST] テスト1: StrategyStatisticsCalculator単体テスト")
     result1 = test_strategy_statistics_calculator()
     test_results.append(("StrategyStatisticsCalculator", result1))
     
     # テスト2: DSSMSUnifiedOutputEngine統合テスト
-    logger.info("\n📋 テスト2: DSSMSUnifiedOutputEngine統合テスト")
+    logger.info("\n[LIST] テスト2: DSSMSUnifiedOutputEngine統合テスト")
     result2 = test_dssms_unified_output_engine()
     test_results.append(("DSSMSUnifiedOutputEngine", result2))
     
     # 結果サマリー
     logger.info("\n" + "="*60)
-    logger.info("📊 テスト結果サマリー")
+    logger.info("[CHART] テスト結果サマリー")
     logger.info("="*60)
     
     all_passed = True
     for test_name, result in test_results:
-        status = "✅ 成功" if result else "❌ 失敗"
+        status = "[OK] 成功" if result else "[ERROR] 失敗"
         logger.info(f"{status} {test_name}")
         if not result:
             all_passed = False
     
     logger.info("="*60)
     if all_passed:
-        logger.info("🎉 Problem 戦略統計 統合テスト: 全テスト成功")
-        logger.info("✅ 85.0ポイントエンジン品質維持確認")
-        logger.info("✅ 戦略統計品質向上確認")
+        logger.info("[SUCCESS] Problem 戦略統計 統合テスト: 全テスト成功")
+        logger.info("[OK] 85.0ポイントエンジン品質維持確認")
+        logger.info("[OK] 戦略統計品質向上確認")
     else:
-        logger.error("❌ Problem 戦略統計 統合テスト: 一部テスト失敗")
+        logger.error("[ERROR] Problem 戦略統計 統合テスト: 一部テスト失敗")
     
     return all_passed
 

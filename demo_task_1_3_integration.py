@@ -325,6 +325,6 @@ def generate_final_report(test_results):
 if __name__ == "__main__":
     success = run_comprehensive_task_1_3_test()
     if success:
-        print("\n🎉 DSSMS Task 1.3 実装・テスト完了!")
+        print("\n[SUCCESS] DSSMS Task 1.3 実装・テスト完了!")
     else:
-        print("\n⚠️ DSSMS Task 1.3 テストで問題が検出されました。")
+        print("\n[WARNING] DSSMS Task 1.3 テストで問題が検出されました。")

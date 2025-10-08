@@ -24,27 +24,27 @@ def measure_import_time():
     try:
         from src.dssms.dssms_integrated_main import DSSMSIntegratedBacktester
         import_time = (time.perf_counter() - start_time) * 1000  # ms
-        print(f"✅ DSSMSIntegratedBacktester import時間: {import_time:.1f}ms")
+        print(f"[OK] DSSMSIntegratedBacktester import時間: {import_time:.1f}ms")
         
         # 初期化時間測定
         init_start = time.perf_counter()
         backtester = DSSMSIntegratedBacktester()
         init_time = (time.perf_counter() - init_start) * 1000  # ms
-        print(f"✅ DSSMSIntegratedBacktester 初期化時間: {init_time:.1f}ms")
+        print(f"[OK] DSSMSIntegratedBacktester 初期化時間: {init_time:.1f}ms")
         
         total_time = import_time + init_time
-        print(f"✅ 合計初期化時間: {total_time:.1f}ms")
+        print(f"[OK] 合計初期化時間: {total_time:.1f}ms")
         
         # 目標値との比較
         target_time = 1500  # ms
         if total_time <= target_time:
-            print(f"🎯 目標達成: {total_time:.1f}ms ≤ {target_time:.1f}ms")
+            print(f"[TARGET] 目標達成: {total_time:.1f}ms ≤ {target_time:.1f}ms")
             improvement = ((2682 - total_time) / 2682) * 100
-            print(f"📈 改善率: {improvement:.1f}% (ベースライン: 2682ms)")
+            print(f"[UP] 改善率: {improvement:.1f}% (ベースライン: 2682ms)")
         else:
-            print(f"⚠️  目標未達成: {total_time:.1f}ms > {target_time:.1f}ms")
+            print(f"[WARNING]  目標未達成: {total_time:.1f}ms > {target_time:.1f}ms")
             remaining = total_time - target_time
-            print(f"📉 目標まで: {remaining:.1f}ms の追加最適化が必要")
+            print(f"[DOWN] 目標まで: {remaining:.1f}ms の追加最適化が必要")
         
         # 遅延初期化のテスト
         print("\n=== 遅延初期化テスト ===")
@@ -80,7 +80,7 @@ def measure_import_time():
         }
         
     except Exception as e:
-        print(f"❌ エラー: {e}")
+        print(f"[ERROR] エラー: {e}")
         return {'error': str(e)}
 
 def generate_performance_report(results: Dict[str, Any]):
@@ -93,19 +93,19 @@ def generate_performance_report(results: Dict[str, Any]):
     print(f"改善前ベースライン: 2682ms")
     print(f"改善後実測値: {results['total_time_ms']:.1f}ms")
     print(f"改善効果: {results['improvement_percent']:.1f}%")
-    print(f"目標達成: {'✅ YES' if results['target_achieved'] else '❌ NO'}")
+    print(f"目標達成: {'[OK] YES' if results['target_achieved'] else '[ERROR] NO'}")
     
     if results['target_achieved']:
-        print(f"🎯 TODO-PERF-001 Phase 1 成功")
-        print(f"   ✅ 遅延ロード実装により {results['improvement_percent']:.1f}% 改善")
-        print(f"   ✅ 目標1500ms以下を達成")
-        print(f"   📋 Phase 2で更なる最適化実施予定")
+        print(f"[TARGET] TODO-PERF-001 Phase 1 成功")
+        print(f"   [OK] 遅延ロード実装により {results['improvement_percent']:.1f}% 改善")
+        print(f"   [OK] 目標1500ms以下を達成")
+        print(f"   [LIST] Phase 2で更なる最適化実施予定")
     else:
         remaining = results['total_time_ms'] - 1500
-        print(f"⚠️  TODO-PERF-001 Phase 1 部分達成")
-        print(f"   📈 {results['improvement_percent']:.1f}% 改善済み")
-        print(f"   📉 目標まで追加 {remaining:.1f}ms 最適化必要")
-        print(f"   📋 Phase 2で残り最適化実施")
+        print(f"[WARNING]  TODO-PERF-001 Phase 1 部分達成")
+        print(f"   [UP] {results['improvement_percent']:.1f}% 改善済み")
+        print(f"   [DOWN] 目標まで追加 {remaining:.1f}ms 最適化必要")
+        print(f"   [LIST] Phase 2で残り最適化実施")
 
 if __name__ == "__main__":
     results = measure_import_time()

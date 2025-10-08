@@ -23,17 +23,17 @@ def measure_execution_time():
         
         execution_time = (time.time() - start_time) * 1000
         
-        print(f"✅ 実行完了: {execution_time:.0f}ms")
+        print(f"[OK] 実行完了: {execution_time:.0f}ms")
         
         if result.returncode == 0:
-            print(f"🎉 正常終了")
+            print(f"[SUCCESS] 正常終了")
         else:
-            print(f"⚠️ 異常終了: return code {result.returncode}")
+            print(f"[WARNING] 異常終了: return code {result.returncode}")
         
         # 目標達成確認
         target_time = 1500  # ms
         if execution_time <= target_time:
-            print(f"🎯 目標達成！ {execution_time:.0f}ms ≤ {target_time}ms")
+            print(f"[TARGET] 目標達成！ {execution_time:.0f}ms ≤ {target_time}ms")
         else:
             remaining = execution_time - target_time
             print(f"🔄 あと{remaining:.0f}ms短縮が必要")
@@ -42,11 +42,11 @@ def measure_execution_time():
         
     except subprocess.TimeoutExpired:
         execution_time = (time.time() - start_time) * 1000
-        print(f"❌ タイムアウト: {execution_time:.0f}ms")
+        print(f"[ERROR] タイムアウト: {execution_time:.0f}ms")
         return execution_time
     except Exception as e:
         execution_time = (time.time() - start_time) * 1000
-        print(f"❌ 実行エラー: {e}")
+        print(f"[ERROR] 実行エラー: {e}")
         return execution_time
 
 if __name__ == "__main__":

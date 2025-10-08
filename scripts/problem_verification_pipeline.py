@@ -393,7 +393,7 @@ class ProblemVerificationPipeline:
         print("=== Problem完了状況検証パイプライン開始 ===\n")
         
         # Stage 1: 静的検証（2分）
-        print("🔍 Stage 1: 静的検証実行中...")
+        print("[SEARCH] Stage 1: 静的検証実行中...")
         stage1_start = time.time()
         static_results = self.verification_stages['static'].verify_all()
         stage1_duration = time.time() - stage1_start
@@ -403,12 +403,12 @@ class ProblemVerificationPipeline:
             'results': static_results
         }
         
-        print(f"✅ Stage 1完了 ({stage1_duration:.1f}秒)")
+        print(f"[OK] Stage 1完了 ({stage1_duration:.1f}秒)")
         self._print_stage1_summary(static_results)
         
         # Stage 2: 軽量バックテスト（5分）
         if self._should_proceed_lightweight(static_results):
-            print("\n🚀 Stage 2: 軽量バックテスト実行中...")
+            print("\n[ROCKET] Stage 2: 軽量バックテスト実行中...")
             stage2_start = time.time()
             lightweight_results = self.verification_stages['lightweight'].verify_critical()
             stage2_duration = time.time() - stage2_start
@@ -418,12 +418,12 @@ class ProblemVerificationPipeline:
                 'results': lightweight_results
             }
             
-            print(f"✅ Stage 2完了 ({stage2_duration:.1f}秒)")
+            print(f"[OK] Stage 2完了 ({stage2_duration:.1f}秒)")
             self._print_stage2_summary(lightweight_results)
             
             # Stage 3: 本格バックテスト（15分）
             if self._should_proceed_full_scale(lightweight_results):
-                print("\n📊 Stage 3: 本格バックテスト実行中...")
+                print("\n[CHART] Stage 3: 本格バックテスト実行中...")
                 stage3_start = time.time()
                 full_results = self.verification_stages['full_scale'].verify_final()
                 stage3_duration = time.time() - stage3_start
@@ -433,14 +433,14 @@ class ProblemVerificationPipeline:
                     'results': full_results
                 }
                 
-                print(f"✅ Stage 3完了 ({stage3_duration:.1f}秒)")
+                print(f"[OK] Stage 3完了 ({stage3_duration:.1f}秒)")
                 self._print_stage3_summary(full_results)
                 
             else:
-                print("⚠️  Stage 3スキップ: Stage 2で問題検出")
+                print("[WARNING]  Stage 3スキップ: Stage 2で問題検出")
                 
         else:
-            print("⚠️  Stage 2, 3スキップ: Stage 1で問題検出")
+            print("[WARNING]  Stage 2, 3スキップ: Stage 1で問題検出")
             
         results['pipeline_end_time'] = datetime.now().isoformat()
         self.results = results
@@ -466,7 +466,7 @@ class ProblemVerificationPipeline:
         """Stage 1結果サマリー出力"""
         print("\n--- Stage 1結果サマリー ---")
         for problem, result in results.items():
-            status = "✅" if result.get('config_updated', False) else "❌"
+            status = "[OK]" if result.get('config_updated', False) else "[ERROR]"
             print(f"{status} {problem}: 設定更新{'完了' if result.get('config_updated', False) else '未完了'}")
             
     def _print_stage2_summary(self, results: Dict[str, Any]):
@@ -476,12 +476,12 @@ class ProblemVerificationPipeline:
         switching = results.get('switching_mechanism', {})
         switches = switching.get('switching_count', 0)
         functional = switching.get('functional', False)
-        print(f"{'✅' if functional else '❌'} 切替メカニズム: {switches}回 ({'動作正常' if functional else '要修正'})")
+        print(f"{'[OK]' if functional else '[ERROR]'} 切替メカニズム: {switches}回 ({'動作正常' if functional else '要修正'})")
         
         repro = results.get('deterministic_reproducibility', {})
         repro_ok = repro.get('reproducible', False)
         diff = repro.get('difference_percent', 100.0)
-        print(f"{'✅' if repro_ok else '❌'} 決定論的再現性: ±{diff:.1f}% ({'OK' if repro_ok else 'NG'})")
+        print(f"{'[OK]' if repro_ok else '[ERROR]'} 決定論的再現性: ±{diff:.1f}% ({'OK' if repro_ok else 'NG'})")
         
     def _print_stage3_summary(self, results: Dict[str, Any]):
         """Stage 3結果サマリー出力"""
@@ -489,22 +489,22 @@ class ProblemVerificationPipeline:
         
         kpi = results.get('problem_1_kpi', {})
         if kpi.get('kpi_achieved', False):
-            print("✅ Problem 1 KPI: 全達成")
+            print("[OK] Problem 1 KPI: 全達成")
         else:
-            print("❌ Problem 1 KPI: 要改善")
+            print("[ERROR] Problem 1 KPI: 要改善")
             
             switches_ok = kpi.get('switching_count_target', False)
             unnecessary_ok = kpi.get('unnecessary_switch_rate_target', False)
             deterministic_ok = kpi.get('deterministic_difference_target', False)
             
-            print(f"  - 切替数レンジ: {'✅' if switches_ok else '❌'}")
-            print(f"  - 不要切替率: {'✅' if unnecessary_ok else '❌'}")
-            print(f"  - 決定論的差分: {'✅' if deterministic_ok else '❌'}")
+            print(f"  - 切替数レンジ: {'[OK]' if switches_ok else '[ERROR]'}")
+            print(f"  - 不要切替率: {'[OK]' if unnecessary_ok else '[ERROR]'}")
+            print(f"  - 決定論的差分: {'[OK]' if deterministic_ok else '[ERROR]'}")
             
     def _print_final_summary(self, results: Dict[str, Any]):
         """最終検証結果サマリー出力"""
         print("\n" + "="*50)
-        print("🎯 Problem完了状況検証結果")
+        print("[TARGET] Problem完了状況検証結果")
         print("="*50)
         
         stages = results.get('stages', {})
@@ -513,7 +513,7 @@ class ProblemVerificationPipeline:
             duration = stage_data.get('duration_seconds', 0)
             print(f"⏱️  {stage_name}: {duration:.1f}秒")
             
-        print(f"\n📋 検証結果保存: verification_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+        print(f"\n[LIST] 検証結果保存: verification_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
         
     def save_results(self, filepath: Optional[str] = None) -> str:
         """検証結果をJSONファイルに保存"""

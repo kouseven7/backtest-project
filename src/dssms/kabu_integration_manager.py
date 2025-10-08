@@ -917,10 +917,10 @@ if __name__ == "__main__":
     integrator = DSSMSKabuIntegrator()
     
     if integrator.initialize_integration():
-        print("✅ DSSMS-kabu API統合初期化成功")
+        print("[OK] DSSMS-kabu API統合初期化成功")
         
         # システム状況確認
         status = integrator.get_integrated_status()
         print(f"システム状況: {status}")
     else:
-        print("❌ 初期化に失敗しました")
+        print("[ERROR] 初期化に失敗しました")

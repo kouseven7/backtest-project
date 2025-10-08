@@ -71,8 +71,8 @@ class MomentumParameterValidator:
     @staticmethod
     def _generate_validation_summary(errors: List[str], warnings: List[str]) -> str:
         if errors:
-            return f"❌ エラー{len(errors)}件"
+            return f"[ERROR] エラー{len(errors)}件"
         elif warnings:
-            return f"⚠️ 警告{len(warnings)}件"
+            return f"[WARNING] 警告{len(warnings)}件"
         else:
-            return "✅ 検証完了"
+            return "[OK] 検証完了"

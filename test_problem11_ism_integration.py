@@ -85,7 +85,7 @@ def test_ism_integration():
     except ImportError as e:
         print(f"⚠ IntelligentSwitchManager インポートエラー: {e}")
     except Exception as e:
-        print(f"❌ ISM統合テストエラー: {e}")
+        print(f"[ERROR] ISM統合テストエラー: {e}")
         traceback.print_exc()
     
     try:
@@ -143,7 +143,7 @@ def test_ism_integration():
     except ImportError as e:
         print(f"⚠ DSSMSBacktester インポートエラー: {e}")
     except Exception as e:
-        print(f"❌ DSSMSBacktester統合テストエラー: {e}")
+        print(f"[ERROR] DSSMSBacktester統合テストエラー: {e}")
         traceback.print_exc()
     
     try:
@@ -222,10 +222,10 @@ def test_ism_integration():
         print("-" * 40)
         
         for criterion, passed in success_criteria.items():
-            status = "✓ PASS" if passed else "❌ FAIL"
+            status = "✓ PASS" if passed else "[ERROR] FAIL"
             print(f"{status} {criterion}")
         
-        final_status = "✓ SUCCESS" if all_success else "❌ PARTIAL"
+        final_status = "✓ SUCCESS" if all_success else "[ERROR] PARTIAL"
         print(f"\n{final_status} Problem 11 統合評価: {sum(success_criteria.values())}/3 基準達成")
         
         # KPIメタデータ出力
@@ -249,7 +249,7 @@ def test_ism_integration():
         print(f"✓ KPIメタデータ出力: {kpi_path.name}")
         
     except Exception as e:
-        print(f"❌ 品質メトリクス計算エラー: {e}")
+        print(f"[ERROR] 品質メトリクス計算エラー: {e}")
         traceback.print_exc()
     
     print("\n" + "=" * 60)

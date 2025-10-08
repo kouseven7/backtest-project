@@ -446,7 +446,7 @@ class CompositeBacktestDemoSystem:
         
         print(f"\nデモID: {demo_results['demo_id']}")
         print(f"実行時間: {demo_results.get('total_duration', 0):.2f}秒")
-        print(f"成功状態: {'✅ 成功' if demo_results['success'] else '❌ 失敗'}")
+        print(f"成功状態: {'[OK] 成功' if demo_results['success'] else '[ERROR] 失敗'}")
         
         if demo_results["success"]:
             print(f"\nテスト対象コンポーネント:")
@@ -508,16 +508,16 @@ async def main():
         
         # 成功時の追加情報
         if results["success"]:
-            print("\n📊 Excel + 可視化レポートが生成されました")
-            print("📈 期待値重視のパフォーマンス分析が完了しました")
+            print("\n[CHART] Excel + 可視化レポートが生成されました")
+            print("[UP] 期待値重視のパフォーマンス分析が完了しました")
             print("🔄 トレンド切替システムとの連携が確認されました")
-            print("\n✅ 4-2-2 実装完了!")
+            print("\n[OK] 4-2-2 実装完了!")
         
         return results
         
     except Exception as e:
         logger.error(f"Demo execution failed: {e}")
-        print(f"\n❌ デモ実行に失敗しました: {e}")
+        print(f"\n[ERROR] デモ実行に失敗しました: {e}")
         return {"success": False, "error": str(e)}
 
 if __name__ == "__main__":

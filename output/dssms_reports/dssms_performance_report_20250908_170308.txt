@@ -21,19 +21,19 @@ DSSMS パフォーマンス達成確認レポート
 ■ 目標達成状況
 ----------------------------------------
 評価指標数: 4
-❌ failed    :   0件 (  0.0%)
+[ERROR] failed    :   0件 (  0.0%)
 ⚡ minimum   :   0件 (  0.0%)
-✅ target    :   4件 (100.0%)
+[OK] target    :   4件 (100.0%)
 🌟 stretch   :   0件 (  0.0%)
 
 ■ 詳細指標評価
 ----------------------------------------
 指標名                  現在値          目標値          達成度        フェーズ    
 ----------------------------------------------------------------------
-total_return         165.51       -20.00       ✅target    emergency
-portfolio_value      2655131.99   800000.00    ✅target    emergency
-max_drawdown         -11.23       60.00        ✅target    emergency
-switching_success_rate 0.71         0.30         ✅target    emergency
+total_return         165.51       -20.00       [OK]target    emergency
+portfolio_value      2655131.99   800000.00    [OK]target    emergency
+max_drawdown         -11.23       60.00        [OK]target    emergency
+switching_success_rate 0.71         0.30         [OK]target    emergency
 
 ================================================================================
 レポート終了

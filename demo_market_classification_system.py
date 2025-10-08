@@ -361,15 +361,15 @@ def main():
     logger.info("Demo Results Summary:")
     
     for test_name, result in test_results.items():
-        status = "✅ PASSED" if result else "❌ FAILED"
+        status = "[OK] PASSED" if result else "[ERROR] FAILED"
         logger.info(f"  {test_name}: {status}")
     
     overall_success = all(test_results.values())
     
     if overall_success:
-        logger.info("🎉 All tests passed! A→B Market Classification System is working correctly.")
+        logger.info("[SUCCESS] All tests passed! A→B Market Classification System is working correctly.")
     else:
-        logger.error("⚠️  Some tests failed. Please check the logs for details.")
+        logger.error("[WARNING]  Some tests failed. Please check the logs for details.")
     
     logger.info("Demo completed.")
     return overall_success

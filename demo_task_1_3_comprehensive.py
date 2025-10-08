@@ -39,7 +39,7 @@ try:
     from src.dssms.dssms_staged_validator import DSSMSStagedValidator
     from src.dssms.dssms_issue_detector_fixer import DSSMSIssueDetectorFixer
 except ImportError as e:
-    print(f"⚠️ Task 1.3コンポーネントインポートエラー: {e}")
+    print(f"[WARNING] Task 1.3コンポーネントインポートエラー: {e}")
     print("個別にコンポーネントを実行してください")
 
 class DemoPhase(Enum):
@@ -423,26 +423,26 @@ class DSSMSTask13ComprehensiveDemo:
         
         if not failed_phases:
             recommendations.extend([
-                "✅ すべてのフェーズが正常完了しました",
-                "🚀 Task 1.3クイック修正版の動作確認完了",
-                "📈 Phase 2への移行準備が整いました"
+                "[OK] すべてのフェーズが正常完了しました",
+                "[ROCKET] Task 1.3クイック修正版の動作確認完了",
+                "[UP] Phase 2への移行準備が整いました"
             ])
         else:
-            recommendations.append("⚠️ 以下のフェーズで問題が発生しました:")
+            recommendations.append("[WARNING] 以下のフェーズで問題が発生しました:")
             for failed in failed_phases:
                 recommendations.append(f"  - {failed.phase.value}: {failed.error_message}")
         
         # スコア別推奨事項
         if hasattr(self, 'issue_detector') and self.issue_detector:
-            recommendations.append("🔧 問題検出・修正システムが実行されました")
+            recommendations.append("[TOOL] 問題検出・修正システムが実行されました")
         
         if hasattr(self, 'integration_manager') and self.integration_manager:
             recommendations.append("🔗 ハイブリッド統合が実行されました")
         
         if hasattr(self, 'staged_validator') and self.staged_validator:
-            recommendations.append("✅ 段階的検証が実行されました")
+            recommendations.append("[OK] 段階的検証が実行されました")
         
-        recommendations.append("📊 詳細レポートを確認してください")
+        recommendations.append("[CHART] 詳細レポートを確認してください")
         
         return recommendations
     
@@ -460,7 +460,7 @@ class DSSMSTask13ComprehensiveDemo:
         # フェーズ別結果
         lines.append("🔄 フェーズ実行結果:")
         for result in self.phase_results:
-            status = "✅" if result.success else "❌"
+            status = "[OK]" if result.success else "[ERROR]"
             lines.append(f"  {status} {result.phase.value}: {result.execution_time:.2f}s")
             if result.error_message:
                 lines.append(f"    エラー: {result.error_message}")
@@ -468,14 +468,14 @@ class DSSMSTask13ComprehensiveDemo:
         lines.append("")
         
         # 詳細結果
-        lines.append("📊 詳細結果:")
+        lines.append("[CHART] 詳細結果:")
         for result in self.phase_results:
             lines.append(f"\n[{result.phase.value.upper()}]")
             for key, value in result.details.items():
                 lines.append(f"  {key}: {value}")
         
         # 推奨事項
-        lines.append("\n💡 推奨事項:")
+        lines.append("\n[IDEA] 推奨事項:")
         recommendations = self._generate_final_recommendations()
         for rec in recommendations:
             lines.append(f"  {rec}")
@@ -533,29 +533,29 @@ def demo_comprehensive_task_1_3():
         # 包括デモ実行
         report = demo_system.run_comprehensive_demo()
         
-        print(f"\n📊 包括デモ結果:")
-        print(f"全体成功: {'✅' if report.overall_success else '❌'}")
+        print(f"\n[CHART] 包括デモ結果:")
+        print(f"全体成功: {'[OK]' if report.overall_success else '[ERROR]'}")
         print(f"総実行時間: {report.total_execution_time:.2f}秒")
         print(f"成功フェーズ: {report.summary['successful_phases']}/{report.summary['total_phases']}")
         
-        print(f"\n🎯 スコア:")
+        print(f"\n[TARGET] スコア:")
         print(f"システム健全性: {report.system_health:.1%}")
         print(f"統合スコア: {report.integration_score:.1%}")
         print(f"検証スコア: {report.validation_score:.1%}")
         
         print(f"\n🔄 フェーズ結果:")
         for result in report.phase_results:
-            status = "✅" if result.success else "❌"
+            status = "[OK]" if result.success else "[ERROR]"
             print(f"  {status} {result.phase.value}: {result.execution_time:.2f}s")
         
-        print(f"\n💡 最終推奨事項:")
+        print(f"\n[IDEA] 最終推奨事項:")
         for rec in report.final_recommendations[:5]:  # 最初の5つ
             print(f"  {rec}")
         
         return report.overall_success
         
     except Exception as e:
-        print(f"❌ 包括デモエラー: {e}")
+        print(f"[ERROR] 包括デモエラー: {e}")
         traceback.print_exc()
         return False
 

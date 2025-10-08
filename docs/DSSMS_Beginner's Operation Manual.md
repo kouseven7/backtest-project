@@ -53,7 +53,7 @@ config/dssms/                 # 設定ファイル
 └── scheduler_config.json     # スケジューラー設定
 ```
 
-### ⚠️ 重要な注意事項
+### [WARNING] 重要な注意事項
 - **UnifiedTrendDetector警告**: システム起動時に循環インポート警告が表示されますが、基本機能は正常に動作します
 - **メソッド名**: 一部のメソッド名が従来バージョンから変更されています（例：`get_nikkei225_symbols()` → `fetch_nikkei225_symbols()`）
 - **データ取得**: 初回実行時にネットワーク接続によりデータ取得に時間がかかる場合があります
@@ -288,7 +288,7 @@ backtester = DSSMSBacktester()
 symbol_universe = ['7203', '6758', '9984']  # 高速テスト用に3銘柄
 
 for period_name, start_date_str, end_date_str in test_periods:
-    print(f'\\n📊 {period_name} ({start_date_str} ～ {end_date_str})')
+    print(f'\\n[CHART] {period_name} ({start_date_str} ～ {end_date_str})')
     
     try:
         start_dt = datetime.strptime(start_date_str, '%Y-%m-%d')
@@ -300,12 +300,12 @@ for period_name, start_date_str, end_date_str in test_periods:
             symbol_universe=symbol_universe
         )
         
-        print(f'   ✅ テスト完了 - 期間: {(end_dt - start_dt).days}日間')
+        print(f'   [OK] テスト完了 - 期間: {(end_dt - start_dt).days}日間')
         
     except Exception as e:
-        print(f'   ❌ エラー: {str(e)[:50]}...')
+        print(f'   [ERROR] エラー: {str(e)[:50]}...')
 
-print('\\n🎯 複数期間比較テスト完了')
+print('\\n[TARGET] 複数期間比較テスト完了')
 "
 ```
 
@@ -479,7 +479,7 @@ print('現在のスケジュール:', info)
 
 ### 5. 包括的バックテストの実行
 
-**⚠️ 実行前の重要な注意事項:**
+**[WARNING] 実行前の重要な注意事項:**
 - UnifiedTrendDetector関連の警告メッセージが表示されますが、システムは正常動作します
 - データ取得に時間がかかる場合があります（初回実行時は特に）
 - yfinanceライブラリの警告メッセージは通常の動作です
@@ -1156,14 +1156,14 @@ try:
     recent_data = ticker.history(period='1mo')
     current_price = float(recent_data['Close'].iloc[-1])
     price_change = ((current_price - float(recent_data['Close'].iloc[0])) / float(recent_data['Close'].iloc[0])) * 100
-    print(f'\\n📊 基本情報:')
+    print(f'\\n[CHART] 基本情報:')
     print(f'   現在価格: {current_price:,.0f}円')
     print(f'   30日変化率: {price_change:+.2f}%')
 except Exception as e:
-    print(f'\\n📊 基本情報: データ取得エラー - {e}')
+    print(f'\\n[CHART] 基本情報: データ取得エラー - {e}')
 
 # 1. ファンダメンタル分析
-print(f'\\n💰 ファンダメンタル分析:')
+print(f'\\n[MONEY] ファンダメンタル分析:')
 fundamental = FundamentalAnalyzer()
 try:
     fund_result = fundamental.analyze_symbol(symbol)
@@ -1183,14 +1183,14 @@ try:
     elif avg_score >= 40:
         fund_rating = '普通 ⭐'
     else:
-        fund_rating = '要注意 ⚠️'
+        fund_rating = '要注意 [WARNING]'
     print(f'   総合評価: {fund_rating}')
     
 except Exception as e:
     print(f'   分析エラー: {e}')
 
 # 2. テクニカル分析
-print(f'\\n📈 テクニカル分析:')
+print(f'\\n[UP] テクニカル分析:')
 technical = PerfectOrderDetector()
 try:
     tech_result = technical.detect_perfect_order(symbol)
@@ -1199,7 +1199,7 @@ try:
     trend_strength = tech_result.get('trend_strength', 0)
     confidence = tech_result.get('confidence', 0)
     
-    print(f'   パーフェクトオーダー: {\"成立 ✅\" if is_perfect else \"非成立 ❌\"}')
+    print(f'   パーフェクトオーダー: {\"成立 [OK]\" if is_perfect else \"非成立 [ERROR]\"}')
     print(f'   トレンド方向: {trend_direction}')
     print(f'   トレンド強度: {trend_strength}/10')
     print(f'   信頼度: {confidence}%')
@@ -1212,14 +1212,14 @@ try:
     elif trend_strength >= 4:
         tech_rating = '普通 ⭐'
     else:
-        tech_rating = '弱い ⚠️'
+        tech_rating = '弱い [WARNING]'
     print(f'   総合評価: {tech_rating}')
     
 except Exception as e:
     print(f'   分析エラー: {e}')
 
 # 3. 包括的スコアリング
-print(f'\\n🎯 包括的スコアリング:')
+print(f'\\n[TARGET] 包括的スコアリング:')
 scoring = ComprehensiveScoringEngine()
 try:
     score_result = scoring.calculate_comprehensive_score(symbol)
@@ -1237,7 +1237,7 @@ try:
     
     # 最終判定
     if total_score >= 80:
-        final_rating = '強く推奨 🚀'
+        final_rating = '強く推奨 [ROCKET]'
     elif total_score >= 60:
         final_rating = '推奨 👍'
     elif total_score >= 40:
@@ -1260,7 +1260,7 @@ print('=' * 60)
 - ファンダメンタル各指標のスコアと総合評価
 - テクニカル分析結果と強度評価
 - 包括的スコアリングと最終的な投資推奨度
-- 視覚的に分かりやすい評価マーク（⭐、✅、❌等）
+- 視覚的に分かりやすい評価マーク（⭐、[OK]、[ERROR]等）
 
 ### サンプル実行3: 市場状況に応じた戦略切り替え
 
@@ -1294,11 +1294,11 @@ try:
     
     # 市場状況の視覚化
     if condition == '上昇':
-        condition_icon = '📈'
+        condition_icon = '[UP]'
     elif condition == '下降':
-        condition_icon = '📉'
+        condition_icon = '[DOWN]'
     else:
-        condition_icon = '📊'
+        condition_icon = '[CHART]'
     
     print(f'   状況表示: {condition_icon} {condition}市場')
     
@@ -1352,13 +1352,13 @@ try:
     # 戦略切り替えの必要性判定
     if current_strategy != recommended_strategy:
         if confidence >= 70:
-            switch_recommendation = '即座に切り替え推奨 🚨'
+            switch_recommendation = '即座に切り替え推奨 [ALERT]'
         elif confidence >= 50:
-            switch_recommendation = '切り替え検討 ⚠️'
+            switch_recommendation = '切り替え検討 [WARNING]'
         else:
-            switch_recommendation = '現状維持 ✅'
+            switch_recommendation = '現状維持 [OK]'
     else:
-        switch_recommendation = '現状維持 ✅'
+        switch_recommendation = '現状維持 [OK]'
     
     print(f'   判定: {switch_recommendation}')
     
@@ -1366,27 +1366,27 @@ except Exception as e:
     print(f'   切り替え分析エラー: {e}')
 
 # 4. 推奨アクション
-print('\\n🎯 推奨アクション:')
+print('\\n[TARGET] 推奨アクション:')
 try:
     # 市場状況とリスクレベルに基づく推奨
     if health_score >= 70 and volatility == '低':
-        print('   ✅ 積極的な投資が可能です')
-        print('   ✅ 成長株への投資を検討してください')
-        print('   ✅ レバレッジの活用も検討可能です')
+        print('   [OK] 積極的な投資が可能です')
+        print('   [OK] 成長株への投資を検討してください')
+        print('   [OK] レバレッジの活用も検討可能です')
     elif health_score >= 50:
-        print('   ⚠️  慎重な投資が推奨されます')
-        print('   ⚠️  安定株中心のポートフォリオを維持してください')
-        print('   ⚠️  リスク管理を強化してください')
+        print('   [WARNING]  慎重な投資が推奨されます')
+        print('   [WARNING]  安定株中心のポートフォリオを維持してください')
+        print('   [WARNING]  リスク管理を強化してください')
     else:
-        print('   🚨 防御的なポジションが必要です')
-        print('   🚨 現金比率を高めることを検討してください')
-        print('   🚨 損切りルールを厳格に適用してください')
+        print('   [ALERT] 防御的なポジションが必要です')
+        print('   [ALERT] 現金比率を高めることを検討してください')
+        print('   [ALERT] 損切りルールを厳格に適用してください')
         
     # 具体的な銘柄選定指針
     if condition == '上昇' and risk_level == '低':
         print('\\n   銘柄選定指針:')
-        print('   📈 成長性重視（テック株、新興企業）')
-        print('   📈 モメンタム戦略の活用')
+        print('   [UP] 成長性重視（テック株、新興企業）')
+        print('   [UP] モメンタム戦略の活用')
     elif condition == '下降' or risk_level == '高':
         print('\\n   銘柄選定指針:')
         print('   🛡️  ディフェンシブ株（公益、生活必需品）')
@@ -1435,15 +1435,15 @@ try:
     health = analyzer.check_system_health()
     
     all_ok = all(health.values())
-    print(f'   システム状況: {\"✅ 正常\" if all_ok else \"⚠️ 警告あり\"}')
+    print(f'   システム状況: {\"[OK] 正常\" if all_ok else \"[WARNING] 警告あり\"}')
     
     if not all_ok:
         print('   警告システム:')
         for component, status in health.items():
             if not status:
-                print(f'     ❌ {component}')
+                print(f'     [ERROR] {component}')
 except Exception as e:
-    print(f'   ❌ システムチェックエラー: {e}')
+    print(f'   [ERROR] システムチェックエラー: {e}')
 
 # 2. 市場状況確認
 print('\\n2️⃣ 市場状況分析...')
@@ -1457,7 +1457,7 @@ try:
     print(f'   トレンド: {condition.get(\"trend\", \"不明\")}')
     print(f'   ボラティリティ: {condition.get(\"volatility\", \"不明\")}')
 except Exception as e:
-    print(f'   ❌ 市場分析エラー: {e}')
+    print(f'   [ERROR] 市場分析エラー: {e}')
 
 # 3. 日次スクリーニング
 print('\\n3️⃣ 日次スクリーニング実行...')
@@ -1470,9 +1470,9 @@ try:
     if len(candidates) > 0:
         print(f'   トップ5: {candidates[:5]}')
     else:
-        print('   ⚠️ 候補銘柄なし - 条件を見直してください')
+        print('   [WARNING] 候補銘柄なし - 条件を見直してください')
 except Exception as e:
-    print(f'   ❌ スクリーニングエラー: {e}')
+    print(f'   [ERROR] スクリーニングエラー: {e}')
 
 # 4. アラート確認
 print('\\n4️⃣ アラート確認...')
@@ -1482,13 +1482,13 @@ try:
     alerts = detector.check_daily_alerts()
     
     if alerts:
-        print(f'   🚨 {len(alerts)}件のアラートがあります:')
+        print(f'   [ALERT] {len(alerts)}件のアラートがあります:')
         for alert in alerts[:3]:  # 最大3件表示
             print(f'     - {alert}')
     else:
-        print('   ✅ アラートなし')
+        print('   [OK] アラートなし')
 except Exception as e:
-    print(f'   ❌ アラート確認エラー: {e}')
+    print(f'   [ERROR] アラート確認エラー: {e}')
 
 # 5. 実行時間計測
 end_time = datetime.now()
@@ -1506,7 +1506,7 @@ print('🌅 === 日次ルーチン完了 ===')
 ```powershell
 # 週次パフォーマンス分析（推奨実行時間：金曜日夕方）
 python -c "
-print('📊 === 週次パフォーマンス分析開始 ===')
+print('[CHART] === 週次パフォーマンス分析開始 ===')
 from datetime import datetime, timedelta
 from src.dssms.dssms_analyzer import DSSMSAnalyzer
 from src.dssms.execution_history import ExecutionHistory
@@ -1515,7 +1515,7 @@ analysis_date = datetime.now()
 print(f'分析日: {analysis_date.strftime(\"%Y-%m-%d %H:%M\")}')
 
 # 1. 週次実行統計
-print('\\n📈 週次実行統計:')
+print('\\n[UP] 週次実行統計:')
 try:
     history = ExecutionHistory()
     week_data = history.get_weekly_summary()
@@ -1526,10 +1526,10 @@ try:
     print(f'   エラー回数: {week_data.get(\"error_count\", 0)}回')
     
 except Exception as e:
-    print(f'   ❌ 統計取得エラー: {e}')
+    print(f'   [ERROR] 統計取得エラー: {e}')
 
 # 2. パフォーマンス評価
-print('\\n💰 パフォーマンス評価:')
+print('\\n[MONEY] パフォーマンス評価:')
 try:
     analyzer = DSSMSAnalyzer()
     performance = analyzer.calculate_weekly_performance()
@@ -1548,12 +1548,12 @@ try:
     elif weekly_return > -2:
         perf_rating = '普通 😐'
     else:
-        perf_rating = '要改善 📉'
+        perf_rating = '要改善 [DOWN]'
     
     print(f'   総合評価: {perf_rating}')
     
 except Exception as e:
-    print(f'   ❌ パフォーマンス計算エラー: {e}')
+    print(f'   [ERROR] パフォーマンス計算エラー: {e}')
 
 # 3. 設定最適化提案
 print('\\n⚙️ 設定最適化提案:')
@@ -1563,16 +1563,16 @@ try:
     if optimization.get('suggestions'):
         print('   推奨調整:')
         for suggestion in optimization['suggestions'][:3]:
-            print(f'     💡 {suggestion}')
+            print(f'     [IDEA] {suggestion}')
     else:
-        print('   ✅ 現在の設定で良好です')
+        print('   [OK] 現在の設定で良好です')
         
     # 来週の推奨戦略
     next_week_strategy = optimization.get('next_week_strategy', '継続')
     print(f'   来週の戦略: {next_week_strategy}')
     
 except Exception as e:
-    print(f'   ❌ 最適化提案エラー: {e}')
+    print(f'   [ERROR] 最適化提案エラー: {e}')
 
 # 4. 市場見通し
 print('\\n🔮 来週の市場見通し:')
@@ -1586,9 +1586,9 @@ try:
     print(f'   注意事項: {forecast.get(\"warnings\", \"特になし\")}')
     
 except Exception as e:
-    print(f'   ❌ 市場予測エラー: {e}')
+    print(f'   [ERROR] 市場予測エラー: {e}')
 
-print('\\n📊 === 週次分析完了 ===')
+print('\\n[CHART] === 週次分析完了 ===')
 "
 ```
 **期待される結果**: 週次実行統計、パフォーマンス評価、設定最適化提案、来週の見通し
@@ -1608,7 +1608,7 @@ review_date = datetime.now()
 print(f'レビュー日: {review_date.strftime(\"%Y年%m月%d日\")}')
 
 # 1. 月次パフォーマンスサマリー
-print('\\n📊 月次パフォーマンスサマリー:')
+print('\\n[CHART] 月次パフォーマンスサマリー:')
 try:
     analyzer = DSSMSAnalyzer()
     monthly_perf = analyzer.calculate_monthly_performance()
@@ -1625,10 +1625,10 @@ try:
     print(f'   ベンチマーク比較: {excess_return:+.2f}% (vs TOPIX)')
     
 except Exception as e:
-    print(f'   ❌ パフォーマンス計算エラー: {e}')
+    print(f'   [ERROR] パフォーマンス計算エラー: {e}')
 
 # 2. 戦略別パフォーマンス
-print('\\n🎯 戦略別パフォーマンス:')
+print('\\n[TARGET] 戦略別パフォーマンス:')
 try:
     strategy_performance = analyzer.analyze_strategy_performance()
     
@@ -1640,10 +1640,10 @@ try:
         print(f'     使用率: {usage_rate:.1f}%')
         
 except Exception as e:
-    print(f'   ❌ 戦略分析エラー: {e}')
+    print(f'   [ERROR] 戦略分析エラー: {e}')
 
 # 3. システム信頼性評価
-print('\\n🔧 システム信頼性評価:')
+print('\\n[TOOL] システム信頼性評価:')
 try:
     reliability = analyzer.calculate_system_reliability()
     
@@ -1660,15 +1660,15 @@ try:
     elif uptime > 90:
         reliability_rating = '普通 ⭐'
     else:
-        reliability_rating = '要改善 ⚠️'
+        reliability_rating = '要改善 [WARNING]'
     
     print(f'   信頼性評価: {reliability_rating}')
     
 except Exception as e:
-    print(f'   ❌ 信頼性評価エラー: {e}')
+    print(f'   [ERROR] 信頼性評価エラー: {e}')
 
 # 4. 来月の戦略提案
-print('\\n🚀 来月の戦略提案:')
+print('\\n[ROCKET] 来月の戦略提案:')
 try:
     next_month_strategy = analyzer.suggest_next_month_strategy()
     
@@ -1681,20 +1681,20 @@ try:
     if adjustments:
         print('   推奨調整:')
         for adj in adjustments:
-            print(f'     🔧 {adj}')
+            print(f'     [TOOL] {adj}')
     
 except Exception as e:
-    print(f'   ❌ 戦略提案エラー: {e}')
+    print(f'   [ERROR] 戦略提案エラー: {e}')
 
 # 5. レポート生成
 print('\\n📄 月次レポート生成:')
 try:
     report_path = analyzer.generate_monthly_report()
-    print(f'   ✅ レポート生成完了: {report_path}')
-    print(f'   📊 グラフ、詳細データを含む包括的レポート')
+    print(f'   [OK] レポート生成完了: {report_path}')
+    print(f'   [CHART] グラフ、詳細データを含む包括的レポート')
     
 except Exception as e:
-    print(f'   ❌ レポート生成エラー: {e}')
+    print(f'   [ERROR] レポート生成エラー: {e}')
 
 print('\\n🗓️ === 月次総合レビュー完了 ===')
 "
@@ -1710,7 +1710,7 @@ print('\\n🗓️ === 月次総合レビュー完了 ===')
 ```powershell
 # システム全体診断（エラー発生時に最初に実行）
 python -c "
-print('🔍 === システム全体診断開始 ===')
+print('[SEARCH] === システム全体診断開始 ===')
 import sys
 import os
 from datetime import datetime
@@ -1731,19 +1731,19 @@ missing_libs = []
 for lib in required_libs:
     try:
         __import__(lib)
-        print(f'   ✅ {lib}: 利用可能')
+        print(f'   [OK] {lib}: 利用可能')
     except ImportError:
-        print(f'   ❌ {lib}: 未インストール')
+        print(f'   [ERROR] {lib}: 未インストール')
         missing_libs.append(lib)
 
 if missing_libs:
-    print(f'\\n⚠️ 不足ライブラリ: {missing_libs}')
+    print(f'\\n[WARNING] 不足ライブラリ: {missing_libs}')
     print('   インストールコマンド:')
     for lib in missing_libs:
         print(f'     pip install {lib}')
 
 # 3. DSSMSモジュール確認
-print('\\n🎯 DSSMSモジュール確認:')
+print('\\n[TARGET] DSSMSモジュール確認:')
 dssms_modules = [
     'src.dssms.nikkei225_screener',
     'src.dssms.dssms_analyzer',
@@ -1754,11 +1754,11 @@ dssms_modules = [
 for module in dssms_modules:
     try:
         __import__(module)
-        print(f'   ✅ {module}: 読み込み成功')
+        print(f'   [OK] {module}: 読み込み成功')
     except ImportError as e:
-        print(f'   ❌ {module}: 読み込み失敗 - {str(e)[:50]}...')
+        print(f'   [ERROR] {module}: 読み込み失敗 - {str(e)[:50]}...')
     except Exception as e:
-        print(f'   ⚠️ {module}: エラー - {str(e)[:50]}...')
+        print(f'   [WARNING] {module}: エラー - {str(e)[:50]}...')
 
 # 4. 設定ファイル確認
 print('\\n⚙️ 設定ファイル確認:')
@@ -1774,13 +1774,13 @@ for config_file in config_files:
             import json
             with open(config_file, 'r', encoding='utf-8') as f:
                 json.load(f)
-            print(f'   ✅ {config_file}: 正常')
+            print(f'   [OK] {config_file}: 正常')
         except json.JSONDecodeError:
-            print(f'   ❌ {config_file}: JSON形式エラー')
+            print(f'   [ERROR] {config_file}: JSON形式エラー')
         except Exception as e:
-            print(f'   ⚠️ {config_file}: 読み込みエラー')
+            print(f'   [WARNING] {config_file}: 読み込みエラー')
     else:
-        print(f'   ❌ {config_file}: ファイル不存在')
+        print(f'   [ERROR] {config_file}: ファイル不存在')
 
 # 5. ネットワーク接続確認
 print('\\n🌐 ネットワーク接続確認:')
@@ -1789,13 +1789,13 @@ try:
     test_ticker = yf.Ticker('7203.T')
     data = test_ticker.history(period='1d')
     if len(data) > 0:
-        print('   ✅ yfinanceデータ取得: 成功')
+        print('   [OK] yfinanceデータ取得: 成功')
     else:
-        print('   ⚠️ yfinanceデータ取得: データなし')
+        print('   [WARNING] yfinanceデータ取得: データなし')
 except Exception as e:
-    print(f'   ❌ yfinanceデータ取得: エラー - {str(e)[:50]}...')
+    print(f'   [ERROR] yfinanceデータ取得: エラー - {str(e)[:50]}...')
 
-print('\\n🔍 === システム診断完了 ===')
+print('\\n[SEARCH] === システム診断完了 ===')
 "
 ```
 **期待される結果**: 各コンポーネントの動作状況、不足ライブラリ、設定ファイル状況、ネットワーク接続状況
@@ -1805,7 +1805,7 @@ print('\\n🔍 === システム診断完了 ===')
 ```powershell
 # データ取得問題の詳細診断
 python -c "
-print('📊 === データ取得問題診断 ===')
+print('[CHART] === データ取得問題診断 ===')
 
 # 1. yfinance接続詳細テスト
 print('\\n🔗 yfinance接続詳細テスト:')
@@ -1818,17 +1818,17 @@ for symbol in test_symbols:
         
         # 基本情報取得テスト
         info = ticker.info
-        print(f'   {symbol} 基本情報: ✅ {info.get(\"longName\", \"名前不明\")}')
+        print(f'   {symbol} 基本情報: [OK] {info.get(\"longName\", \"名前不明\")}')
         
         # 履歴データ取得テスト
         hist = ticker.history(period='5d')
         if len(hist) > 0:
-            print(f'   {symbol} 履歴データ: ✅ {len(hist)}日分')
+            print(f'   {symbol} 履歴データ: [OK] {len(hist)}日分')
         else:
-            print(f'   {symbol} 履歴データ: ⚠️ データなし')
+            print(f'   {symbol} 履歴データ: [WARNING] データなし')
             
     except Exception as e:
-        print(f'   {symbol} エラー: ❌ {str(e)[:50]}...')
+        print(f'   {symbol} エラー: [ERROR] {str(e)[:50]}...')
 
 # 2. ネットワーク遅延テスト
 print('\\n⏱️ ネットワーク遅延テスト:')
@@ -1842,17 +1842,17 @@ try:
     print(f'   データ取得時間: {duration:.2f}秒')
     
     if duration > 10:
-        print('   ⚠️ 接続が遅い可能性があります')
+        print('   [WARNING] 接続が遅い可能性があります')
     elif duration > 5:
-        print('   ⚠️ やや遅いです')
+        print('   [WARNING] やや遅いです')
     else:
-        print('   ✅ 正常な速度です')
+        print('   [OK] 正常な速度です')
         
 except Exception as e:
-    print(f'   ❌ 遅延テストエラー: {e}')
+    print(f'   [ERROR] 遅延テストエラー: {e}')
 
 # 3. データ品質確認
-print('\\n🎯 データ品質確認:')
+print('\\n[TARGET] データ品質確認:')
 try:
     symbol = '7203.T'
     data = yf.download(symbol, period='1mo', progress=False)
@@ -1873,16 +1873,16 @@ try:
         print(f'   平均出来高: {avg_volume:,.0f}株')
         
         if missing_data == 0 and avg_volume > 0:
-            print('   ✅ データ品質: 良好')
+            print('   [OK] データ品質: 良好')
         else:
-            print('   ⚠️ データ品質: 要注意')
+            print('   [WARNING] データ品質: 要注意')
     else:
-        print('   ❌ データ取得失敗')
+        print('   [ERROR] データ取得失敗')
         
 except Exception as e:
-    print(f'   ❌ 品質確認エラー: {e}')
+    print(f'   [ERROR] 品質確認エラー: {e}')
 
-print('\\n📊 === データ診断完了 ===')
+print('\\n[CHART] === データ診断完了 ===')
 "
 ```
 
@@ -1891,7 +1891,7 @@ print('\\n📊 === データ診断完了 ===')
 ```powershell
 # 設定ファイル自動修復
 python -c "
-print('🔧 === 設定ファイル修復開始 ===')
+print('[TOOL] === 設定ファイル修復開始 ===')
 import json
 import os
 
@@ -1920,7 +1920,7 @@ default_configs = {
 
 # 設定ファイルの確認と修復
 for config_path, default_config in default_configs.items():
-    print(f'\\n🔍 {config_path} 確認中...')
+    print(f'\\n[SEARCH] {config_path} 確認中...')
     
     # ディレクトリ作成
     os.makedirs(os.path.dirname(config_path), exist_ok=True)
@@ -1937,30 +1937,30 @@ for config_path, default_config in default_configs.items():
                 if key not in existing_config:
                     existing_config[key] = value
                     updated = True
-                    print(f'   ✅ 不足キー追加: {key}')
+                    print(f'   [OK] 不足キー追加: {key}')
             
             if updated:
                 with open(config_path, 'w', encoding='utf-8') as f:
                     json.dump(existing_config, f, indent=2, ensure_ascii=False)
-                print(f'   🔧 設定ファイル更新完了')
+                print(f'   [TOOL] 設定ファイル更新完了')
             else:
-                print(f'   ✅ 設定ファイル正常')
+                print(f'   [OK] 設定ファイル正常')
                 
         except json.JSONDecodeError:
-            print(f'   ❌ JSON形式エラー - デフォルト設定で置換')
+            print(f'   [ERROR] JSON形式エラー - デフォルト設定で置換')
             with open(config_path, 'w', encoding='utf-8') as f:
                 json.dump(default_config, f, indent=2, ensure_ascii=False)
                 
         except Exception as e:
-            print(f'   ❌ 読み込みエラー: {e}')
+            print(f'   [ERROR] 読み込みエラー: {e}')
     else:
         # ファイルが存在しない場合は新規作成
         print(f'   📝 新規作成中...')
         with open(config_path, 'w', encoding='utf-8') as f:
             json.dump(default_config, f, indent=2, ensure_ascii=False)
-        print(f'   ✅ デフォルト設定ファイル作成完了')
+        print(f'   [OK] デフォルト設定ファイル作成完了')
 
-print('\\n🔧 === 設定ファイル修復完了 ===')
+print('\\n[TOOL] === 設定ファイル修復完了 ===')
 "
 ```
 
@@ -1984,24 +1984,24 @@ try:
     print(f'   現在のメモリ使用量: {memory_mb:.1f} MB')
     
     if memory_mb > 500:
-        print('   ⚠️ メモリ使用量が多いです')
-        print('   💡 ガベージコレクション実行中...')
+        print('   [WARNING] メモリ使用量が多いです')
+        print('   [IDEA] ガベージコレクション実行中...')
         gc.collect()
-        print('   ✅ メモリクリーンアップ完了')
+        print('   [OK] メモリクリーンアップ完了')
     else:
-        print('   ✅ メモリ使用量正常')
+        print('   [OK] メモリ使用量正常')
         
 except ImportError:
-    print('   ⚠️ psutilがインストールされていません')
-    print('   💡 インストール: pip install psutil')
+    print('   [WARNING] psutilがインストールされていません')
+    print('   [IDEA] インストール: pip install psutil')
 
 # 2. データ取得速度最適化
-print('\\n🚀 データ取得速度最適化:')
+print('\\n[ROCKET] データ取得速度最適化:')
 try:
     # キャッシュディレクトリ作成
     cache_dir = 'cache/data'
     os.makedirs(cache_dir, exist_ok=True)
-    print(f'   ✅ キャッシュディレクトリ: {cache_dir}')
+    print(f'   [OK] キャッシュディレクトリ: {cache_dir}')
     
     # 並列処理設定の最適化
     import concurrent.futures
@@ -2012,16 +2012,16 @@ try:
     print(f'   💻 CPU数: {cpu_count}, 最適ワーカー数: {optimal_workers}')
     
 except Exception as e:
-    print(f'   ❌ 最適化エラー: {e}')
+    print(f'   [ERROR] 最適化エラー: {e}')
 
 # 3. 設定最適化提案
 print('\\n⚙️ 設定最適化提案:')
 optimization_tips = [
     '🔄 データ取得頻度を市場時間に合わせて調整',
-    '📊 不要な指標計算を無効化してパフォーマンス向上',
+    '[CHART] 不要な指標計算を無効化してパフォーマンス向上',
     '💾 結果キャッシュを活用して重複計算を回避',
     '⏰ バックテスト期間を短縮して高速化',
-    '🎯 銘柄数を制限して処理時間短縮'
+    '[TARGET] 銘柄数を制限して処理時間短縮'
 ]
 
 for tip in optimization_tips:
@@ -2041,14 +2041,14 @@ try:
     print(f'   スクリーニング実行時間: {duration:.2f}秒')
     
     if duration > 30:
-        print('   ⚠️ 実行が遅いです - 最適化が必要')
+        print('   [WARNING] 実行が遅いです - 最適化が必要')
     elif duration > 10:
-        print('   ⚠️ やや遅いです - 改善の余地あり')
+        print('   [WARNING] やや遅いです - 改善の余地あり')
     else:
-        print('   ✅ 実行速度良好')
+        print('   [OK] 実行速度良好')
         
 except Exception as e:
-    print(f'   ❌ ベンチマークエラー: {e}')
+    print(f'   [ERROR] ベンチマークエラー: {e}')
 
 print('\\n⚡ === パフォーマンス最適化完了 ===')
 "
@@ -2075,24 +2075,24 @@ python -c "from src.dssms.market_condition_monitor import MarketConditionMonitor
 ```powershell
 # システム緊急診断
 python -c "
-print('🚨 === システム緊急診断 ===')
+print('[ALERT] === システム緊急診断 ===')
 try:
     import yfinance as yf
-    print('✅ yfinance: 正常')
+    print('[OK] yfinance: 正常')
 except:
-    print('❌ yfinance: エラー')
+    print('[ERROR] yfinance: エラー')
 
 try:
     import pandas as pd
-    print('✅ pandas: 正常')
+    print('[OK] pandas: 正常')
 except:
-    print('❌ pandas: エラー')
+    print('[ERROR] pandas: エラー')
 
 try:
     from src.dssms.nikkei225_screener import Nikkei225Screener
-    print('✅ DSSMS: 正常')
+    print('[OK] DSSMS: 正常')
 except Exception as e:
-    print(f'❌ DSSMS: {e}')
+    print(f'[ERROR] DSSMS: {e}')
 "
 
 # 設定ファイル緊急修復
@@ -2100,7 +2100,7 @@ python -c "
 import json
 import os
 
-print('🔧 === 設定ファイル緊急修復 ===')
+print('[TOOL] === 設定ファイル緊急修復 ===')
 
 # 基本設定の修復
 basic_config = {
@@ -2111,13 +2111,13 @@ basic_config = {
 
 config_path = 'config/dssms/dssms_config.json'
 if os.path.exists(config_path):
-    print('✅ 設定ファイル存在確認')
+    print('[OK] 設定ファイル存在確認')
 else:
-    print('⚠️ 設定ファイル作成中...')
+    print('[WARNING] 設定ファイル作成中...')
     os.makedirs(os.path.dirname(config_path), exist_ok=True)
     with open(config_path, 'w', encoding='utf-8') as f:
         json.dump(basic_config, f, indent=2, ensure_ascii=False)
-    print('✅ 設定ファイル修復完了')
+    print('[OK] 設定ファイル修復完了')
 "
 
 # データキャッシュクリア
@@ -2131,11 +2131,11 @@ cache_dirs = ['cache', '__pycache__', '.pytest_cache']
 for cache_dir in cache_dirs:
     if os.path.exists(cache_dir):
         shutil.rmtree(cache_dir, ignore_errors=True)
-        print(f'✅ {cache_dir} クリア完了')
+        print(f'[OK] {cache_dir} クリア完了')
     else:
         print(f'ℹ️ {cache_dir} 存在しません')
 
-print('✅ キャッシュクリア完了')
+print('[OK] キャッシュクリア完了')
 "
 ```
 

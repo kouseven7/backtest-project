@@ -61,15 +61,15 @@ def demo_task_1_3_simple():
         print(f"\n成功率: {passed}/{total} ({passed/total*100:.1f}%)")
         
         if passed >= 2:  # 3つ中2つ以上成功で OK
-            print("\n🎉 DSSMS Task 1.3 コア機能実装成功!")
-            print("\n✅ 主要改善点:")
+            print("\n[SUCCESS] DSSMS Task 1.3 コア機能実装成功!")
+            print("\n[OK] 主要改善点:")
             print("• ポートフォリオ価値0.01円問題 → V2エンジンで解決アプローチ完成")
             print("• 切替成功率0%問題 → V2切替ロジックで改善機能実装")
             print("• 計算精度問題 → データ統合・品質管理機能追加")
             print("• ハイブリッド統合 → 既存システム維持しつつV2機能追加")
             return True
         else:
-            print("\n⚠️ 一部機能に課題がありますが、基本実装は完了しています。")
+            print("\n[WARNING] 一部機能に課題がありますが、基本実装は完了しています。")
             return False
     
     except Exception as e:
@@ -115,10 +115,10 @@ def test_portfolio_calculator_v2_simple():
             
             # 0.01円問題の検証
             if portfolio_value > 1000.0:  # 1000円以上あれば正常
-                print("  ✅ ポートフォリオ価値0.01円問題: 解決確認")
+                print("  [OK] ポートフォリオ価値0.01円問題: 解決確認")
                 return True
             else:
-                print(f"  ⚠️ ポートフォリオ価値低下: {portfolio_value:.2f}円")
+                print(f"  [WARNING] ポートフォリオ価値低下: {portfolio_value:.2f}円")
                 return False
         else:
             print(f"  ✗ テスト取引失敗: {details.get('error', '不明')}")
@@ -181,10 +181,10 @@ def test_switch_engine_v2_simple():
         
         # 0%問題の検証 - 判定が動作すれば改善
         if decision.confidence >= 0 and hasattr(decision, 'triggers'):
-            print("  ✅ 切替成功率0%問題: 判定ロジック改善確認")
+            print("  [OK] 切替成功率0%問題: 判定ロジック改善確認")
             return True
         else:
-            print("  ⚠️ 切替ロジックに問題があります")
+            print("  [WARNING] 切替ロジックに問題があります")
             return False
             
     except ImportError as e:
@@ -211,10 +211,10 @@ def test_data_integration_simple():
             
             # データ品質確認
             if all(col in sample_data.columns for col in ['Open', 'High', 'Low', 'Close', 'Volume']):
-                print("  ✅ データ統合機能: 正常動作確認")
+                print("  [OK] データ統合機能: 正常動作確認")
                 return True
             else:
-                print("  ⚠️ データ構造に問題があります")
+                print("  [WARNING] データ構造に問題があります")
                 return False
         else:
             print("  ✗ サンプルデータ生成失敗")
@@ -235,19 +235,19 @@ if __name__ == "__main__":
     
     if success:
         print("\n" + "="*60)
-        print("🎯 DSSMS Task 1.3 実装目標達成!")
+        print("[TARGET] DSSMS Task 1.3 実装目標達成!")
         print("="*60)
-        print("\n📋 実装完了項目:")
-        print("  ✅ DSSMSPortfolioCalculatorV2 - 完全な再構築")
-        print("  ✅ DSSMSSwitchEngineV2 - 切替ロジック改善")
-        print("  ✅ DSSMSBacktesterV2 - 統合バックテスター")
-        print("  ✅ データ統合・品質管理機能")
-        print("  ✅ Task 1.2 コンポーネント統合")
-        print("\n🔧 解決したTask 1.3課題:")
+        print("\n[LIST] 実装完了項目:")
+        print("  [OK] DSSMSPortfolioCalculatorV2 - 完全な再構築")
+        print("  [OK] DSSMSSwitchEngineV2 - 切替ロジック改善")
+        print("  [OK] DSSMSBacktesterV2 - 統合バックテスター")
+        print("  [OK] データ統合・品質管理機能")
+        print("  [OK] Task 1.2 コンポーネント統合")
+        print("\n[TOOL] 解決したTask 1.3課題:")
         print("  • ポートフォリオ価値0.01円 → V2計算エンジンで根本解決")
         print("  • 切替成功率0.00% → V2切替エンジンで改善実装") 
         print("  • 計算精度・統合問題 → データ統合とクリーニング追加")
         print("\nTask 1.3 実装完了 ✨")
     else:
-        print("\n⚠️ 一部課題が残っていますが、主要コンポーネントの実装は完了しています。")
+        print("\n[WARNING] 一部課題が残っていますが、主要コンポーネントの実装は完了しています。")
         print("実データ取得や環境設定の最適化により、さらなる改善が可能です。")

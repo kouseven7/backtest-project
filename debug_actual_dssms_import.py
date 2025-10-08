@@ -55,7 +55,7 @@ def measure_actual_dssms_import():
         }
         
     except Exception as e:
-        print(f"   ❌ 初期化エラー: {e}")
+        print(f"   [ERROR] 初期化エラー: {e}")
         import traceback
         traceback.print_exc()
         return {
@@ -104,24 +104,24 @@ def main():
         result = analyze_modules_loaded()
         
         print("\n=== 総合分析結果 ===")
-        print(f"📊 インポート時間: {result['import_time']:.1f}ms")
-        print(f"📊 初期化時間: {result['init_time']:.1f}ms")
-        print(f"📊 コンポーネント確保時間: {result['ensure_time']:.1f}ms")
+        print(f"[CHART] インポート時間: {result['import_time']:.1f}ms")
+        print(f"[CHART] 初期化時間: {result['init_time']:.1f}ms")
+        print(f"[CHART] コンポーネント確保時間: {result['ensure_time']:.1f}ms")
         
         total_measured = result['import_time'] + result['init_time'] + result['ensure_time']
-        print(f"📊 測定総時間: {total_measured:.1f}ms")
+        print(f"[CHART] 測定総時間: {total_measured:.1f}ms")
         
         # 2854ms問題との比較
         expected_problem_time = 2854.4
         if total_measured < expected_problem_time / 2:
-            print(f"⚠️ 大きな差異発見: 予想{expected_problem_time:.1f}ms vs 実測{total_measured:.1f}ms")
-            print("🔍 可能性:")
+            print(f"[WARNING] 大きな差異発見: 予想{expected_problem_time:.1f}ms vs 実測{total_measured:.1f}ms")
+            print("[SEARCH] 可能性:")
             print("   1. 測定タイミングの違い（クラス取得 vs インスタンス作成）")
             print("   2. 他の遅延インポートが未発火")
             print("   3. 初回実行vs2回目実行の差")
             print("   4. キャッシュ効果の影響")
         else:
-            print("✅ 測定値が妥当範囲")
+            print("[OK] 測定値が妥当範囲")
             
     except Exception as e:
         print(f"分析エラー: {e}")

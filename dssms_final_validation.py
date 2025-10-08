@@ -80,15 +80,15 @@ class DSSMSFinalValidation:
                 }
                 
                 if success:
-                    print(f"✅ {test_name} - 成功 ({execution_time:.2f}秒)")
+                    print(f"[OK] {test_name} - 成功 ({execution_time:.2f}秒)")
                 else:
-                    print(f"❌ {test_name} - 失敗 ({execution_time:.2f}秒)")
+                    print(f"[ERROR] {test_name} - 失敗 ({execution_time:.2f}秒)")
                     if 'error' in results:
                         print(f"   エラー詳細: {results['error']}")
                     overall_success = False
                     
             except Exception as e:
-                print(f"❌ {test_name} - 例外発生: {str(e)}")
+                print(f"[ERROR] {test_name} - 例外発生: {str(e)}")
                 self.test_results[test_name] = {
                     'success': False,
                     'error': str(e),
@@ -128,9 +128,9 @@ class DSSMSFinalValidation:
                 full_path = project_root / dir_path
                 if full_path.exists():
                     existing_dirs.append(dir_path)
-                    print(f"   ✅ {dir_path}")
+                    print(f"   [OK] {dir_path}")
                 else:
-                    print(f"   ❌ {dir_path}")
+                    print(f"   [ERROR] {dir_path}")
             
             results['directory_coverage'] = len(existing_dirs) / len(required_dirs)
             
@@ -148,9 +148,9 @@ class DSSMSFinalValidation:
                 full_path = project_root / file_path
                 if full_path.exists():
                     existing_files.append(file_path)
-                    print(f"   ✅ {file_path}")
+                    print(f"   [OK] {file_path}")
                 else:
-                    print(f"   ❌ {file_path}")
+                    print(f"   [ERROR] {file_path}")
             
             results['file_coverage'] = len(existing_files) / len(key_files)
             
@@ -203,9 +203,9 @@ class DSSMSFinalValidation:
                 module_path = dssms_dir / module
                 if module_path.exists():
                     existing_modules.append(module)
-                    print(f"   ✅ {module}")
+                    print(f"   [OK] {module}")
                 else:
-                    print(f"   ❌ {module}")
+                    print(f"   [ERROR] {module}")
             
             results['core_module_coverage'] = len(existing_modules) / len(core_modules)
             
@@ -228,7 +228,7 @@ class DSSMSFinalValidation:
                     matching_files = [f for f in all_py_files if spec in f.name.lower()]
                     if matching_files:
                         found_specialized.append(spec)
-                        print(f"   ✅ {spec}関連モジュール: {len(matching_files)}個")
+                        print(f"   [OK] {spec}関連モジュール: {len(matching_files)}個")
                 
                 results['specialized_module_coverage'] = len(found_specialized) / len(specialized_modules)
             else:
@@ -246,9 +246,9 @@ class DSSMSFinalValidation:
             for config_file in config_files:
                 if (project_root / config_file).exists():
                     config_success += 1
-                    print(f"   ✅ {config_file}")
+                    print(f"   [OK] {config_file}")
                 else:
-                    print(f"   ❌ {config_file}")
+                    print(f"   [ERROR] {config_file}")
             
             results['config_coverage'] = config_success / len(config_files)
             
@@ -289,13 +289,13 @@ class DSSMSFinalValidation:
                 
                 print(f"   戦略ファイル数: {len(strategy_files)}個")
                 for strategy_file in strategy_files[:5]:  # 最初の5個を表示
-                    print(f"   ✅ {strategy_file.name}")
+                    print(f"   [OK] {strategy_file.name}")
                     
                 if len(strategy_files) > 5:
                     print(f"   ... その他 {len(strategy_files) - 5}個")
             else:
                 results['strategy_file_count'] = 0
-                print(f"   ❌ strategiesディレクトリが存在しません")
+                print(f"   [ERROR] strategiesディレクトリが存在しません")
             
             # 2. 主要戦略の存在確認
             key_strategies = [
@@ -310,9 +310,9 @@ class DSSMSFinalValidation:
                 strategy_path = strategies_dir / strategy
                 if strategy_path.exists():
                     existing_key_strategies.append(strategy)
-                    print(f"   ✅ {strategy}")
+                    print(f"   [OK] {strategy}")
                 else:
-                    print(f"   ❌ {strategy}")
+                    print(f"   [ERROR] {strategy}")
             
             results['key_strategy_coverage'] = len(existing_key_strategies) / len(key_strategies)
             
@@ -327,9 +327,9 @@ class DSSMSFinalValidation:
             for module in integration_modules:
                 if (project_root / module).exists():
                     integration_success += 1
-                    print(f"   ✅ {module}")
+                    print(f"   [OK] {module}")
                 else:
-                    print(f"   ❌ {module}")
+                    print(f"   [ERROR] {module}")
             
             results['integration_module_coverage'] = integration_success / len(integration_modules)
             
@@ -361,7 +361,7 @@ class DSSMSFinalValidation:
             try:
                 from data_fetcher import fetch_stock_data
                 results['data_fetcher_import'] = True
-                print(f"   ✅ data_fetcher インポート成功")
+                print(f"   [OK] data_fetcher インポート成功")
                 
                 # 簡単なデータ取得テスト
                 test_symbol = '7203.T'
@@ -374,36 +374,36 @@ class DSSMSFinalValidation:
                 if not data.empty:
                     results['data_fetch_test'] = True
                     results['test_data_rows'] = len(data)
-                    print(f"   ✅ データ取得成功: {len(data)}行")
+                    print(f"   [OK] データ取得成功: {len(data)}行")
                 else:
                     results['data_fetch_test'] = False
-                    print(f"   ⚠️ データ取得結果が空です")
+                    print(f"   [WARNING] データ取得結果が空です")
                     
             except Exception as e:
                 results['data_fetcher_import'] = False
                 results['data_fetch_test'] = False
-                print(f"   ❌ データ取得テスト失敗: {e}")
+                print(f"   [ERROR] データ取得テスト失敗: {e}")
             
             # 2. データ前処理モジュール確認
             try:
                 from data_processor import preprocess_data
                 results['data_processor_import'] = True
-                print(f"   ✅ data_processor インポート成功")
+                print(f"   [OK] data_processor インポート成功")
                 
                 # 前処理テスト（テストデータでの場合）
                 if results.get('data_fetch_test', False):
                     processed_data = preprocess_data(data)
                     results['data_preprocessing_test'] = True
                     results['processed_data_rows'] = len(processed_data)
-                    print(f"   ✅ データ前処理成功: {len(processed_data)}行")
+                    print(f"   [OK] データ前処理成功: {len(processed_data)}行")
                 else:
                     results['data_preprocessing_test'] = False
-                    print(f"   ⚠️ データ前処理テストをスキップ（データ取得失敗のため）")
+                    print(f"   [WARNING] データ前処理テストをスキップ（データ取得失敗のため）")
                     
             except Exception as e:
                 results['data_processor_import'] = False
                 results['data_preprocessing_test'] = False
-                print(f"   ❌ データ前処理テスト失敗: {e}")
+                print(f"   [ERROR] データ前処理テスト失敗: {e}")
             
             # 3. DSSMSデータ統合確認
             dssms_data_modules = [
@@ -416,9 +416,9 @@ class DSSMSFinalValidation:
             for module in dssms_data_modules:
                 if (project_root / module).exists():
                     dssms_data_success += 1
-                    print(f"   ✅ {module}")
+                    print(f"   [OK] {module}")
                 else:
-                    print(f"   ❌ {module}")
+                    print(f"   [ERROR] {module}")
             
             results['dssms_data_module_coverage'] = dssms_data_success / len(dssms_data_modules)
             
@@ -460,13 +460,13 @@ class DSSMSFinalValidation:
             try:
                 from src.reports.comprehensive.comprehensive_report_engine import ComprehensiveReportEngine
                 results['comprehensive_report_import'] = True
-                print(f"   ✅ ComprehensiveReportEngine インポート成功")
+                print(f"   [OK] ComprehensiveReportEngine インポート成功")
                 
                 # 簡単なレポート生成テスト
                 try:
                     engine = ComprehensiveReportEngine()
                     results['report_engine_init'] = True
-                    print(f"   ✅ レポートエンジン初期化成功")
+                    print(f"   [OK] レポートエンジン初期化成功")
                     
                     # テストデータでレポート生成
                     test_data = {
@@ -487,21 +487,21 @@ class DSSMSFinalValidation:
                     if html_report and len(html_report) > 100:
                         results['report_generation_test'] = True
                         results['test_report_length'] = len(html_report)
-                        print(f"   ✅ レポート生成テスト成功 ({len(html_report)}文字)")
+                        print(f"   [OK] レポート生成テスト成功 ({len(html_report)}文字)")
                     else:
                         results['report_generation_test'] = False
-                        print(f"   ❌ レポート生成テスト失敗")
+                        print(f"   [ERROR] レポート生成テスト失敗")
                     
                 except Exception as e:
                     results['report_engine_init'] = False
                     results['report_generation_test'] = False
-                    print(f"   ❌ レポートエンジンテスト失敗: {e}")
+                    print(f"   [ERROR] レポートエンジンテスト失敗: {e}")
                 
             except Exception as e:
                 results['comprehensive_report_import'] = False
                 results['report_engine_init'] = False
                 results['report_generation_test'] = False
-                print(f"   ❌ 包括的レポートシステムインポート失敗: {e}")
+                print(f"   [ERROR] 包括的レポートシステムインポート失敗: {e}")
             
             # 2. 既存レポートシステム確認
             existing_reports = [
@@ -514,9 +514,9 @@ class DSSMSFinalValidation:
             for report_file in existing_reports:
                 if (project_root / report_file).exists():
                     existing_report_count += 1
-                    print(f"   ✅ {report_file}")
+                    print(f"   [OK] {report_file}")
                 else:
-                    print(f"   ❌ {report_file}")
+                    print(f"   [ERROR] {report_file}")
             
             results['existing_report_coverage'] = existing_report_count / len(existing_reports)
             
@@ -531,9 +531,9 @@ class DSSMSFinalValidation:
             for config_file in report_config_files:
                 if (project_root / config_file).exists():
                     config_count += 1
-                    print(f"   ✅ {config_file}")
+                    print(f"   [OK] {config_file}")
                 else:
-                    print(f"   ❌ {config_file}")
+                    print(f"   [ERROR] {config_file}")
             
             results['report_config_coverage'] = config_count / len(report_config_files)
             
@@ -583,9 +583,9 @@ class DSSMSFinalValidation:
             for config_file in main_config_files:
                 if (project_root / config_file).exists():
                     main_config_count += 1
-                    print(f"   ✅ {config_file}")
+                    print(f"   [OK] {config_file}")
                 else:
-                    print(f"   ❌ {config_file}")
+                    print(f"   [ERROR] {config_file}")
             
             results['main_config_coverage'] = main_config_count / len(main_config_files)
             
@@ -599,9 +599,9 @@ class DSSMSFinalValidation:
             for config_file in dssms_config_files:
                 if (project_root / config_file).exists():
                     dssms_config_count += 1
-                    print(f"   ✅ {config_file}")
+                    print(f"   [OK] {config_file}")
                 else:
-                    print(f"   ❌ {config_file}")
+                    print(f"   [ERROR] {config_file}")
             
             results['dssms_config_coverage'] = dssms_config_count / len(dssms_config_files) if dssms_config_files else 1
             
@@ -610,20 +610,20 @@ class DSSMSFinalValidation:
             if weight_learning_dir.exists():
                 weight_files = list(weight_learning_dir.glob('*.json'))
                 results['weight_learning_files'] = len(weight_files)
-                print(f"   ✅ 重み学習設定ファイル: {len(weight_files)}個")
+                print(f"   [OK] 重み学習設定ファイル: {len(weight_files)}個")
             else:
                 results['weight_learning_files'] = 0
-                print(f"   ❌ 重み学習設定ディレクトリが存在しません")
+                print(f"   [ERROR] 重み学習設定ディレクトリが存在しません")
             
             # 4. レポート設定確認
             comprehensive_config_dir = project_root / 'config/comprehensive_reporting'
             if comprehensive_config_dir.exists():
                 report_config_files = list(comprehensive_config_dir.glob('*.json'))
                 results['report_config_files'] = len(report_config_files)
-                print(f"   ✅ レポート設定ファイル: {len(report_config_files)}個")
+                print(f"   [OK] レポート設定ファイル: {len(report_config_files)}個")
             else:
                 results['report_config_files'] = 0
-                print(f"   ❌ レポート設定ディレクトリが存在しません")
+                print(f"   [ERROR] レポート設定ディレクトリが存在しません")
             
             # 5. 設定システム全体スコア
             config_score = (
@@ -675,7 +675,7 @@ class DSSMSFinalValidation:
             data_quality_count = sum(1 for m in data_quality_modules if (project_root / m).exists())
             if data_quality_count >= 2:
                 implemented_features.append('data_quality_improvement')
-                print(f"   ✅ データ品質改善機能実装済み ({data_quality_count}/3)")
+                print(f"   [OK] データ品質改善機能実装済み ({data_quality_count}/3)")
             
             # スイッチング最適化機能確認
             switch_optimization_modules = [
@@ -687,7 +687,7 @@ class DSSMSFinalValidation:
             switch_opt_count = sum(1 for m in switch_optimization_modules if (project_root / m).exists())
             if switch_opt_count >= 2:
                 implemented_features.append('switch_reduction')
-                print(f"   ✅ スイッチング最適化機能実装済み ({switch_opt_count}/3)")
+                print(f"   [OK] スイッチング最適化機能実装済み ({switch_opt_count}/3)")
             
             # パフォーマンス計算最適化確認
             performance_modules = [
@@ -699,7 +699,7 @@ class DSSMSFinalValidation:
             perf_count = sum(1 for m in performance_modules if (project_root / m).exists())
             if perf_count >= 2:
                 implemented_features.append('execution_speed_up')
-                print(f"   ✅ パフォーマンス計算最適化実装済み ({perf_count}/3)")
+                print(f"   [OK] パフォーマンス計算最適化実装済み ({perf_count}/3)")
             
             # コスト最適化機能確認
             cost_optimization_modules = [
@@ -710,7 +710,7 @@ class DSSMSFinalValidation:
             cost_opt_count = sum(1 for m in cost_optimization_modules if (project_root / m).exists())
             if cost_opt_count >= 1:
                 implemented_features.append('cost_reduction')
-                print(f"   ✅ コスト最適化機能実装済み ({cost_opt_count}/2)")
+                print(f"   [OK] コスト最適化機能実装済み ({cost_opt_count}/2)")
             
             # 3. 改善効果推定
             improvement_estimates = {}
@@ -763,9 +763,9 @@ class DSSMSFinalValidation:
                 if '統合動作テスト' not in test_name:  # 自分自身は除外
                     if test_result.get('success', False):
                         successful_components.append(test_name)
-                        print(f"   ✅ {test_name}")
+                        print(f"   [OK] {test_name}")
                     else:
-                        print(f"   ❌ {test_name}")
+                        print(f"   [ERROR] {test_name}")
             
             results['successful_component_count'] = len(successful_components)
             results['total_component_count'] = len(self.test_results) - 1  # 自分自身を除く
@@ -812,17 +812,17 @@ class DSSMSFinalValidation:
             # main.py実行可能性
             if (project_root / 'main.py').exists():
                 executable_components += 1
-                print(f"   ✅ main.py 実行可能")
+                print(f"   [OK] main.py 実行可能")
             
             # DSSMSバックテスター実行可能性
             if (project_root / 'src/dssms/dssms_backtester.py').exists():
                 executable_components += 1
-                print(f"   ✅ DSSMSバックテスター実行可能")
+                print(f"   [OK] DSSMSバックテスター実行可能")
             
             # レポート生成実行可能性
             if (project_root / 'src/reports/comprehensive/comprehensive_report_engine.py').exists():
                 executable_components += 1
-                print(f"   ✅ レポート生成実行可能")
+                print(f"   [OK] レポート生成実行可能")
             
             results['executable_component_count'] = executable_components
             results['executability_score'] = executable_components / 3  # 3つの主要コンポーネント
@@ -852,22 +852,22 @@ class DSSMSFinalValidation:
         """検証結果サマリー生成"""
         
         print("\n" + "="*80)
-        print("📊 DSSMS 最終統合検証結果サマリー")
+        print("[CHART] DSSMS 最終統合検証結果サマリー")
         print("="*80)
         
         # 1. 全体結果
         total_tests = len(self.test_results)
         successful_tests = sum(1 for result in self.test_results.values() if result.get('success', False))
         
-        print(f"\n🎯 総合結果:")
-        print(f"   全体判定: {'✅ 成功' if overall_success else '❌ 失敗'}")
+        print(f"\n[TARGET] 総合結果:")
+        print(f"   全体判定: {'[OK] 成功' if overall_success else '[ERROR] 失敗'}")
         print(f"   検証成功率: {successful_tests}/{total_tests} ({successful_tests/total_tests:.1%})")
         print(f"   総実行時間: {(datetime.now() - self.start_time).total_seconds():.1f}秒")
         
         # 2. 検証項目別結果
-        print(f"\n📋 検証項目別結果:")
+        print(f"\n[LIST] 検証項目別結果:")
         for test_name, result in self.test_results.items():
-            status = "✅" if result.get('success', False) else "❌"
+            status = "[OK]" if result.get('success', False) else "[ERROR]"
             execution_time = result.get('execution_time', 0)
             print(f"   {status} {test_name} ({execution_time:.2f}秒)")
         
@@ -881,10 +881,10 @@ class DSSMSFinalValidation:
                     health_metrics[metric_name] = metric_value
         
         if health_metrics:
-            print(f"\n🔍 システム健全性指標:")
+            print(f"\n[SEARCH] システム健全性指標:")
             for metric_name, metric_value in health_metrics.items():
                 if isinstance(metric_value, (int, float)):
-                    print(f"   📊 {metric_name}: {metric_value:.1%}")
+                    print(f"   [CHART] {metric_name}: {metric_value:.1%}")
         
         # 4. 改善効果サマリー
         performance_test = self.test_results.get('7️⃣ パフォーマンス改善効果評価', {})
@@ -892,7 +892,7 @@ class DSSMSFinalValidation:
             improvement_results = performance_test.get('results', {})
             improvement_estimates = improvement_results.get('improvement_estimates', {})
             
-            print(f"\n📈 改善効果推定:")
+            print(f"\n[UP] 改善効果推定:")
             improvement_names = {
                 'switch_reduction': 'スイッチング削減',
                 'cost_reduction': 'コスト削減',
@@ -902,29 +902,29 @@ class DSSMSFinalValidation:
             
             for metric, improvement in improvement_estimates.items():
                 metric_name = improvement_names.get(metric, metric)
-                print(f"   📊 {metric_name}: {improvement:.1%}")
+                print(f"   [CHART] {metric_name}: {improvement:.1%}")
         
         # 5. 推奨事項
-        print(f"\n💡 推奨事項:")
+        print(f"\n[IDEA] 推奨事項:")
         
         if overall_success:
-            print(f"   ✅ DSSMSシステムは良好な状態です")
-            print(f"   ✅ 主要コンポーネントが正常に統合されています")
-            print(f"   ✅ パフォーマンス改善効果が期待できます")
-            print(f"   📈 次のステップ: 実データでの長期テスト実行")
-            print(f"   📈 次のステップ: 本番環境での段階的運用開始")
+            print(f"   [OK] DSSMSシステムは良好な状態です")
+            print(f"   [OK] 主要コンポーネントが正常に統合されています")
+            print(f"   [OK] パフォーマンス改善効果が期待できます")
+            print(f"   [UP] 次のステップ: 実データでの長期テスト実行")
+            print(f"   [UP] 次のステップ: 本番環境での段階的運用開始")
         else:
             failed_tests = [name for name, result in self.test_results.items() if not result.get('success', False)]
-            print(f"   ❌ 以下の検証項目で問題が発見されました:")
+            print(f"   [ERROR] 以下の検証項目で問題が発見されました:")
             for failed_test in failed_tests:
                 print(f"     - {failed_test}")
-            print(f"   🔧 問題のあるコンポーネントの修正が必要")
-            print(f"   📋 修正後に再検証実行を推奨")
+            print(f"   [TOOL] 問題のあるコンポーネントの修正が必要")
+            print(f"   [LIST] 修正後に再検証実行を推奨")
 
 def main():
     """メイン実行関数"""
     
-    print("🚀 DSSMS最終統合検証開始")
+    print("[ROCKET] DSSMS最終統合検証開始")
     print("Phase 1-3完了後の包括的検証を実行します\n")
     
     try:
@@ -940,12 +940,12 @@ def main():
             f.write("DSSMS最終統合検証結果\n")
             f.write("="*50 + "\n\n")
             f.write(f"実行日時: {datetime.now().strftime('%Y年%m月%d日 %H:%M:%S')}\n")
-            f.write(f"全体成功: {'✅' if final_results['overall_success'] else '❌'}\n")
+            f.write(f"全体成功: {'[OK]' if final_results['overall_success'] else '[ERROR]'}\n")
             f.write(f"総実行時間: {final_results['total_execution_time']:.1f}秒\n\n")
             
             for test_name, result in final_results['test_results'].items():
                 f.write(f"{test_name}:\n")
-                f.write(f"  成功: {'✅' if result.get('success', False) else '❌'}\n")
+                f.write(f"  成功: {'[OK]' if result.get('success', False) else '[ERROR]'}\n")
                 f.write(f"  実行時間: {result.get('execution_time', 0):.2f}秒\n")
                 if not result.get('success', False) and 'error' in result:
                     f.write(f"  エラー: {result['error']}\n")
@@ -955,16 +955,16 @@ def main():
         
         # 最終判定
         if final_results['overall_success']:
-            print("\n🎉 DSSMS最終統合検証 【成功】")
+            print("\n[SUCCESS] DSSMS最終統合検証 【成功】")
             print("システムは良好な状態で、改善効果が期待できます！")
             return 0
         else:
-            print("\n⚠️ DSSMS最終統合検証 【一部課題あり】")
+            print("\n[WARNING] DSSMS最終統合検証 【一部課題あり】")
             print("主要機能は動作していますが、一部改善の余地があります。")
             return 1
             
     except Exception as e:
-        print(f"\n❌ 最終統合検証実行エラー: {e}")
+        print(f"\n[ERROR] 最終統合検証実行エラー: {e}")
         print(f"詳細: {traceback.format_exc()}")
         return 1
 

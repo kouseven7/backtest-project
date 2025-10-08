@@ -32,7 +32,7 @@ def analyze_calculation_formula_error_patterns():
     analysis_results = {}
     
     # 1. 全エンジンの統計計算式総点検
-    print("🔍 1. 全エンジンの統計計算式総点検")
+    print("[SEARCH] 1. 全エンジンの統計計算式総点検")
     formula_analysis = analyze_all_engines_formulas(engine_paths)
     analysis_results['formula_analysis'] = formula_analysis
     
@@ -42,17 +42,17 @@ def analyze_calculation_formula_error_patterns():
     analysis_results['correct_formulas'] = correct_formulas
     
     # 3. エラーパターンの分類（分母欠如、変数誤用、公式間違い等）
-    print("\n❌ 3. エラーパターンの分類")
+    print("\n[ERROR] 3. エラーパターンの分類")
     error_patterns = classify_error_patterns(formula_analysis, correct_formulas)
     analysis_results['error_patterns'] = error_patterns
     
     # 4. 計算式正確性検証テストケース作成
-    print("\n🧪 4. 計算式正確性検証テストケース作成")
+    print("\n[TEST] 4. 計算式正確性検証テストケース作成")
     test_cases = create_formula_test_cases(correct_formulas)
     analysis_results['test_cases'] = test_cases
     
     # 5. 段階的修正計画とテスト方針策定
-    print("\n📋 5. 段階的修正計画とテスト方針策定")
+    print("\n[LIST] 5. 段階的修正計画とテスト方針策定")
     correction_plan = create_correction_plan(error_patterns, test_cases)
     analysis_results['correction_plan'] = correction_plan
     
@@ -65,11 +65,11 @@ def analyze_calculation_formula_error_patterns():
     total_errors = len(error_patterns.get('classified_errors', []))
     error_rate = (total_errors / total_formulas * 100) if total_formulas > 0 else 0
     
-    print(f"📊 総計算式数: {total_formulas}個")
-    print(f"❌ 総エラー数: {total_errors}個")
-    print(f"📈 エラー率: {error_rate:.1f}%")
-    print(f"🧪 作成テストケース: {len(test_cases.get('test_scenarios', []))}シナリオ")
-    print(f"📋 修正計画: {len(correction_plan.get('phases', []))}段階")
+    print(f"[CHART] 総計算式数: {total_formulas}個")
+    print(f"[ERROR] 総エラー数: {total_errors}個")
+    print(f"[UP] エラー率: {error_rate:.1f}%")
+    print(f"[TEST] 作成テストケース: {len(test_cases.get('test_scenarios', []))}シナリオ")
+    print(f"[LIST] 修正計画: {len(correction_plan.get('phases', []))}段階")
     
     return analysis_results
 
@@ -130,7 +130,7 @@ def analyze_all_engines_formulas(engine_paths: Dict[str, str]) -> Dict[str, Any]
         
         if not os.path.exists(engine_path):
             engine_analysis['critical_issues'].append(f"ファイル未存在: {engine_path}")
-            print(f"   ❌ ファイルが存在しません: {engine_path}")
+            print(f"   [ERROR] ファイルが存在しません: {engine_path}")
             analysis[version] = engine_analysis
             continue
         
@@ -139,7 +139,7 @@ def analyze_all_engines_formulas(engine_paths: Dict[str, str]) -> Dict[str, Any]
                 content = f.read()
         except Exception as e:
             engine_analysis['critical_issues'].append(f"読み込みエラー: {e}")
-            print(f"   ❌ 読み込みエラー: {e}")
+            print(f"   [ERROR] 読み込みエラー: {e}")
             analysis[version] = engine_analysis
             continue
         
@@ -161,11 +161,11 @@ def analyze_all_engines_formulas(engine_paths: Dict[str, str]) -> Dict[str, Any]
             
             if implementations:
                 found_formulas[formula_type] = implementations
-                print(f"   ✅ {formula_type}: {len(implementations)}個の実装発見")
+                print(f"   [OK] {formula_type}: {len(implementations)}個の実装発見")
                 for impl in implementations[:2]:  # 最初の2個を表示
                     print(f"      - {impl[:50]}...")
             else:
-                print(f"   ❌ {formula_type}: 実装なし")
+                print(f"   [ERROR] {formula_type}: 実装なし")
         
         engine_analysis['formulas'] = found_formulas
         
@@ -180,7 +180,7 @@ def analyze_all_engines_formulas(engine_paths: Dict[str, str]) -> Dict[str, Any]
         else:
             engine_analysis['implementation_quality'] = 'comprehensive'
         
-        print(f"   📊 実装品質: {engine_analysis['implementation_quality']} ({formula_count}個の計算式)")
+        print(f"   [CHART] 実装品質: {engine_analysis['implementation_quality']} ({formula_count}個の計算式)")
         
         analysis[version] = engine_analysis
     
@@ -353,14 +353,14 @@ def classify_error_patterns(formula_analysis: Dict, correct_formulas: Dict) -> D
     
     # 結果サマリ
     total_errors = len(error_patterns['classified_errors'])
-    print(f"\n📊 エラー分類結果:")
+    print(f"\n[CHART] エラー分類結果:")
     print(f"   総エラー数: {total_errors}個")
     
     for category, errors in error_patterns['error_categories'].items():
         if errors:
             print(f"   {category}: {len(errors)}個")
     
-    print(f"\n⚠️ 重要度別:")
+    print(f"\n[WARNING] 重要度別:")
     for severity, errors in error_patterns['severity_levels'].items():
         if errors:
             print(f"   {severity}: {len(errors)}個")
@@ -454,11 +454,11 @@ def analyze_single_implementation(version: str, formula_type: str, implementatio
         })
     
     if errors:
-        print(f"     ❌ {len(errors)}個のエラー発見")
+        print(f"     [ERROR] {len(errors)}個のエラー発見")
         for error in errors:
             print(f"       - {error['category']}: {error['description']}")
     else:
-        print(f"     ✅ エラーなし")
+        print(f"     [OK] エラーなし")
     
     return errors
 
@@ -482,7 +482,7 @@ def create_formula_test_cases(correct_formulas: Dict) -> Dict[str, Any]:
         'peak_value': 430
     }
     
-    print("🧪 テストケース作成:")
+    print("[TEST] テストケース作成:")
     
     for formula_name, formula_def in correct_formulas.items():
         scenario = create_test_scenario(formula_name, formula_def, test_data)
@@ -563,7 +563,7 @@ def create_correction_plan(error_patterns: Dict, test_cases: Dict) -> Dict[str, 
     major_errors = error_patterns['severity_levels']['major']
     minor_errors = error_patterns['severity_levels']['minor']
     
-    print("📋 修正計画策定:")
+    print("[LIST] 修正計画策定:")
     
     # Phase 1: 緊急修正（Critical）
     if critical_errors:
@@ -634,7 +634,7 @@ def create_correction_plan(error_patterns: Dict, test_cases: Dict) -> Dict[str, 
         'target_error_count': max(1, total_errors // 10)  # 90%削減目標
     }
     
-    print(f"\n🎯 成功基準:")
+    print(f"\n[TARGET] 成功基準:")
     print(f"   エラー削減: {total_errors} → {correction_plan['success_criteria']['target_error_count']}個")
     print(f"   正確性: 100%（数学的正確性確保）")
     print(f"   テストケース: {len(test_cases['test_scenarios'])}シナリオで検証")
@@ -650,9 +650,9 @@ if __name__ == "__main__":
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(results, f, ensure_ascii=False, indent=2, default=str)
         
-        print(f"\n✅ 分析結果を {output_file} に保存しました")
+        print(f"\n[OK] 分析結果を {output_file} に保存しました")
         
     except Exception as e:
-        print(f"❌ エラーが発生しました: {e}")
+        print(f"[ERROR] エラーが発生しました: {e}")
         import traceback
         traceback.print_exc()

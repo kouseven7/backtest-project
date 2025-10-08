@@ -86,10 +86,10 @@ class TestSuite1_InitializeSystemPatterns(unittest.TestCase):
             self.assertTrue(manager.is_initialized, "初期化フラグがTrueになっていません")
             self.assertNotEqual(manager.status, IntegrationStatus.ERROR, "ステータスがERRORになっています")
             
-            logger.info("✅ Development mode正常初期化テスト成功")
+            logger.info("[OK] Development mode正常初期化テスト成功")
             
         except Exception as e:
-            logger.error(f"❌ Development mode正常初期化テスト失敗: {e}")
+            logger.error(f"[ERROR] Development mode正常初期化テスト失敗: {e}")
             self.fail(f"予期しないエラーが発生しました: {e}")
     
     def test_02_normal_initialization_production_mode(self):
@@ -118,10 +118,10 @@ class TestSuite1_InitializeSystemPatterns(unittest.TestCase):
             readiness = manager.get_production_readiness_status()
             self.assertEqual(readiness['system_mode'], 'production', "システムモードがproductionになっていません")
             
-            logger.info("✅ Production mode正常初期化テスト成功")
+            logger.info("[OK] Production mode正常初期化テスト成功")
             
         except Exception as e:
-            logger.error(f"❌ Production mode正常初期化テスト失敗: {e}")
+            logger.error(f"[ERROR] Production mode正常初期化テスト失敗: {e}")
             self.fail(f"予期しないエラーが発生しました: {e}")
     
     def test_03_error_handling_invalid_config(self):
@@ -146,7 +146,7 @@ class TestSuite1_InitializeSystemPatterns(unittest.TestCase):
             else:
                 logger.info("フォールバック機能により初期化が継続されました")
             
-            logger.info("✅ 設定不備エラーハンドリングテスト成功")
+            logger.info("[OK] 設定不備エラーハンドリングテスト成功")
             
         except Exception as e:
             logger.info(f"適切なエラーハンドリング: {e}")
@@ -171,10 +171,10 @@ class TestSuite1_InitializeSystemPatterns(unittest.TestCase):
                 else:
                     logger.info("初期化が失敗し、適切にハンドリングされました")
             
-            logger.info("✅ フォールバック動作テスト成功")
+            logger.info("[OK] フォールバック動作テスト成功")
             
         except Exception as e:
-            logger.error(f"❌ フォールバック動作テスト失敗: {e}")
+            logger.error(f"[ERROR] フォールバック動作テスト失敗: {e}")
             self.fail(f"予期しないエラーが発生しました: {e}")
     
     def test_05_initialization_sequence_dependencies(self):
@@ -205,10 +205,10 @@ class TestSuite1_InitializeSystemPatterns(unittest.TestCase):
                 if hasattr(manager, 'resource_pool') and manager.resource_pool:
                     logger.info("リソース管理システムが正常に初期化されました")
             
-            logger.info("✅ 依存関係解決・初期化順序テスト成功")
+            logger.info("[OK] 依存関係解決・初期化順序テスト成功")
             
         except Exception as e:
-            logger.error(f"❌ 依存関係解決テスト失敗: {e}")
+            logger.error(f"[ERROR] 依存関係解決テスト失敗: {e}")
             self.fail(f"予期しないエラーが発生しました: {e}")
 
 
@@ -279,10 +279,10 @@ class TestSuite2_MultiStrategyManagerFunctionality(unittest.TestCase):
                         else:
                             logger.warning(f"⚠ {strategy_name} が見つかりません")
             
-            logger.info("✅ 戦略レジストリシステムテスト成功")
+            logger.info("[OK] 戦略レジストリシステムテスト成功")
             
         except Exception as e:
-            logger.error(f"❌ 戦略レジストリテスト失敗: {e}")
+            logger.error(f"[ERROR] 戦略レジストリテスト失敗: {e}")
             self.fail(f"予期しないエラーが発生しました: {e}")
     
     def test_02_resource_management_system(self):
@@ -313,10 +313,10 @@ class TestSuite2_MultiStrategyManagerFunctionality(unittest.TestCase):
                         logger.info(f"CPU制限: {cpu_limit} cores")
                         self.assertGreater(cpu_limit, 0, "CPU制限が設定されていません")
             
-            logger.info("✅ リソース管理システムテスト成功")
+            logger.info("[OK] リソース管理システムテスト成功")
             
         except Exception as e:
-            logger.error(f"❌ リソース管理システムテスト失敗: {e}")
+            logger.error(f"[ERROR] リソース管理システムテスト失敗: {e}")
             self.fail(f"予期しないエラーが発生しました: {e}")
     
     def test_03_dependency_resolution_mechanism(self):
@@ -347,10 +347,10 @@ class TestSuite2_MultiStrategyManagerFunctionality(unittest.TestCase):
                         logger.info(f"初期化順序: {init_order}")
                         self.assertGreater(len(init_order), 0, "初期化順序が設定されていません")
             
-            logger.info("✅ 依存関係解決メカニズムテスト成功")
+            logger.info("[OK] 依存関係解決メカニズムテスト成功")
             
         except Exception as e:
-            logger.error(f"❌ 依存関係解決テスト失敗: {e}")
+            logger.error(f"[ERROR] 依存関係解決テスト失敗: {e}")
             self.fail(f"予期しないエラーが発生しました: {e}")
     
     def test_04_health_check_monitoring_system(self):
@@ -384,10 +384,10 @@ class TestSuite2_MultiStrategyManagerFunctionality(unittest.TestCase):
                         alert_sys = monitoring['alert_system']
                         logger.info("アラートシステムが有効です")
             
-            logger.info("✅ ヘルスチェック・監視システムテスト成功")
+            logger.info("[OK] ヘルスチェック・監視システムテスト成功")
             
         except Exception as e:
-            logger.error(f"❌ ヘルスチェック・監視システムテスト失敗: {e}")
+            logger.error(f"[ERROR] ヘルスチェック・監視システムテスト失敗: {e}")
             self.fail(f"予期しないエラーが発生しました: {e}")
     
     def test_05_production_mode_constraints(self):
@@ -421,16 +421,16 @@ class TestSuite2_MultiStrategyManagerFunctionality(unittest.TestCase):
                 self.assertTrue(readiness['immediate_failure_on_error'], "即停止設定が有効になっていません")
                 logger.info("即停止制約: OK")
             
-            logger.info("✅ Production mode制約強制テスト成功")
+            logger.info("[OK] Production mode制約強制テスト成功")
             
         except Exception as e:
-            logger.error(f"❌ Production mode制約テスト失敗: {e}")
+            logger.error(f"[ERROR] Production mode制約テスト失敗: {e}")
             self.fail(f"予期しないエラーが発生しました: {e}")
 
 
 def run_test_suite_1():
     """Test Suite 1の実行"""
-    logger.info("🚀 Test Suite 1: initialize_system()成功/失敗パターンテスト開始")
+    logger.info("[ROCKET] Test Suite 1: initialize_system()成功/失敗パターンテスト開始")
     
     suite = unittest.TestLoader().loadTestsFromTestCase(TestSuite1_InitializeSystemPatterns)
     runner = unittest.TextTestRunner(verbosity=2)
@@ -442,7 +442,7 @@ def run_test_suite_1():
 
 def run_test_suite_2():
     """Test Suite 2の実行"""
-    logger.info("🚀 Test Suite 2: MultiStrategyManager全機能テスト開始")
+    logger.info("[ROCKET] Test Suite 2: MultiStrategyManager全機能テスト開始")
     
     suite = unittest.TestLoader().loadTestsFromTestCase(TestSuite2_MultiStrategyManagerFunctionality)
     runner = unittest.TextTestRunner(verbosity=2)
@@ -469,11 +469,11 @@ def main():
         duration = (end_time - start_time).total_seconds()
         
         logger.info(f"====== 統合テスト完了 (実行時間: {duration:.2f}秒) ======")
-        logger.info(f"Test Suite 1 (initialize_system): {'✅ 成功' if suite1_success else '❌ 失敗'}")
-        logger.info(f"Test Suite 2 (MultiStrategyManager全機能): {'✅ 成功' if suite2_success else '❌ 失敗'}")
+        logger.info(f"Test Suite 1 (initialize_system): {'[OK] 成功' if suite1_success else '[ERROR] 失敗'}")
+        logger.info(f"Test Suite 2 (MultiStrategyManager全機能): {'[OK] 成功' if suite2_success else '[ERROR] 失敗'}")
         
         if suite1_success and suite2_success:
-            logger.info("🎉 統合テスト完備実装 Test Suite 1-2 完了: 全テスト成功")
+            logger.info("[SUCCESS] 統合テスト完備実装 Test Suite 1-2 完了: 全テスト成功")
         else:
             logger.warning("⚠ 統合テスト完備実装 Test Suite 1-2: 一部テスト失敗")
         

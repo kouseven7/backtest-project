@@ -27,17 +27,17 @@ def analyze_trading_history():
     excel_files = list(excel_dir.glob("backtest_results_*.xlsx"))
     
     if not excel_files:
-        print("❌ Excelファイルが見つかりません")
+        print("[ERROR] Excelファイルが見つかりません")
         return
     
     latest_file = sorted(excel_files, key=lambda x: x.name)[-1]
-    print(f"📊 分析対象: {latest_file}")
+    print(f"[CHART] 分析対象: {latest_file}")
     
     try:
         workbook = openpyxl.load_workbook(latest_file)
         
         if "取引履歴" not in workbook.sheetnames:
-            print("❌ 取引履歴シートが見つかりません")
+            print("[ERROR] 取引履歴シートが見つかりません")
             return
         
         ws = workbook["取引履歴"]
@@ -50,7 +50,7 @@ def analyze_trading_history():
             if header:
                 headers.append((col, header))
         
-        print(f"📋 列構造:")
+        print(f"[LIST] 列構造:")
         for col_idx, header in headers:
             print(f"  {chr(64+col_idx)}列: {header}")
         
@@ -69,7 +69,7 @@ def analyze_trading_history():
         print(f"分析対象: {len(trades)}件の取引")
         
         # 1. 価格データの妥当性チェック
-        print(f"\n🔍 1. 価格データ分析:")
+        print(f"\n[SEARCH] 1. 価格データ分析:")
         entry_prices = set()
         exit_prices = set()
         
@@ -85,10 +85,10 @@ def analyze_trading_history():
         print(f"  エグジット価格一覧: {sorted(exit_prices) if exit_prices else 'なし'}")
         
         if len(entry_prices) == 1 and len(exit_prices) == 1:
-            print("  ⚠️ 警告: 全取引で同一価格 - モックデータの可能性")
+            print("  [WARNING] 警告: 全取引で同一価格 - モックデータの可能性")
         
         # 2. 損益計算の妥当性チェック
-        print(f"\n🔍 2. 損益計算分析:")
+        print(f"\n[SEARCH] 2. 損益計算分析:")
         calculation_errors = []
         
         for i, trade in enumerate(trades):
@@ -127,7 +127,7 @@ def analyze_trading_history():
                 print(f"      理論値={error['theoretical_profit']:.2f}, 実際={error['actual_profit']:.2f}, 差={error['difference']:.2f}")
         
         # 3. 保有期間の妥当性チェック
-        print(f"\n🔍 3. 保有期間分析:")
+        print(f"\n[SEARCH] 3. 保有期間分析:")
         holding_periods = set()
         
         for trade in trades:
@@ -138,10 +138,10 @@ def analyze_trading_history():
         print(f"  保有期間一覧: {sorted(holding_periods) if holding_periods else 'なし'}")
         
         if len(holding_periods) == 1:
-            print("  ⚠️ 警告: 全取引で同一保有期間 - 計算ロジックに問題の可能性")
+            print("  [WARNING] 警告: 全取引で同一保有期間 - 計算ロジックに問題の可能性")
         
         # 4. 銘柄切替パターンの分析
-        print(f"\n🔍 4. 銘柄切替パターン分析:")
+        print(f"\n[SEARCH] 4. 銘柄切替パターン分析:")
         symbols_used = set()
         switch_pattern = []
         
@@ -159,7 +159,7 @@ def analyze_trading_history():
         print(f"  切替パターン（最初の10件）: {switch_pattern[:10]}")
         
         # 5. 累積損益の整合性チェック
-        print(f"\n🔍 5. 累積損益整合性分析:")
+        print(f"\n[SEARCH] 5. 累積損益整合性分析:")
         cumulative_errors = []
         expected_cumulative = 0
         
@@ -189,7 +189,7 @@ def analyze_trading_history():
         
         # 6. データソース調査の提案
         print(f"\n=== データソース調査提案 ===")
-        print("📋 以下の調査を推奨:")
+        print("[LIST] 以下の調査を推奨:")
         print("  1. DSSMSバックテスターの価格データ取得ロジック確認")
         print("  2. ポジション計算ロジック（_calculate_position_update）の検証")
         print("  3. 実際の株価データ vs モックデータの使用状況確認")
@@ -198,7 +198,7 @@ def analyze_trading_history():
         workbook.close()
         
     except Exception as e:
-        print(f"❌ 分析エラー: {e}")
+        print(f"[ERROR] 分析エラー: {e}")
         import traceback
         traceback.print_exc()
 
@@ -216,49 +216,49 @@ def check_dssms_data_sources():
     
     for file_path in files_to_check:
         if Path(file_path).exists():
-            print(f"✅ {file_path}: 存在")
+            print(f"[OK] {file_path}: 存在")
         else:
-            print(f"❌ {file_path}: 不存在")
+            print(f"[ERROR] {file_path}: 不存在")
     
     # モックデータ使用の可能性チェック
     try:
         # data_fetcherの利用可能性確認
         try:
             import yfinance
-            print("✅ yfinance: 利用可能 - 実際の株価データ取得可能")
+            print("[OK] yfinance: 利用可能 - 実際の株価データ取得可能")
         except ImportError:
-            print("❌ yfinance: 不利用可能 - モックデータ使用の可能性")
+            print("[ERROR] yfinance: 不利用可能 - モックデータ使用の可能性")
         
         # DSSコアの利用可能性確認
         sys.path.append(".")
         try:
             from dssms_backtester_v3 import DSSBacktesterV3
-            print("✅ DSS Core V3: 利用可能")
+            print("[OK] DSS Core V3: 利用可能")
         except ImportError:
-            print("❌ DSS Core V3: 不利用可能 - モック処理の可能性")
+            print("[ERROR] DSS Core V3: 不利用可能 - モック処理の可能性")
             
     except Exception as e:
-        print(f"⚠️ 依存関係確認エラー: {e}")
+        print(f"[WARNING] 依存関係確認エラー: {e}")
 
 def suggest_investigation_steps():
     """調査ステップの提案"""
     print(f"\n=== 推奨調査ステップ ===")
-    print("🔍 1. 価格データ取得ロジックの確認:")
+    print("[SEARCH] 1. 価格データ取得ロジックの確認:")
     print("   - dssms_integrated_main.py の _get_symbol_data メソッド")
     print("   - _generate_mock_data の使用状況")
     print("   - yfinanceの実際の利用状況")
     
-    print("🔍 2. 損益計算ロジックの確認:")
+    print("[SEARCH] 2. 損益計算ロジックの確認:")
     print("   - _calculate_position_update メソッド")
     print("   - _close_position と _open_position の実装")
     print("   - 手数料やスプレッドの考慮")
     
-    print("🔍 3. Excel出力データ変換の確認:")
+    print("[SEARCH] 3. Excel出力データ変換の確認:")
     print("   - dssms_excel_exporter.py の _create_trades_sheet")
     print("   - データの数値変換処理")
     print("   - 日付・時間計算の処理")
     
-    print("🔍 4. デバッグ用ログ出力の追加:")
+    print("[SEARCH] 4. デバッグ用ログ出力の追加:")
     print("   - 各取引での実際の価格データ")
     print("   - 損益計算の中間過程")
     print("   - データソースの識別（実データ vs モック）")
@@ -271,4 +271,4 @@ if __name__ == "__main__":
     check_dssms_data_sources()
     suggest_investigation_steps()
     
-    print(f"\n✅ 分析完了")
+    print(f"\n[OK] 分析完了")

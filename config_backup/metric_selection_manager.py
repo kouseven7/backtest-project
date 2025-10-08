@@ -408,7 +408,7 @@ class MetricSelectionManager:
         report = f"""# 重要指標選定システム実行レポート
 
 **実行日時**: {timestamp}  
-**分析成功**: {'✅ 成功' if summary.success else '❌ 失敗'}  
+**分析成功**: {'[OK] 成功' if summary.success else '[ERROR] 失敗'}  
 **信頼度レベル**: {summary.confidence_level.upper()}  
 
 ## 実行概要
@@ -468,17 +468,17 @@ class MetricSelectionManager:
         
         if summary.success:
             if summary.confidence_level == "high":
-                report += "- ✅ 分析結果は高い信頼性を持っています\n"
-                report += "- ✅ 推奨指標の実装を進めることを推奨します\n"
+                report += "- [OK] 分析結果は高い信頼性を持っています\n"
+                report += "- [OK] 推奨指標の実装を進めることを推奨します\n"
             elif summary.confidence_level == "medium":
-                report += "- ⚠️ 分析結果は中程度の信頼性です\n"
-                report += "- ⚠️ 追加データでの検証を推奨します\n"
+                report += "- [WARNING] 分析結果は中程度の信頼性です\n"
+                report += "- [WARNING] 追加データでの検証を推奨します\n"
             else:
-                report += "- ❌ 分析結果の信頼性が低いです\n"
-                report += "- ❌ データ品質の改善が必要です\n"
+                report += "- [ERROR] 分析結果の信頼性が低いです\n"
+                report += "- [ERROR] データ品質の改善が必要です\n"
         else:
-            report += "- ❌ 分析が失敗しました\n"
-            report += "- ❌ エラーを修正して再実行してください\n"
+            report += "- [ERROR] 分析が失敗しました\n"
+            report += "- [ERROR] エラーを修正して再実行してください\n"
         
         report += f"\n---\n*レポート生成日時: {timestamp}*\n"
         

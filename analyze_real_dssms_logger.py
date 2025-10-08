@@ -117,7 +117,7 @@ def analyze_real_dssms_logger_import():
     print(f"初期モジュール数: {initial_modules}")
     
     if max(import_time_1, import_time_2, avg_reload_time) > 1000:
-        print("\n⚠️ 異常な遅延が検出されました:")
+        print("\n[WARNING] 異常な遅延が検出されました:")
         if import_time_1 > 1000:
             print(f"  - config.logger_config インポートが異常に重い: {import_time_1:.1f}ms")
         if import_time_2 > 1000:
@@ -125,7 +125,7 @@ def analyze_real_dssms_logger_import():
         if avg_reload_time > 1000:
             print(f"  - リロード処理が異常に重い: {avg_reload_time:.1f}ms")
     else:
-        print("\n✅ 実環境でのLogger設定は正常範囲内です")
+        print("\n[OK] 実環境でのLogger設定は正常範囲内です")
         print("   7204.4msの異常時間は他の要因によるものと判断されます")
     
     return {

@@ -1,7 +1,7 @@
-# 🚨 DSSMS出力システム問題調査・解決計画
+# [ALERT] DSSMS出力システム問題調査・解決計画
 **Dynamic Stock Selection & Management System - Output Problem Analysis & Resolution**
 
-## 📊 問題現状サマリー
+## [CHART] 問題現状サマリー
 
 ### 🔴 緊急度: 最高
 **実行日**: 2025年9月4日  
@@ -13,14 +13,14 @@
 3. **Excel出力異常**: サマリーシートの重要値が0または空白
 4. **取引履歴データ異常**: 取引回数・損益計算の相違
 
-### 📈 影響度分析
+### [UP] 影響度分析
 - **即座の影響**: 統合バックテストシステム完全停止
 - **短期影響**: DSSMSシステム信頼性失墜
 - **長期影響**: 実取引準備プロジェクト大幅遅延
 
 ---
 
-## 🔍 Phase 1: 問題把握・原因特定フェーズ
+## [SEARCH] Phase 1: 問題把握・原因特定フェーズ
 
 ### Phase 1.1: モジュール構造・依存関係調査
 **目的**: main.py実行エラーの根本原因特定  
@@ -43,13 +43,13 @@ for f in output_files:
 
 # simple_excel_exporterの存在確認
 simple_excel_files = glob.glob('**/simple_excel_exporter.py', recursive=True)
-print('\n🔍 simple_excel_exporter.pyの場所:')
+print('\n[SEARCH] simple_excel_exporter.pyの場所:')
 for f in simple_excel_files:
     print(f'  {f}')
 
 # __init__.pyの存在確認
 init_files = glob.glob('output/__init__.py')
-print('\n📋 output/__init__.py:')
+print('\n[LIST] output/__init__.py:')
 print(f'  存在: {\"あり\" if init_files else \"なし\"}')
 
 # outputディレクトリ内の全ファイル詳細
@@ -63,7 +63,7 @@ if os.path.exists('output'):
         for file in files:
             print(f'{subindent}{file}')
 else:
-    print('  ❌ outputディレクトリが存在しません')
+    print('  [ERROR] outputディレクトリが存在しません')
 "
 ```
 
@@ -102,14 +102,14 @@ try:
                 imports.append(import_stmt)
                 import_lines[import_stmt] = node.lineno
     
-    print('📋 main.pyの全インポート文:')
+    print('[LIST] main.pyの全インポート文:')
     for imp in sorted(imports):
         line_no = import_lines[imp]
         print(f'  行{line_no:3d}: {imp}')
         
     # 問題のあるインポートの特定
     problem_imports = [imp for imp in imports if 'output' in imp and 'simple' in imp]
-    print('\n❌ 問題のあるインポート:')
+    print('\n[ERROR] 問題のあるインポート:')
     for imp in problem_imports:
         line_no = import_lines[imp]
         print(f'  行{line_no:3d}: {imp}')
@@ -122,7 +122,7 @@ try:
         print(f'  行{line_no:3d}: {imp}')
         
 except Exception as e:
-    print(f'❌ エラー: {e}')
+    print(f'[ERROR] エラー: {e}')
     import traceback
     traceback.print_exc()
 "
@@ -147,46 +147,46 @@ print('\nPythonバージョン:', sys.version)
 
 print('\n📁 sys.path (モジュール検索パス):')
 for i, path in enumerate(sys.path):
-    exists = '✅' if os.path.exists(path) else '❌'
+    exists = '[OK]' if os.path.exists(path) else '[ERROR]'
     print(f'  {i:2d}: {exists} {path}')
 
-print('\n🧪 outputモジュール段階的インポートテスト:')
+print('\n[TEST] outputモジュール段階的インポートテスト:')
 
 # Step 1: outputディレクトリの存在確認
 if os.path.exists('output'):
-    print('✅ Step 1: outputディレクトリ存在確認 - OK')
+    print('[OK] Step 1: outputディレクトリ存在確認 - OK')
     
     # Step 2: __init__.pyの確認
     if os.path.exists('output/__init__.py'):
-        print('✅ Step 2: output/__init__.py存在確認 - OK')
+        print('[OK] Step 2: output/__init__.py存在確認 - OK')
     else:
-        print('❌ Step 2: output/__init__.py存在確認 - NG')
+        print('[ERROR] Step 2: output/__init__.py存在確認 - NG')
         
     # Step 3: outputモジュールインポートテスト
     try:
         import output
-        print('✅ Step 3: outputモジュールインポート - OK')
+        print('[OK] Step 3: outputモジュールインポート - OK')
         print(f'   パス: {output.__file__ if hasattr(output, \"__file__\") else \"不明\"}')
         print(f'   属性: {[attr for attr in dir(output) if not attr.startswith(\"_\")]}')
     except ImportError as e:
-        print(f'❌ Step 3: outputモジュールインポート - NG: {e}')
+        print(f'[ERROR] Step 3: outputモジュールインポート - NG: {e}')
         
     # Step 4: simple_excel_exporterファイル存在確認
     simple_excel_path = 'output/simple_excel_exporter.py'
     if os.path.exists(simple_excel_path):
-        print(f'✅ Step 4: {simple_excel_path}存在確認 - OK')
+        print(f'[OK] Step 4: {simple_excel_path}存在確認 - OK')
         
         # Step 5: simple_excel_exporterインポートテスト
         try:
             from output import simple_excel_exporter
-            print('✅ Step 5: simple_excel_exporterインポート - OK')
+            print('[OK] Step 5: simple_excel_exporterインポート - OK')
         except ImportError as e:
-            print(f'❌ Step 5: simple_excel_exporterインポート - NG: {e}')
+            print(f'[ERROR] Step 5: simple_excel_exporterインポート - NG: {e}')
     else:
-        print(f'❌ Step 4: {simple_excel_path}存在確認 - NG')
+        print(f'[ERROR] Step 4: {simple_excel_path}存在確認 - NG')
         
 else:
-    print('❌ Step 1: outputディレクトリ存在確認 - NG')
+    print('[ERROR] Step 1: outputディレクトリ存在確認 - NG')
 "
 ```
 
@@ -209,22 +209,22 @@ print('=== DSSMS出力システム詳細調査 ===')
 try:
     from dssms.dssms_backtester import DSSMSBacktester
     
-    print('✅ DSSMSBacktesterインポート成功')
+    print('[OK] DSSMSBacktesterインポート成功')
     
     # クラス詳細情報
-    print('\n🔧 クラス基本情報:')
+    print('\n[TOOL] クラス基本情報:')
     print(f'   モジュール: {DSSMSBacktester.__module__}')
     print(f'   ファイル: {inspect.getfile(DSSMSBacktester)}')
     
     # 全メソッド一覧
     methods = [method for method in dir(DSSMSBacktester) if not method.startswith('_')]
-    print(f'\n📋 公開メソッド ({len(methods)}個):')
+    print(f'\n[LIST] 公開メソッド ({len(methods)}個):')
     for method in sorted(methods):
         method_obj = getattr(DSSMSBacktester, method)
         if callable(method_obj):
             print(f'  📝 {method}()')
         else:
-            print(f'  📊 {method} (属性)')
+            print(f'  [CHART] {method} (属性)')
     
     # 出力関連メソッドの詳細分析
     output_keywords = ['save', 'export', 'output', 'write', 'generate', 'report', 'excel', 'file']
@@ -239,32 +239,32 @@ try:
         if callable(method_obj):
             try:
                 sig = inspect.signature(method_obj)
-                print(f'  🔧 {method}{sig}')
+                print(f'  [TOOL] {method}{sig}')
             except:
-                print(f'  🔧 {method}() - シグネチャ取得失敗')
+                print(f'  [TOOL] {method}() - シグネチャ取得失敗')
         
     # インスタンス作成テスト
-    print('\n🧪 インスタンス作成テスト:')
+    print('\n[TEST] インスタンス作成テスト:')
     try:
         instance = DSSMSBacktester()
-        print('✅ DSSMSBacktesterインスタンス作成成功')
+        print('[OK] DSSMSBacktesterインスタンス作成成功')
         
         # 主要属性の確認
         key_attrs = ['config', 'data', 'results', 'portfolio']
         print('   主要属性:')
         for attr in key_attrs:
             if hasattr(instance, attr):
-                print(f'     ✅ {attr}: 存在')
+                print(f'     [OK] {attr}: 存在')
             else:
-                print(f'     ❌ {attr}: 不存在')
+                print(f'     [ERROR] {attr}: 不存在')
                 
     except Exception as e:
-        print(f'❌ インスタンス作成エラー: {e}')
+        print(f'[ERROR] インスタンス作成エラー: {e}')
         import traceback
         traceback.print_exc()
         
 except ImportError as e:
-    print(f'❌ DSSMSBacktesterインポートエラー: {e}')
+    print(f'[ERROR] DSSMSBacktesterインポートエラー: {e}')
     import traceback
     traceback.print_exc()
 "
@@ -290,7 +290,7 @@ all_files = {
 }
 
 # ファイル種別ごとの統計
-print('📊 出力ファイル統計:')
+print('[CHART] 出力ファイル統計:')
 for file_type, files in all_files.items():
     count = len(files)
     if count > 0:
@@ -307,7 +307,7 @@ for file_type, files in all_files.items():
         if 'dssms' in file.lower():
             dssms_files.append((file_type, file))
 
-print(f'\n🎯 DSSMS関連ファイル ({len(dssms_files)}個):')
+print(f'\n[TARGET] DSSMS関連ファイル ({len(dssms_files)}個):')
 dssms_files.sort(key=lambda x: os.path.getmtime(x[1]), reverse=True)
 
 for i, (file_type, file_path) in enumerate(dssms_files[:10]):  # 最新10件
@@ -320,7 +320,7 @@ for i, (file_type, file_path) in enumerate(dssms_files[:10]):  # 最新10件
 excel_dssms = [f for _, f in dssms_files if f.endswith('.xlsx')]
 if excel_dssms:
     latest_excel = excel_dssms[0]  # 既にソート済み
-    print(f'\n📊 最新Excel詳細分析: {latest_excel}')
+    print(f'\n[CHART] 最新Excel詳細分析: {latest_excel}')
     
     try:
         xls = pd.ExcelFile(latest_excel)
@@ -331,7 +331,7 @@ if excel_dssms:
         for sheet_name in xls.sheet_names:
             try:
                 df = pd.read_excel(latest_excel, sheet_name=sheet_name)
-                print(f'   📋 [{sheet_name}]: {df.shape[0]}行 × {df.shape[1]}列')
+                print(f'   [LIST] [{sheet_name}]: {df.shape[0]}行 × {df.shape[1]}列')
                 
                 # 重要データの存在確認
                 if df.shape[0] > 0:
@@ -340,19 +340,19 @@ if excel_dssms:
                     fill_rate = (non_null_cols / total_cells * 100) if total_cells > 0 else 0
                     print(f'        データ充填率: {fill_rate:.1f}%')
                 else:
-                    print(f'        ❌ データなし')
+                    print(f'        [ERROR] データなし')
                     
             except Exception as e:
-                print(f'   ❌ [{sheet_name}]: 読み込みエラー - {e}')
+                print(f'   [ERROR] [{sheet_name}]: 読み込みエラー - {e}')
                 
     except Exception as e:
-        print(f'   ❌ Excel読み込みエラー: {e}')
+        print(f'   [ERROR] Excel読み込みエラー: {e}')
 
 # 最新のテキストレポート詳細分析
 text_dssms = [f for _, f in dssms_files if f.endswith('.txt') and 'report' in f]
 if text_dssms:
     latest_text = text_dssms[0]
-    print(f'\n📋 最新テキストレポート詳細分析: {latest_text}')
+    print(f'\n[LIST] 最新テキストレポート詳細分析: {latest_text}')
     
     try:
         with open(latest_text, 'r', encoding='utf-8') as f:
@@ -373,12 +373,12 @@ if text_dssms:
             elif 'シャープレシオ:' in line:
                 key_values['シャープレシオ'] = (i+1, line)
         
-        print('   📊 抽出された重要指標:')
+        print('   [CHART] 抽出された重要指標:')
         for key, (line_no, value) in key_values.items():
             print(f'     行{line_no:3d}: {value}')
             
     except Exception as e:
-        print(f'   ❌ テキスト読み込みエラー: {e}')
+        print(f'   [ERROR] テキスト読み込みエラー: {e}')
 "
 ```
 
@@ -404,7 +404,7 @@ excel_files = [f for f in glob.glob('**/*.xlsx', recursive=True) if 'dssms' in f
 text_files = [f for f in glob.glob('**/*.txt', recursive=True) if 'dssms' in f.lower() and 'report' in f.lower()]
 
 if not excel_files or not text_files:
-    print('❌ 比較対象ファイルが不足しています')
+    print('[ERROR] 比較対象ファイルが不足しています')
     print(f'   Excel: {len(excel_files)}個, Text: {len(text_files)}個')
     exit()
 
@@ -415,27 +415,27 @@ latest_text = max(text_files, key=os.path.getmtime)
 excel_time = datetime.fromtimestamp(os.path.getmtime(latest_excel))
 text_time = datetime.fromtimestamp(os.path.getmtime(latest_text))
 
-print(f'📊 比較対象ファイル:')
+print(f'[CHART] 比較対象ファイル:')
 print(f'   Excel: {latest_excel} ({excel_time.strftime(\"%Y-%m-%d %H:%M:%S\")})')
 print(f'   Text:  {latest_text} ({text_time.strftime(\"%Y-%m-%d %H:%M:%S\")})')
 
 # 時間差チェック
 time_diff = abs((excel_time - text_time).total_seconds())
 if time_diff > 300:  # 5分以上の差
-    print(f'   ⚠️  生成時間差: {time_diff:.0f}秒 (同期性に問題の可能性)')
+    print(f'   [WARNING]  生成時間差: {time_diff:.0f}秒 (同期性に問題の可能性)')
 else:
-    print(f'   ✅ 生成時間差: {time_diff:.0f}秒 (同期性OK)')
+    print(f'   [OK] 生成時間差: {time_diff:.0f}秒 (同期性OK)')
 
 print('\n' + '='*60)
 
 # Excelデータの抽出
-print('📊 Excelデータ抽出:')
+print('[CHART] Excelデータ抽出:')
 excel_data = {}
 
 try:
     # サマリーシートからデータ抽出
     df_summary = pd.read_excel(latest_excel, sheet_name=0)  # 最初のシート
-    print(f'   ✅ サマリーシート読み込み: {df_summary.shape}')
+    print(f'   [OK] サマリーシート読み込み: {df_summary.shape}')
     
     # 重要な値を抽出（様々な形式に対応）
     for idx, row in df_summary.iterrows():
@@ -457,24 +457,24 @@ try:
                     if col_idx + 1 < len(row):
                         excel_data['切替回数'] = row.iloc[col_idx + 1]
     
-    print(f'   📋 抽出されたExcelデータ: {len(excel_data)}項目')
+    print(f'   [LIST] 抽出されたExcelデータ: {len(excel_data)}項目')
     for key, value in excel_data.items():
         print(f'     {key}: {value}')
         
 except Exception as e:
-    print(f'   ❌ Excel読み込みエラー: {e}')
+    print(f'   [ERROR] Excel読み込みエラー: {e}')
 
 print('\n' + '-'*40)
 
 # テキストデータの抽出
-print('📋 テキストデータ抽出:')
+print('[LIST] テキストデータ抽出:')
 text_data = {}
 
 try:
     with open(latest_text, 'r', encoding='utf-8') as f:
         content = f.read()
     
-    print(f'   ✅ テキストファイル読み込み: {len(content)}文字')
+    print(f'   [OK] テキストファイル読み込み: {len(content)}文字')
     
     # 正規表現で数値を抽出
     patterns = {
@@ -494,18 +494,18 @@ try:
             print(f'     {key}: 見つからず')
             
 except Exception as e:
-    print(f'   ❌ テキスト読み込みエラー: {e}')
+    print(f'   [ERROR] テキスト読み込みエラー: {e}')
 
 print('\n' + '='*60)
 
 # データ比較分析
-print('🔍 データ比較分析:')
+print('[SEARCH] データ比較分析:')
 
 if excel_data and text_data:
     common_keys = set(excel_data.keys()) & set(text_data.keys())
     
     if common_keys:
-        print(f'   📊 比較可能項目: {len(common_keys)}個')
+        print(f'   [CHART] 比較可能項目: {len(common_keys)}個')
         
         for key in common_keys:
             excel_val = excel_data[key]
@@ -519,26 +519,26 @@ if excel_data and text_data:
                 diff = abs(excel_num - text_num)
                 diff_pct = (diff / max(abs(excel_num), abs(text_num)) * 100) if max(abs(excel_num), abs(text_num)) > 0 else 0
                 
-                status = '✅ 一致' if diff < 0.01 else f'❌ 差異 ({diff_pct:.1f}%)'
+                status = '[OK] 一致' if diff < 0.01 else f'[ERROR] 差異 ({diff_pct:.1f}%)'
                 
-                print(f'   📋 {key}:')
+                print(f'   [LIST] {key}:')
                 print(f'     Excel: {excel_val}')
                 print(f'     Text:  {text_val}')
                 print(f'     判定:  {status}')
                 
             except:
                 # 文字列比較
-                status = '✅ 一致' if str(excel_val) == str(text_val) else '❌ 不一致'
-                print(f'   📋 {key}:')
+                status = '[OK] 一致' if str(excel_val) == str(text_val) else '[ERROR] 不一致'
+                print(f'   [LIST] {key}:')
                 print(f'     Excel: {excel_val}')
                 print(f'     Text:  {text_val}')
                 print(f'     判定:  {status}')
     else:
-        print('   ❌ 比較可能な共通項目がありません')
+        print('   [ERROR] 比較可能な共通項目がありません')
         print(f'     Excel項目: {list(excel_data.keys())}')
         print(f'     Text項目:  {list(text_data.keys())}')
 else:
-    print('   ❌ データ抽出に失敗しました')
+    print('   [ERROR] データ抽出に失敗しました')
 "
 ```
 
@@ -562,7 +562,7 @@ print('🖥️  実行環境:')
 print(f'   Python: {sys.version}')
 print(f'   実行パス: {sys.executable}')
 print(f'   作業ディレクトリ: {os.getcwd()}')
-print(f'   main.py存在: {\"✅\" if os.path.exists(\"main.py\") else \"❌\"}')
+print(f'   main.py存在: {\"[OK]\" if os.path.exists(\"main.py\") else \"[ERROR]\"}')
 
 test_results = {}
 
@@ -572,22 +572,22 @@ try:
     import pandas as pd
     import numpy as np
     import logging
-    test_results['基本ライブラリ'] = '✅ 成功'
-    print('✅ 基本ライブラリ: OK')
+    test_results['基本ライブラリ'] = '[OK] 成功'
+    print('[OK] 基本ライブラリ: OK')
 except Exception as e:
-    test_results['基本ライブラリ'] = f'❌ 失敗: {e}'
-    print(f'❌ 基本ライブラリ: {e}')
+    test_results['基本ライブラリ'] = f'[ERROR] 失敗: {e}'
+    print(f'[ERROR] 基本ライブラリ: {e}')
 
 # Step 2: プロジェクト設定インポート
 print('\n⚙️  Step 2: プロジェクト設定インポート')
 try:
     from config.logger_config import setup_logger
     from config.optimized_parameters import get_optimized_parameters
-    test_results['プロジェクト設定'] = '✅ 成功'
-    print('✅ プロジェクト設定: OK')
+    test_results['プロジェクト設定'] = '[OK] 成功'
+    print('[OK] プロジェクト設定: OK')
 except Exception as e:
-    test_results['プロジェクト設定'] = f'❌ 失敗: {e}'
-    print(f'❌ プロジェクト設定: {e}')
+    test_results['プロジェクト設定'] = f'[ERROR] 失敗: {e}'
+    print(f'[ERROR] プロジェクト設定: {e}')
     print('詳細エラー:')
     traceback.print_exc()
 
@@ -595,62 +595,62 @@ except Exception as e:
 print('\n🔗 Step 3: 統合システムインポート')
 try:
     from config.multi_strategy_manager import MultiStrategyManager
-    test_results['統合システム'] = '✅ 成功'
-    print('✅ 統合システム: OK')
+    test_results['統合システム'] = '[OK] 成功'
+    print('[OK] 統合システム: OK')
 except Exception as e:
-    test_results['統合システム'] = f'❌ 失敗: {e}'
-    print(f'❌ 統合システム: {e}')
+    test_results['統合システム'] = f'[ERROR] 失敗: {e}'
+    print(f'[ERROR] 統合システム: {e}')
 
 # Step 4: データ処理モジュールインポート
 print('\n💾 Step 4: データ処理モジュールインポート')
 try:
     import data_fetcher
     import data_processor
-    test_results['データ処理'] = '✅ 成功'
-    print('✅ データ処理: OK')
+    test_results['データ処理'] = '[OK] 成功'
+    print('[OK] データ処理: OK')
 except Exception as e:
-    test_results['データ処理'] = f'❌ 失敗: {e}'
-    print(f'❌ データ処理: {e}')
+    test_results['データ処理'] = f'[ERROR] 失敗: {e}'
+    print(f'[ERROR] データ処理: {e}')
 
 # Step 5: 戦略モジュールインポート
-print('\n🎯 Step 5: 戦略モジュールインポート')
+print('\n[TARGET] Step 5: 戦略モジュールインポート')
 try:
     from strategies.vwap_breakout_strategy import VWAPBreakoutStrategy
-    test_results['戦略モジュール'] = '✅ 成功'
-    print('✅ 戦略モジュール: OK')
+    test_results['戦略モジュール'] = '[OK] 成功'
+    print('[OK] 戦略モジュール: OK')
 except Exception as e:
-    test_results['戦略モジュール'] = f'❌ 失敗: {e}'
-    print(f'❌ 戦略モジュール: {e}')
+    test_results['戦略モジュール'] = f'[ERROR] 失敗: {e}'
+    print(f'[ERROR] 戦略モジュール: {e}')
 
 # Step 6: 問題の出力モジュールインポート
 print('\n📤 Step 6: 出力モジュールインポート (問題箇所)')
 try:
     from output.simple_simulation_handler import simulate_and_save
-    test_results['出力モジュール'] = '✅ 成功'
-    print('✅ 出力モジュール: OK')
+    test_results['出力モジュール'] = '[OK] 成功'
+    print('[OK] 出力モジュール: OK')
 except Exception as e:
-    test_results['出力モジュール'] = f'❌ 失敗: {e}'
-    print(f'❌ 出力モジュール: {e}')
+    test_results['出力モジュール'] = f'[ERROR] 失敗: {e}'
+    print(f'[ERROR] 出力モジュール: {e}')
     print('詳細エラー:')
     traceback.print_exc()
 
 # 結果サマリー
 print('\n' + '='*50)
-print('📊 段階的テスト結果サマリー:')
+print('[CHART] 段階的テスト結果サマリー:')
 for step, result in test_results.items():
     print(f'   {step}: {result}')
 
 # 成功率計算
-success_count = sum(1 for result in test_results.values() if '✅' in result)
+success_count = sum(1 for result in test_results.values() if '[OK]' in result)
 total_count = len(test_results)
 success_rate = (success_count / total_count * 100) if total_count > 0 else 0
 
-print(f'\n📈 成功率: {success_count}/{total_count} ({success_rate:.1f}%)')
+print(f'\n[UP] 成功率: {success_count}/{total_count} ({success_rate:.1f}%)')
 
 if success_rate < 100:
-    print('\\n🔧 次のアクション:')
+    print('\\n[TOOL] 次のアクション:')
     for step, result in test_results.items():
-        if '❌' in result:
+        if '[ERROR]' in result:
             print(f'   - {step}の修復が必要')
 "
 ```
@@ -667,10 +667,10 @@ import traceback
 
 # output/simple_simulation_handler.pyの詳細分析
 handler_path = 'output/simple_simulation_handler.py'
-print(f'🔍 ターゲットファイル: {handler_path}')
+print(f'[SEARCH] ターゲットファイル: {handler_path}')
 
 if os.path.exists(handler_path):
-    print('✅ ファイル存在確認: OK')
+    print('[OK] ファイル存在確認: OK')
     
     try:
         with open(handler_path, 'r', encoding='utf-8') as f:
@@ -693,11 +693,11 @@ if os.path.exists(handler_path):
             print(f'     行{line_no:2d}: {import_stmt}')
             if 'simple_excel_exporter' in import_stmt:
                 problem_line = (line_no, import_stmt)
-                print(f'          ↑ ❌ 問題のあるインポート')
+                print(f'          ↑ [ERROR] 問題のあるインポート')
         
         if problem_line:
             line_no, stmt = problem_line
-            print(f'\\n🎯 問題箇所詳細:')
+            print(f'\\n[TARGET] 問題箇所詳細:')
             print(f'   ファイル: {handler_path}')
             print(f'   行番号: {line_no}')
             print(f'   内容: {stmt}')
@@ -705,37 +705,37 @@ if os.path.exists(handler_path):
             # 前後の行も表示
             start = max(0, line_no - 3)
             end = min(len(lines), line_no + 2)
-            print(f'\\n📋 コンテキスト (行{start+1}-{end}):')
+            print(f'\\n[LIST] コンテキスト (行{start+1}-{end}):')
             for i in range(start, end):
                 marker = '>>> ' if i == line_no - 1 else '    '
                 print(f'   {marker}{i+1:3d}: {lines[i]}')
         
         # 実際のインポートテスト
-        print(f'\\n🧪 インポートテスト:')
+        print(f'\\n[TEST] インポートテスト:')
         try:
             import output.simple_simulation_handler
-            print('✅ simple_simulation_handlerインポート: 成功')
+            print('[OK] simple_simulation_handlerインポート: 成功')
         except Exception as e:
-            print(f'❌ simple_simulation_handlerインポート: {e}')
+            print(f'[ERROR] simple_simulation_handlerインポート: {e}')
             print('詳細エラー:')
             traceback.print_exc()
             
     except Exception as e:
-        print(f'❌ ファイル読み込みエラー: {e}')
+        print(f'[ERROR] ファイル読み込みエラー: {e}')
 else:
-    print('❌ ファイル存在確認: NG')
+    print('[ERROR] ファイル存在確認: NG')
 
 # simple_excel_exporter.pyの存在確認と分析
 exporter_path = 'output/simple_excel_exporter.py'
-print(f'\\n🔍 依存ファイル: {exporter_path}')
+print(f'\\n[SEARCH] 依存ファイル: {exporter_path}')
 
 if os.path.exists(exporter_path):
-    print('✅ 依存ファイル存在: OK')
+    print('[OK] 依存ファイル存在: OK')
     
     try:
         # ファイル基本情報
         stat = os.stat(exporter_path)
-        print(f'   📊 ファイルサイズ: {stat.st_size} bytes')
+        print(f'   [CHART] ファイルサイズ: {stat.st_size} bytes')
         
         with open(exporter_path, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -755,28 +755,28 @@ if os.path.exists(exporter_path):
                 class_name = line.split('(')[0].split(':')[0].replace('class ', '')
                 classes.append(class_name)
         
-        print(f'   🔧 関数: {functions}')
+        print(f'   [TOOL] 関数: {functions}')
         print(f'   🏛️  クラス: {classes}')
         
         # save_backtest_results_simple関数の存在確認
         if 'save_backtest_results_simple' in content:
-            print('   ✅ save_backtest_results_simple関数: 存在')
+            print('   [OK] save_backtest_results_simple関数: 存在')
         else:
-            print('   ❌ save_backtest_results_simple関数: 不存在')
+            print('   [ERROR] save_backtest_results_simple関数: 不存在')
             
     except Exception as e:
-        print(f'❌ 依存ファイル読み込みエラー: {e}')
+        print(f'[ERROR] 依存ファイル読み込みエラー: {e}')
 else:
-    print('❌ 依存ファイル存在: NG')
-    print('   🔧 これが主要な問題原因です！')
+    print('[ERROR] 依存ファイル存在: NG')
+    print('   [TOOL] これが主要な問題原因です！')
 "
 ```
 
 ---
 
-## 📋 Phase 1 実行チェックリスト
+## [LIST] Phase 1 実行チェックリスト
 
-### ✅ 実行前準備
+### [OK] 実行前準備
 - [ ] PowerShellで作業ディレクトリが `C:\Users\imega\Documents\my_backtest_project` であることを確認
 - [ ] Python仮想環境が有効化されていることを確認
 - [ ] このドキュメントを参照用に開いている
@@ -787,7 +787,7 @@ else:
 3. **Task 1.3.1** を実行
 4. **Task 1.4.1** → **Task 1.4.2** の順で実行
 
-### 📊 各Task実行後の記録項目
+### [CHART] 各Task実行後の記録項目
 - **実行日時**
 - **コマンド実行結果** (成功/失敗)
 - **発見された問題点**
@@ -796,9 +796,9 @@ else:
 
 ---
 
-## 🎯 Phase 1 完了後の期待成果
+## [TARGET] Phase 1 完了後の期待成果
 
-### 📋 問題特定レポート
+### [LIST] 問題特定レポート
 1. **根本原因の明確化**
    - main.py実行エラーの具体的原因
    - 欠損ファイル・モジュールの特定
@@ -814,7 +814,7 @@ else:
    - 作業順序
    - 所要時間見積もり
 
-### 🚀 Phase 2 (解決実装) への準備完了
+### [ROCKET] Phase 2 (解決実装) への準備完了
 Phase 1の調査結果に基づいて、具体的な修復作業を開始できる状態を目指します。
 把握した問題と解決策の案をC:\Users\imega\Documents\my_backtest_project\docs\dssms\Output problem solving roadmap.mdにまとめていきます
 最も重視することは解決のためのphaseとタスク化です、文面はおもにそこに重点をおき記入していきます

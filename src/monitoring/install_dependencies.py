@@ -41,9 +41,9 @@ def install_requirements():
             subprocess.check_call([
                 sys.executable, "-m", "pip", "install", package
             ])
-            print(f"✅ {package} インストール完了")
+            print(f"[OK] {package} インストール完了")
         except subprocess.CalledProcessError as e:
-            print(f"❌ {package} インストール失敗: {e}")
+            print(f"[ERROR] {package} インストール失敗: {e}")
             
     # オプション依存関係インストール
     print("\nオプション依存関係をインストールしています...")
@@ -53,9 +53,9 @@ def install_requirements():
             subprocess.check_call([
                 sys.executable, "-m", "pip", "install", package
             ])
-            print(f"✅ {package} インストール完了")
+            print(f"[OK] {package} インストール完了")
         except subprocess.CalledProcessError as e:
-            print(f"⚠️ {package} インストール失敗（オプション）: {e}")
+            print(f"[WARNING] {package} インストール失敗（オプション）: {e}")
             
     print("\n依存関係インストール完了!")
     print("\n次のステップ:")

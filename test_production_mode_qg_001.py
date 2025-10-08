@@ -56,36 +56,36 @@ class ProductionModeTestSuite:
     
     def run_all_stages(self) -> Dict[str, Any]:
         """全Stageを順次実行"""
-        logger.info("🚀 TODO-QG-001: Production Mode動作テスト開始")
+        logger.info("[ROCKET] TODO-QG-001: Production Mode動作テスト開始")
         
         try:
             # Stage 1: Production Mode基盤確認
             if self.run_stage_1():
-                logger.info("✅ Stage 1完了 - 次段階へ進行")
+                logger.info("[OK] Stage 1完了 - 次段階へ進行")
                 
                 # Stage 2: Production Mode動作テスト
                 if self.run_stage_2():
-                    logger.info("✅ Stage 2完了 - 次段階へ進行")
+                    logger.info("[OK] Stage 2完了 - 次段階へ進行")
                     
                     # Stage 3: エラー時動作検証
                     if self.run_stage_3():
-                        logger.info("✅ Stage 3完了 - 次段階へ進行")
+                        logger.info("[OK] Stage 3完了 - 次段階へ進行")
                         
                         # Stage 4: 本番相当データ検証
                         if self.run_stage_4():
-                            logger.info("✅ Stage 4完了 - 全テスト成功")
+                            logger.info("[OK] Stage 4完了 - 全テスト成功")
                             self.test_results['overall_status'] = 'passed'
                         else:
-                            logger.error("❌ Stage 4失敗")
+                            logger.error("[ERROR] Stage 4失敗")
                             self.test_results['overall_status'] = 'failed_stage_4'
                     else:
-                        logger.error("❌ Stage 3失敗")
+                        logger.error("[ERROR] Stage 3失敗")
                         self.test_results['overall_status'] = 'failed_stage_3'
                 else:
-                    logger.error("❌ Stage 2失敗")
+                    logger.error("[ERROR] Stage 2失敗")
                     self.test_results['overall_status'] = 'failed_stage_2'
             else:
-                logger.error("❌ Stage 1失敗")
+                logger.error("[ERROR] Stage 1失敗")
                 self.test_results['overall_status'] = 'failed_stage_1'
         
         except Exception as e:
@@ -105,12 +105,12 @@ class ProductionModeTestSuite:
     
     def run_stage_1(self) -> bool:
         """Stage 1: Production Mode基盤確認"""
-        logger.info("📋 Stage 1: Production Mode基盤確認開始")
+        logger.info("[LIST] Stage 1: Production Mode基盤確認開始")
         stage_results = {'status': 'running', 'checks': {}}
         
         try:
             # 1.1: SystemFallbackPolicy PRODUCTION mode動作確認
-            logger.info("🔍 1.1: SystemFallbackPolicy PRODUCTION mode動作確認")
+            logger.info("[SEARCH] 1.1: SystemFallbackPolicy PRODUCTION mode動作確認")
             production_check = self.verify_system_fallback_policy()
             stage_results['checks']['system_fallback_policy'] = production_check
             
@@ -120,12 +120,12 @@ class ProductionModeTestSuite:
                 return False
             
             # 1.2: 現在のフォールバック使用状況ベースライン測定
-            logger.info("📊 1.2: フォールバック使用状況ベースライン測定")
+            logger.info("[CHART] 1.2: フォールバック使用状況ベースライン測定")
             baseline_check = self.measure_baseline_fallback_usage()
             stage_results['checks']['baseline_measurement'] = baseline_check
             
             # 1.3: DSSMS主要コンポーネント動作確認
-            logger.info("🔧 1.3: DSSMS主要コンポーネント動作確認")
+            logger.info("[TOOL] 1.3: DSSMS主要コンポーネント動作確認")
             components_check = self.verify_dssms_components()
             stage_results['checks']['dssms_components'] = components_check
             
@@ -135,7 +135,7 @@ class ProductionModeTestSuite:
                 return False
             
             stage_results['status'] = 'passed'
-            logger.info("✅ Stage 1: Production Mode基盤確認完了")
+            logger.info("[OK] Stage 1: Production Mode基盤確認完了")
             return True
             
         except Exception as e:
@@ -149,7 +149,7 @@ class ProductionModeTestSuite:
     
     def run_stage_2(self) -> bool:
         """Stage 2: Production Mode動作テスト実装"""
-        logger.info("📋 Stage 2: Production Mode動作テスト実装開始")
+        logger.info("[LIST] Stage 2: Production Mode動作テスト実装開始")
         stage_results = {'status': 'running', 'tests': {}}
         
         try:
@@ -164,7 +164,7 @@ class ProductionModeTestSuite:
                 return False
             
             # 2.2: 主要機能（銘柄選択・ランキング・バックテスト）の動作テスト
-            logger.info("🎯 2.2: 主要機能動作テスト")
+            logger.info("[TARGET] 2.2: 主要機能動作テスト")
             core_functions_test = self.test_core_functions_production_mode()
             stage_results['tests']['core_functions'] = core_functions_test
             
@@ -174,18 +174,18 @@ class ProductionModeTestSuite:
                 return False
             
             # 2.3: フォールバック使用量監視・記録システム
-            logger.info("📊 2.3: フォールバック使用量監視")
+            logger.info("[CHART] 2.3: フォールバック使用量監視")
             fallback_monitoring = self.monitor_fallback_usage()
             stage_results['tests']['fallback_monitoring'] = fallback_monitoring
             
             # フォールバック使用量ゼロチェック
             if fallback_monitoring['fallback_count'] > 0:
-                logger.error(f"❌ フォールバック使用量: {fallback_monitoring['fallback_count']} (目標: 0)")
+                logger.error(f"[ERROR] フォールバック使用量: {fallback_monitoring['fallback_count']} (目標: 0)")
                 stage_results['status'] = 'failed_fallback_usage'
                 return False
             
             stage_results['status'] = 'passed'
-            logger.info("✅ Stage 2: Production Mode動作テスト完了")
+            logger.info("[OK] Stage 2: Production Mode動作テスト完了")
             return True
             
         except Exception as e:
@@ -199,7 +199,7 @@ class ProductionModeTestSuite:
     
     def run_stage_3(self) -> bool:
         """Stage 3: エラー時動作検証"""
-        logger.info("📋 Stage 3: エラー時動作検証開始")
+        logger.info("[LIST] Stage 3: エラー時動作検証開始")
         stage_results = {'status': 'running', 'error_tests': {}}
         
         try:
@@ -214,7 +214,7 @@ class ProductionModeTestSuite:
             stage_results['error_tests']['exception_handling'] = exception_handling_test
             
             # 3.3: エラーログ・レポート機能確認
-            logger.info("📋 3.3: エラーログ・レポート機能確認")
+            logger.info("[LIST] 3.3: エラーログ・レポート機能確認")
             error_logging_test = self.test_error_logging()
             stage_results['error_tests']['error_logging'] = error_logging_test
             
@@ -226,11 +226,11 @@ class ProductionModeTestSuite:
             
             if all_tests_passed:
                 stage_results['status'] = 'passed'
-                logger.info("✅ Stage 3: エラー時動作検証完了")
+                logger.info("[OK] Stage 3: エラー時動作検証完了")
                 return True
             else:
                 stage_results['status'] = 'failed'
-                logger.error("❌ Stage 3: エラー時動作検証失敗")
+                logger.error("[ERROR] Stage 3: エラー時動作検証失敗")
                 return False
             
         except Exception as e:
@@ -244,12 +244,12 @@ class ProductionModeTestSuite:
     
     def run_stage_4(self) -> bool:
         """Stage 4: 本番相当データ検証"""
-        logger.info("📋 Stage 4: 本番相当データ検証開始")
+        logger.info("[LIST] Stage 4: 本番相当データ検証開始")
         stage_results = {'status': 'running', 'production_tests': {}}
         
         try:
             # 4.1: 実際の市場データでの全機能動作確認
-            logger.info("📈 4.1: 実市場データ全機能動作確認")
+            logger.info("[UP] 4.1: 実市場データ全機能動作確認")
             market_data_test = self.test_with_real_market_data()
             stage_results['production_tests']['market_data'] = market_data_test
             
@@ -259,7 +259,7 @@ class ProductionModeTestSuite:
             stage_results['production_tests']['performance'] = performance_test
             
             # 4.3: 結果レポート生成・合格判定
-            logger.info("📊 4.3: 結果レポート生成・合格判定")
+            logger.info("[CHART] 4.3: 結果レポート生成・合格判定")
             final_report = self.generate_final_report()
             stage_results['production_tests']['final_report'] = final_report
             
@@ -269,11 +269,11 @@ class ProductionModeTestSuite:
             
             if pass_criteria['overall_pass']:
                 stage_results['status'] = 'passed'
-                logger.info("🎉 Stage 4: 本番相当データ検証完了 - 全テスト合格")
+                logger.info("[SUCCESS] Stage 4: 本番相当データ検証完了 - 全テスト合格")
                 return True
             else:
                 stage_results['status'] = 'failed'
-                logger.error("❌ Stage 4: 本番相当データ検証失敗")
+                logger.error("[ERROR] Stage 4: 本番相当データ検証失敗")
                 return False
             
         except Exception as e:
@@ -689,7 +689,7 @@ class ProductionModeTestSuite:
             with open(report_path, 'w', encoding='utf-8') as f:
                 json.dump(self.test_results, f, indent=2, ensure_ascii=False)
             
-            logger.info(f"📊 テスト結果レポート保存: {report_path}")
+            logger.info(f"[CHART] テスト結果レポート保存: {report_path}")
             
         except Exception as e:
             logger.error(f"レポート保存エラー: {e}")
@@ -720,14 +720,14 @@ def main():
         
         # 合格判定
         if results['overall_status'] == 'passed':
-            print("\n🎉 Production Mode動作テスト: 合格")
+            print("\n[SUCCESS] Production Mode動作テスト: 合格")
             return True
         else:
-            print(f"\n❌ Production Mode動作テスト: 不合格 ({results['overall_status']})")
+            print(f"\n[ERROR] Production Mode動作テスト: 不合格 ({results['overall_status']})")
             return False
         
     except Exception as e:
-        print(f"❌ テスト実行中に重大エラー: {e}")
+        print(f"[ERROR] テスト実行中に重大エラー: {e}")
         traceback.print_exc()
         return False
 

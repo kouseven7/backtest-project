@@ -318,7 +318,7 @@ class Task12IntegrationTester:
             f"実行日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
             "=" * 80,
             "",
-            "📊 総合結果",
+            "[CHART] 総合結果",
             "-" * 30,
             f"テストスイート: {summary.get('passed_test_suites', 0)}/{summary.get('total_test_suites', 0)} 合格",
             f"総合成功率: {summary.get('overall_success_rate', 0):.1%}",
@@ -340,7 +340,7 @@ class Task12IntegrationTester:
             if test_key in self.test_results:
                 result = self.test_results[test_key]
                 status = result.get('status', 'unknown')
-                status_emoji = {"passed": "✅", "failed": "❌", "error": "🔥"}.get(status, "❓")
+                status_emoji = {"passed": "[OK]", "failed": "[ERROR]", "error": "[FIRE]"}.get(status, "❓")
                 
                 report_lines.append(f"{status_emoji} {test_name}: {status}")
                 
@@ -381,14 +381,14 @@ def main():
         overall_success = summary.get('overall_success_rate', 0) >= 0.8
         
         if overall_success:
-            print("\n🎉 Task 1.2 統合テスト: 成功!")
+            print("\n[SUCCESS] Task 1.2 統合テスト: 成功!")
             return 0
         else:
-            print("\n⚠️ Task 1.2 統合テスト: 一部失敗")
+            print("\n[WARNING] Task 1.2 統合テスト: 一部失敗")
             return 1
             
     except Exception as e:
-        print(f"\n🔥 Task 1.2 統合テスト実行エラー: {e}")
+        print(f"\n[FIRE] Task 1.2 統合テスト実行エラー: {e}")
         return 2
 
 if __name__ == "__main__":

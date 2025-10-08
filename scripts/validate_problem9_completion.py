@@ -87,17 +87,17 @@ class Problem9CompletionValidator:
         
         try:
             # 1. 定量的条件評価
-            logger.info("📊 定量的条件評価実行")
+            logger.info("[CHART] 定量的条件評価実行")
             quantitative_results = self._evaluate_quantitative_criteria()
             completion_assessment['quantitative_results'] = quantitative_results
             
             # 2. 定性的条件評価
-            logger.info("📋 定性的条件評価実行")
+            logger.info("[LIST] 定性的条件評価実行")
             qualitative_results = self._evaluate_qualitative_criteria()
             completion_assessment['qualitative_results'] = qualitative_results
             
             # 3. 全体完了判定
-            logger.info("🎯 全体完了判定実行")
+            logger.info("[TARGET] 全体完了判定実行")
             overall_status, completion_percentage = self._calculate_overall_completion(
                 quantitative_results, qualitative_results
             )
@@ -120,16 +120,16 @@ class Problem9CompletionValidator:
             # 結果報告
             logger.info("=== Problem 9: 最終KPI評価・完了確認完了 ===")
             if overall_status == 'COMPLETED':
-                logger.info("🎉 Problem 9: エンジン品質統一 完了")
+                logger.info("[SUCCESS] Problem 9: エンジン品質統一 完了")
             elif overall_status == 'PARTIAL_COMPLETION':
-                logger.warning("⚠️ Problem 9: 一部条件未達成")
+                logger.warning("[WARNING] Problem 9: 一部条件未達成")
             else:
-                logger.error("❌ Problem 9: 完了条件未達成")
+                logger.error("[ERROR] Problem 9: 完了条件未達成")
             
             return completion_assessment
             
         except Exception as e:
-            logger.error(f"❌ 完了確認エラー: {str(e)}")
+            logger.error(f"[ERROR] 完了確認エラー: {str(e)}")
             completion_assessment['overall_completion_status'] = 'ERROR'
             completion_assessment['error'] = str(e)
             completion_assessment['traceback'] = traceback.format_exc()
@@ -530,23 +530,23 @@ def main():
         overall_status = results.get('overall_completion_status', 'UNKNOWN')
         completion_percentage = results.get('completion_percentage', 0.0)
         
-        print(f"\n🎯 Problem 9: エンジン品質統一 最終評価")
-        print(f"📊 完了率: {completion_percentage:.1f}%")
+        print(f"\n[TARGET] Problem 9: エンジン品質統一 最終評価")
+        print(f"[CHART] 完了率: {completion_percentage:.1f}%")
         
         if overall_status == 'COMPLETED':
-            print(f"✅ ステータス: 完了")
-            print(f"🎉 Problem 9: エンジン品質統一 正常完了！")
+            print(f"[OK] ステータス: 完了")
+            print(f"[SUCCESS] Problem 9: エンジン品質統一 正常完了！")
         elif overall_status == 'PARTIAL_COMPLETION':
-            print(f"⚠️ ステータス: 一部完了")
-            print(f"📋 追加対応が必要です")
+            print(f"[WARNING] ステータス: 一部完了")
+            print(f"[LIST] 追加対応が必要です")
         else:
-            print(f"❌ ステータス: 未完了")
-            print(f"🔧 完了条件の確認と対応が必要です")
+            print(f"[ERROR] ステータス: 未完了")
+            print(f"[TOOL] 完了条件の確認と対応が必要です")
         
         # 推奨事項表示
         recommendations = results.get('recommendations', [])
         if recommendations:
-            print(f"\n📋 推奨事項:")
+            print(f"\n[LIST] 推奨事項:")
             for i, rec in enumerate(recommendations, 1):
                 print(f"  {i}. {rec}")
         
@@ -558,7 +558,7 @@ def main():
         return results
         
     except Exception as e:
-        logger.error(f"❌ 完了確認エラー: {str(e)}")
+        logger.error(f"[ERROR] 完了確認エラー: {str(e)}")
         logger.error(traceback.format_exc())
         return None
 
@@ -568,5 +568,5 @@ if __name__ == "__main__":
         print("\n🎊 Problem 9: エンジン品質統一 完了確認")
         sys.exit(0)
     else:
-        print("\n❌ Problem 9: 完了条件未達成")
+        print("\n[ERROR] Problem 9: 完了条件未達成")
         sys.exit(1)

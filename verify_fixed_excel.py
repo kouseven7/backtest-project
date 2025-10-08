@@ -63,9 +63,9 @@ def verify_fixed_excel(excel_file_path: str):
                     
                     # 修正が成功したかチェック
                     if np.std(periods_clean) > 0.1:
-                        logger.info("✅ 修正成功: 保有期間が多様化されています")
+                        logger.info("[OK] 修正成功: 保有期間が多様化されています")
                     else:
-                        logger.warning("❌ 修正不十分: 保有期間がまだ固定されている可能性があります")
+                        logger.warning("[ERROR] 修正不十分: 保有期間がまだ固定されている可能性があります")
                         
                 else:
                     logger.warning("保有期間（時間）列が見つかりません")
@@ -86,9 +86,9 @@ def verify_fixed_excel(excel_file_path: str):
                         logger.info(f"勝率統計: 平均{np.mean(win_rates):.1f}%, 範囲{np.min(win_rates):.1f}%-{np.max(win_rates):.1f}%")
                     
                     if len(strategies) == 7:
-                        logger.info("✅ 戦略統計修正成功: 7つの個別戦略が表示されています")
+                        logger.info("[OK] 戦略統計修正成功: 7つの個別戦略が表示されています")
                     else:
-                        logger.warning(f"❌ 戦略統計問題: {len(strategies)}戦略のみ表示")
+                        logger.warning(f"[ERROR] 戦略統計問題: {len(strategies)}戦略のみ表示")
                 else:
                     logger.warning("戦略名列が見つかりません")
             

@@ -11,11 +11,11 @@ from pathlib import Path
 
 def fix_dssms_report_generator_syntax():
     """dssms_report_generator.py 構文エラー修正"""
-    print("🔧 dssms_report_generator.py 構文エラー修正中...")
+    print("[TOOL] dssms_report_generator.py 構文エラー修正中...")
     
     report_gen_path = Path("src/dssms/dssms_report_generator.py")
     if not report_gen_path.exists():
-        print("  ❌ ファイルが存在しません")
+        print("  [ERROR] ファイルが存在しません")
         return False
     
     try:
@@ -67,20 +67,20 @@ def fix_dssms_report_generator_syntax():
         with open(report_gen_path, 'w', encoding='utf-8') as f:
             f.write(simplified_content)
         
-        print("  ✅ dssms_report_generator.py 修正完了")
+        print("  [OK] dssms_report_generator.py 修正完了")
         return True
         
     except Exception as e:
-        print(f"  ❌ 修正エラー: {e}")
+        print(f"  [ERROR] 修正エラー: {e}")
         return False
 
 def fix_hierarchical_ranking_syntax():
     """hierarchical_ranking_system.py 構文エラー修正"""
-    print("🔧 hierarchical_ranking_system.py 構文エラー修正中...")
+    print("[TOOL] hierarchical_ranking_system.py 構文エラー修正中...")
     
     ranking_path = Path("src/dssms/hierarchical_ranking_system.py")
     if not ranking_path.exists():
-        print("  ❌ ファイルが存在しません")
+        print("  [ERROR] ファイルが存在しません")
         return False
     
     try:
@@ -112,16 +112,16 @@ def fix_hierarchical_ranking_syntax():
         with open(ranking_path, 'w', encoding='utf-8') as f:
             f.write(fixed_content)
         
-        print("  ✅ hierarchical_ranking_system.py 修正完了")
+        print("  [OK] hierarchical_ranking_system.py 修正完了")
         return True
         
     except Exception as e:
-        print(f"  ❌ 修正エラー: {e}")
+        print(f"  [ERROR] 修正エラー: {e}")
         return False
 
 def validate_syntax():
     """構文検証"""
-    print("🔍 構文検証中...")
+    print("[SEARCH] 構文検証中...")
     
     files_to_check = [
         "src/dssms/dssms_report_generator.py",
@@ -137,24 +137,24 @@ def validate_syntax():
                     content = f.read()
                 
                 ast.parse(content)
-                print(f"  ✅ {file_path}: 構文OK")
+                print(f"  [OK] {file_path}: 構文OK")
                 
             except SyntaxError as e:
-                print(f"  ❌ {file_path}: 構文エラー - {e}")
+                print(f"  [ERROR] {file_path}: 構文エラー - {e}")
                 print(f"    行 {e.lineno}: {e.text}")
                 all_valid = False
             except Exception as e:
-                print(f"  ⚠️ {file_path}: 検証エラー - {e}")
+                print(f"  [WARNING] {file_path}: 検証エラー - {e}")
                 all_valid = False
         else:
-            print(f"  ❌ {file_path}: ファイル未存在")
+            print(f"  [ERROR] {file_path}: ファイル未存在")
             all_valid = False
     
     return all_valid
 
 def main():
     """メイン実行"""
-    print("🚀 TODO-PERF-001 Phase 2 Stage 3 構文エラー緊急修正開始")
+    print("[ROCKET] TODO-PERF-001 Phase 2 Stage 3 構文エラー緊急修正開始")
     print("=" * 60)
     
     success = True
@@ -168,17 +168,17 @@ def main():
         success = False
     
     # 3. 構文検証
-    print("\n🔍 修正結果検証")
+    print("\n[SEARCH] 修正結果検証")
     if validate_syntax():
-        print("✅ 全ファイル構文OK")
+        print("[OK] 全ファイル構文OK")
     else:
-        print("⚠️ 一部ファイルに構文問題あり")
+        print("[WARNING] 一部ファイルに構文問題あり")
         success = False
     
     if success:
-        print("\n🎉 構文エラー修正完了 - Stage 4進行可能")
+        print("\n[SUCCESS] 構文エラー修正完了 - Stage 4進行可能")
     else:
-        print("\n⚠️ 構文エラー修正に問題あり - さらなる修正が必要")
+        print("\n[WARNING] 構文エラー修正に問題あり - さらなる修正が必要")
     
     return success
 

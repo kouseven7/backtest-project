@@ -43,7 +43,7 @@ class FallbackBaselineAnalyzer:
         
     def establish_baseline_metrics(self) -> Dict[str, Any]:
         """現状ベースライン測定実装"""
-        logger.info("🔍 Stage 1: フォールバック使用状況ベースライン測定開始")
+        logger.info("[SEARCH] Stage 1: フォールバック使用状況ベースライン測定開始")
         
         # 1. SystemFallbackPolicy統計収集
         baseline_stats = self._collect_current_fallback_statistics()
@@ -70,12 +70,12 @@ class FallbackBaselineAnalyzer:
         # 6. ベースライン保存
         self._save_baseline_data(baseline_results)
         
-        logger.info("✅ Stage 1: ベースライン測定完了")
+        logger.info("[OK] Stage 1: ベースライン測定完了")
         return baseline_results
     
     def _collect_current_fallback_statistics(self) -> Dict[str, Any]:
         """現在のフォールバック使用統計収集"""
-        logger.info("📊 SystemFallbackPolicy統計収集中...")
+        logger.info("[CHART] SystemFallbackPolicy統計収集中...")
         
         # DEVELOPMENT modeでSystemFallbackPolicy初期化・統計取得
         policy = SystemFallbackPolicy(SystemMode.DEVELOPMENT)
@@ -93,12 +93,12 @@ class FallbackBaselineAnalyzer:
             'baseline_fallback_count': current_stats.get('total_failures', 0)
         }
         
-        logger.info(f"📈 ベースライン フォールバック使用量: {stats['baseline_fallback_count']}件")
+        logger.info(f"[UP] ベースライン フォールバック使用量: {stats['baseline_fallback_count']}件")
         return stats
     
     def _analyze_component_usage_patterns(self) -> Dict[str, Any]:
         """コンポーネント別使用パターン分析"""
-        logger.info("🔧 コンポーネント別フォールバック使用パターン分析中...")
+        logger.info("[TOOL] コンポーネント別フォールバック使用パターン分析中...")
         
         # 各コンポーネントタイプの理論的フォールバック可能性評価
         component_risk_assessment = {
@@ -142,7 +142,7 @@ class FallbackBaselineAnalyzer:
             if component_type in component_risk_assessment:
                 component_risk_assessment[component_type]['current_usage'] = usage_count
         
-        logger.info("🎯 コンポーネント別分析完了")
+        logger.info("[TARGET] コンポーネント別分析完了")
         return component_risk_assessment
     
     def _establish_weekly_benchmarks(self) -> Dict[str, Any]:
@@ -174,7 +174,7 @@ class FallbackBaselineAnalyzer:
     
     def _calculate_50_percent_reduction_targets(self, baseline_stats: Dict[str, Any]) -> Dict[str, Any]:
         """50%削減目標の具体的数値計算"""
-        logger.info("🎯 50%削減目標数値計算中...")
+        logger.info("[TARGET] 50%削減目標数値計算中...")
         
         baseline_count = baseline_stats.get('baseline_fallback_count', 0)
         target_date = datetime(2025, 10, 31)
@@ -191,7 +191,7 @@ class FallbackBaselineAnalyzer:
             'milestone_targets': self._generate_milestone_targets(baseline_count, weeks_remaining)
         }
         
-        logger.info(f"📊 50%削減目標: {baseline_count} → {reduction_targets['target_count']} ({reduction_targets['reduction_amount']}件削減)")
+        logger.info(f"[CHART] 50%削減目標: {baseline_count} → {reduction_targets['target_count']} ({reduction_targets['reduction_amount']}件削減)")
         logger.info(f"⏱️ 残り期間: {weeks_remaining}週間、週次削減必要量: {reduction_targets['weekly_reduction_required']:.1f}件")
         
         return reduction_targets
@@ -336,7 +336,7 @@ class FallbackBaselineAnalyzer:
 
 def main():
     """メイン実行関数"""
-    print("🚀 TODO-QG-002 Stage 1: フォールバック除去進捗監視 - ベースライン測定開始")
+    print("[ROCKET] TODO-QG-002 Stage 1: フォールバック除去進捗監視 - ベースライン測定開始")
     
     analyzer = FallbackBaselineAnalyzer()
     
@@ -346,32 +346,32 @@ def main():
         
         # 結果サマリー表示
         print("\n" + "="*80)
-        print("📊 Stage 1: ベースライン測定結果サマリー")
+        print("[CHART] Stage 1: ベースライン測定結果サマリー")
         print("="*80)
         
         baseline_count = baseline_results['baseline_statistics']['baseline_fallback_count']
         target_count = baseline_results['reduction_targets']['target_count']
         weeks_remaining = baseline_results['reduction_targets']['weeks_remaining']
         
-        print(f"📈 現在のフォールバック使用量: {baseline_count}件")
-        print(f"🎯 50%削減目標: {target_count}件")
-        print(f"📉 削減必要量: {baseline_results['reduction_targets']['reduction_amount']}件")
+        print(f"[UP] 現在のフォールバック使用量: {baseline_count}件")
+        print(f"[TARGET] 50%削減目標: {target_count}件")
+        print(f"[DOWN] 削減必要量: {baseline_results['reduction_targets']['reduction_amount']}件")
         print(f"⏰ 残り期間: {weeks_remaining}週間")
         print(f"📅 週次削減必要量: {baseline_results['reduction_targets']['weekly_reduction_required']:.1f}件")
         
         # コンポーネント別優先度
-        print("\n🔧 コンポーネント別優先度:")
+        print("\n[TOOL] コンポーネント別優先度:")
         for component, analysis in baseline_results['component_analysis'].items():
             risk = analysis['risk_level']
             priority = analysis['priority_for_removal']
             usage = analysis['current_usage']
             print(f"  {component}: リスク={risk}, 優先度={priority}, 使用量={usage}件")
         
-        print(f"\n✅ Stage 1完了 - 次段階: Stage 2 監視システム基盤構築")
+        print(f"\n[OK] Stage 1完了 - 次段階: Stage 2 監視システム基盤構築")
         return True
         
     except Exception as e:
-        print(f"❌ Stage 1失敗: {e}")
+        print(f"[ERROR] Stage 1失敗: {e}")
         logger.error(f"ベースライン測定エラー: {e}")
         import traceback
         traceback.print_exc()

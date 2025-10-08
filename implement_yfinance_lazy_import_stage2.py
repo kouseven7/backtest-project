@@ -27,7 +27,7 @@ class YfinanceLazyImportImplementer:
         
     def identify_yfinance_files(self) -> List[Path]:
         """yfinance使用ファイル特定"""
-        print("🔍 yfinance使用ファイル特定中...")
+        print("[SEARCH] yfinance使用ファイル特定中...")
         yfinance_files = []
         
         # 主要対象ファイル（分析結果から）
@@ -43,7 +43,7 @@ class YfinanceLazyImportImplementer:
             full_path = self.project_root / file_path
             if full_path.exists():
                 yfinance_files.append(full_path)
-                print(f"  ✅ 優先ファイル: {file_path}")
+                print(f"  [OK] 優先ファイル: {file_path}")
         
         # その他のyfinance使用ファイルを検索
         for file_path in self.project_root.rglob('*.py'):
@@ -60,12 +60,12 @@ class YfinanceLazyImportImplementer:
                 continue
         
         self.yfinance_files = yfinance_files
-        print(f"  📊 合計 {len(yfinance_files)} ファイルでyfinance使用")
+        print(f"  [CHART] 合計 {len(yfinance_files)} ファイルでyfinance使用")
         return yfinance_files
     
     def create_lazy_yfinance_wrapper(self) -> Path:
         """yfinance遅延インポートラッパー作成"""
-        print("🔧 yfinance遅延インポートラッパー作成中...")
+        print("[TOOL] yfinance遅延インポートラッパー作成中...")
         
         wrapper_content = '''#!/usr/bin/env python3
 """
@@ -100,11 +100,11 @@ class YfinanceLazyWrapper:
                 self._import_time = (time.perf_counter() - start_time) * 1000
                 
                 if self._first_access:
-                    print(f"📊 yfinance lazy import: {self._import_time:.1f}ms")
+                    print(f"[CHART] yfinance lazy import: {self._import_time:.1f}ms")
                     self._first_access = False
                     
             except ImportError as e:
-                print(f"❌ yfinance import error: {e}")
+                print(f"[ERROR] yfinance import error: {e}")
                 raise
                 
         return self._yfinance
@@ -158,7 +158,7 @@ def __getattr__(name: str):
         with open(wrapper_path, 'w', encoding='utf-8') as f:
             f.write(wrapper_content)
         
-        print(f"  ✅ ラッパー作成完了: {wrapper_path}")
+        print(f"  [OK] ラッパー作成完了: {wrapper_path}")
         return wrapper_path
     
     def backup_files(self) -> bool:
@@ -176,20 +176,20 @@ def __getattr__(name: str):
                 shutil.copy2(file_path, backup_path)
                 print(f"  📁 バックアップ: {relative_path}")
             
-            print(f"  ✅ バックアップ完了: {self.backup_dir}")
+            print(f"  [OK] バックアップ完了: {self.backup_dir}")
             return True
             
         except Exception as e:
-            print(f"  ❌ バックアップエラー: {e}")
+            print(f"  [ERROR] バックアップエラー: {e}")
             return False
     
     def implement_lazy_import_data_fetcher(self) -> bool:
         """data_fetcher.py遅延インポート実装"""
-        print("🔧 data_fetcher.py遅延インポート実装中...")
+        print("[TOOL] data_fetcher.py遅延インポート実装中...")
         
         data_fetcher_path = self.project_root / "data_fetcher.py"
         if not data_fetcher_path.exists():
-            print(f"  ❌ ファイルが存在しません: {data_fetcher_path}")
+            print(f"  [ERROR] ファイルが存在しません: {data_fetcher_path}")
             return False
         
         try:
@@ -204,9 +204,9 @@ import src.utils.yfinance_lazy_wrapper as yf"""
             
             if old_import in content:
                 content = content.replace(old_import, new_import)
-                print(f"  ✅ インポート文置換: {old_import}")
+                print(f"  [OK] インポート文置換: {old_import}")
             else:
-                print(f"  ⚠️ 標準インポート文が見つかりません")
+                print(f"  [WARNING] 標準インポート文が見つかりません")
             
             # 使用箇所の置換
             replacements = [
@@ -217,7 +217,7 @@ import src.utils.yfinance_lazy_wrapper as yf"""
             for old, new in replacements:
                 if old in content:
                     content = content.replace(old, new)
-                    print(f"  ✅ 使用箇所置換: {old} → {new}")
+                    print(f"  [OK] 使用箇所置換: {old} → {new}")
             
             # ファイル書き込み
             with open(data_fetcher_path, 'w', encoding='utf-8') as f:
@@ -229,20 +229,20 @@ import src.utils.yfinance_lazy_wrapper as yf"""
                 'changes': len(replacements) + 1
             })
             
-            print(f"  ✅ data_fetcher.py遅延インポート実装完了")
+            print(f"  [OK] data_fetcher.py遅延インポート実装完了")
             return True
             
         except Exception as e:
-            print(f"  ❌ data_fetcher.py実装エラー: {e}")
+            print(f"  [ERROR] data_fetcher.py実装エラー: {e}")
             return False
     
     def implement_lazy_import_market_data_provider(self) -> bool:
         """market_data_provider.py遅延インポート実装"""
-        print("🔧 market_data_provider.py遅延インポート実装中...")
+        print("[TOOL] market_data_provider.py遅延インポート実装中...")
         
         file_path = self.project_root / "src" / "analysis" / "market_data_provider.py"
         if not file_path.exists():
-            print(f"  ❌ ファイルが存在しません: {file_path}")
+            print(f"  [ERROR] ファイルが存在しません: {file_path}")
             return False
         
         try:
@@ -256,7 +256,7 @@ import src.utils.yfinance_lazy_wrapper as yf"""
             
             if old_import in content:
                 content = content.replace(old_import, new_import)
-                print(f"  ✅ インポート文置換完了")
+                print(f"  [OK] インポート文置換完了")
             
             # ファイル書き込み
             with open(file_path, 'w', encoding='utf-8') as f:
@@ -268,20 +268,20 @@ import src.utils.yfinance_lazy_wrapper as yf"""
                 'changes': 1
             })
             
-            print(f"  ✅ market_data_provider.py遅延インポート実装完了")
+            print(f"  [OK] market_data_provider.py遅延インポート実装完了")
             return True
             
         except Exception as e:
-            print(f"  ❌ market_data_provider.py実装エラー: {e}")
+            print(f"  [ERROR] market_data_provider.py実装エラー: {e}")
             return False
     
     def implement_lazy_import_data_source_adapter(self) -> bool:
         """data_source_adapter.py遅延インポート実装"""
-        print("🔧 data_source_adapter.py遅延インポート実装中...")
+        print("[TOOL] data_source_adapter.py遅延インポート実装中...")
         
         file_path = self.project_root / "src" / "data" / "data_source_adapter.py"
         if not file_path.exists():
-            print(f"  ❌ ファイルが存在しません: {file_path}")
+            print(f"  [ERROR] ファイルが存在しません: {file_path}")
             return False
         
         try:
@@ -295,7 +295,7 @@ import src.utils.yfinance_lazy_wrapper as yf"""
             
             if old_import in content:
                 content = content.replace(old_import, new_import)
-                print(f"  ✅ インポート文置換完了")
+                print(f"  [OK] インポート文置換完了")
             
             # ファイル書き込み
             with open(file_path, 'w', encoding='utf-8') as f:
@@ -307,16 +307,16 @@ import src.utils.yfinance_lazy_wrapper as yf"""
                 'changes': 1
             })
             
-            print(f"  ✅ data_source_adapter.py遅延インポート実装完了")
+            print(f"  [OK] data_source_adapter.py遅延インポート実装完了")
             return True
             
         except Exception as e:
-            print(f"  ❌ data_source_adapter.py実装エラー: {e}")
+            print(f"  [ERROR] data_source_adapter.py実装エラー: {e}")
             return False
     
     def measure_improvement(self) -> Dict[str, float]:
         """遅延インポート効果測定"""
-        print("📊 yfinance遅延インポート効果測定中...")
+        print("[CHART] yfinance遅延インポート効果測定中...")
         
         try:
             # 測定スクリプト作成
@@ -369,20 +369,20 @@ print(f"LAZY_FIRST_ACCESS: {lazy_first_access_time:.1f}")
                 # 効果計算
                 import_reduction = measurements['direct_import_ms'] - measurements['lazy_import_ms']
                 
-                print(f"  📈 直接インポート: {measurements['direct_import_ms']:.1f}ms")
-                print(f"  📈 遅延インポート: {measurements['lazy_import_ms']:.1f}ms") 
-                print(f"  📈 初回アクセス: {measurements['lazy_first_access_ms']:.1f}ms")
+                print(f"  [UP] 直接インポート: {measurements['direct_import_ms']:.1f}ms")
+                print(f"  [UP] 遅延インポート: {measurements['lazy_import_ms']:.1f}ms") 
+                print(f"  [UP] 初回アクセス: {measurements['lazy_first_access_ms']:.1f}ms")
                 print(f"  🏆 インポート削減効果: {import_reduction:.1f}ms")
                 
                 measurements['import_reduction_ms'] = import_reduction
                 return measurements
                 
             else:
-                print(f"  ❌ 測定エラー: {result.stderr}")
+                print(f"  [ERROR] 測定エラー: {result.stderr}")
                 return {}
                 
         except Exception as e:
-            print(f"  ❌ 効果測定例外: {e}")
+            print(f"  [ERROR] 効果測定例外: {e}")
             return {}
     
     def integrate_systemfallbackpolicy(self) -> bool:
@@ -403,7 +403,7 @@ try:
     _fallback_policy = SystemFallbackPolicy.get_instance()
 except ImportError:
     _fallback_policy = None
-    print("⚠️ SystemFallbackPolicy not available")
+    print("[WARNING] SystemFallbackPolicy not available")
 
 def _handle_yfinance_error(error: Exception, operation: str):
     """yfinanceエラーハンドリング"""
@@ -415,7 +415,7 @@ def _handle_yfinance_error(error: Exception, operation: str):
             fallback_func=lambda: None
         )
     else:
-        print(f"❌ yfinance error in {operation}: {error}")
+        print(f"[ERROR] yfinance error in {operation}: {error}")
         raise error
 '''
             
@@ -431,11 +431,11 @@ def _handle_yfinance_error(error: Exception, operation: str):
                 self._import_time = (time.perf_counter() - start_time) * 1000
                 
                 if self._first_access:
-                    print(f"📊 yfinance lazy import: {self._import_time:.1f}ms")
+                    print(f"[CHART] yfinance lazy import: {self._import_time:.1f}ms")
                     self._first_access = False
                     
             except ImportError as e:
-                print(f"❌ yfinance import error: {e}")
+                print(f"[ERROR] yfinance import error: {e}")
                 raise
                 
         return self._yfinance"""
@@ -451,7 +451,7 @@ def _handle_yfinance_error(error: Exception, operation: str):
                 self._import_time = (time.perf_counter() - start_time) * 1000
                 
                 if self._first_access:
-                    print(f"📊 yfinance lazy import: {self._import_time:.1f}ms")
+                    print(f"[CHART] yfinance lazy import: {self._import_time:.1f}ms")
                     self._first_access = False
                     
             except ImportError as e:
@@ -472,16 +472,16 @@ def _handle_yfinance_error(error: Exception, operation: str):
             with open(wrapper_path, 'w', encoding='utf-8') as f:
                 f.write(content)
             
-            print(f"  ✅ SystemFallbackPolicy統合完了")
+            print(f"  [OK] SystemFallbackPolicy統合完了")
             return True
             
         except Exception as e:
-            print(f"  ❌ SystemFallbackPolicy統合エラー: {e}")
+            print(f"  [ERROR] SystemFallbackPolicy統合エラー: {e}")
             return False
     
     def run_functionality_test(self) -> bool:
         """機能完全性テスト実行"""
-        print("🧪 yfinance遅延インポート機能テスト実行中...")
+        print("[TEST] yfinance遅延インポート機能テスト実行中...")
         
         test_script = '''
 import sys
@@ -491,11 +491,11 @@ sys.path.insert(0, os.getcwd())
 try:
     # 1. ラッパーインポートテスト
     from src.utils.yfinance_lazy_wrapper import download, Ticker, get_yfinance_import_stats
-    print("✅ yfinance lazy wrapper import successful")
+    print("[OK] yfinance lazy wrapper import successful")
     
     # 2. 基本機能テスト
     ticker = Ticker("AAPL")
-    print("✅ Ticker creation successful")
+    print("[OK] Ticker creation successful")
     
     # 3. データ取得テスト（軽量）
     import datetime
@@ -503,15 +503,15 @@ try:
     start_date = end_date - datetime.timedelta(days=2)
     
     data = download("AAPL", start=start_date.strftime('%Y-%m-%d'), end=end_date.strftime('%Y-%m-%d'))
-    print(f"✅ Data download successful: {len(data)} rows")
+    print(f"[OK] Data download successful: {len(data)} rows")
     
     # 4. 統計情報テスト
     stats = get_yfinance_import_stats()
-    print(f"✅ Import stats: {stats}")
+    print(f"[OK] Import stats: {stats}")
     
     # 5. data_fetcher.py インポートテスト
     import data_fetcher
-    print("✅ data_fetcher import successful")
+    print("[OK] data_fetcher import successful")
     
     print("SUCCESS: All functionality tests passed")
     
@@ -527,7 +527,7 @@ except Exception as e:
                 sys.executable, '-c', test_script
             ], capture_output=True, text=True, cwd=self.project_root)
             
-            print(f"  📋 テスト結果:")
+            print(f"  [LIST] テスト結果:")
             print(f"    Return code: {result.returncode}")
             print(f"    Output: {result.stdout}")
             if result.stderr:
@@ -536,19 +536,19 @@ except Exception as e:
             success = result.returncode == 0 and "SUCCESS" in result.stdout
             
             if success:
-                print(f"  ✅ 機能完全性テスト成功")
+                print(f"  [OK] 機能完全性テスト成功")
             else:
-                print(f"  ❌ 機能完全性テスト失敗")
+                print(f"  [ERROR] 機能完全性テスト失敗")
             
             return success
             
         except Exception as e:
-            print(f"  ❌ テスト実行エラー: {e}")
+            print(f"  [ERROR] テスト実行エラー: {e}")
             return False
     
     def generate_stage2_report(self) -> Dict[str, Any]:
         """Stage 2完了レポート生成"""
-        print("📋 Stage 2完了レポート生成中...")
+        print("[LIST] Stage 2完了レポート生成中...")
         
         report = {
             'stage': 'Stage 2: yfinance遅延インポート統合実装',
@@ -564,7 +564,7 @@ except Exception as e:
     
     def run_stage2_implementation(self) -> bool:
         """Stage 2完全実装実行"""
-        print("🚀 TODO-PERF-001 Phase 1 Stage 2: yfinance遅延インポート統合実装開始")
+        print("[ROCKET] TODO-PERF-001 Phase 1 Stage 2: yfinance遅延インポート統合実装開始")
         print("=" * 80)
         
         start_time = time.time()
@@ -575,42 +575,42 @@ except Exception as e:
             # Task 1: yfinance使用ファイル特定
             if self.identify_yfinance_files():
                 success_count += 1
-                print("  ✅ Task 1完了")
+                print("  [OK] Task 1完了")
             
             # Task 2: 遅延インポートラッパー作成
             if self.create_lazy_yfinance_wrapper():
                 success_count += 1
-                print("  ✅ Task 2完了")
+                print("  [OK] Task 2完了")
             
             # Task 3: ファイルバックアップ
             if self.backup_files():
                 success_count += 1
-                print("  ✅ Task 3完了")
+                print("  [OK] Task 3完了")
             
             # Task 4: data_fetcher.py実装
             if self.implement_lazy_import_data_fetcher():
                 success_count += 1
-                print("  ✅ Task 4完了")
+                print("  [OK] Task 4完了")
             
             # Task 5: market_data_provider.py実装
             if self.implement_lazy_import_market_data_provider():
                 success_count += 1
-                print("  ✅ Task 5完了")
+                print("  [OK] Task 5完了")
             
             # Task 6: data_source_adapter.py実装
             if self.implement_lazy_import_data_source_adapter():
                 success_count += 1
-                print("  ✅ Task 6完了")
+                print("  [OK] Task 6完了")
             
             # Task 7: SystemFallbackPolicy統合
             if self.integrate_systemfallbackpolicy():
                 success_count += 1
-                print("  ✅ Task 7完了")
+                print("  [OK] Task 7完了")
             
             # Task 8: 機能完全性テスト
             if self.run_functionality_test():
                 success_count += 1
-                print("  ✅ Task 8完了")
+                print("  [OK] Task 8完了")
             
             # 効果測定
             measurements = self.measure_improvement()
@@ -630,24 +630,24 @@ except Exception as e:
             print("\n" + "="*80)
             print("🏆 TODO-PERF-001 Phase 1 Stage 2完了サマリー")
             print("="*80)
-            print(f"📊 タスク成功率: {success_count}/{total_tasks} ({success_count/total_tasks*100:.1f}%)")
+            print(f"[CHART] タスク成功率: {success_count}/{total_tasks} ({success_count/total_tasks*100:.1f}%)")
             print(f"⏱️ 実行時間: {time.time() - start_time:.1f}秒")
             
             if measurements:
                 reduction = measurements.get('import_reduction_ms', 0)
-                print(f"🎯 yfinanceインポート削減: {reduction:.1f}ms")
+                print(f"[TARGET] yfinanceインポート削減: {reduction:.1f}ms")
                 
             print(f"📄 完了レポート: {report_path}")
             
             if success_count >= 6:  # 75%以上成功で合格
-                print("✅ Stage 2合格: yfinance遅延インポート統合実装成功")
+                print("[OK] Stage 2合格: yfinance遅延インポート統合実装成功")
                 return True
             else:
-                print("❌ Stage 2不合格: 重要タスク失敗")
+                print("[ERROR] Stage 2不合格: 重要タスク失敗")
                 return False
                 
         except Exception as e:
-            print(f"❌ Stage 2実装エラー: {e}")
+            print(f"[ERROR] Stage 2実装エラー: {e}")
             import traceback
             traceback.print_exc()
             return False
@@ -660,9 +660,9 @@ def main():
     success = implementer.run_stage2_implementation()
     
     if success:
-        print("\n🎉 Stage 2完了 - 次は Stage 3 openpyxl遅延インポート・lazy_loader除去に進行")
+        print("\n[SUCCESS] Stage 2完了 - 次は Stage 3 openpyxl遅延インポート・lazy_loader除去に進行")
     else:
-        print("\n⚠️ Stage 2部分成功 - 問題解決後に Stage 3進行を推奨")
+        print("\n[WARNING] Stage 2部分成功 - 問題解決後に Stage 3進行を推奨")
     
     return success
 

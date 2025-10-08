@@ -688,10 +688,10 @@ def main():
     logger.info(f"成功率: {success_rate:.1f}%")
     
     if success_rate >= 85:
-        logger.info("✅ 5-2-2 システム統合デモ 正常終了")
+        logger.info("[OK] 5-2-2 システム統合デモ 正常終了")
         return True
     else:
-        logger.warning("⚠️ 一部デモで問題が発生しました")
+        logger.warning("[WARNING] 一部デモで問題が発生しました")
         return False
 
 if __name__ == "__main__":

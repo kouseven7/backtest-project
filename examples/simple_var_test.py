@@ -118,8 +118,8 @@ if __name__ == "__main__":
     result = test_var_system()
     
     if result['status'] == 'SUCCESS':
-        print("\n🎉 5-3-2 VaRシステム実装完了！")
+        print("\n[SUCCESS] 5-3-2 VaRシステム実装完了！")
         print(f"VaR95%: {result['basic_var_95']:.4f}")
         print(f"VaR99%: {result['basic_var_99']:.4f}")
     else:
-        print(f"\n❌ テスト失敗: {result.get('error', 'Unknown error')}")
+        print(f"\n[ERROR] テスト失敗: {result.get('error', 'Unknown error')}")

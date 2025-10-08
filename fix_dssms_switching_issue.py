@@ -162,7 +162,7 @@ def create_realistic_ranking_system():
 def apply_dssms_switch_fix():
     """DSSMS切替問題の修正を適用"""
     
-    print("🔧 DSSMS銘柄切替過多問題の修正開始")
+    print("[TOOL] DSSMS銘柄切替過多問題の修正開始")
     
     # 1. 元ファイルのバックアップ
     original_file = Path("src/dssms/dssms_backtester.py")
@@ -171,7 +171,7 @@ def apply_dssms_switch_fix():
     if original_file.exists():
         import shutil
         shutil.copy2(original_file, backup_file)
-        print(f"✅ バックアップ作成: {backup_file}")
+        print(f"[OK] バックアップ作成: {backup_file}")
     
     # 2. 修正版の作成
     print("📝 修正版ロジック実装...")
@@ -193,7 +193,7 @@ def apply_dssms_switch_fix():
     with open(patch_file, 'w', encoding='utf-8') as f:
         f.write(patch_content)
     
-    print(f"✅ 修正パッチ作成: {patch_file}")
+    print(f"[OK] 修正パッチ作成: {patch_file}")
     
     # 3. 設定値の推奨変更
     config_recommendations = {
@@ -204,12 +204,12 @@ def apply_dssms_switch_fix():
         'volatility_check': True   # 高ボラ時の切替停止
     }
     
-    print("\n📊 推奨設定値:")
+    print("\n[CHART] 推奨設定値:")
     for key, value in config_recommendations.items():
         print(f"  {key}: {value}")
     
     # 4. テスト実行の推奨
-    print("\n🧪 修正確認テスト:")
+    print("\n[TEST] 修正確認テスト:")
     print("1. python test_dssms_switch_optimization.py")
     print("2. 期待結果: 切替回数 < 50回/年、平均保有期間 > 7日")
     
@@ -265,7 +265,7 @@ def test_switch_optimization():
             avg_holding = result.get('average_holding_period_hours', 0)
             total_return = result.get('total_return', 0)
             
-            print(f"\\n📊 修正後の結果:")
+            print(f"\\n[CHART] 修正後の結果:")
             print(f"切替回数: {switch_count}回 (3ヶ月)")
             print(f"平均保有期間: {avg_holding:.1f}時間")
             print(f"総リターン: {total_return:.2%}")
@@ -274,50 +274,50 @@ def test_switch_optimization():
             yearly_switches = switch_count * 4  # 年間換算
             
             if yearly_switches < 100:
-                print("✅ 切替頻度: 良好（年間100回未満）")
+                print("[OK] 切替頻度: 良好（年間100回未満）")
             elif yearly_switches < 200:
-                print("⚠️ 切替頻度: 改善余地あり")
+                print("[WARNING] 切替頻度: 改善余地あり")
             else:
-                print("❌ 切替頻度: まだ高すぎる")
+                print("[ERROR] 切替頻度: まだ高すぎる")
             
             if avg_holding > 48:
-                print("✅ 保有期間: 良好（48時間以上）")
+                print("[OK] 保有期間: 良好（48時間以上）")
             else:
-                print("⚠️ 保有期間: 短い（さらに改善推奨）")
+                print("[WARNING] 保有期間: 短い（さらに改善推奨）")
             
             return True
         else:
-            print(f"❌ テスト失敗: {result.get('error')}")
+            print(f"[ERROR] テスト失敗: {result.get('error')}")
             return False
             
     except Exception as e:
-        print(f"❌ テストエラー: {e}")
+        print(f"[ERROR] テストエラー: {e}")
         return False
 
 if __name__ == "__main__":
     success = test_switch_optimization()
     if success:
-        print("\\n🎉 修正テスト完了")
+        print("\\n[SUCCESS] 修正テスト完了")
     else:
-        print("\\n❌ 修正が必要です")
+        print("\\n[ERROR] 修正が必要です")
 '''
     
     with open("test_dssms_switch_optimization.py", 'w', encoding='utf-8') as f:
         f.write(test_content)
     
-    print("✅ テストスクリプト作成: test_dssms_switch_optimization.py")
+    print("[OK] テストスクリプト作成: test_dssms_switch_optimization.py")
 
 if __name__ == "__main__":
-    print("🚀 DSSMS銘柄切替過多問題の修正開始")
+    print("[ROCKET] DSSMS銘柄切替過多問題の修正開始")
     
     success = apply_dssms_switch_fix()
     
     if success:
         create_test_script()
-        print("\n✅ 修正完了! 次の手順:")
+        print("\n[OK] 修正完了! 次の手順:")
         print("1. パッチの内容確認")
         print("2. 実際のコード適用")
         print("3. テスト実行")
         print("4. 結果確認")
     else:
-        print("❌ 修正に失敗しました")
+        print("[ERROR] 修正に失敗しました")

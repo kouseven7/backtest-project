@@ -275,7 +275,7 @@ def main():
     success = create_final_comprehensive_fix()
     
     logger.info("=== 最終修正完了レポート ===")
-    logger.info(f"全体修正: {'✅ 成功' if success else '❌ 失敗'}")
+    logger.info(f"全体修正: {'[OK] 成功' if success else '[ERROR] 失敗'}")
     
     if success:
         logger.info("修正内容:")

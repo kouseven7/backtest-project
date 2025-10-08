@@ -51,10 +51,10 @@ def test_vwap_bounce_improvements():
         entry_count = result_data["Entry_Signal"].sum()
         exit_count = (result_data["Exit_Signal"] == -1).sum()
         
-        logger.info(f"✅ 結果: エントリー {entry_count}回, イグジット {exit_count}回")
+        logger.info(f"[OK] 結果: エントリー {entry_count}回, イグジット {exit_count}回")
         
         if entry_count > 0:
-            logger.info("✅ 取引機会が改善されました")
+            logger.info("[OK] 取引機会が改善されました")
             
             # 取引シミュレーション
             from trade_simulation import simulate_trades
@@ -66,21 +66,21 @@ def test_vwap_bounce_improvements():
                 win_count = (trade_history["取引結果"] > 0).sum()
                 win_rate = win_count / len(trade_history) * 100
                 
-                logger.info(f"📊 取引結果:")
+                logger.info(f"[CHART] 取引結果:")
                 logger.info(f"   - 総取引数: {len(trade_history)}件")
                 logger.info(f"   - 合計損益: {total_profit:.2f}円")
                 logger.info(f"   - 勝率: {win_rate:.1f}%")
                 
                 return True
             else:
-                logger.warning("⚠️ 取引履歴が空です")
+                logger.warning("[WARNING] 取引履歴が空です")
                 return False
         else:
-            logger.warning("❌ 取引機会が改善されていません")
+            logger.warning("[ERROR] 取引機会が改善されていません")
             return False
             
     except Exception as e:
-        logger.error(f"❌ テスト中にエラー: {e}")
+        logger.error(f"[ERROR] テスト中にエラー: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -98,17 +98,17 @@ def test_parameter_combinations():
             total_combinations *= combinations
             logger.info(f"{param_name}: {combinations}通り")
         
-        logger.info(f"📊 総組み合わせ数: {total_combinations:,}通り")
+        logger.info(f"[CHART] 総組み合わせ数: {total_combinations:,}通り")
         
         if total_combinations <= 8000:
-            logger.info("✅ 組み合わせ数は適切です")
+            logger.info("[OK] 組み合わせ数は適切です")
             return True
         else:
-            logger.warning(f"⚠️ 組み合わせ数が多すぎます: {total_combinations:,}通り")
+            logger.warning(f"[WARNING] 組み合わせ数が多すぎます: {total_combinations:,}通り")
             return False
             
     except Exception as e:
-        logger.error(f"❌ パラメータ確認エラー: {e}")
+        logger.error(f"[ERROR] パラメータ確認エラー: {e}")
         return False
 
 if __name__ == "__main__":
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     success2 = test_vwap_bounce_improvements()
     
     if success1 and success2:
-        logger.info("🎉 すべてのテストが成功しました！")
+        logger.info("[SUCCESS] すべてのテストが成功しました！")
         logger.info("最適化の実行を推奨します:")
         logger.info("python optimize_strategy.py --strategy vwap_bounce --save-results --parallel")
     else:

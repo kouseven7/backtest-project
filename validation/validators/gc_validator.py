@@ -48,9 +48,9 @@ class GCParameterValidator:
                 warnings.append("take_profitはstop_lossより大きい値が推奨されます")
         valid = len(errors) == 0
         validation_summary = (
-            f"❌ エラー{len(errors)}件" if errors else
-            f"⚠️ 警告{len(warnings)}件" if warnings else
-            "✅ 検証完了"
+            f"[ERROR] エラー{len(errors)}件" if errors else
+            f"[WARNING] 警告{len(warnings)}件" if warnings else
+            "[OK] 検証完了"
         )
         return {
             "errors": errors,

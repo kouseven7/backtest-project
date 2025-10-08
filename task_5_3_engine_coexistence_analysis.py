@@ -16,7 +16,7 @@ import ast
 
 def analyze_engine_coexistence():
     """複数エンジンの共存分析実行"""
-    print("🔍 Task 5.3: DSSMS エンジン共存分析開始")
+    print("[SEARCH] Task 5.3: DSSMS エンジン共存分析開始")
     
     analysis_results = {
         "analysis_timestamp": datetime.now().isoformat(),
@@ -63,12 +63,12 @@ def analyze_engine_coexistence():
     analysis_results["integration_problems"] = integration_analysis
     
     # 7. パフォーマンス競合分析
-    print("\n📊 Step 7: パフォーマンス競合分析")
+    print("\n[CHART] Step 7: パフォーマンス競合分析")
     performance_analysis = analyze_performance_conflicts(engine_files)
     analysis_results["performance_conflicts"] = performance_analysis
     
     # 8. 総合分析と結論
-    print("\n📋 Step 8: 総合分析")
+    print("\n[LIST] Step 8: 総合分析")
     summary = generate_summary_analysis(analysis_results)
     analysis_results["summary_findings"] = summary
     
@@ -77,9 +77,9 @@ def analyze_engine_coexistence():
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(analysis_results, f, ensure_ascii=False, indent=2)
     
-    print(f"\n✅ Task 5.3 完了: {output_file}")
-    print(f"🔍 検出エンジン数: {len(engine_files)}")
-    print(f"⚠️ 共存問題: {len(analysis_results['coexistence_issues'])}")
+    print(f"\n[OK] Task 5.3 完了: {output_file}")
+    print(f"[SEARCH] 検出エンジン数: {len(engine_files)}")
+    print(f"[WARNING] 共存問題: {len(analysis_results['coexistence_issues'])}")
     print(f"⚡ 実行時競合: {len(analysis_results['execution_runtime_conflicts'])}")
     print(f"💾 リソース競合: {len(analysis_results['resource_competition'])}")
     
@@ -154,7 +154,7 @@ def analyze_engine_file(file_path: str) -> Optional[Dict[str, Any]]:
         }
         
     except Exception as e:
-        print(f"⚠️ エンジンファイル解析エラー {file_path}: {e}")
+        print(f"[WARNING] エンジンファイル解析エラー {file_path}: {e}")
         return None
 
 def determine_engine_type(file_path: str, content: str) -> str:
@@ -819,7 +819,7 @@ if __name__ == "__main__":
         
         # 結果サマリー表示
         summary = results["summary_findings"]
-        print(f"\n📊 分析サマリー:")
+        print(f"\n[CHART] 分析サマリー:")
         print(f"総エンジン数: {summary['total_engines_detected']}")
         print(f"アクティブ: {summary['active_engines']}, 非アクティブ: {summary['inactive_engines']}")
         print(f"総問題数: {summary['total_issues_detected']}")
@@ -829,11 +829,11 @@ if __name__ == "__main__":
         print(f"切替頻度影響: {summary['impact_on_switch_frequency']['impact_level']}")
         
         if summary["primary_concerns"]:
-            print(f"\n⚠️ 主要懸念事項:")
+            print(f"\n[WARNING] 主要懸念事項:")
             for concern in summary["primary_concerns"]:
                 print(f"  - {concern}")
         
     except Exception as e:
-        print(f"❌ Task 5.3 エラー: {e}")
+        print(f"[ERROR] Task 5.3 エラー: {e}")
         import traceback
         traceback.print_exc()

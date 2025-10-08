@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 def main():
     """メインデモ実行"""
     print("=" * 60)
-    print("🚀 5-2-1「戦略実績に基づくスコア補正機能」システムデモ")
+    print("[ROCKET] 5-2-1「戦略実績に基づくスコア補正機能」システムデモ")
     print("=" * 60)
     
     try:
@@ -44,10 +44,10 @@ def main():
         # システムコンポーネントのテスト
         test_results = {}
         
-        print("\n📊 1. パフォーマンス追跡システムのテスト")
+        print("\n[CHART] 1. パフォーマンス追跡システムのテスト")
         test_results['tracker'] = test_performance_tracker(config)
         
-        print("\n🔧 2. スコア補正エンジンのテスト")
+        print("\n[TOOL] 2. スコア補正エンジンのテスト")
         test_results['corrector'] = test_score_corrector(config)
         
         print("\n⚡ 3. 統合計算器のテスト")
@@ -56,7 +56,7 @@ def main():
         print("\n🔄 4. バッチ処理システムのテスト")
         test_results['batch'] = test_batch_processor(config)
         
-        print("\n📈 5. 統合システムテスト")
+        print("\n[UP] 5. 統合システムテスト")
         test_results['integration'] = test_integrated_system(config)
         
         # 結果サマリー
@@ -64,7 +64,7 @@ def main():
         
     except Exception as e:
         logger.error(f"Demo execution failed: {e}")
-        print(f"❌ デモ実行エラー: {e}")
+        print(f"[ERROR] デモ実行エラー: {e}")
 
 def load_demo_config() -> dict:
     """デモ用設定を読み込み"""
@@ -74,7 +74,7 @@ def load_demo_config() -> dict:
         if config_path.exists():
             with open(config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
-            print(f"✅ 設定ファイル読み込み成功: {config_path}")
+            print(f"[OK] 設定ファイル読み込み成功: {config_path}")
         else:
             # デフォルト設定
             config = {
@@ -97,7 +97,7 @@ def load_demo_config() -> dict:
                     "max_concurrent_updates": 3
                 }
             }
-            print("⚠️ デフォルト設定を使用")
+            print("[WARNING] デフォルト設定を使用")
         
         return config
         
@@ -130,20 +130,20 @@ def test_performance_tracker(config: dict) -> bool:
                     actual_performance=actual_performance,
                     market_context={'volatility': 0.2, 'trend': 'upward'}
                 )
-                print(f"    ✅ 記録追加: {record_id}")
+                print(f"    [OK] 記録追加: {record_id}")
         
         # 履歴取得テスト
-        print("  📊 パフォーマンス履歴取得テスト...")
+        print("  [CHART] パフォーマンス履歴取得テスト...")
         for strategy in test_strategies:
             history = tracker.get_performance_history(strategy, days=30)
             stats = tracker.get_strategy_statistics(strategy, days=30)
-            print(f"    📈 {strategy}: {len(history)}件, 平均精度: {stats.get('avg_accuracy', 0):.3f}")
+            print(f"    [UP] {strategy}: {len(history)}件, 平均精度: {stats.get('avg_accuracy', 0):.3f}")
         
-        print("  ✅ パフォーマンス追跡システムテスト完了")
+        print("  [OK] パフォーマンス追跡システムテスト完了")
         return True
         
     except Exception as e:
-        print(f"  ❌ パフォーマンス追跡システムテスト失敗: {e}")
+        print(f"  [ERROR] パフォーマンス追跡システムテスト失敗: {e}")
         return False
 
 def test_score_corrector(config: dict) -> bool:
@@ -151,7 +151,7 @@ def test_score_corrector(config: dict) -> bool:
     try:
         from config.performance_score_correction import PerformanceBasedScoreCorrector
         
-        print("  🔧 PerformanceBasedScoreCorrector初期化中...")
+        print("  [TOOL] PerformanceBasedScoreCorrector初期化中...")
         corrector = PerformanceBasedScoreCorrector(config)
         
         # 補正ファクター計算テスト
@@ -164,7 +164,7 @@ def test_score_corrector(config: dict) -> bool:
         
         for strategy, ticker, score in test_cases:
             result = corrector.calculate_correction_factor(strategy, ticker, score)
-            print(f"    📊 {strategy}/{ticker}: factor={result.correction_factor:.3f}, "
+            print(f"    [CHART] {strategy}/{ticker}: factor={result.correction_factor:.3f}, "
                   f"confidence={result.confidence:.3f}, reason={result.reason}")
         
         # パフォーマンス記録更新テスト
@@ -176,13 +176,13 @@ def test_score_corrector(config: dict) -> bool:
             actual_performance=0.75,
             market_context={'test': True}
         )
-        print(f"    ✅ 記録更新完了: {record_id}")
+        print(f"    [OK] 記録更新完了: {record_id}")
         
-        print("  ✅ スコア補正エンジンテスト完了")
+        print("  [OK] スコア補正エンジンテスト完了")
         return True
         
     except Exception as e:
-        print(f"  ❌ スコア補正エンジンテスト失敗: {e}")
+        print(f"  [ERROR] スコア補正エンジンテスト失敗: {e}")
         return False
 
 def test_enhanced_calculator(config: dict) -> bool:
@@ -209,26 +209,26 @@ def test_enhanced_calculator(config: dict) -> bool:
             )
             
             if corrected_score:
-                print(f"    📈 {strategy}/{ticker}:")
+                print(f"    [UP] {strategy}/{ticker}:")
                 print(f"      基本スコア: {corrected_score.base_score.total_score:.3f}")
                 print(f"      補正スコア: {corrected_score.corrected_total_score:.3f}")
                 print(f"      補正ファクター: {corrected_score.correction_factor:.3f}")
                 print(f"      改善比率: {corrected_score.get_improvement_ratio():.3f}")
             else:
-                print(f"    ⚠️ {strategy}/{ticker}: スコア計算失敗")
+                print(f"    [WARNING] {strategy}/{ticker}: スコア計算失敗")
         
         # パフォーマンス統計取得
-        print("  📊 補正パフォーマンス統計取得...")
+        print("  [CHART] 補正パフォーマンス統計取得...")
         performance = calculator.get_correction_performance()
         print(f"    総計算数: {performance.get('total_calculations', 0)}")
         print(f"    補正適用数: {performance.get('corrections_applied', 0)}")
         print(f"    補正率: {performance.get('correction_rate', 0):.3f}")
         
-        print("  ✅ 統合計算器テスト完了")
+        print("  [OK] 統合計算器テスト完了")
         return True
         
     except Exception as e:
-        print(f"  ❌ 統合計算器テスト失敗: {e}")
+        print(f"  [ERROR] 統合計算器テスト失敗: {e}")
         return False
 
 def test_batch_processor(config: dict) -> bool:
@@ -253,7 +253,7 @@ def test_batch_processor(config: dict) -> bool:
         print(f"    実行時間: {daily_result.get_duration():.2f}秒")
         
         # 週次分析テスト
-        print("  📈 週次分析テスト実行中...")
+        print("  [UP] 週次分析テスト実行中...")
         weekly_result = processor.run_weekly_analysis()
         
         print(f"    分析対象: {weekly_result.total_strategies}")
@@ -261,11 +261,11 @@ def test_batch_processor(config: dict) -> bool:
         for key, value in weekly_result.performance_metrics.items():
             print(f"      {key}: {value:.3f}")
         
-        print("  ✅ バッチ処理システムテスト完了")
+        print("  [OK] バッチ処理システムテスト完了")
         return True
         
     except Exception as e:
-        print(f"  ❌ バッチ処理システムテスト失敗: {e}")
+        print(f"  [ERROR] バッチ処理システムテスト失敗: {e}")
         return False
 
 def test_integrated_system(config: dict) -> bool:
@@ -281,7 +281,7 @@ def test_integrated_system(config: dict) -> bool:
         )
         
         # 全コンポーネントの初期化
-        print("    🔧 全コンポーネント初期化...")
+        print("    [TOOL] 全コンポーネント初期化...")
         tracker = PerformanceTracker(config.get('tracker', {}))
         corrector = PerformanceBasedScoreCorrector(config)
         calculator = EnhancedStrategyScoreCalculator(score_corrector=corrector)
@@ -328,24 +328,24 @@ def test_integrated_system(config: dict) -> bool:
             stats = calculator.get_correction_performance()
             print(f"      システム統計: {len(stats)}項目")
             
-        print("  ✅ 統合システムテスト完了")
+        print("  [OK] 統合システムテスト完了")
         return True
         
     except Exception as e:
-        print(f"  ❌ 統合システムテスト失敗: {e}")
+        print(f"  [ERROR] 統合システムテスト失敗: {e}")
         return False
 
 def print_test_summary(test_results: dict):
     """テスト結果サマリーを出力"""
     print("\n" + "=" * 60)
-    print("📋 テスト結果サマリー")
+    print("[LIST] テスト結果サマリー")
     print("=" * 60)
     
     total_tests = len(test_results)
     successful_tests = sum(1 for result in test_results.values() if result)
     
     for component, result in test_results.items():
-        status = "✅ 成功" if result else "❌ 失敗"
+        status = "[OK] 成功" if result else "[ERROR] 失敗"
         component_name = {
             'tracker': 'パフォーマンス追跡システム',
             'corrector': 'スコア補正エンジン',
@@ -356,19 +356,19 @@ def print_test_summary(test_results: dict):
         
         print(f"  {status}: {component_name}")
     
-    print(f"\n🎯 総合結果: {successful_tests}/{total_tests} テスト成功")
+    print(f"\n[TARGET] 総合結果: {successful_tests}/{total_tests} テスト成功")
     
     if successful_tests == total_tests:
-        print("🎉 5-2-1「戦略実績に基づくスコア補正機能」システム実装完了！")
+        print("[SUCCESS] 5-2-1「戦略実績に基づくスコア補正機能」システム実装完了！")
         
         # システム機能サマリー
-        print("\n💡 実装された機能:")
-        print("  ✅ 実績ベースのパフォーマンス追跡")
-        print("  ✅ 指数移動平均による補正計算")
-        print("  ✅ 適応的学習による調整")
-        print("  ✅ 統合されたスコア計算器")
-        print("  ✅ バッチ処理による自動更新")
-        print("  ✅ 包括的なレポーティング")
+        print("\n[IDEA] 実装された機能:")
+        print("  [OK] 実績ベースのパフォーマンス追跡")
+        print("  [OK] 指数移動平均による補正計算")
+        print("  [OK] 適応的学習による調整")
+        print("  [OK] 統合されたスコア計算器")
+        print("  [OK] バッチ処理による自動更新")
+        print("  [OK] 包括的なレポーティング")
         
         # 使用方法の案内
         print("\n📖 使用方法:")
@@ -378,7 +378,7 @@ def print_test_summary(test_results: dict):
         print("  4. get_correction_performanceで統計確認")
         
     else:
-        print("⚠️  一部のテストが失敗しました。ログを確認してください。")
+        print("[WARNING]  一部のテストが失敗しました。ログを確認してください。")
     
     print("=" * 60)
 

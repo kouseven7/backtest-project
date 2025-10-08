@@ -315,15 +315,15 @@ def main():
     print(f"成功: {success_count}/{total_tests}")
     
     if success_count == total_tests:
-        print("✅ 全テスト成功 - 2-2-3実装完了")
-        print("\n🎯 2-2-3 実装内容:")
+        print("[OK] 全テスト成功 - 2-2-3実装完了")
+        print("\n[TARGET] 2-2-3 実装内容:")
         print("   • ConfidenceThresholdManager: 信頼度閾値に基づく意思決定")
         print("   • IntegratedDecisionSystem: 市場コンテキスト統合決定")
         print("   • MarketContext: 市場状況分析と意思決定調整")
         print("   • RiskManagement: リスク許容度による動的調整")
         print("   • DecisionHistory: 意思決定履歴と統計分析")
     else:
-        print("⚠️ 一部テスト失敗")
+        print("[WARNING] 一部テスト失敗")
     
     print("=" * 60)
 

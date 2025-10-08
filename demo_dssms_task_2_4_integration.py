@@ -36,7 +36,7 @@ def main():
     緊急修正 + 統合テスト実行メイン関数
     """
     
-    print("🚨 DSSMS Phase 2 Task 2.4: 統合テスト実装")
+    print("[ALERT] DSSMS Phase 2 Task 2.4: 統合テスト実装")
     print("=" * 80)
     print("切替成功率0%問題の緊急修正 + 包括的統合テスト実行")
     print("=" * 80)
@@ -56,23 +56,23 @@ def main():
     }
     
     try:
-        logger.info("🚀 DSSMS Task 2.4 統合テスト実装開始")
+        logger.info("[ROCKET] DSSMS Task 2.4 統合テスト実装開始")
         
         # Phase 1: 緊急診断・修正システム実行
-        print("\n🔍 Phase 1: 緊急診断・修正システム実行")
+        print("\n[SEARCH] Phase 1: 緊急診断・修正システム実行")
         print("-" * 50)
         
         emergency_success = False
         try:
             # 緊急診断システム初期化
-            print("📋 緊急診断システム初期化中...")
+            print("[LIST] 緊急診断システム初期化中...")
             diagnostics = CriticalSwitchDiagnostics()
             
             # 緊急診断実行
-            print("🔍 緊急診断実行中...")
+            print("[SEARCH] 緊急診断実行中...")
             diagnostic_result = diagnostics.run_emergency_diagnosis()
             
-            print(f"✅ 緊急診断完了")
+            print(f"[OK] 緊急診断完了")
             print(f"   検出問題: {len(diagnostic_result.critical_issues)}個")
             print(f"   根本原因: {len(diagnostic_result.root_causes)}個")
             print(f"   現在成功率: {diagnostic_result.success_rate_current:.2%}")
@@ -90,15 +90,15 @@ def main():
                 print(f"   修正後成功率: {post_fix_rate:.2%}")
                 
                 if fix_results.get("target_achieved", False):
-                    print("   ✅ 目標成功率達成!")
+                    print("   [OK] 目標成功率達成!")
                     emergency_success = True
                 else:
-                    print("   ⚠️ 目標成功率未達成")
+                    print("   [WARNING] 目標成功率未達成")
                 
                 execution_summary["final_success_rate"] = post_fix_rate
                 execution_summary["target_achieved"] = fix_results.get("target_achieved", False)
             else:
-                print("   ✅ 既に目標成功率達成済み")
+                print("   [OK] 既に目標成功率達成済み")
                 emergency_success = True
                 execution_summary["final_success_rate"] = diagnostic_result.success_rate_current
                 execution_summary["target_achieved"] = True
@@ -106,35 +106,35 @@ def main():
             # 緊急診断レポート生成
             print("\n📄 緊急診断レポート生成中...")
             emergency_report = diagnostics.generate_emergency_report()
-            print("   ✅ 緊急診断レポート生成完了")
+            print("   [OK] 緊急診断レポート生成完了")
             
             execution_summary["emergency_diagnosis_success"] = emergency_success
             
         except Exception as e:
-            print(f"   ❌ 緊急診断・修正失敗: {e}")
+            print(f"   [ERROR] 緊急診断・修正失敗: {e}")
             logger.error(f"緊急診断・修正エラー: {e}")
             logger.error(traceback.format_exc())
         
         # Phase 2: 統合テスト実行
-        print(f"\n🧪 Phase 2: 統合テスト実行")
+        print(f"\n[TEST] Phase 2: 統合テスト実行")
         print("-" * 50)
         
         integration_success = False
         try:
             # 統合テストフレームワーク初期化
-            print("📋 統合テストフレームワーク初期化中...")
+            print("[LIST] 統合テストフレームワーク初期化中...")
             test_framework = IntegrationTestFramework()
             
             # 包括的統合テスト実行
-            print("🚀 包括的統合テスト実行中...")
+            print("[ROCKET] 包括的統合テスト実行中...")
             test_results = test_framework.run_comprehensive_integration_tests()
             
-            print(f"✅ 統合テスト完了")
+            print(f"[OK] 統合テスト完了")
             print(f"   実行テスト: {test_results['tests_executed']}個")
             print(f"   成功テスト: {test_results['tests_passed']}個")
             print(f"   失敗テスト: {test_results['tests_failed']}個")
             print(f"   実行時間: {test_results['execution_time']:.2f}秒")
-            print(f"   総合成功: {'✅' if test_results['overall_success'] else '❌'}")
+            print(f"   総合成功: {'[OK]' if test_results['overall_success'] else '[ERROR]'}")
             
             if 'final_success_rate' in test_results:
                 print(f"   最終成功率: {test_results['final_success_rate']:.2%}")
@@ -146,7 +146,7 @@ def main():
             # 統合テストレポート生成
             print("\n📄 統合テストレポート生成中...")
             integration_report = test_framework.generate_integration_test_report()
-            print("   ✅ 統合テストレポート生成完了")
+            print("   [OK] 統合テストレポート生成完了")
             
             integration_success = test_results['overall_success']
             execution_summary["integration_test_success"] = integration_success
@@ -155,12 +155,12 @@ def main():
             test_framework.cleanup()
             
         except Exception as e:
-            print(f"   ❌ 統合テスト実行失敗: {e}")
+            print(f"   [ERROR] 統合テスト実行失敗: {e}")
             logger.error(f"統合テストエラー: {e}")
             logger.error(traceback.format_exc())
         
         # Phase 3: 最終評価・レポート
-        print(f"\n📊 Phase 3: 最終評価・レポート")
+        print(f"\n[CHART] Phase 3: 最終評価・レポート")
         print("-" * 50)
         
         # 総合成功判定
@@ -175,12 +175,12 @@ def main():
         execution_summary["total_execution_time"] = (datetime.now() - start_time).total_seconds()
         
         # 最終結果表示
-        print("📋 最終実行結果:")
-        print(f"   緊急診断・修正: {'✅ 成功' if execution_summary['emergency_diagnosis_success'] else '❌ 失敗'}")
-        print(f"   統合テスト実行: {'✅ 成功' if execution_summary['integration_test_success'] else '❌ 失敗'}")
+        print("[LIST] 最終実行結果:")
+        print(f"   緊急診断・修正: {'[OK] 成功' if execution_summary['emergency_diagnosis_success'] else '[ERROR] 失敗'}")
+        print(f"   統合テスト実行: {'[OK] 成功' if execution_summary['integration_test_success'] else '[ERROR] 失敗'}")
         print(f"   最終成功率: {execution_summary['final_success_rate']:.2%}")
-        print(f"   目標達成: {'✅ 達成' if execution_summary['target_achieved'] else '❌ 未達成'}")
-        print(f"   総合判定: {'✅ 成功' if overall_success else '❌ 失敗'}")
+        print(f"   目標達成: {'[OK] 達成' if execution_summary['target_achieved'] else '[ERROR] 未達成'}")
+        print(f"   総合判定: {'[OK] 成功' if overall_success else '[ERROR] 失敗'}")
         print(f"   総実行時間: {execution_summary['total_execution_time']:.2f}秒")
         
         # 実行サマリー保存
@@ -191,13 +191,13 @@ def main():
         
         # 成功時の追加情報
         if overall_success:
-            print("\n🎉 DSSMS Phase 2 Task 2.4 統合テスト実装 完全成功!")
+            print("\n[SUCCESS] DSSMS Phase 2 Task 2.4 統合テスト実装 完全成功!")
             print("   - 切替成功率0%問題の修正完了")
             print("   - 目標成功率30%以上の達成")
             print("   - 包括的統合テストの全項目合格")
             print("   - システム統合・安定化の確認")
         else:
-            print("\n⚠️ DSSMS Phase 2 Task 2.4 統合テスト実装 部分成功")
+            print("\n[WARNING] DSSMS Phase 2 Task 2.4 統合テスト実装 部分成功")
             print("   一部の項目で問題が残存しています。")
             print("   生成されたレポートを確認して追加対応を検討してください。")
         
@@ -205,7 +205,7 @@ def main():
         return overall_success
         
     except Exception as e:
-        print(f"\n❌ DSSMS Task 2.4 統合テスト実装 致命的エラー: {e}")
+        print(f"\n[ERROR] DSSMS Task 2.4 統合テスト実装 致命的エラー: {e}")
         logger.error(f"Task 2.4 致命的エラー: {e}")
         logger.error(traceback.format_exc())
         
@@ -223,7 +223,7 @@ def main():
         print(f"開始時刻: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"終了時刻: {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"総実行時間: {total_time:.2f}秒")
-        print(f"最終判定: {'✅ 成功' if overall_success else '❌ 失敗/部分成功'}")
+        print(f"最終判定: {'[OK] 成功' if overall_success else '[ERROR] 失敗/部分成功'}")
         print("=" * 80)
 
 
@@ -232,7 +232,7 @@ if __name__ == "__main__":
         success = main()
         sys.exit(0 if success else 1)
     except KeyboardInterrupt:
-        print("\n⚠️ ユーザーによる実行中断")
+        print("\n[WARNING] ユーザーによる実行中断")
         sys.exit(2)
     except Exception as e:
         print(f"\n💥 予期しないエラー: {e}")

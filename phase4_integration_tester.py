@@ -1200,26 +1200,26 @@ def main():
         test_results = tester.run_comprehensive_integration_tests()
         
         # 結果表示
-        print(f"\n📊 Phase 4 統合テスト結果:")
+        print(f"\n[CHART] Phase 4 統合テスト結果:")
         print(f"=" * 40)
         
         final_assessment = test_results.get('final_assessment', {})
-        print(f"🎯 総合評価: {final_assessment.get('overall_status', 'unknown')}")
-        print(f"📈 成功率: {final_assessment.get('overall_success_rate', 0):.1%}")
-        print(f"✅ 合格カテゴリ: {final_assessment.get('passed_categories', 0)}/{final_assessment.get('total_categories_tested', 0)}")
-        print(f"🚀 本番準備度: {'準備完了' if final_assessment.get('ready_for_production', False) else '要改善'}")
+        print(f"[TARGET] 総合評価: {final_assessment.get('overall_status', 'unknown')}")
+        print(f"[UP] 成功率: {final_assessment.get('overall_success_rate', 0):.1%}")
+        print(f"[OK] 合格カテゴリ: {final_assessment.get('passed_categories', 0)}/{final_assessment.get('total_categories_tested', 0)}")
+        print(f"[ROCKET] 本番準備度: {'準備完了' if final_assessment.get('ready_for_production', False) else '要改善'}")
         
         # カテゴリ別結果
-        print(f"\n📋 カテゴリ別テスト結果:")
+        print(f"\n[LIST] カテゴリ別テスト結果:")
         category_assessments = final_assessment.get('category_assessments', {})
         for category, assessment in category_assessments.items():
-            status_icon = "✅" if assessment['passed'] else "❌"
+            status_icon = "[OK]" if assessment['passed'] else "[ERROR]"
             print(f"  {status_icon} {category}: {assessment['status']}")
         
         # 推奨事項
         recommendations = final_assessment.get('recommendations', [])
         if recommendations:
-            print(f"\n💡 推奨事項:")
+            print(f"\n[IDEA] 推奨事項:")
             for i, rec in enumerate(recommendations, 1):
                 print(f"  {i}. {rec}")
         
@@ -1229,10 +1229,10 @@ def main():
         tester.save_test_results(test_results, output_path)
         
         print(f"\n💾 詳細結果保存: {output_path}")
-        print(f"\n🎉 Phase 4 統合テスト完了！")
+        print(f"\n[SUCCESS] Phase 4 統合テスト完了！")
         
     except Exception as e:
-        print(f"❌ Phase 4 統合テストエラー: {e}")
+        print(f"[ERROR] Phase 4 統合テストエラー: {e}")
         import traceback
         traceback.print_exc()
 

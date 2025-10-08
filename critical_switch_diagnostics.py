@@ -76,7 +76,7 @@ class CriticalSwitchDiagnostics:
         self.coordinator_v2_available = False
         self.diagnostics_available = False
         
-        self.logger.info("🚨 緊急切替診断システム初期化開始")
+        self.logger.info("[ALERT] 緊急切替診断システム初期化開始")
         self._initialize_emergency_system()
     
     def _initialize_emergency_system(self):
@@ -88,10 +88,10 @@ class CriticalSwitchDiagnostics:
             # 基本診断環境準備
             self._setup_diagnostic_environment()
             
-            self.logger.info("✅ 緊急システム初期化完了")
+            self.logger.info("[OK] 緊急システム初期化完了")
             
         except Exception as e:
-            self.logger.error(f"❌ 緊急システム初期化失敗: {e}")
+            self.logger.error(f"[ERROR] 緊急システム初期化失敗: {e}")
             self.logger.error(traceback.format_exc())
     
     def _check_existing_components(self):
@@ -101,28 +101,28 @@ class CriticalSwitchDiagnostics:
             try:
                 from src.dssms.dssms_switch_coordinator_v2 import DSSMSSwitchCoordinatorV2
                 self.coordinator_v2_available = True
-                self.logger.info("✅ Switch Coordinator V2利用可能")
+                self.logger.info("[OK] Switch Coordinator V2利用可能")
             except ImportError:
-                self.logger.warning("⚠️ Switch Coordinator V2利用不可")
+                self.logger.warning("[WARNING] Switch Coordinator V2利用不可")
             
             # Switch Diagnostics確認
             try:
                 from src.dssms.switch_diagnostics import SwitchDiagnostics
                 self.diagnostics_available = True
-                self.logger.info("✅ Switch Diagnostics利用可能")
+                self.logger.info("[OK] Switch Diagnostics利用可能")
             except ImportError:
-                self.logger.warning("⚠️ Switch Diagnostics利用不可")
+                self.logger.warning("[WARNING] Switch Diagnostics利用不可")
             
             # 基盤テスト確認
             try:
                 from test_dssms_task_1_4_comprehensive import TestDSSMSTask14Comprehensive
                 self.base_test_available = True
-                self.logger.info("✅ 基盤テストシステム利用可能")
+                self.logger.info("[OK] 基盤テストシステム利用可能")
             except ImportError:
-                self.logger.warning("⚠️ 基盤テストシステム利用不可")
+                self.logger.warning("[WARNING] 基盤テストシステム利用不可")
                 
         except Exception as e:
-            self.logger.error(f"❌ コンポーネント確認失敗: {e}")
+            self.logger.error(f"[ERROR] コンポーネント確認失敗: {e}")
     
     def _setup_diagnostic_environment(self):
         """診断環境準備"""
@@ -144,11 +144,11 @@ class CriticalSwitchDiagnostics:
             self.logger.info(f"📁 診断環境準備完了: {self.diagnostic_dir}")
             
         except Exception as e:
-            self.logger.error(f"❌ 診断環境準備失敗: {e}")
+            self.logger.error(f"[ERROR] 診断環境準備失敗: {e}")
     
     def run_emergency_diagnosis(self) -> EmergencyDiagnosticResult:
         """緊急診断実行"""
-        self.logger.info("🔍 緊急切替診断開始")
+        self.logger.info("[SEARCH] 緊急切替診断開始")
         
         start_time = datetime.now()
         critical_issues = []
@@ -196,11 +196,11 @@ class CriticalSwitchDiagnostics:
             self.diagnostic_results.append(diagnostic_result)
             self._save_diagnostic_result(diagnostic_result)
             
-            self.logger.info(f"✅ 緊急診断完了: {len(critical_issues)}個の重要問題を検出")
+            self.logger.info(f"[OK] 緊急診断完了: {len(critical_issues)}個の重要問題を検出")
             return diagnostic_result
             
         except Exception as e:
-            self.logger.error(f"❌ 緊急診断失敗: {e}")
+            self.logger.error(f"[ERROR] 緊急診断失敗: {e}")
             self.logger.error(traceback.format_exc())
             
             # エラー時のフォールバック結果
@@ -220,7 +220,7 @@ class CriticalSwitchDiagnostics:
         issues = []
         
         try:
-            self.logger.info("🔧 基本コンポーネント診断開始")
+            self.logger.info("[TOOL] 基本コンポーネント診断開始")
             
             # Switch Coordinator V2診断
             if not self.coordinator_v2_available:
@@ -257,11 +257,11 @@ class CriticalSwitchDiagnostics:
                 except Exception as e:
                     issues.append(f"Switch Diagnostics初期化エラー: {str(e)}")
             
-            self.logger.info(f"🔧 基本コンポーネント診断完了: {len(issues)}個の問題")
+            self.logger.info(f"[TOOL] 基本コンポーネント診断完了: {len(issues)}個の問題")
             
         except Exception as e:
             issues.append(f"基本コンポーネント診断エラー: {str(e)}")
-            self.logger.error(f"❌ 基本コンポーネント診断失敗: {e}")
+            self.logger.error(f"[ERROR] 基本コンポーネント診断失敗: {e}")
         
         return issues
     
@@ -304,7 +304,7 @@ class CriticalSwitchDiagnostics:
             
         except Exception as e:
             issues.append(f"切替エンジン診断エラー: {str(e)}")
-            self.logger.error(f"❌ 切替エンジン診断失敗: {e}")
+            self.logger.error(f"[ERROR] 切替エンジン診断失敗: {e}")
         
         return issues
     
@@ -313,7 +313,7 @@ class CriticalSwitchDiagnostics:
         issues = []
         
         try:
-            self.logger.info("📊 データフロー診断開始")
+            self.logger.info("[CHART] データフロー診断開始")
             
             # テストデータ作成確認
             try:
@@ -346,11 +346,11 @@ class CriticalSwitchDiagnostics:
             except Exception as e:
                 issues.append(f"データ処理パイプラインエラー: {str(e)}")
             
-            self.logger.info(f"📊 データフロー診断完了: {len(issues)}個の問題")
+            self.logger.info(f"[CHART] データフロー診断完了: {len(issues)}個の問題")
             
         except Exception as e:
             issues.append(f"データフロー診断エラー: {str(e)}")
-            self.logger.error(f"❌ データフロー診断失敗: {e}")
+            self.logger.error(f"[ERROR] データフロー診断失敗: {e}")
         
         return issues
     
@@ -402,7 +402,7 @@ class CriticalSwitchDiagnostics:
             
         except Exception as e:
             issues.append(f"設定診断エラー: {str(e)}")
-            self.logger.error(f"❌ 設定診断失敗: {e}")
+            self.logger.error(f"[ERROR] 設定診断失敗: {e}")
         
         return issues
     
@@ -411,7 +411,7 @@ class CriticalSwitchDiagnostics:
         root_causes = []
         
         try:
-            self.logger.info("🔍 根本原因分析開始")
+            self.logger.info("[SEARCH] 根本原因分析開始")
             
             # パターンベースの根本原因分析
             if any("初期化" in issue for issue in critical_issues):
@@ -440,11 +440,11 @@ class CriticalSwitchDiagnostics:
             if not root_causes:
                 root_causes.append("システム統合・連携問題")
             
-            self.logger.info(f"🔍 根本原因分析完了: {len(root_causes)}個の根本原因")
+            self.logger.info(f"[SEARCH] 根本原因分析完了: {len(root_causes)}個の根本原因")
             
         except Exception as e:
             root_causes.append(f"根本原因分析エラー: {str(e)}")
-            self.logger.error(f"❌ 根本原因分析失敗: {e}")
+            self.logger.error(f"[ERROR] 根本原因分析失敗: {e}")
         
         return root_causes
     
@@ -498,14 +498,14 @@ class CriticalSwitchDiagnostics:
             
         except Exception as e:
             fixes.append(f"修正提案生成エラー: {str(e)}")
-            self.logger.error(f"❌ 修正提案生成失敗: {e}")
+            self.logger.error(f"[ERROR] 修正提案生成失敗: {e}")
         
         return fixes
     
     def _measure_current_success_rate(self) -> float:
         """現在の成功率測定"""
         try:
-            self.logger.info("📊 成功率測定開始")
+            self.logger.info("[CHART] 成功率測定開始")
             
             if not self.coordinator_v2_available:
                 self.logger.warning("Switch Coordinator V2利用不可のため成功率測定不可")
@@ -535,11 +535,11 @@ class CriticalSwitchDiagnostics:
             success_rate = success_count / test_count
             self.current_success_rate = success_rate
             
-            self.logger.info(f"📊 成功率測定完了: {success_rate:.2%} ({success_count}/{test_count})")
+            self.logger.info(f"[CHART] 成功率測定完了: {success_rate:.2%} ({success_count}/{test_count})")
             return success_rate
             
         except Exception as e:
-            self.logger.error(f"❌ 成功率測定失敗: {e}")
+            self.logger.error(f"[ERROR] 成功率測定失敗: {e}")
             return 0.0
     
     def _create_minimal_test_data(self) -> pd.DataFrame:
@@ -563,7 +563,7 @@ class CriticalSwitchDiagnostics:
             return data
             
         except Exception as e:
-            self.logger.error(f"❌ テストデータ作成失敗: {e}")
+            self.logger.error(f"[ERROR] テストデータ作成失敗: {e}")
             return pd.DataFrame()
     
     def _save_diagnostic_result(self, result: EmergencyDiagnosticResult):
@@ -589,7 +589,7 @@ class CriticalSwitchDiagnostics:
             self.logger.info(f"💾 診断結果保存: {result_file}")
             
         except Exception as e:
-            self.logger.error(f"❌ 診断結果保存失敗: {e}")
+            self.logger.error(f"[ERROR] 診断結果保存失敗: {e}")
     
     def apply_emergency_fixes(self, diagnostic_result: EmergencyDiagnosticResult) -> Dict[str, Any]:
         """緊急修正適用"""
@@ -623,7 +623,7 @@ class CriticalSwitchDiagnostics:
                         
                 except Exception as e:
                     fix_results[fix] = f"適用失敗: {str(e)}"
-                    self.logger.error(f"❌ 修正適用失敗 {fix}: {e}")
+                    self.logger.error(f"[ERROR] 修正適用失敗 {fix}: {e}")
             
             self.emergency_patches_applied.extend(applied_fixes)
             
@@ -640,37 +640,37 @@ class CriticalSwitchDiagnostics:
             
         except Exception as e:
             fix_results["error"] = str(e)
-            self.logger.error(f"❌ 緊急修正適用失敗: {e}")
+            self.logger.error(f"[ERROR] 緊急修正適用失敗: {e}")
         
         return fix_results
     
     def _apply_initialization_fix(self):
         """初期化修正適用"""
-        self.logger.info("🔧 初期化修正適用")
+        self.logger.info("[TOOL] 初期化修正適用")
         # 安全な初期化パターンの適用
         pass
     
     def _apply_configuration_fix(self):
         """設定修正適用"""
-        self.logger.info("🔧 設定修正適用")
+        self.logger.info("[TOOL] 設定修正適用")
         # 設定値の適正化
         pass
     
     def _apply_switch_logic_fix(self):
         """切替ロジック修正適用"""
-        self.logger.info("🔧 切替ロジック修正適用")
+        self.logger.info("[TOOL] 切替ロジック修正適用")
         # 切替決定ロジックの簡素化
         pass
     
     def _apply_data_processing_fix(self):
         """データ処理修正適用"""
-        self.logger.info("🔧 データ処理修正適用")
+        self.logger.info("[TOOL] データ処理修正適用")
         # データ処理の安定化
         pass
     
     def _apply_success_rate_fix(self):
         """成功率修正適用"""
-        self.logger.info("🔧 成功率修正適用")
+        self.logger.info("[TOOL] 成功率修正適用")
         # 成功率計算の修正
         pass
     
@@ -679,14 +679,14 @@ class CriticalSwitchDiagnostics:
         try:
             report_lines = [
                 "=" * 80,
-                "🚨 DSSMS 緊急切替診断レポート",
+                "[ALERT] DSSMS 緊急切替診断レポート",
                 "=" * 80,
                 f"診断実行時刻: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
                 f"現在の成功率: {self.current_success_rate:.2%}",
                 f"目標成功率: {self.target_success_rate:.2%}",
-                f"目標達成状況: {'✅ 達成' if self.current_success_rate >= self.target_success_rate else '❌ 未達成'}",
+                f"目標達成状況: {'[OK] 達成' if self.current_success_rate >= self.target_success_rate else '[ERROR] 未達成'}",
                 "",
-                "📋 診断結果サマリー:",
+                "[LIST] 診断結果サマリー:",
                 f"- 実行した診断: {len(self.diagnostic_results)}回",
                 f"- 適用した緊急修正: {len(self.emergency_patches_applied)}個",
                 ""
@@ -695,7 +695,7 @@ class CriticalSwitchDiagnostics:
             if self.diagnostic_results:
                 latest_result = self.diagnostic_results[-1]
                 report_lines.extend([
-                    "🔍 最新診断結果:",
+                    "[SEARCH] 最新診断結果:",
                     f"- 検出された重要問題: {len(latest_result.critical_issues)}個",
                     f"- 特定された根本原因: {len(latest_result.root_causes)}個", 
                     f"- 推奨修正項目: {len(latest_result.recommended_fixes)}個",
@@ -703,7 +703,7 @@ class CriticalSwitchDiagnostics:
                 ])
                 
                 if latest_result.critical_issues:
-                    report_lines.extend(["🚨 重要問題:"])
+                    report_lines.extend(["[ALERT] 重要問題:"])
                     for i, issue in enumerate(latest_result.critical_issues[:5], 1):
                         report_lines.append(f"  {i}. {issue}")
                     if len(latest_result.critical_issues) > 5:
@@ -734,13 +734,13 @@ class CriticalSwitchDiagnostics:
             return report_content
             
         except Exception as e:
-            self.logger.error(f"❌ レポート生成失敗: {e}")
+            self.logger.error(f"[ERROR] レポート生成失敗: {e}")
             return f"レポート生成エラー: {str(e)}"
 
 
 def run_emergency_diagnosis():
     """緊急診断実行関数"""
-    print("🚨 DSSMS 緊急切替診断開始")
+    print("[ALERT] DSSMS 緊急切替診断開始")
     print("=" * 60)
     
     try:
@@ -748,11 +748,11 @@ def run_emergency_diagnosis():
         diagnostics = CriticalSwitchDiagnostics()
         
         # 緊急診断実行
-        print("🔍 緊急診断実行中...")
+        print("[SEARCH] 緊急診断実行中...")
         result = diagnostics.run_emergency_diagnosis()
         
         # 結果表示
-        print(f"\n📊 診断結果:")
+        print(f"\n[CHART] 診断結果:")
         print(f"現在の成功率: {result.success_rate_current:.2%}")
         print(f"目標成功率: {result.success_rate_target:.2%}")
         print(f"検出問題: {len(result.critical_issues)}個")
@@ -767,19 +767,19 @@ def run_emergency_diagnosis():
             if 'post_fix_success_rate' in fix_results:
                 print(f"修正後成功率: {fix_results['post_fix_success_rate']:.2%}")
                 if fix_results.get('target_achieved', False):
-                    print("✅ 目標成功率達成!")
+                    print("[OK] 目標成功率達成!")
                 else:
-                    print("⚠️ 目標成功率未達成")
+                    print("[WARNING] 目標成功率未達成")
         
         # レポート生成
         print("\n📄 診断レポート生成中...")
         report = diagnostics.generate_emergency_report()
-        print("✅ 緊急診断完了")
+        print("[OK] 緊急診断完了")
         
         return True
         
     except Exception as e:
-        print(f"❌ 緊急診断失敗: {e}")
+        print(f"[ERROR] 緊急診断失敗: {e}")
         return False
 
 

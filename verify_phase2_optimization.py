@@ -22,9 +22,9 @@ def measure_import_time():
     try:
         from src.dssms.symbol_switch_manager_fast import SymbolSwitchManagerFast
         fast_time = (time.perf_counter() - start_fast) * 1000
-        print(f"   ✅ SymbolSwitchManagerFast: {fast_time:.1f}ms")
+        print(f"   [OK] SymbolSwitchManagerFast: {fast_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ SymbolSwitchManagerFast: エラー - {e}")
+        print(f"   [ERROR] SymbolSwitchManagerFast: エラー - {e}")
     
     print()
     
@@ -34,9 +34,9 @@ def measure_import_time():
     try:
         from src.dssms.symbol_switch_manager import SymbolSwitchManager
         orig_time = (time.perf_counter() - start_orig) * 1000
-        print(f"   ⚠️ SymbolSwitchManager: {orig_time:.1f}ms")
+        print(f"   [WARNING] SymbolSwitchManager: {orig_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ SymbolSwitchManager: エラー - {e}")
+        print(f"   [ERROR] SymbolSwitchManager: エラー - {e}")
     
     print()
     
@@ -46,18 +46,18 @@ def measure_import_time():
     try:
         from src.dssms.dssms_integrated_main import DSSMSIntegratedBacktester
         main_time = (time.perf_counter() - start_main) * 1000
-        print(f"   📊 DSSMSIntegratedBacktester: {main_time:.1f}ms")
+        print(f"   [CHART] DSSMSIntegratedBacktester: {main_time:.1f}ms")
         
         # Phase 2の目標: 2763ms → 1.2ms (99.96%改善)
         target_time = 1.2
         if main_time <= target_time:
-            print(f"   ✅ Phase 2目標達成! ({target_time}ms以下)")
+            print(f"   [OK] Phase 2目標達成! ({target_time}ms以下)")
         else:
             improvement_needed = main_time - target_time
-            print(f"   ❌ Phase 2目標未達成: 残り{improvement_needed:.1f}ms短縮必要")
+            print(f"   [ERROR] Phase 2目標未達成: 残り{improvement_needed:.1f}ms短縮必要")
             
     except Exception as e:
-        print(f"   ❌ DSSMSIntegratedBacktester: エラー - {e}")
+        print(f"   [ERROR] DSSMSIntegratedBacktester: エラー - {e}")
     
     print()
     
@@ -68,13 +68,13 @@ def measure_import_time():
 # 直接インポートに変更: lazy_modules
         stats = # lazy_modules除去: get_import_stats()
         if stats:
-            print("   📈 遅延ロード統計:")
+            print("   [UP] 遅延ロード統計:")
             for module, load_time in stats.items():
                 print(f"      {module}: {load_time:.1f}ms")
         else:
-            print("   ⚠️ 遅延ロード未使用")
+            print("   [WARNING] 遅延ロード未使用")
     except Exception as e:
-        print(f"   ❌ lazy_loader統計: エラー - {e}")
+        print(f"   [ERROR] lazy_loader統計: エラー - {e}")
 
 def measure_initialization_time():
     """初期化時間測定"""
@@ -99,21 +99,21 @@ def measure_initialization_time():
         backtester = DSSMSIntegratedBacktester(config)
         init_time = (time.perf_counter() - start_init) * 1000
         
-        print(f"   📊 初期化時間: {init_time:.1f}ms")
+        print(f"   [CHART] 初期化時間: {init_time:.1f}ms")
         
         # どのコンポーネントが使用されているか確認
         switch_manager_type = type(backtester.switch_manager).__name__ if hasattr(backtester, 'switch_manager') and backtester.switch_manager else "None"
-        print(f"   🔍 使用中SymbolSwitchManager: {switch_manager_type}")
+        print(f"   [SEARCH] 使用中SymbolSwitchManager: {switch_manager_type}")
         
         if switch_manager_type == "SymbolSwitchManagerFast":
-            print("   ✅ 軽量版使用中（Phase 2最適化成功）")
+            print("   [OK] 軽量版使用中（Phase 2最適化成功）")
         elif switch_manager_type == "SymbolSwitchManager":
-            print("   ❌ 重い元版使用中（Phase 2最適化未適用）")
+            print("   [ERROR] 重い元版使用中（Phase 2最適化未適用）")
         else:
-            print("   ⚠️ SymbolSwitchManager未初期化")
+            print("   [WARNING] SymbolSwitchManager未初期化")
             
     except Exception as e:
-        print(f"   ❌ 初期化エラー: {e}")
+        print(f"   [ERROR] 初期化エラー: {e}")
 
 def main():
     """メイン実行"""
@@ -122,7 +122,7 @@ def main():
         measure_initialization_time()
         
         print("\n=== Phase 2最適化検証完了 ===")
-        print("\n📋 次のステップ:")
+        print("\n[LIST] 次のステップ:")
         print("1. dssms_integrated_main.pyの軽量版切り替え修正")
         print("2. 残ボトルネック特定（データ取得・戦略実行・Excel出力）")
         print("3. Phase 3最適化計画策定")

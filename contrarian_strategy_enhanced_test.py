@@ -30,22 +30,22 @@ available_contrarian_strategies = {}
 try:
     from strategies.contrarian_strategy import ContrarianStrategy
     available_contrarian_strategies['Contrarian'] = ContrarianStrategy
-    print("✅ ContrarianStrategy Import Completed")
+    print("[OK] ContrarianStrategy Import Completed")
 except Exception as e:
-    print(f"❌ ContrarianStrategy Import Failed: {e}")
+    print(f"[ERROR] ContrarianStrategy Import Failed: {e}")
 
 try:
     from strategies.support_resistance_contrarian_strategy import SupportResistanceContrarianStrategy
     available_contrarian_strategies['SRContrarian'] = SupportResistanceContrarianStrategy
-    print("✅ SupportResistanceContrarianStrategy Import Completed")
+    print("[OK] SupportResistanceContrarianStrategy Import Completed")
 except Exception as e:
-    print(f"❌ SupportResistanceContrarianStrategy Import Failed: {e}")
+    print(f"[ERROR] SupportResistanceContrarianStrategy Import Failed: {e}")
 
 if not available_contrarian_strategies:
-    print("❌ 逆張り戦略がインポートできませんでした")
+    print("[ERROR] 逆張り戦略がインポートできませんでした")
     sys.exit(1)
 
-print(f"📊 利用可能な逆張り戦略数: {len(available_contrarian_strategies)}")
+print(f"[CHART] 利用可能な逆張り戦略数: {len(available_contrarian_strategies)}")
 
 def create_bearish_reversal_data():
     """逆張り戦略に適した弱気相場+反発データを生成"""
@@ -173,7 +173,7 @@ def test_contrarian_strategies():
             
             # 戦略初期化
             strategy = strategy_class(data=test_data, params=params, price_column="Adj Close")
-            print(f"✅ {strategy_name} Strategy Initialized")
+            print(f"[OK] {strategy_name} Strategy Initialized")
             
             # バックテスト実行
             result = strategy.backtest()
@@ -188,17 +188,17 @@ def test_contrarian_strategies():
             if len(entry_dates) > 0:
                 entry_prices = result.loc[entry_dates, 'Adj Close']
                 avg_entry_price = entry_prices.mean()
-                print(f"  📈 Entry Signals: {entry_count}")
-                print(f"  📉 Exit Signals: {exit_count}")
-                print(f"  💰 Avg Entry Price: ${avg_entry_price:.2f}")
+                print(f"  [UP] Entry Signals: {entry_count}")
+                print(f"  [DOWN] Exit Signals: {exit_count}")
+                print(f"  [MONEY] Avg Entry Price: ${avg_entry_price:.2f}")
                 print(f"  📅 Entry Dates: {[d.strftime('%m-%d') for d in entry_dates[:5]]}")  # 最初の5件
             else:
-                print(f"  📈 Entry Signals: {entry_count}")
-                print(f"  📉 Exit Signals: {exit_count}")
-                print("  ⚠️  No entries generated")
+                print(f"  [UP] Entry Signals: {entry_count}")
+                print(f"  [DOWN] Exit Signals: {exit_count}")
+                print("  [WARNING]  No entries generated")
                 
         except Exception as e:
-            print(f"❌ {strategy_name} Strategy Error: {e}")
+            print(f"[ERROR] {strategy_name} Strategy Error: {e}")
             import traceback
             print(traceback.format_exc())
     
@@ -230,7 +230,7 @@ def main():
         results = test_contrarian_strategies()
         
         if results:
-            print(f"\n✅ Test Completed Successfully!")
+            print(f"\n[OK] Test Completed Successfully!")
             print(f"   Tested {len(results)} contrarian strategies")
             
             # 最もアクティブな戦略を特定
@@ -250,11 +250,11 @@ def main():
                 
             return True
         else:
-            print("❌ No strategy results generated")
+            print("[ERROR] No strategy results generated")
             return False
             
     except Exception as e:
-        print(f"❌ Test execution error: {e}")
+        print(f"[ERROR] Test execution error: {e}")
         logger.error(f"Test execution failed: {e}")
         return False
 
@@ -262,7 +262,7 @@ if __name__ == "__main__":
     success = main()
     
     if success:
-        print("\n🎉 SUCCESS - Contrarian Strategy Test Completed!")
+        print("\n[SUCCESS] SUCCESS - Contrarian Strategy Test Completed!")
         logger.info("Contrarian Strategy Test Success")
     else:
         print("\n💥 FAILED - Contrarian Strategy Test Failed")

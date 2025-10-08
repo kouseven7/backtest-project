@@ -15,13 +15,13 @@ try:
     # 統合インスタンス
     _fast_ranking_adapter = HierarchicalRankingSystemAdapter()
     
-    print("✅ FastRankingCore統合成功 - 超高速ランキング処理開始")
+    print("[OK] FastRankingCore統合成功 - 超高速ランキング処理開始")
     
 except ImportError as e:
     # フォールバック: 既存実装使用
     USE_FAST_CORE = False
     _fast_ranking_adapter = None
-    print(f"⚠️ FastRankingCore統合失敗、既存実装使用: {e}")
+    print(f"[WARNING] FastRankingCore統合失敗、既存実装使用: {e}")
 
 
 
@@ -39,7 +39,7 @@ def performance_monitor(operation_name: str):
     finally:
         elapsed = (time.time() - start_time) * 1000
         if elapsed > 100:  # 100ms以上の処理を監視
-            print(f"⚠️ Performance: {operation_name} took {elapsed:.1f}ms")
+            print(f"[WARNING] Performance: {operation_name} took {elapsed:.1f}ms")
 
 
 """

@@ -534,14 +534,14 @@ def main():
     print(f"Success Rate: {passed/len(test_results)*100:.1f}%")
     
     if failed == 0:
-        print("\n🎉 All tests passed! 3-1-3 implementation is ready for use.")
+        print("\n[SUCCESS] All tests passed! 3-1-3 implementation is ready for use.")
         print("\nNext steps:")
         print("  1. Run with real market data")
         print("  2. Customize rule configurations")
         print("  3. Monitor performance metrics")
         print("  4. Integrate with existing backtesting system")
     else:
-        print(f"\n⚠️ {failed} test(s) failed. Please check the error messages above.")
+        print(f"\n[WARNING] {failed} test(s) failed. Please check the error messages above.")
     
     return failed == 0
 

@@ -53,28 +53,28 @@ def test_vwap_bounce_strategy_fix():
                 # index_dataは意図的に渡さない（修正テスト）
             )
             
-            logger.info("✅ VWAPBounceStrategy インスタンス化成功")
+            logger.info("[OK] VWAPBounceStrategy インスタンス化成功")
             
             # backtest()メソッド実行テスト
             result = vwap_bounce_instance.backtest(test_data)
-            logger.info(f"✅ VWAPBounceStrategy backtest実行成功: 結果形状 {result.shape}")
+            logger.info(f"[OK] VWAPBounceStrategy backtest実行成功: 結果形状 {result.shape}")
             
             # バックテスト基本理念遵守確認
             if 'Entry_Signal' in result.columns and 'Exit_Signal' in result.columns:
                 entry_count = (result['Entry_Signal'] == 1).sum()
                 exit_count = (result['Exit_Signal'] == 1).sum()
-                logger.info(f"✅ バックテスト基本理念遵守: Entry={entry_count}, Exit={exit_count}")
+                logger.info(f"[OK] バックテスト基本理念遵守: Entry={entry_count}, Exit={exit_count}")
                 return True, f"Success: Entry={entry_count}, Exit={exit_count}"
             else:
-                logger.error("❌ バックテスト基本理念違反: Entry_Signal/Exit_Signal欠損")
+                logger.error("[ERROR] バックテスト基本理念違反: Entry_Signal/Exit_Signal欠損")
                 return False, "Signal columns missing"
                 
         except Exception as e:
-            logger.error(f"❌ VWAPBounceStrategy テスト失敗: {e}")
+            logger.error(f"[ERROR] VWAPBounceStrategy テスト失敗: {e}")
             return False, str(e)
             
     except Exception as e:
-        logger.error(f"❌ テスト準備段階で失敗: {e}")
+        logger.error(f"[ERROR] テスト準備段階で失敗: {e}")
         return False, f"Setup failed: {e}"
 
 def test_all_strategy_success():
@@ -120,13 +120,13 @@ def test_all_strategy_success():
                 
                 # backtest基本理念確認
                 if hasattr(strategy_instance, 'backtest') and callable(strategy_instance.backtest):
-                    logger.info(f"✅ {strategy_name}: インスタンス化 + backtest()確認成功")
+                    logger.info(f"[OK] {strategy_name}: インスタンス化 + backtest()確認成功")
                     success_count += 1
                 else:
-                    logger.error(f"❌ {strategy_name}: backtest()メソッド不備")
+                    logger.error(f"[ERROR] {strategy_name}: backtest()メソッド不備")
                     
             except Exception as e:
-                logger.error(f"❌ {strategy_name}: インスタンス化失敗 - {e}")
+                logger.error(f"[ERROR] {strategy_name}: インスタンス化失敗 - {e}")
         
         # 成功率計算
         success_rate = (success_count / total_strategies) * 100
@@ -135,14 +135,14 @@ def test_all_strategy_success():
         logger.info(f"成功率: {success_rate:.1f}%")
         
         if success_count == total_strategies:
-            logger.info("🎉 7/7戦略成功（100%）達成！RA_005修正成功")
+            logger.info("[SUCCESS] 7/7戦略成功（100%）達成！RA_005修正成功")
             return True, f"100% success ({success_count}/{total_strategies})"
         else:
-            logger.warning(f"⚠️ 7/7戦略未達成: {success_count}/{total_strategies}")
+            logger.warning(f"[WARNING] 7/7戦略未達成: {success_count}/{total_strategies}")
             return False, f"Partial success ({success_count}/{total_strategies})"
             
     except Exception as e:
-        logger.error(f"❌ 全戦略テスト失敗: {e}")
+        logger.error(f"[ERROR] 全戦略テスト失敗: {e}")
         return False, str(e)
 
 if __name__ == "__main__":
@@ -163,14 +163,14 @@ if __name__ == "__main__":
     # 総合判定
     print("\n" + "=" * 60)
     if success1 and success2:
-        print("🎉 RA_005修正完全成功！")
-        print("✅ VWAPBounceStrategyパラメータミスマッチ解決")
-        print("✅ 7/7戦略（100%）インスタンス化成功達成")
-        print("✅ TODO #12戦略初期化エラー問題完全解決")
+        print("[SUCCESS] RA_005修正完全成功！")
+        print("[OK] VWAPBounceStrategyパラメータミスマッチ解決")
+        print("[OK] 7/7戦略（100%）インスタンス化成功達成")
+        print("[OK] TODO #12戦略初期化エラー問題完全解決")
         print("\n次: RA_006でTODO #11最終再実行により75%+復旧確認")
     else:
-        print("❌ RA_005修正で問題発生")
+        print("[ERROR] RA_005修正で問題発生")
         if not success1:
-            print(f"❌ VWAPBounceStrategy問題: {message1}")
+            print(f"[ERROR] VWAPBounceStrategy問題: {message1}")
         if not success2:
-            print(f"❌ 全戦略問題: {message2}")
+            print(f"[ERROR] 全戦略問題: {message2}")

@@ -21,7 +21,7 @@ class QualityScoreContradictionAnalyzer:
         
     def analyze_score_contradiction(self):
         """品質スコア矛盾の詳細分析"""
-        print("🚨 品質スコア矛盾の原因特定調査")
+        print("[ALERT] 品質スコア矛盾の原因特定調査")
         print("=" * 80)
         
         # 1. Task 4.2とTask 6.1の評価方法比較
@@ -40,7 +40,7 @@ class QualityScoreContradictionAnalyzer:
     
     def _compare_evaluation_methods(self):
         """1. Task 4.2とTask 6.1の評価方法比較"""
-        print("\n🔍 1. 評価方法の比較分析")
+        print("\n[SEARCH] 1. 評価方法の比較分析")
         print("-" * 60)
         
         comparison = {
@@ -70,7 +70,7 @@ class QualityScoreContradictionAnalyzer:
                     'evaluation_criteria': 'calculated_based_on_implementation_quality_and_formula_match'
                 }
                 
-                print(f"📊 Task 4.2評価結果:")
+                print(f"[CHART] Task 4.2評価結果:")
                 print(f"   スコア: {comparison['task42_method']['score']}点")
                 print(f"   実装率: {comparison['task42_method']['implementation_percentage']}%")
                 print(f"   品質率: {comparison['task42_method']['quality_percentage']}%")
@@ -93,7 +93,7 @@ class QualityScoreContradictionAnalyzer:
                     'evaluation_criteria': 'cross_reference_with_task42_results'
                 }
                 
-                print(f"📊 Task 6.1評価結果:")
+                print(f"[CHART] Task 6.1評価結果:")
                 print(f"   報告スコア: {comparison['task61_method']['reported_score']}点")
                 print(f"   Task 4.2参照スコア: {comparison['task61_method']['task42_reference_score']}点")
                 print(f"   評価アプローチ: {comparison['task61_method']['evaluation_approach']}")
@@ -113,12 +113,12 @@ class QualityScoreContradictionAnalyzer:
             self.analysis_results['evaluation_comparison'] = comparison
             
         except Exception as e:
-            print(f"❌ 評価方法比較エラー: {e}")
+            print(f"[ERROR] 評価方法比較エラー: {e}")
             self.analysis_results['evaluation_comparison'] = {'error': str(e)}
     
     def _check_file_modification_history(self):
         """2. ファイルの変更履歴確認"""
-        print("\n🔍 2. ファイル変更履歴の確認")
+        print("\n[SEARCH] 2. ファイル変更履歴の確認")
         print("-" * 60)
         
         modification_history = {}
@@ -162,17 +162,17 @@ class QualityScoreContradictionAnalyzer:
                     'file_exists': False,
                     'error': 'ファイルが存在しません'
                 }
-                print("❌ ファイルが存在しません")
+                print("[ERROR] ファイルが存在しません")
             
             self.analysis_results['modification_history'] = modification_history
             
         except Exception as e:
-            print(f"❌ ファイル履歴確認エラー: {e}")
+            print(f"[ERROR] ファイル履歴確認エラー: {e}")
             self.analysis_results['modification_history'] = {'error': str(e)}
     
     def _analyze_evaluation_criteria_differences(self):
         """3. 評価基準の差異分析"""
-        print("\n🔍 3. 評価基準の差異分析")
+        print("\n[SEARCH] 3. 評価基準の差異分析")
         print("-" * 60)
         
         criteria_analysis = {
@@ -198,7 +198,7 @@ class QualityScoreContradictionAnalyzer:
                     }
                 }
                 
-                print(f"📋 Task 4.2評価基準:")
+                print(f"[LIST] Task 4.2評価基準:")
                 print(f"   評価対象計算: {len(criteria_analysis['task42_criteria']['calculations_evaluated'])}個")
                 print(f"   ファイルサイズ: {criteria_analysis['task42_criteria']['file_analysis']['file_size']:,} bytes")
                 print(f"   発見計算数: {criteria_analysis['task42_criteria']['file_analysis']['calculations_found']}")
@@ -218,7 +218,7 @@ class QualityScoreContradictionAnalyzer:
                     'file_analysis': calc_analysis.get('file_info', {})
                 }
                 
-                print(f"📋 Task 6.1評価基準:")
+                print(f"[LIST] Task 6.1評価基準:")
                 print(f"   実装済み計算: {len(criteria_analysis['task61_criteria']['implemented_calculations'])}個")
                 print(f"   実装完全性: {criteria_analysis['task61_criteria']['implementation_completeness']:.1f}%")
             
@@ -242,19 +242,19 @@ class QualityScoreContradictionAnalyzer:
                         f"評価対象計算の差異: Task 4.2({len(task42_calcs)}個) vs Task 6.1({len(task61_calcs)}個)"
                     )
                 
-                print(f"⚠️ 差異: {len(criteria_analysis['discrepancies'])}件")
+                print(f"[WARNING] 差異: {len(criteria_analysis['discrepancies'])}件")
                 for discrepancy in criteria_analysis['discrepancies']:
                     print(f"   - {discrepancy}")
             
             self.analysis_results['criteria_analysis'] = criteria_analysis
             
         except Exception as e:
-            print(f"❌ 評価基準分析エラー: {e}")
+            print(f"[ERROR] 評価基準分析エラー: {e}")
             self.analysis_results['criteria_analysis'] = {'error': str(e)}
     
     def _identify_contradiction_root_cause(self):
         """4. 矛盾の根本原因特定"""
-        print("\n🔍 4. 矛盾の根本原因特定")
+        print("\n[SEARCH] 4. 矛盾の根本原因特定")
         print("-" * 60)
         
         root_cause = {
@@ -315,17 +315,17 @@ class QualityScoreContradictionAnalyzer:
                     root_cause['most_likely_cause'] = root_cause['identified_causes'][0]
                     root_cause['confidence_level'] = 'medium'
             
-            print(f"🎯 特定された原因: {len(root_cause['identified_causes'])}件")
+            print(f"[TARGET] 特定された原因: {len(root_cause['identified_causes'])}件")
             for i, cause in enumerate(root_cause['identified_causes'], 1):
                 print(f"   {i}. {cause}")
             
-            print(f"🔍 最有力原因: {root_cause['most_likely_cause']}")
-            print(f"📊 信頼度: {root_cause['confidence_level']}")
+            print(f"[SEARCH] 最有力原因: {root_cause['most_likely_cause']}")
+            print(f"[CHART] 信頼度: {root_cause['confidence_level']}")
             
             self.analysis_results['root_cause'] = root_cause
             
         except Exception as e:
-            print(f"❌ 根本原因特定エラー: {e}")
+            print(f"[ERROR] 根本原因特定エラー: {e}")
             self.analysis_results['root_cause'] = {'error': str(e)}
     
     def generate_problem16_corrected_definition(self):
@@ -368,12 +368,12 @@ class QualityScoreContradictionAnalyzer:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(self.analysis_results, f, ensure_ascii=False, indent=2, default=str)
         
-        print(f"\n✅ 矛盾分析結果保存: {output_file}")
+        print(f"\n[OK] 矛盾分析結果保存: {output_file}")
         return output_file
 
 def main():
     """メイン実行"""
-    print("🚨 品質スコア矛盾の原因特定調査")
+    print("[ALERT] 品質スコア矛盾の原因特定調査")
     print("=" * 80)
     
     analyzer = QualityScoreContradictionAnalyzer()
@@ -388,15 +388,15 @@ def main():
     output_file = analyzer.save_results()
     
     print("\n" + "=" * 80)
-    print("📋 矛盾分析完了サマリー")
+    print("[LIST] 矛盾分析完了サマリー")
     print("=" * 80)
-    print(f"🎯 Problem 16修正版: {problem16_corrected['title']}")
-    print(f"⚠️ 重要度: {problem16_corrected['severity']}")
-    print(f"🔍 根本原因: {problem16_corrected['root_cause']}")
-    print(f"📊 信頼度: {problem16_corrected['confidence']}")
-    print(f"📈 スコア矛盾: {problem16_corrected['contradiction_details']['score_gap']}点差")
+    print(f"[TARGET] Problem 16修正版: {problem16_corrected['title']}")
+    print(f"[WARNING] 重要度: {problem16_corrected['severity']}")
+    print(f"[SEARCH] 根本原因: {problem16_corrected['root_cause']}")
+    print(f"[CHART] 信頼度: {problem16_corrected['confidence']}")
+    print(f"[UP] スコア矛盾: {problem16_corrected['contradiction_details']['score_gap']}点差")
     
-    print(f"\n💡 推奨解決策:")
+    print(f"\n[IDEA] 推奨解決策:")
     for i, resolution in enumerate(problem16_corrected['recommended_resolution'], 1):
         print(f"   {i}. {resolution}")
     

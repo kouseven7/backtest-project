@@ -343,9 +343,9 @@ def generate_integration_report(test_results):
     logger.info(f"\nIntegration Quality: {integration_quality}")
     
     if passed_tests == total_tests:
-        logger.info("\n🎉 All integration tests passed! 2-1-3 Normalization System is fully integrated.")
+        logger.info("\n[SUCCESS] All integration tests passed! 2-1-3 Normalization System is fully integrated.")
     else:
-        logger.warning("\n⚠️ Some integration tests failed. Please review and fix issues.")
+        logger.warning("\n[WARNING] Some integration tests failed. Please review and fix issues.")
 
 def main():
     """メイン統合テスト実行"""

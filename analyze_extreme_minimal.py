@@ -86,7 +86,7 @@ def main():
     
     total_time = (time.perf_counter() - total_start) * 1000
     
-    print("\n📊 極限軽量版インポート時間:")
+    print("\n[CHART] 極限軽量版インポート時間:")
     
     measured_total = sum(comp[1] for comp in components)
     
@@ -97,30 +97,30 @@ def main():
         else:
             print(f"   {name}: {time_ms:.1f}ms")
     
-    print(f"\n📊 測定合計: {measured_total:.1f}ms")
-    print(f"📊 実際の総時間: {total_time:.1f}ms")
-    print(f"📊 未測定分: {total_time - measured_total:.1f}ms")
+    print(f"\n[CHART] 測定合計: {measured_total:.1f}ms")
+    print(f"[CHART] 実際の総時間: {total_time:.1f}ms")
+    print(f"[CHART] 未測定分: {total_time - measured_total:.1f}ms")
     
     # 1.2ms目標との比較
     target = 1.2
     remaining = total_time - target
     
-    print(f"\n🎯 極限最適化結果:")
+    print(f"\n[TARGET] 極限最適化結果:")
     print(f"   現在: {total_time:.1f}ms")
     print(f"   目標: {target:.1f}ms")
     print(f"   残り: {remaining:.1f}ms")
     
     if remaining <= 0:
-        print("   ✅ 目標達成！")
+        print("   [OK] 目標達成！")
     elif remaining < 5:
         print("   🔸 ほぼ目標達成")
-        print("   💡 さらなる最適化: クラス定義簡素化、不要処理除去")
+        print("   [IDEA] さらなる最適化: クラス定義簡素化、不要処理除去")
     else:
-        print("   ⚠️ さらなる最適化が必要")
+        print("   [WARNING] さらなる最適化が必要")
         
         # 最重要ボトルネック特定
         max_component = max(components, key=lambda x: x[1])
-        print(f"   🔥 最大ボトルネック: {max_component[0]} ({max_component[1]:.1f}ms)")
+        print(f"   [FIRE] 最大ボトルネック: {max_component[0]} ({max_component[1]:.1f}ms)")
 
 if __name__ == "__main__":
     main()

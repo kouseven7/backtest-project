@@ -13,7 +13,7 @@ def test_deterministic_dssms():
     try:
         from dssms.dssms_backtester import DSSMSBacktester
         
-        print("🧪 同一条件での3回実行テスト...")
+        print("[TEST] 同一条件での3回実行テスト...")
         
         # 短期間でのテスト
         start_date = datetime(2023, 11, 1)
@@ -47,10 +47,10 @@ def test_deterministic_dssms():
                     print(f"     完了: 最終価値={result.get('final_portfolio_value', 0):,.0f}")
                 
             except Exception as e:
-                print(f"     ❌ 実行{run + 1}エラー: {e}")
+                print(f"     [ERROR] 実行{run + 1}エラー: {e}")
         
         if len(results) >= 2:
-            print(f"\n📊 {len(results)}回実行の一貫性チェック:")
+            print(f"\n[CHART] {len(results)}回実行の一貫性チェック:")
             
             # 結果比較
             for i in range(1, len(results)):
@@ -69,25 +69,25 @@ def test_deterministic_dssms():
                         
                         if isinstance(val1, (int, float)) and isinstance(val2, (int, float)):
                             if abs(val1 - val2) < 0.01:  # 許容誤差
-                                print(f"       ✅ 一致 (差異: {abs(val1 - val2):.6f})")
+                                print(f"       [OK] 一致 (差異: {abs(val1 - val2):.6f})")
                             else:
-                                print(f"       ⚠️ 不一致 (差異: {abs(val1 - val2):.6f})")
+                                print(f"       [WARNING] 不一致 (差異: {abs(val1 - val2):.6f})")
                         else:
                             if val1 == val2:
-                                print(f"       ✅ 一致")
+                                print(f"       [OK] 一致")
                             else:
-                                print(f"       ⚠️ 不一致")
+                                print(f"       [WARNING] 不一致")
             
             # パフォーマンス指標の詳細比較
-            print(f"\n📈 パフォーマンス指標詳細:")
+            print(f"\n[UP] パフォーマンス指標詳細:")
             for i, result in enumerate(results):
                 metrics = result.get('performance_metrics', {})
                 print(f"   実行{i+1}: {metrics}")
         else:
-            print("❌ 有効な結果が2つ未満のため比較できません")
+            print("[ERROR] 有効な結果が2つ未満のため比較できません")
     
     except Exception as e:
-        print(f"❌ テスト実行エラー: {e}")
+        print(f"[ERROR] テスト実行エラー: {e}")
         import traceback
         traceback.print_exc()
 
@@ -127,12 +127,12 @@ def test_config_loading():
                     for key, value in execution.items():
                         print(f"     {key}: {value}")
                 
-                print("   ✅ 読み込み成功")
+                print("   [OK] 読み込み成功")
                 
             except Exception as e:
-                print(f"   ❌ 読み込みエラー: {e}")
+                print(f"   [ERROR] 読み込みエラー: {e}")
         else:
-            print("   ❌ ファイルが存在しません")
+            print("   [ERROR] ファイルが存在しません")
 
 if __name__ == "__main__":
     test_config_loading()

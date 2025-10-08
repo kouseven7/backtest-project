@@ -193,12 +193,12 @@ def main():
     print("=" * 60)
     
     if effect:
-        print(f"✅ yfinance最適化完了")
+        print(f"[OK] yfinance最適化完了")
         print(f"   削減時間: {effect['time_saved_ms']:.1f}ms")
         print(f"   改善率: {effect['improvement_rate_pct']:.1f}%")
         print(f"   目標達成率: {effect['achievement_rate_pct']:.1f}%")
     
-    print(f"✅ DSSMS統合テスト結果:")
+    print(f"[OK] DSSMS統合テスト結果:")
     for component, result in integration_results.items():
         if 'error' not in result:
             print(f"   {component}: {result.get('total_time_ms', 0):.1f}ms")
@@ -208,7 +208,7 @@ def main():
     # 遅延インポート統計
     from src.utils.lazy_import_manager import get_total_optimization_effect
     total_effect = get_total_optimization_effect()
-    print(f"\n✅ 遅延インポート総合効果:")
+    print(f"\n[OK] 遅延インポート総合効果:")
     print(f"   合計削減時間: {total_effect['total_saved_time_ms']:.1f}ms")
     print(f"   最適化モジュール数: {total_effect['modules_optimized']}")
     print(f"   目標削減時間: {total_effect['target_reduction_ms']:.1f}ms")

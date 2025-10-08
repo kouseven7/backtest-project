@@ -228,7 +228,7 @@ def test_components_individually():
     total_count = len(results)
     
     for component, success in results.items():
-        status = "✅ 成功" if success else "❌ 失敗"
+        status = "[OK] 成功" if success else "[ERROR] 失敗"
         logger.info(f"{component}: {status}")
     
     logger.info(f"総合結果: {success_count}/{total_count} 成功")
@@ -248,8 +248,8 @@ if __name__ == "__main__":
         success = main()
     
     if success:
-        logger.info("🎉 デモ実行完了 - 全て正常")
+        logger.info("[SUCCESS] デモ実行完了 - 全て正常")
         sys.exit(0)
     else:
-        logger.error("❌ デモ実行失敗")
+        logger.error("[ERROR] デモ実行失敗")
         sys.exit(1)

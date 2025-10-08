@@ -1,9 +1,9 @@
 # 🛠️ DSSMS出力システム問題解決ロードマップ
 **Dynamic Stock Selection Management System - Output Problem Solution Roadmap**
 
-## 📊 Phase 1調査結果サマリー
+## [CHART] Phase 1調査結果サマリー
 
-### 🎯 特定された根本原因
+### [TARGET] 特定された根本原因
 **実行日**: 2025年9月4日  
 **調査完了**: Phase 1.1 (モジュール構造調査) + Phase 1.4.2 (詳細エラー分析)
 
@@ -13,19 +13,19 @@
    - `from output.simple_excel_exporter import save_backtest_results_simple`
    - これが`main.py`実行時の`ModuleNotFoundError`の直接原因
 
-#### 📋 調査で確認された事実
-✅ **正常な部分**:
+#### [LIST] 調査で確認された事実
+[OK] **正常な部分**:
 - `output/`ディレクトリ存在 
 - `output/__init__.py`存在
 - `output/simple_simulation_handler.py`存在
 - `output/dssms_excel_exporter_v2.py`存在
 - Pythonモジュール解決パス正常
 
-❌ **問題の部分**:
+[ERROR] **問題の部分**:
 - `output/simple_excel_exporter.py`**完全に欠損**
 - `save_backtest_results_simple`関数が利用できない
 
-### 📈 影響度分析
+### [UP] 影響度分析
 - **即座の影響**: main.py完全実行不可
 - **波及的影響**: DSSMS統合バックテストシステム停止
 - **解決優先度**: 🔴 最高 (即座修復必要)
@@ -135,7 +135,7 @@ python -c "
 
 ## 📅 実行スケジュール
 
-### 🚨 Phase 2.1: 緊急修復 (今すぐ実行)
+### [ALERT] Phase 2.1: 緊急修復 (今すぐ実行)
 **今日中完了目標**
 - [ ] **Task 2.1.1**: simple_excel_exporter.py作成 (30分)
 - [ ] **Task 2.1.2**: インポート互換性確保 (10分)  
@@ -149,7 +149,7 @@ python -c "
 - [ ] **Task 2.2.3**: データ整合性確保 (30分)
 - [ ] **検証**: Excel・テキスト出力整合性確認
 
-### 🔧 Phase 2.3: 品質最適化 (今週内)
+### [TOOL] Phase 2.3: 品質最適化 (今週内)
 **週内完了目標**  
 - [ ] **Task 2.3.1**: データ収集最適化 (90分)
 - [ ] **Task 2.3.2**: 多形式出力エンジン (120分)
@@ -158,7 +158,7 @@ python -c "
 
 ---
 
-## 🎯 各Phase完了基準
+## [TARGET] 各Phase完了基準
 
 ### Phase 2.1完了基準
 - [ ] main.py正常実行（エラーなし）
@@ -177,7 +177,7 @@ python -c "
 
 ---
 
-## 🔧 Task 2.1.1 詳細実装計画
+## [TOOL] Task 2.1.1 詳細実装計画
 
 ### 実装アプローチ
 1. **既存コード調査**: `dssms_excel_exporter_v2.py`の分析
@@ -273,4 +273,4 @@ def _create_fallback_csv(results: Dict[str, Any], filepath: str):
 
 ---
 
-**🚀 次のアクション**: Task 2.1.1の実行開始 - `simple_excel_exporter.py`の作成から開始します。
+**[ROCKET] 次のアクション**: Task 2.1.1の実行開始 - `simple_excel_exporter.py`の作成から開始します。

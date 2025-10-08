@@ -42,7 +42,7 @@ class ParameterReviewer:
         # 戦略名を正規化
         normalized_strategy_name = self._normalize_strategy_name(strategy_name)
         
-        print(f"\n🔍 {strategy_name}戦略のパラメータレビューを開始します...")
+        print(f"\n[SEARCH] {strategy_name}戦略のパラメータレビューを開始します...")
         if strategy_name != normalized_strategy_name:
             print(f"   ({strategy_name} → {normalized_strategy_name})")
         
@@ -53,11 +53,11 @@ class ParameterReviewer:
         )
         
         if not available_configs:
-            print(f"❌ レビュー待ちの{strategy_name}戦略設定はありません。")
+            print(f"[ERROR] レビュー待ちの{strategy_name}戦略設定はありません。")
             self._show_available_files(normalized_strategy_name)
             return
         
-        print(f"📋 レビュー対象: {len(available_configs)}件")
+        print(f"[LIST] レビュー対象: {len(available_configs)}件")
         
         # 各ファイルをレビュー
         for i, config in enumerate(available_configs, 1):
@@ -80,9 +80,9 @@ class ParameterReviewer:
         if all_configs:
             print(f"\n📂 {strategy_name}戦略の利用可能なファイル:")
             status_emoji = {
-                "approved": "✅",
+                "approved": "[OK]",
                 "pending_review": "⏳", 
-                "rejected": "❌"
+                "rejected": "[ERROR]"
             }
             
             for config in all_configs[:10]:  # 最大10件表示
@@ -92,11 +92,11 @@ class ParameterReviewer:
             if len(all_configs) > 10:
                 print(f"  ... 他 {len(all_configs) - 10}件")
         else:
-            print(f"❌ {strategy_name}戦略のファイルが見つかりません。")
+            print(f"[ERROR] {strategy_name}戦略のファイルが見つかりません。")
     
     def _review_single_config(self, config: Dict) -> Dict:
         """単一設定ファイルのレビュー"""
-        print(f"📊 銘柄: {config.get('ticker', 'N/A')}")
+        print(f"[CHART] 銘柄: {config.get('ticker', 'N/A')}")
         print(f"📅 最適化日: {config.get('optimization_date', 'N/A')}")
         
         # パフォーマンス指標表示
@@ -118,7 +118,7 @@ class ParameterReviewer:
     
     def _display_performance_metrics(self, metrics: Dict):
         """パフォーマンス指標を表示"""
-        print(f"\n📊 パフォーマンス指標:")
+        print(f"\n[CHART] パフォーマンス指標:")
         
         metric_display = {
             'sharpe_ratio': ('シャープレシオ', ''),
@@ -167,7 +167,7 @@ class ParameterReviewer:
         for category, param_names in categories.items():
             category_params = {k: v for k, v in params.items() if k in param_names}
             if category_params:
-                print(f"  📋 {category}:")
+                print(f"  [LIST] {category}:")
                 for k, v in category_params.items():
                     print(f"    {k}: {v}")
     
@@ -176,7 +176,7 @@ class ParameterReviewer:
         if not validation_info:
             return
         
-        print(f"\n🔍 検証結果:")
+        print(f"\n[SEARCH] 検証結果:")
         
         # オーバーフィッティングリスク
         overfitting_risk = validation_info.get('overfitting_risk', 'N/A')
@@ -186,24 +186,24 @@ class ParameterReviewer:
         # パラメータ検証
         param_validation = validation_info.get('parameter_validation')
         if param_validation is not None:
-            validation_emoji = "✅" if param_validation else "❌"
+            validation_emoji = "[OK]" if param_validation else "[ERROR]"
             status_text = "通過" if param_validation else "不合格"
             print(f"  パラメータ検証: {validation_emoji} {status_text}")
     
     def _display_revalidation_result(self, validation_result: Dict):
         """再検証結果を表示"""
-        print(f"\n🔍 パラメータ再検証:")
-        print(f"  結果: {'✅ 合格' if validation_result['valid'] else '❌ 不合格'}")
+        print(f"\n[SEARCH] パラメータ再検証:")
+        print(f"  結果: {'[OK] 合格' if validation_result['valid'] else '[ERROR] 不合格'}")
         
         if validation_result.get('errors'):
-            print(f"  ❌ エラー ({len(validation_result['errors'])}件):")
+            print(f"  [ERROR] エラー ({len(validation_result['errors'])}件):")
             for error in validation_result['errors'][:3]:  # 最大3件表示
                 print(f"    • {error}")
             if len(validation_result['errors']) > 3:
                 print(f"    ... 他 {len(validation_result['errors']) - 3}件")
         
         if validation_result.get('warnings'):
-            print(f"  ⚠️ 警告 ({len(validation_result['warnings'])}件):")
+            print(f"  [WARNING] 警告 ({len(validation_result['warnings'])}件):")
             for warning in validation_result['warnings'][:3]:  # 最大3件表示
                 print(f"    • {warning}")
             if len(validation_result['warnings']) > 3:
@@ -235,7 +235,7 @@ class ParameterReviewer:
                 print("🚪 レビューを終了します。")
                 return {'action': 'quit', 'config': config['filename']}
             else:
-                print("❌ 無効な選択です。a, r, s, d, q のいずれかを入力してください。")
+                print("[ERROR] 無効な選択です。a, r, s, d, q のいずれかを入力してください。")
     
     def _approve_config(self, config: Dict) -> Dict:
         """設定を承認"""
@@ -248,7 +248,7 @@ class ParameterReviewer:
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(config, f, indent=2, ensure_ascii=False)
         
-        print("✅ 承認しました。")
+        print("[OK] 承認しました。")
         return {'action': 'approve', 'config': config['filename']}
     
     def _reject_config(self, config: Dict) -> Dict:
@@ -265,12 +265,12 @@ class ParameterReviewer:
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(config, f, indent=2, ensure_ascii=False)
         
-        print("❌ 却下しました。")
+        print("[ERROR] 却下しました。")
         return {'action': 'reject', 'config': config['filename'], 'reason': reason}
     
     def _show_detailed_info(self, config: Dict):
         """詳細情報を表示"""
-        print(f"\n📋 詳細情報:")
+        print(f"\n[LIST] 詳細情報:")
         print(f"ファイルパス: {config.get('filename', 'N/A')}")
         print(f"作成日時: {config.get('created_at', 'N/A')}")
         
@@ -295,7 +295,7 @@ class ParameterReviewer:
             return
         
         print(f"\n{'='*60}")
-        print(f"📊 レビューセッション完了")
+        print(f"[CHART] レビューセッション完了")
         print(f"{'='*60}")
         
         # 統計
@@ -304,14 +304,14 @@ class ParameterReviewer:
         reject_count = actions.count('reject')
         skip_count = actions.count('skip')
         
-        print(f"✅ 承認: {approve_count}件")
-        print(f"❌ 却下: {reject_count}件") 
+        print(f"[OK] 承認: {approve_count}件")
+        print(f"[ERROR] 却下: {reject_count}件") 
         print(f"⏭️ スキップ: {skip_count}件")
         
         # 却下理由（あれば）
         reject_logs = [log for log in self.review_log if log['action'] == 'reject']
         if reject_logs:
-            print(f"\n❌ 却下理由:")
+            print(f"\n[ERROR] 却下理由:")
             for log in reject_logs:
                 print(f"  • {log['config']}: {log.get('reason', '理由なし')}")
     
@@ -347,7 +347,7 @@ def main():
     # 対話モード
     while True:
         print(f"\n{'='*60}")
-        print(f"📋 パラメータレビューシステム")
+        print(f"[LIST] パラメータレビューシステム")
         print(f"{'='*60}")
         print("1. レビューセッション開始")
         print("2. レビュー履歴表示")
@@ -376,7 +376,7 @@ def main():
             break
             
         else:
-            print("❌ 無効な選択です。1-3の数字を入力してください。")
+            print("[ERROR] 無効な選択です。1-3の数字を入力してください。")
 
 
 if __name__ == "__main__":

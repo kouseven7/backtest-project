@@ -30,7 +30,7 @@ from src.dssms.performance_tracker import PerformanceTracker
 
 def create_comprehensive_test_data():
     """包括的テストデータ作成"""
-    print("📊 包括的テストデータ作成中...")
+    print("[CHART] 包括的テストデータ作成中...")
     
     # バックテスト結果データ
     backtest_results = {
@@ -257,7 +257,7 @@ def create_comprehensive_test_data():
         }
     }
     
-    print(f"✅ テストデータ生成完了:")
+    print(f"[OK] テストデータ生成完了:")
     print(f"  - 日次データ: {len(backtest_results['daily_results'])}件")
     print(f"  - 銘柄切替: {len(backtest_results['switch_history'])}回")
     print(f"  - 戦略統計: {len(backtest_results['strategy_statistics'])}戦略")
@@ -267,7 +267,7 @@ def create_comprehensive_test_data():
 
 def test_excel_exporter_integration(test_data):
     """DSSMSExcelExporter統合テスト"""
-    print(f"\n📈 DSSMSExcelExporter統合テスト開始:")
+    print(f"\n[UP] DSSMSExcelExporter統合テスト開始:")
     
     try:
         # 設定
@@ -289,7 +289,7 @@ def test_excel_exporter_integration(test_data):
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
 # ORIGINAL: 'output/tier3_integration_test/comprehensive_backtest_results.xlsx'
         )
-        print(f"  ✅ バックテスト結果エクスポート: {backtest_export_path}")
+        print(f"  [OK] バックテスト結果エクスポート: {backtest_export_path}")
         
         # 2. パフォーマンス分析エクスポート
         performance_export_path = exporter.export_performance_analysis(
@@ -297,7 +297,7 @@ def test_excel_exporter_integration(test_data):
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
 # ORIGINAL: 'output/tier3_integration_test/performance_analysis.xlsx'
         )
-        print(f"  ✅ パフォーマンス分析エクスポート: {performance_export_path}")
+        print(f"  [OK] パフォーマンス分析エクスポート: {performance_export_path}")
         
         # 3. 銘柄切替分析エクスポート
         switch_export_path = exporter.export_switch_analysis(
@@ -305,7 +305,7 @@ def test_excel_exporter_integration(test_data):
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: 'output/tier3_integration_test/switch_analysis.xlsx'
         )
-        print(f"  ✅ 銘柄切替分析エクスポート: {switch_export_path}")
+        print(f"  [OK] 銘柄切替分析エクスポート: {switch_export_path}")
         
         # 4. 包括的レポートエクスポート
         comprehensive_export_path = exporter.create_comprehensive_report(
@@ -313,11 +313,11 @@ def test_excel_exporter_integration(test_data):
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: 'output/tier3_integration_test/comprehensive_report.xlsx'
         )
-        print(f"  ✅ 包括的レポートエクスポート: {comprehensive_export_path}")
+        print(f"  [OK] 包括的レポートエクスポート: {comprehensive_export_path}")
         
         # 5. 統計確認
         export_stats = exporter.get_export_statistics()
-        print(f"  📊 エクスポート統計:")
+        print(f"  [CHART] エクスポート統計:")
         print(f"    - 総エクスポート数: {export_stats['total_exports']}")
         print(f"    - 総ファイルサイズ: {export_stats['total_file_size_mb']}MB")
         print(f"    - グラフサポート: {'有効' if export_stats['charts_supported'] else '無効'}")
@@ -334,13 +334,13 @@ def test_excel_exporter_integration(test_data):
         }
         
     except Exception as e:
-        print(f"  ❌ エクスポーター統合テストエラー: {e}")
+        print(f"  [ERROR] エクスポーター統合テストエラー: {e}")
         return {'status': 'error', 'error': str(e)}
 
 
 def test_report_generator_integration(test_data):
     """DSSMSReportGenerator統合テスト"""
-    print(f"\n📋 DSSMSReportGenerator統合テスト開始:")
+    print(f"\n[LIST] DSSMSReportGenerator統合テスト開始:")
     
     try:
         # 設定
@@ -365,27 +365,27 @@ def test_report_generator_integration(test_data):
             'output/tier3_integration_test/comprehensive_analysis_report.json'
         )
         
-        print(f"  ✅ 包括的レポート生成完了:")
+        print(f"  [OK] 包括的レポート生成完了:")
         print(f"    - 総合評価: {comprehensive_report['executive_summary']['overall_grade']}")
         print(f"    - 総合スコア: {comprehensive_report['executive_summary']['overall_score']:.3f}")
         print(f"    - 主要成果数: {len(comprehensive_report['executive_summary']['key_achievements'])}")
         print(f"    - 推奨事項数: {len(comprehensive_report['recommendations'])}")
         
         # 2. 主要推奨事項表示
-        print(f"  💡 主要推奨事項:")
+        print(f"  [IDEA] 主要推奨事項:")
         for i, rec in enumerate(comprehensive_report['recommendations'][:3]):
             print(f"    {i+1}. {rec['title']}: {rec['description']}")
         
         # 3. パフォーマンス分析結果
         perf_analysis = comprehensive_report['performance_analysis']
-        print(f"  📊 パフォーマンス分析:")
+        print(f"  [CHART] パフォーマンス分析:")
         print(f"    - 実行パフォーマンス: {perf_analysis['execution_performance']['efficiency']}")
         print(f"    - メモリ効率: {perf_analysis['memory_performance']['efficiency']}")
         print(f"    - システム信頼性: {perf_analysis['reliability_performance']['stability']}")
         
         # 4. 統計確認
         report_stats = generator.get_report_statistics()
-        print(f"  📈 レポート統計:")
+        print(f"  [UP] レポート統計:")
         print(f"    - 総レポート数: {report_stats['total_reports']}")
         print(f"    - 分析深度: {report_stats['analysis_depth']}")
         
@@ -396,7 +396,7 @@ def test_report_generator_integration(test_data):
         }
         
     except Exception as e:
-        print(f"  ❌ レポートジェネレーター統合テストエラー: {e}")
+        print(f"  [ERROR] レポートジェネレーター統合テストエラー: {e}")
         return {'status': 'error', 'error': str(e)}
 
 
@@ -414,7 +414,7 @@ def test_tier2_tier3_integration(test_data):
         exporter = DSSMSExcelExporter({'output_directory': 'output/tier_integration_test'})
         generator = DSSMSReportGenerator({'analysis_depth': 'standard'})
         
-        print(f"  ✅ 全コンポーネント初期化完了")
+        print(f"  [OK] 全コンポーネント初期化完了")
         
         # 1. パフォーマンス追跡 → レポート生成連携
         daily_performance = {
@@ -437,7 +437,7 @@ def test_tier2_tier3_integration(test_data):
         }
         
         integrated_report = generator.generate_comprehensive_report(integration_data)
-        print(f"  ✅ 統合レポート生成完了: 評価 {integrated_report['executive_summary']['overall_grade']}")
+        print(f"  [OK] 統合レポート生成完了: 評価 {integrated_report['executive_summary']['overall_grade']}")
         
         # 2. 統合データエクスポート
         export_path = exporter.export_backtest_results(
@@ -445,7 +445,7 @@ def test_tier2_tier3_integration(test_data):
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: 'output/tier_integration_test/integrated_results.xlsx'
         )
-        print(f"  ✅ 統合データエクスポート完了: {export_path}")
+        print(f"  [OK] 統合データエクスポート完了: {export_path}")
         
         # 3. 切替分析 → エクスポート連携
         switch_stats = switch_manager.get_switch_statistics()
@@ -454,11 +454,11 @@ def test_tier2_tier3_integration(test_data):
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: 'output/tier_integration_test/enhanced_switch_analysis.xlsx'
         )
-        print(f"  ✅ 拡張切替分析エクスポート完了: {switch_export_path}")
+        print(f"  [OK] 拡張切替分析エクスポート完了: {switch_export_path}")
         
         # 4. キャッシュ統計 → レポート統合
         cache_stats = cache_manager.get_cache_statistics()
-        print(f"  📊 キャッシュ統計: ヒット率 {cache_stats['hit_rate']:.1%}, 使用量 {cache_stats['memory_usage_mb']:.1f}MB")
+        print(f"  [CHART] キャッシュ統計: ヒット率 {cache_stats['hit_rate']:.1%}, 使用量 {cache_stats['memory_usage_mb']:.1f}MB")
         
         return {
             'status': 'success',
@@ -472,7 +472,7 @@ def test_tier2_tier3_integration(test_data):
         }
         
     except Exception as e:
-        print(f"  ❌ Tier 2+3 統合テストエラー: {e}")
+        print(f"  [ERROR] Tier 2+3 統合テストエラー: {e}")
         import traceback
         traceback.print_exc()
         return {'status': 'error', 'error': str(e)}
@@ -499,14 +499,14 @@ def main():
         # 総合結果評価
         execution_time = time.time() - start_time
         
-        print(f"\n🎉 Phase 3 Tier 3 統合テスト完了！")
+        print(f"\n[SUCCESS] Phase 3 Tier 3 統合テスト完了！")
         print(f"=" * 60)
         print(f"⏱️  総実行時間: {execution_time:.2f}秒")
-        print(f"📊 テストデータ規模: {test_data['test_metadata']['data_points']}日次データ")
+        print(f"[CHART] テストデータ規模: {test_data['test_metadata']['data_points']}日次データ")
         print(f"🔄 銘柄切替数: {test_data['test_metadata']['switch_count']}回")
-        print(f"📈 戦略数: {test_data['test_metadata']['strategies_tested']}")
+        print(f"[UP] 戦略数: {test_data['test_metadata']['strategies_tested']}")
         
-        print(f"\n✅ コンポーネント結果:")
+        print(f"\n[OK] コンポーネント結果:")
         print(f"  - DSSMSExcelExporter: {'成功' if exporter_result['status'] == 'success' else '失敗'}")
         print(f"  - DSSMSReportGenerator: {'成功' if generator_result['status'] == 'success' else '失敗'}")
         print(f"  - Tier 2+3 統合: {'成功' if integration_result['status'] == 'success' else '失敗'}")
@@ -516,20 +516,20 @@ def main():
         
         if generator_result['status'] == 'success':
             report = generator_result['report']
-            print(f"    📋 レポート評価: {report['executive_summary']['overall_grade']}")
-            print(f"    💡 推奨事項: {len(report['recommendations'])}件")
+            print(f"    [LIST] レポート評価: {report['executive_summary']['overall_grade']}")
+            print(f"    [IDEA] 推奨事項: {len(report['recommendations'])}件")
         
         if integration_result['status'] == 'success':
             print(f"    🔗 統合レポート評価: {integration_result['integrated_report']['executive_summary']['overall_grade']}")
             print(f"    📁 統合エクスポート: {len(integration_result['export_paths'])}ファイル")
         
-        print(f"\n🚀 Phase 3 Tier 3 実装・テスト 完全成功！")
+        print(f"\n[ROCKET] Phase 3 Tier 3 実装・テスト 完全成功！")
         print(f"💪 実装機能: Excel出力、包括レポート、統合分析、Tier間連携")
         
         return True
         
     except Exception as e:
-        print(f"\n❌ 統合テスト実行エラー: {e}")
+        print(f"\n[ERROR] 統合テスト実行エラー: {e}")
         import traceback
         traceback.print_exc()
         return False

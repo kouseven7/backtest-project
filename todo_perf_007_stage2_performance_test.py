@@ -23,9 +23,9 @@ sys.path.append(str(project_root))
 # 統合後Screenerインポート
 try:
     from src.dssms.nikkei225_screener import Nikkei225Screener
-    print("✅ 統合後Nikkei225Screener インポート成功")
+    print("[OK] 統合後Nikkei225Screener インポート成功")
 except ImportError as e:
-    print(f"❌ Screenerインポートエラー: {e}")
+    print(f"[ERROR] Screenerインポートエラー: {e}")
     sys.exit(1)
 
 class ScreenerPerformanceTester:
@@ -48,7 +48,7 @@ class ScreenerPerformanceTester:
     def run_comprehensive_performance_test(self) -> Dict[str, Any]:
         """包括的パフォーマンステスト実行"""
         
-        print("🚀 TODO-PERF-007 Stage 2: 並列処理統合効果テスト開始")
+        print("[ROCKET] TODO-PERF-007 Stage 2: 並列処理統合効果テスト開始")
         print("="*80)
         
         try:
@@ -79,13 +79,13 @@ class ScreenerPerformanceTester:
             return self.test_results
             
         except Exception as e:
-            print(f"❌ テスト実行エラー: {e}")
+            print(f"[ERROR] テスト実行エラー: {e}")
             return {"error": str(e)}
     
     def _test_basic_functionality(self) -> Dict[str, Any]:
         """基本機能テスト"""
         
-        print("🧪 基本機能テスト実行中...")
+        print("[TEST] 基本機能テスト実行中...")
         
         try:
             test_symbols = self.test_symbol_sets["small"]
@@ -106,7 +106,7 @@ class ScreenerPerformanceTester:
             
             success_rate = sum(basic_checks.values()) / len(basic_checks) * 100
             
-            print(f"  ✅ 基本機能テスト完了: {success_rate:.1f}%成功")
+            print(f"  [OK] 基本機能テスト完了: {success_rate:.1f}%成功")
             
             return {
                 "success": success_rate >= 80,
@@ -129,7 +129,7 @@ class ScreenerPerformanceTester:
         
         for size_name, symbols in self.test_symbol_sets.items():
             try:
-                print(f"  🔧 {size_name}テスト ({len(symbols)}銘柄)...")
+                print(f"  [TOOL] {size_name}テスト ({len(symbols)}銘柄)...")
                 
                 start_time = time.perf_counter()
                 filtered_symbols = self.screener.apply_market_cap_filter(symbols)
@@ -145,7 +145,7 @@ class ScreenerPerformanceTester:
                     "filter_rate": round(len(filtered_symbols) / len(symbols) * 100, 1)
                 }
                 
-                print(f"    ✅ {execution_time:.1f}秒 ({symbols_per_second:.1f}銘柄/秒)")
+                print(f"    [OK] {execution_time:.1f}秒 ({symbols_per_second:.1f}銘柄/秒)")
                 
             except Exception as e:
                 scaling_results[size_name] = {"error": str(e)}
@@ -224,7 +224,7 @@ class ScreenerPerformanceTester:
                 }
             }
             
-            print(f"  📊 比較結果: {speedup:.2f}x高速化 ({improvement_percentage:.1f}%改善)")
+            print(f"  [CHART] 比較結果: {speedup:.2f}x高速化 ({improvement_percentage:.1f}%改善)")
             
             return {
                 "success": True,
@@ -238,7 +238,7 @@ class ScreenerPerformanceTester:
     def _analyze_effectiveness(self) -> Dict[str, Any]:
         """効果分析・外挿"""
         
-        print("📈 効果分析・200銘柄スケール外挿中...")
+        print("[UP] 効果分析・200銘柄スケール外挿中...")
         
         try:
             # 実測データから200銘柄への外挿
@@ -283,7 +283,7 @@ class ScreenerPerformanceTester:
                         }
                     }
                     
-                    print(f"  📊 200銘柄推定: {original_estimated_time}秒 → {realistic_200_symbols_time:.1f}秒 ({improvement_percentage:.1f}%改善)")
+                    print(f"  [CHART] 200銘柄推定: {original_estimated_time}秒 → {realistic_200_symbols_time:.1f}秒 ({improvement_percentage:.1f}%改善)")
                     
                     return {"success": True, "effectiveness_data": effectiveness_data}
             
@@ -312,13 +312,13 @@ class ScreenerPerformanceTester:
             
             # 総合評価
             if success_count >= 4 and target_met:
-                overall_status = "✅ 完全成功"
+                overall_status = "[OK] 完全成功"
                 readiness = "実用レベル達成"
             elif success_count >= 3 and achieved_percentage >= 30:
-                overall_status = "⚠️ 部分的成功"
+                overall_status = "[WARNING] 部分的成功"
                 readiness = "改善余地あり・実用可能"
             else:
-                overall_status = "❌ 要改善"
+                overall_status = "[ERROR] 要改善"
                 readiness = "追加最適化必要"
             
             return {
@@ -328,10 +328,10 @@ class ScreenerPerformanceTester:
                     "readiness": readiness
                 },
                 "test_summary": {
-                    "basic_functionality": "✅" if basic_ok else "❌",
-                    "performance_scaling": "✅" if scaling_ok else "❌",
-                    "parallel_comparison": "✅" if comparison_ok else "❌",
-                    "effectiveness_analysis": "✅" if effectiveness_ok else "❌"
+                    "basic_functionality": "[OK]" if basic_ok else "[ERROR]",
+                    "performance_scaling": "[OK]" if scaling_ok else "[ERROR]",
+                    "parallel_comparison": "[OK]" if comparison_ok else "[ERROR]",
+                    "effectiveness_analysis": "[OK]" if effectiveness_ok else "[ERROR]"
                 },
                 "target_achievement": {
                     "target_met": target_met,
@@ -350,7 +350,7 @@ class ScreenerPerformanceTester:
 
 def main():
     """メイン実行"""
-    print("🚀 TODO-PERF-007 Stage 2: 並列処理統合効果テスト")
+    print("[ROCKET] TODO-PERF-007 Stage 2: 並列処理統合効果テスト")
     print("目標: 52.5秒→25-30秒削減確認・40-50%改善達成検証")
     print("="*80)
     
@@ -360,7 +360,7 @@ def main():
         
         if "error" not in results:
             print("\n" + "="*80)
-            print("🎯 Stage 2: 並列処理統合効果テスト完了")
+            print("[TARGET] Stage 2: 並列処理統合効果テスト完了")
             print("="*80)
             
             # 最終評価表示
@@ -376,20 +376,20 @@ def main():
                 print(f"  成功テスト: {assessment['success_tests']}")
                 print(f"  実用性: {assessment['readiness']}")
                 
-                print(f"\n📊 テスト結果サマリー:")
+                print(f"\n[CHART] テスト結果サマリー:")
                 print(f"  基本機能: {test_summary['basic_functionality']}")
                 print(f"  スケーリング: {test_summary['performance_scaling']}")
                 print(f"  並列比較: {test_summary['parallel_comparison']}")
                 print(f"  効果分析: {test_summary['effectiveness_analysis']}")
                 
-                print(f"\n🎯 目標達成状況:")
-                print(f"  目標達成: {'✅ 達成' if target_achievement['target_met'] else '❌ 未達成'}")
+                print(f"\n[TARGET] 目標達成状況:")
+                print(f"  目標達成: {'[OK] 達成' if target_achievement['target_met'] else '[ERROR] 未達成'}")
                 print(f"  達成改善率: {target_achievement['achieved_improvement']}")
                 print(f"  目標改善率: {target_achievement['target_improvement']}")
                 
-                print(f"\n🚀 次ステップ:")
+                print(f"\n[ROCKET] 次ステップ:")
                 print(f"  即座対応: {next_steps['immediate_action']}")
-                print(f"  Stage 3準備: {'✅ 準備完了' if next_steps['stage3_readiness'] else '❌ 要追加最適化'}")
+                print(f"  Stage 3準備: {'[OK] 準備完了' if next_steps['stage3_readiness'] else '[ERROR] 要追加最適化'}")
                 print(f"  最適化優先度: {next_steps['optimization_priority']}")
             
             # 詳細結果保存
@@ -402,7 +402,7 @@ def main():
             
             return results.get("final_assessment", {}).get("target_achievement", {}).get("target_met", False)
         else:
-            print(f"\n❌ テスト失敗: {results.get('error')}")
+            print(f"\n[ERROR] テスト失敗: {results.get('error')}")
             return False
             
     except Exception as e:

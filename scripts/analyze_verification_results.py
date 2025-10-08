@@ -19,45 +19,45 @@ def analyze_verification_results():
         with open(results_file, 'r', encoding='utf-8') as f:
             results = json.load(f)
     except FileNotFoundError:
-        print(f"⚠️ 検証結果ファイルが見つかりません: {results_file}")
+        print(f"[WARNING] 検証結果ファイルが見つかりません: {results_file}")
         return
         
     print("="*70)
-    print("🎯 DSSMS Problem完了状況 総合分析レポート")
+    print("[TARGET] DSSMS Problem完了状況 総合分析レポート")
     print("="*70)
     print(f"📅 分析日時: {datetime.now().strftime('%Y年%m月%d日 %H:%M:%S')}")
-    print(f"📊 検証実行時間: {results['pipeline_start_time']} - {results['pipeline_end_time']}")
+    print(f"[CHART] 検証実行時間: {results['pipeline_start_time']} - {results['pipeline_end_time']}")
     print()
     
     # Stage 1: 静的検証結果分析
-    print("🔍 Stage 1: 静的検証結果")
+    print("[SEARCH] Stage 1: 静的検証結果")
     print("-" * 30)
     
     stage1_results = results['stages']['stage1_static']['results']
     
     for problem, result in stage1_results.items():
-        config_status = "✅ 完了" if result.get('config_updated', False) else "❌ 未完了"
+        config_status = "[OK] 完了" if result.get('config_updated', False) else "[ERROR] 未完了"
         print(f"{problem}: {config_status}")
         
         if problem == "Problem 1":
             details = [
-                f"  - 確率的切替: {'✅' if result.get('enable_probabilistic_updated') else '❌'}",
-                f"  - 閾値緩和: {'✅' if result.get('threshold_updated') else '❌'}",
-                f"  - ノイズ有効化: {'✅' if result.get('noise_enabled') else '❌'}",
-                f"  - 切替上限緩和: {'✅' if result.get('max_switches_updated') else '❌'}"
+                f"  - 確率的切替: {'[OK]' if result.get('enable_probabilistic_updated') else '[ERROR]'}",
+                f"  - 閾値緩和: {'[OK]' if result.get('threshold_updated') else '[ERROR]'}",
+                f"  - ノイズ有効化: {'[OK]' if result.get('noise_enabled') else '[ERROR]'}",
+                f"  - 切替上限緩和: {'[OK]' if result.get('max_switches_updated') else '[ERROR]'}"
             ]
             print("\n".join(details))
         elif problem == "Problem 12":
             details = [
-                f"  - 決定論的モード: {'✅' if result.get('deterministic_maintained') else '❌'}",
-                f"  - ランダムシード: {'✅' if result.get('random_seed_set') else '❌'}",
-                f"  - 再現性有効: {'✅' if result.get('reproducible_enabled') else '❌'}"
+                f"  - 決定論的モード: {'[OK]' if result.get('deterministic_maintained') else '[ERROR]'}",
+                f"  - ランダムシード: {'[OK]' if result.get('random_seed_set') else '[ERROR]'}",
+                f"  - 再現性有効: {'[OK]' if result.get('reproducible_enabled') else '[ERROR]'}"
             ]
             print("\n".join(details))
         print()
     
     # Stage 2: 軽量バックテスト結果分析
-    print("🚀 Stage 2: 軽量バックテスト結果")
+    print("[ROCKET] Stage 2: 軽量バックテスト結果")
     print("-" * 30)
     
     stage2_results = results['stages']['stage2_lightweight']['results']
@@ -66,32 +66,32 @@ def analyze_verification_results():
     switching_count = switching.get('switching_count', 0)
     functional = switching.get('functional', False)
     
-    print(f"切替メカニズム動作: {'✅ 正常' if functional else '❌ 異常'}")
+    print(f"切替メカニズム動作: {'[OK] 正常' if functional else '[ERROR] 異常'}")
     print(f"実際の切替数: {switching_count}回")
-    print(f"期待レンジ内: {'✅ Yes' if switching.get('within_expected_range') else '❌ No'}")
-    print(f"改善確認: {'✅ Yes' if switching.get('improvement_confirmed') else '❌ No'}")
+    print(f"期待レンジ内: {'[OK] Yes' if switching.get('within_expected_range') else '[ERROR] No'}")
+    print(f"改善確認: {'[OK] Yes' if switching.get('improvement_confirmed') else '[ERROR] No'}")
     print()
     
     repro = stage2_results.get('deterministic_reproducibility', {})
     repro_ok = repro.get('reproducible', False)
     diff_percent = repro.get('difference_percent', 100.0)
     
-    print(f"決定論的再現性: {'✅ 良好' if repro_ok else '❌ 要改善'}")
+    print(f"決定論的再現性: {'[OK] 良好' if repro_ok else '[ERROR] 要改善'}")
     print(f"実行間差異: ±{diff_percent:.1f}%")
     print()
     
     # 実際のバックテスト結果（先ほどの実行）との比較
-    print("📊 実際のDSSMSバックテスト結果との比較")
+    print("[CHART] 実際のDSSMSバックテスト結果との比較")
     print("-" * 30)
     print("実際のフルバックテスト（Stage 3相当）:")
     print("  - 切替判定回数: 359回（毎日実行確認）")
     print("  - ISM統合判定: should_switch=True（一貫して動作）")
     print("  - 実際の切替実行: 1回（target_symbol=None問題により制限）")
-    print("  - 決定論的再現性: ✅ seed=42で一貫性確認")
+    print("  - 決定論的再現性: [OK] seed=42で一貫性確認")
     print()
     
     # Problem別完了状況判定
-    print("📋 Problem別完了状況最終判定")
+    print("[LIST] Problem別完了状況最終判定")
     print("-" * 30)
     
     problems_status = analyze_problem_completion(stage1_results, stage2_results)
@@ -99,12 +99,12 @@ def analyze_verification_results():
     for problem, status in problems_status.items():
         print(f"{problem}: {status['overall_status']}")
         for step, completed in status['steps'].items():
-            mark = "✅" if completed else "❌"
+            mark = "[OK]" if completed else "[ERROR]"
             print(f"  - {step}: {mark}")
         print()
     
     # 推奨アクション
-    print("🎯 推奨アクション")
+    print("[TARGET] 推奨アクション")
     print("-" * 30)
     
     recommendations = generate_recommendations(problems_status, switching_count)
@@ -170,7 +170,7 @@ def analyze_problem_completion(stage1_results, stage2_results):
     
     # Problem 6の総合判定
     p6_completed = sum(status['Problem 6']['steps'].values())
-    status['Problem 6']['overall_status'] = f"✅ 完了 ({p6_completed}/5)"
+    status['Problem 6']['overall_status'] = f"[OK] 完了 ({p6_completed}/5)"
     
     return status
 
@@ -214,7 +214,7 @@ def update_roadmap_status(problems_status):
     roadmap_path = Path("docs/dssms/Output problem solving roadmap2.md")
     
     if not roadmap_path.exists():
-        print(f"⚠️ ロードマップファイルが見つかりません: {roadmap_path}")
+        print(f"[WARNING] ロードマップファイルが見つかりません: {roadmap_path}")
         return
         
     try:
@@ -237,7 +237,7 @@ def update_roadmap_status(problems_status):
             
         # Problem 6の実装状況更新
         p6_status = problems_status.get('Problem 6', {})
-        if p6_status.get('overall_status', '').startswith('✅'):
+        if p6_status.get('overall_status', '').startswith('[OK]'):
             # Problem 6が完了している場合のロードマップ更新
             pass
             
@@ -245,10 +245,10 @@ def update_roadmap_status(problems_status):
         with open(roadmap_path, 'w', encoding='utf-8') as f:
             f.write(content)
             
-        print(f"✅ ロードマップ更新完了: {roadmap_path}")
+        print(f"[OK] ロードマップ更新完了: {roadmap_path}")
         
     except Exception as e:
-        print(f"❌ ロードマップ更新エラー: {e}")
+        print(f"[ERROR] ロードマップ更新エラー: {e}")
 
 def main():
     """メイン実行"""
@@ -260,21 +260,21 @@ def main():
         
         # 最終サマリー
         print("\n" + "="*70)
-        print("📊 最終サマリー")
+        print("[CHART] 最終サマリー")
         print("="*70)
         
         completed_count = sum(1 for status in problems_status.values() 
-                            if status['overall_status'].startswith('✅'))
+                            if status['overall_status'].startswith('[OK]'))
         partial_count = sum(1 for status in problems_status.values() 
                           if 'ほぼ完了' in status['overall_status'] or '部分完了' in status['overall_status'])
         total_count = len(problems_status)
         
-        print(f"✅ 完了済み: {completed_count}/{total_count} Problem")
+        print(f"[OK] 完了済み: {completed_count}/{total_count} Problem")
         print(f"🔄 部分完了: {partial_count}/{total_count} Problem")
-        print(f"🎯 完了率: {(completed_count/total_count)*100:.1f}%")
+        print(f"[TARGET] 完了率: {(completed_count/total_count)*100:.1f}%")
         
         if completed_count == total_count:
-            print("\n🎉 全Problem完了！")
+            print("\n[SUCCESS] 全Problem完了！")
         else:
             print(f"\n⏳ 残り{total_count - completed_count}件のProblem完了待ち")
 

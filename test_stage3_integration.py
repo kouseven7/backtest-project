@@ -20,14 +20,14 @@ def test_stage3_integration():
     
     logger = setup_logger("stage3_test", "logs/stage3_integration_test.log")
     
-    print("🚀 Stage 3統合テスト開始")
+    print("[ROCKET] Stage 3統合テスト開始")
     print("=" * 60)
     
     try:
         # Nikkei225Screenerインスタンス作成
-        print("📊 Nikkei225Screener初期化中...")
+        print("[CHART] Nikkei225Screener初期化中...")
         screener = Nikkei225Screener()
-        print("✅ 初期化完了")
+        print("[OK] 初期化完了")
         
         # テスト設定
         available_funds = 1000000  # 100万円
@@ -44,7 +44,7 @@ def test_stage3_integration():
         first_run_time = time.time() - start_time
         
         print(f"⏱️  1回目実行時間: {first_run_time:.2f}秒")
-        print(f"📈 選択銘柄数: {len(symbols_1st)}")
+        print(f"[UP] 選択銘柄数: {len(symbols_1st)}")
         
         # 2回目実行（キャッシュあり）
         print("\n💾 2回目実行 (キャッシュあり)...")
@@ -53,12 +53,12 @@ def test_stage3_integration():
         second_run_time = time.time() - start_time
         
         print(f"⏱️  2回目実行時間: {second_run_time:.2f}秒")
-        print(f"📈 選択銘柄数: {len(symbols_2nd)}")
+        print(f"[UP] 選択銘柄数: {len(symbols_2nd)}")
         
         # キャッシュ効果測定
         if first_run_time > 0:
             cache_speedup = ((first_run_time - second_run_time) / first_run_time) * 100
-            print(f"🚀 キャッシュ高速化効果: {cache_speedup:.1f}%")
+            print(f"[ROCKET] キャッシュ高速化効果: {cache_speedup:.1f}%")
         
         # Stage 3-2: OptimizedAlgorithmEngine統合テスト
         print("\n⚡ Stage 3-2: OptimizedAlgorithmEngine統合テスト")
@@ -68,7 +68,7 @@ def test_stage3_integration():
         if hasattr(screener, 'algorithm_optimizer'):
             stats = screener.algorithm_optimizer.get_optimization_stats()
             print(f"🔢 NumPy操作回数: {stats['numpy_operations']}")
-            print(f"📊 ベクトル化計算数: {stats['vectorized_calculations']}")
+            print(f"[CHART] ベクトル化計算数: {stats['vectorized_calculations']}")
             print(f"⏩ 早期終了回数: {stats['early_terminations']}")
             print(f"⏱️  節約処理時間: {stats['processing_time_saved']:.2f}秒")
         
@@ -82,7 +82,7 @@ def test_stage3_integration():
             print(f"   キャッシュサイズ: {cache_stats.get('cache_size', 0)}")
         
         # パフォーマンス評価
-        print("\n📊 Stage 3統合パフォーマンス評価")
+        print("\n[CHART] Stage 3統合パフォーマンス評価")
         print("-" * 40)
         
         total_time_saved = 0
@@ -94,22 +94,22 @@ def test_stage3_integration():
         
         print(f"⚡ アルゴリズム最適化節約: {total_time_saved:.2f}秒")
         print(f"💾 キャッシュ最適化節約: {cache_time_saved:.2f}秒")
-        print(f"🚀 総最適化効果: {total_optimization:.2f}秒")
+        print(f"[ROCKET] 総最適化効果: {total_optimization:.2f}秒")
         
         baseline_time = first_run_time
         if baseline_time > 0:
             total_reduction_percent = (total_optimization / baseline_time) * 100
-            print(f"📈 総削減率: {total_reduction_percent:.1f}%")
+            print(f"[UP] 総削減率: {total_reduction_percent:.1f}%")
             
             # Stage 3目標達成判定
             if total_reduction_percent >= 85:
-                print("🎉 Stage 3目標達成! (85%以上削減)")
+                print("[SUCCESS] Stage 3目標達成! (85%以上削減)")
             elif total_reduction_percent >= 70:
-                print("✅ Stage 3部分達成 (70%以上削減)")
+                print("[OK] Stage 3部分達成 (70%以上削減)")
             else:
-                print("⚠️  Stage 3目標未達成 (85%削減未満)")
+                print("[WARNING]  Stage 3目標未達成 (85%削減未満)")
         
-        print(f"\n🔍 選択銘柄サンプル:")
+        print(f"\n[SEARCH] 選択銘柄サンプル:")
         for i, symbol in enumerate(symbols_1st[:5]):
             print(f"   {i+1}. {symbol}")
             
@@ -124,7 +124,7 @@ def test_stage3_integration():
         
     except Exception as e:
         logger.error(f"Stage 3統合テスト失敗: {e}")
-        print(f"❌ テスト失敗: {e}")
+        print(f"[ERROR] テスト失敗: {e}")
         return None
 
 def main():
@@ -134,7 +134,7 @@ def main():
     
     if results:
         print("\n" + "=" * 60)
-        print("📊 Stage 3統合テスト結果サマリー")
+        print("[CHART] Stage 3統合テスト結果サマリー")
         print("=" * 60)
         print(f"1回目実行時間: {results['first_run_time']:.2f}秒")
         print(f"2回目実行時間: {results['second_run_time']:.2f}秒")
@@ -146,9 +146,9 @@ def main():
         if results['total_reduction_percent'] >= 85:
             print("🏆 Stage 3統合: 目標達成!")
         else:
-            print("⚠️  Stage 3統合: さらなる最適化が必要")
+            print("[WARNING]  Stage 3統合: さらなる最適化が必要")
     else:
-        print("❌ Stage 3統合テスト失敗")
+        print("[ERROR] Stage 3統合テスト失敗")
 
 if __name__ == "__main__":
     main()

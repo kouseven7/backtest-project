@@ -9,7 +9,7 @@ def debug_switch_logic():
     
     total_days = 30
     
-    print("🔍 切替ロジック詳細調査")
+    print("[SEARCH] 切替ロジック詳細調査")
     print("=" * 40)
     
     switch_days = []
@@ -28,7 +28,7 @@ def debug_switch_logic():
     
     # 修正版ロジック提案
     print("\n" + "=" * 40)
-    print("🔧 修正版ロジックテスト")
+    print("[TOOL] 修正版ロジックテスト")
     
     switch_days_fixed = []
     for day in range(total_days):

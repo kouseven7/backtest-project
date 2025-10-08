@@ -36,20 +36,20 @@ def main():
         )
         
         engine = AdvancedPatternEngineV2()
-        print("✅ パターンエンジン初期化成功")
+        print("[OK] パターンエンジン初期化成功")
         
         # テンプレート一覧の表示
         templates = engine.list_templates()
-        print(f"✅ 初期テンプレート数: {len(templates)}")
+        print(f"[OK] 初期テンプレート数: {len(templates)}")
         
         for template in templates:
             print(f"   - {template.name}: {template.description[:50]}...")
             
     except ImportError as e:
-        print(f"❌ インポートエラー: {e}")
+        print(f"[ERROR] インポートエラー: {e}")
         return
     except Exception as e:
-        print(f"❌ 初期化エラー: {e}")
+        print(f"[ERROR] 初期化エラー: {e}")
         return
     
     # 2. リスク許容度別テンプレート推奨テスト
@@ -58,13 +58,13 @@ def main():
     for risk in [RiskTolerance.CONSERVATIVE, RiskTolerance.BALANCED, RiskTolerance.AGGRESSIVE]:
         try:
             recommended = engine.recommend_template(risk)
-            print(f"✅ {risk.value}: {recommended.name}")
+            print(f"[OK] {risk.value}: {recommended.name}")
             print(f"   配分手法: {recommended.allocation_method}")
             print(f"   最大重み: {recommended.max_individual_weight}")
             print(f"   戦略数: {recommended.min_strategies}-{recommended.max_strategies}")
             
         except Exception as e:
-            print(f"❌ {risk.value}でエラー: {e}")
+            print(f"[ERROR] {risk.value}でエラー: {e}")
     
     # 3. 市場環境判定テスト
     print("\n3. 市場環境判定テスト")
@@ -74,17 +74,17 @@ def main():
     
     try:
         market_env = engine.detect_market_environment(sample_data)
-        print(f"✅ 判定された市場環境: {market_env.value}")
+        print(f"[OK] 判定された市場環境: {market_env.value}")
         
         # 市場環境ベースの推奨
         market_template = engine.recommend_template(
             RiskTolerance.BALANCED, 
             sample_data
         )
-        print(f"✅ 市場環境考慮推奨: {market_template.name}")
+        print(f"[OK] 市場環境考慮推奨: {market_template.name}")
         
     except Exception as e:
-        print(f"❌ 市場環境判定エラー: {e}")
+        print(f"[ERROR] 市場環境判定エラー: {e}")
     
     # 4. カスタムテンプレート作成テスト
     print("\n4. カスタムテンプレート作成テスト")
@@ -104,23 +104,23 @@ def main():
             custom_settings=custom_settings
         )
         
-        print(f"✅ カスタムテンプレート作成: {custom_template.name}")
+        print(f"[OK] カスタムテンプレート作成: {custom_template.name}")
         print(f"   最大重み: {custom_template.max_individual_weight}")
         print(f"   集中度制限: {custom_template.concentration_limit}")
         
     except Exception as e:
-        print(f"❌ カスタムテンプレート作成エラー: {e}")
+        print(f"[ERROR] カスタムテンプレート作成エラー: {e}")
     
     # 5. クイック推奨機能テスト
     print("\n5. クイック推奨機能テスト")
     
     try:
         quick_template = quick_template_recommendation("aggressive", sample_data)
-        print(f"✅ クイック推奨: {quick_template.name}")
+        print(f"[OK] クイック推奨: {quick_template.name}")
         print(f"   カテゴリ: {quick_template.category.value}")
         
     except Exception as e:
-        print(f"❌ クイック推奨エラー: {e}")
+        print(f"[ERROR] クイック推奨エラー: {e}")
     
     # 6. 既存システムとの統合テスト
     print("\n6. 既存システムとの統合テスト")
@@ -147,10 +147,10 @@ def main():
         print(f"   最小個別重み: {balanced_template.min_individual_weight}")
         print(f"   集中度制限: {balanced_template.concentration_limit}")
         
-        print("✅ 統合テスト完了（設定確認のみ）")
+        print("[OK] 統合テスト完了（設定確認のみ）")
         
     except Exception as e:
-        print(f"❌ 統合テストエラー: {e}")
+        print(f"[ERROR] 統合テストエラー: {e}")
     
     # 7. PowerShellコマンド例の表示
     print("\n7. PowerShellでのテスト実行例")
@@ -159,10 +159,10 @@ def main():
     print("# PowerShellでの実行例:")
     print(f"cd '{project_dir}' ; python demo_pattern_template_system.py")
     print("# エラーチェック:")
-    print(f"cd '{project_dir}' ; python -c \"from config.portfolio_weight_pattern_engine_v2 import AdvancedPatternEngineV2; print('✅ インポート成功')\"")
+    print(f"cd '{project_dir}' ; python -c \"from config.portfolio_weight_pattern_engine_v2 import AdvancedPatternEngineV2; print('[OK] インポート成功')\"")
     
     print("\n=== 3-2-3 パターンテンプレートシステム デモ完了 ===")
-    print("✅ 全機能の動作確認が正常に完了しました")
+    print("[OK] 全機能の動作確認が正常に完了しました")
 
 def create_sample_market_data(days: int = 100) -> pd.DataFrame:
     """サンプル市場データの作成"""

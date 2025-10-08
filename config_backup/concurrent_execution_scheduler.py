@@ -849,12 +849,12 @@ if __name__ == "__main__":
             for i in range(1, 6)
         ]
         
-        print(f"\n🎯 Testing concurrent execution with {len(demo_tasks)} tasks")
+        print(f"\n[TARGET] Testing concurrent execution with {len(demo_tasks)} tasks")
         for task in demo_tasks:
             print(f"  - {task.strategy_name}: {task.execution_mode.value} mode, priority {task.priority}")
         
         # スケジューリング計画作成
-        print(f"\n📋 Creating scheduling plan...")
+        print(f"\n[LIST] Creating scheduling plan...")
         plan = scheduler.create_scheduling_plan(demo_tasks)
         
         print(f"Execution Batches: {len(plan.execution_batches)}")
@@ -864,19 +864,19 @@ if __name__ == "__main__":
         if plan.optimization_notes:
             print(f"Optimization Notes:")
             for note in plan.optimization_notes:
-                print(f"  💡 {note}")
+                print(f"  [IDEA] {note}")
         
         # タスク実行
-        print(f"\n🚀 Executing tasks...")
+        print(f"\n[ROCKET] Executing tasks...")
         start_time = time.time()
         results = scheduler.execute_tasks(demo_tasks)
         execution_time = time.time() - start_time
         
-        print(f"\n📊 Execution Results (completed in {execution_time:.2f}s):")
+        print(f"\n[CHART] Execution Results (completed in {execution_time:.2f}s):")
         print("-" * 50)
         
         for task_id, result in results.items():
-            status_emoji = "✅" if result.status == ExecutionStatus.COMPLETED else "❌"
+            status_emoji = "[OK]" if result.status == ExecutionStatus.COMPLETED else "[ERROR]"
             print(f"{status_emoji} {result.strategy_name} ({task_id})")
             print(f"    Status: {result.status.value}")
             print(f"    Execution Time: {result.execution_time:.2f}s")
@@ -887,7 +887,7 @@ if __name__ == "__main__":
         
         # 実行状態統計
         status = scheduler.get_execution_status()
-        print(f"\n📈 Scheduler Statistics:")
+        print(f"\n[UP] Scheduler Statistics:")
         print(f"  Completed Tasks: {status['completed_tasks']}")
         print(f"  Performance Metrics:")
         metrics = status['performance_metrics']
@@ -896,10 +896,10 @@ if __name__ == "__main__":
         print(f"    Total Failed: {metrics['total_tasks_failed']}")
         print(f"    Average Execution Time: {metrics['average_execution_time']:.2f}s")
         
-        print("\n✅ Concurrent Execution Scheduler demo completed successfully!")
+        print("\n[OK] Concurrent Execution Scheduler demo completed successfully!")
         
     except Exception as e:
-        print(f"\n❌ Demo failed: {e}")
+        print(f"\n[ERROR] Demo failed: {e}")
         import traceback
         traceback.print_exc()
         

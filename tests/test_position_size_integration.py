@@ -155,7 +155,7 @@ class TestPositionSizeIntegration(unittest.TestCase):
                 weight_calculated = False
             
         except Exception as e:
-            print(f"    ⚠️ Portfolio weight calculation failed: {e}")
+            print(f"    [WARNING] Portfolio weight calculation failed: {e}")
             weight_calculated = False
         
         # ポジションサイズ計算（重み計算の結果に関係なく実行）
@@ -202,7 +202,7 @@ class TestPositionSizeIntegration(unittest.TestCase):
                       f"{result.total_allocated_percentage:.1%} allocated")
                 
             except Exception as e:
-                print(f"    ❌ {method_name} failed: {e}")
+                print(f"    [ERROR] {method_name} failed: {e}")
                 results[method_name] = None
         
         # 少なくとも1つの手法は成功する必要がある
@@ -317,7 +317,7 @@ class TestPositionSizeIntegration(unittest.TestCase):
                         passed_tests += 1  # 正常処理も成功とみなす
                         print(f"    ✓ {test_name}: Processed successfully")
                 else:
-                    print(f"    ❌ {test_name}: Unexpected result type")
+                    print(f"    [ERROR] {test_name}: Unexpected result type")
                     
             except Exception as e:
                 # 例外が発生した場合も適切な処理
@@ -358,7 +358,7 @@ class TestPositionSizeIntegration(unittest.TestCase):
             print("    ✓ Configuration file loaded and used successfully")
             
         except Exception as e:
-            print(f"    ❌ Configuration loading failed: {e}")
+            print(f"    [ERROR] Configuration loading failed: {e}")
             self.fail(f"Configuration loading should not fail: {e}")
 
     def test_performance_metrics(self):
@@ -537,7 +537,7 @@ class TestPositionSizeAdjusterMethods(unittest.TestCase):
 def run_integration_tests():
     """統合テストの実行"""
     print("=" * 70)
-    print("🧪 Position Size Adjuster - Integration Test Suite")
+    print("[TEST] Position Size Adjuster - Integration Test Suite")
     print("=" * 70)
     print("Author: imega")
     print("Created: 2025-07-20")
@@ -569,7 +569,7 @@ def run_integration_tests():
     
     # 結果サマリー
     print("\n" + "=" * 70)
-    print("📊 Integration Test Results Summary")
+    print("[CHART] Integration Test Results Summary")
     print("=" * 70)
     print(f"Total Tests Run: {result.testsRun}")
     print(f"Failures: {len(result.failures)}")
@@ -577,20 +577,20 @@ def run_integration_tests():
     print(f"Success Rate: {((result.testsRun - len(result.failures) - len(result.errors)) / result.testsRun * 100):.1f}%")
     
     if result.failures:
-        print(f"\n❌ Failed Tests:")
+        print(f"\n[ERROR] Failed Tests:")
         for test, traceback in result.failures:
             print(f"  - {test}: {traceback.split('AssertionError:')[-1].strip()}")
     
     if result.errors:
-        print(f"\n⚠️ Error Tests:")
+        print(f"\n[WARNING] Error Tests:")
         for test, traceback in result.errors:
             print(f"  - {test}: {traceback.split('Exception:')[-1].strip()}")
     
     if not result.failures and not result.errors:
-        print(f"\n🎉 All integration tests passed successfully!")
+        print(f"\n[SUCCESS] All integration tests passed successfully!")
         print("Position Size Adjuster system is ready for production deployment.")
     else:
-        print(f"\n⚠️ Some tests failed. Please review the issues before deployment.")
+        print(f"\n[WARNING] Some tests failed. Please review the issues before deployment.")
     
     return result.wasSuccessful()
 

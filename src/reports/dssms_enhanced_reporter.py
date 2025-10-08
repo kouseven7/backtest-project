@@ -752,7 +752,7 @@ class DSSMSEnhancedReporter:
 
         <!-- 戦略分析セクション -->
         <div class="section">
-            <h2>📊 戦略別パフォーマンス分析</h2>
+            <h2>[CHART] 戦略別パフォーマンス分析</h2>
             {strategy_section}
         </div>
 
@@ -865,7 +865,7 @@ class DSSMSEnhancedReporter:
             
             cards += f"""
             <div class="strategy-card">
-                <h4>🎯 {strategy.strategy_name} (ランク #{strategy.performance_ranking})</h4>
+                <h4>[TARGET] {strategy.strategy_name} (ランク #{strategy.performance_ranking})</h4>
                 <div class="big-number {performance_class}">{strategy.total_return:.2f}%</div>
                 <table>
                     <tr><td>勝率</td><td>{strategy.win_rate:.1f}%</td></tr>
@@ -892,7 +892,7 @@ class DSSMSEnhancedReporter:
         
         return f"""
         <div class="portfolio-status {status_class}">
-            <h3>📈 現在のポートフォリオ状態: {portfolio_diagnostic.health_status}</h3>
+            <h3>[UP] 現在のポートフォリオ状態: {portfolio_diagnostic.health_status}</h3>
             
             <table>
                 <tr><td>現在価値</td><td>¥{portfolio_diagnostic.current_value:,.0f}</td></tr>
@@ -905,7 +905,7 @@ class DSSMSEnhancedReporter:
             </table>
             
             <div class="highlight">
-                <strong>⚠️ 検出された異常:</strong><br>{anomalies_html}
+                <strong>[WARNING] 検出された異常:</strong><br>{anomalies_html}
             </div>
         </div>
         """
@@ -928,7 +928,7 @@ class DSSMSEnhancedReporter:
             <tr><td>失敗した切り替え</td><td>{performance_metrics.failed_switches}回</td></tr>
         </table>
         
-        <h4>📊 戦略分布</h4>
+        <h4>[CHART] 戦略分布</h4>
         <table>
             <thead><tr><th>戦略</th><th>使用率</th></tr></thead>
             <tbody>{strategy_dist_html}</tbody>

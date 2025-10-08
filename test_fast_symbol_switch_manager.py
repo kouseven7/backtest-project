@@ -11,7 +11,7 @@ def test_fast_version():
     start_time = time.time()
     from src.dssms.symbol_switch_manager_fast import SymbolSwitchManagerFast
     import_time = (time.time() - start_time) * 1000
-    print(f"✅ 高速版インポート: {import_time:.1f}ms")
+    print(f"[OK] 高速版インポート: {import_time:.1f}ms")
     
     # 動作テスト
     config = {
@@ -27,7 +27,7 @@ def test_fast_version():
     
     # 基本動作確認
     evaluation = ssm.evaluate_symbol_switch(None, '7203', None)
-    print(f"✅ 評価結果: {evaluation['should_switch']} ({evaluation['reason']})")
+    print(f"[OK] 評価結果: {evaluation['should_switch']} ({evaluation['reason']})")
     
     return import_time
 
@@ -38,7 +38,7 @@ def test_original_version():
     start_time = time.time()
     from src.dssms.symbol_switch_manager import SymbolSwitchManager
     import_time = (time.time() - start_time) * 1000
-    print(f"✅ 元版インポート: {import_time:.1f}ms")
+    print(f"[OK] 元版インポート: {import_time:.1f}ms")
     
     return import_time
 
@@ -54,4 +54,4 @@ if __name__ == "__main__":
     print(f"改善: {original_time - fast_time:.1f}ms ({original_time/fast_time:.1f}x高速化)")
     
     if fast_time < 100:
-        print("🎉 高速版が100ms未満を達成！")
+        print("[SUCCESS] 高速版が100ms未満を達成！")

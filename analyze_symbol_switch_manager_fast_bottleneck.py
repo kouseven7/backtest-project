@@ -42,7 +42,7 @@ def measure_import_step_by_step():
         print(f"   ファイル読み込み: {file_read_time:.1f}ms")
         print(f"   ファイルサイズ: {len(content)}文字")
     except Exception as e:
-        print(f"   ❌ ファイル読み込みエラー: {e}")
+        print(f"   [ERROR] ファイル読み込みエラー: {e}")
         measurements['file_read'] = 0
     
     # 3. 段階別インポート測定
@@ -89,7 +89,7 @@ def measure_import_step_by_step():
         print(f"   クラス初期化: {init_time:.1f}ms")
         
     except Exception as e:
-        print(f"   ❌ モジュール実行エラー: {e}")
+        print(f"   [ERROR] モジュール実行エラー: {e}")
         measurements['module_execution'] = 0
         measurements['class_access'] = 0
         measurements['class_init'] = 0
@@ -107,7 +107,7 @@ def measure_import_step_by_step():
         measurements['normal_import'] = normal_import_time
         print(f"   通常のfromインポート: {normal_import_time:.1f}ms")
     except Exception as e:
-        print(f"   ❌ 通常インポートエラー: {e}")
+        print(f"   [ERROR] 通常インポートエラー: {e}")
         measurements['normal_import'] = 0
     
     return measurements
@@ -118,7 +118,7 @@ def analyze_bottleneck_causes(measurements):
     
     # 最大時間項目特定
     sorted_items = sorted(measurements.items(), key=lambda x: x[1], reverse=True)
-    print("📊 処理時間ランキング:")
+    print("[CHART] 処理時間ランキング:")
     for i, (item, time_ms) in enumerate(sorted_items[:5]):
         print(f"   {i+1}. {item}: {time_ms:.1f}ms")
     
@@ -126,12 +126,12 @@ def analyze_bottleneck_causes(measurements):
     total_measured = sum(measurements.values())
     main_bottleneck = sorted_items[0] if sorted_items else ('unknown', 0)
     
-    print(f"\n🔍 分析結果:")
+    print(f"\n[SEARCH] 分析結果:")
     print(f"   測定合計時間: {total_measured:.1f}ms")
     print(f"   最大ボトルネック: {main_bottleneck[0]} ({main_bottleneck[1]:.1f}ms)")
     
     # 最適化推奨
-    print(f"\n🎯 最適化推奨:")
+    print(f"\n[TARGET] 最適化推奨:")
     if main_bottleneck[1] > 1000:
         print(f"   🔴 緊急: {main_bottleneck[0]}の大幅削減が必要")
     elif main_bottleneck[1] > 100:
@@ -141,9 +141,9 @@ def analyze_bottleneck_causes(measurements):
     
     # 具体的改善案
     if 'module_execution' in measurements and measurements['module_execution'] > 1000:
-        print(f"   💡 改善案: モジュール実行時の重い処理を遅延化")
+        print(f"   [IDEA] 改善案: モジュール実行時の重い処理を遅延化")
     if 'normal_import' in measurements and measurements['normal_import'] > 1000:
-        print(f"   💡 改善案: インポート依存関係の見直し・軽量化")
+        print(f"   [IDEA] 改善案: インポート依存関係の見直し・軽量化")
     
     return {
         'main_bottleneck': main_bottleneck,
@@ -177,9 +177,9 @@ def generate_optimization_plan(analysis_result):
     
     remaining_reduction = total_time - target_time
     if remaining_reduction > 0:
-        print(f"   📈 必要削減量: {remaining_reduction:.1f}ms (現在比{remaining_reduction/total_time*100:.1f}%削減)")
+        print(f"   [UP] 必要削減量: {remaining_reduction:.1f}ms (現在比{remaining_reduction/total_time*100:.1f}%削減)")
     else:
-        print(f"   ✅ 既に目標達成済み")
+        print(f"   [OK] 既に目標達成済み")
     
     return {
         'phase1_target_reduction': phase1_target if main_time > 1000 else total_time * 0.5,
@@ -201,17 +201,17 @@ def main():
         
         # 結果サマリー
         print("\n=== TODO-PERF-005実装サマリー ===")
-        print(f"🔍 分析完了: {len(measurements)}項目測定")
-        print(f"🎯 主要ボトルネック: {analysis['main_bottleneck'][0]} ({analysis['main_bottleneck'][1]:.1f}ms)")
-        print(f"📊 削減必要量: {plan['total_target_reduction']:.1f}ms")
-        print(f"🚀 実現可能性: {plan['feasibility']}")
+        print(f"[SEARCH] 分析完了: {len(measurements)}項目測定")
+        print(f"[TARGET] 主要ボトルネック: {analysis['main_bottleneck'][0]} ({analysis['main_bottleneck'][1]:.1f}ms)")
+        print(f"[CHART] 削減必要量: {plan['total_target_reduction']:.1f}ms")
+        print(f"[ROCKET] 実現可能性: {plan['feasibility']}")
         
         if plan['feasibility'] == 'high':
-            print("\n✅ TODO-PERF-005は段階的実装で達成可能")
+            print("\n[OK] TODO-PERF-005は段階的実装で達成可能")
         else:
-            print("\n⚠️ TODO-PERF-005は困難 - 追加戦略検討必要")
+            print("\n[WARNING] TODO-PERF-005は困難 - 追加戦略検討必要")
         
-        print("\n📋 次ステップ:")
+        print("\n[LIST] 次ステップ:")
         print("1. Phase 1: 主要ボトルネック最適化実装")
         print("2. 効果測定・検証")
         print("3. Phase 2-3: 残存最適化")

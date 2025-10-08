@@ -1,10 +1,10 @@
 # Excel出力システム調査結果 - 2025年9月28日
 
-## 📊 調査概要
+## [CHART] 調査概要
 
 プロジェクト全体でExcel出力に関係する**76個のファイル**を特定し、依存関係と役割を分析した結果をまとめる。
 
-## 🎯 メイン出力システムファイル
+## [TARGET] メイン出力システムファイル
 
 ### コア出力エンジン（優先度高）
 
@@ -14,7 +14,7 @@
 
 2. **`output/dssms_excel_exporter_## � 重複処理パス競合検証完了 - dssms_excel_exporter_v2.py 深層分析
 
-### 🎯 重要発見: 0%データ生成メカニズムの完全解明
+### [TARGET] 重要発見: 0%データ生成メカニズムの完全解明
 
 #### **A. dssms_excel_exporter_v2.py の0%生成箇所の詳細特定**
 
@@ -173,9 +173,9 @@ if not daily_returns:
 - **0%を「安全値」として扱う設計思想**
 - **データ品質よりもシステム安定性を優先する設計**
 
-## �📊 DSSMS エクスポーター計算ロジック比較検証
+## �[CHART] DSSMS エクスポーター計算ロジック比較検証
 
-### 🔍 重要発見: DSSMSエクスポーター混在による品質不整合の実態
+### [SEARCH] 重要発見: DSSMSエクスポーター混在による品質不整合の実態
 
 #### **混在パターンの特定**
 
@@ -289,7 +289,7 @@ dssms_integrated_main.py:
 - `results.get('total_return_rate', 0)` → 直接0%表示
 - 計算処理なし
 
-## 📊 simple_excel_exporter.py 計算ロジック詳細検証
+## [CHART] simple_excel_exporter.py 計算ロジック詳細検証
 
 ### A. 0%リターン生成の具体的コードパス特定
 
@@ -438,7 +438,7 @@ if 'Entry_Signal' in results.columns and 'Exit_Signal' in results.columns:
    - `dssms_unified_output_engine_fixed_v3.py` - v3修正版
    - `dssms_unified_output_engine_fixed_v4.py` - v4修正版
 
-## 🔧 特化型出力ファイル
+## [TOOL] 特化型出力ファイル
 
 ### DSSMS専用出力
 - **`src/dssms/dssms_backtester.py:2377`** - `export_results_to_excel()` メソッド
@@ -449,7 +449,7 @@ if 'Entry_Signal' in results.columns and 'Exit_Signal' in results.columns:
 - **`output/main_text_reporter.py`** - メインシステムレポート生成
 - **`src/reports/comprehensive/export_manager.py`** - 包括的エクスポート管理
 
-## 📋 テスト・デバッグファイル
+## [LIST] テスト・デバッグファイル
 
 ### テスト関連
 - **`complete_integration_test.py:123`** - `test_excel_export()` 
@@ -474,7 +474,7 @@ if 'Entry_Signal' in results.columns and 'Exit_Signal' in results.columns:
 - **`demo_dssms_excel_output.py`** - DSSMSExcel出力デモ
 - **`examples/demo_simple_excel_output.py`** - シンプルExcel出力デモ
 
-## 📈 出力ディレクトリ構造
+## [UP] 出力ディレクトリ構造
 
 ```
 output/
@@ -489,7 +489,7 @@ output/
 └── quality_assurance/      # 品質保証レポート
 ```
 
-## ⚠️ 廃止・バックアップファイル
+## [WARNING] 廃止・バックアップファイル
 
 ### 廃止ファイル
 - **`deprecated/simple_excel_exporter.py_deprecated`** - 廃止版Excel出力
@@ -499,7 +499,7 @@ output/
 - **`output/simple_excel_exporter.bak`** - simple_excel_exporter バックアップ
 - **`output/dssms_excel_exporter_v2.bak`** - dssms_excel_exporter_v2 バックアップ
 
-## 📊 追加発見ファイル（問題解決関連）
+## [CHART] 追加発見ファイル（問題解決関連）
 
 ### Excel修復関連
 - **`fix_dssms_excel_phase1.py`** - DSSMSExcel修復フェーズ1
@@ -511,9 +511,9 @@ output/
 - **`excel_output_investigation_completion_report_20250914_075540.md`** - Excel出力調査完了レポート
 - **`context_engine_excel_impact_analysis_20250914_075255.json`** - Excel影響分析結果
 
-## 🔍 Excel出力システム呼び出し関係分析
+## [SEARCH] Excel出力システム呼び出し関係分析
 
-## 📊 主要ファイル呼び出し関係図
+## [CHART] 主要ファイル呼び出し関係図
 
 ### A. SimpleExcelExporter系（基本Excel出力）
 
@@ -554,7 +554,7 @@ dssms_integrated_main.py → DSSMSExcelExporter (src版)
 dssms_backtester.py → DSSMSUnifiedOutputEngine
 ```
 
-## ⚠️ 重複・競合問題の特定
+## [WARNING] 重複・競合問題の特定
 
 ### 重複呼び出しパターン
 
@@ -587,7 +587,7 @@ dssms_backtester.py → DSSMSUnifiedOutputEngine
    ```
    **問題**: 異なるエクスポーター使用による出力品質の不整合
 
-## 📈 実際の呼び出し優先度
+## [UP] 実際の呼び出し優先度
 
 ### 高優先度（実際に使用される）
 1. **`main.py` → `simple_simulation_handler` → `simple_excel_exporter`**
@@ -602,7 +602,7 @@ dssms_backtester.py → DSSMSUnifiedOutputEngine
 1. **テストファイル群**
 2. **分析・デバッグスクリプト**
 
-## 🔧 推奨される統合順序
+## [TOOL] 推奨される統合順序
 
 ### Phase 1: メインシステム分析
 1. **`main.py`** - 最上位エントリーポイント分析
@@ -672,7 +672,7 @@ from src.dssms.dssms_excel_exporter import DSSMSExcelExporter
 self.excel_exporter = DSSMSExcelExporter(export_config)
 ```
 
-## ⚠️ 重大な構造問題の発見
+## [WARNING] 重大な構造問題の発見
 
 ### 1. **重複・競合する処理パス**
 - **問題**: `main.py`が複数の出力システムを同時に呼び出す可能性
@@ -691,7 +691,7 @@ self.excel_exporter = DSSMSExcelExporter(export_config)
 - **修正版**: 4つのバージョンが併存
 - **問題**: どのバージョンが実際に使用されているか不明
 
-## 🔍 0%リターン問題の潜在原因分析
+## [SEARCH] 0%リターン問題の潜在原因分析
 
 ### 原因仮説A: 計算ロジックの競合
 ```python
@@ -720,7 +720,7 @@ def _generate_trade_history(self, result):
 - **dssms_excel_exporter_v2.py**: `_create_dummy_data()` 相当の処理
 - **問題**: エラー時のフォールバック処理で0%データが生成される可能性
 
-## 📊 実際のファイルサイズ・複雑度比較
+## [CHART] 実際のファイルサイズ・複雑度比較
 
 | ファイル | 行数 | 主要機能 | 使用状況 |
 |---------|------|----------|----------|
@@ -741,7 +741,7 @@ def _generate_trade_history(self, result):
 
 ---
 
-## 7. unified_output_engine.py統合システム分析 ✅
+## 7. unified_output_engine.py統合システム分析 [OK]
 
 ### 7.1 重複処理パスによる計算ロジック競合の実態
 
@@ -821,7 +821,7 @@ else:
 
 ---
 
-## 8. dssms_unified_output_engine.py代替統合システム分析 ✅
+## 8. dssms_unified_output_engine.py代替統合システム分析 [OK]
 
 ### 8.1 構造的差異による重複処理パス競合の新たな発見
 

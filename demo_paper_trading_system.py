@@ -98,9 +98,9 @@ def demo_basic_functionality(executor, broker, portfolio, logger):
         # 約定確認
         filled_order = executor.order_manager.get_order(order_id)
         if filled_order and filled_order.status == OrderStatus.FILLED:
-            logger.info(f"  ✅ 約定: {filled_order.filled_quantity} 株 @ ${filled_order.filled_price}")
+            logger.info(f"  [OK] 約定: {filled_order.filled_quantity} 株 @ ${filled_order.filled_price}")
         else:
-            logger.warning(f"  ❌ 約定失敗: {filled_order.status if filled_order else 'None'}")
+            logger.warning(f"  [ERROR] 約定失敗: {filled_order.status if filled_order else 'None'}")
     
     # ポジション確認
     logger.info("\\n3. ポジション状況")
@@ -153,7 +153,7 @@ def demo_limit_orders(executor, broker, portfolio, logger):
         # 約定確認
         final_order = executor.order_manager.get_order(order_id)
         if final_order and final_order.status == OrderStatus.FILLED:
-            logger.info(f"  ✅ 約定: {final_order.filled_quantity} 株 @ ${final_order.filled_price}")
+            logger.info(f"  [OK] 約定: {final_order.filled_quantity} 株 @ ${final_order.filled_price}")
         else:
             logger.info(f"  待機中: {final_order.status if final_order else 'None'}")
 
@@ -179,7 +179,7 @@ def demo_risk_management(executor, broker, portfolio, logger):
         if order_id:
             logger.info("  大量注文が承認されました")
         else:
-            logger.info("  ✅ リスク管理により大量注文が拒否されました")
+            logger.info("  [OK] リスク管理により大量注文が拒否されました")
     
     # 資金不足テスト
     logger.info("\\n2. 資金不足テスト")
@@ -200,7 +200,7 @@ def demo_risk_management(executor, broker, portfolio, logger):
         if order_id:
             order_result = executor.order_manager.get_order(order_id)
             if order_result and order_result.status == OrderStatus.REJECTED:
-                logger.info("  ✅ 資金不足により注文が拒否されました")
+                logger.info("  [OK] 資金不足により注文が拒否されました")
             else:
                 logger.info("  注文が受け入れられました")
 

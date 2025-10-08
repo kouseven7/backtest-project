@@ -579,13 +579,13 @@ class DSSMSPerformanceCalculatorV2:
             recommendations.append("🟡 マイナスリターンです。戦略の調整を検討してください。")
         
         if metrics.max_drawdown > 0.3:
-            recommendations.append("⚠️  大きなドローダウンが発生しています。ポジションサイズの調整を推奨します。")
+            recommendations.append("[WARNING]  大きなドローダウンが発生しています。ポジションサイズの調整を推奨します。")
         
         if metrics.sharpe_ratio < 0.5:
-            recommendations.append("📊 シャープレシオが低いです。リスク調整後リターンの改善を検討してください。")
+            recommendations.append("[CHART] シャープレシオが低いです。リスク調整後リターンの改善を検討してください。")
         
         if not recommendations:
-            recommendations.append("✅ パフォーマンス指標は正常範囲内です。")
+            recommendations.append("[OK] パフォーマンス指標は正常範囲内です。")
         
         return recommendations
     
@@ -702,7 +702,7 @@ def main():
         )
         
         # 結果の表示
-        print("\n📊 パフォーマンス計算結果:")
+        print("\n[CHART] パフォーマンス計算結果:")
         print(f"  総リターン: {result.metrics.total_return:.2%}")
         print(f"  年率リターン: {result.metrics.annualized_return:.2%}")
         print(f"  最大ドローダウン: {result.metrics.max_drawdown:.2%}")
@@ -711,20 +711,20 @@ def main():
         print(f"  データ品質: {result.metrics.data_quality_score:.2f}")
         
         if result.metrics.anomalies_detected:
-            print(f"\n⚠️  異常値検出: {len(result.metrics.anomalies_detected)}件")
+            print(f"\n[WARNING]  異常値検出: {len(result.metrics.anomalies_detected)}件")
             for anomaly in result.metrics.anomalies_detected:
                 print(f"    - {anomaly}")
         
         if result.recommendations:
-            print(f"\n💡 推奨事項:")
+            print(f"\n[IDEA] 推奨事項:")
             for rec in result.recommendations:
                 print(f"    {rec}")
         
-        print(f"\n✅ Task 2.2 パフォーマンス計算エンジン修正: 正常動作確認")
+        print(f"\n[OK] Task 2.2 パフォーマンス計算エンジン修正: 正常動作確認")
         return True
         
     except Exception as e:
-        print(f"\n❌ エラー: {e}")
+        print(f"\n[ERROR] エラー: {e}")
         return False
 
 if __name__ == "__main__":

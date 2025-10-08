@@ -1,11 +1,11 @@
 # Phase 4B Implementation Plan: ISM Unified Switching Logic Overhaul
 
-## 🎯 実装目標
+## [TARGET] 実装目標
 
 **Phase 4A問題**: 構造修復成功も切替頻度激減 (1回のみ)
 **Phase 4B目標**: ISM統合判定ロジック抜本的改善で切替頻度3-5倍向上
 
-## 📊 Phase 4A問題分析結果
+## [CHART] Phase 4A問題分析結果
 
 ### 特定された根本問題
 1. **ISM信頼度固定**: 0.4で固定され動的変化なし
@@ -13,7 +13,7 @@
 3. **統一切替判定硬直性**: daily/weekly共に過度に保守的
 4. **ランキング結果無視**: 7203が1位でも6758固定選択
 
-## 🔧 Phase 4B修正戦略
+## [TOOL] Phase 4B修正戦略
 
 ### Phase 4B-1: ISM信頼度計算動的化 (CRITICAL)
 
@@ -82,7 +82,7 @@ if ranking_result.get('rankings'):
     # キャッシュよりリアルタイム結果優先
 ```
 
-## 🚀 実装手順
+## [ROCKET] 実装手順
 
 ### Step 1: ISM統合判定ロジック修正
 1. `intelligent_switch_manager.py` 特定
@@ -104,7 +104,7 @@ if ranking_result.get('rankings'):
 2. キャッシュ依存削減
 3. Top symbol決定プロセス修正
 
-## 📈 期待効果
+## [UP] 期待効果
 
 ### 定量的目標
 - **切替回数**: 1回 → 5-7回 (500%向上)
@@ -116,7 +116,7 @@ if ranking_result.get('rankings'):
 - **判定精度向上**: リアルタイムデータ反映
 - **システム整合性**: ランキング結果と実行の一致
 
-## 🧪 Phase 4Bテスト計画
+## [TEST] Phase 4Bテスト計画
 
 ### テストケース
 1. **基本動作確認**: 10日間シミュレーション
@@ -125,12 +125,12 @@ if ranking_result.get('rankings'):
 4. **銘柄多様性確認**: 異なる銘柄への切替実行
 
 ### 成功基準
-- ✅ 切替回数 ≥ 5回
-- ✅ ISM信頼度 0.5-0.8範囲で変動
-- ✅ Market volatility > 0.0記録
-- ✅ ランキング1位銘柄選択実行
+- [OK] 切替回数 ≥ 5回
+- [OK] ISM信頼度 0.5-0.8範囲で変動
+- [OK] Market volatility > 0.0記録
+- [OK] ランキング1位銘柄選択実行
 
-## 🔍 リスク評価
+## [SEARCH] リスク評価
 
 ### 高リスク要素
 1. **ISMロジック複雑化**: 新たなバグ発生可能性
@@ -142,7 +142,7 @@ if ranking_result.get('rankings'):
 2. **厳格なテスト**: 各段階で動作確認
 3. **バックアップ保持**: 修正前コード保存
 
-## 📋 実装チェックリスト
+## [LIST] 実装チェックリスト
 
 ### Phase 4B-1 (CRITICAL)
 - [ ] ISM信頼度計算ロジック修正
@@ -164,7 +164,7 @@ if ranking_result.get('rankings'):
 - [ ] リアルタイム結果優先
 - [ ] Top symbol決定修正
 
-## 💡 技術的考慮事項
+## [IDEA] 技術的考慮事項
 
 ### パフォーマンス最適化
 - **計算効率**: 新規計算処理の最適化

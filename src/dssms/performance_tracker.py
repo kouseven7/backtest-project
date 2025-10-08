@@ -824,11 +824,11 @@ def main():
     try:
         # 1. 初期化テスト
         tracker = PerformanceTracker()
-        print("✅ PerformanceTracker初期化成功")
+        print("[OK] PerformanceTracker初期化成功")
         time.sleep(1)  # システム監視データ収集待ち
         
         # 2. 日次パフォーマンス記録テスト
-        print(f"\n📊 日次パフォーマンス記録テスト:")
+        print(f"\n[CHART] 日次パフォーマンス記録テスト:")
         
         # サンプルデータ記録
         for i in range(10):
@@ -844,20 +844,20 @@ def main():
             
             tracker.record_daily_performance(daily_result)
             
-        print(f"✅ 10件の日次データ記録完了")
+        print(f"[OK] 10件の日次データ記録完了")
         
         # 3. パフォーマンスサマリーテスト
-        print(f"\n📈 パフォーマンスサマリーテスト:")
+        print(f"\n[UP] パフォーマンスサマリーテスト:")
         summary = tracker.get_performance_summary()
         
-        print(f"✅ サマリー取得成功:")
+        print(f"[OK] サマリー取得成功:")
         print(f"  - 総合評価: {summary['overall']['status']}")
         print(f"  - 平均実行時間: {summary['execution']['average_time_ms']}ms")
         print(f"  - 成功率: {summary['reliability']['success_rate']:.1%}")
         print(f"  - アクティブアラート数: {summary['alerts']['active_count']}")
         
         # 4. アラート発生テスト
-        print(f"\n🚨 アラート発生テスト:")
+        print(f"\n[ALERT] アラート発生テスト:")
         
         # 高実行時間でアラート発生
         high_load_result = {
@@ -870,7 +870,7 @@ def main():
         }
         
         tracker.record_daily_performance(high_load_result)
-        print(f"✅ アラート発生テスト完了")
+        print(f"[OK] アラート発生テスト完了")
         
         # アラート状況確認
         updated_summary = tracker.get_performance_summary()
@@ -880,13 +880,13 @@ def main():
         # 5. パフォーマンスチェックタイミング
         print(f"\n⏰ パフォーマンスチェックタイミングテスト:")
         should_check = tracker.should_check_performance(datetime.now())
-        print(f"✅ チェック必要性: {'必要' if should_check else '不要'}")
+        print(f"[OK] チェック必要性: {'必要' if should_check else '不要'}")
         
         # 6. 詳細レポート生成テスト
-        print(f"\n📋 詳細レポート生成テスト:")
+        print(f"\n[LIST] 詳細レポート生成テスト:")
         report = tracker.generate_performance_report()
         
-        print(f"✅ 詳細レポート生成成功:")
+        print(f"[OK] 詳細レポート生成成功:")
         print(f"  - レポートタイプ: {report['report_metadata']['report_type']}")
         print(f"  - 分析期間: {report['report_metadata']['analysis_period_days']}日")
         print(f"  - 推奨事項数: {len(report['recommendations'])}")
@@ -908,13 +908,13 @@ def main():
         # 8. 監視停止テスト
         print(f"\n🛑 監視停止テスト:")
         tracker.stop_monitoring()
-        print(f"✅ 監視停止完了")
+        print(f"[OK] 監視停止完了")
         
-        print(f"\n🎉 PerformanceTracker テスト完了！")
+        print(f"\n[SUCCESS] PerformanceTracker テスト完了！")
         print(f"実装機能: 日次記録、統計計算、アラート生成、システム監視")
         
     except Exception as e:
-        print(f"❌ テスト実行エラー: {e}")
+        print(f"[ERROR] テスト実行エラー: {e}")
         import traceback
         traceback.print_exc()
 

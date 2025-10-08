@@ -41,10 +41,10 @@ def test_individual_components():
             "max_drawdown": f"{performance_result.max_drawdown:.2%}"
         }
         results["success_count"] += 1
-        print("✅ Enhanced Performance Calculator テスト成功")
+        print("[OK] Enhanced Performance Calculator テスト成功")
         
     except Exception as e:
-        print(f"❌ Enhanced Performance Calculator テストエラー: {e}")
+        print(f"[ERROR] Enhanced Performance Calculator テストエラー: {e}")
         results["test_results"]["performance_calculator"] = {"status": "失敗", "error": str(e)}
     
     results["total_tests"] += 1
@@ -60,10 +60,10 @@ def test_individual_components():
             "generation_time": f"{scenario_result['generation_time']:.2f}秒"
         }
         results["success_count"] += 1
-        print("✅ Backtest Scenario Generator テスト成功")
+        print("[OK] Backtest Scenario Generator テスト成功")
         
     except Exception as e:
-        print(f"❌ Backtest Scenario Generator テストエラー: {e}")
+        print(f"[ERROR] Backtest Scenario Generator テストエラー: {e}")
         results["test_results"]["scenario_generator"] = {"status": "失敗", "error": str(e)}
     
     results["total_tests"] += 1
@@ -81,10 +81,10 @@ def test_individual_components():
             "recommendations_count": len(analysis_result.recommendations)
         }
         results["success_count"] += 1
-        print("✅ Backtest Result Analyzer テスト成功")
+        print("[OK] Backtest Result Analyzer テスト成功")
         
     except Exception as e:
-        print(f"❌ Backtest Result Analyzer テストエラー: {e}")
+        print(f"[ERROR] Backtest Result Analyzer テストエラー: {e}")
         results["test_results"]["result_analyzer"] = {"status": "失敗", "error": str(e)}
     
     results["total_tests"] += 1
@@ -100,10 +100,10 @@ def test_individual_components():
             "diversification_benefit": combination_result["diversification_benefit"]
         }
         results["success_count"] += 1
-        print("✅ Strategy Combination Manager テスト成功")
+        print("[OK] Strategy Combination Manager テスト成功")
         
     except Exception as e:
-        print(f"❌ Strategy Combination Manager テストエラー: {e}")
+        print(f"[ERROR] Strategy Combination Manager テストエラー: {e}")
         results["test_results"]["combination_manager"] = {"status": "失敗", "error": str(e)}
     
     results["total_tests"] += 1
@@ -199,7 +199,7 @@ def test_integration_sample():
         calculator = EnhancedPerformanceCalculator()
         performance = calculator.calculate_comprehensive_performance(returns)
         
-        print(f"📊 統合パフォーマンス分析結果:")
+        print(f"[CHART] 統合パフォーマンス分析結果:")
         print(f"   • 年率リターン: {performance.annualized_return:.2%}")
         print(f"   • シャープレシオ: {performance.sharpe_ratio:.3f}")
         print(f"   • 最大ドローダウン: {performance.max_drawdown:.2%}")
@@ -222,14 +222,14 @@ def test_integration_sample():
         analyzer = BacktestResultAnalyzer()
         analysis_result = analyzer.analyze_backtest_results(backtest_data)
         
-        print(f"\n📈 結果分析:")
+        print(f"\n[UP] 結果分析:")
         print(f"   • 分析ID: {analysis_result.analysis_id}")
         print(f"   • データ品質スコア: {analysis_result.data_quality_score:.2f}")
         print(f"   • 推奨事項数: {len(analysis_result.recommendations)}")
         print(f"   • 警告数: {len(analysis_result.warnings)}")
         
         if analysis_result.recommendations:
-            print(f"\n💡 主な推奨事項:")
+            print(f"\n[IDEA] 主な推奨事項:")
             for i, rec in enumerate(analysis_result.recommendations[:2], 1):
                 print(f"   {i}. {rec}")
         
@@ -237,20 +237,20 @@ def test_integration_sample():
         try:
             excel_path = analyzer.generate_excel_report(analysis_result)
             if excel_path:
-                print(f"\n📋 Excelレポート生成: {excel_path}")
+                print(f"\n[LIST] Excelレポート生成: {excel_path}")
             
             html_path = analyzer.generate_html_visualization(analysis_result)
             if html_path:
                 print(f"🌐 HTML可視化レポート生成: {html_path}")
                 
         except Exception as e:
-            print(f"⚠️  レポート生成でエラー: {e}")
+            print(f"[WARNING]  レポート生成でエラー: {e}")
         
-        print("\n✅ 統合テストサンプル完了")
+        print("\n[OK] 統合テストサンプル完了")
         return True
         
     except Exception as e:
-        print(f"❌ 統合テストサンプルエラー: {e}")
+        print(f"[ERROR] 統合テストサンプルエラー: {e}")
         return False
 
 def print_final_summary(results):
@@ -259,19 +259,19 @@ def print_final_summary(results):
     print("4-2-2 複合戦略バックテストシステム実装完了レポート")
     print("="*70)
     
-    print(f"\n📊 テスト結果サマリー:")
+    print(f"\n[CHART] テスト結果サマリー:")
     print(f"   • 総テスト数: {results['total_tests']}")
     print(f"   • 成功: {results['success_count']}")
     print(f"   • 失敗: {results['total_tests'] - results['success_count']}")
     print(f"   • 成功率: {results['success_count']/results['total_tests']*100:.1f}%")
     
-    print(f"\n🔧 実装済みコンポーネント:")
+    print(f"\n[TOOL] 実装済みコンポーネント:")
     for i, component in enumerate(results['components_tested'], 1):
         print(f"   {i}. {component}")
     
-    print(f"\n📋 詳細結果:")
+    print(f"\n[LIST] 詳細結果:")
     for component, result in results['test_results'].items():
-        status_icon = "✅" if result['status'] == "成功" else "❌"
+        status_icon = "[OK]" if result['status'] == "成功" else "[ERROR]"
         print(f"   {status_icon} {component}: {result['status']}")
         
         if result['status'] == "成功":
@@ -279,14 +279,14 @@ def print_final_summary(results):
                 if key != 'status':
                     print(f"      - {key}: {value}")
     
-    print(f"\n🎯 主要機能:")
-    print(f"   ✅ 期待値重視パフォーマンス計算")
-    print(f"   ✅ 動的シナリオ生成（トレンド変化ベース期間分割）")
-    print(f"   ✅ 複合戦略組み合わせ最適化")
-    print(f"   ✅ Excel + 可視化レポート生成")
-    print(f"   ✅ 包括的結果分析システム")
+    print(f"\n[TARGET] 主要機能:")
+    print(f"   [OK] 期待値重視パフォーマンス計算")
+    print(f"   [OK] 動的シナリオ生成（トレンド変化ベース期間分割）")
+    print(f"   [OK] 複合戦略組み合わせ最適化")
+    print(f"   [OK] Excel + 可視化レポート生成")
+    print(f"   [OK] 包括的結果分析システム")
     
-    print(f"\n📈 技術的特徴:")
+    print(f"\n[UP] 技術的特徴:")
     print(f"   • ハイブリッド型アーキテクチャ（既存システム拡張）")
     print(f"   • JSON設定ファイルベース管理")
     print(f"   • 4-2-1 トレンド切替システムとの統合")
@@ -294,10 +294,10 @@ def print_final_summary(results):
     
     success_rate = results['success_count'] / results['total_tests']
     if success_rate >= 0.75:
-        print(f"\n🎉 4-2-2「複合戦略バックテスト機能実装」完成!")
+        print(f"\n[SUCCESS] 4-2-2「複合戦略バックテスト機能実装」完成!")
         print(f"   システムは正常に動作しており、本格運用可能です。")
     else:
-        print(f"\n⚠️  一部コンポーネントに問題があります。")
+        print(f"\n[WARNING]  一部コンポーネントに問題があります。")
         print(f"   成功したコンポーネントは個別に使用可能です。")
     
     print("\n" + "="*70)

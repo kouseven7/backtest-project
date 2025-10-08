@@ -32,10 +32,10 @@ def test_conditional_execution_system():
         if config_path.exists():
             with open(config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
-            logger.info("✅ 設定ファイル読み込み成功")
+            logger.info("[OK] 設定ファイル読み込み成功")
             logger.info(f"条件付き実行有効: {config.get('conditional_execution', {}).get('enabled', False)}")
         else:
-            logger.error("❌ 設定ファイルが見つかりません")
+            logger.error("[ERROR] 設定ファイルが見つかりません")
             return False
         
         # 2. Switch Coordinator V2 初期化テスト
@@ -44,9 +44,9 @@ def test_conditional_execution_system():
         try:
             from src.dssms.dssms_switch_coordinator_v2 import DSSMSSwitchCoordinatorV2
             coordinator = DSSMSSwitchCoordinatorV2()
-            logger.info("✅ Switch Coordinator V2 初期化成功")
+            logger.info("[OK] Switch Coordinator V2 初期化成功")
         except Exception as init_error:
-            logger.error(f"❌ Switch Coordinator V2 初期化失敗: {init_error}")
+            logger.error(f"[ERROR] Switch Coordinator V2 初期化失敗: {init_error}")
             return False
         
         # 3. 条件付き実行判定テスト
@@ -59,18 +59,18 @@ def test_conditional_execution_system():
         holding_period = coordinator._check_holding_period_optimization()
         overall_decision = coordinator._should_execute_daily_switch_v2()
         
-        logger.info(f"コスト効率チェック: {'✅ 通過' if cost_efficiency else '❌ 失敗'}")
-        logger.info(f"利益保護チェック: {'✅ 通過' if profit_protection else '❌ 失敗'}")
-        logger.info(f"市場適合性チェック: {'✅ 通過' if market_suitability else '❌ 失敗'}")
-        logger.info(f"保有期間最適化チェック: {'✅ 通過' if holding_period else '❌ 失敗'}")
-        logger.info(f"総合判定: {'✅ 実行許可' if overall_decision else '❌ 実行拒否'}")
+        logger.info(f"コスト効率チェック: {'[OK] 通過' if cost_efficiency else '[ERROR] 失敗'}")
+        logger.info(f"利益保護チェック: {'[OK] 通過' if profit_protection else '[ERROR] 失敗'}")
+        logger.info(f"市場適合性チェック: {'[OK] 通過' if market_suitability else '[ERROR] 失敗'}")
+        logger.info(f"保有期間最適化チェック: {'[OK] 通過' if holding_period else '[ERROR] 失敗'}")
+        logger.info(f"総合判定: {'[OK] 実行許可' if overall_decision else '[ERROR] 実行拒否'}")
         
         # 4. ステータスレポート取得テスト
         logger.info("ステータスレポート取得テスト...")
         
         try:
             status_report = coordinator.get_status_report()
-            logger.info("✅ ステータスレポート取得成功")
+            logger.info("[OK] ステータスレポート取得成功")
             
             # 条件付き実行状態の確認
             conditional_status = status_report.get("conditional_execution", {})
@@ -83,7 +83,7 @@ def test_conditional_execution_system():
             logger.info(f"総合判定: {conditional_status.get('overall_decision', False)}")
             
         except Exception as status_error:
-            logger.error(f"❌ ステータスレポート取得失敗: {status_error}")
+            logger.error(f"[ERROR] ステータスレポート取得失敗: {status_error}")
             return False
         
         # 5. 設定値変更テスト
@@ -99,7 +99,7 @@ def test_conditional_execution_system():
         
         # 再テスト
         new_decision = coordinator._should_execute_daily_switch_v2()
-        logger.info(f"厳しい条件での判定: {'✅ 実行許可' if new_decision else '❌ 実行拒否'}")
+        logger.info(f"厳しい条件での判定: {'[OK] 実行許可' if new_decision else '[ERROR] 実行拒否'}")
         
         # 6. パフォーマンス統計テスト（ダミーデータ追加）
         logger.info("パフォーマンス統計テスト...")
@@ -123,26 +123,26 @@ def test_conditional_execution_system():
         # 統計取得
         try:
             performance_stats = coordinator.get_performance_statistics()
-            logger.info("✅ パフォーマンス統計取得成功")
+            logger.info("[OK] パフォーマンス統計取得成功")
             logger.info(f"実行履歴数: {len(coordinator.execution_history)}")
             
         except Exception as perf_error:
-            logger.error(f"❌ パフォーマンス統計取得失敗: {perf_error}")
+            logger.error(f"[ERROR] パフォーマンス統計取得失敗: {perf_error}")
         
         # 7. 最終結果サマリー
         logger.info("=== テスト結果サマリー ===")
-        logger.info(f"条件付き実行システム: {'✅ 正常動作' if overall_decision is not None else '❌ 動作不良'}")
-        logger.info(f"設定ファイル読み込み: ✅ 成功")
-        logger.info(f"初期化: ✅ 成功")
-        logger.info(f"4段階チェック: ✅ 全項目実行")
-        logger.info(f"ステータスレポート: ✅ 正常取得")
-        logger.info(f"設定変更対応: ✅ 動的更新")
+        logger.info(f"条件付き実行システム: {'[OK] 正常動作' if overall_decision is not None else '[ERROR] 動作不良'}")
+        logger.info(f"設定ファイル読み込み: [OK] 成功")
+        logger.info(f"初期化: [OK] 成功")
+        logger.info(f"4段階チェック: [OK] 全項目実行")
+        logger.info(f"ステータスレポート: [OK] 正常取得")
+        logger.info(f"設定変更対応: [OK] 動的更新")
         
         logger.info("=== DSSMS条件付き実行システム デモ完了 ===")
         return True
         
     except Exception as e:
-        logger.error(f"❌ デモ実行中にエラー: {e}")
+        logger.error(f"[ERROR] デモ実行中にエラー: {e}")
         logger.error(f"詳細エラー: {traceback.format_exc()}")
         return False
 
@@ -150,11 +150,11 @@ if __name__ == "__main__":
     success = test_conditional_execution_system()
     
     if success:
-        print("\n🎉 条件付き実行システム デモ成功")
-        print("📊 システムは正常に動作しています")
+        print("\n[SUCCESS] 条件付き実行システム デモ成功")
+        print("[CHART] システムは正常に動作しています")
         print("⚙️  設定ファイルで動作をカスタマイズできます: config/switch_optimization_config.json")
     else:
-        print("\n❌ 条件付き実行システム デモ失敗")
-        print("🔍 ログファイルで詳細を確認してください")
+        print("\n[ERROR] 条件付き実行システム デモ失敗")
+        print("[SEARCH] ログファイルで詳細を確認してください")
     
     print(f"\n📝 ログファイル: logs/{datetime.now().strftime('%Y%m%d')}_demo_conditional_execution.log")

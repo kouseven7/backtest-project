@@ -377,7 +377,7 @@ class SystemFallbackIntegrator:
                     self.fallback_policy = SystemFallbackPolicy()
                     self.component_type = ComponentType.DSSMS_CORE if hasattr(ComponentType, 'DSSMS_CORE') else 'DSSMS_CORE'
                     self.has_fallback_policy = True
-                    print("  ✅ SystemFallbackPolicy統合成功 (src.config)")
+                    print("  [OK] SystemFallbackPolicy統合成功 (src.config)")
             except Exception:
                 pass
                 
@@ -385,7 +385,7 @@ class SystemFallbackIntegrator:
             pass
         
         if not self.has_fallback_policy:
-            print("  ⚠️ SystemFallbackPolicy統合スキップ - 単体動作モード")
+            print("  [WARNING] SystemFallbackPolicy統合スキップ - 単体動作モード")
     
     def calculate_scores_with_fallback(self, data: List[Dict[str, Any]], 
                                      scoring_config: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -529,16 +529,16 @@ class Phase3Stage2Implementer:
                     shutil.copy2(full_path, backup_path)
                     backed_up_files.append(file_path)
             
-            print(f"  ✅ バックアップ完了: {len(backed_up_files)}ファイル → {self.backup_dir}")
+            print(f"  [OK] バックアップ完了: {len(backed_up_files)}ファイル → {self.backup_dir}")
             return True
             
         except Exception as e:
-            print(f"  ❌ バックアップエラー: {e}")
+            print(f"  [ERROR] バックアップエラー: {e}")
             return False
     
     def implement_fast_ranking_core_integration(self) -> bool:
         """FastRankingCore統合実装"""
-        print("🚀 FastRankingCore統合実装中...")
+        print("[ROCKET] FastRankingCore統合実装中...")
         
         try:
             # FastRankingCoreモジュールファイル作成
@@ -551,20 +551,20 @@ class Phase3Stage2Implementer:
             with open(core_module_path, 'w', encoding='utf-8') as f:
                 f.write(core_module_content)
             
-            print(f"  ✅ FastRankingCoreモジュール作成: {core_module_path}")
+            print(f"  [OK] FastRankingCoreモジュール作成: {core_module_path}")
             
             # 既存システム統合
             integration_success = self._integrate_with_existing_system()
             
             if integration_success:
-                print("  ✅ 既存システム統合完了")
+                print("  [OK] 既存システム統合完了")
                 return True
             else:
-                print("  ⚠️ 既存システム統合に課題あり")
+                print("  [WARNING] 既存システム統合に課題あり")
                 return False
                 
         except Exception as e:
-            print(f"  ❌ FastRankingCore統合エラー: {e}")
+            print(f"  [ERROR] FastRankingCore統合エラー: {e}")
             return False
     
     def _generate_core_module_content(self) -> str:
@@ -694,7 +694,7 @@ class HierarchicalRankingSystemAdapter:
             hrs_path = self.project_root / "src" / "dssms" / "hierarchical_ranking_system.py"
             
             if not hrs_path.exists():
-                print(f"  ⚠️ hierarchical_ranking_system.py未発見: {hrs_path}")
+                print(f"  [WARNING] hierarchical_ranking_system.py未発見: {hrs_path}")
                 return True  # ファイルがない場合は新規作成扱い
             
             # 既存ファイル読み込み
@@ -719,13 +719,13 @@ try:
     # 統合インスタンス
     _fast_ranking_adapter = HierarchicalRankingSystemAdapter()
     
-    print("✅ FastRankingCore統合成功 - 超高速ランキング処理開始")
+    print("[OK] FastRankingCore統合成功 - 超高速ランキング処理開始")
     
 except ImportError as e:
     # フォールバック: 既存実装使用
     USE_FAST_CORE = False
     _fast_ranking_adapter = None
-    print(f"⚠️ FastRankingCore統合失敗、既存実装使用: {{e}}")
+    print(f"[WARNING] FastRankingCore統合失敗、既存実装使用: {{e}}")
 
 """
             
@@ -784,16 +784,16 @@ if 'rank_symbols_hierarchical' in globals():
             with open(hrs_path, 'w', encoding='utf-8') as f:
                 f.write(integrated_content)
             
-            print(f"  ✅ hierarchical_ranking_system.py統合完了")
+            print(f"  [OK] hierarchical_ranking_system.py統合完了")
             return True
             
         except Exception as e:
-            print(f"  ❌ 既存システム統合エラー: {e}")
+            print(f"  [ERROR] 既存システム統合エラー: {e}")
             return False
     
     def run_performance_benchmark(self) -> Dict[str, Any]:
         """パフォーマンスベンチマーク実行"""
-        print("📊 パフォーマンスベンチマーク実行中...")
+        print("[CHART] パフォーマンスベンチマーク実行中...")
         
         benchmark_results = {
             'fast_core_benchmark': {},
@@ -847,14 +847,14 @@ if 'rank_symbols_hierarchical' in globals():
                 'recommendations': self._generate_performance_recommendations(fast_execution_time, target_time_ms)
             }
             
-            print(f"  📊 FastCore実行時間: {fast_execution_time:.2f}ms")
-            print(f"  📊 目標達成率: {benchmark_results['improvement_analysis']['achievement_rate_percent']:.1f}%")
-            print(f"  📊 パフォーマンス分類: {benchmark_results['improvement_analysis']['performance_category']}")
+            print(f"  [CHART] FastCore実行時間: {fast_execution_time:.2f}ms")
+            print(f"  [CHART] 目標達成率: {benchmark_results['improvement_analysis']['achievement_rate_percent']:.1f}%")
+            print(f"  [CHART] パフォーマンス分類: {benchmark_results['improvement_analysis']['performance_category']}")
             
             return benchmark_results
             
         except Exception as e:
-            print(f"  ❌ ベンチマークエラー: {e}")
+            print(f"  [ERROR] ベンチマークエラー: {e}")
             benchmark_results['error'] = str(e)
             return benchmark_results
     
@@ -881,21 +881,21 @@ if 'rank_symbols_hierarchical' in globals():
         recommendations = []
         
         if current_time_ms <= target_time_ms:
-            recommendations.append("✅ 目標達成済み - 現在の最適化を維持")
+            recommendations.append("[OK] 目標達成済み - 現在の最適化を維持")
             recommendations.append("🔄 キャッシュ効率の継続監視")
         elif current_time_ms <= target_time_ms * 2:
-            recommendations.append("🚀 キャッシュサイズ拡大検討")
+            recommendations.append("[ROCKET] キャッシュサイズ拡大検討")
             recommendations.append("⚡ 計算アルゴリズム微調整")
         else:
-            recommendations.append("🔧 アルゴリズム根本見直し必要")
+            recommendations.append("[TOOL] アルゴリズム根本見直し必要")
             recommendations.append("💾 キャッシュ戦略大幅変更")
-            recommendations.append("🎯 並列処理導入検討")
+            recommendations.append("[TARGET] 並列処理導入検討")
         
         return recommendations
     
     def validate_integration_quality(self) -> Dict[str, Any]:
         """統合品質検証"""
-        print("🔍 統合品質検証中...")
+        print("[SEARCH] 統合品質検証中...")
         
         validation_results = {
             'functional_validation': {},
@@ -981,15 +981,15 @@ if 'rank_symbols_hierarchical' in globals():
             )
             validation_results['quality_level'] = quality_level
             
-            print(f"  📊 機能検証スコア: {functional_score}/60")
-            print(f"  📊 パフォーマンス検証スコア: {performance_score}/40") 
-            print(f"  📊 互換性検証スコア: {compatibility_score}/20")
-            print(f"  📊 総合品質スコア: {total_score}/100 ({quality_level})")
+            print(f"  [CHART] 機能検証スコア: {functional_score}/60")
+            print(f"  [CHART] パフォーマンス検証スコア: {performance_score}/40") 
+            print(f"  [CHART] 互換性検証スコア: {compatibility_score}/20")
+            print(f"  [CHART] 総合品質スコア: {total_score}/100 ({quality_level})")
             
             return validation_results
             
         except Exception as e:
-            print(f"  ❌ 品質検証エラー: {e}")
+            print(f"  [ERROR] 品質検証エラー: {e}")
             validation_results['error'] = str(e)
             return validation_results
     
@@ -1084,7 +1084,7 @@ if 'rank_symbols_hierarchical' in globals():
     
     def run_stage2_comprehensive_implementation(self) -> bool:
         """Stage 2包括的実装実行"""
-        print("🚀 TODO-PERF-001 Phase 3 Stage 2: hierarchical_ranking_systemコア抽出実装開始")
+        print("[ROCKET] TODO-PERF-001 Phase 3 Stage 2: hierarchical_ranking_systemコア抽出実装開始")
         print("="*80)
         
         stage2_start_time = time.time()
@@ -1131,24 +1131,24 @@ if 'rank_symbols_hierarchical' in globals():
             print("🏆 TODO-PERF-001 Phase 3 Stage 2完了サマリー")
             print("="*80)
             print(f"⏱️ 実行時間: {execution_time:.1f}秒")
-            print(f"📊 成功ステップ: {success_steps}/{total_steps} ({success_rate:.1f}%)")
+            print(f"[CHART] 成功ステップ: {success_steps}/{total_steps} ({success_rate:.1f}%)")
             
             # パフォーマンス結果
             fast_core_time = benchmark_results.get('fast_core_benchmark', {}).get('execution_time_ms', 'N/A')
             achievement_rate = implementation_report.get('achievements', {}).get('performance_achievement', {}).get('target_achievement_percent', 0)
             
-            print(f"🚀 FastRankingCore実行時間: {fast_core_time}ms")
-            print(f"🎯 目標達成率 (50ms目標): {achievement_rate:.1f}%")
+            print(f"[ROCKET] FastRankingCore実行時間: {fast_core_time}ms")
+            print(f"[TARGET] 目標達成率 (50ms目標): {achievement_rate:.1f}%")
             
             # 品質結果
             quality_score = quality_results.get('overall_quality_score', 0)
             quality_level = quality_results.get('quality_level', 'unknown')
             
-            print(f"📊 統合品質スコア: {quality_score}/100 ({quality_level})")
+            print(f"[CHART] 統合品質スコア: {quality_score}/100 ({quality_level})")
             
             # SystemFallbackPolicy統合状況
             fallback_integration = implementation_report.get('implementation_summary', {}).get('system_fallback_integration', False)
-            print(f"🛡️ SystemFallbackPolicy統合: {'✅' if fallback_integration else '⚠️'}")
+            print(f"🛡️ SystemFallbackPolicy統合: {'[OK]' if fallback_integration else '[WARNING]'}")
             
             print(f"📄 実装レポート: {report_path}")
             
@@ -1156,17 +1156,17 @@ if 'rank_symbols_hierarchical' in globals():
             overall_success_rate = implementation_report.get('achievements', {}).get('overall_success_rate', 0)
             
             if overall_success_rate >= 70:
-                print(f"\n✅ Stage 2実装成功 ({overall_success_rate:.1f}%) - Stage 3非同期処理実装に進行可能")
+                print(f"\n[OK] Stage 2実装成功 ({overall_success_rate:.1f}%) - Stage 3非同期処理実装に進行可能")
                 return True
             elif overall_success_rate >= 50:
-                print(f"\n⚠️ Stage 2部分的成功 ({overall_success_rate:.1f}%) - Stage 3進行可能、品質改善推奨")
+                print(f"\n[WARNING] Stage 2部分的成功 ({overall_success_rate:.1f}%) - Stage 3進行可能、品質改善推奨")
                 return True
             else:
-                print(f"\n❌ Stage 2実装課題 ({overall_success_rate:.1f}%) - Stage 2見直し推奨")
+                print(f"\n[ERROR] Stage 2実装課題 ({overall_success_rate:.1f}%) - Stage 2見直し推奨")
                 return False
                 
         except Exception as e:
-            print(f"❌ Stage 2実装エラー: {e}")
+            print(f"[ERROR] Stage 2実装エラー: {e}")
             traceback.print_exc()
             return False
 
@@ -1178,9 +1178,9 @@ def main():
     success = implementer.run_stage2_comprehensive_implementation()
     
     if success:
-        print("\n🎉 Stage 2完成 - 次は Stage 3 非同期処理・並列化アーキテクチャ実装に進行")
+        print("\n[SUCCESS] Stage 2完成 - 次は Stage 3 非同期処理・並列化アーキテクチャ実装に進行")
     else:
-        print("\n⚠️ Stage 2実装課題 - 品質改善後に Stage 3進行を推奨")
+        print("\n[WARNING] Stage 2実装課題 - 品質改善後に Stage 3進行を推奨")
     
     return success
 

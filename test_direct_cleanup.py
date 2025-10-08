@@ -17,7 +17,7 @@ from fallback_monitoring_system import FallbackMonitor
 
 def test_direct_cleanup():
     """直接自動削除機能テスト"""
-    print("🧪 直接自動削除機能テスト")
+    print("[TEST] 直接自動削除機能テスト")
     
     monitor = FallbackMonitor()
     
@@ -31,7 +31,7 @@ def test_direct_cleanup():
             print("\n🧹 直接自動削除実行...")
             cleanup_results = monitor.auto_cleanup.implement_auto_cleanup()
             
-            print("✅ 直接実行成功:")
+            print("[OK] 直接実行成功:")
             print(f"  ステータス: {cleanup_results.get('overall_status', 'unknown')}")
             print(f"  実行時間: {cleanup_results.get('execution_duration', 0):.2f}秒")
             
@@ -41,7 +41,7 @@ def test_direct_cleanup():
             print(f"  解放容量: {cleanup_data.get('total_space_freed', 0)}MB")
             
             # 3. 統計情報取得
-            print("\n📊 統計情報取得...")
+            print("\n[CHART] 統計情報取得...")
             stats = monitor.auto_cleanup.get_cleanup_statistics()
             
             for dir_name, dir_stats in stats.get('directories', {}).items():
@@ -50,10 +50,10 @@ def test_direct_cleanup():
             return True
             
         except Exception as e:
-            print(f"❌ 直接実行エラー: {e}")
+            print(f"[ERROR] 直接実行エラー: {e}")
             return False
     else:
-        print("❌ auto_cleanup機能が利用できません")
+        print("[ERROR] auto_cleanup機能が利用できません")
         return False
 
 if __name__ == "__main__":

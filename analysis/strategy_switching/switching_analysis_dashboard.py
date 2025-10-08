@@ -923,7 +923,7 @@ class SwitchingAnalysisDashboard:
         </div>
         
         <div class="section">
-            <h2>📊 エグゼクティブサマリー</h2>
+            <h2>[CHART] エグゼクティブサマリー</h2>
             <div class="summary-grid">
                 <div class="summary-card">
                     <h3>総切替回数</h3>
@@ -958,7 +958,7 @@ class SwitchingAnalysisDashboard:
                 if section_id in generated_files:
                     html_content += f"""
         <div class="section" id="{section_id}">
-            <h2>📈 {section_title}</h2>
+            <h2>[UP] {section_title}</h2>
             <iframe src="{os.path.basename(generated_files[section_id])}" class="dashboard-frame"></iframe>
         </div>
 """

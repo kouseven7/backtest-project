@@ -27,11 +27,11 @@ def analyze_portfolio_data_flow():
         "recommendations": []
     }
     
-    print("🔍 Task 2.2: ポートフォリオ価値データフロー追跡を開始")
+    print("[SEARCH] Task 2.2: ポートフォリオ価値データフロー追跡を開始")
     print("=" * 60)
     
     # 1. DSSMSBacktester.portfolio_values の生データ確認
-    print("\n📊 Step 1: DSSMSBacktesterの生データ分析")
+    print("\n[CHART] Step 1: DSSMSBacktesterの生データ分析")
     try:
         # DSSMSBacktesterクラスを調査
         backtester_path = Path("src/dssms/dssms_backtester.py")
@@ -50,15 +50,15 @@ def analyze_portfolio_data_flow():
                 "usage_lines": portfolio_usage[:10]  # 最初の10件
             }
             
-            print(f"✅ DSSMSBacktesterでのportfolio_values使用箇所: {len(portfolio_usage)}件")
+            print(f"[OK] DSSMSBacktesterでのportfolio_values使用箇所: {len(portfolio_usage)}件")
             for usage in portfolio_usage[:5]:
                 print(f"   {usage}")
         else:
             results["problems_identified"].append("DSSMSBacktesterファイルが見つからない")
-            print("❌ DSSMSBacktesterファイルが見つかりません")
+            print("[ERROR] DSSMSBacktesterファイルが見つかりません")
             
     except Exception as e:
-        print(f"❌ DSSMSBacktester分析エラー: {e}")
+        print(f"[ERROR] DSSMSBacktester分析エラー: {e}")
         results["problems_identified"].append(f"DSSMSBacktester分析エラー: {e}")
     
     # 2. _convert_backtester_results での変換過程分析
@@ -97,12 +97,12 @@ def analyze_portfolio_data_flow():
                     "first_10_lines": method_lines[:10]
                 }
                 
-                print(f"📁 {engine_file}: {'✅' if len(method_lines) > 0 else '❌'} _convert_backtester_results")
+                print(f"📁 {engine_file}: {'[OK]' if len(method_lines) > 0 else '[ERROR]'} _convert_backtester_results")
                 
         results["data_flow_analysis"]["conversion_methods"] = conversion_analysis
         
     except Exception as e:
-        print(f"❌ 変換過程分析エラー: {e}")
+        print(f"[ERROR] 変換過程分析エラー: {e}")
         results["problems_identified"].append(f"変換過程分析エラー: {e}")
     
     # 3. _fix_date_inconsistencies での修正過程分析
@@ -141,17 +141,17 @@ def analyze_portfolio_data_flow():
                 }
                 
                 print(f"📁 {engine_file}:")
-                print(f"   _fix_date_inconsistencies: {'✅' if len(fix_lines) > 0 else '❌'}")
+                print(f"   _fix_date_inconsistencies: {'[OK]' if len(fix_lines) > 0 else '[ERROR]'}")
                 print(f"   pd.to_datetime使用箇所: {len(datetime_usage)}件")
                 
         results["data_flow_analysis"]["date_fix_methods"] = date_fix_analysis
         
     except Exception as e:
-        print(f"❌ 日付修正分析エラー: {e}")
+        print(f"[ERROR] 日付修正分析エラー: {e}")
         results["problems_identified"].append(f"日付修正分析エラー: {e}")
     
     # 4. Excel出力での最終データ確認
-    print("\n📊 Step 4: Excel出力最終データ確認")
+    print("\n[CHART] Step 4: Excel出力最終データ確認")
     try:
         # 最新のExcelファイルを検索
         excel_files = list(Path("backtest_results/dssms_results").glob("*.xlsx"))
@@ -191,25 +191,25 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
                         "sample_data": portfolio_data
                     }
                     
-                    print(f"✅ 損益推移シート: {ws.max_row}行 x {ws.max_column}列")
+                    print(f"[OK] 損益推移シート: {ws.max_row}行 x {ws.max_column}列")
                 
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: results["data_flow_analysis"]["excel_output"] = excel_analysis
                 
             except Exception as excel_error:
-                print(f"❌ Excel分析エラー: {excel_error}")
+                print(f"[ERROR] Excel分析エラー: {excel_error}")
                 results["problems_identified"].append(f"Excel分析エラー: {excel_error}")
                 
         else:
-            print("❌ Excelファイルが見つかりません")
+            print("[ERROR] Excelファイルが見つかりません")
             results["problems_identified"].append("Excelファイルが見つからない")
             
     except Exception as e:
-        print(f"❌ Excel出力分析エラー: {e}")
+        print(f"[ERROR] Excel出力分析エラー: {e}")
         results["problems_identified"].append(f"Excel出力分析エラー: {e}")
     
     # 5. データフロー問題の特定
-    print("\n🎯 Step 5: データフロー問題の特定")
+    print("\n[TARGET] Step 5: データフロー問題の特定")
     
     # Task 2.1の結果と連携して問題を特定
     task_2_1_results_file = None
@@ -237,10 +237,10 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
             results["data_flow_analysis"]["date_loop_correlation"] = date_loop_impact
             
         except Exception as e:
-            print(f"⚠️ Task 2.1結果読み込みエラー: {e}")
+            print(f"[WARNING] Task 2.1結果読み込みエラー: {e}")
     
     # 推奨事項の生成
-    print("\n💡 推奨事項:")
+    print("\n[IDEA] 推奨事項:")
     recommendations = [
         "DSSMSBacktester.portfolio_valuesの生成ロジック詳細調査",
         "各エンジンでの変換ロジック統一",
@@ -259,7 +259,7 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
     
     print(f"\n💾 分析結果を保存: {output_file}")
     print("=" * 60)
-    print("🔍 Task 2.2: ポートフォリオ価値データフロー追跡完了")
+    print("[SEARCH] Task 2.2: ポートフォリオ価値データフロー追跡完了")
     
     return results
 
@@ -268,10 +268,10 @@ if __name__ == "__main__":
         results = analyze_portfolio_data_flow()
         
         # 重要な発見事項を表示
-        print("\n🎯 重要な発見事項:")
+        print("\n[TARGET] 重要な発見事項:")
         for problem in results["problems_identified"]:
-            print(f"❌ {problem}")
+            print(f"[ERROR] {problem}")
             
     except Exception as e:
-        print(f"❌ Task 2.2実行エラー: {e}")
+        print(f"[ERROR] Task 2.2実行エラー: {e}")
         traceback.print_exc()

@@ -330,7 +330,7 @@ class RiskAlertManager:
     def _format_alert_message(self, rule: AlertRule, risk_event: RiskEvent) -> str:
         """アラートメッセージのフォーマット"""
         return (
-            f"🚨 [{rule.severity.value.upper()}] {rule.rule_name}\n"
+            f"[ALERT] [{rule.severity.value.upper()}] {rule.rule_name}\n"
             f"イベント: {risk_event.description}\n"
             f"発生時刻: {risk_event.timestamp.strftime('%Y-%m-%d %H:%M:%S')}\n"
             f"ドローダウン: {risk_event.drawdown:.2%}\n"
@@ -505,6 +505,6 @@ if __name__ == "__main__":
     # テスト実行
     success = run_risk_alert_manager_test()
     if success:
-        print("✅ RiskAlertManager test passed")
+        print("[OK] RiskAlertManager test passed")
     else:
-        print("❌ RiskAlertManager test failed")
+        print("[ERROR] RiskAlertManager test failed")

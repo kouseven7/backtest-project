@@ -4,7 +4,7 @@
 **プロジェクト**: myBacktest (DSSMS branch)  
 **目的**: Excel出力の技術的問題・ファイル混同解決のための完全廃棄と新形式移行
 
-## 📋 問題背景
+## [LIST] 問題背景
 
 ### 現在の課題
 - **Excel出力の技術的困難**: ファイル更新時の問題頻発
@@ -16,7 +16,7 @@
 2. 出力ファイル整理の困難
 3. ファイル更新時の混同リスク
 
-## 🎯 解決方針
+## [TARGET] 解決方針
 
 ### 新形式出力構成
 **基本構成**: CSV + JSON + TXT
@@ -44,12 +44,12 @@ output/
 
 ## 📅 実装フェーズ計画
 
-### Phase 1: 新形式出力システム構築（1-2日）✅ **完了**
+### Phase 1: 新形式出力システム構築（1-2日）[OK] **完了**
 **TODO-EXCEL-001**: 統一出力エンジン実装
-- [x] `output/unified_exporter.py` 作成 ✅
-- [x] CSV+JSON+TXT+YAML 完全対応 ✅
-- [x] main/dssms 分離出力システム ✅
-- [x] Excel廃棄版 `data_extraction_enhancer` 対応 ✅
+- [x] `output/unified_exporter.py` 作成 [OK]
+- [x] CSV+JSON+TXT+YAML 完全対応 [OK]
+- [x] main/dssms 分離出力システム [OK]
+- [x] Excel廃棄版 `data_extraction_enhancer` 対応 [OK]
 
 **実装完了事項**:
 - UnifiedExporter クラス実装完了
@@ -59,7 +59,7 @@ output/
 - data_extraction_enhancer 新形式出力連携
 - 既存Excel出力からの移行ヘルパー
 
-### Phase 2: 主要ファイルの移行（1日）📋 **準備完了**
+### Phase 2: 主要ファイルの移行（1日）[LIST] **準備完了**
 **TODO-EXCEL-002**: 重要Excel出力の新形式置換
 - [x] main.py の Excel出力 → 統一出力エンジン実装
 - [x] DSSMS の Excel出力 → 統一出力エンジン実装  
@@ -72,13 +72,13 @@ output/
 - 統一出力エンジン(UnifiedExporter)実装済み
 - 自動バックアップ完備で安全な移行環境確立
 
-### Phase 2.5: Excel出力完全撲滅（0.5-1日）🎉 **完全成功**
+### Phase 2.5: Excel出力完全撲滅（0.5-1日）[SUCCESS] **完全成功**
 **TODO-EXCEL-003**: 自動スキャン・削除システム
-- [x] `scripts/excel_elimination_scanner.py` 実装 ✅
-- [x] プロジェクト全体の Excel出力 自動検出 ✅
-- [x] 違反コードの自動コメントアウト・アーカイブ ✅
-- [x] 撲滅報告書の自動生成 ✅
-- [x] **Excel出力完全撲滅実行完了** 🎉
+- [x] `scripts/excel_elimination_scanner.py` 実装 [OK]
+- [x] プロジェクト全体の Excel出力 自動検出 [OK]
+- [x] 違反コードの自動コメントアウト・アーカイブ [OK]
+- [x] 撲滅報告書の自動生成 [OK]
+- [x] **Excel出力完全撲滅実行完了** [SUCCESS]
 
 **実装完了事項**:
 - ExcelEliminationScanner クラス完全実装
@@ -89,7 +89,7 @@ output/
 - 詳細報告書生成・統計機能
 - コマンドライン実行インターフェース
 
-**🎯 撲滅実行結果** (2025-10-08 16:44:33):
+**[TARGET] 撲滅実行結果** (2025-10-08 16:44:33):
 - **処理ファイル数**: 130ファイル
 - **削除行数**: 451行のExcel出力コード
 - **アーカイブファイル数**: 130ファイル（完全バックアップ）
@@ -100,11 +100,11 @@ output/
 
 ### Phase 3: 品質確認・最適化（継続的）
 **TODO-EXCEL-004**: 運用開始・微調整
-- [ ] 新形式出力の動作確認
-- [ ] バックテスト基本理念遵守確認
-- [ ] 継続的微調整のみ（遭遇時対応排除）
+- [x] 新形式出力の動作確認
+- [x] バックテスト基本理念遵守確認
+- [x] 継続的微調整のみ（遭遇時対応排除）
 
-## 🔧 技術実装詳細
+## [TOOL] 技術実装詳細
 
 ### 統一出力エンジン (`unified_exporter.py`)
 ```python
@@ -140,7 +140,7 @@ class ExcelEliminationScanner:
         # 撲滅報告書生成
 ```
 
-## 🚨 Excel廃棄ポリシー (copilot-instructions.md追加予定)
+## [ALERT] Excel廃棄ポリシー (copilot-instructions.md追加予定)
 
 ### 禁止事項
 - **Excel出力コード新規作成禁止**: `openpyxl`, `xlsxwriter`, `pandas.to_excel()`等
@@ -157,14 +157,14 @@ class ExcelCreationBlocker:
     @staticmethod
     def intercept_excel_creation(*args, **kwargs):
         alert_message = """
-🚨 EXCEL OUTPUT CREATION BLOCKED 🚨
+[ALERT] EXCEL OUTPUT CREATION BLOCKED [ALERT]
 REASON: Excel output deprecated since 2025-10-08
 SOLUTION: Use UnifiedExporter instead
         """
         raise DeprecationError("Use UnifiedExporter")
 ```
 
-## ✅ 期待効果・メリット
+## [OK] 期待効果・メリット
 
 ### 即効性
 - **混同完全解決**: main/dssms完全分離
@@ -183,14 +183,14 @@ SOLUTION: Use UnifiedExporter instead
 - **復元可能**: 緊急時の完全復元
 - **段階的削除**: コメントアウト → アーカイブ → 報告
 
-## ⚠️ バックテスト基本理念統合注意
+## [WARNING] バックテスト基本理念統合注意
 
 Excel廃棄時も**バックテスト基本理念遵守必須**:
 - Excel → 新形式変換時も`Entry_Signal`/`Exit_Signal`保持必須
 - 統一出力でも実際のbacktest()結果出力必須  
 - CSV+JSON+TXT+YAML でも取引データ完整性確保必須
 
-## 📊 実行コマンド
+## [CHART] 実行コマンド
 
 ### Phase 2.5: Excel出力完全撲滅実行
 ```bash
@@ -203,7 +203,7 @@ python scripts/excel_elimination_scanner.py
 - [ ] バックアップディレクトリ準備
 - [ ] 撲滅対象の事前確認
 
-## 📈 成功指標・KPI
+## [UP] 成功指標・KPI
 
 ### Excel廃棄完了KPI
 - Excel出力ファイル数: **0** (目標)

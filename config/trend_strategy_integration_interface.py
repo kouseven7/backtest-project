@@ -1080,7 +1080,7 @@ if __name__ == "__main__":
     import pandas as pd
     import numpy as np
     
-    print("🔧 TrendStrategyIntegrationInterface テスト開始")
+    print("[TOOL] TrendStrategyIntegrationInterface テスト開始")
     
     # サンプルデータ作成
     dates = pd.date_range('2023-01-01', periods=100, freq='D')
@@ -1090,20 +1090,20 @@ if __name__ == "__main__":
     }, index=dates)
     
     # 統合インターフェースのテスト
-    print("📊 統合インターフェース初期化テスト...")
+    print("[CHART] 統合インターフェース初期化テスト...")
     try:
         interface = create_integration_interface(enable_async=False)
         print("  ✓ 初期化成功")
         
         # データ検証テスト
         is_valid, issues = interface.validate_market_data(sample_data)
-        print(f"  データ検証: {'✓ 有効' if is_valid else '❌ 無効'}")
+        print(f"  データ検証: {'✓ 有効' if is_valid else '[ERROR] 無効'}")
         if issues:
             for issue in issues:
                 print(f"    - {issue}")
         
         # シングル判定テスト
-        print("📊 シングル判定テスト...")
+        print("[CHART] シングル判定テスト...")
         result = interface.integrate_decision(sample_data, "TEST")
         print(f"  選択戦略: {result.strategy_selection.selected_strategies}")
         print(f"  トレンド: {result.trend_analysis.trend_type} (信頼度: {result.trend_analysis.confidence:.2f})")
@@ -1114,9 +1114,9 @@ if __name__ == "__main__":
         stats = interface.get_performance_statistics()
         print(f"  成功率: {stats['performance_metrics']['successful_requests']}/{stats['performance_metrics']['total_requests']}")
         
-        print("✅ 3-1-2「トレンド戦略統合インターフェース」実装完了！")
+        print("[OK] 3-1-2「トレンド戦略統合インターフェース」実装完了！")
         
     except Exception as e:
-        print(f"❌ テストエラー: {e}")
+        print(f"[ERROR] テストエラー: {e}")
         import traceback
         traceback.print_exc()

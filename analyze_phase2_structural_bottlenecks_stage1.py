@@ -36,7 +36,7 @@ class Phase2StructuralAnalyzer:
         
     def analyze_stage2_syntax_errors(self) -> Dict[str, Any]:
         """Stage 2構文エラー箇所完全特定・影響範囲分析"""
-        print("🔍 Stage 2構文エラー箇所完全特定・影響範囲分析中...")
+        print("[SEARCH] Stage 2構文エラー箇所完全特定・影響範囲分析中...")
         
         syntax_analysis = {
             'error_files': [],
@@ -65,7 +65,7 @@ class Phase2StructuralAnalyzer:
                     # AST解析による構文チェック
                     try:
                         ast.parse(content)
-                        print(f"  ✅ 構文OK: {file_path}")
+                        print(f"  [OK] 構文OK: {file_path}")
                     except SyntaxError as e:
                         error_info = {
                             'file': file_path,
@@ -76,7 +76,7 @@ class Phase2StructuralAnalyzer:
                             'error_type': 'SyntaxError'
                         }
                         syntax_analysis['error_files'].append(error_info)
-                        print(f"  ❌ 構文エラー: {file_path}:{e.lineno} - {e.msg}")
+                        print(f"  [ERROR] 構文エラー: {file_path}:{e.lineno} - {e.msg}")
                         
                         # エラーパターン分類
                         pattern = self._classify_error_pattern(e.msg)
@@ -85,10 +85,10 @@ class Phase2StructuralAnalyzer:
                         syntax_analysis['error_patterns'][pattern].append(error_info)
                         
                 except Exception as e:
-                    print(f"  ⚠️ ファイル読み込みエラー: {file_path} - {e}")
+                    print(f"  [WARNING] ファイル読み込みエラー: {file_path} - {e}")
                     
         # インポートエラーチェック
-        print("  🔍 インポートエラーチェック中...")
+        print("  [SEARCH] インポートエラーチェック中...")
         for file_path in critical_files:
             full_path = self.project_root / file_path
             if full_path.exists():
@@ -98,7 +98,7 @@ class Phase2StructuralAnalyzer:
                         error['file'] = file_path
                         error['error_type'] = 'ImportError'
                         syntax_analysis['error_files'].append(error)
-                        print(f"  ❌ インポートエラー: {file_path} - {error['message']}")
+                        print(f"  [ERROR] インポートエラー: {file_path} - {error['message']}")
         
         # 影響範囲分析
         syntax_analysis['impact_analysis'] = self._analyze_error_impact(syntax_analysis['error_files'])
@@ -106,8 +106,8 @@ class Phase2StructuralAnalyzer:
         # 修正優先度決定
         syntax_analysis['fix_priority'] = self._determine_fix_priority(syntax_analysis['error_files'])
         
-        print(f"  📊 構文エラー総数: {len(syntax_analysis['error_files'])}")
-        print(f"  📊 エラーパターン種類: {len(syntax_analysis['error_patterns'])}")
+        print(f"  [CHART] 構文エラー総数: {len(syntax_analysis['error_files'])}")
+        print(f"  [CHART] エラーパターン種類: {len(syntax_analysis['error_patterns'])}")
         
         self.syntax_errors = syntax_analysis
         return syntax_analysis
@@ -235,7 +235,7 @@ class Phase2StructuralAnalyzer:
     
     def profile_dssms_report_generator(self) -> Dict[str, Any]:
         """dssms_report_generator詳細プロファイリング・ボトルネック分解"""
-        print("🔍 dssms_report_generator詳細プロファイリング・ボトルネック分解中...")
+        print("[SEARCH] dssms_report_generator詳細プロファイリング・ボトルネック分解中...")
         
         profiling_results = {
             'profiling_success': False,
@@ -248,7 +248,7 @@ class Phase2StructuralAnalyzer:
         report_generator_path = self.project_root / "src" / "dssms" / "dssms_report_generator.py"
         
         if not report_generator_path.exists():
-            print(f"  ❌ ファイルが存在しません: {report_generator_path}")
+            print(f"  [ERROR] ファイルが存在しません: {report_generator_path}")
             return profiling_results
         
         try:
@@ -343,7 +343,7 @@ except Exception as e:
                         if total_time > 0:
                             hotspot['percentage'] = (hotspot['cumulative_time'] / total_time) * 100
                 
-                print(f"  ✅ プロファイリング成功: {len(profiling_results['hotspots'])}件のホットスポット特定")
+                print(f"  [OK] プロファイリング成功: {len(profiling_results['hotspots'])}件のホットスポット特定")
                 
                 # ボトルネック分析
                 profiling_results['bottleneck_analysis'] = self._analyze_bottlenecks(profiling_results['hotspots'])
@@ -352,11 +352,11 @@ except Exception as e:
                 profiling_results['optimization_targets'] = self._identify_optimization_targets(profiling_results['hotspots'])
                 
             else:
-                print(f"  ❌ プロファイリング失敗: {result.stderr}")
+                print(f"  [ERROR] プロファイリング失敗: {result.stderr}")
                 profiling_results['error'] = result.stderr
                 
         except Exception as e:
-            print(f"  ❌ プロファイリング例外: {e}")
+            print(f"  [ERROR] プロファイリング例外: {e}")
             profiling_results['error'] = str(e)
         
         return profiling_results
@@ -433,7 +433,7 @@ except Exception as e:
     
     def investigate_hidden_performance_gap(self) -> Dict[str, Any]:
         """隠れたパフォーマンスギャップ1243ms原因調査・特定"""
-        print("🔍 隠れたパフォーマンスギャップ1243ms原因調査・特定中...")
+        print("[SEARCH] 隠れたパフォーマンスギャップ1243ms原因調査・特定中...")
         
         gap_analysis = {
             'total_measured_time': 0,
@@ -525,9 +525,9 @@ except Exception as e:
         gap_analysis['investigated_impact_ms'] = investigated_total
         gap_analysis['remaining_gap_ms'] = max(0, 1243 - investigated_total)
         
-        print(f"  📊 調査完了: {len(gap_analysis['investigation_results'])}項目")
-        print(f"  📊 調査済み影響: {investigated_total}ms")
-        print(f"  📊 残存ギャップ: {gap_analysis['remaining_gap_ms']}ms")
+        print(f"  [CHART] 調査完了: {len(gap_analysis['investigation_results'])}項目")
+        print(f"  [CHART] 調査済み影響: {investigated_total}ms")
+        print(f"  [CHART] 残存ギャップ: {gap_analysis['remaining_gap_ms']}ms")
         
         return gap_analysis
     
@@ -671,7 +671,7 @@ except Exception as e:
     
     def determine_optimization_priority(self) -> Dict[str, Any]:
         """修正優先順位決定・段階的アプローチ設計"""
-        print("🎯 修正優先順位決定・段階的アプローチ設計中...")
+        print("[TARGET] 修正優先順位決定・段階的アプローチ設計中...")
         
         priority_strategy = {
             'stage2_syntax_fixes': {
@@ -721,9 +721,9 @@ except Exception as e:
             }
         }
         
-        print(f"  📊 最適化段階: {len(priority_strategy)}段階")
-        print(f"  📊 予想総削減: {optimization_approach['expected_total_reduction_ms']}ms")
-        print(f"  📊 予想実行時間: {optimization_approach['phase2_total_time_minutes']}分")
+        print(f"  [CHART] 最適化段階: {len(priority_strategy)}段階")
+        print(f"  [CHART] 予想総削減: {optimization_approach['expected_total_reduction_ms']}ms")
+        print(f"  [CHART] 予想実行時間: {optimization_approach['phase2_total_time_minutes']}分")
         
         self.optimization_strategy = {
             'priority_strategy': priority_strategy,
@@ -767,14 +767,14 @@ except Exception as e:
             ]
         }
         
-        print(f"  📊 統合ポイント: {len(integration_strategy['integration_points'])}箇所")
-        print(f"  📊 エラーハンドリング強化: {len(integration_strategy['error_handling_enhancements'])}項目")
+        print(f"  [CHART] 統合ポイント: {len(integration_strategy['integration_points'])}箇所")
+        print(f"  [CHART] エラーハンドリング強化: {len(integration_strategy['error_handling_enhancements'])}項目")
         
         return integration_strategy
     
     def generate_stage1_analysis_report(self) -> Dict[str, Any]:
         """Stage 1分析レポート生成"""
-        print("📋 Stage 1分析レポート生成中...")
+        print("[LIST] Stage 1分析レポート生成中...")
         
         analysis_report = {
             'stage': 'Stage 1: 構造的問題分析・修正戦略策定',
@@ -795,7 +795,7 @@ except Exception as e:
     
     def run_stage1_analysis(self) -> bool:
         """Stage 1完全分析実行"""
-        print("🚀 TODO-PERF-001 Phase 2 Stage 1: 構造的問題分析・修正戦略策定開始")
+        print("[ROCKET] TODO-PERF-001 Phase 2 Stage 1: 構造的問題分析・修正戦略策定開始")
         print("=" * 80)
         
         start_time = time.time()
@@ -837,17 +837,17 @@ except Exception as e:
             print("🏆 TODO-PERF-001 Phase 2 Stage 1完了サマリー")
             print("="*80)
             print(f"⏱️ 実行時間: {execution_time:.1f}秒")
-            print(f"🔍 構文エラー特定: {len(syntax_analysis['error_files'])}箇所")
-            print(f"📊 プロファイリング成功: {self.profiling_results.get('profiling_success', False)}")
+            print(f"[SEARCH] 構文エラー特定: {len(syntax_analysis['error_files'])}箇所")
+            print(f"[CHART] プロファイリング成功: {self.profiling_results.get('profiling_success', False)}")
             print(f"🕵️ ギャップ調査項目: {len(self.gap_analysis.get('investigation_results', {}))}")
-            print(f"🎯 最適化戦略策定: {len(optimization_strategy.get('priority_strategy', {}))}段階")
+            print(f"[TARGET] 最適化戦略策定: {len(optimization_strategy.get('priority_strategy', {}))}段階")
             print(f"📄 分析レポート: {report_path}")
             
-            print("\n✅ Stage 1分析完了 - Stage 2構文エラー修正実装に進行可能")
+            print("\n[OK] Stage 1分析完了 - Stage 2構文エラー修正実装に進行可能")
             return True
             
         except Exception as e:
-            print(f"❌ Stage 1分析エラー: {e}")
+            print(f"[ERROR] Stage 1分析エラー: {e}")
             traceback.print_exc()
             return False
 
@@ -859,9 +859,9 @@ def main():
     success = analyzer.run_stage1_analysis()
     
     if success:
-        print("\n🎉 Stage 1完成 - 次は Stage 2構文エラー根本修正実装に進行")
+        print("\n[SUCCESS] Stage 1完成 - 次は Stage 2構文エラー根本修正実装に進行")
     else:
-        print("\n⚠️ Stage 1部分完了 - 問題解決後に Stage 2進行を推奨")
+        print("\n[WARNING] Stage 1部分完了 - 問題解決後に Stage 2進行を推奨")
     
     return success
 

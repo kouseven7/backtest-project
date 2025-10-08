@@ -27,7 +27,7 @@ class DSSMSComprehensiveAnalyzer:
         
     def run_comprehensive_analysis(self) -> str:
         """包括的分析の実行"""
-        print("🚀 DSSMS包括的問題分析開始")
+        print("[ROCKET] DSSMS包括的問題分析開始")
         print("=" * 70)
         
         # 1. DSSMSバックテスターを実行してログを取得
@@ -77,14 +77,14 @@ class DSSMSComprehensiveAnalyzer:
             self.execution_log = result.stdout + result.stderr
             
             if result.returncode == 0:
-                print("   ✅ DSSMS実行成功")
+                print("   [OK] DSSMS実行成功")
                 self.analysis_results['execution_status'] = 'success'
                 
                 # ログから重要情報を抽出
                 self._extract_log_metrics()
                 
             else:
-                print(f"   ❌ DSSMS実行エラー")
+                print(f"   [ERROR] DSSMS実行エラー")
                 self.analysis_results['execution_status'] = 'failed'
                 self.issues.append({
                     'category': 'execution',
@@ -103,7 +103,7 @@ class DSSMSComprehensiveAnalyzer:
                 'type': 'execution_timeout'
             })
         except Exception as e:
-            print(f"   ❌ 実行エラー: {e}")
+            print(f"   [ERROR] 実行エラー: {e}")
             self.issues.append({
                 'category': 'execution',
                 'severity': 'critical',
@@ -164,7 +164,7 @@ class DSSMSComprehensiveAnalyzer:
         
         self.analysis_results['log_metrics'] = log_metrics
         
-        print(f"   📊 ログ解析完了:")
+        print(f"   [CHART] ログ解析完了:")
         for key, value in log_metrics.items():
             print(f"     {key}: {value}")
     
@@ -207,7 +207,7 @@ class DSSMSComprehensiveAnalyzer:
                 latest_files[file_type] = latest_file
                 print(f"   📁 {file_type}: {os.path.basename(latest_file)}")
             else:
-                print(f"   ❌ {file_type}: ファイル未発見")
+                print(f"   [ERROR] {file_type}: ファイル未発見")
                 self.issues.append({
                     'category': 'file_availability',
                     'severity': 'high',
@@ -221,7 +221,7 @@ class DSSMSComprehensiveAnalyzer:
     def _analyze_log_output_inconsistency(self, latest_files: Dict[str, str]):
         """ログと出力ファイルの不整合分析"""
         if 'log_metrics' not in self.analysis_results:
-            print("   ❌ ログ情報が取得できていません")
+            print("   [ERROR] ログ情報が取得できていません")
             return
         
         log_metrics = self.analysis_results['log_metrics']
@@ -240,7 +240,7 @@ class DSSMSComprehensiveAnalyzer:
     
     def _analyze_excel_vs_log_consistency(self, excel_path: str, log_metrics: Dict):
         """Excel⇔ログ整合性分析"""
-        print(f"   📊 Excel分析: {os.path.basename(excel_path)}")
+        print(f"   [CHART] Excel分析: {os.path.basename(excel_path)}")
         
         try:
             excel_file = pd.ExcelFile(excel_path)
@@ -266,9 +266,9 @@ class DSSMSComprehensiveAnalyzer:
                             'percentage_diff': abs(actual_rows - expected_days) / max(expected_days, 1) * 100
                         }
                     })
-                    print(f"     ❌ データ行数不整合: ログ{expected_days}日 vs Excel{actual_rows}行")
+                    print(f"     [ERROR] データ行数不整合: ログ{expected_days}日 vs Excel{actual_rows}行")
                 else:
-                    print(f"     ✅ データ行数整合性OK: {actual_rows}行")
+                    print(f"     [OK] データ行数整合性OK: {actual_rows}行")
                 
                 # 日付範囲の分析
                 if '日付' in pnl_df.columns:
@@ -289,7 +289,7 @@ class DSSMSComprehensiveAnalyzer:
                                     'end_date': dates.max().strftime('%Y-%m-%d')
                                 }
                             })
-                            print(f"     ❌ 日付範囲不整合: 期待{expected_days}日 vs 実際{date_range_days}日")
+                            print(f"     [ERROR] 日付範囲不整合: 期待{expected_days}日 vs 実際{date_range_days}日")
             
             # 取引履歴シートの分析
             if '取引履歴' in excel_file.sheet_names:
@@ -310,9 +310,9 @@ class DSSMSComprehensiveAnalyzer:
                             'difference': abs(actual_trades - expected_trades)
                         }
                     })
-                    print(f"     ❌ 取引数不整合: ログ{expected_trades}件 vs Excel{actual_trades}件")
+                    print(f"     [ERROR] 取引数不整合: ログ{expected_trades}件 vs Excel{actual_trades}件")
                 else:
-                    print(f"     ✅ 取引数整合性OK: {actual_trades}件")
+                    print(f"     [OK] 取引数整合性OK: {actual_trades}件")
             
             # パフォーマンス指標の比較
             if 'サマリー' in excel_file.sheet_names:
@@ -320,7 +320,7 @@ class DSSMSComprehensiveAnalyzer:
                 self._compare_performance_metrics(summary_df, log_metrics)
                 
         except Exception as e:
-            print(f"     ❌ Excel分析エラー: {e}")
+            print(f"     [ERROR] Excel分析エラー: {e}")
             self.issues.append({
                 'category': 'file_analysis',
                 'severity': 'high',
@@ -330,7 +330,7 @@ class DSSMSComprehensiveAnalyzer:
     
     def _compare_performance_metrics(self, summary_df: pd.DataFrame, log_metrics: Dict):
         """パフォーマンス指標の比較"""
-        print("     📈 パフォーマンス指標比較")
+        print("     [UP] パフォーマンス指標比較")
         
         if '項目' in summary_df.columns and '値' in summary_df.columns:
             # 総リターンの比較
@@ -363,10 +363,10 @@ class DSSMSComprehensiveAnalyzer:
                                     'difference': abs(excel_return - log_return)
                                 }
                             })
-                            print(f"       ❌ 総リターン不整合: Excel{excel_return}% vs ログ{log_return}%")
+                            print(f"       [ERROR] 総リターン不整合: Excel{excel_return}% vs ログ{log_return}%")
                             break
                     else:
-                        print(f"       ✅ 総リターン整合性OK: {excel_return}%")
+                        print(f"       [OK] 総リターン整合性OK: {excel_return}%")
             
             # 最終ポートフォリオ価値の比較
             portfolio_row = summary_df[summary_df['項目'].str.contains('最終ポートフォリオ価値', na=False)]
@@ -390,9 +390,9 @@ class DSSMSComprehensiveAnalyzer:
                                 'difference': abs(excel_portfolio - log_portfolio)
                             }
                         })
-                        print(f"       ❌ ポートフォリオ価値不整合: Excel{excel_portfolio:,}円 vs ログ{log_portfolio:,}円")
+                        print(f"       [ERROR] ポートフォリオ価値不整合: Excel{excel_portfolio:,}円 vs ログ{log_portfolio:,}円")
                     else:
-                        print(f"       ✅ ポートフォリオ価値整合性OK: {excel_portfolio:,}円")
+                        print(f"       [OK] ポートフォリオ価値整合性OK: {excel_portfolio:,}円")
     
     def _analyze_text_vs_log_consistency(self, text_path: str, log_metrics: Dict):
         """テキスト⇔ログ整合性分析"""
@@ -420,9 +420,9 @@ class DSSMSComprehensiveAnalyzer:
                             'difference': abs(text_return - log_return)
                         }
                     })
-                    print(f"     ❌ 総リターン不整合: テキスト{text_return}% vs ログ{log_return}%")
+                    print(f"     [ERROR] 総リターン不整合: テキスト{text_return}% vs ログ{log_return}%")
                 else:
-                    print(f"     ✅ 総リターン整合性OK: {text_return}%")
+                    print(f"     [OK] 総リターン整合性OK: {text_return}%")
             
             # 銘柄切替回数の比較
             switches_match = re.search(r'銘柄切替回数[:\s]*(\d+)', text_content)
@@ -442,12 +442,12 @@ class DSSMSComprehensiveAnalyzer:
                             'difference': abs(text_switches - log_switches)
                         }
                     })
-                    print(f"     ❌ 切替回数不整合: テキスト{text_switches}回 vs ログ{log_switches}回")
+                    print(f"     [ERROR] 切替回数不整合: テキスト{text_switches}回 vs ログ{log_switches}回")
                 else:
-                    print(f"     ✅ 切替回数整合性OK: {text_switches}回")
+                    print(f"     [OK] 切替回数整合性OK: {text_switches}回")
                     
         except Exception as e:
-            print(f"     ❌ テキスト分析エラー: {e}")
+            print(f"     [ERROR] テキスト分析エラー: {e}")
             self.issues.append({
                 'category': 'file_analysis',
                 'severity': 'medium',
@@ -481,9 +481,9 @@ class DSSMSComprehensiveAnalyzer:
                             'difference': abs(actual_count - expected_count)
                         }
                     })
-                    print(f"     ❌ ポートフォリオデータ数不整合: JSON{actual_count}件 vs ログ{expected_count}件")
+                    print(f"     [ERROR] ポートフォリオデータ数不整合: JSON{actual_count}件 vs ログ{expected_count}件")
                 else:
-                    print(f"     ✅ ポートフォリオデータ数整合性OK: {actual_count}件")
+                    print(f"     [OK] ポートフォリオデータ数整合性OK: {actual_count}件")
             
             # 取引データの整合性チェック
             if 'trades' in json_data:
@@ -503,12 +503,12 @@ class DSSMSComprehensiveAnalyzer:
                             'difference': abs(actual_trades - expected_trades)
                         }
                     })
-                    print(f"     ❌ 取引データ数不整合: JSON{actual_trades}件 vs ログ{expected_trades}件")
+                    print(f"     [ERROR] 取引データ数不整合: JSON{actual_trades}件 vs ログ{expected_trades}件")
                 else:
-                    print(f"     ✅ 取引データ数整合性OK: {actual_trades}件")
+                    print(f"     [OK] 取引データ数整合性OK: {actual_trades}件")
                     
         except Exception as e:
-            print(f"     ❌ JSON分析エラー: {e}")
+            print(f"     [ERROR] JSON分析エラー: {e}")
             self.issues.append({
                 'category': 'file_analysis',
                 'severity': 'medium',
@@ -541,7 +541,7 @@ class DSSMSComprehensiveAnalyzer:
                             expected_end = pd.to_datetime('2023-12-31')
                             expected_range_days = (expected_end - expected_start).days + 1
                             
-                            print(f"     📊 期間分析: {start_date.strftime('%Y-%m-%d')} ～ {end_date.strftime('%Y-%m-%d')} ({date_range_days}日)")
+                            print(f"     [CHART] 期間分析: {start_date.strftime('%Y-%m-%d')} ～ {end_date.strftime('%Y-%m-%d')} ({date_range_days}日)")
                             
                             # 年の整合性チェック
                             years = dates.dt.year.unique()
@@ -556,7 +556,7 @@ class DSSMSComprehensiveAnalyzer:
                                         'date_range': f"{start_date.strftime('%Y-%m-%d')} ～ {end_date.strftime('%Y-%m-%d')}"
                                     }
                                 })
-                                print(f"     ❌ 未来日付検出: {years.tolist()}")
+                                print(f"     [ERROR] 未来日付検出: {years.tolist()}")
                             
                             # 期間の妥当性チェック
                             if date_range_days > 400:  # 400日を超える場合
@@ -572,7 +572,7 @@ class DSSMSComprehensiveAnalyzer:
                                         'end_date': end_date.strftime('%Y-%m-%d')
                                     }
                                 })
-                                print(f"     ❌ 期間異常: {date_range_days}日（365日想定）")
+                                print(f"     [ERROR] 期間異常: {date_range_days}日（365日想定）")
                             
                             # ログとの期間比較
                             log_days = self.analysis_results.get('log_metrics', {}).get('days_used', 0)
@@ -588,10 +588,10 @@ class DSSMSComprehensiveAnalyzer:
                                         'difference': abs(date_range_days - log_days)
                                     }
                                 })
-                                print(f"     ❌ 期間不整合: ログ{log_days}日 vs Excel{date_range_days}日")
+                                print(f"     [ERROR] 期間不整合: ログ{log_days}日 vs Excel{date_range_days}日")
                             
             except Exception as e:
-                print(f"     ❌ 時系列分析エラー: {e}")
+                print(f"     [ERROR] 時系列分析エラー: {e}")
                 self.issues.append({
                     'category': 'temporal_analysis',
                     'severity': 'medium',
@@ -601,7 +601,7 @@ class DSSMSComprehensiveAnalyzer:
     
     def _verify_performance_calculations(self, latest_files: Dict[str, str]):
         """パフォーマンス計算の検証"""
-        print("   💰 パフォーマンス計算検証")
+        print("   [MONEY] パフォーマンス計算検証")
         
         if 'excel' in latest_files:
             try:
@@ -618,7 +618,7 @@ class DSSMSComprehensiveAnalyzer:
                         # 手動でリターン計算
                         calculated_return = ((final_value - initial_value) / initial_value) * 100
                         
-                        print(f"     📊 手動計算: 初期{initial_value:,}円 → 最終{final_value:,}円 → リターン{calculated_return:.2f}%")
+                        print(f"     [CHART] 手動計算: 初期{initial_value:,}円 → 最終{final_value:,}円 → リターン{calculated_return:.2f}%")
                         
                         # サマリーのリターンと比較
                         if 'サマリー' in excel_file.sheet_names:
@@ -646,9 +646,9 @@ class DSSMSComprehensiveAnalyzer:
                                                     'difference': abs(calculated_return - summary_return)
                                                 }
                                             })
-                                            print(f"     ❌ リターン計算不整合: 手動{calculated_return:.2f}% vs サマリー{summary_return}%")
+                                            print(f"     [ERROR] リターン計算不整合: 手動{calculated_return:.2f}% vs サマリー{summary_return}%")
                                         else:
-                                            print(f"     ✅ リターン計算整合性OK: {calculated_return:.2f}%")
+                                            print(f"     [OK] リターン計算整合性OK: {calculated_return:.2f}%")
                         
                         # ポートフォリオ価値の変動チェック
                         if pnl_df['ポートフォリオ価値'].nunique() == 1:
@@ -662,10 +662,10 @@ class DSSMSComprehensiveAnalyzer:
                                     'data_points': len(pnl_df)
                                 }
                             })
-                            print(f"     ❌ ポートフォリオ価値が固定値: {initial_value:,}円")
+                            print(f"     [ERROR] ポートフォリオ価値が固定値: {initial_value:,}円")
                         
             except Exception as e:
-                print(f"     ❌ パフォーマンス計算検証エラー: {e}")
+                print(f"     [ERROR] パフォーマンス計算検証エラー: {e}")
                 self.issues.append({
                     'category': 'calculation_verification',
                     'severity': 'medium',
@@ -714,7 +714,7 @@ class DSSMSComprehensiveAnalyzer:
                                             'duplicate_count': duplicate_dates
                                         }
                                     })
-                                    print(f"     ⚠️ {sheet_name}: 重複日付{duplicate_dates}件")
+                                    print(f"     [WARNING] {sheet_name}: 重複日付{duplicate_dates}件")
                                 
                                 # 日付順序チェック
                                 if not valid_dates.is_monotonic_increasing:
@@ -727,7 +727,7 @@ class DSSMSComprehensiveAnalyzer:
                                             'sheet': sheet_name
                                         }
                                     })
-                                    print(f"     ❌ {sheet_name}: 日付が非昇順")
+                                    print(f"     [ERROR] {sheet_name}: 日付が非昇順")
                 
                 if date_issues:
                     total_invalid = sum(issue['invalid_count'] for issue in date_issues)
@@ -741,12 +741,12 @@ class DSSMSComprehensiveAnalyzer:
                             'total_invalid': total_invalid
                         }
                     })
-                    print(f"     ❌ 無効日付: {total_invalid}件")
+                    print(f"     [ERROR] 無効日付: {total_invalid}件")
                 else:
-                    print(f"     ✅ 日付データ品質OK")
+                    print(f"     [OK] 日付データ品質OK")
                     
             except Exception as e:
-                print(f"     ❌ 日付データチェックエラー: {e}")
+                print(f"     [ERROR] 日付データチェックエラー: {e}")
                 self.issues.append({
                     'category': 'date_analysis',
                     'severity': 'medium',
@@ -756,7 +756,7 @@ class DSSMSComprehensiveAnalyzer:
     
     def _categorize_and_generate_fixes(self):
         """問題の分類と修正提案生成"""
-        print("   🔧 問題分類・修正提案生成")
+        print("   [TOOL] 問題分類・修正提案生成")
         
         # 重要度順でソート
         severity_order = {'critical': 4, 'high': 3, 'medium': 2, 'low': 1}
@@ -827,7 +827,7 @@ class DSSMSComprehensiveAnalyzer:
             'categories_count': len(categories)
         }
         
-        print(f"     📊 問題サマリー:")
+        print(f"     [CHART] 問題サマリー:")
         print(f"       総問題数: {len(self.issues)}")
         print(f"       重要: {self.analysis_results['issue_summary']['critical_count']}件")
         print(f"       高優先度: {self.analysis_results['issue_summary']['high_count']}件")
@@ -907,7 +907,7 @@ class DSSMSComprehensiveAnalyzer:
 
 def main():
     """メイン実行関数"""
-    print("🚀 DSSMS包括的問題分析システム開始")
+    print("[ROCKET] DSSMS包括的問題分析システム開始")
     print("="*70)
     print("このシステムは以下を検出します:")
     print("• ログ表示と実際のファイル出力の不整合")
@@ -924,33 +924,33 @@ def main():
         
         # 結果サマリー表示
         print("\n" + "="*70)
-        print("📋 分析結果サマリー")
+        print("[LIST] 分析結果サマリー")
         print("="*70)
         
         summary = analyzer.analysis_results.get('issue_summary', {})
-        print(f"✅ 分析完了")
-        print(f"📊 総問題数: {summary.get('total_issues', 0)}")
-        print(f"🚨 重要問題: {summary.get('critical_count', 0)}件")
-        print(f"⚠️  高優先度: {summary.get('high_count', 0)}件")
+        print(f"[OK] 分析完了")
+        print(f"[CHART] 総問題数: {summary.get('total_issues', 0)}")
+        print(f"[ALERT] 重要問題: {summary.get('critical_count', 0)}件")
+        print(f"[WARNING]  高優先度: {summary.get('high_count', 0)}件")
         print(f"📝 中優先度: {summary.get('medium_count', 0)}件")
-        print(f"🔧 修正提案: {len(analyzer.analysis_results.get('fix_proposals', []))}項目")
+        print(f"[TOOL] 修正提案: {len(analyzer.analysis_results.get('fix_proposals', []))}項目")
         
         # 重要問題のハイライト
         critical_issues = [i for i in analyzer.issues if i['severity'] == 'critical']
         if critical_issues:
-            print(f"\n🚨 重要問題（即座修正推奨）:")
+            print(f"\n[ALERT] 重要問題（即座修正推奨）:")
             for i, issue in enumerate(critical_issues[:3], 1):  # Top 3
                 print(f"   {i}. {issue['description']}")
             if len(critical_issues) > 3:
                 print(f"   ... 他{len(critical_issues)-3}件")
         
         print(f"\n📄 詳細レポート: {report_path}")
-        print(f"💡 推奨: まず重要問題から修正を開始してください")
+        print(f"[IDEA] 推奨: まず重要問題から修正を開始してください")
         
         return report_path
         
     except Exception as e:
-        print(f"\n❌ 分析実行エラー: {e}")
+        print(f"\n[ERROR] 分析実行エラー: {e}")
         import traceback
         traceback.print_exc()
         return None

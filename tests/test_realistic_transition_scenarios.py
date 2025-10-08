@@ -23,8 +23,8 @@ def test_realistic_scenarios():
     print("=" * 60)
     
     scenarios = [
-        ("📈 強いトレンド → レンジ移行", create_trend_to_range_data),
-        ("📊 レンジ → ブレイクアウト移行", create_range_to_breakout_data),
+        ("[UP] 強いトレンド → レンジ移行", create_trend_to_range_data),
+        ("[CHART] レンジ → ブレイクアウト移行", create_range_to_breakout_data),
         ("💥 ボラティリティ急上昇", create_volatility_spike_data),
         ("🌊 不安定な市場", create_unstable_market_data)
     ]
@@ -46,7 +46,7 @@ def test_realistic_scenarios():
         
         if result.position_adjustments:
             for adj in result.position_adjustments:
-                print(f"  📉 {adj.strategy_name}: {adj.current_position_size:.0f} → {adj.recommended_size:.0f} ({adj.urgency})")
+                print(f"  [DOWN] {adj.strategy_name}: {adj.current_position_size:.0f} → {adj.recommended_size:.0f} ({adj.urgency})")
         
         if result.risk_modifications:
             print(f"リスク調整: {list(result.risk_modifications.keys())}")

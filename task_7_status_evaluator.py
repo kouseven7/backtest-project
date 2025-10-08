@@ -122,12 +122,12 @@ class Task7StatusEvaluator:
         
         print("### 解決済み問題")
         for issue in necessity_factors["resolved_issues"]:
-            print(f"- ✅ {issue}")
+            print(f"- [OK] {issue}")
         print()
         
         print("### 残存課題")
         for concern in necessity_factors["remaining_concerns"]:
-            print(f"- ⚠️ {concern}")
+            print(f"- [WARNING] {concern}")
         print()
         
         print("### 優先度変化")

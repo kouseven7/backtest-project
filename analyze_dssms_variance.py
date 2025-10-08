@@ -56,7 +56,7 @@ def analyze_dssms_variance():
     
     df = pd.DataFrame(results)
     
-    print("📊 結果変動の統計:")
+    print("[CHART] 結果変動の統計:")
     for col in ['final_value', 'total_return', 'switches', 'success_rate']:
         if col in df.columns:
             mean_val = df[col].mean()
@@ -67,21 +67,21 @@ def analyze_dssms_variance():
             print(f"     標準偏差: {std_val:.2f}")
             print(f"     変動係数: {cv:.2f}%")
     
-    print("\n🔍 変動の異常度判定:")
+    print("\n[SEARCH] 変動の異常度判定:")
     
     # 総リターンの変動 (45.49% → 22.42% は異常に大きい)
     return_range = df['total_return'].max() - df['total_return'].min()
     print(f"   総リターン変動幅: {return_range:.2f}% (45.49% → 22.42%)")
     if return_range > 20:
-        print("   ⚠️ 異常: 同じ期間・同じ設定での変動幅が20%以上は異常")
+        print("   [WARNING] 異常: 同じ期間・同じ設定での変動幅が20%以上は異常")
     
     # vs_戦略の変動 (71.96% → -15.99% は明らかに異常)
     vs_7203_range = df['vs_7203'].max() - df['vs_7203'].min()
     print(f"   vs_7203変動幅: {vs_7203_range:.2f}% (71.96% → -15.99%)")
     if vs_7203_range > 50:
-        print("   ⚠️ 異常: vs_戦略の変動幅が50%以上は計算エラーの可能性")
+        print("   [WARNING] 異常: vs_戦略の変動幅が50%以上は計算エラーの可能性")
     
-    print("\n🎯 予想される原因:")
+    print("\n[TARGET] 予想される原因:")
     print("   1. ランダム要素の混入（乱数シードが固定されていない）")
     print("   2. データ取得タイミングの違い（リアルタイムデータ混入）")
     print("   3. 日付・時刻計算の不整合")
@@ -100,7 +100,7 @@ def check_dssms_determinism():
         from dssms.dssms_backtester import DSSMSBacktester
         
         # 同じ条件で2回実行
-        print("🧪 同一条件での2回実行テスト:")
+        print("[TEST] 同一条件での2回実行テスト:")
         
         backtester1 = DSSMSBacktester()
         backtester2 = DSSMSBacktester()
@@ -128,7 +128,7 @@ def check_dssms_determinism():
         result2 = backtester2.simulate_dynamic_selection(**test_params)
         
         # 結果比較
-        print("\n📊 結果比較:")
+        print("\n[CHART] 結果比較:")
         
         if isinstance(result1, dict) and isinstance(result2, dict):
             for key in ['final_portfolio_value', 'total_return', 'total_switches']:
@@ -142,12 +142,12 @@ def check_dssms_determinism():
                     print(f"     差異: {diff}")
                     
                     if isinstance(diff, (int, float)) and diff > 0.01:
-                        print(f"     ⚠️ 非決定的: 同じ条件で異なる結果")
+                        print(f"     [WARNING] 非決定的: 同じ条件で異なる結果")
                     else:
-                        print(f"     ✅ 決定的: 同じ結果")
+                        print(f"     [OK] 決定的: 同じ結果")
         
     except Exception as e:
-        print(f"❌ テスト実行エラー: {e}")
+        print(f"[ERROR] テスト実行エラー: {e}")
         import traceback
         traceback.print_exc()
 

@@ -80,18 +80,18 @@ def debug_switch_control():
         # 切替制御が効いているかの判定
         print(f"\n=== 制御効果診断 ===")
         if len(backtester.switch_history) > 50:
-            print("❌ 切替が多すぎます（制御が効いていない可能性）")
+            print("[ERROR] 切替が多すぎます（制御が効いていない可能性）")
         elif len(backtester.switch_history) < 20:
-            print("✅ 切替が適度に抑制されています")
+            print("[OK] 切替が適度に抑制されています")
         else:
-            print("⚠️  切替回数は中程度です")
+            print("[WARNING]  切替回数は中程度です")
             
         if backtester.switch_history:
             avg_holding = sum([s.holding_period_hours for s in backtester.switch_history]) / len(backtester.switch_history)
             if avg_holding < 48:
-                print("❌ 平均保有期間が短すぎます")
+                print("[ERROR] 平均保有期間が短すぎます")
             else:
-                print("✅ 平均保有期間は適切です")
+                print("[OK] 平均保有期間は適切です")
         
     except Exception as e:
         print(f"エラーが発生しました: {e}")
