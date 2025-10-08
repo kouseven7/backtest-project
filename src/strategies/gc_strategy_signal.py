@@ -48,23 +48,51 @@ class GCStrategy(BaseStrategy):
             price_column = "Close"
             self.price_column = price_column
         
-        # デフォルトパラメータの設定
-        default_params = {
-            "short_window": 5,       # 短期移動平均期間
-            "long_window": 25,       # 長期移動平均期間
-            "take_profit": 0.05,     # 利益確定（5%）
-            "stop_loss": 0.03,       # ストップロス（3%）
-            "trailing_stop_pct": 0.03,  # トレーリングストップ（3%）
-            "max_hold_days": 20,     # 最大保有期間（20日）
-            "exit_on_death_cross": True,  # デッドクロスでイグジットするかどうか
+        # TODO #13: 戦略パラメータ標準化システム統合
+        try:
+            from config.strategy_parameter_standardizer import get_parameter_standardizer
+            standardizer = get_parameter_standardizer()
             
-            # トレンドフィルター設定
-            "trend_filter_enabled": True,  # 統一トレンド判定の有効化
-            "allowed_trends": ["uptrend"]  # 許可するトレンド（上昇トレンド）
-        }
+            # デフォルトパラメータの設定（TODO #13: Phase 1 統一名称使用）
+            default_params = {
+                "short_window": 5,       # 短期移動平均期間
+                "long_window": 25,       # 長期移動平均期間
+                "take_profit_pct": 0.05, # 利益確定（5%） - 統一名称
+                "stop_loss_pct": 0.03,   # ストップロス（3%） - 統一名称  
+                "trailing_stop_pct": 0.03,  # トレーリングストップ（3%）
+                "max_hold_days": 20,     # 最大保有期間（20日）
+                "exit_on_death_cross": True,  # デッドクロスでイグジットするかどうか
+                
+                # トレンドフィルター設定
+                "trend_filter_enabled": True,  # 統一トレンド判定の有効化
+                "allowed_trends": ["uptrend"]  # 許可するトレンド（上昇トレンド）
+            }
+            
+            # ユーザーパラメータの標準化（旧名称→新名称）
+            user_params = params or {}
+            standardized_user_params = standardizer.standardize_parameters('GCStrategy', user_params)
+            
+            # 親クラスの初期化（デフォルトパラメータと標準化済みユーザーパラメータをマージ）
+            merged_params = {**default_params, **standardized_user_params}
+            
+        except ImportError:
+            # 標準化システム未利用可能時はフォールバック（後方互換性）
+            logging.warning("TODO #13: Parameter standardizer unavailable - using legacy parameter names")
+            default_params = {
+                "short_window": 5,       # 短期移動平均期間
+                "long_window": 25,       # 長期移動平均期間
+                "take_profit": 0.05,     # 利益確定（5%）- 旧名称
+                "stop_loss": 0.03,       # ストップロス（3%）- 旧名称
+                "trailing_stop_pct": 0.03,  # トレーリングストップ（3%）
+                "max_hold_days": 20,     # 最大保有期間（20日）
+                "exit_on_death_cross": True,  # デッドクロスでイグジットするかどうか
+                
+                # トレンドフィルター設定
+                "trend_filter_enabled": True,  # 統一トレンド判定の有効化
+                "allowed_trends": ["uptrend"]  # 許可するトレンド（上昇トレンド）
+            }
+            merged_params = {**default_params, **(params or {})}
         
-        # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
-        merged_params = {**default_params, **(params or {})}
         super().__init__(data, merged_params)
 
     def initialize_strategy(self):
@@ -96,7 +124,8 @@ class GCStrategy(BaseStrategy):
         
         self.logger.info(
             f"GCStrategy initialized with short_window={self.short_window}, long_window={self.long_window}, "
-            f"take_profit={self.params['take_profit']}, stop_loss={self.params['stop_loss']}"
+            f"take_profit_pct={self.params.get('take_profit_pct', self.params.get('take_profit', 0.05))}, "
+            f"stop_loss_pct={self.params.get('stop_loss_pct', self.params.get('stop_loss', 0.03))}"
         )
         
         # 移動平均の計算（指定した価格カラムを使用）
@@ -208,13 +237,15 @@ class GCStrategy(BaseStrategy):
             self.logger.info(f"トレーリングストップによるイグジット: 日付={self.data.index[idx]}")
             return -1
     
-        # 3. 利益確定
-        if current_price >= entry_price * (1 + self.params.get("take_profit", 0.05)):
+        # 3. TODO #13: 利益確定（統一名称使用、後方互換性維持）
+        take_profit_pct = self.params.get("take_profit_pct", self.params.get("take_profit", 0.05))
+        if current_price >= entry_price * (1 + take_profit_pct):
             self.logger.info(f"利益確定によるイグジット: 日付={self.data.index[idx]}")
             return -1
     
-        # 4. 損切り
-        if current_price <= entry_price * (1 - self.params.get("stop_loss", 0.03)):
+        # 4. TODO #13: 損切り（統一名称使用、後方互換性維持）
+        stop_loss_pct = self.params.get("stop_loss_pct", self.params.get("stop_loss", 0.03))
+        if current_price <= entry_price * (1 - stop_loss_pct):
             self.logger.info(f"損切りによるイグジット: 日付={self.data.index[idx]}")
             return -1
     
@@ -303,8 +334,8 @@ class GCStrategy(BaseStrategy):
             'default_params': {
                 "short_window": 5,
                 "long_window": 25,
-                "take_profit": 0.05,
-                "stop_loss": 0.03,
+                "take_profit_pct": 0.05,
+                "stop_loss_pct": 0.03,
                 "trailing_stop_pct": 0.03,
                 "max_hold_days": 20,
                 "exit_on_death_cross": True
@@ -336,8 +367,8 @@ GC戦略の最適化設定ファイル
 PARAM_GRID = {
     "short_window": [5, 10, 15, 20],           # 短期移動平均期間
     "long_window": [25, 50, 100, 200],         # 長期移動平均期間
-    "take_profit": [0.03, 0.05, 0.08, 0.1],    # 利益確定レベル
-    "stop_loss": [0.02, 0.03, 0.05],           # ストップロスレベル
+    "take_profit_pct": [0.03, 0.05, 0.08, 0.1],    # 利益確定レベル（統一名称）
+    "stop_loss_pct": [0.02, 0.03, 0.05],           # ストップロスレベル（統一名称）
     "trailing_stop_pct": [0.02, 0.03, 0.05],   # トレーリングストップの割合
     "max_hold_days": [10, 15, 20, 30],         # 最大保有期間
     "exit_on_death_cross": [True, False],      # デッドクロスでイグジット
@@ -349,8 +380,8 @@ PARAM_GRID = {
 PARAM_DESCRIPTIONS = {
     "short_window": "短期移動平均の期間 - 小さいほど反応が早い",
     "long_window": "長期移動平均の期間 - 大きいほどトレンドを捉える",
-    "take_profit": "利益確定レベル - エントリー価格からの上昇率",
-    "stop_loss": "ストップロスレベル - エントリー価格からの下落率",
+    "take_profit_pct": "利益確定レベル - エントリー価格からの上昇率（統一名称）",
+    "stop_loss_pct": "ストップロスレベル - エントリー価格からの下落率（統一名称）",
     "trailing_stop_pct": "トレーリングストップの割合 - 高値からの下落率",
     "max_hold_days": "最大保有期間 - この日数を超えると強制イグジット",
     "exit_on_death_cross": "デッドクロス発生時にイグジットするかどうか",

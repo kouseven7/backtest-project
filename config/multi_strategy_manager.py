@@ -22,6 +22,14 @@ from typing import Dict, Any, List, Optional, Tuple, Union
 from dataclasses import dataclass, field
 from enum import Enum
 
+# TODO #14 Phase 3: RealMarketDataFetcher統合
+try:
+    from real_market_data_fetcher import RealMarketDataFetcher, fetch_strategy_required_data
+    REAL_DATA_FETCHER_AVAILABLE = True
+except ImportError as e:
+    REAL_DATA_FETCHER_AVAILABLE = False
+    print(f"RealMarketDataFetcher not available: {e}")
+
 # プロジェクトパスの追加
 # TODO(tag:syntax_fix, rationale:restore weight judgment system)
 try:
@@ -30,6 +38,21 @@ try:
     print(f"Project path added: {project_root}")
 except Exception as e:
     print(f"Failed to add project path: {e}")
+
+# TODO #15 Phase 1-Priority 1: 戦略クラスインポート
+try:
+    from src.strategies.VWAP_Breakout import VWAPBreakoutStrategy
+    from src.strategies.Momentum_Investing import MomentumInvestingStrategy  
+    from src.strategies.Breakout import BreakoutStrategy
+    from src.strategies.VWAP_Bounce import VWAPBounceStrategy
+    from src.strategies.Opening_Gap import OpeningGapStrategy
+    from src.strategies.contrarian_strategy import ContrarianStrategy
+    from src.strategies.gc_strategy_signal import GCStrategy
+    STRATEGY_IMPORTS_AVAILABLE = True
+    print("✅ All strategy classes imported successfully")
+except ImportError as e:
+    STRATEGY_IMPORTS_AVAILABLE = False
+    print(f"⚠️ Some strategy imports failed: {e}")
 
 # Phase 4-A-2: 支援メソッド実装 (バックテスト基本理念準拠)
     
@@ -193,13 +216,18 @@ class MultiStrategyManager:
         self.config = self._load_config(config_path)
         self.execution_mode = ExecutionMode(self.config.get('execution_mode', 'hybrid'))
         
-        # TODO(tag:strategy_registry, rationale:complete weight judgment system recovery)
-        # 戦略レジストリシステム初期化
+        # TODO #15 Phase 1-Priority 1: 戦略レジストリ確実な初期化
+        # loggerを先に初期化
+        self.logger = logging.getLogger(__name__)
+        
+        # 確実に戦略レジストリを初期化
         self.strategy_registry = {}
+        self._initialize_strategy_registry()
+        print(f"✅ Strategy registry initialized: {len(self.strategy_registry)} strategies")
+        
         self.strategy_import_paths = {}
         self.registry_validation_results = {}
         self.is_initialized = False
-        self.logger = logging.getLogger(__name__)
         
         # システムコンポーネント
         self.strategy_selector = None
@@ -225,7 +253,43 @@ class MultiStrategyManager:
         self.monitoring_config = {}
         
         logger.info("MultiStrategyManager initialized with strategy registry system")
+        
+        # TODO #15 Phase 1-Priority 2: 自動システム初期化（戦略初期化エラー解決）
+        try:
+            logger.info("Initializing multi-strategy systems with complete strategy registry...")
+            self._initialize_strategy_registry_complete()
+            self._validate_strategy_registry()
+            self._setup_resource_pool()
+            self._prepare_monitoring()
+            self._initialize_data_managers()
+            self._initialize_strategy_selector()  
+            self._initialize_portfolio_systems()
+            self._initialize_risk_management()
+            self._initialize_execution_adapter()
+            
+            self.is_initialized = True
+            logger.info("Multi-strategy systems with complete strategy registry initialized successfully")
+        except Exception as e:
+            logger.warning(f"Full system initialization failed: {e}. Using basic registry mode.")
+            self.is_initialized = True  # 戦略レジストリは動作するため基本機能有効
     
+    def _initialize_strategy_registry(self):
+        """戦略レジストリの確実な初期化 - TODO #15 Phase 1-Priority 1"""
+        if STRATEGY_IMPORTS_AVAILABLE:
+            self.strategy_registry = {
+                'VWAPBreakoutStrategy': VWAPBreakoutStrategy,
+                'MomentumInvestingStrategy': MomentumInvestingStrategy,
+                'BreakoutStrategy': BreakoutStrategy,
+                'VWAPBounceStrategy': VWAPBounceStrategy,
+                'OpeningGapStrategy': OpeningGapStrategy,
+                'ContrarianStrategy': ContrarianStrategy,
+                'GCStrategy': GCStrategy
+            }
+            self.logger.info(f"✅ Strategy registry initialized with {len(self.strategy_registry)} strategies")
+        else:
+            self.strategy_registry = {}
+            self.logger.warning("⚠️ Strategy imports failed - empty registry initialized")
+            
     def _load_config(self, config_path: str) -> Dict[str, Any]:
         """設定ファイルをロード"""
         try:
@@ -1049,27 +1113,93 @@ class MultiStrategyManager:
                 'price_column': kwargs.get('price_column', 'Close')
             }
             
-            # TODO #12 RA_003: VWAPBreakoutStrategy index_data自動供給
+            # TODO #14 Phase 3: 実データ自動供給システム統合
+            # (Phase 1のエラー停止方式を Phase 3で自動供給に強化)
+            # ✅ RealMarketDataFetcher統合による実データ自動供給
+            
             if strategy_name == 'VWAPBreakoutStrategy':
                 if 'index_data' not in kwargs:
-                    # index_dataが提供されない場合は株価データをコピーして使用
-                    instance_kwargs['index_data'] = data.copy()
-                    self.logger.info(f"{strategy_name}: index_data auto-supplied from stock_data")
+                    # Phase 3: 自動供給機能（RealMarketDataFetcher使用）
+                    if REAL_DATA_FETCHER_AVAILABLE:
+                        try:
+                            self.logger.info(f"{strategy_name}: Fetching real index_data automatically...")
+                            strategy_data = fetch_strategy_required_data(strategy_name, data)
+                            
+                            if 'index_data' in strategy_data and strategy_data['index_data'] is not None:
+                                instance_kwargs['index_data'] = strategy_data['index_data']
+                                self.logger.info(f"{strategy_name}: Real index_data auto-supplied successfully ({len(strategy_data['index_data'])} rows)")
+                            else:
+                                raise ValueError("Failed to fetch index_data")
+                                
+                        except Exception as e:
+                            error_msg = (
+                                f"❌ FAILED: {strategy_name} real data auto-supply failed.\n"
+                                f"📋 Error: {str(e)}\n"
+                                f"🔧 Solutions:\n"
+                                f"  1. Check network connection for market data access\n"
+                                f"  2. Manually provide index_data: kwargs['index_data'] = your_data\n"
+                                f"  3. Verify yfinance service availability\n"
+                                f"TODO(tag:real_data_required, rationale:TODO14 auto-supply failed)"
+                            )
+                            self.logger.error(error_msg)
+                            raise ValueError(error_msg)
+                    else:
+                        # RealMarketDataFetcher利用不可時のエラー（Phase 1フォールバック）
+                        error_msg = (
+                            f"ERROR: {strategy_name} requires 'index_data' parameter for real market data.\n"
+                            f"Auto-supply system unavailable - RealMarketDataFetcher not loaded.\n"
+                            f"Please provide actual market index data manually.\n"
+                            f"Example: kwargs['index_data'] = fetch_real_index_data('N225')"
+                        )
+                        self.logger.error(error_msg)
+                        raise ValueError(f"Real data required: {strategy_name} missing index_data TODO(tag:real_data_required, rationale:TODO14 fetcher unavailable)")
                 else:
                     instance_kwargs['index_data'] = kwargs['index_data']
+                    self.logger.info(f"{strategy_name}: Real index_data provided manually")
                 
                 # その他のVWAP固有パラメータ
                 if 'volume_column' in kwargs:
                     instance_kwargs['volume_column'] = kwargs['volume_column']
             
-            # TODO #12 RA_003: OpeningGapStrategy dow_data自動供給  
             elif strategy_name == 'OpeningGapStrategy':
                 if 'dow_data' not in kwargs:
-                    # dow_dataが提供されない場合は株価データをコピーして使用
-                    instance_kwargs['dow_data'] = data.copy()
-                    self.logger.info(f"{strategy_name}: dow_data auto-supplied from stock_data")
+                    # Phase 3: 自動供給機能（RealMarketDataFetcher使用）
+                    if REAL_DATA_FETCHER_AVAILABLE:
+                        try:
+                            self.logger.info(f"{strategy_name}: Fetching real dow_data automatically...")
+                            strategy_data = fetch_strategy_required_data(strategy_name, data)
+                            
+                            if 'dow_data' in strategy_data and strategy_data['dow_data'] is not None:
+                                instance_kwargs['dow_data'] = strategy_data['dow_data']
+                                self.logger.info(f"{strategy_name}: Real dow_data auto-supplied successfully ({len(strategy_data['dow_data'])} rows)")
+                            else:
+                                raise ValueError("Failed to fetch dow_data")
+                                
+                        except Exception as e:
+                            error_msg = (
+                                f"❌ FAILED: {strategy_name} real data auto-supply failed.\n"
+                                f"📋 Error: {str(e)}\n"
+                                f"🔧 Solutions:\n"
+                                f"  1. Check network connection for market data access\n"
+                                f"  2. Manually provide dow_data: kwargs['dow_data'] = your_data\n"
+                                f"  3. Verify yfinance service availability\n"
+                                f"TODO(tag:real_data_required, rationale:TODO14 auto-supply failed)"
+                            )
+                            self.logger.error(error_msg)
+                            raise ValueError(error_msg)
+                    else:
+                        # RealMarketDataFetcher利用不可時のエラー（Phase 1フォールバック）
+                        error_msg = (
+                            f"ERROR: {strategy_name} requires 'dow_data' parameter for real market data.\n"
+                            f"Auto-supply system unavailable - RealMarketDataFetcher not loaded.\n"
+                            f"Please provide actual Dow Jones index data manually.\n"
+                            f"Example: kwargs['dow_data'] = fetch_real_index_data('DJI')"
+                        )
+                        self.logger.error(error_msg)
+                        raise ValueError(f"Real data required: {strategy_name} missing dow_data TODO(tag:real_data_required, rationale:TODO14 fetcher unavailable)")
                 else:
                     instance_kwargs['dow_data'] = kwargs['dow_data']
+                    self.logger.info(f"{strategy_name}: Real dow_data provided manually")
             
             # TODO #12 RA_005: VWAPBounceStrategy等の他の戦略（index_data不要）
             elif strategy_name in ['VWAPBounceStrategy']:
