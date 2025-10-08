@@ -388,5 +388,89 @@ def extract_and_analyze_main_data(stock_data: pd.DataFrame, ticker: str = "UNKNO
         'performance': performance,
         'period': period_info,
         'extraction_timestamp': datetime.now(),
-        'data_quality': 'enhanced' if trades else 'no_trades'
+        'data_quality': 'enhanced' if trades else 'no_trades',
+        'stock_data': stock_data  # 新形式出力用に追加
     }
+
+
+# Excel廃棄版: 新形式出力連携機能
+def export_enhanced_results(analysis_results: Dict[str, Any], output_format: str = "unified") -> Dict[str, Any]:
+    """
+    Excel廃棄版: 拡張解析結果の統一出力
+    
+    Args:
+        analysis_results: extract_and_analyze_main_data()の結果
+        output_format: "unified" (CSV+JSON+TXT+YAML)
+        
+    Returns:
+        Dict[str, Any]: 出力結果 {'exported_files': ファイルパス辞書, 'summary': 出力サマリー}
+    """
+    try:
+        # 統一出力エンジンをインポート
+        from .unified_exporter import UnifiedExporter
+        
+        exporter = UnifiedExporter()
+        
+        # main.py形式として出力
+        exported_files = exporter.export_main_results(
+            stock_data=analysis_results.get('stock_data', pd.DataFrame()),
+            trades=analysis_results.get('trades', []),
+            performance=analysis_results.get('performance', {}),
+            ticker=analysis_results.get('ticker', 'ENHANCED_ANALYSIS'),
+            strategy_name="Enhanced_Data_Analysis"
+        )
+        
+        # 出力サマリー作成
+        output_summary: Dict[str, Any] = {
+            'export_timestamp': datetime.now().isoformat(),
+            'total_files': len(exported_files),
+            'formats': list(exported_files.keys()),
+            'data_quality': analysis_results.get('data_quality', 'unknown'),
+            'excel_dependency_removed': True,
+            'backtest_compliance': True
+        }
+        
+        logger.info(f"✅ 拡張解析結果の新形式出力完了: {len(exported_files)}ファイル")
+        
+        return {
+            'exported_files': exported_files,
+            'summary': output_summary
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ 拡張解析結果の新形式出力エラー: {e}")
+        # TODO(tag:excel_deprecated, rationale:error handling for enhanced data export)
+        raise
+
+
+# 既存Excel出力からの移行用ヘルパー
+def migrate_enhanced_analysis_from_excel(ticker: str, stock_data: pd.DataFrame) -> Dict[str, Any]:
+    """
+    既存Excel出力を使用していた拡張解析を新形式に移行
+    
+    Args:
+        ticker: 銘柄コード
+        stock_data: バックテスト結果データ
+        
+    Returns:
+        新形式出力結果
+    """
+    logger.info(f"🔄 拡張解析の新形式移行開始: {ticker}")
+    
+    # 拡張解析実行
+    analysis_results = extract_and_analyze_main_data(stock_data, ticker)
+    
+    # 新形式出力
+    export_results = export_enhanced_results(analysis_results)
+    
+    logger.info(f"✅ 拡張解析の新形式移行完了: {ticker}")
+    
+    return {
+        'analysis': analysis_results,
+        'export': export_results,
+        'migration_status': 'success',
+        'migration_timestamp': datetime.now().isoformat()
+    }
+
+
+# TODO(tag:excel_deprecated, rationale:Excel output completely eliminated from data_extraction_enhancer since 2025-10-08)

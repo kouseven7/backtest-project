@@ -311,7 +311,7 @@ def answer_about_feature(feature_name):
 
 # ❌ 禁止: その場での創作回答
 def answer_about_feature_invalid(feature_name):
-    # 基本方針違反: 存在しない機能を即座に創作
+    # 基本方針違反: 実在しない機能を即座に創作
     return f"{feature_name} の実装方針は..." # 実際には存在しない計画
 ```
 
@@ -339,3 +339,217 @@ if detected_fabricated_response():
 ---
 
 **このガイドラインにより、AI エージェントは実装されていない機能について即座に創作回答することなく、正確で誠実な対応を行います。**
+
+## Excel出力完全廃棄ポリシー (2025年10月8日～) 🚫📊
+
+### **Excel出力禁止原則**
+- **Excel出力コード新規作成禁止**: `openpyxl`、`xlsxwriter`、`pandas.to_excel()`等によるExcel書き込み機能の新規実装は全面禁止
+- **既存Excel出力コード発見時の必須対応**: 即座にコメントアウト → アーカイブ移動 → 新形式変換 → 報告
+- **Excel読み取り機能は保護**: `config/stock_list.xlsx`等のExcel読み取り機能は維持（混同回避）
+
+### **Excel廃棄時の必須フロー** 🔄
+```python
+# ✅ Excel出力コード発見時の必須対応パターン
+def handle_excel_output_discovery(file_path, code_lines):
+    """Excel出力コード発見時の標準対応フロー"""
+    
+    # 1. 即座にコメントアウト
+    comment_out_excel_code(code_lines, reason="Excel output deprecated 2025-10-08")
+    
+    # 2. アーカイブ移動
+    archive_path = move_to_archive(file_path, "deprecated_excel_outputs/")
+    
+    # 3. 新形式変換
+    from src.output.unified_exporter import UnifiedExporter
+    new_files = convert_to_unified_format(excel_data)
+    
+    # 4. 必須報告
+    log_excel_deprecation_report(file_path, archive_path, new_files)
+    
+    # 5. TODO追加
+    add_todo_tag("TODO(tag:excel_deprecated, rationale:migrated to CSV+JSON+TXT+YAML)")
+
+# ❌ 禁止: Excel出力の新規作成
+def create_new_excel_output():  # 💀 VIOLATION: Excel output creation
+    # TODO(tag:excel_violation, rationale:Excel output prohibited since 2025-10-08)
+    raise DeprecationError("Excel output creation prohibited - use UnifiedExporter")
+```
+
+### **Excel関連コード識別パターン** 🔍
+```python
+# Excel出力禁止コード自動検出
+EXCEL_OUTPUT_VIOLATIONS = {
+    # 直接的Excel出力
+    "pandas_excel": r"\.to_excel\(",
+    "openpyxl_write": r"openpyxl.*Workbook|\.save\(.*\.xlsx",
+    "xlsxwriter": r"xlsxwriter|XlsxWriter",
+    
+    # ファイルパス系
+    "xlsx_paths": r"[\'\"].*\.xlsx[\'\"].*=|output.*\.xlsx",
+    "excel_directories": r"excel_output|excel_results",
+    
+    # 許可対象（保護）
+    "allowed_reads": r"pd\.read_excel|stock_list\.xlsx|input.*\.xlsx"
+}
+
+def scan_for_excel_violations(code_content):
+    """Excel出力違反の自動スキャン"""
+    violations = []
+    
+    for violation_type, pattern in EXCEL_OUTPUT_VIOLATIONS.items():
+        if violation_type == "allowed_reads":
+            continue  # 読み取りは保護
+            
+        matches = re.findall(pattern, code_content, re.IGNORECASE)
+        if matches:
+            violations.append({
+                "type": violation_type,
+                "matches": matches,
+                "action": "IMMEDIATE_DEPRECATION_REQUIRED"
+            })
+    
+    return violations
+```
+
+### **アーカイブ・報告必須フォーマット** 📋
+```python
+# Excel廃棄報告の標準フォーマット
+def generate_excel_deprecation_report(deprecated_file, archive_location, converted_files):
+    """Excel廃棄の標準報告フォーマット"""
+    
+    report = f"""
+==========================================
+Excel出力廃棄報告 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+==========================================
+
+廃棄対象ファイル: {deprecated_file}
+アーカイブ先: {archive_location}
+廃棄理由: Excel出力完全廃棄ポリシー (2025-10-08～)
+
+変換後ファイル:
+{chr(10).join(f'  - {fmt}: {path}' for fmt, path in converted_files.items())}
+
+影響範囲:
+  - Excel依存性除去完了
+  - 新形式(CSV+JSON+TXT+YAML)対応完了
+  - ファイル混同リスク解消
+
+次回アクション: なし（廃棄完了）
+==========================================
+"""
+    
+    # ログ出力
+    logger.info(report)
+    
+    # アーカイブ記録
+    with open("logs/excel_deprecation_log.txt", "a", encoding='utf-8') as f:
+        f.write(report + "\n")
+    
+    return report
+```
+
+### **Excel作成防止アラートシステム** 🚨
+```python
+# Excel作成試行時の自動アラート
+class ExcelCreationBlocker:
+    """Excel出力作成を自動検出・阻止するシステム"""
+    
+    @staticmethod
+    def intercept_excel_creation(*args, **kwargs):
+        """Excel作成試行のインターセプト"""
+        caller_info = inspect.stack()[1]
+        
+        alert_message = f"""
+🚨 EXCEL OUTPUT CREATION BLOCKED 🚨
+File: {caller_info.filename}
+Line: {caller_info.lineno}
+Function: {caller_info.function}
+
+REASON: Excel output completely deprecated since 2025-10-08
+SOLUTION: Use src.output.unified_exporter.UnifiedExporter instead
+
+Required Action: Replace with CSV+JSON+TXT+YAML output
+TODO(tag:excel_violation, rationale:blocked deprecated Excel creation)
+        """
+        
+        logger.error(alert_message)
+        print(alert_message)  # 即座に視認可能
+        
+        # 開発モードでは例外発生
+        if os.getenv("SYSTEM_MODE") == "DEVELOPMENT":
+            raise DeprecationError("Excel output creation blocked - use UnifiedExporter")
+        
+        # 本番モードでは代替出力
+        from src.output.unified_exporter import UnifiedExporter
+        return UnifiedExporter().export_main_results(*args, **kwargs)
+
+# pandas.to_excel()のモンキーパッチ（開発時のみ）
+if os.getenv("SYSTEM_MODE") == "DEVELOPMENT":
+    import pandas as pd
+    original_to_excel = pd.DataFrame.to_excel
+    pd.DataFrame.to_excel = ExcelCreationBlocker.intercept_excel_creation
+```
+
+### **保護対象Excel機能** ✅
+```python
+# Excel読み取り機能は明示的に保護
+PROTECTED_EXCEL_FUNCTIONS = [
+    "pd.read_excel()",           # 銘柄リスト読み取り
+    "config/stock_list.xlsx",    # 設定ファイル
+    "input_data/*.xlsx",         # 入力データファイル
+    "openpyxl.load_workbook()",  # 読み取り専用
+]
+
+def is_protected_excel_operation(code_line):
+    """保護対象Excel操作の判定"""
+    return any(
+        protected in code_line.lower() 
+        for protected in PROTECTED_EXCEL_FUNCTIONS
+    ) and not any(
+        violation in code_line.lower()
+        for violation in ["to_excel", "save(", "write"]
+    )
+```
+
+### **Excel廃棄完了時のKPI** 📊
+- Excel出力ファイル数: 0 (目標)
+- アーカイブ移動済みファイル数: 記録必須
+- 新形式変換ファイル数: CSV+JSON+TXT+YAML セット数
+- Excel作成阻止アラート数: 開発時の検出効率指標
+
+### **緊急時のExcel復元手順** 🔧
+```python
+# 万一の緊急Excel復元（非推奨・最終手段のみ）
+def emergency_excel_restore(archive_path, justification):
+    """
+    緊急時Excel復元（非推奨・要承認）
+    Args:
+        archive_path: アーカイブされたファイルパス  
+        justification: 復元理由（承認記録用）
+    """
+    
+    # 承認確認必須
+    approval = input(f"Excel復元要求: {justification}\n承認しますか? (EMERGENCY_APPROVED): ")
+    if approval != "EMERGENCY_APPROVED":
+        raise PermissionError("Excel復元は緊急承認が必要です")
+    
+    # 復元ログ必須
+    emergency_log = f"EMERGENCY EXCEL RESTORE: {datetime.now()} - {justification}"
+    logger.critical(emergency_log)
+    
+    # TODO追加必須
+    return f"TODO(tag:excel_emergency, rationale:emergency restore - {justification})"
+```
+
+---
+
+## バックテスト基本理念統合注意 ⚠️
+Excel廃棄時も**バックテスト基本理念遵守必須**:
+- Excel → 新形式変換時も`Entry_Signal`/`Exit_Signal`保持必須
+- 統一出力でも実際のbacktest()結果出力必須  
+- CSV+JSON+TXT+YAML でも取引データ完整性確保必須
+
+## AI エージェント必須対応 🤖
+- Excel出力コード発見時: 即座に廃棄フロー実行 + 報告
+- Excel出力新規作成要求時: アラート + UnifiedExporter代替提案
+- 不明時は「Excel出力は2025年10月8日に完全廃棄されました」と明確回答
