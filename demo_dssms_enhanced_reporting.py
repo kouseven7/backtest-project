@@ -272,7 +272,8 @@ class DSSMSReportGenerator:
                     deleted_count += 1
                     logger.debug(f"削除: {file_path}")
                     
-            for file_path in self.output_dir.glob("*report*.xlsx"):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: for file_path in self.output_dir.glob("*report*.xlsx"):
                 if file_path.stat().st_mtime < cutoff_time:
                     file_path.unlink()
                     deleted_count += 1

@@ -304,7 +304,8 @@ class DSSMSStrategyStatsAnalyzer:
                 strategy_methods.append('戦略別統計_処理')
             
             # Excel生成部分を確認
-            excel_generation_found = '_generate_excel_output' in content
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_generation_found = '_generate_excel_output' in content
             
             analysis = {
                 'engine_file_exists': True,

@@ -253,7 +253,8 @@ def compare_with_existing_output():
     
     try:
         # テスト用のシンプルなデータを準備
-        from demo_simple_excel_output import create_sample_data
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: from demo_simple_excel_output import create_sample_data
         sample_data = create_sample_data()
         ticker = "COMPARE_TEST"
         

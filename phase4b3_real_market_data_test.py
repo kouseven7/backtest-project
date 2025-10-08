@@ -73,7 +73,8 @@ def phase4b3_real_market_data_integration_test() -> Tuple[bool, Dict[str, Any]]:
                 'total_symbols': len(test_symbols),
                 'successful_symbols': sum(1 for r in test_results.values() if r.get('integration_success', False)),
                 'total_trades_generated': sum(r.get('trades_count', 0) for r in test_results.values()),
-                'excel_outputs_created': sum(1 for r in test_results.values() if r.get('excel_output_success', False))
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_outputs_created': sum(1 for r in test_results.values() if r.get('excel_output_success', False))
             }
         }
         
@@ -130,7 +131,8 @@ def test_single_symbol_integration(symbol: str) -> Dict[str, Any]:
             'data_fetch_success': data_fetcher_result.get('data_fetch_success', False),
             'data_rows': data_fetcher_result.get('data_rows', 0),
             'trades_count': backtest_result.get('trades_count', 0),
-            'excel_output_success': backtest_result.get('excel_output_success', False),
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: 'excel_output_success': backtest_result.get('excel_output_success', False),
             'quality_score': quality_metrics.get('overall_quality_score', 0),
             'backtest_principle_compliant': quality_metrics.get('backtest_principle_compliant', False),
             'execution_timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -303,13 +305,16 @@ def execute_integrated_backtest_with_real_data(symbol: str, data: pd.DataFrame) 
                 logger.error(f"Strategy {strategy_name} execution failed for {symbol}: {strategy_error}")
         
         # ✅ Excel出力実行
-        excel_output_success = False
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_output_success = False
         excel_file_path = None
         
         if total_trades > 0 and not integrated_results.empty:
             try:
-                excel_file_path = create_real_data_excel_output(symbol, integrated_results, strategy_performances)
-                excel_output_success = excel_file_path is not None
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: excel_file_path = create_real_data_excel_output(symbol, integrated_results, strategy_performances)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_output_success = excel_file_path is not None
             except Exception as excel_error:
                 logger.error(f"Excel output failed for {symbol}: {excel_error}")
         
@@ -319,7 +324,8 @@ def execute_integrated_backtest_with_real_data(symbol: str, data: pd.DataFrame) 
             'trades_count': total_trades,
             'strategies_tested': strategies_to_test,
             'successful_strategies': len(strategy_performances),
-            'excel_output_success': excel_output_success,
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_success': excel_output_success,
             'excel_file_path': excel_file_path,
             'performance_metrics': calculate_integrated_performance_metrics(strategy_performances),
             'execution_timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -416,7 +422,8 @@ def get_strategy_class(strategy_name: str):
         return None
 
 
-def create_real_data_excel_output(symbol: str, results: pd.DataFrame, strategy_performances: Dict) -> Optional[str]:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: def create_real_data_excel_output(symbol: str, results: pd.DataFrame, strategy_performances: Dict) -> Optional[str]:
     """
     Real market dataテスト結果のExcel出力作成
     
@@ -438,7 +445,8 @@ def create_real_data_excel_output(symbol: str, results: pd.DataFrame, strategy_p
         output_dir = "backtest_results/phase4b3_real_data_tests"
         os.makedirs(output_dir, exist_ok=True)
         
-        output_file = f"{output_dir}/real_data_test_{symbol}_{timestamp}.xlsx"
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: output_file = f"{output_dir}/real_data_test_{symbol}_{timestamp}.xlsx"
         
         # Excel出力実行
         exporter.export_to_excel(results, symbol, output_file)
@@ -500,7 +508,8 @@ def validate_real_data_backtest_quality(backtest_result: Dict[str, Any], symbol:
             'execution_success': backtest_result.get('backtest_execution_success', False),
             'adequate_trades': backtest_result.get('trades_count', 0) >= 10,
             'multiple_strategies': backtest_result.get('successful_strategies', 0) >= 2,
-            'excel_output': backtest_result.get('excel_output_success', False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: 'excel_output': backtest_result.get('excel_output_success', False)
         }
         
         overall_quality_score = sum(quality_factors.values()) / len(quality_factors)
@@ -585,7 +594,8 @@ def phase4b3_real_data_test_report(test_results: Tuple[bool, Dict[str, Any]]) ->
 - **総銘柄数**: {results.get('test_summary', {}).get('total_symbols', 0)}
 - **統合成功銘柄数**: {results.get('test_summary', {}).get('successful_symbols', 0)}
 - **総取引数**: {results.get('test_summary', {}).get('total_trades_generated', 0)}
-- **Excel出力作成数**: {results.get('test_summary', {}).get('excel_outputs_created', 0)}
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: - **Excel出力作成数**: {results.get('test_summary', {}).get('excel_outputs_created', 0)}
 - **統合品質スコア**: {results.get('integration_quality_score', 0):.2f}
 
 ## 個別銘柄結果
@@ -603,7 +613,8 @@ def phase4b3_real_data_test_report(test_results: Tuple[bool, Dict[str, Any]]) ->
 - **取引数**: {trades}
 - **品質スコア**: {quality:.2f}
 - **データ行数**: {result.get('data_rows', 0)}
-- **Excel出力**: {'✅' if result.get('excel_output_success', False) else '❌'}
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: - **Excel出力**: {'✅' if result.get('excel_output_success', False) else '❌'}
 """
     
     # バックテスト基本理念遵守確認

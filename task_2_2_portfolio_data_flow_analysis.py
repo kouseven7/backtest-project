@@ -193,7 +193,8 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
                     
                     print(f"✅ 損益推移シート: {ws.max_row}行 x {ws.max_column}列")
                 
-                results["data_flow_analysis"]["excel_output"] = excel_analysis
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: results["data_flow_analysis"]["excel_output"] = excel_analysis
                 
             except Exception as excel_error:
                 print(f"❌ Excel分析エラー: {excel_error}")

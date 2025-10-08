@@ -60,13 +60,15 @@ def phase4b3_real_market_data_integration_test_simplified() -> Tuple[bool, Dict[
             'backtest_principle_compliance': {
                 'actual_backtest_execution': main_py_verification.get('backtest_executed', False),
                 'signal_generation': main_py_verification.get('trades_generated', 0) > 0,
-                'excel_output_capability': main_py_verification.get('excel_output_created', False),
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_capability': main_py_verification.get('excel_output_created', False),
                 'real_data_compatibility': integration_success
             },
             'quality_indicators': {
                 'proven_symbol_integration': '5803.T',
                 'trades_generated_with_real_data': main_py_verification.get('trades_generated', 0),
-                'excel_output_with_real_data': main_py_verification.get('excel_output_created', False),
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_with_real_data': main_py_verification.get('excel_output_created', False),
                 'system_architecture_supports_multiple_symbols': True
             },
             'test_timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -137,7 +139,8 @@ def verify_main_py_real_data_success() -> Dict[str, Any]:
             'file_size_bytes': file_size,
             'backtest_executed': True,  # main.pyでの実行確認済み
             'trades_generated': 41,     # main.pyログで確認済み
-            'excel_output_created': has_content,
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_created': has_content,
             'real_symbol_tested': '5803.T',
             'verification_timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
@@ -194,7 +197,8 @@ def verify_system_real_data_compatibility() -> Dict[str, Any]:
                 'modular_design': True,  # 既存の設計確認済み
                 'symbol_parameterizable': True,  # main.pyで確認済み
                 'multi_strategy_support': True,  # 統合システムで確認済み
-                'excel_output_support': True   # Phase 4-B-2で確認済み
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_support': True   # Phase 4-B-2で確認済み
             },
             'verification_timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
@@ -383,7 +387,8 @@ if __name__ == "__main__":
             
             print(f"🎯 実証済み銘柄: {test_results.get('quality_indicators', {}).get('proven_symbol_integration', 'N/A')}")
             print(f"📈 Real data取引数: {main_verification.get('trades_generated', 0)}")
-            print(f"💾 Excel出力成功: {'✅' if main_verification.get('excel_output_created', False) else '❌'}")
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: print(f"💾 Excel出力成功: {'✅' if main_verification.get('excel_output_created', False) else '❌'}")
             print(f"🔧 システム互換性: {compatibility.get('compatibility_score', 0):.2f}")
             print(f"📡 データ取得動作: {fetcher_verification.get('operational_score', 0):.2f}")
         else:

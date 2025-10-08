@@ -81,7 +81,8 @@ def generate_excel_for_task63():
                 "strategy_stats": {}
             }
             
-            excel_path = engine.generate_excel_output(dummy_data)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_path = engine.generate_excel_output(dummy_data)
             logger.info(f"代替Excelファイル生成完了: {excel_path}")
             return excel_path
             

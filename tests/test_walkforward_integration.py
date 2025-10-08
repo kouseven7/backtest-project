@@ -228,7 +228,8 @@ class TestWalkforwardIntegration:
         
         # 一時ファイルでテスト
         with tempfile.TemporaryDirectory() as temp_dir:
-            output_path = Path(temp_dir) / "test_output.xlsx"
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: output_path = Path(temp_dir) / "test_output.xlsx"
             
             # Excel出力実行
             success = analyzer.export_to_excel(str(output_path))

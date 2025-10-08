@@ -396,7 +396,8 @@ class MainPyIntegrationDiagnosticSuite:
         compliance_results = {
             'signal_generation_compliance': True,
             'trade_execution_compliance': True,
-            'excel_output_compliance': True,
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_compliance': True,
             'overall_compliance': True,
             'violations': []
         }
@@ -428,14 +429,16 @@ class MainPyIntegrationDiagnosticSuite:
             required_excel_columns = ['Close', 'Entry_Signal', 'Exit_Signal']
             missing_excel_columns = [col for col in required_excel_columns if col not in integrated_data.columns]
             if missing_excel_columns:
-                compliance_results['excel_output_compliance'] = False
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: compliance_results['excel_output_compliance'] = False
                 compliance_results['violations'].append(f"Excel output columns missing: {missing_excel_columns}")
             
             # 全体遵守判定
             compliance_results['overall_compliance'] = (
                 compliance_results['signal_generation_compliance'] and
                 compliance_results['trade_execution_compliance'] and
-                compliance_results['excel_output_compliance']
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: compliance_results['excel_output_compliance']
             )
             
         except Exception as e:

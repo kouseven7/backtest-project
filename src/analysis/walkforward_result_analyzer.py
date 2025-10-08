@@ -323,11 +323,13 @@ class WalkforwardResultAnalyzer:
             output_path = Path(output_path)
             output_path.parent.mkdir(parents=True, exist_ok=True)
             
-            with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
                 
                 # 生データ
                 if self.df is not None:
-                    self.df.to_excel(writer, sheet_name='Raw_Data', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: self.df.to_excel(writer, sheet_name='Raw_Data', index=False)
                 
                 # サマリーレポート
                 summary = self.generate_summary_report()
@@ -335,22 +337,26 @@ class WalkforwardResultAnalyzer:
                 # 基本統計
                 if 'basic_stats' in summary:
                     basic_df = pd.json_normalize(summary['basic_stats']).T
-                    basic_df.to_excel(writer, sheet_name='Basic_Stats')
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: basic_df.to_excel(writer, sheet_name='Basic_Stats')
                 
                 # 戦略別分析
                 if 'strategy_analysis' in summary:
                     strategy_df = pd.DataFrame(summary['strategy_analysis']).T
-                    strategy_df.to_excel(writer, sheet_name='Strategy_Analysis')
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: strategy_df.to_excel(writer, sheet_name='Strategy_Analysis')
                 
                 # 市場状況別分析
                 if 'market_condition_analysis' in summary:
                     market_df = pd.DataFrame(summary['market_condition_analysis']).T
-                    market_df.to_excel(writer, sheet_name='Market_Analysis')
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: market_df.to_excel(writer, sheet_name='Market_Analysis')
                 
                 # 期間別分析
                 if 'period_analysis' in summary:
                     period_df = pd.DataFrame(summary['period_analysis']).T
-                    period_df.to_excel(writer, sheet_name='Period_Analysis')
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: period_df.to_excel(writer, sheet_name='Period_Analysis')
             
             self.logger.info(f"Excelファイル出力完了: {output_path}")
             return True

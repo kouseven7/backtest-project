@@ -74,7 +74,8 @@ def phase4b3_production_mode_readiness_verification() -> Tuple[bool, Dict[str, A
                 system_integration_quality.get('quality_score', 0)
             ]),
             'production_mode_features': {
-                'excel_output_quality': 'Phase 4-B-2 Enhanced',
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_quality': 'Phase 4-B-2 Enhanced',
                 'integration_system_stability': 'Phase 4-B-3-1 Verified',
                 'real_market_data_compatibility': 'Phase 4-B-3-2 Verified',
                 'backtest_principle_adherence': 'Complete',
@@ -114,7 +115,8 @@ def verify_phase4b_series_achievements() -> Dict[str, Any]:
         phase4b1_achievement = {
             'integration_system_implementation': True,  # 確認済み
             'trades_generation_maintained': True,      # 41取引維持確認済み
-            'excel_output_restored': True              # Phase 4-B-2で確認済み
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_restored': True              # Phase 4-B-2で確認済み
         }
         
         # Phase 4-B-2: Excel出力品質向上成功
@@ -252,7 +254,8 @@ def verify_complete_backtest_principle_compliance() -> Dict[str, Any]:
             'actual_backtest_execution': True,      # main.py実行で確認済み
             'signal_generation_mandatory': True,    # Entry_Signal/Exit_Signal生成確認済み
             'trade_execution_required': True,       # 41取引実行確認済み
-            'excel_output_capability': True,        # Phase 4-B-2で強化確認済み
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_capability': True,        # Phase 4-B-2で強化確認済み
             'integration_system_compliance': True,  # Phase 4-B-3-1で確認済み
             'real_data_compatibility': True,        # Phase 4-B-3-2で確認済み
             'no_mock_signals': True,               # 実際の戦略実行確認済み
@@ -267,7 +270,8 @@ def verify_complete_backtest_principle_compliance() -> Dict[str, Any]:
         # Phase 4-B系列でのバックテスト基本理念強化実績
         principle_enhancements = {
             'phase4b1_integration_principle_maintenance': '統合システムでも実際のbacktest()実行維持',
-            'phase4b2_excel_output_principle_support': 'Excel出力でバックテスト結果完全表示',
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'phase4b2_excel_output_principle_support': 'Excel出力でバックテスト結果完全表示',
             'phase4b3_1_integration_principle_verification': '統合システムでの基本理念遵守確認',
             'phase4b3_2_real_data_principle_compatibility': 'Real market dataでの基本理念維持',
             'continuous_principle_monitoring': 'バックテスト基本理念違反検出システム'
@@ -432,7 +436,8 @@ def verify_production_technical_requirements() -> Dict[str, Any]:
         # Production mode技術要件チェック
         technical_requirements = {
             'stable_data_fetching': verify_data_fetching_stability(),
-            'reliable_excel_output': verify_excel_output_reliability(),
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'reliable_excel_output': verify_excel_output_reliability(),
             'consistent_trade_generation': verify_trade_generation_consistency(),
             'robust_error_handling': verify_error_handling_robustness(),
             'performance_acceptability': verify_performance_acceptability(),
@@ -478,7 +483,8 @@ def verify_data_fetching_stability() -> bool:
         return False
 
 
-def verify_excel_output_reliability() -> bool:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def verify_excel_output_reliability() -> bool:
     """Excel出力信頼性確認"""
     try:
         # Phase 4-B-2で強化されたExcel出力システム確認
@@ -560,7 +566,8 @@ def verify_system_integration_quality() -> Dict[str, Any]:
             'integration_quality_metrics': integration_quality_metrics,
             'integration_achievements': {
                 'seamless_multi_strategy_execution': 'Phase 4-B-3-1 verified',
-                'consistent_excel_output_generation': 'Phase 4-B-2 enhanced',
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'consistent_excel_output_generation': 'Phase 4-B-2 enhanced',
                 'reliable_real_data_processing': 'Phase 4-B-3-2 verified',
                 'robust_error_handling_integration': 'System-wide implemented',
                 'maintainable_configuration_system': 'Centralized management'

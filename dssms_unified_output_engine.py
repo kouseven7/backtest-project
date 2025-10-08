@@ -489,7 +489,8 @@ class DSSMSUnifiedOutputEngine:
         
         try:
             # Excel出力
-            excel_path = self._generate_excel_output(output_dir)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_path = self._generate_excel_output(output_dir)
             output_files['excel'] = excel_path
             
             # テキストレポート出力
@@ -507,35 +508,44 @@ class DSSMSUnifiedOutputEngine:
             logger.error(f"❌ 出力生成エラー: {e}")
             raise
     
-    def _generate_excel_output(self, output_dir: str) -> str:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _generate_excel_output(self, output_dir: str) -> str:
         """Excel出力の生成"""
-        excel_path = Path(output_dir) / f"dssms_unified_backtest_{self.output_timestamp}.xlsx"
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: excel_path = Path(output_dir) / f"dssms_unified_backtest_{self.output_timestamp}.xlsx"
         
         try:
-            with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
                 # サマリーシート
                 summary_df = self._create_summary_sheet()
-                summary_df.to_excel(writer, sheet_name='サマリー', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: summary_df.to_excel(writer, sheet_name='サマリー', index=False)
                 
                 # パフォーマンス指標シート
                 performance_df = self._create_performance_sheet()
-                performance_df.to_excel(writer, sheet_name='パフォーマンス指標', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: performance_df.to_excel(writer, sheet_name='パフォーマンス指標', index=False)
                 
                 # 取引履歴シート
                 trade_history = self._create_trade_history_sheet()
-                trade_history.to_excel(writer, sheet_name='取引履歴', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: trade_history.to_excel(writer, sheet_name='取引履歴', index=False)
                 
                 # 損益推移シート
                 pnl_history = self._create_pnl_history_sheet()
-                pnl_history.to_excel(writer, sheet_name='損益推移', index=True)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: pnl_history.to_excel(writer, sheet_name='損益推移', index=True)
                 
                 # 戦略別統計シート
                 strategy_stats = self._create_strategy_stats_sheet()
-                strategy_stats.to_excel(writer, sheet_name='戦略別統計', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: strategy_stats.to_excel(writer, sheet_name='戦略別統計', index=False)
                 
                 # 切り替え分析シート
                 switch_analysis = self._create_switch_analysis_sheet()
-                switch_analysis.to_excel(writer, sheet_name='切替分析', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: switch_analysis.to_excel(writer, sheet_name='切替分析', index=False)
             
             logger.info(f"📊 Excel出力完了: {excel_path}")
             return str(excel_path)

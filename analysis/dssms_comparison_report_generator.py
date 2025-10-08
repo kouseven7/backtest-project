@@ -213,24 +213,30 @@ class DSSMSComparisonReportGenerator:
     def _generate_simple_excel_report(self, comparison_result: 'ComparisonResult', output_path: str) -> str:
         """シンプルExcelレポート生成（openpyxl非使用時）"""
         try:
-            # pandasのExcelWriterを使用
-            with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: # pandasのExcelWriterを使用
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
                 
                 # エグゼクティブサマリー
                 summary_data = self._prepare_summary_data(comparison_result)
-                summary_data.to_excel(writer, sheet_name='エグゼクティブサマリー', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: summary_data.to_excel(writer, sheet_name='エグゼクティブサマリー', index=False)
                 
                 # 戦略パフォーマンス
                 perf_data = self._prepare_performance_data(comparison_result)
-                perf_data.to_excel(writer, sheet_name='戦略パフォーマンス', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: perf_data.to_excel(writer, sheet_name='戦略パフォーマンス', index=False)
                 
                 # 推奨事項
                 rec_data = self._prepare_recommendations_data(comparison_result)
-                rec_data.to_excel(writer, sheet_name='推奨事項', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: rec_data.to_excel(writer, sheet_name='推奨事項', index=False)
                 
                 # メタデータ
                 meta_data = self._prepare_metadata(comparison_result)
-                meta_data.to_excel(writer, sheet_name='メタデータ', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: meta_data.to_excel(writer, sheet_name='メタデータ', index=False)
             
             logger.info(f"シンプルExcelレポート生成完了: {output_path}")
             return output_path
@@ -841,20 +847,25 @@ class DSSMSComparisonReportGenerator:
             
             logger.info(f"クイックサマリーレポート生成開始: {output_path}")
             
-            # pandasのExcelWriterを使用
-            with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: # pandasのExcelWriterを使用
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
                 
                 # サマリーシート
                 summary_data = self._prepare_summary_data(comparison_result)
-                summary_data.to_excel(writer, sheet_name='サマリー', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: summary_data.to_excel(writer, sheet_name='サマリー', index=False)
                 
                 # 戦略ランキング
                 ranking_data = self._prepare_ranking_data(comparison_result)
-                ranking_data.to_excel(writer, sheet_name='戦略ランキング', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: ranking_data.to_excel(writer, sheet_name='戦略ランキング', index=False)
                 
                 # 推奨事項
                 rec_data = self._prepare_recommendations_data(comparison_result)
-                rec_data.to_excel(writer, sheet_name='推奨事項', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: rec_data.to_excel(writer, sheet_name='推奨事項', index=False)
             
             # 履歴更新
             self.report_history.append({

@@ -180,10 +180,12 @@ class ExportManager:
             self.logger.info("Excelエクスポート開始")
             
             # ファイルパス設定
-            excel_path = output_dir / f"{report_id}.xlsx"
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_path = output_dir / f"{report_id}.xlsx"
             
             # ワークブック作成
-            workbook = openpyxl.Workbook()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: workbook = openpyxl.Workbook()
             
             # デフォルトシート削除
             default_sheet = workbook.active
@@ -222,7 +224,8 @@ class ExportManager:
                 'format_type': 'excel'
             }
     
-    def _create_metadata_sheet(self, workbook: openpyxl.Workbook, report_data: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_metadata_sheet(self, workbook: openpyxl.Workbook, report_data: Dict[str, Any]):
         """メタデータシート作成"""
         try:
             sheet = workbook.create_sheet(self.export_config['excel']['sheet_names']['metadata'])
@@ -251,7 +254,8 @@ class ExportManager:
         except Exception as e:
             self.logger.error(f"メタデータシート作成エラー: {e}")
     
-    def _create_summary_sheet(self, workbook: openpyxl.Workbook, report_data: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_summary_sheet(self, workbook: openpyxl.Workbook, report_data: Dict[str, Any]):
         """サマリーシート作成"""
         try:
             sheet = workbook.create_sheet(self.export_config['excel']['sheet_names']['summary'])
@@ -299,7 +303,8 @@ class ExportManager:
     
     def _create_data_sheets(
         self,
-        workbook: openpyxl.Workbook,
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: workbook: openpyxl.Workbook,
         report_data: Dict[str, Any],
         custom_options: Optional[Dict[str, Any]] = None
     ):
@@ -322,7 +327,8 @@ class ExportManager:
         except Exception as e:
             self.logger.error(f"データシート作成エラー: {e}")
     
-    def _create_dssms_data_sheet(self, workbook: openpyxl.Workbook, dssms_data: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_dssms_data_sheet(self, workbook: openpyxl.Workbook, dssms_data: Dict[str, Any]):
         """DSSMSデータシート作成"""
         try:
             sheet = workbook.create_sheet('DSSMS データ')
@@ -364,7 +370,8 @@ class ExportManager:
         except Exception as e:
             self.logger.error(f"DSSMSデータシート作成エラー: {e}")
     
-    def _create_strategy_data_sheet(self, workbook: openpyxl.Workbook, strategy_data: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: def _create_strategy_data_sheet(self, workbook: openpyxl.Workbook, strategy_data: Dict[str, Any]):
         """戦略データシート作成"""
         try:
             sheet = workbook.create_sheet('戦略データ')
@@ -409,7 +416,8 @@ class ExportManager:
         except Exception as e:
             self.logger.error(f"戦略データシート作成エラー: {e}")
     
-    def _create_performance_data_sheet(self, workbook: openpyxl.Workbook, performance_data: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: def _create_performance_data_sheet(self, workbook: openpyxl.Workbook, performance_data: Dict[str, Any]):
         """パフォーマンスデータシート作成"""
         try:
             sheet = workbook.create_sheet('パフォーマンス')
@@ -451,7 +459,8 @@ class ExportManager:
         except Exception as e:
             self.logger.error(f"パフォーマンスデータシート作成エラー: {e}")
     
-    def _create_analysis_sheet(self, workbook: openpyxl.Workbook, report_data: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_analysis_sheet(self, workbook: openpyxl.Workbook, report_data: Dict[str, Any]):
         """分析シート作成"""
         try:
             sheet = workbook.create_sheet(self.export_config['excel']['sheet_names']['analysis'])

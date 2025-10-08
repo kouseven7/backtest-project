@@ -16,7 +16,8 @@ from config.logger_config import setup_logger
 
 logger = setup_logger("dssms_result_check")
 
-def check_latest_excel_results():
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def check_latest_excel_results():
     """
     最新のExcelファイルからバックテスト結果を確認
     """
@@ -175,7 +176,8 @@ def main():
     logger.info("🚀 DSSMS修正結果確認スクリプト開始")
     
     # 最新Excel結果の確認
-    result = check_latest_excel_results()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: result = check_latest_excel_results()
     
     # シグナル生成状況の分析
     analyze_signal_generation()

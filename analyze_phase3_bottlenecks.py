@@ -69,7 +69,8 @@ def analyze_strategy_execution_bottleneck():
     
     print(f"   📊 戦略合計: {total_strategy_time:.1f}ms")
 
-def analyze_excel_output_bottleneck():
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def analyze_excel_output_bottleneck():
     """Excel出力ボトルネック分析"""
     print("\n📄 3. Excel出力コンポーネント分析")
     
@@ -172,7 +173,8 @@ def main():
     try:
         analyze_data_fetching_bottleneck()
         analyze_strategy_execution_bottleneck()
-        analyze_excel_output_bottleneck() 
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: analyze_excel_output_bottleneck()
         analyze_heavy_libraries()
         analyze_dssms_specific_bottlenecks()
         calculate_optimization_priorities()

@@ -159,10 +159,12 @@ class DSSMSExcelExporter:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 output_dir = Path("backtest_results/dssms_results")
                 output_dir.mkdir(parents=True, exist_ok=True)
-                output_path = str(output_dir / f"dssms_backtest_results_unified_{timestamp}.xlsx")
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: output_path = str(output_dir / f"dssms_backtest_results_unified_{timestamp}.xlsx")
             
             # Excelワークブック作成
-            workbook = openpyxl.Workbook()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: workbook = openpyxl.Workbook()
             
             # デフォルトシートを削除
             if "Sheet" in workbook.sheetnames:
@@ -195,7 +197,8 @@ class DSSMSExcelExporter:
             self.logger.error(traceback.format_exc())
             raise
     
-    def _create_summary_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_summary_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
         """サマリーシート作成（V2版から移植）"""
         ws = workbook.create_sheet("サマリー", 0)
         
@@ -252,7 +255,8 @@ class DSSMSExcelExporter:
         
         self.logger.info("サマリーシート作成完了")
     
-    def _create_performance_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: def _create_performance_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
         """パフォーマンス指標シート作成（V2版から移植）"""
         ws = workbook.create_sheet("パフォーマンス指標")
         
@@ -369,7 +373,8 @@ class DSSMSExcelExporter:
             self.logger.error(f"最大ドローダウン計算エラー: {e}")
             return 0.0  # フォールバック値
     
-    def _create_trade_history_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_trade_history_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
         """取引履歴シート作成（シンプル版 - 実際のデータ使用）"""
         ws = workbook.create_sheet("取引履歴")
         
@@ -583,7 +588,8 @@ class DSSMSExcelExporter:
             self.logger.error(f"日次リターン計算エラー: {e}")
             return [0.0]  # フォールバック（0%生成回避）
     
-    def _create_daily_pnl_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_daily_pnl_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
         """日次損益推移シート作成（V2版から移植）"""
         try:
             ws = workbook.create_sheet("損益推移")
@@ -678,7 +684,8 @@ class DSSMSExcelExporter:
             self.logger.error(f"日次損益データ生成エラー: {e}")
             return []  # フォールバック（0%生成回避）
     
-    def _create_strategy_stats_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: def _create_strategy_stats_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
         """戦略別統計シート作成（V2版から移植）"""
         try:
             ws = workbook.create_sheet("戦略別統計")
@@ -775,7 +782,8 @@ class DSSMSExcelExporter:
             self.logger.error(f"戦略別統計データ生成エラー: {e}")
             return {}  # フォールバック（0%生成回避）
     
-    def _create_switch_analysis_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_switch_analysis_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
         """切替分析シート作成（V2版から移植）"""
         try:
             ws = workbook.create_sheet("切替分析")
@@ -860,7 +868,8 @@ class DSSMSExcelExporter:
             self.logger.error(f"切替履歴データ生成エラー: {e}")
             return []  # フォールバック（0%生成回避）
     
-    def _create_charts_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_charts_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
         """チャートシート作成（V2版から移植・簡略化）"""
         try:
             ws = workbook.create_sheet("チャート")
@@ -885,7 +894,8 @@ class DSSMSExcelExporter:
         except Exception as e:
             self.logger.error(f"チャートシート作成エラー: {e}")
     
-    def _apply_sheet_formatting(self, workbook: openpyxl.Workbook):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _apply_sheet_formatting(self, workbook: openpyxl.Workbook):
         """シート書式統一適用（新規実装）"""
         try:
             for sheet in workbook.worksheets:
@@ -945,7 +955,8 @@ class DSSMSExcelExporter:
             
             else:
                 # 汎用データ処理（基本Excel出力）
-                workbook = openpyxl.Workbook()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: workbook = openpyxl.Workbook()
                 ws = workbook.active
                 ws.title = "データ"
                 
@@ -989,7 +1000,8 @@ class DSSMSExcelExporter:
         try:
             self.logger.info(f"ランキングデータエクスポート開始: {filepath}")
             
-            workbook = openpyxl.Workbook()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: workbook = openpyxl.Workbook()
             ws = workbook.active
             ws.title = "ランキング"
             
@@ -1035,7 +1047,8 @@ class DSSMSExcelExporter:
         try:
             self.logger.info(f"切替分析データエクスポート開始: {filepath}")
             
-            workbook = openpyxl.Workbook()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: workbook = openpyxl.Workbook()
             ws = workbook.active
             ws.title = "切替分析"
             

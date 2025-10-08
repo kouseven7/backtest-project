@@ -158,8 +158,10 @@ def optimize_opening_gap_strategy(data, dow_data=None, use_parallel=False):
         from trade_simulation import simulate_trades
         trade_results = simulate_trades(result_data, "最適化後評価")
         metrics = PerformanceMetricsCalculator.calculate_all(trade_results["取引履歴"])
-        metrics_path = os.path.join(output_dir, f"performance_metrics_{timestamp}.xlsx")
-        pd.DataFrame([metrics]).to_excel(metrics_path, index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: metrics_path = os.path.join(output_dir, f"performance_metrics_{timestamp}.xlsx")
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: pd.DataFrame([metrics]).to_excel(metrics_path, index=False)
         logger.info(f"パフォーマンス指標を保存しました: {metrics_path}")
 
         # ★ここで最適化パラメータを半自動システム用に保存

@@ -44,7 +44,8 @@ def analyze_existing_backtester_output():
     except Exception as e:
         print(f"❌ レポート分析エラー: {e}")
 
-def analyze_excel_output():
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def analyze_excel_output():
     """既存のExcel出力を分析"""
     print(f"\n=== Excel出力分析 ===")
     
@@ -199,7 +200,8 @@ if __name__ == "__main__":
     analyze_existing_backtester_output()
     
     # Excel出力の分析
-    excel_path, trades_df, pnl_df, performance_df = analyze_excel_output()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: excel_path, trades_df, pnl_df, performance_df = analyze_excel_output()
     
     # 変換設計
     design_switch_to_trade_converter()

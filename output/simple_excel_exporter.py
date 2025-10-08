@@ -353,13 +353,39 @@ def save_backtest_results_simple(
             target_data = results if results is not None else stock_data
             normalized_data = _normalize_results_data(target_data)
         
-        # 4. Excel出力実行
-        _create_excel_output(normalized_data, filepath)
+        # 4. 統一出力エンジンによる新形式出力（Excel廃棄対応）
+        from output.unified_exporter import UnifiedExporter
+        exporter = UnifiedExporter()
         
-        print(f"✅ Phase 2.3 Enhanced Excel出力完了: {filepath}")
-        print(f"📊 最終ポートフォリオ価値: {normalized_data['summary'].get('final_portfolio_value', 0):,.0f}円")
-        print(f"🎯 総取引数: {normalized_data['summary'].get('num_trades', 0)}件")
-        return filepath
+        # バックテスト基本理念遵守のための取引データ準備
+        trades = []
+        if 'trades' in normalized_data and isinstance(normalized_data['trades'], dict):
+            trades_data = normalized_data['trades']
+            if 'timestamp' in trades_data and 'type' in trades_data:
+                for i, (timestamp, trade_type) in enumerate(zip(trades_data['timestamp'], trades_data['type'])):
+                    trades.append({
+                        'timestamp': str(timestamp),
+                        'type': str(trade_type),
+                        'price': trades_data.get('price', [0.0] * len(trades_data['timestamp']))[i] if i < len(trades_data.get('price', [])) else 0.0,
+                        'signal': trades_data.get('signal', ['unknown'] * len(trades_data['timestamp']))[i] if i < len(trades_data.get('signal', [])) else 'unknown'
+                    })
+        
+        # パフォーマンス指標準備
+        performance = normalized_data.get('summary', {})
+        
+        # 統一出力エンジンで出力
+        export_result = exporter.export_main_results(
+            stock_data=stock_data if isinstance(stock_data, pd.DataFrame) else pd.DataFrame(),
+            trades=trades,
+            performance=performance,
+            ticker=ticker,
+            strategy_name="simple_excel_migrated"
+        )
+        
+        print(f"✅ 統一出力エンジン移行完了: {export_result}")
+        print(f"📊 最終ポートフォリオ価値: {performance.get('final_portfolio_value', 0):,.0f}円")
+        print(f"🎯 総取引数: {performance.get('num_trades', 0)}件")
+        return export_result
         
     except Exception as e:
         print(f"⚠️ Excel出力エラー: {e}")
@@ -455,7 +481,8 @@ def _normalize_results_data(results: Union[Dict[str, Any], Any]) -> Dict[str, An
     return normalized
 
 
-def _create_excel_output(data: Dict[str, Any], filepath: str) -> None:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_excel_output(data: Dict[str, Any], filepath: str) -> None:
     """
     正規化されたデータからExcelファイルを作成
     
@@ -464,22 +491,26 @@ def _create_excel_output(data: Dict[str, Any], filepath: str) -> None:
         filepath: 出力ファイルパス
     """
     
-    with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
         
         # 1. サマリーシート作成
         summary_data = _create_summary_data(data)
         summary_df = pd.DataFrame(summary_data)
-        summary_df.to_excel(writer, sheet_name='サマリー', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: summary_df.to_excel(writer, sheet_name='サマリー', index=False)
         
         # 2. 取引履歴シート作成（データがある場合）
         if data.get('trades') and len(data['trades']) > 0:
             trades_df = _create_trades_dataframe(data['trades'])
-            trades_df.to_excel(writer, sheet_name='取引履歴', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: trades_df.to_excel(writer, sheet_name='取引履歴', index=False)
         
         # 3. 日次損益シート作成（データがある場合）
         if data.get('daily_pnl') and len(data['daily_pnl']) > 0:
             pnl_df = _create_pnl_dataframe(data['daily_pnl'])
-            pnl_df.to_excel(writer, sheet_name='日次損益', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: pnl_df.to_excel(writer, sheet_name='日次損益', index=False)
         
         # 4. メタデータシート作成（Phase 4-B-2-2: N/A完全除去版）
         from datetime import datetime
@@ -503,7 +534,8 @@ def _create_excel_output(data: Dict[str, Any], filepath: str) -> None:
             ['処理ステータス', '正常']
         ]
         metadata_df = pd.DataFrame(metadata_data[1:], columns=metadata_data[0])
-        metadata_df.to_excel(writer, sheet_name='メタデータ', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: metadata_df.to_excel(writer, sheet_name='メタデータ', index=False)
 
 
 def _create_summary_data(data: Dict[str, Any]) -> List[List[Any]]:

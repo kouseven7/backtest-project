@@ -1036,12 +1036,15 @@ class EnhancedTrendSwitchingTester:
     def _save_to_excel(self, batch_results: Dict[str, Any], timestamp: str):
         """Excel形式保存"""
         try:
-            excel_file = self.output_dir / f"batch_results_{timestamp}.xlsx"
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_file = self.output_dir / f"batch_results_{timestamp}.xlsx"
             
-            with pd.ExcelWriter(excel_file, engine='openpyxl') as writer:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: with pd.ExcelWriter(excel_file, engine='openpyxl') as writer:
                 # 実行サマリー
                 summary_df = pd.DataFrame([batch_results.get('execution_summary', {})])
-                summary_df.to_excel(writer, sheet_name='ExecutionSummary', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: summary_df.to_excel(writer, sheet_name='ExecutionSummary', index=False)
                 
                 # 詳細結果（簡略化）
                 detailed_results = batch_results.get('detailed_results', [])
@@ -1060,7 +1063,8 @@ class EnhancedTrendSwitchingTester:
                     
                     if results_data:
                         results_df = pd.DataFrame(results_data)
-                        results_df.to_excel(writer, sheet_name='DetailedResults', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: results_df.to_excel(writer, sheet_name='DetailedResults', index=False)
             
             logger.info(f"Excel file saved: {excel_file}")
             

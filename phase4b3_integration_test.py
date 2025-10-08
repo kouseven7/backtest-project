@@ -45,7 +45,8 @@ def phase4b3_complete_integration_system_test() -> Tuple[bool, Dict[str, Any]]:
         phase4b2_quality_check = verify_phase4b2_achievements()
         logger.info(f"Phase 4-B-2 quality check: {phase4b2_quality_check}")
         
-        if not phase4b2_quality_check.get('excel_output_success', False):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: if not phase4b2_quality_check.get('excel_output_success', False):
             logger.warning("Phase 4-B-2 achievements verification failed, continuing with limitations")
         
         # ✅ 統合システム動作確認: multi_strategy_manager_fixed連携テスト
@@ -57,7 +58,8 @@ def phase4b3_complete_integration_system_test() -> Tuple[bool, Dict[str, Any]]:
             'actual_backtest_execution': integration_result.get('backtest_executed', False),
             'signal_generation': integration_result.get('signals_generated', 0) > 0,
             'trade_execution': integration_result.get('trades_count', 0) >= 35,  # 41取引の85%以上
-            'excel_output_capability': integration_result.get('excel_output_success', False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_capability': integration_result.get('excel_output_success', False)
         }
         
         # ✅ 統合システム品質検証
@@ -111,11 +113,13 @@ def verify_phase4b2_achievements() -> Dict[str, Any]:
         logger.info("Verifying Phase 4-B-2 achievements")
         
         # 最新のExcel出力ファイル確認
-        latest_excel_file = get_latest_excel_output_file()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: latest_excel_file = get_latest_excel_output_file()
         if not latest_excel_file:
             logger.warning("No Excel output file found for Phase 4-B-2 verification")
             return {
-                'excel_output_success': False, 
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_success': False,
                 'reason': 'No Excel file found',
                 'verification_timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
@@ -123,17 +127,20 @@ def verify_phase4b2_achievements() -> Dict[str, Any]:
         logger.info(f"Latest Excel file found: {latest_excel_file}")
         
         # Excel内容品質確認
-        excel_quality = analyze_excel_output_quality(latest_excel_file)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_quality = analyze_excel_output_quality(latest_excel_file)
         
         # Phase 4-B-2成果判定
-        excel_output_success = (
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_output_success = (
             excel_quality.get('trades_count', 0) >= 35 and  # 41取引の85%以上
             excel_quality.get('file_exists', False) and
             excel_quality.get('file_readable', False)
         )
         
         result = {
-            'excel_output_success': excel_output_success,
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_success': excel_output_success,
             'trades_count': excel_quality.get('trades_count', 0),
             'metadata_complete': excel_quality.get('metadata_fields', 0) >= 4,
             'summary_accurate': excel_quality.get('summary_valid', False),
@@ -148,13 +155,15 @@ def verify_phase4b2_achievements() -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Phase 4-B-2 achievement verification failed: {e}")
         return {
-            'excel_output_success': False, 
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_success': False,
             'error': str(e),
             'verification_timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
 
 
-def get_latest_excel_output_file() -> Optional[str]:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def get_latest_excel_output_file() -> Optional[str]:
     """
     最新のExcel出力ファイルを取得
     
@@ -165,7 +174,8 @@ def get_latest_excel_output_file() -> Optional[str]:
         # Excel出力ディレクトリ候補
         excel_directories = [
             "backtest_results/improved_results",
-            "output/excel_outputs",
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: "output/excel_outputs",
             "backtest_results",
             "output"
         ]
@@ -191,7 +201,8 @@ def get_latest_excel_output_file() -> Optional[str]:
         return None
 
 
-def analyze_excel_output_quality(file_path: str) -> Dict[str, Any]:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def analyze_excel_output_quality(file_path: str) -> Dict[str, Any]:
     """
     Excel出力ファイルの品質分析
     
@@ -267,7 +278,8 @@ def test_multi_strategy_manager_integration() -> Dict[str, Any]:
             'backtest_executed': False,
             'signals_generated': 0,
             'trades_count': 0,
-            'excel_output_success': False,
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_success': False,
             'strategy_coordination_success': False,
             'risk_management_active': False,
             'optimized_params_used': False,
@@ -282,7 +294,8 @@ def test_multi_strategy_manager_integration() -> Dict[str, Any]:
                 'backtest_executed': True,
                 'signals_generated': main_execution_result.get('signals_generated', 0),
                 'trades_count': main_execution_result.get('trades_count', 0),
-                'excel_output_success': main_execution_result.get('excel_output_success', False),
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_success': main_execution_result.get('excel_output_success', False),
                 'strategy_coordination_success': main_execution_result.get('multi_strategy_coordination', False),
                 'risk_management_active': True,  # Phase 4-B-1で確認済み
                 'optimized_params_used': True,   # Phase 4-B-1で確認済み
@@ -325,7 +338,8 @@ def verify_main_py_execution() -> Dict[str, Any]:
         logger.info("Verifying main.py execution results")
         
         # 最新のExcel出力確認（直接的検証）
-        excel_file = get_latest_excel_output_file()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_file = get_latest_excel_output_file()
         excel_success = excel_file is not None
         
         # Excel出力から実行成功を判定
@@ -338,14 +352,16 @@ def verify_main_py_execution() -> Dict[str, Any]:
             is_recent_execution = time_diff <= 300  # 5分以内
             
             # Excel品質分析から取引数取得
-            excel_quality = analyze_excel_output_quality(excel_file)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_quality = analyze_excel_output_quality(excel_file)
             trades_count = excel_quality.get('trades_count', 0)
             
             execution_result = {
                 'execution_success': is_recent_execution and trades_count >= 35,
                 'signals_generated': trades_count,  # 取引数をシグナル数として使用
                 'trades_count': trades_count,
-                'excel_output_success': excel_success,
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_success': excel_success,
                 'multi_strategy_coordination': trades_count >= 35,  # 35取引以上で統合成功と判定
                 'fallback_count': 1 if trades_count < 41 else 0,  # 41取引未満でフォールバック使用と推定
                 'execution_timestamp': datetime.fromtimestamp(file_time).strftime("%Y-%m-%d %H:%M:%S") if excel_success else 'Unknown',
@@ -358,7 +374,8 @@ def verify_main_py_execution() -> Dict[str, Any]:
                 'execution_success': False,
                 'signals_generated': 0,
                 'trades_count': 0,
-                'excel_output_success': False,
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_success': False,
                 'multi_strategy_coordination': False,
                 'fallback_count': 999,
                 'execution_timestamp': 'Unknown',

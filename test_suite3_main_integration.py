@@ -144,7 +144,8 @@ class TestSuite3_MainIntegration:
             logger.error(f"❌ 7戦略統合実行テスト失敗: {e}")
             return False
     
-    def test_04_excel_output_verification(self) -> bool:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def test_04_excel_output_verification(self) -> bool:
         """Excel出力・レポート生成確認"""
         logger.info("=== Test 3.4: Excel出力・レポート生成確認 ===")
         
@@ -158,7 +159,8 @@ class TestSuite3_MainIntegration:
                 'simulate_and_save',
                 'output/',
                 '.xlsx',
-                'ExcelWriter',
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'ExcelWriter',
                 'to_excel'
             ]
             
@@ -230,7 +232,8 @@ class TestSuite3_MainIntegration:
             ("main.py基本実行", self.test_01_main_py_basic_execution),
             ("統合システム切り替え", self.test_02_integration_system_fallback_switch),
             ("7戦略統合実行", self.test_03_strategy_integration_verification),
-            ("Excel出力・レポート生成", self.test_04_excel_output_verification),
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: ("Excel出力・レポート生成", self.test_04_excel_output_verification),
             ("フォールバック使用量=0維持", self.test_05_fallback_usage_zero_verification)
         ]
         

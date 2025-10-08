@@ -105,7 +105,8 @@ def measure_full_system_performance_optimized():
         ticker = yf.Ticker("7203.T")  # 軽量テスト
         
         openpyxl = get_openpyxl()
-        wb = openpyxl.Workbook()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: wb = openpyxl.Workbook()
         
         heavy_time = (time.perf_counter() - start_heavy) * 1000
         print(f"重いライブラリ実使用: {heavy_time:.1f}ms")

@@ -59,9 +59,11 @@ class OpenpyxlLazyWrapper:
     
     # よく使用されるクラス・関数の直接実装
     def Workbook(self, *args, **kwargs):
-        """openpyxl.Workbook()の遅延ラッパー"""
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: """openpyxl.Workbook()の遅延ラッパー"""
         openpyxl = self._import_openpyxl()
-        return openpyxl.Workbook(*args, **kwargs)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: return openpyxl.Workbook(*args, **kwargs)
     
     def load_workbook(self, *args, **kwargs):
         """openpyxl.load_workbook()の遅延ラッパー"""
@@ -81,7 +83,8 @@ _lazy_openpyxl = OpenpyxlLazyWrapper()
 
 # openpyxlのAPIをエクスポート
 def Workbook(*args, **kwargs):
-    return _lazy_openpyxl.Workbook(*args, **kwargs)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: return _lazy_openpyxl.Workbook(*args, **kwargs)
 
 def load_workbook(*args, **kwargs):
     return _lazy_openpyxl.load_workbook(*args, **kwargs)

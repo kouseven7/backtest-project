@@ -349,7 +349,8 @@ class UnifiedOutputEngine:
             output_files = {}
             
             if 'excel' in output_formats:
-                excel_path = self._generate_excel_output(unified_model, f"{output_prefix}_{timestamp}")
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_path = self._generate_excel_output(unified_model, f"{output_prefix}_{timestamp}")
                 if excel_path:
                     output_files['excel'] = excel_path
             
@@ -451,10 +452,12 @@ class UnifiedOutputEngine:
         
         return 'unknown'
     
-    def _generate_excel_output(self, unified_model: UnifiedOutputModel, filename: str) -> Optional[str]:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _generate_excel_output(self, unified_model: UnifiedOutputModel, filename: str) -> Optional[str]:
         """Excel出力の生成"""
         try:
-            output_path = self.output_base_dir / f"{filename}.xlsx"
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: output_path = self.output_base_dir / f"{filename}.xlsx"
             
             # DSSMSデータがある場合はDSSMS専用エクスポーターを使用
             if unified_model.dssms_metrics and self.dssms_excel_exporter:
@@ -484,7 +487,8 @@ class UnifiedOutputEngine:
                 
             else:
                 # フォールバック：基本的なExcel出力
-                self._generate_basic_excel_output(unified_model, output_path)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: self._generate_basic_excel_output(unified_model, output_path)
             
             self.logger.info(f"Excel出力完了: {output_path}")
             return str(output_path)

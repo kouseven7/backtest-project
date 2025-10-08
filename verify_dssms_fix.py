@@ -6,7 +6,8 @@ import pandas as pd
 import os
 from datetime import datetime
 
-def verify_latest_excel_output():
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def verify_latest_excel_output():
     """最新のExcel出力を検証"""
     print("=== 修正後DSSMS Excel出力検証 ===")
     
@@ -150,7 +151,8 @@ def compare_before_after():
 if __name__ == "__main__":
     print("修正後DSSMS Excel出力検証開始")
     
-    success = verify_latest_excel_output()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: success = verify_latest_excel_output()
     
     compare_before_after()
     

@@ -23,7 +23,8 @@ from src.dssms.dssms_backtester import DSSMSBacktester, DSSMSPerformanceMetrics
 
 def setup_test_logger():
     """テスト用ロガーを設定"""
-    logger = setup_logger("DSSMS_Excel_Test", log_file="test_dssms_excel_output.log")
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: logger = setup_logger("DSSMS_Excel_Test", log_file="test_dssms_excel_output.log")
     logger.setLevel(logging.INFO)
     return logger
 
@@ -168,7 +169,8 @@ def run_dssms_excel_test():
                 logger.info(f"[SUCCESS] Excel出力成功: {excel_path}")
                 
                 # Excelファイルの内容確認
-                verify_excel_output(excel_path, logger)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: verify_excel_output(excel_path, logger)
                 
                 return True
             else:
@@ -184,7 +186,8 @@ def run_dssms_excel_test():
         logger.error(traceback.format_exc())
         return False
 
-def verify_excel_output(excel_path, logger):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def verify_excel_output(excel_path, logger):
     """Excel出力内容を検証"""
     try:
         # Excelファイルを読み込んで内容確認
@@ -251,4 +254,5 @@ if __name__ == "__main__":
         print("[FAILED] テスト完了: 失敗")
         print("Excel出力機能に問題があります")
     
-    print("\n詳細なログは test_dssms_excel_output.log をご確認ください")
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: print("\n詳細なログは test_dssms_excel_output.log をご確認ください")

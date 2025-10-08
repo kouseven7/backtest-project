@@ -73,7 +73,8 @@ class FileCleanupManager:
             'temp_files': ['*.tmp', '*.temp', '*~', '.DS_Store', 'Thumbs.db'],
             'cache_files': ['__pycache__/*', '*.pyc', '*.pyo', '.pytest_cache/*'],
             'backup_files': ['backup_*', '*_backup*', '*.bak', '*_bak_*'],
-            'old_output': ['*.png', '*.csv', '*.txt', '*.xlsx'],  # 出力ファイル
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'old_output': ['*.png', '*.csv', '*.txt', '*.xlsx'],  # 出力ファイル
             'log_files': ['*.log', 'logs/*'],
             'venv_cache': ['.venv/Lib/site-packages/*/tests/*', '.venv/Lib/site-packages/*/__pycache__/*']
         }

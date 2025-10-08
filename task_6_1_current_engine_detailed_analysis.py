@@ -36,7 +36,8 @@ class CurrentEngineDetailedQualityAnalyzer:
         self._compare_with_task42_v1_engine()
         
         # 3. 実際のExcel出力内容の数学的正確性検証
-        self._verify_excel_output_accuracy()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: self._verify_excel_output_accuracy()
         
         # 4. 24KB出力データの構造・完全性確認
         self._analyze_excel_structure_completeness()
@@ -185,7 +186,8 @@ class CurrentEngineDetailedQualityAnalyzer:
             print(f"❌ 比較分析エラー: {e}")
             self.analysis_results['task42_comparison'] = {'error': str(e)}
     
-    def _verify_excel_output_accuracy(self):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _verify_excel_output_accuracy(self):
         """3. 実際のExcel出力内容の数学的正確性検証"""
         print("\n🔍 3. Excel出力内容の数学的正確性検証")
         print("-" * 60)
@@ -561,7 +563,8 @@ class CurrentEngineDetailedQualityAnalyzer:
             'description': f"dssms_unified_output_engine.py（0点品質）が稼働中で、Task 4.2のv1エンジン（85.0点）と85点の品質格差",
             'discovered_issues': root_cause.get('potential_causes', []),
             'impact_assessment': {
-                'excel_output_reliability': 'questionable',
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_reliability': 'questionable',
                 'calculation_accuracy': 'unverified',
                 'implementation_completeness': calc_analysis.get('implementation_completeness', 0),
                 'quality_gap': task42_comparison.get('quality_scores', {}).get('score_gap', 85)

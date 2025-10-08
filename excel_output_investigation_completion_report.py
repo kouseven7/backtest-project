@@ -140,7 +140,8 @@ def main():
     
     # ファイル保存
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = f"excel_output_investigation_completion_report_{timestamp}.md"
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: output_file = f"excel_output_investigation_completion_report_{timestamp}.md"
     
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(report)

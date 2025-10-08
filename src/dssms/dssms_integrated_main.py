@@ -1994,7 +1994,8 @@ class DSSMSIntegratedBacktester:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             
             # 1. Excelエクスポート
-            excel_path = f"output/dssms_integration/backtest_results_{timestamp}.xlsx"
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: excel_path = f"output/dssms_integration/backtest_results_{timestamp}.xlsx"
             self.excel_exporter.export_dssms_results(final_results, excel_path)
             self.logger.info(f"Excelエクスポート完了: {excel_path}")
             

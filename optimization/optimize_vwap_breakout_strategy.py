@@ -197,8 +197,10 @@ def optimize_vwap_breakout_strategy(data, index_data=None, use_parallel=False):
         print("\n=== 損益推移['日次損益']の記述統計 ===")
         print(trade_results["損益推移"]["日次損益"].describe())
         metrics = PerformanceMetricsCalculator.calculate_all(trade_results["取引履歴"])
-        metrics_path = os.path.join(output_dir, f"performance_metrics_{timestamp}.xlsx")
-        pd.DataFrame([metrics]).to_excel(metrics_path, index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: metrics_path = os.path.join(output_dir, f"performance_metrics_{timestamp}.xlsx")
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: pd.DataFrame([metrics]).to_excel(metrics_path, index=False)
         logger.info(f"パフォーマンス指標を保存しました: {metrics_path}")
     
     # 結果の保存
@@ -214,11 +216,14 @@ def optimize_vwap_breakout_strategy(data, index_data=None, use_parallel=False):
         
         # ウォークフォワード分析の詳細結果
         if hasattr(optimizer, 'walk_forward_results') and optimizer.walk_forward_results:
-            wf_output_path = os.path.join(output_dir, f"walk_forward_details_{timestamp}.xlsx")
-            with pd.ExcelWriter(wf_output_path) as writer:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: wf_output_path = os.path.join(output_dir, f"walk_forward_details_{timestamp}.xlsx")
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: with pd.ExcelWriter(wf_output_path) as writer:
                 for i, wf_result in enumerate(optimizer.walk_forward_results):
                     if isinstance(wf_result, pd.DataFrame):
-                        wf_result.to_excel(writer, sheet_name=f"Window_{i+1}")
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: wf_result.to_excel(writer, sheet_name=f"Window_{i+1}")
             logger.info(f"ウォークフォワード分析詳細結果を保存しました: {wf_output_path}")
     else:
         logger.warning("最適化に失敗しました。結果が空です。")

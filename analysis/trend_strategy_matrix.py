@@ -536,30 +536,36 @@ class TrendStrategyMatrix:
     def _save_excel_report(self, excel_path: str) -> None:
         """Excel形式でレポートを保存"""
         try:
-            with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
                 
                 # 1. マトリクスサマリー
                 matrix_df = self._create_matrix_dataframe()
-                matrix_df.to_excel(writer, sheet_name='Matrix_Summary', index=True)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: matrix_df.to_excel(writer, sheet_name='Matrix_Summary', index=True)
                 
                 # 2. 戦略ランキング（トレンド別）
                 for trend_type in self.trend_types:
                     if trend_type in self.strategy_rankings:
                         ranking_df = pd.DataFrame(self.strategy_rankings[trend_type])
-                        ranking_df.to_excel(writer, sheet_name=f'Ranking_{trend_type}', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: ranking_df.to_excel(writer, sheet_name=f'Ranking_{trend_type}', index=False)
                 
                 # 3. 総合ランキング
                 if "overall" in self.strategy_rankings:
                     overall_df = pd.DataFrame(self.strategy_rankings["overall"])
-                    overall_df.to_excel(writer, sheet_name='Overall_Ranking', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: overall_df.to_excel(writer, sheet_name='Overall_Ranking', index=False)
                 
                 # 4. 適応性メトリクス
                 adaptation_df = pd.DataFrame.from_dict(self.adaptation_metrics, orient='index')
-                adaptation_df.to_excel(writer, sheet_name='Adaptation_Metrics', index=True)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: adaptation_df.to_excel(writer, sheet_name='Adaptation_Metrics', index=True)
                 
                 # 5. 詳細データ
                 detailed_df = self._create_detailed_dataframe()
-                detailed_df.to_excel(writer, sheet_name='Detailed_Metrics', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: detailed_df.to_excel(writer, sheet_name='Detailed_Metrics', index=False)
                 
         except Exception as e:
             logger.error(f"Excel保存エラー: {e}")

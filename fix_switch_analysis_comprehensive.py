@@ -102,7 +102,8 @@ def apply_excel_exporter_fixes():
             logger.error(f"切替履歴生成エラー: {e}")
             return []
     
-    def _create_switch_analysis_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_switch_analysis_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
         """切替分析シート作成（修正版）"""
         ws = workbook.create_sheet("切替分析")
         

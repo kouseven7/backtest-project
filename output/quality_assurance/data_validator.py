@@ -317,7 +317,8 @@ class DataQualityValidator:
         
         return issues
 
-def validate_excel_output_quality(stock_data: pd.DataFrame, 
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def validate_excel_output_quality(stock_data: pd.DataFrame,
                                  normalized_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Excel出力用データ品質検証の便利関数

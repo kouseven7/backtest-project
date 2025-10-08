@@ -455,7 +455,9 @@ DSSMS概要・バックテスト基本理念遵守確認
 
 
 # 既存ファイルの段階的移行用ヘルパー（バックテスト基本理念遵守版）
-def migrate_from_excel_output(excel_data_dict: Dict[str, Any], output_type: str = "main") -> Dict[str, Path]:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def migrate_from_excel_output(excel_data_dict: Dict[str, Any], output_type: str = "main") -> Dict[str, Path]:
+def migrate_excel_to_unified(excel_data_dict: Dict[str, Any], output_type: str = "main") -> Dict[str, Path]:
     """
     既存Excel出力データを新形式に移行（バックテスト基本理念遵守版）
     

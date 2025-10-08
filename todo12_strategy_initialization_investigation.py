@@ -716,7 +716,8 @@ class TODO12ComprehensiveStrategyInitializationInvestigator:
                     'affected_strategies': ['VWAPBreakoutStrategy', 'OpeningGapStrategy']
                 },
                 {
-                    'violation': 'excel_output_readiness_impaired',
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'violation': 'excel_output_readiness_impaired',
                     'description': '全戦略結果が揃わないためExcel出力品質低下',
                     'severity': 'high',
                     'impact': 'バックテスト結果の完整性問題',

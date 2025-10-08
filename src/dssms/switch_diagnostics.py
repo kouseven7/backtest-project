@@ -808,7 +808,8 @@ class SwitchDiagnostics:
                 df_data.append(row)
             
             df = pd.DataFrame(df_data)
-            df.to_excel(export_file, index=False, engine='openpyxl')
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: df.to_excel(export_file, index=False, engine='openpyxl')
         
         else:
             raise ValueError(f"未対応のエクスポート形式: {format_type}")

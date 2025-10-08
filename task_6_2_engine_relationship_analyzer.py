@@ -37,7 +37,8 @@ class EngineFilesRelationshipAnalyzer:
         self._analyze_engine_dependencies()
         
         # 5. Excel出力責任エンジンの最終特定
-        self._identify_excel_output_responsible_engine()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: self._identify_excel_output_responsible_engine()
         
         # 6. 混乱状況の整理・問題特定
         self._identify_confusion_problems()
@@ -354,7 +355,8 @@ class EngineFilesRelationshipAnalyzer:
             print(f"❌ 依存関係分析エラー: {e}")
             self.analysis_results['dependencies'] = {'error': str(e)}
     
-    def _identify_excel_output_responsible_engine(self):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _identify_excel_output_responsible_engine(self):
         """5. Excel出力責任エンジンの最終特定"""
         print("\n🔍 5. Excel出力責任エンジンの最終特定")
         print("-" * 60)

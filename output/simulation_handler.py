@@ -98,7 +98,8 @@ def simulate_and_save(data: pd.DataFrame, ticker: str, splits: Optional[List[Tup
     
     # ウォークフォワード分割結果がある場合は保存
     if splits:
-        split_output_path = os.path.join(output_dir, f"splits_{timestamp}.xlsx")
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: split_output_path = os.path.join(output_dir, f"splits_{timestamp}.xlsx")
         save_splits_to_excel(splits, split_output_path)
         logger.info(f"ウォークフォワード分割結果を保存しました: {split_output_path}")
     

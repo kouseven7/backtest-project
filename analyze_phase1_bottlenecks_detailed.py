@@ -197,7 +197,8 @@ class Phase1BottleneckAnalyzer:
         if lib == 'yfinance':
             return 'conditional_import_in_data_fetcher'
         elif lib == 'openpyxl':
-            return 'conditional_import_in_excel_output'
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: return 'conditional_import_in_excel_output'
         else:
             return 'general_lazy_import'
     
@@ -213,7 +214,8 @@ class Phase1BottleneckAnalyzer:
             ])
         elif lib == 'openpyxl':
             risks.extend([
-                'excel_output_first_time_delay',
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_first_time_delay',
                 'memory_allocation_spike',
                 'file_format_compatibility_check_delay'
             ])
@@ -281,7 +283,8 @@ class Phase1BottleneckAnalyzer:
                     'cleanup_approach': 'direct_import_replacement'
                 },
                 'implementation_steps': [
-                    'create_excel_output_lazy_wrapper',
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'create_excel_output_lazy_wrapper',
                     'modify_simulation_handler_imports',
                     'remove_all_lazy_loader_remnants',
                     'convert_to_direct_imports',

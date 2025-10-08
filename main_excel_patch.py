@@ -10,8 +10,10 @@ Created: 2025-07-30
 
 Usage:
     # main.pyの最後に以下を追加:
-    from main_excel_patch import apply_new_excel_output
-    apply_new_excel_output(stock_data, ticker)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: from main_excel_patch import apply_new_excel_output
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: apply_new_excel_output(stock_data, ticker)
 """
 
 import os
@@ -30,7 +32,8 @@ logger = setup_logger(__name__)
 # 新しいExcel出力モジュールをインポート
 from output.simple_excel_exporter import save_backtest_results_simple
 
-def apply_new_excel_output(stock_data: pd.DataFrame, ticker: str, 
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def apply_new_excel_output(stock_data: pd.DataFrame, ticker: str,
                           output_filename: str = None) -> str:
     """
     新しいExcel出力モジュールを使用してバックテスト結果を出力する
@@ -49,7 +52,8 @@ def apply_new_excel_output(stock_data: pd.DataFrame, ticker: str,
         # ファイル名の生成
         if output_filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_filename = f"improved_backtest_{ticker}_{timestamp}.xlsx"
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: output_filename = f"improved_backtest_{ticker}_{timestamp}.xlsx"
         
         # 新しいモジュールで出力
         output_path = save_backtest_results_simple(
@@ -146,9 +150,11 @@ def patch_main_with_new_excel(main_module_path: str = "main.py"):
         patch_code = """
 # === 新Excel出力モジュール統合パッチ ===
 try:
-    from main_excel_patch import apply_new_excel_output
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: from main_excel_patch import apply_new_excel_output
     logger.info("新Excel出力モジュールでも結果を保存します...")
-    new_excel_path = apply_new_excel_output(stock_data, ticker)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: new_excel_path = apply_new_excel_output(stock_data, ticker)
     if new_excel_path:
         logger.info(f"新Excel出力完了: {new_excel_path}")
     else:
@@ -186,12 +192,14 @@ def demo_patch_application():
     print("=" * 60)
     
     # サンプルデータでテスト
-    from demo_simple_excel_output import create_sample_data
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: from demo_simple_excel_output import create_sample_data
     sample_data = create_sample_data()
     ticker = "PATCH_DEMO"
     
     # 新Excel出力を実行
-    output_path = apply_new_excel_output(sample_data, ticker)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: output_path = apply_new_excel_output(sample_data, ticker)
     
     if output_path:
         print(f"\n✅ パッチデモ成功: {output_path}")

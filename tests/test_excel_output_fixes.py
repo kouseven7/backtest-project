@@ -36,7 +36,8 @@ def create_test_excel_data():
     
     return test_data
 
-def test_excel_output():
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def test_excel_output():
     """Excel出力のテスト"""
     print("=== Excel出力テスト ===")
     
@@ -175,7 +176,8 @@ if __name__ == "__main__":
     print("🔍 trade_simulation.py修正のExcel出力テスト開始")
     
     # Excel出力テスト
-    excel_success = test_excel_output()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_success = test_excel_output()
     
     # main.py統合テスト
     main_success = test_main_integration()

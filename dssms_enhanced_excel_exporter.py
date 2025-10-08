@@ -27,7 +27,8 @@ class EnhancedDSSMSExcelExporter:
             'RSIStrategy'
         ]
         
-    def create_enhanced_trade_history_sheet(self, workbook: openpyxl.Workbook, trades_data: List[Dict]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: def create_enhanced_trade_history_sheet(self, workbook: openpyxl.Workbook, trades_data: List[Dict]):
         """強化された取引履歴シートを作成"""
         if '取引履歴' in workbook.sheetnames:
             sheet = workbook['取引履歴']

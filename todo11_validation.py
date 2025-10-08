@@ -365,7 +365,8 @@ class WeightJudgmentSystemRecoveryValidator:
             'actual_backtest_execution': False,
             'signal_generation_verified': False,
             'trade_execution_confirmed': False,
-            'excel_output_ready': False
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_ready': False
         }
         
         try:
@@ -393,7 +394,8 @@ class WeightJudgmentSystemRecoveryValidator:
                             
                             # Excel出力準備確認
                             if 'total_trades' in performance_metrics or 'portfolio_value' in performance_metrics or 'test_mode' in performance_metrics:
-                                principle_compliance['excel_output_ready'] = True
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: principle_compliance['excel_output_ready'] = True
                                 print("  ✅ Excel出力対応確認: 取引データ準備完了")
             
             # 戦略レジストリ実行結果からの基本理念確認

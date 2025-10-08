@@ -229,7 +229,8 @@ class MultiStrategyManager:
             execution_time = (datetime.now() - start_time).total_seconds()
             
             # Excel出力対応: 完全データ返却
-            result_data = self._format_for_excel_output(integrated_results, strategy_performances, combined_signals)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: result_data = self._format_for_excel_output(integrated_results, strategy_performances, combined_signals)
             
             result = MultiStrategyResult(
                 execution_mode=ExecutionMode.MULTI_STRATEGY,
@@ -315,7 +316,8 @@ class MultiStrategyManager:
             # TODO(tag:backtest_execution, rationale:improve validation robustness)
             raise
     
-    def _format_for_excel_output(self, integrated_results, strategy_performances, combined_signals):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: def _format_for_excel_output(self, integrated_results, strategy_performances, combined_signals):
         """Excel出力対応: 完全データフォーマット"""
         try:
             # DSSMSレベルの品質を目標とした出力データ準備

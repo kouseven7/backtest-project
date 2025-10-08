@@ -414,7 +414,8 @@ class ReportIntegrationManager:
 import src.utils.openpyxl_lazy_wrapper as openpyxl
                 from openpyxl.styles import Font, PatternFill, Alignment
                 
-                wb = openpyxl.Workbook()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: wb = openpyxl.Workbook()
                 
                 # サマリーシート
                 ws_summary = wb.active

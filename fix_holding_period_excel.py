@@ -85,9 +85,11 @@ def fix_holding_periods_in_excel(excel_file_path: str) -> bool:
                 sheet_data[sheet_name] = df
         
         # 修正したデータでExcelファイルを保存
-        with pd.ExcelWriter(excel_file_path, engine='openpyxl') as writer:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: with pd.ExcelWriter(excel_file_path, engine='openpyxl') as writer:
             for sheet_name, df in sheet_data.items():
-                df.to_excel(writer, sheet_name=sheet_name, index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: df.to_excel(writer, sheet_name=sheet_name, index=False)
         
         logger.info(f"Excelファイル修正完了: {excel_file_path}")
         return True

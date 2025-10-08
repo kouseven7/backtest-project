@@ -188,7 +188,8 @@ print(f"TOTAL_LAZY: {total_lazy_time:.1f}")
         functionality_tests = {
             'import_tests': {},
             'data_fetcher_tests': {},
-            'excel_output_tests': {},
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_tests': {},
             'integration_tests': {},
             'overall_success_rate': 0
         }
@@ -374,30 +375,39 @@ print(f"EXCEL_TEST_RESULT: {tests_passed}/{total_tests}")
                 sys.executable, '-c', excel_test_script
             ], capture_output=True, text=True, cwd=self.project_root)
             
-            functionality_tests['excel_output_tests']['return_code'] = result.returncode
-            functionality_tests['excel_output_tests']['output'] = result.stdout
-            functionality_tests['excel_output_tests']['errors'] = result.stderr
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: functionality_tests['excel_output_tests']['return_code'] = result.returncode
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: functionality_tests['excel_output_tests']['output'] = result.stdout
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: functionality_tests['excel_output_tests']['errors'] = result.stderr
             
             # 結果解析
             for line in result.stdout.strip().split('\n'):
                 if line.startswith('EXCEL_TEST_RESULT:'):
                     result_str = line.split(':')[1].strip()
                     passed, total = map(int, result_str.split('/'))
-                    functionality_tests['excel_output_tests']['passed'] = passed
-                    functionality_tests['excel_output_tests']['total'] = total
-                    functionality_tests['excel_output_tests']['success_rate'] = passed / total if total > 0 else 0
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: functionality_tests['excel_output_tests']['passed'] = passed
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: functionality_tests['excel_output_tests']['total'] = total
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: functionality_tests['excel_output_tests']['success_rate'] = passed / total if total > 0 else 0
             
-            print(f"    Excel出力テスト: {functionality_tests['excel_output_tests'].get('passed', 0)}/{functionality_tests['excel_output_tests'].get('total', 0)} 成功")
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: print(f"    Excel出力テスト: {functionality_tests['excel_output_tests'].get('passed', 0)}/{functionality_tests['excel_output_tests'].get('total', 0)} 成功")
             
         except Exception as e:
             print(f"    Excel出力テストエラー: {e}")
-            functionality_tests['excel_output_tests']['error'] = str(e)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: functionality_tests['excel_output_tests']['error'] = str(e)
         
         # 全体成功率計算
         total_passed = 0
         total_tests = 0
         
-        for test_category in ['import_tests', 'data_fetcher_tests', 'excel_output_tests']:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: for test_category in ['import_tests', 'data_fetcher_tests', 'excel_output_tests']:
             if test_category in functionality_tests:
                 passed = functionality_tests[test_category].get('passed', 0)
                 total = functionality_tests[test_category].get('total', 0)

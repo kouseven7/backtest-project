@@ -137,13 +137,15 @@ class DSSMSExcelExporterV2:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 output_dir = Path("backtest_results/dssms_results")
                 output_dir.mkdir(parents=True, exist_ok=True)
-                output_path = output_dir / f"dssms_backtest_results_v2_{timestamp}.xlsx"
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: output_path = output_dir / f"dssms_backtest_results_v2_{timestamp}.xlsx"
             
             # Phase 3最適化: openpyxl遅延インポート
             openpyxl = get_openpyxl()
             
             # Excelワークブック作成
-            workbook = openpyxl.Workbook()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: workbook = openpyxl.Workbook()
             
             # デフォルトシートを削除
             if "Sheet" in workbook.sheetnames:
@@ -173,7 +175,8 @@ class DSSMSExcelExporterV2:
             self.logger.error(traceback.format_exc())
             raise
     
-    def _create_summary_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_summary_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
         """サマリーシート作成"""
         ws = workbook.create_sheet("サマリー", 0)
         
@@ -221,7 +224,8 @@ class DSSMSExcelExporterV2:
         ws.column_dimensions["A"].width = 25
         ws.column_dimensions["B"].width = 20
     
-    def _create_performance_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: def _create_performance_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
         """パフォーマンス指標シート作成"""
         ws = workbook.create_sheet("パフォーマンス指標")
         
@@ -253,7 +257,8 @@ class DSSMSExcelExporterV2:
         for col in ["A", "B", "C", "D"]:
             ws.column_dimensions[col].width = 20
     
-    def _create_trade_history_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_trade_history_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
         """取引履歴シート作成"""
         ws = workbook.create_sheet("取引履歴")
         
@@ -299,7 +304,8 @@ class DSSMSExcelExporterV2:
         for col, width in column_widths.items():
             ws.column_dimensions[col].width = width
     
-    def _create_daily_pnl_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_daily_pnl_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
         """損益推移シート作成"""
         ws = workbook.create_sheet("損益推移")
         
@@ -334,7 +340,8 @@ class DSSMSExcelExporterV2:
         for col in ["A", "B", "C", "D", "E"]:
             ws.column_dimensions[col].width = 15
     
-    def _create_strategy_stats_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: def _create_strategy_stats_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
         """戦略別統計シート作成"""
         ws = workbook.create_sheet("戦略別統計")
         
@@ -378,7 +385,8 @@ class DSSMSExcelExporterV2:
         for col, width in column_widths.items():
             ws.column_dimensions[col].width = width
     
-    def _create_switch_analysis_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_switch_analysis_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
         """切替分析シート作成"""
         ws = workbook.create_sheet("切替分析")
         
@@ -451,7 +459,8 @@ class DSSMSExcelExporterV2:
         for col, width in column_widths.items():
             ws.column_dimensions[col].width = width
     
-    def _create_charts_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_charts_sheet(self, workbook: openpyxl.Workbook, result: Dict[str, Any]):
         """チャートシート作成"""
         ws = workbook.create_sheet("チャート")
         

@@ -713,23 +713,27 @@ class StrategyComparisonReporter:
         """Excelレポートの生成"""
         try:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            excel_path = self.output_dir / f"strategy_comparison_report_{timestamp}.xlsx"
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: excel_path = self.output_dir / f"strategy_comparison_report_{timestamp}.xlsx"
             
-            with pd.ExcelWriter(str(excel_path), engine='openpyxl') as writer:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: with pd.ExcelWriter(str(excel_path), engine='openpyxl') as writer:
                 # 各セクションをシートとして追加
                 for section in self.report_sections:
                     sheet_name = section.title[:31]  # Excel sheet name limit
                     
                     if section.section_type == "table":
                         if isinstance(section.content, pd.DataFrame):
-                            section.content.to_excel(writer, sheet_name=sheet_name, index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: section.content.to_excel(writer, sheet_name=sheet_name, index=False)
                         elif isinstance(section.content, dict):
                             # 辞書の場合は複数のテーブルを含む可能性がある
                             if len(section.content) == 1:
                                 # 単一テーブル
                                 key, df = next(iter(section.content.items()))
                                 if isinstance(df, pd.DataFrame):
-                                    df.to_excel(writer, sheet_name=sheet_name, index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: df.to_excel(writer, sheet_name=sheet_name, index=False)
                             else:
                                 # 複数テーブルを縦に連結
                                 start_row = 0
@@ -737,12 +741,14 @@ class StrategyComparisonReporter:
                                     if isinstance(df, pd.DataFrame):
                                         # サブタイトルを追加
                                         subtitle_df = pd.DataFrame([[key]], columns=[''])
-                                        subtitle_df.to_excel(writer, sheet_name=sheet_name, 
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: subtitle_df.to_excel(writer, sheet_name=sheet_name,
                                                            startrow=start_row, index=False, header=False)
                                         start_row += 2
                                         
                                         # データを追加
-                                        df.to_excel(writer, sheet_name=sheet_name, 
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: df.to_excel(writer, sheet_name=sheet_name,
                                                   startrow=start_row, index=False)
                                         start_row += len(df) + 3
                     
@@ -757,7 +763,8 @@ class StrategyComparisonReporter:
                                     text_data.append([key, value])
                             
                             text_df = pd.DataFrame(text_data, columns=['項目', '内容'])
-                            text_df.to_excel(writer, sheet_name=sheet_name, index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: text_df.to_excel(writer, sheet_name=sheet_name, index=False)
                 
                 # スタイルの適用
                 self._apply_excel_styles(writer)

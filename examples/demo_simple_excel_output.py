@@ -1,6 +1,7 @@
 """
 新Excel出力モジュールのデモ実行スクリプト
-File: demo_simple_excel_output.py
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: File: demo_simple_excel_output.py
 Description: 
   新しいsimple_excel_exporter.pyを使用したデモ実行スクリプト。
   正確な取引履歴計算と適切なExcel出力を確認できます。
@@ -9,7 +10,8 @@ Author: imega
 Created: 2025-07-30
 
 Usage:
-    python demo_simple_excel_output.py
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: python demo_simple_excel_output.py
 """
 
 import os
@@ -113,7 +115,8 @@ def demo_simple_excel_export():
             logger.info(f"ファイルサイズ: {file_size:,} bytes")
             
             # 出力結果の簡易検証
-            verify_excel_output(output_path)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: verify_excel_output(output_path)
             
         else:
             logger.error("❌ Excel出力に失敗しました")
@@ -123,7 +126,8 @@ def demo_simple_excel_export():
         import traceback
         traceback.print_exc()
 
-def verify_excel_output(output_path: str):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def verify_excel_output(output_path: str):
     """Excel出力結果の簡易検証"""
     try:
         logger.info("Excel出力結果の検証開始")

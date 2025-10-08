@@ -33,7 +33,8 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
         
         # 軽量使用テスト
         start_usage = time.perf_counter()
-        wb = openpyxl.Workbook()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: wb = openpyxl.Workbook()
         font = Font(bold=True, size=12)
         usage_time = (time.perf_counter() - start_usage) * 1000
         print(f"Workbook作成・Font作成時間: {usage_time:.1f}ms")
@@ -73,7 +74,8 @@ def test_lazy_openpyxl_import_performance():
     
     # 使用時間測定
     start_usage = time.perf_counter()
-    wb = openpyxl.Workbook()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: wb = openpyxl.Workbook()
     from openpyxl.styles import Font
     font = Font(bold=True, size=12)
     usage_time = (time.perf_counter() - start_usage) * 1000

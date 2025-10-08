@@ -10,7 +10,8 @@ import src.utils.openpyxl_lazy_wrapper as openpyxl
 from pathlib import Path
 from typing import List
 
-def check_excel_output():
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def check_excel_output():
     """最新のExcelファイルの内容を確認"""
     
     # 最新のExcelファイルを特定
@@ -109,4 +110,5 @@ def check_excel_output():
         print(f"❌ Excel読み込みエラー: {e}")
 
 if __name__ == "__main__":
-    check_excel_output()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: check_excel_output()

@@ -874,12 +874,15 @@ class IntegrationTestFramework:
                 "詳細": str(result.details)[:100] + "..." if len(str(result.details)) > 100 else str(result.details)
             } for result in self.test_results])
             
-            with pd.ExcelWriter(excel_file, engine='openpyxl') as writer:
-                summary_df.to_excel(writer, sheet_name='テスト結果サマリー', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: with pd.ExcelWriter(excel_file, engine='openpyxl') as writer:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: summary_df.to_excel(writer, sheet_name='テスト結果サマリー', index=False)
                 
                 # テスト設定シート
                 config_df = pd.DataFrame(list(self.test_config.items()), columns=['設定項目', '値'])
-                config_df.to_excel(writer, sheet_name='テスト設定', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: config_df.to_excel(writer, sheet_name='テスト設定', index=False)
             
             self.logger.info(f"💾 テスト結果保存完了: {results_file}")
             self.logger.info(f"📊 テスト結果Excel保存: {excel_file}")

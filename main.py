@@ -74,7 +74,7 @@ from strategies.gc_strategy_signal import GCStrategy
 from data_processor import preprocess_data
 from indicators.indicator_calculator import compute_indicators
 from data_fetcher import get_parameters_and_data
-from output.simple_simulation_handler import simulate_and_save
+# Excel廃棄対応: simulate_and_save from output.simple_simulation_handler は統一出力エンジンに移行済み
 
 # リスク管理の初期化
 risk_manager = RiskManagement(total_assets=1000000)  # 総資産100万円
@@ -848,11 +848,60 @@ def main():
                                 logger.warning("[WARNING] バックテスト基本理念注意: 取引数0件 - テストデータ制約の可能性")
                                 result_data = stock_data
                                 
-                            backtest_results = simulate_and_save(result_data, ticker)
+                            # 統一出力エンジンに移行（Excel廃棄対応）
+                            from output.unified_exporter import UnifiedExporter
+                            exporter = UnifiedExporter()
+                            
+                            # 取引データ生成
+                            trades = []
+                            if 'Entry_Signal' in result_data.columns and 'Exit_Signal' in result_data.columns:
+                                entry_signals = result_data[result_data['Entry_Signal'] == 1]
+                                exit_signals = result_data[result_data['Exit_Signal'] == 1]
+                                
+                                for idx, row in entry_signals.iterrows():
+                                    trades.append({
+                                        'timestamp': str(idx),
+                                        'type': 'entry', 
+                                        'price': float(row['Close']),
+                                        'signal': 'Entry_Signal'
+                                    })
+                                
+                                for idx, row in exit_signals.iterrows():
+                                    trades.append({
+                                        'timestamp': str(idx),
+                                        'type': 'exit',
+                                        'price': float(row['Close']),
+                                        'signal': 'Exit_Signal'
+                                    })
+                            
+                            performance = {
+                                'total_trades': len(trades),
+                                'integrated_execution': True,
+                                'ticker': ticker
+                            }
+                            
+                            backtest_results = exporter.export_main_results(
+                                stock_data=result_data,
+                                trades=trades,
+                                performance=performance, 
+                                ticker=ticker,
+                                strategy_name="integrated_multi_strategy"
+                            )
                         else:
                             logger.warning("backtest_dataが存在しません - フォールバック")
                             result_data = stock_data
-                            backtest_results = simulate_and_save(result_data, ticker)
+                            # 統一出力エンジンフォールバック
+                            from output.unified_exporter import UnifiedExporter
+                            exporter = UnifiedExporter()
+                            trades: List[Dict[str, Any]] = []
+                            performance: Dict[str, Any] = {'total_trades': 0, 'fallback_execution': True, 'ticker': ticker}
+                            backtest_results = exporter.export_main_results(
+                                stock_data=result_data,
+                                trades=trades,
+                                performance=performance,
+                                ticker=ticker,
+                                strategy_name="fallback_strategy"
+                            )
                     else:
                         logger.warning("統合システムの実行結果が不正でした。従来システムにフォールバックします。")
                         raise Exception("統合システムの実行に失敗")
@@ -912,12 +961,57 @@ def main():
         except Exception as e:
             logger.warning(f"テキストレポート生成エラー: {e}")
         
-        # 従来のExcel出力も保持（参考用）
+        # 統一出力エンジンによる新形式出力（CSV+JSON+TXT+YAML）
         try:
-            backtest_results = simulate_and_save(stock_data, ticker)
-            logger.info(f"従来Excel出力: {backtest_results}")
+            from output.unified_exporter import UnifiedExporter
+            from typing import List, Dict, Any
+            exporter = UnifiedExporter()
+            
+            # バックテスト基本理念遵守確認
+            if 'Entry_Signal' in stock_data.columns and 'Exit_Signal' in stock_data.columns:
+                # 取引履歴とパフォーマンス指標を生成
+                trades: List[Dict[str, Any]] = []
+                entry_signals = stock_data[stock_data['Entry_Signal'] == 1]
+                exit_signals = stock_data[stock_data['Exit_Signal'] == 1]
+                
+                for idx, row in entry_signals.iterrows():
+                    trades.append({
+                        'timestamp': str(idx),
+                        'type': 'entry',
+                        'price': float(row['Close']),
+                        'signal': 'Entry_Signal'
+                    })
+                
+                for idx, row in exit_signals.iterrows():
+                    trades.append({
+                        'timestamp': str(idx), 
+                        'type': 'exit',
+                        'price': float(row['Close']),
+                        'signal': 'Exit_Signal'
+                    })
+                
+                # パフォーマンス指標
+                performance: Dict[str, Any] = {
+                    'total_trades': len(trades),
+                    'entry_signals': len(entry_signals),
+                    'exit_signals': len(exit_signals),
+                    'ticker': ticker
+                }
+                
+                export_result = exporter.export_main_results(
+                    stock_data=stock_data,
+                    trades=trades,
+                    performance=performance,
+                    ticker=ticker,
+                    strategy_name="integrated_strategy"
+                )
+                logger.info(f"統一出力エンジン成功: {export_result}")
+            else:
+                logger.warning("バックテスト基本理念違反検出: Entry_Signal/Exit_Signal列が不足")
+                # TODO(tag:backtest_execution, rationale:ensure signal columns exist)
         except Exception as e:
-            logger.warning(f"Excel出力エラー: {e}")
+            logger.warning(f"統一出力エンジンエラー: {e}")
+            # TODO(tag:backtest_execution, rationale:fix unified export error)
         
         # SystemFallbackPolicy 使用統計の出力
         fallback_stats = fallback_policy.get_usage_statistics()

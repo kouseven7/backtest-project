@@ -56,7 +56,8 @@ class ContextEngineExcelImpactAnalyzer:
                 "excel_impact": self._analyze_excel_impact(content),
                 "current_usage": self._check_current_usage(engine_file),
                 "implementation_status": self._check_implementation_status(content),
-                "excel_output_methods": self._find_excel_methods(content),
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: "excel_output_methods": self._find_excel_methods(content),
                 "potential_conflicts": self._check_conflicts(content)
             }
             
@@ -68,7 +69,8 @@ class ContextEngineExcelImpactAnalyzer:
     def _analyze_excel_impact(self, content):
         """Excel出力への影響度分析"""
         excel_keywords = [
-            'excel', 'xlsx', 'openpyxl', 'ExcelWriter', 
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel', 'xlsx', 'openpyxl', 'ExcelWriter',
             'to_excel', 'create_sheet', 'workbook'
         ]
         
@@ -130,8 +132,10 @@ class ContextEngineExcelImpactAnalyzer:
         
         # 重要メソッドの実装確認
         critical_methods = [
-            'generate_excel', 'create_excel', '_generate_excel_output',
-            'to_excel', 'export_excel', 'excel_output'
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'generate_excel', 'create_excel', '_generate_excel_output',
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'to_excel', 'export_excel', 'excel_output'
         ]
         
         implemented_methods = []

@@ -1,0 +1,1018 @@
+{
+  "timestamp": "2025-09-12T11:27:31.520473",
+  "hidden_files": {
+    "dssms_results": [
+      {
+        "name": "~$dssms_unified_backtest_20250910_213413.xlsx",
+        "size": 165,
+        "modified": "2025-09-12T10:34:48.554772"
+      }
+    ],
+    "project_root": [
+      ".gitignore"
+    ]
+  },
+  "cache_directories": {
+    "total_count": 1188,
+    "dssms_related_count": 0,
+    "details": [
+      {
+        "path": "__pycache__",
+        "file_count": 148,
+        "total_size": 2376517,
+        "is_dssms_related": false
+      },
+      {
+        "path": "analysis\\__pycache__",
+        "file_count": 10,
+        "total_size": 369736,
+        "is_dssms_related": false
+      },
+      {
+        "path": "config\\__pycache__",
+        "file_count": 53,
+        "total_size": 1531621,
+        "is_dssms_related": false
+      },
+      {
+        "path": "config_backup\\__pycache__",
+        "file_count": 32,
+        "total_size": 883879,
+        "is_dssms_related": false
+      },
+      {
+        "path": "data\\__pycache__",
+        "file_count": 0,
+        "total_size": 0,
+        "is_dssms_related": false
+      },
+      {
+        "path": "indicators\\__pycache__",
+        "file_count": 28,
+        "total_size": 282217,
+        "is_dssms_related": false
+      },
+      {
+        "path": "metrics\\__pycache__",
+        "file_count": 3,
+        "total_size": 35320,
+        "is_dssms_related": false
+      },
+      {
+        "path": "optimization\\__pycache__",
+        "file_count": 13,
+        "total_size": 145313,
+        "is_dssms_related": false
+      },
+      {
+        "path": "output\\__pycache__",
+        "file_count": 8,
+        "total_size": 131260,
+        "is_dssms_related": false
+      },
+      {
+        "path": "preprocessing\\__pycache__",
+        "file_count": 6,
+        "total_size": 10105,
+        "is_dssms_related": false
+      },
+      {
+        "path": "reports\\__pycache__",
+        "file_count": 2,
+        "total_size": 92180,
+        "is_dssms_related": false
+      },
+      {
+        "path": "risk\\__pycache__",
+        "file_count": 0,
+        "total_size": 0,
+        "is_dssms_related": false
+      },
+      {
+        "path": "src\\__pycache__",
+        "file_count": 2,
+        "total_size": 22947,
+        "is_dssms_related": false
+      },
+      {
+        "path": "strategies\\__pycache__",
+        "file_count": 24,
+        "total_size": 354697,
+        "is_dssms_related": false
+      },
+      {
+        "path": "strategies_backup\\__pycache__",
+        "file_count": 24,
+        "total_size": 354697,
+        "is_dssms_related": false
+      },
+      {
+        "path": "strategies_modules\\__pycache__",
+        "file_count": 2,
+        "total_size": 3959,
+        "is_dssms_related": false
+      },
+      {
+        "path": "tests\\__pycache__",
+        "file_count": 70,
+        "total_size": 928878,
+        "is_dssms_related": false
+      },
+      {
+        "path": "tools\\__pycache__",
+        "file_count": 1,
+        "total_size": 20113,
+        "is_dssms_related": false
+      },
+      {
+        "path": "utils\\__pycache__",
+        "file_count": 0,
+        "total_size": 0,
+        "is_dssms_related": false
+      },
+      {
+        "path": "validation\\__pycache__",
+        "file_count": 2,
+        "total_size": 15648,
+        "is_dssms_related": false
+      }
+    ]
+  },
+  "dssms_config_files": {
+    "total_count": 169,
+    "by_pattern": {
+      "**/dssms*.json": [
+        {
+          "path": "dssms_comprehensive_analysis_report_20250908_133511.json",
+          "size": 4935,
+          "modified": "2025-09-08T13:35:11.529000"
+        },
+        {
+          "path": "dssms_comprehensive_analysis_report_20250908_144406.json",
+          "size": 4885,
+          "modified": "2025-09-08T14:44:06.818475"
+        },
+        {
+          "path": "dssms_comprehensive_analysis_report_20250908_144827.json",
+          "size": 3371,
+          "modified": "2025-09-08T14:48:27.901259"
+        },
+        {
+          "path": "dssms_excel_integration_test_20250903_163914.json",
+          "size": 428,
+          "modified": "2025-09-03T16:39:14.200809"
+        },
+        {
+          "path": "dssms_production_variance_investigation_20250903_165909.json",
+          "size": 8301,
+          "modified": "2025-09-03T16:59:09.476245"
+        },
+        {
+          "path": "dssms_strategy_stats_issue_report_20250908_152007.json",
+          "size": 8618,
+          "modified": "2025-09-08T15:20:07.237565"
+        },
+        {
+          "path": "dssms_strategy_stats_issue_report_20250908_152441.json",
+          "size": 8733,
+          "modified": "2025-09-08T15:24:41.968673"
+        },
+        {
+          "path": "dssms_trade_history_issue_report_20250908_150623.json",
+          "size": 6676,
+          "modified": "2025-09-08T15:06:23.758916"
+        },
+        {
+          "path": "dssms_trade_history_issue_report_20250908_151000.json",
+          "size": 6676,
+          "modified": "2025-09-08T15:10:00.391113"
+        },
+        {
+          "path": "dssms_trade_history_issue_report_20250908_151017.json",
+          "size": 7284,
+          "modified": "2025-09-08T15:10:17.144812"
+        },
+        {
+          "path": "dssms_trade_history_issue_report_20250908_151152.json",
+          "size": 10007,
+          "modified": "2025-09-08T15:11:52.568059"
+        },
+        {
+          "path": "src\\dssms\\dssms_integration_config.json",
+          "size": 4679,
+          "modified": "2025-09-03T09:50:36.997914"
+        },
+        {
+          "path": "output\\dssms_analysis\\dssms_analysis_report_20250818_182920.json",
+          "size": 3377,
+          "modified": "2025-08-18T18:29:20.692489"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_130527.json",
+          "size": 3034,
+          "modified": "2025-09-08T13:05:27.467374"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_130921.json",
+          "size": 3037,
+          "modified": "2025-09-08T13:09:21.827638"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_131114.json",
+          "size": 3036,
+          "modified": "2025-09-08T13:11:14.981705"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_133510.json",
+          "size": 3035,
+          "modified": "2025-09-08T13:35:10.329972"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_143953.json",
+          "size": 3036,
+          "modified": "2025-09-08T14:39:53.851809"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_144337.json",
+          "size": 3035,
+          "modified": "2025-09-08T14:43:37.618249"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_144405.json",
+          "size": 3037,
+          "modified": "2025-09-08T14:44:05.828127"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_144642.json",
+          "size": 3035,
+          "modified": "2025-09-08T14:46:42.049369"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_144749.json",
+          "size": 3034,
+          "modified": "2025-09-08T14:47:49.899119"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_144826.json",
+          "size": 3037,
+          "modified": "2025-09-08T14:48:26.884971"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_145056.json",
+          "size": 3034,
+          "modified": "2025-09-08T14:50:56.502197"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_145423.json",
+          "size": 3036,
+          "modified": "2025-09-08T14:54:23.104286"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_150951.json",
+          "size": 3036,
+          "modified": "2025-09-08T15:09:51.204573"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_151251.json",
+          "size": 3036,
+          "modified": "2025-09-08T15:12:51.919649"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_152431.json",
+          "size": 3036,
+          "modified": "2025-09-08T15:24:31.384709"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_153110.json",
+          "size": 3034,
+          "modified": "2025-09-08T15:31:10.597441"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_154256.json",
+          "size": 3037,
+          "modified": "2025-09-08T15:42:56.675888"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_155104.json",
+          "size": 3032,
+          "modified": "2025-09-08T15:51:04.997479"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_160009.json",
+          "size": 3036,
+          "modified": "2025-09-08T16:00:09.943943"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_161918.json",
+          "size": 3035,
+          "modified": "2025-09-08T16:19:18.375263"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_162329.json",
+          "size": 3037,
+          "modified": "2025-09-08T16:23:29.885039"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_162611.json",
+          "size": 3035,
+          "modified": "2025-09-08T16:26:11.356135"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_162811.json",
+          "size": 3035,
+          "modified": "2025-09-08T16:28:11.968441"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_162916.json",
+          "size": 3036,
+          "modified": "2025-09-08T16:29:16.358344"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_163149.json",
+          "size": 3036,
+          "modified": "2025-09-08T16:31:49.763424"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_163642.json",
+          "size": 3036,
+          "modified": "2025-09-08T16:36:42.526855"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_163746.json",
+          "size": 3034,
+          "modified": "2025-09-08T16:37:46.042657"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_164025.json",
+          "size": 3036,
+          "modified": "2025-09-08T16:40:25.975505"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_164816.json",
+          "size": 3034,
+          "modified": "2025-09-08T16:48:16.562250"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_164944.json",
+          "size": 3036,
+          "modified": "2025-09-08T16:49:44.995393"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_165350.json",
+          "size": 3037,
+          "modified": "2025-09-08T16:53:50.730391"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_165914.json",
+          "size": 3037,
+          "modified": "2025-09-08T16:59:14.337148"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_170116.json",
+          "size": 3037,
+          "modified": "2025-09-08T17:01:16.555795"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_170308.json",
+          "size": 3037,
+          "modified": "2025-09-08T17:03:08.929308"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_192301.json",
+          "size": 3037,
+          "modified": "2025-09-08T19:23:01.386284"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_192532.json",
+          "size": 3033,
+          "modified": "2025-09-08T19:25:32.478906"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_192647.json",
+          "size": 3035,
+          "modified": "2025-09-08T19:26:47.392441"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_192754.json",
+          "size": 3032,
+          "modified": "2025-09-08T19:27:54.822618"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_193502.json",
+          "size": 3034,
+          "modified": "2025-09-08T19:35:02.170613"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250908_201701.json",
+          "size": 3036,
+          "modified": "2025-09-08T20:17:01.936769"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250909_002211.json",
+          "size": 3036,
+          "modified": "2025-09-09T00:22:11.715544"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250911_203255.json",
+          "size": 3649,
+          "modified": "2025-09-11T20:32:55.911649"
+        },
+        {
+          "path": "output\\dssms_reports\\dssms_performance_report_20250911_204120.json",
+          "size": 3019,
+          "modified": "2025-09-11T20:41:20.737588"
+        },
+        {
+          "path": "output\\validation_reports\\dssms_validation_report_20250828_203928.json",
+          "size": 3093,
+          "modified": "2025-08-28T20:39:28.700077"
+        },
+        {
+          "path": "config\\dssms\\dssms_backtester_config.json",
+          "size": 1208,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "config\\dssms\\dssms_config.json",
+          "size": 953,
+          "modified": "2025-08-17T21:09:03.811151"
+        },
+        {
+          "path": "backtest_results\\dssms_results\\dssms_unified_data_20250910_213413.json",
+          "size": 53409,
+          "modified": "2025-09-10T21:34:13.838536"
+        }
+      ],
+      "**/dssms*.config": [],
+      "**/dssms*.cache": [],
+      "**/*dssms*.py": [
+        {
+          "path": "analyze_dssms_randomness_impact.py",
+          "size": 7944,
+          "modified": "2025-09-03T15:49:16.950709"
+        },
+        {
+          "path": "analyze_dssms_structure.py",
+          "size": 8182,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "analyze_dssms_variance.py",
+          "size": 5629,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "analyze_dssms_variance_detailed.py",
+          "size": 7213,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "analyze_fixed_dssms_excel.py",
+          "size": 7734,
+          "modified": "2025-09-08T20:29:12.313228"
+        },
+        {
+          "path": "analyze_latest_dssms_excel_issues.py",
+          "size": 10722,
+          "modified": "2025-09-08T20:29:12.313228"
+        },
+        {
+          "path": "backup_dssms_excel_exporter_v2_20250908_161750.py",
+          "size": 34173,
+          "modified": "2025-09-08T15:23:16.504705"
+        },
+        {
+          "path": "backup_dssms_excel_exporter_v2_20250908_161857.py",
+          "size": 34173,
+          "modified": "2025-09-08T15:23:16.504705"
+        },
+        {
+          "path": "check_dssms_calculation_logic.py",
+          "size": 7105,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "check_dssms_core_logic.py",
+          "size": 5990,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "create_dssms_fixes.py",
+          "size": 7357,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "create_minimal_dssms_test.py",
+          "size": 7452,
+          "modified": "2025-08-31T23:34:09.717784"
+        },
+        {
+          "path": "debug_dssms_issue.py",
+          "size": 5819,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "debug_dssms_output.py",
+          "size": 3395,
+          "modified": "2025-09-08T20:29:12.302620"
+        },
+        {
+          "path": "demo_balanced_dssms.py",
+          "size": 12564,
+          "modified": "2025-08-21T21:35:29.290680"
+        },
+        {
+          "path": "demo_dssms_enhanced_reporting.py",
+          "size": 18298,
+          "modified": "2025-08-27T21:10:53.711539"
+        },
+        {
+          "path": "demo_dssms_excel_output.py",
+          "size": 2723,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "demo_dssms_phase1.py",
+          "size": 5330,
+          "modified": "2025-08-17T21:09:03.811151"
+        },
+        {
+          "path": "demo_dssms_phase2.py",
+          "size": 11108,
+          "modified": "2025-08-17T21:09:03.828781"
+        },
+        {
+          "path": "demo_dssms_task34_integration.py",
+          "size": 16315,
+          "modified": "2025-08-31T23:34:08.940228"
+        },
+        {
+          "path": "demo_dssms_task_1_4.py",
+          "size": 27449,
+          "modified": "2025-08-26T20:27:56.434932"
+        },
+        {
+          "path": "demo_dssms_task_1_4_en.py",
+          "size": 26887,
+          "modified": "2025-08-26T20:27:56.441911"
+        },
+        {
+          "path": "demo_dssms_task_2_4_integration.py",
+          "size": 11030,
+          "modified": "2025-08-27T21:10:53.711539"
+        },
+        {
+          "path": "diagnose_dssms_logic.py",
+          "size": 4531,
+          "modified": "2025-08-20T22:01:35.176958"
+        },
+        {
+          "path": "dssms_comprehensive_issue_analyzer.py",
+          "size": 50192,
+          "modified": "2025-09-08T20:29:12.313228"
+        },
+        {
+          "path": "dssms_emergency_patch.py",
+          "size": 19889,
+          "modified": "2025-08-26T13:00:11.280961"
+        },
+        {
+          "path": "dssms_enhanced_excel_exporter.py",
+          "size": 7116,
+          "modified": "2025-09-08T15:09:17.116020"
+        },
+        {
+          "path": "dssms_excel_fix_phase2.py",
+          "size": 12652,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "dssms_excel_fix_phase3.py",
+          "size": 8102,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "dssms_final_check.py",
+          "size": 9973,
+          "modified": "2025-08-31T23:34:09.717784"
+        },
+        {
+          "path": "dssms_final_validation.py",
+          "size": 43928,
+          "modified": "2025-09-03T09:50:37.034893"
+        },
+        {
+          "path": "dssms_holding_period_fixer.py",
+          "size": 15133,
+          "modified": "2025-09-08T20:29:12.313228"
+        },
+        {
+          "path": "dssms_integration_fix.py",
+          "size": 7729,
+          "modified": "2025-08-31T23:34:08.954543"
+        },
+        {
+          "path": "dssms_operational_test.py",
+          "size": 14149,
+          "modified": "2025-09-03T09:50:37.034893"
+        },
+        {
+          "path": "dssms_result_check.py",
+          "size": 8534,
+          "modified": "2025-08-31T23:34:08.954543"
+        },
+        {
+          "path": "dssms_strategy_stats_analyzer.py",
+          "size": 21729,
+          "modified": "2025-09-08T20:29:12.313228"
+        },
+        {
+          "path": "dssms_strategy_stats_corrector.py",
+          "size": 27919,
+          "modified": "2025-09-08T20:29:12.313228"
+        },
+        {
+          "path": "dssms_success_report.py",
+          "size": 6969,
+          "modified": "2025-08-31T23:34:09.717784"
+        },
+        {
+          "path": "dssms_switch_optimization_patch.py",
+          "size": 6877,
+          "modified": "2025-09-03T10:04:14.368250"
+        },
+        {
+          "path": "dssms_task_2_1_compatibility_patch.py",
+          "size": 12397,
+          "modified": "2025-08-27T21:10:53.697576"
+        },
+        {
+          "path": "dssms_task_2_1_integration_manager.py",
+          "size": 23727,
+          "modified": "2025-08-27T21:10:53.697576"
+        },
+        {
+          "path": "dssms_task_2_3_integration_test_suite.py",
+          "size": 26551,
+          "modified": "2025-09-03T09:50:37.015645"
+        },
+        {
+          "path": "dssms_task_2_3_main_controller.py",
+          "size": 20310,
+          "modified": "2025-09-03T09:50:37.015645"
+        },
+        {
+          "path": "dssms_task_2_3_performance_optimizer.py",
+          "size": 17113,
+          "modified": "2025-09-03T09:50:37.015645"
+        },
+        {
+          "path": "dssms_task_2_3_quality_assurance.py",
+          "size": 24989,
+          "modified": "2025-09-03T09:50:37.015645"
+        },
+        {
+          "path": "dssms_test_helper.py",
+          "size": 2432,
+          "modified": "2025-08-26T21:00:00.621281"
+        },
+        {
+          "path": "dssms_trade_history_analyzer.py",
+          "size": 20606,
+          "modified": "2025-09-08T20:29:12.313228"
+        },
+        {
+          "path": "dssms_trade_history_fixer.py",
+          "size": 27421,
+          "modified": "2025-09-08T20:29:12.313228"
+        },
+        {
+          "path": "dssms_unified_output_engine.py",
+          "size": 43812,
+          "modified": "2025-09-08T20:29:12.312231"
+        },
+        {
+          "path": "dssms_unified_output_engine_fixed.py",
+          "size": 34675,
+          "modified": "2025-09-09T00:23:15.250638"
+        },
+        {
+          "path": "dssms_unified_output_engine_fixed_v3.py",
+          "size": 0,
+          "modified": "2025-09-09T20:53:31.661721"
+        },
+        {
+          "path": "dssms_unified_output_engine_fixed_v4.py",
+          "size": 23725,
+          "modified": "2025-09-09T00:23:15.250638"
+        },
+        {
+          "path": "emergency_dssms_diagnosis.py",
+          "size": 9283,
+          "modified": "2025-08-31T23:34:06.082503"
+        },
+        {
+          "path": "final_dssms_verification.py",
+          "size": 3821,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "fix_dssms_critical.py",
+          "size": 9747,
+          "modified": "2025-08-31T23:34:09.717784"
+        },
+        {
+          "path": "fix_dssms_data_integration.py",
+          "size": 11211,
+          "modified": "2025-08-31T23:34:09.717784"
+        },
+        {
+          "path": "fix_dssms_excel_phase1.py",
+          "size": 7784,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "fix_dssms_issues.py",
+          "size": 6307,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "fix_dssms_perfect_order.py",
+          "size": 17205,
+          "modified": "2025-08-31T23:34:09.717784"
+        },
+        {
+          "path": "fix_dssms_return_calculation.py",
+          "size": 7330,
+          "modified": "2025-09-08T20:29:12.313228"
+        },
+        {
+          "path": "fix_dssms_return_final.py",
+          "size": 6437,
+          "modified": "2025-09-08T20:29:12.313228"
+        },
+        {
+          "path": "fix_dssms_strategy_statistics.py",
+          "size": 9627,
+          "modified": "2025-09-08T20:29:12.313228"
+        },
+        {
+          "path": "fix_dssms_switching_issue.py",
+          "size": 12785,
+          "modified": "2025-09-04T09:18:34.198330"
+        },
+        {
+          "path": "investigate_dssms_data_flow.py",
+          "size": 21067,
+          "modified": "2025-09-08T20:29:12.312231"
+        },
+        {
+          "path": "investigate_dssms_production_variance.py",
+          "size": 33338,
+          "modified": "2025-09-04T09:19:09.997317"
+        },
+        {
+          "path": "minimal_dssms_test.py",
+          "size": 6764,
+          "modified": "2025-08-28T23:28:11.895187"
+        },
+        {
+          "path": "patch_dssms_backtester.py",
+          "size": 2400,
+          "modified": "2025-09-03T14:58:59.506044"
+        },
+        {
+          "path": "run_dssms_task_2_3.py",
+          "size": 4170,
+          "modified": "2025-09-03T09:50:37.015645"
+        },
+        {
+          "path": "test_deterministic_dssms.py",
+          "size": 5282,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "test_dssms_backtester_v2.py",
+          "size": 10234,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "test_dssms_excel_output.py",
+          "size": 10174,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "test_dssms_excel_v2.py",
+          "size": 11605,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "test_dssms_phase1.py",
+          "size": 12144,
+          "modified": "2025-08-17T21:09:03.811151"
+        },
+        {
+          "path": "test_dssms_phase2.py",
+          "size": 21919,
+          "modified": "2025-08-17T21:09:03.828781"
+        },
+        {
+          "path": "test_dssms_scheduler.py",
+          "size": 14274,
+          "modified": "2025-08-18T18:13:43.300507"
+        },
+        {
+          "path": "test_dssms_switch_optimization.py",
+          "size": 2640,
+          "modified": "2025-09-03T10:04:14.368250"
+        },
+        {
+          "path": "test_dssms_task_1_4_comprehensive.py",
+          "size": 22317,
+          "modified": "2025-08-26T20:27:56.433933"
+        },
+        {
+          "path": "test_full_dssms_consistency.py",
+          "size": 6170,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "verify_dssms_fix.py",
+          "size": 7884,
+          "modified": "2025-09-04T09:19:09.974061"
+        },
+        {
+          "path": "analysis\\dssms_comparison_analysis_engine.py",
+          "size": 36558,
+          "modified": "2025-08-31T23:34:08.887386"
+        },
+        {
+          "path": "analysis\\dssms_comparison_report_generator.py",
+          "size": 44713,
+          "modified": "2025-08-31T23:34:08.922018"
+        },
+        {
+          "path": "output\\dssms_excel_exporter_v2.py",
+          "size": 38236,
+          "modified": "2025-09-08T20:29:12.332177"
+        },
+        {
+          "path": "src\\dssms\\dssms_analyzer.py",
+          "size": 49396,
+          "modified": "2025-08-18T23:19:40.131574"
+        },
+        {
+          "path": "src\\dssms\\dssms_backtester.py",
+          "size": 133213,
+          "modified": "2025-09-09T00:21:21.705496"
+        },
+        {
+          "path": "src\\dssms\\dssms_backtester_backup.py",
+          "size": 78129,
+          "modified": "2025-08-31T23:34:03.038504"
+        },
+        {
+          "path": "src\\dssms\\dssms_backtester_backup_20250828_222919.py",
+          "size": 66727,
+          "modified": "2025-08-28T22:29:19.216338"
+        },
+        {
+          "path": "src\\dssms\\dssms_backtester_v2.py",
+          "size": 31705,
+          "modified": "2025-08-26T17:10:58.177696"
+        },
+        {
+          "path": "src\\dssms\\dssms_backtester_v2_updated.py",
+          "size": 29102,
+          "modified": "2025-08-26T20:27:56.432937"
+        },
+        {
+          "path": "src\\dssms\\dssms_data_bridge.py",
+          "size": 11317,
+          "modified": "2025-08-26T11:58:17.374031"
+        },
+        {
+          "path": "src\\dssms\\dssms_data_diagnostics.py",
+          "size": 17829,
+          "modified": "2025-08-26T11:58:17.373033"
+        },
+        {
+          "path": "src\\dssms\\dssms_data_integration_enhancer.py",
+          "size": 19406,
+          "modified": "2025-08-26T11:58:17.377024"
+        },
+        {
+          "path": "src\\dssms\\dssms_data_manager.py",
+          "size": 19110,
+          "modified": "2025-08-18T11:46:25.235186"
+        },
+        {
+          "path": "src\\dssms\\dssms_emergency_backtester.py",
+          "size": 9032,
+          "modified": "2025-08-26T12:06:12.932683"
+        },
+        {
+          "path": "src\\dssms\\dssms_integration_demo.py",
+          "size": 31385,
+          "modified": "2025-09-03T09:50:37.004507"
+        },
+        {
+          "path": "src\\dssms\\dssms_integration_patch.py",
+          "size": 2711,
+          "modified": "2025-08-31T23:34:09.717784"
+        },
+        {
+          "path": "src\\dssms\\dssms_issue_detector_fixer.py",
+          "size": 31459,
+          "modified": "2025-08-26T11:58:17.381014"
+        },
+        {
+          "path": "src\\dssms\\dssms_performance_calculator_v2.py",
+          "size": 32046,
+          "modified": "2025-08-27T21:10:53.701564"
+        },
+        {
+          "path": "src\\dssms\\dssms_portfolio_calculator_v2.py",
+          "size": 35733,
+          "modified": "2025-08-27T21:10:53.694582"
+        },
+        {
+          "path": "src\\dssms\\dssms_quick_fix_integration_manager.py",
+          "size": 21775,
+          "modified": "2025-08-26T11:58:14.920221"
+        },
+        {
+          "path": "src\\dssms\\dssms_scheduler.py",
+          "size": 22413,
+          "modified": "2025-08-18T18:13:43.300507"
+        },
+        {
+          "path": "src\\dssms\\dssms_simulation_quality_manager.py",
+          "size": 29102,
+          "modified": "2025-08-26T11:58:17.379019"
+        },
+        {
+          "path": "src\\dssms\\dssms_staged_validator.py",
+          "size": 31266,
+          "modified": "2025-08-26T11:58:17.380015"
+        },
+        {
+          "path": "src\\dssms\\dssms_strategy_bridge.py",
+          "size": 23872,
+          "modified": "2025-09-03T09:50:36.997914"
+        },
+        {
+          "path": "src\\dssms\\dssms_strategy_integration_manager.py",
+          "size": 28151,
+          "modified": "2025-09-03T09:50:36.997914"
+        },
+        {
+          "path": "src\\dssms\\dssms_switch_coordinator_v2.py",
+          "size": 29411,
+          "modified": "2025-09-04T09:18:34.198330"
+        },
+        {
+          "path": "src\\dssms\\dssms_switch_engine_v2.py",
+          "size": 47086,
+          "modified": "2025-08-27T21:10:53.696578"
+        },
+        {
+          "path": "src\\dssms\\strategy_dssms_coordinator.py",
+          "size": 26103,
+          "modified": "2025-09-03T09:50:36.997914"
+        },
+        {
+          "path": "src\\reports\\dssms_enhanced_reporter.py",
+          "size": 43179,
+          "modified": "2025-08-27T21:10:53.711539"
+        },
+        {
+          "path": "src\\testing\\dssms_validation_framework.py",
+          "size": 13018,
+          "modified": "2025-08-31T23:34:08.923526"
+        }
+      ]
+    }
+  },
+  "temp_files": {
+    "total_count": 1,
+    "by_pattern": {
+      "**/*.tmp": [],
+      "**/*.lock": [],
+      "**/*.~*": [],
+      "**/~$*": [
+        {
+          "path": "backtest_results\\dssms_results\\~$dssms_unified_backtest_20250910_213413.xlsx",
+          "size": 165,
+          "modified": "2025-09-12T10:34:48.554772"
+        }
+      ]
+    }
+  },
+  "memory_state": {
+    "state_keywords_found": 1,
+    "sample_findings": [
+      "config = json.load(f)"
+    ]
+  }
+}

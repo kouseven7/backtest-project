@@ -73,7 +73,8 @@ def check_dssms_calculation_methods():
         for line in data_fetch_lines[:10]:
             print(f"   {line}")
 
-def check_excel_output_issue():
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def check_excel_output_issue():
     """Excel出力の問題確認"""
     print("\n" + "=" * 80)
     print("Excel出力問題確認")
@@ -182,5 +183,6 @@ def find_error_source():
 
 if __name__ == "__main__":
     check_dssms_calculation_methods()
-    check_excel_output_issue()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: check_excel_output_issue()
     find_error_source()

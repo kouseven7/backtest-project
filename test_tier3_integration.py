@@ -286,28 +286,32 @@ def test_excel_exporter_integration(test_data):
         # 1. バックテスト結果エクスポート
         backtest_export_path = exporter.export_backtest_results(
             test_data['backtest_results'],
-            'output/tier3_integration_test/comprehensive_backtest_results.xlsx'
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: 'output/tier3_integration_test/comprehensive_backtest_results.xlsx'
         )
         print(f"  ✅ バックテスト結果エクスポート: {backtest_export_path}")
         
         # 2. パフォーマンス分析エクスポート
         performance_export_path = exporter.export_performance_analysis(
             test_data['performance_data'],
-            'output/tier3_integration_test/performance_analysis.xlsx'
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: 'output/tier3_integration_test/performance_analysis.xlsx'
         )
         print(f"  ✅ パフォーマンス分析エクスポート: {performance_export_path}")
         
         # 3. 銘柄切替分析エクスポート
         switch_export_path = exporter.export_switch_analysis(
             test_data['switch_data'],
-            'output/tier3_integration_test/switch_analysis.xlsx'
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'output/tier3_integration_test/switch_analysis.xlsx'
         )
         print(f"  ✅ 銘柄切替分析エクスポート: {switch_export_path}")
         
         # 4. 包括的レポートエクスポート
         comprehensive_export_path = exporter.create_comprehensive_report(
             test_data,
-            'output/tier3_integration_test/comprehensive_report.xlsx'
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'output/tier3_integration_test/comprehensive_report.xlsx'
         )
         print(f"  ✅ 包括的レポートエクスポート: {comprehensive_export_path}")
         
@@ -438,7 +442,8 @@ def test_tier2_tier3_integration(test_data):
         # 2. 統合データエクスポート
         export_path = exporter.export_backtest_results(
             integration_data['backtest_results'],
-            'output/tier_integration_test/integrated_results.xlsx'
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'output/tier_integration_test/integrated_results.xlsx'
         )
         print(f"  ✅ 統合データエクスポート完了: {export_path}")
         
@@ -446,7 +451,8 @@ def test_tier2_tier3_integration(test_data):
         switch_stats = switch_manager.get_switch_statistics()
         switch_export_path = exporter.export_switch_analysis(
             {**test_data['switch_data'], 'manager_stats': switch_stats},
-            'output/tier_integration_test/enhanced_switch_analysis.xlsx'
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'output/tier_integration_test/enhanced_switch_analysis.xlsx'
         )
         print(f"  ✅ 拡張切替分析エクスポート完了: {switch_export_path}")
         

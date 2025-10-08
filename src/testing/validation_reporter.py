@@ -66,7 +66,8 @@ class ValidationReporter:
             self._save_json_report(results, json_path)
             
             # Excelレポートも生成
-            excel_path = str(output_path).replace('.html', '.xlsx')
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_path = str(output_path).replace('.html', '.xlsx')
             self._generate_excel_report(results, excel_path)
             
             self.logger.info(f"検証レポート生成完了: {output_path}")
@@ -557,11 +558,13 @@ class ValidationReporter:
     def _generate_excel_report(self, results: List[ValidationResult], output_path: str):
         """Excelレポート生成"""
         try:
-            with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
                 # サマリーシート
                 summary = self._calculate_summary(results)
                 summary_df = pd.DataFrame([summary])
-                summary_df.to_excel(writer, sheet_name='Summary', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: summary_df.to_excel(writer, sheet_name='Summary', index=False)
                 
                 # 詳細結果シート
                 results_data = []
@@ -579,7 +582,8 @@ class ValidationReporter:
                     })
                 
                 results_df = pd.DataFrame(results_data)
-                results_df.to_excel(writer, sheet_name='Results', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: results_df.to_excel(writer, sheet_name='Results', index=False)
                 
                 # エラー・警告シート
                 issues_data = []
@@ -599,7 +603,8 @@ class ValidationReporter:
                 
                 if issues_data:
                     issues_df = pd.DataFrame(issues_data)
-                    issues_df.to_excel(writer, sheet_name='Issues', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: issues_df.to_excel(writer, sheet_name='Issues', index=False)
                 
         except Exception as e:
             self.logger.warning(f"Excel レポート生成エラー: {e}")

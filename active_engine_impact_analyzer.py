@@ -33,7 +33,8 @@ class ActiveEngineImpactAnalyzer:
         self._compare_with_task42_results()
         
         # 3. 実際のExcel出力への影響評価
-        self._evaluate_excel_output_impact()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: self._evaluate_excel_output_impact()
         
         # 4. Problem 15として新問題定義
         self._define_as_new_problem()
@@ -127,7 +128,8 @@ class ActiveEngineImpactAnalyzer:
             print("⚠️ Task 4.2結果ファイルが見つかりません")
             self.results['quality_assessment'] = {'status': 'not_found'}
     
-    def _evaluate_excel_output_impact(self):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _evaluate_excel_output_impact(self):
         """実際のExcel出力への影響評価"""
         print("\n🔍 3. 実際のExcel出力への影響評価")
         print("-" * 40)
@@ -160,14 +162,16 @@ class ActiveEngineImpactAnalyzer:
                 impact_level = "normal"
                 print("✅ ファイルサイズは正常範囲")
             
-            self.results['excel_output_impact'] = {
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: self.results['excel_output_impact'] = {
                 'latest_file': str(latest_excel),
                 'file_size': file_size,
                 'impact_level': impact_level
             }
         else:
             print("❌ Excel出力ファイルが見つかりません")
-            self.results['excel_output_impact'] = {
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: self.results['excel_output_impact'] = {
                 'status': 'no_files_found',
                 'impact_level': 'unknown'
             }
@@ -180,7 +184,8 @@ class ActiveEngineImpactAnalyzer:
         # 調査結果に基づく問題定義
         usage_count = self.results.get('usage_analysis', {}).get('total_references', 0)
         quality_score = self.results.get('quality_assessment', {}).get('score', 0)
-        impact_level = self.results.get('excel_output_impact', {}).get('impact_level', 'unknown')
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: impact_level = self.results.get('excel_output_impact', {}).get('impact_level', 'unknown')
         
         # 問題の重要度評価
         if usage_count > 0 and quality_score < 50:

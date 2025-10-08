@@ -101,27 +101,33 @@ class PerformanceAchievementReporter:
         filepath = os.path.join(self.output_dir, filename)
         
         try:
-            with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
                 # サマリーシート
                 summary_df = self._create_summary_dataframe(evaluation_result)
-                summary_df.to_excel(writer, sheet_name='Summary', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: summary_df.to_excel(writer, sheet_name='Summary', index=False)
                 
                 # 目標達成状況シート
                 targets_df = self._create_targets_dataframe(target_results)
-                targets_df.to_excel(writer, sheet_name='Target_Achievement', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: targets_df.to_excel(writer, sheet_name='Target_Achievement', index=False)
                 
                 # 次元別評価シート
                 dimensions_df = self._create_dimensions_dataframe(evaluation_result.dimension_scores)
-                dimensions_df.to_excel(writer, sheet_name='Dimension_Analysis', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: dimensions_df.to_excel(writer, sheet_name='Dimension_Analysis', index=False)
                 
                 # 緊急修正シート（該当する場合）
                 if emergency_fix_result:
                     emergency_df = self._create_emergency_dataframe(emergency_fix_result)
-                    emergency_df.to_excel(writer, sheet_name='Emergency_Fixes', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: emergency_df.to_excel(writer, sheet_name='Emergency_Fixes', index=False)
                 
                 # 推奨事項シート
                 recommendations_df = self._create_recommendations_dataframe(evaluation_result)
-                recommendations_df.to_excel(writer, sheet_name='Recommendations', index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: recommendations_df.to_excel(writer, sheet_name='Recommendations', index=False)
             
             self.logger.info(f"Excelレポート生成成功: {filepath}")
             return filepath

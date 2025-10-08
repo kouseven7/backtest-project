@@ -565,7 +565,8 @@ class BacktestResultAnalyzer:
             filepath = os.path.join(self.output_dir, "excel", filename)
             
             # Excelワークブックの作成
-            wb = openpyxl.Workbook()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: wb = openpyxl.Workbook()
             
             # サマリーシートの作成
             self._create_summary_sheet(wb, analysis_result)
@@ -596,7 +597,8 @@ class BacktestResultAnalyzer:
             self.analysis_stats["failed_reports"] += 1
             return ""
     
-    def _create_summary_sheet(self, wb: openpyxl.Workbook, analysis_result: AnalysisResult):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_summary_sheet(self, wb: openpyxl.Workbook, analysis_result: AnalysisResult):
         """サマリーシートの作成"""
         
         ws = wb.active
@@ -658,7 +660,8 @@ class BacktestResultAnalyzer:
                 ws[f'A{row}'].fill = PatternFill(start_color="FFEEEE", end_color="FFEEEE", fill_type="solid")
                 row += 1
     
-    def _create_detailed_analysis_sheet(self, wb: openpyxl.Workbook, analysis_result: AnalysisResult):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_detailed_analysis_sheet(self, wb: openpyxl.Workbook, analysis_result: AnalysisResult):
         """詳細分析シートの作成"""
         
         ws = wb.create_sheet(title="詳細分析")
@@ -681,7 +684,8 @@ class BacktestResultAnalyzer:
             
             row += 1
     
-    def _create_risk_analysis_sheet(self, wb: openpyxl.Workbook, analysis_result: AnalysisResult):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_risk_analysis_sheet(self, wb: openpyxl.Workbook, analysis_result: AnalysisResult):
         """リスク分析シートの作成"""
         
         ws = wb.create_sheet(title="リスク分析")
@@ -708,7 +712,8 @@ class BacktestResultAnalyzer:
                 
                 row += 1
     
-    def _create_recommendations_sheet(self, wb: openpyxl.Workbook, analysis_result: AnalysisResult):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_recommendations_sheet(self, wb: openpyxl.Workbook, analysis_result: AnalysisResult):
         """推奨事項シートの作成"""
         
         ws = wb.create_sheet(title="推奨事項")
@@ -740,7 +745,8 @@ class BacktestResultAnalyzer:
                 ws[f'B{row}'] = warning
                 row += 2
     
-    def _create_charts_sheet(self, wb: openpyxl.Workbook, analysis_result: AnalysisResult):
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def _create_charts_sheet(self, wb: openpyxl.Workbook, analysis_result: AnalysisResult):
         """チャートシートの作成"""
         
         ws = wb.create_sheet(title="チャート")

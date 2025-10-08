@@ -128,7 +128,8 @@ def main():
         output_dir = Path("output") / "walkforward_demo_results"
         output_dir.mkdir(parents=True, exist_ok=True)
         
-        excel_path = output_dir / f"walkforward_demo_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_path = output_dir / f"walkforward_demo_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
         
         success = analyzer.export_to_excel(str(excel_path))
         if success:

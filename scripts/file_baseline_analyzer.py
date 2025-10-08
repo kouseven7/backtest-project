@@ -55,7 +55,8 @@ class FileBaselineAnalyzer:
             'cache_files': ['__pycache__/*', '*.pyc', '*.pyo'],
             'backup_files': ['backup_*', '*_backup*', '*.bak'],
             'log_files': ['*.log', 'logs/*'],
-            'output_files': ['*.png', '*.csv', '*.txt', '*.xlsx'],
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'output_files': ['*.png', '*.csv', '*.txt', '*.xlsx'],
             'test_files': ['*_test.py', 'test_*.py', 'conftest.py']
         }
     

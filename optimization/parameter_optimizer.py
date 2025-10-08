@@ -371,8 +371,10 @@ class ParameterOptimizer:
             except ImportError as e:
                 logger.warning(f"excel_result_exporterのインポートに失敗しました: {e}")
                 # 従来の方法で保存
-                filepath = os.path.join(self.output_dir, f"{filename}.xlsx")
-                results_df.to_excel(filepath, index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: filepath = os.path.join(self.output_dir, f"{filename}.xlsx")
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: results_df.to_excel(filepath, index=False)
                 logger.info(f"従来の方法で結果をExcelに保存しました: {filepath}")
             except Exception as e:
                 logger.error(f"Excelでの保存中にエラーが発生しました: {e}")

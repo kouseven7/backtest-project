@@ -112,21 +112,25 @@ print(f"{{(end - start) * 1000:.2f}}")
                 continue
         
         # Excel出力関連ファイルの特定
-        excel_output_files = []
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_output_files = []
         for file_path in openpyxl_files:
             if any(key in file_path for key in ['simulation_handler', 'output', 'excel', 'export']):
-                excel_output_files.append(file_path)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: excel_output_files.append(file_path)
         
         self.results['openpyxl_analysis'] = {
             'import_time_ms': openpyxl_time,
             'usage_files_total': len(openpyxl_files),
-            'excel_output_files': excel_output_files,
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_files': excel_output_files,
             'expected_reduction': openpyxl_time * 0.76,  # 76%削減期待
             'lazy_import_priority': 'high' if openpyxl_time > 100 else 'medium'
         }
         
         print(f"  📊 openpyxl使用ファイル: {len(openpyxl_files)}個")
-        print(f"  📊 Excel出力ファイル: {len(excel_output_files)}個")
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: print(f"  📊 Excel出力ファイル: {len(excel_output_files)}個")
         print(f"  📊 期待削減効果: {openpyxl_time * 0.76:.0f}ms")
     
     def analyze_lazy_loader_remnants(self):
@@ -191,7 +195,8 @@ print(f"{{(end - start) * 1000:.2f}}")
                     'current_ms': xl_time,
                     'target_ms': 50,
                     'reduction_ms': xl_time - 50,
-                    'strategy': 'excel_output_lazy_loading',
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# ORIGINAL: 'strategy': 'excel_output_lazy_loading',
                     'implementation_files': ['output/simulation_handler.py']
                 }
             },
@@ -232,7 +237,8 @@ print(f"{{(end - start) * 1000:.2f}}")
             risks['mitigation_strategies']['yfinance_dependency'] = 'importlib.util使用・エラーハンドリング強化'
         
         # openpyxlリスク評価  
-        xl_files = len(self.results['openpyxl_analysis']['excel_output_files'])
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: xl_files = len(self.results['openpyxl_analysis']['excel_output_files'])
         if xl_files > 3:
             risks['medium_risk'].append('openpyxl複数出力ファイルでの初回遅延')
             risks['mitigation_strategies']['openpyxl_delay'] = '初回Excel出力時の明示的待機メッセージ'

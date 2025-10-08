@@ -47,7 +47,8 @@ def analyze_single_engine(engine_path):
             'file_size': len(content),
             'switch_history_usage': [],
             'data_conversion_methods': [],
-            'excel_output_methods': [],
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: 'excel_output_methods': [],
             'date_fixing_methods': [],
             'holding_period_calculation': []
         }
@@ -62,7 +63,8 @@ def analyze_single_engine(engine_path):
         
         # Excel出力メソッドを検索
         excel_matches = re.findall(r'def.*excel.*\(.*\):', content)
-        analysis['excel_output_methods'] = excel_matches
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: analysis['excel_output_methods'] = excel_matches
         
         # 日付修正メソッドを検索
         date_matches = re.findall(r'def.*date.*\(.*\):', content)
@@ -76,7 +78,8 @@ def analyze_single_engine(engine_path):
         print(f"  📊 ファイルサイズ: {analysis['file_size']} 文字")
         print(f"  🔄 switch_history使用箇所: {len(analysis['switch_history_usage'])}件")
         print(f"  📈 データ変換メソッド: {len(analysis['data_conversion_methods'])}件")
-        print(f"  📊 Excel出力メソッド: {len(analysis['excel_output_methods'])}件")
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: print(f"  📊 Excel出力メソッド: {len(analysis['excel_output_methods'])}件")
         print(f"  📅 日付修正メソッド: {len(analysis['date_fixing_methods'])}件")
         print(f"  ⏱️ 保有期間計算: {len(analysis['holding_period_calculation'])}件")
         

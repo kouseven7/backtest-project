@@ -240,7 +240,8 @@ def extract_performance_indicators(content: str) -> Dict[str, List[str]]:
     # Excel操作
     excel_patterns = [
         r'\.to_excel\(',
-        r'pd\.ExcelWriter',
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: r'pd\.ExcelWriter',
         r'xlsxwriter',
         r'openpyxl',
         r'\.save\(',
@@ -573,7 +574,8 @@ def analyze_performance_conflicts(engines: List[Dict[str, Any]]) -> List[Dict[st
     
     if len(excel_engines) > 1:
         conflicts.append({
-            "conflict_type": "excel_output_competition",
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: "conflict_type": "excel_output_competition",
             "competing_engines": len(excel_engines),
             "engines": [e["engine"]["file_path"] for e in excel_engines],
             "total_operations": sum(e["excel_operations"] for e in excel_engines),
@@ -703,7 +705,8 @@ def identify_primary_concerns(analysis_results: Dict[str, Any]) -> List[str]:
             concerns.append(f"同時実行競合: {issue['engine_count']}個のアクティブエンジン")
         elif issue.get("problem_type") == "circular_dependencies":
             concerns.append("循環依存: エンジン間で循環インポート")
-        elif issue.get("conflict_type") == "excel_output_competition":
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: elif issue.get("conflict_type") == "excel_output_competition":
             concerns.append("Excel出力競合: 複数エンジンが同時出力")
     
     return concerns
@@ -755,7 +758,8 @@ def generate_improvement_recommendations(analysis_results: Dict[str, Any]) -> Li
     
     # 4. パフォーマンス最適化
     excel_conflicts = [c for c in analysis_results["performance_conflicts"] 
-                      if c.get("conflict_type") == "excel_output_competition"]
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: if c.get("conflict_type") == "excel_output_competition"]
     if excel_conflicts:
         recommendations.append({
             "priority": "medium",

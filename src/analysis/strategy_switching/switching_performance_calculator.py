@@ -864,7 +864,8 @@ class SwitchingPerformanceCalculator:
             if file_path.endswith('.csv'):
                 df.to_csv(file_path, index=False)
             elif file_path.endswith('.xlsx'):
-                df.to_excel(file_path, index=False)
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: df.to_excel(file_path, index=False)
             else:
                 df.to_json(file_path, orient='records', indent=2)
                 

@@ -14,7 +14,8 @@ import logging
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
-def run_excel_output_demo():
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def run_excel_output_demo():
     """既存のDSSMSデモスクリプトを実行してExcel出力をテスト"""
     print("DSSMSバックテスターExcel出力デモ")
     print("=" * 50)
@@ -68,7 +69,8 @@ def run_excel_output_demo():
         print(f"❌ デモ実行エラー: {e}")
 
 if __name__ == "__main__":
-    run_excel_output_demo()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: run_excel_output_demo()
     
     print("\n" + "=" * 50)
     print("デモ完了")

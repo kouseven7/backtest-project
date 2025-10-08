@@ -219,7 +219,8 @@ UNIFIED_OUTPUT_CONFIG = {
         "base_directory": "output",
         "subdirectories": {
             "unified_reports": "unified_reports",
-            "excel_outputs": "excel_outputs",
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: "excel_outputs": "excel_outputs",
             "json_outputs": "json_outputs",
             "text_outputs": "text_outputs",
             "html_outputs": "html_outputs"

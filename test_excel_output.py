@@ -12,7 +12,8 @@ from datetime import datetime
 # パスを追加
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-def test_excel_output():
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: def test_excel_output():
     """Excel出力処理のテスト"""
     print("=== Excel出力処理テスト開始 ===")
     
@@ -52,7 +53,8 @@ def test_excel_output():
         filepath = save_backtest_results_simple(
             stock_data=stock_data,
             ticker=ticker,
-            filename=f"test_excel_output_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: filename=f"test_excel_output_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
         )
         
         if filepath:
@@ -69,4 +71,5 @@ def test_excel_output():
         return False
 
 if __name__ == "__main__":
-    test_excel_output()
+# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# ORIGINAL: test_excel_output()
