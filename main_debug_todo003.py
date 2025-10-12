@@ -462,6 +462,27 @@ def _integrate_exit_signals_with_position_tracking(integrated_data: pd.DataFrame
             if valid_exit and integrated_data.loc[exit_idx, 'Exit_Signal'] == 0:
                 # エグジットシグナル適用
                 integrated_data.loc[exit_idx, 'Exit_Signal'] = 1
+
+# DEBUG: TODO-003 Exit_Signal変化追跡
+print(f"[DEBUG-464] Exit_Signal変化追跡")
+if 'Exit_Signal' in locals() and hasattr(Exit_Signal, 'sum'):
+    print(f"  Exit_Signal合計: {{Exit_Signal.sum()}}")
+if 'strategy_result' in locals() and 'Exit_Signal' in strategy_result.columns:
+    exit_neg_ones = (strategy_result['Exit_Signal'] == -1).sum()
+    exit_pos_ones = (strategy_result['Exit_Signal'] == 1).sum()
+    exit_zeros = (strategy_result['Exit_Signal'] == 0).sum()
+    print(f"  strategy_result Exit_Signal: -1={exit_neg_ones}, 1={exit_pos_ones}, 0={exit_zeros}")
+if 'integrated_data' in locals() and 'Exit_Signal' in integrated_data.columns:
+    int_neg_ones = (integrated_data['Exit_Signal'] == -1).sum()
+    int_pos_ones = (integrated_data['Exit_Signal'] == 1).sum()
+    int_zeros = (integrated_data['Exit_Signal'] == 0).sum()
+    print(f"  integrated_data Exit_Signal: -1={int_neg_ones}, 1={int_pos_ones}, 0={int_zeros}")
+if 'stock_data' in locals() and 'Exit_Signal' in stock_data.columns:
+    stock_neg_ones = (stock_data['Exit_Signal'] == -1).sum()
+    stock_pos_ones = (stock_data['Exit_Signal'] == 1).sum()
+    stock_zeros = (stock_data['Exit_Signal'] == 0).sum()
+    print(f"  stock_data Exit_Signal: -1={stock_neg_ones}, 1={stock_pos_ones}, 0={stock_zeros}")
+
                 integrated_data.loc[exit_idx, 'Active_Strategy'] = ''  # ポジション終了
                 integrated_data.loc[exit_idx, 'Position_Duration'] = 0  # 保有期間リセット
                 
@@ -501,6 +522,27 @@ def _integrate_exit_signals_filtered(integrated_data: pd.DataFrame, strategy_res
                     
                     if integrated_data.loc[exit_idx, 'Exit_Signal'] == 0:
                         integrated_data.loc[exit_idx, 'Exit_Signal'] = 1
+
+# DEBUG: TODO-003 Exit_Signal変化追跡
+print(f"[DEBUG-503] Exit_Signal変化追跡")
+if 'Exit_Signal' in locals() and hasattr(Exit_Signal, 'sum'):
+    print(f"  Exit_Signal合計: {{Exit_Signal.sum()}}")
+if 'strategy_result' in locals() and 'Exit_Signal' in strategy_result.columns:
+    exit_neg_ones = (strategy_result['Exit_Signal'] == -1).sum()
+    exit_pos_ones = (strategy_result['Exit_Signal'] == 1).sum()
+    exit_zeros = (strategy_result['Exit_Signal'] == 0).sum()
+    print(f"  strategy_result Exit_Signal: -1={exit_neg_ones}, 1={exit_pos_ones}, 0={exit_zeros}")
+if 'integrated_data' in locals() and 'Exit_Signal' in integrated_data.columns:
+    int_neg_ones = (integrated_data['Exit_Signal'] == -1).sum()
+    int_pos_ones = (integrated_data['Exit_Signal'] == 1).sum()
+    int_zeros = (integrated_data['Exit_Signal'] == 0).sum()
+    print(f"  integrated_data Exit_Signal: -1={int_neg_ones}, 1={int_pos_ones}, 0={int_zeros}")
+if 'stock_data' in locals() and 'Exit_Signal' in stock_data.columns:
+    stock_neg_ones = (stock_data['Exit_Signal'] == -1).sum()
+    stock_pos_ones = (stock_data['Exit_Signal'] == 1).sum()
+    stock_zeros = (stock_data['Exit_Signal'] == 0).sum()
+    print(f"  stock_data Exit_Signal: -1={stock_neg_ones}, 1={stock_pos_ones}, 0={stock_zeros}")
+
                         integrated_data.loc[exit_idx, 'Active_Strategy'] = ''
                         exit_integration_count += 1
                         
@@ -520,6 +562,27 @@ def _integrate_exit_signals_filtered(integrated_data: pd.DataFrame, strategy_res
                     integrated_data.loc[exit_idx, 'Exit_Signal'] == 0):
                     
                     integrated_data.loc[exit_idx, 'Exit_Signal'] = 1
+
+# DEBUG: TODO-003 Exit_Signal変化追跡
+print(f"[DEBUG-522] Exit_Signal変化追跡")
+if 'Exit_Signal' in locals() and hasattr(Exit_Signal, 'sum'):
+    print(f"  Exit_Signal合計: {{Exit_Signal.sum()}}")
+if 'strategy_result' in locals() and 'Exit_Signal' in strategy_result.columns:
+    exit_neg_ones = (strategy_result['Exit_Signal'] == -1).sum()
+    exit_pos_ones = (strategy_result['Exit_Signal'] == 1).sum()
+    exit_zeros = (strategy_result['Exit_Signal'] == 0).sum()
+    print(f"  strategy_result Exit_Signal: -1={exit_neg_ones}, 1={exit_pos_ones}, 0={exit_zeros}")
+if 'integrated_data' in locals() and 'Exit_Signal' in integrated_data.columns:
+    int_neg_ones = (integrated_data['Exit_Signal'] == -1).sum()
+    int_pos_ones = (integrated_data['Exit_Signal'] == 1).sum()
+    int_zeros = (integrated_data['Exit_Signal'] == 0).sum()
+    print(f"  integrated_data Exit_Signal: -1={int_neg_ones}, 1={int_pos_ones}, 0={int_zeros}")
+if 'stock_data' in locals() and 'Exit_Signal' in stock_data.columns:
+    stock_neg_ones = (stock_data['Exit_Signal'] == -1).sum()
+    stock_pos_ones = (stock_data['Exit_Signal'] == 1).sum()
+    stock_zeros = (stock_data['Exit_Signal'] == 0).sum()
+    print(f"  stock_data Exit_Signal: -1={stock_neg_ones}, 1={stock_pos_ones}, 0={stock_zeros}")
+
                     integrated_data.loc[exit_idx, 'Active_Strategy'] = ''
                     exit_integration_count += 1
                     
@@ -546,7 +609,28 @@ def _validate_strategy_backtest_output(strategy_result, strategy_name):
     # シグナル数チェック
     if 'Entry_Signal' in strategy_result.columns and 'Exit_Signal' in strategy_result.columns:
         entry_signals = (strategy_result['Entry_Signal'] == 1).sum()
-        exit_signals = (strategy_result['Exit_Signal'] != 0).sum()  # TODO-003修正: abs()除去、Exit_Signal=-1保持
+        exit_signals = abs(strategy_result['Exit_Signal']).sum()
+
+# DEBUG: TODO-003 Exit_Signal変化追跡
+print(f"[DEBUG-549] Exit_Signal変化追跡")
+if 'Exit_Signal' in locals() and hasattr(Exit_Signal, 'sum'):
+    print(f"  Exit_Signal合計: {{Exit_Signal.sum()}}")
+if 'strategy_result' in locals() and 'Exit_Signal' in strategy_result.columns:
+    exit_neg_ones = (strategy_result['Exit_Signal'] == -1).sum()
+    exit_pos_ones = (strategy_result['Exit_Signal'] == 1).sum()
+    exit_zeros = (strategy_result['Exit_Signal'] == 0).sum()
+    print(f"  strategy_result Exit_Signal: -1={exit_neg_ones}, 1={exit_pos_ones}, 0={exit_zeros}")
+if 'integrated_data' in locals() and 'Exit_Signal' in integrated_data.columns:
+    int_neg_ones = (integrated_data['Exit_Signal'] == -1).sum()
+    int_pos_ones = (integrated_data['Exit_Signal'] == 1).sum()
+    int_zeros = (integrated_data['Exit_Signal'] == 0).sum()
+    print(f"  integrated_data Exit_Signal: -1={int_neg_ones}, 1={int_pos_ones}, 0={int_zeros}")
+if 'stock_data' in locals() and 'Exit_Signal' in stock_data.columns:
+    stock_neg_ones = (stock_data['Exit_Signal'] == -1).sum()
+    stock_pos_ones = (stock_data['Exit_Signal'] == 1).sum()
+    stock_zeros = (stock_data['Exit_Signal'] == 0).sum()
+    print(f"  stock_data Exit_Signal: -1={stock_neg_ones}, 1={stock_pos_ones}, 0={stock_zeros}")
+
         
         if entry_signals == 0 and exit_signals == 0:
             violations.append("Zero signals generated - potential strategy logic issue")
@@ -610,6 +694,27 @@ def _execute_intelligent_forced_liquidation(integrated_data: pd.DataFrame) -> Di
         
         # 強制決済実行
         integrated_data.loc[final_positions_mask, 'Exit_Signal'] = 1
+
+# DEBUG: TODO-003 Exit_Signal変化追跡
+print(f"[DEBUG-612] Exit_Signal変化追跡")
+if 'Exit_Signal' in locals() and hasattr(Exit_Signal, 'sum'):
+    print(f"  Exit_Signal合計: {{Exit_Signal.sum()}}")
+if 'strategy_result' in locals() and 'Exit_Signal' in strategy_result.columns:
+    exit_neg_ones = (strategy_result['Exit_Signal'] == -1).sum()
+    exit_pos_ones = (strategy_result['Exit_Signal'] == 1).sum()
+    exit_zeros = (strategy_result['Exit_Signal'] == 0).sum()
+    print(f"  strategy_result Exit_Signal: -1={exit_neg_ones}, 1={exit_pos_ones}, 0={exit_zeros}")
+if 'integrated_data' in locals() and 'Exit_Signal' in integrated_data.columns:
+    int_neg_ones = (integrated_data['Exit_Signal'] == -1).sum()
+    int_pos_ones = (integrated_data['Exit_Signal'] == 1).sum()
+    int_zeros = (integrated_data['Exit_Signal'] == 0).sum()
+    print(f"  integrated_data Exit_Signal: -1={int_neg_ones}, 1={int_pos_ones}, 0={int_zeros}")
+if 'stock_data' in locals() and 'Exit_Signal' in stock_data.columns:
+    stock_neg_ones = (stock_data['Exit_Signal'] == -1).sum()
+    stock_pos_ones = (stock_data['Exit_Signal'] == 1).sum()
+    stock_zeros = (stock_data['Exit_Signal'] == 0).sum()
+    print(f"  stock_data Exit_Signal: -1={stock_neg_ones}, 1={stock_pos_ones}, 0={stock_zeros}")
+
         integrated_data.loc[final_positions_mask, 'Active_Strategy'] = ''
         
         # TODO #3修正版計算ロジック
@@ -965,7 +1070,28 @@ def main():
                             trades = []
                             if 'Entry_Signal' in result_data.columns and 'Exit_Signal' in result_data.columns:
                                 entry_signals = result_data[result_data['Entry_Signal'] == 1]
-                                exit_signals = result_data[result_data['Exit_Signal'] != 0]  # TODO-003修正: abs()除去、Exit_Signal=-1保持
+                                exit_signals = result_data[result_data['Exit_Signal'].abs() == 1]
+
+# DEBUG: TODO-003 Exit_Signal変化追跡
+print(f"[DEBUG-968] Exit_Signal変化追跡")
+if 'Exit_Signal' in locals() and hasattr(Exit_Signal, 'sum'):
+    print(f"  Exit_Signal合計: {{Exit_Signal.sum()}}")
+if 'strategy_result' in locals() and 'Exit_Signal' in strategy_result.columns:
+    exit_neg_ones = (strategy_result['Exit_Signal'] == -1).sum()
+    exit_pos_ones = (strategy_result['Exit_Signal'] == 1).sum()
+    exit_zeros = (strategy_result['Exit_Signal'] == 0).sum()
+    print(f"  strategy_result Exit_Signal: -1={exit_neg_ones}, 1={exit_pos_ones}, 0={exit_zeros}")
+if 'integrated_data' in locals() and 'Exit_Signal' in integrated_data.columns:
+    int_neg_ones = (integrated_data['Exit_Signal'] == -1).sum()
+    int_pos_ones = (integrated_data['Exit_Signal'] == 1).sum()
+    int_zeros = (integrated_data['Exit_Signal'] == 0).sum()
+    print(f"  integrated_data Exit_Signal: -1={int_neg_ones}, 1={int_pos_ones}, 0={int_zeros}")
+if 'stock_data' in locals() and 'Exit_Signal' in stock_data.columns:
+    stock_neg_ones = (stock_data['Exit_Signal'] == -1).sum()
+    stock_pos_ones = (stock_data['Exit_Signal'] == 1).sum()
+    stock_zeros = (stock_data['Exit_Signal'] == 0).sum()
+    print(f"  stock_data Exit_Signal: -1={stock_neg_ones}, 1={stock_pos_ones}, 0={stock_zeros}")
+
                                 
                                 for idx, row in entry_signals.iterrows():
                                     trades.append({
@@ -1081,7 +1207,28 @@ def main():
                 # 取引履歴とパフォーマンス指標を生成
                 trades: List[Dict[str, Any]] = []
                 entry_signals = stock_data[stock_data['Entry_Signal'] == 1]
-                exit_signals = stock_data[stock_data['Exit_Signal'] != 0]  # TODO-003修正: abs()除去、Exit_Signal=-1保持
+                exit_signals = stock_data[stock_data['Exit_Signal'].abs() == 1]
+
+# DEBUG: TODO-003 Exit_Signal変化追跡
+print(f"[DEBUG-1084] Exit_Signal変化追跡")
+if 'Exit_Signal' in locals() and hasattr(Exit_Signal, 'sum'):
+    print(f"  Exit_Signal合計: {{Exit_Signal.sum()}}")
+if 'strategy_result' in locals() and 'Exit_Signal' in strategy_result.columns:
+    exit_neg_ones = (strategy_result['Exit_Signal'] == -1).sum()
+    exit_pos_ones = (strategy_result['Exit_Signal'] == 1).sum()
+    exit_zeros = (strategy_result['Exit_Signal'] == 0).sum()
+    print(f"  strategy_result Exit_Signal: -1={exit_neg_ones}, 1={exit_pos_ones}, 0={exit_zeros}")
+if 'integrated_data' in locals() and 'Exit_Signal' in integrated_data.columns:
+    int_neg_ones = (integrated_data['Exit_Signal'] == -1).sum()
+    int_pos_ones = (integrated_data['Exit_Signal'] == 1).sum()
+    int_zeros = (integrated_data['Exit_Signal'] == 0).sum()
+    print(f"  integrated_data Exit_Signal: -1={int_neg_ones}, 1={int_pos_ones}, 0={int_zeros}")
+if 'stock_data' in locals() and 'Exit_Signal' in stock_data.columns:
+    stock_neg_ones = (stock_data['Exit_Signal'] == -1).sum()
+    stock_pos_ones = (stock_data['Exit_Signal'] == 1).sum()
+    stock_zeros = (stock_data['Exit_Signal'] == 0).sum()
+    print(f"  stock_data Exit_Signal: -1={stock_neg_ones}, 1={stock_pos_ones}, 0={stock_zeros}")
+
                 
                 for idx, row in entry_signals.iterrows():
                     trades.append({

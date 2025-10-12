@@ -10,7 +10,7 @@
 - **If output shows profit=0**: Investigate cause, don't say "perfect"
 - **Excel output prohibited**: Use CSV+JSON+TXT instead (since 2025-10-08)
 
-## 🔧 **System Architecture** 
+## 🔧 **System Architecture**
 - Main entry: `main.py` in project root
 - Strategies: `strategies/*.py` with `backtest()` method
 - Output: `output/unified_exporter.py` (no Excel)

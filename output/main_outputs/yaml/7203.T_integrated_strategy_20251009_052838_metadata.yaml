@@ -1,0 +1,18 @@
+execution_metadata:
+  backtest_compliance_verified: true
+  data_period:
+    end: '2024-12-30 00:00:00'
+    start: '2024-01-04 00:00:00'
+  execution_date: '2025-10-09T05:28:38.612227'
+  strategy: integrated_strategy
+  ticker: 7203.T
+key_metrics:
+  max_drawdown: -0.4167417422994687
+  num_trades: 124
+  sharpe_ratio: 0.6036760641060539
+  signal_integrity:
+    entry_signals: 62
+    exit_signals: 62
+    integrity_verified: true
+    signal_ratio: 1.0
+  total_return: 0.2260236095836031
