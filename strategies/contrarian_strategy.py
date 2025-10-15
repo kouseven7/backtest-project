@@ -146,6 +146,15 @@ class ContrarianStrategy(BaseStrategy):
         if idx < 1:
             return 0
 
+        # ✅ ポジション状態管理を追加
+        # 現在までのエントリー・エグジット数を計算
+        current_entries = (self.data['Entry_Signal'].iloc[:idx+1] == 1).sum()
+        current_exits = abs((self.data['Exit_Signal'].iloc[:idx+1] == -1).sum())
+        
+        # アクティブなポジションがない場合はエグジット不可
+        if current_entries <= current_exits:
+            return 0
+
         # 最新のエントリー価格を取得
         entry_indices = self.data[self.data['Entry_Signal'] == 1].index
         if len(entry_indices) == 0 or entry_indices[-1] >= self.data.index[idx]:

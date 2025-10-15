@@ -124,7 +124,7 @@ class UnifiedExporter:
             # TXT: 人間可読レポート用
             txt_file = self.main_dir / "txt" / f"{base_name}_report.txt"
             with open(txt_file, 'w', encoding='utf-8') as f:
-                f.write(self._generate_text_report(ticker, strategy_name, performance, trades, stock_data))
+                f.write(self._generate_text_report(ticker, strategy_name, combined_performance, trades, stock_data))
             exported_files['txt'] = txt_file
             
             # YAML: 実行設定・メタデータ用

@@ -1,0 +1,429 @@
+[33mcommit 89db69eb262b041625b39fb9b571a125fb91c1d3[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mDSSMS[m[33m)[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Oct 13 03:11:14 2025 +0900
+
+    モジュールの再利用テストしても、テスト自体が不完全であることがおおいので、実践でmain_v2作ったほうが早いとおもって、作り始めた
+    main_v2.pyプロジェクトのPhase 1は完全成功らしい、コミット
+
+[33mcommit adaa56318e13f4d33eca69cf14ff387d3fb52feb[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Sun Oct 12 10:51:43 2025 +0900
+
+    もう、mein.pyを新しくすることに決めました
+    いまは、main.pyで再利用できるモジュールを選定しおわったところです
+    次にモジュールを再利用できるか判定するテストスクリプト作っていきますコミット
+
+[33mcommit 225a713b57c875b0da421c55b47c352a1c062b5b[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Wed Oct 8 22:05:05 2025 +0900
+
+    Unicode問題は完全に解決
+    絵文字の問題らしいよ
+
+[33mcommit e92fb22b1103b9c580e7a67f62d6ec91003f8125[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Wed Oct 8 17:49:51 2025 +0900
+
+    docs/dssms/Excel to text etc/Discard Excel output file.md
+    Excel出力完全廃棄 - 完全成功 🎉
+    
+    今後は統一出力エンジンによる安定した4形式出力（CSV+JSON+TXT+YAML）
+
+[33mcommit d66b62404b5cd18e7186b38c63d82e90e5af00ef[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Wed Oct 8 16:41:55 2025 +0900
+
+    Excel撲滅前に危ないのでコミット
+
+[33mcommit b58a2d9ce001e2697cb56c5511a783dbd1246da5[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Wed Oct 8 12:09:13 2025 +0900
+
+    main_normal_operation_diagnosis_results.md
+    フォールバック問題ほかにもいろいろやったたぶん完全終了コミット
+
+[33mcommit ef57e71edc66942bca6c3a1462c6a624acdebd13[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Wed Oct 8 08:54:43 2025 +0900
+
+    main_normal_operation_diagnosis_results.md
+    TODO #12 最終達成結果
+    残存課題あるけど、一旦コミット
+
+[33mcommit b979faf1826a15ec1cfdd19a1d4b9ae70ae5d5d2[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Tue Oct 7 14:55:45 2025 +0900
+
+    main.py出力問題ぜんぜんかいけつせんこみっと
+
+[33mcommit 9c57887f7c93b867a157ba8158c3af1a784762d6[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Tue Oct 7 10:48:55 2025 +0900
+
+    .github/copilot-instructions.mdへ
+    基本理念追加
+    Backテストしないもんだいに一石を投じるコミット
+
+[33mcommit 0d3ce3b5fe9ac33c4bd051f77a4e477c09a42a21[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Tue Oct 7 10:12:01 2025 +0900
+
+    DEVELOPMENT_LOG.md
+    main.pyのフォールバック問題解決したはずコミット２
+
+[33mcommit 190170b7f60f1cda5988881e10efd2d43dda6fef[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Tue Oct 7 10:11:13 2025 +0900
+
+    DEVELOPMENT_LOG.md
+    main.pyのフォールバック問題解決したはずコミット
+
+[33mcommit f50ebccfd55ed602fc02e2055ef93016812990b5[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Oct 6 21:26:51 2025 +0900
+
+    Fallback problem countermeasures_restructured.md
+    マジでいったん終了していいかも、うまくいったコミット？
+
+[33mcommit 9fb18ee2a128a3d7ccb1eebcaaeeb6d6a497f66d[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Oct 6 16:30:18 2025 +0900
+
+    パフォーマンス改善せずコミット
+    DSSMSのバックテスト遅い問題
+
+[33mcommit 6ae772e63f3bd001a5d5f0b06608fa77f4cd2cf5[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Oct 6 12:00:14 2025 +0900
+
+    allback problem countermeasures_restructured.md
+    フォールバック問題とか全部解決したはずコミット
+
+[33mcommit bf77a0676bfa05fffca0c7a4d16b72393ab54d9c[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Oct 6 08:12:25 2025 +0900
+
+    自動削除機能付きフォールバック監視システム実装
+
+[33mcommit 0955fd26810fb6165014ce2d9f11c3e0fdb1361d[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Sat Oct 4 13:48:57 2025 +0900
+
+    TODO-QG-001: Production Mode動作テスト
+    TODO-QG-001.1: Production Mode テスト合格判定基準調整
+    終了
+
+[33mcommit 5063fb34a5d7519f2df704bb621838df2d2895de[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Sat Oct 4 00:53:48 2025 +0900
+
+    TODO-PERF-006は予定より早く、目標を大幅に上回って完全成功しましたコミット
+
+[33mcommit 3fadaf53706dd31af8f527e26b9e66592393aaf0[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Fri Oct 3 21:34:47 2025 +0900
+
+    Fallback problem countermeasures_restructured.md作成
+    ファイルをソートしたコミット
+
+[33mcommit f9c37d664de2c2dd3e58d727bed7915a2c5bbaca[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Thu Oct 2 23:43:37 2025 +0900
+
+    Fallback problem countermeasures.md
+    ランキング問題一応解決した
+    src/dssms/dssms_integrated_main.pyのバックテストの時間パフォーマンス改善中コミット
+
+[33mcommit 38c216e2ccad1dbd1408cbcdf6d61357905a2ca4[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Thu Oct 2 16:46:35 2025 +0900
+
+    Fallback problem countermeasures.md
+    TODO-FB-006: main.py マルチ戦略フォールバック統一
+    まで終了コミット
+    あと
+    *TODO-FB-009: レポート出力ディレクトリ整理
+    reports/fallback/` 作成コミット
+
+[33mcommit ec9da78c75c7752e9e78601de911533d7bdc57f8[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Thu Oct 2 15:42:56 2025 +0900
+
+    .github/copilot-instructions.mdに
+    エラーハンドリング方針更新を追加したコミット
+
+[33mcommit 32cd3e6a27f31910719fe25084d746eeeee110dc[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Wed Oct 1 23:08:34 2025 +0900
+
+    無効銘柄フィルタリング機能の実装
+
+[33mcommit 3a473b797a6ce48e172d940367b4d4085694bc1e[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Tue Sep 30 19:45:05 2025 +0900
+
+    ターミナルとExcelの出力が一部一致した記念コミット
+
+[33mcommit a1886b2a62f5b5d41b633f6400b124e71b40a815[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Tue Sep 30 15:51:59 2025 +0900
+
+    ログファイル、不要ファイル、クリーンアップ
+    詳細FILE_CLEANUP_COMPLETION_REPORT.md
+
+[33mcommit 02e9e0db8da1526d01bf2829ef519be2681c3fe5[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Tue Sep 30 15:18:19 2025 +0900
+
+    出力問題、重複ファイルないか追加調査後のコミット
+
+[33mcommit 3067337f43ae1caee4a6022c301607d24df6d6d5[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Tue Sep 30 12:15:11 2025 +0900
+
+    output/Output file analysis/Excel_Output_Repair_Implementation_Plan.md
+    phase４終了コミット
+
+[33mcommit daca5d0670ec23e5324aefcb7cc7ed362dff16b0[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Tue Sep 30 11:15:15 2025 +0900
+
+    output/Output file analysis/Excel_Output_Repair_Implementation_Plan.md
+    phase２終わったコミット
+
+[33mcommit ead110dd05b9c0516a5d734b785f3588e0cca7ed[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Tue Sep 30 09:26:22 2025 +0900
+
+    output/Output file analysis/Excel_Output_Repair_Implementation_Plan.md
+    phase１終了
+
+[33mcommit 0e7850d41824e68047baebaab0d87b259fd72459[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Tue Sep 30 08:43:30 2025 +0900
+
+    Excel出力問題のあらたなフォルダをoutputフォルダにつくって
+    削除とかしたんんだけど、削除前にコミットするの忘れたコミット
+
+[33mcommit 1b2905858bf9364a5d1373e4d6232f9c4ca037bf[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Sun Sep 28 10:24:26 2025 +0900
+
+    dssms_integrated_backtester.pyがDSSMSのメインエントリーポイントと分かった記念＆Excel出力がおかしい問題発覚記念コミット
+    つまり、まだ問題が消失していない
+
+[33mcommit 4be82b4993330ee599787686738c05aea138fdde[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Sun Sep 28 07:40:35 2025 +0900
+
+    いったん、DSSMS実装済みらしいけど、うまく動くか確認する前のコミット
+
+[33mcommit 6cbcac6d6a62912ec0b5909ff05a2dff63e2630d[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Thu Sep 25 22:18:23 2025 +0900
+
+    な、なんとDSSMSが未完成で切替問題が幻であることが判明した、かいつまむとDSSMS内のダミーデータの出力に一喜一憂してたってこと
+    DSS cora projectを立ち上げ
+    src/dssms/dssms_backtester_v3.pyを作成
+    シンプルにランキング一位を出すところまでやった
+
+[33mcommit 505063f6a042eb2c3ba4d6e021c8850c57bf1911[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Thu Sep 25 15:33:11 2025 +0900
+
+    決定論は削除したけれど
+    どうにもうまくいかないコミット
+
+[33mcommit bf9fdf757902b48ecee525f23e2512a2a2cf885d[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Thu Sep 25 14:24:43 2025 +0900
+
+    決定論モードが悪さしてるとあたりをつけ、削除するためのファイルを作ったコミット
+
+[33mcommit 10327ae50db80dcba9775a55dca4f8985dc4af2d[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Thu Sep 25 14:03:27 2025 +0900
+
+    DSSMSが一応うごいていることを確認記念コミット
+
+[33mcommit 6da5f5c61ba2208267a39114b60cc5009229de25[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Wed Sep 24 23:00:33 2025 +0900
+
+    キャッシュの問題化とおもって調べてもらったら問題なかったけど
+    ランキングシステムが故障してると診断されて
+    その診断を確定してファイルが２こできたところで
+    やふーファイナンスライブラリのアプデじゃね？とひらめいてアプデしたら
+    良くなった部分とさらにおかしくなった部分でぅあーーーってなってるコミット
+
+[33mcommit 93d0097b00702ddf8e87db23b54069107d4ebd3c[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Sep 22 23:57:57 2025 +0900
+
+    Problem 10「数学的エラー修正」のPhase 4統合により、すべてのKPI目標を達成
+
+[33mcommit c807d48fd842a96ceaa5865934b3d445914eeae6[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Sep 22 23:16:18 2025 +0900
+
+    切替０問題中途半端に解決中
+    とりあえず、分かっている方向を改善するために、一度コミット
+    次は問題点１０の追加分をやる予定
+
+[33mcommit fa207bfac82271c9220621918ad1d4bab3acc18b[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Sep 22 17:26:53 2025 +0900
+
+    また、切替０になったけど
+    問題１を再度やりなおすまえの
+    セーブ的コミット
+
+[33mcommit ec1670c78fb2f526ad2d5805bfe88ee67687bb15[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Sep 22 14:58:43 2025 +0900
+
+    Problem 1
+    また、切替回数激減
+    一旦コミット
+
+[33mcommit 7016ba7f10f8d6ab81db412a9dec26833ed46f9d[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Sep 22 14:12:56 2025 +0900
+
+    Problem 18完全実装達成 - A+グレード品質で本番運用準備完了
+
+[33mcommit 309d75984ddd2aee7892c6d2591cc9af41ca7269[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Sep 22 13:44:33 2025 +0900
+
+    Problem 8: 実行ランタイム最適化 - 実装完了
+
+[33mcommit 17c592e7f3a044a71873a43c431fa942a34d8ebe[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Sep 22 13:30:48 2025 +0900
+
+    Problem 11: ISM統合カバレッジ向上
+    途中まですみ
+    改善課題
+    不要切替率: 70% (目標<20%) - 実際のバックテスト運用で品質調整が必要
+    一貫性率: 0% (目標≥95%) - 長期運用データでの評価・改善が必要
+    実質的完了
+
+[33mcommit 28ccf596204ec13d529705b0572f889efbaf130c[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Sep 22 13:08:48 2025 +0900
+
+    Problem 11: ISM統合カバレッジ向上
+    途中まですみ
+    改善課題
+    不要切替率: 70% (目標<20%) - 実際のバックテスト運用で品質調整が必要
+    一貫性率: 0% (目標≥95%) - 長期運用データでの評価・改善が必要
+
+[33mcommit fbfccb14ed327c01f35cf2758b4a518ab393a0c5[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Sep 22 12:29:25 2025 +0900
+
+    docs/dssms/Output problem solving roadmap2.md
+    Problem 9: エンジン品質統一 正式完了
+
+[33mcommit 0e985d3d7d7b623cf2a4c91b5f5f6826bbf730b8[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Sep 22 11:52:08 2025 +0900
+
+    docs/dssms/Output problem solving roadmap2.md
+    ### Problem 10: 数学的エラー修正
+
+[33mcommit a713f925f4ceb570c7f6cc6089fa77fd3f7cad00[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Sep 22 11:27:48 2025 +0900
+
+    docs/dssms/Output problem solving roadmap2.md
+    Problem 13: エンジン競合解決
+
+[33mcommit 5cebc8154c84910222cbdc85c2fad550270bd584[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Sep 22 11:01:13 2025 +0900
+
+    docs/dssms/Output problem solving roadmap2.md
+    ### Problem 6: データフロー/ポートフォリオ処理混乱問題終了
+
+[33mcommit 96bf412149898db0a21a3f842db51484a0c17ad7[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Sep 22 10:40:54 2025 +0900
+
+    docs/dssms/Output problem solving roadmap2.md
+    Problem 12/3（統合）: 決定論的モード設定問題終了
+
+[33mcommit 7287b807a1be4a454570e32823129dd84b9331d3[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Sun Sep 21 22:38:16 2025 +0900
+
+    Output problem solving roadmap2.md
+    DSSMS問題解決フレームワーク 完全完成
+    📊 全問題完了サマリー
+    完了済み問題: 10件
+
+[33mcommit afc383fea3394fe17f732429d54f4ef67cb8fe7b[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Thu Sep 18 23:14:28 2025 +0900
+
+    Dssms出力問題、構造問題、調査終了からの問題点まとめ終了
+    docs/dssms/Output problem solving roadmap2.mdに問題点の全ての解決策のフレームワークを設定（解決策は議論前）
+
+[33mcommit 7c7df465362bdd498122dc37f0b38e3762995359[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Thu Sep 18 22:40:14 2025 +0900
+
+    docs/dssms/Output problem solving roadmap2.md
+    解決策の評価・実装フレームワーク追加
+
+[33mcommit af79856acf1c4b867b16a08ac56ddea5f6b95e5f[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Thu Sep 18 22:17:38 2025 +0900
+
+    Dssms出力問題、構造問題、調査終了からの問題点まとめ終了
+    docs/dssms/Output problem solving roadmap2.mdに問題点の全てを列挙して、重複部分を削除
+    改善点の構築へ準備完了
+
+[33mcommit 61e54799da9932ab635869b2176167be7dde8d35[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Thu Sep 18 21:55:28 2025 +0900
+
+    Dssms出力問題、構造問題、調査終了からの問題点まとめ終了
+    docs/dssms/Output problem solving roadmap2.mdに問題点の全てを列挙
+
+[33mcommit 42ef259398f0d51884c1dbf61f5aae54aa88d928[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Thu Sep 18 18:17:35 2025 +0900
+
+    Dssms出力問題、構造問題、調査終了からの問題点まとめ終了
+
+[33mcommit 569f9164656023ae6b55dbcd94c4ed89cbeee1ce[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Sun Sep 14 23:00:14 2025 +0900
+
+    Dssms出力問題、構造問題、調査終了
+
+[33mcommit c5eca72725b29888e850d3b3ec9b5b1c6dc60cd4[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Fri Sep 12 12:29:39 2025 +0900
+
+    Output problem understanding file２.md
+    task5を新たに作成調査中
+
+[33mcommit ed6568e7378677eea13ade2ea6d93a22d1a6ed9e[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Wed Sep 10 22:57:50 2025 +0900
+
+    DSSMS出力問題
+    構造分析・特定ロードマップ作製
+
+[33mcommit cb844e0e9a4155e6d950cc5bb1565a8f99ed716f[m
+Author: kouseven7 <imeganemk@icloud.com>
+Date:   Mon Sep 8 20:31:27 2025 +0900
+
+    DSSMS出力問題戦略Excelシート最後と思いきやまた２４時間固定問題復活
+
+[33mcommit c6448ecf75d2358fee8465ad4aa7242fc7431519[m
+Author: kouseven7 <imeganemk@icloud.com>
+Da

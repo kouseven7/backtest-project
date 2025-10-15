@@ -167,19 +167,28 @@ class BreakoutStrategy(BaseStrategy):
         # シグナル列の初期化
         self.data['Entry_Signal'] = 0
         self.data['Exit_Signal'] = 0
+        
+        # ポジション管理変数
+        in_position = False
+        last_entry_idx = None
 
         # 各日にちについてシグナルを計算
         for idx in range(len(self.data)):
-            # Entry_Signalがまだ立っていない場合のみエントリーシグナルをチェック
-            if not self.data['Entry_Signal'].iloc[max(0, idx-1):idx+1].any():
+            # ポジションを持っていない場合のみエントリーシグナルをチェック
+            if not in_position:
                 entry_signal = self.generate_entry_signal(idx)
                 if entry_signal == 1:
                     self.data.at[self.data.index[idx], 'Entry_Signal'] = 1
+                    in_position = True
+                    last_entry_idx = idx
             
-            # イグジットシグナルを確認
-            exit_signal = self.generate_exit_signal(idx)
-            if exit_signal == -1:
-                self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
+            # ポジションを持っている場合のみイグジットシグナルをチェック
+            elif in_position:
+                exit_signal = self.generate_exit_signal(idx)
+                if exit_signal == -1:
+                    self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
+                    in_position = False
+                    last_entry_idx = None
 
         return self.data
 

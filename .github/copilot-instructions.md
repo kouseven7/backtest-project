@@ -27,4 +27,4 @@
 - Report exact numbers, not assumptions
 
 ---
-**Remember: This project exists to run backtests. Any change that prevents actual backtest execution violates the core purpose.** 
+**Remember: This project exists to run backtests. Any change that prevents actual backtest execution violates the core purpose.**

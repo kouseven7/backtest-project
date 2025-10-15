@@ -162,6 +162,15 @@ class GCStrategy(BaseStrategy):
         if idx < self.params["long_window"]:
             return 0
         
+        # ✅ ポジション状態管理を追加（ContrarianStrategyと同じパターン）
+        # 現在までのエントリー・エグジット数を計算
+        current_entries = (self.data['Entry_Signal'].iloc[:idx+1] == 1).sum()
+        current_exits = abs((self.data['Exit_Signal'].iloc[:idx+1] == -1).sum())
+        
+        # アクティブなポジションがない場合はエグジット不可
+        if current_entries <= current_exits:
+            return 0
+        
         # ポジションがあるか確認
         entry_indices = self.data[self.data['Entry_Signal'] == 1].index
         if not len(entry_indices) or entry_indices[-1] >= self.data.index[idx]:

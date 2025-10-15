@@ -220,7 +220,7 @@ class MultiStrategyManager:
                     # TODO(tag:backtest_execution, rationale:strategy execution failure handling)
                     strategy_performances[strategy_name] = {
                         'entries': 0,
-                        'exits': 0,  
+                        'exits': 0,
                         'backtest_completed': False,
                         'error': str(e)
                     }

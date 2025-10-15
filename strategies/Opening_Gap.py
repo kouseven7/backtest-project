@@ -192,6 +192,20 @@ class OpeningGapStrategy(BaseStrategy):
         """
         if idx < 1:  # 前日データが必要
             return 0
+        
+        # ポジション状態をチェック - アクティブなポジションがない場合は終了シグナルを生成しない
+        current_position = 0
+        for i in range(idx + 1):  # 現在のインデックスまでをチェック
+            if i < len(self.data) and 'Entry_Signal' in self.data.columns:
+                if self.data['Entry_Signal'].iloc[i] != 0:
+                    current_position += self.data['Entry_Signal'].iloc[i]
+            if i < len(self.data) and 'Exit_Signal' in self.data.columns:
+                if self.data['Exit_Signal'].iloc[i] != 0:
+                    current_position -= abs(self.data['Exit_Signal'].iloc[i])
+        
+        # アクティブなポジションがない場合は終了シグナルを生成しない
+        if current_position <= 0:
+            return 0
             
         # エントリー価格を取得
         entry_indices = self.data[self.data['Entry_Signal'] == 1].index

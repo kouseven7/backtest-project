@@ -359,46 +359,10 @@ def _execute_individual_strategy(stock_data, index_data, strategy_name, strategy
         return empty_result
 
 
-def _detect_exit_anomalies(strategy_result: pd.DataFrame, strategy_name: str) -> Dict[str, Any]:
-    """
-    異常エグジット検出（TODO #4対応）
-    TODO(tag:exit_signal_integration, rationale:detect OpeningGap-style exit anomalies)
-    """
-    anomaly_info = {
-        'is_abnormal': False,
-        'anomaly_type': 'normal',
-        'exit_entry_ratio': 0.0,
-        'total_exits': 0,
-        'total_entries': 0
-    }
-    
-    if 'Entry_Signal' in strategy_result.columns and 'Exit_Signal' in strategy_result.columns:
-        total_entries = (strategy_result['Entry_Signal'] == 1).sum()
-        total_exits = (strategy_result['Exit_Signal'] == 1).sum()  # Exit_Signalも1で統一
-        
-        anomaly_info['total_entries'] = int(total_entries)
-        anomaly_info['total_exits'] = int(total_exits)
-        
-        if total_entries > 0:
-            exit_entry_ratio = total_exits / total_entries
-            anomaly_info['exit_entry_ratio'] = round(exit_entry_ratio, 2)
-            
-            # 異常判定基準（TODO #4調査結果基準）
-            if exit_entry_ratio > 5.0:  # 5倍以上は明らかに異常
-                anomaly_info['is_abnormal'] = True
-                anomaly_info['anomaly_type'] = 'excessive_exits'
-                print(f"[CRITICAL] {strategy_name}: 異常な大量エグジット検出 (比率: {exit_entry_ratio:.1f})")
-            elif exit_entry_ratio > 2.0:  # 2倍超は要注意
-                anomaly_info['is_abnormal'] = True
-                anomaly_info['anomaly_type'] = 'high_exit_ratio'
-                print(f"[WARNING] {strategy_name}: 高いエグジット比率検出 (比率: {exit_entry_ratio:.1f})")
-    
-    return anomaly_info
-
 
 def _integrate_entry_signals(integrated_data: pd.DataFrame, strategy_result: pd.DataFrame, strategy_name: str) -> int:
     """
-    エントリーシグナル統合（既存ロジック強化版）
+    エントリーシグナル統合（標準版）
     TODO(tag:exit_signal_integration, rationale:enhance entry signal integration with position tracking)
     """
     entry_mask = (strategy_result['Entry_Signal'] == 1) & (integrated_data['Entry_Signal'] == 0)
@@ -407,7 +371,6 @@ def _integrate_entry_signals(integrated_data: pd.DataFrame, strategy_result: pd.
         integrated_data.loc[entry_mask, 'Entry_Signal'] = 1
         integrated_data.loc[entry_mask, 'Active_Strategy'] = strategy_name
         integrated_data.loc[entry_mask, 'Position_Duration'] = 0  # 保有期間リセット
-        
         return int(entry_mask.sum())
     
     return 0
@@ -608,23 +571,24 @@ def _execute_intelligent_forced_liquidation(integrated_data: pd.DataFrame) -> Di
         final_position_count = final_positions_mask.sum()
         print(f"\n=== インテリジェント強制決済実行: {final_position_count}件 ===")
         
-        # 強制決済実行
+        # 正常な強制決済実行: 全てのアクティブポジションを決済
         integrated_data.loc[final_positions_mask, 'Exit_Signal'] = 1
         integrated_data.loc[final_positions_mask, 'Active_Strategy'] = ''
+        actual_forced_count = final_position_count
         
         # TODO #3修正版計算ロジック
         total_exits = (integrated_data['Exit_Signal'] == 1).sum()
         
-        # 修正された強制決済率計算
+        # 修正された強制決済率計算（実際に実行された強制決済数を使用）
         if total_exits > 0:
-            forced_liquidation_rate = (final_position_count / total_exits) * 100
+            forced_liquidation_rate = (actual_forced_count / total_exits) * 100
         else:
             forced_liquidation_rate = 0.0
         
         print(f"修正版強制決済率: {forced_liquidation_rate:.2f}%")
         
         return {
-            'forced_liquidations': int(final_position_count),
+            'forced_liquidations': int(actual_forced_count),
             'total_exits': int(total_exits),
             'forced_liquidation_rate': round(forced_liquidation_rate, 2)
         }

@@ -3,16 +3,16 @@ execution_metadata:
   data_period:
     end: '2024-12-30 00:00:00'
     start: '2024-01-04 00:00:00'
-  execution_date: '2025-10-08T20:07:27.484790'
+  execution_date: '2025-10-15T14:55:22.333884'
   strategy: integrated_strategy
-  ticker: 5803.T
+  ticker: 7203.T
 key_metrics:
-  max_drawdown: -0.36911218747411156
-  num_trades: 220
-  sharpe_ratio: 7.828374377851283
+  max_drawdown: -0.4167417813353322
+  num_trades: 122
+  sharpe_ratio: 0.6036760017243764
   signal_integrity:
-    entry_signals: 110
-    exit_signals: 110
+    entry_signals: 61
+    exit_signals: 61
     integrity_verified: true
     signal_ratio: 1.0
-  total_return: 5.010381896357425
+  total_return: 0.2260236095836031
