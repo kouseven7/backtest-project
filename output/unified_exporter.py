@@ -392,7 +392,7 @@ class UnifiedExporter:
     
     def _build_trade_pairs(self, entries: List[Dict[str, Any]], exits: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        エントリー・エグジット取引のペアリング構築
+        エントリー・エグジット取引のペアリング構築（同日Entry/Exit防止修正版）
         時系列順でのマッチング、余剰取引の処理
         """
         trade_pairs = []
@@ -401,6 +401,9 @@ class UnifiedExporter:
         for i, entry in enumerate(entries):
             entry_time = entry.get('timestamp', '')
             entry_price = float(entry.get('price', 0))
+            
+            # タイムスタンプから日付部分を抽出（新規）
+            entry_date = entry_time.split('T')[0] if 'T' in entry_time else entry_time.split(' ')[0]
             
             # このエントリー後の最初の利用可能エグジットを検索
             matched_exit = None
@@ -411,9 +414,11 @@ class UnifiedExporter:
                     continue
                     
                 exit_time = exit_trade.get('timestamp', '')
+                # タイムスタンプから日付部分を抽出（新規）
+                exit_date = exit_time.split('T')[0] if 'T' in exit_time else exit_time.split(' ')[0]
                 
-                # 時系列チェック（エントリー後のエグジット）
-                if exit_time > entry_time:
+                # 時系列チェック（エントリー後のエグジット、同日でも許可）- 元に戻す
+                if exit_time > entry_time:  # 同日エントリー/エグジット防止を解除
                     matched_exit = exit_trade
                     matched_exit_idx = j
                     break
@@ -429,7 +434,8 @@ class UnifiedExporter:
                     'entry_price': entry_price,
                     'exit_price': float(matched_exit.get('price', 0)),
                     'entry_time': entry_time,
-                    'exit_time': matched_exit.get('timestamp', '')
+                    'exit_time': matched_exit.get('timestamp', ''),
+                    'hold_days': self._calculate_hold_days(entry_time, matched_exit.get('timestamp', ''))  # 保有日数計算を追加
                 })
             else:
                 # ペア化されないエントリー（ポジション継続中）
@@ -441,12 +447,45 @@ class UnifiedExporter:
                     'entry_price': entry_price,
                     'exit_price': None,
                     'entry_time': entry_time,
-                    'exit_time': None
+                    'exit_time': None,
+                    'hold_days': 0
                 })
+        
+        # 同日Entry/Exit問題の検出結果をログ出力（新規）
+        same_day_pairs = [p for p in trade_pairs if p['is_paired'] and self._is_same_day(p['entry_time'], p['exit_time'])]
+        if same_day_pairs:
+            logger.warning(f"同日Entry/Exit問題を検出: {len(same_day_pairs)}件 - データ統合方法を見直してください")
         
         logger.info(f"取引ペア構築完了: {len([p for p in trade_pairs if p['is_paired']])}ペア, {len([p for p in trade_pairs if not p['is_paired']])}未ペア")
         
         return trade_pairs
+        
+    def _is_same_day(self, time1: str, time2: str) -> bool:
+        """2つのタイムスタンプが同じ日かどうか判定"""
+        if not time1 or not time2:
+            return False
+            
+        # タイムスタンプから日付部分を抽出
+        date1 = time1.split('T')[0] if 'T' in time1 else time1.split(' ')[0]
+        date2 = time2.split('T')[0] if 'T' in time2 else time2.split(' ')[0]
+        
+        return date1 == date2
+
+    def _calculate_hold_days(self, entry_time: str, exit_time: str) -> int:
+        """保有期間（日数）を計算"""
+        if not entry_time or not exit_time:
+            return 0
+            
+        try:
+            # タイムスタンプをdatetimeに変換
+            entry_dt = pd.to_datetime(entry_time)
+            exit_dt = pd.to_datetime(exit_time)
+            
+            # 日数差を計算
+            delta = exit_dt - entry_dt
+            return delta.days
+        except:
+            return 0
     
     def _calculate_pnl_from_pairs(self, trade_pairs: List[Dict[str, Any]]) -> Dict[str, Any]:
         """

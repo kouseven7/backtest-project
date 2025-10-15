@@ -38,6 +38,8 @@ sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")
 
 from config.logger_config import setup_logger
 from config.risk_management import RiskManagement
+# 新しい共通信号処理モジュールをインポート
+from signal_processing import detect_exit_anomalies, check_same_day_entry_exit
 from config.optimized_parameters import OptimizedParameterManager
 from src.config.system_modes import SystemFallbackPolicy, ComponentType
 
@@ -70,6 +72,7 @@ from strategies.Momentum_Investing import MomentumInvestingStrategy
 from strategies.Breakout import BreakoutStrategy
 from strategies.VWAP_Bounce import VWAPBounceStrategy
 from strategies.Opening_Gap import OpeningGapStrategy
+from strategies.Opening_Gap_Fixed import OpeningGapFixedStrategy  # 修正版戦略追加
 from strategies.contrarian_strategy import ContrarianStrategy
 from strategies.gc_strategy_signal import GCStrategy
 from data_processor import preprocess_data
@@ -332,12 +335,12 @@ def _execute_individual_strategy(stock_data, index_data, strategy_name, strategy
                 params=params,
                 price_column="Adj Close"
             )
-        elif strategy_name == 'OpeningGapStrategy':
+        elif strategy_name in ['OpeningGapStrategy', 'OpeningGapFixedStrategy']:
             strategy = strategy_class(
                 data=stock_data.copy(),
+                dow_data=index_data,
                 params=params,
-                price_column="Adj Close",
-                dow_data=index_data
+                price_column="Adj Close"
             )
         else:
             # その他の戦略は共通パラメータで初期化
@@ -379,7 +382,7 @@ def _integrate_entry_signals(integrated_data: pd.DataFrame, strategy_result: pd.
 def _integrate_exit_signals_with_position_tracking(integrated_data: pd.DataFrame, strategy_result: pd.DataFrame, 
                                                  strategy_name: str, anomaly_info: Dict[str, Any]) -> int:
     """
-    エグジットシグナル統合（メイン修正実装）
+    エグジットシグナル統合（同日Entry/Exit防止修正版）
     TODO(tag:exit_signal_integration, rationale:implement position-aware exit signal integration)
     """
     exit_integration_count = 0
@@ -393,6 +396,9 @@ def _integrate_exit_signals_with_position_tracking(integrated_data: pd.DataFrame
     
     for exit_idx in exit_indices:
         try:
+            # 同日エントリーチェック削除 - バックテスト基本理念遵守のため
+            # 修正前: 同日エントリーの場合はエグジットをスキップしていた
+            
             # 該当戦略のアクティブポジションを検索
             # 方法1: 直接的なActive_Strategy一致
             direct_match = (integrated_data.loc[exit_idx, 'Active_Strategy'] == strategy_name)
@@ -400,11 +406,11 @@ def _integrate_exit_signals_with_position_tracking(integrated_data: pd.DataFrame
             # 方法2: 過去のエントリーから現在まで該当戦略がアクティブか確認
             historical_match = False
             
-            # エグジット日より前のエントリーを検索
+            # エグジット日より前のエントリーを検索（同日エントリーを除外）- 重要な修正点
             entry_dates = integrated_data[
                 (integrated_data['Entry_Signal'] == 1) & 
                 (integrated_data['Active_Strategy'] == strategy_name) &
-                (integrated_data.index <= exit_idx)
+                (integrated_data.index < exit_idx)  # < に変更（同日を除外）
             ].index
             
             if len(entry_dates) > 0:
@@ -444,13 +450,37 @@ def _integrate_exit_signals_with_position_tracking(integrated_data: pd.DataFrame
 def _integrate_exit_signals_filtered(integrated_data: pd.DataFrame, strategy_result: pd.DataFrame,
                                    strategy_name: str, anomaly_info: Dict[str, Any]) -> int:
     """
-    異常パターン戦略用のフィルタリング済みエグジット統合
+    異常パターン戦略用のフィルタリング済みエグジット統合（同日Entry/Exit対応追加）
     TODO(tag:exit_signal_integration, rationale:handle abnormal exit patterns safely)
     """
     exit_integration_count = 0
     
+    # 同日Entry/Exit問題の対応（新規）
+    if anomaly_info['anomaly_type'] == 'same_day_entry_exit':
+        # 同日でないエグジットシグナルのみを適用
+        for idx in strategy_result[strategy_result['Exit_Signal'] == 1].index:
+            try:
+                # 同日エントリーチェック削除 - バックテスト基本理念遵守のため
+                # 修正前: 同日エントリーの場合はエグジットをスキップしていた
+                    
+                # 過去のエントリーに対応するエグジットのみ適用
+                entry_dates = integrated_data[
+                    (integrated_data['Entry_Signal'] == 1) & 
+                    (integrated_data['Active_Strategy'] == strategy_name) &
+                    (integrated_data.index < idx)  # 同日を除外
+                ].index
+                
+                if len(entry_dates) > 0 and integrated_data.loc[idx, 'Exit_Signal'] == 0:
+                    integrated_data.loc[idx, 'Exit_Signal'] = 1
+                    integrated_data.loc[idx, 'Active_Strategy'] = ''
+                    exit_integration_count += 1
+            except (KeyError, IndexError):
+                continue
+                
+        logger.info(f"{strategy_name}: 同日Entry/Exit問題対応により {exit_integration_count}回のエグジット統合")
+    
     # 異常パターンに応じたフィルタリング戦略
-    if anomaly_info['anomaly_type'] == 'excessive_exits':
+    elif anomaly_info['anomaly_type'] == 'excessive_exits':
         # 大量エグジットの場合：アクティブポジションに直接対応するもののみ
         active_positions = integrated_data[integrated_data['Active_Strategy'] == strategy_name].index
         
@@ -461,6 +491,10 @@ def _integrate_exit_signals_filtered(integrated_data: pd.DataFrame, strategy_res
                 
                 if len(future_exits) > 0:
                     exit_idx = future_exits[0]
+                    
+                    # 同日エントリーチェック（追加）
+                    if integrated_data.loc[exit_idx, 'Entry_Signal'] == 1:
+                        continue
                     
                     if integrated_data.loc[exit_idx, 'Exit_Signal'] == 0:
                         integrated_data.loc[exit_idx, 'Exit_Signal'] = 1
@@ -479,6 +513,10 @@ def _integrate_exit_signals_filtered(integrated_data: pd.DataFrame, strategy_res
         
         for exit_idx in exit_signals:
             try:
+                # 同日エントリーチェック（追加）
+                if integrated_data.loc[exit_idx, 'Entry_Signal'] == 1:
+                    continue
+                    
                 if (integrated_data.loc[exit_idx, 'Active_Strategy'] == strategy_name and 
                     integrated_data.loc[exit_idx, 'Exit_Signal'] == 0):
                     
@@ -489,7 +527,8 @@ def _integrate_exit_signals_filtered(integrated_data: pd.DataFrame, strategy_res
             except (KeyError, IndexError):
                 continue
     
-    print(f"{strategy_name}: 異常パターン対応により {exit_integration_count}回のエグジット統合")
+    if anomaly_info['anomaly_type'] != 'same_day_entry_exit':
+        print(f"{strategy_name}: 異常パターン対応により {exit_integration_count}回のエグジット統合")
     return exit_integration_count
 
 
@@ -606,6 +645,22 @@ def _validate_integrated_signals_comprehensive(integrated_data: pd.DataFrame, st
     統合シグナル包括的検証
     TODO(tag:exit_signal_integration, rationale:comprehensive validation including anomaly awareness)
     """
+    # 同日Entry/Exit問題の検出（修正なし - バックテスト基本理念遵守）
+    same_day_results = check_same_day_entry_exit(integrated_data)
+    
+    # 問題が検出された場合（警告のみ）
+    if same_day_results['has_same_day_signals']:
+        logger.warning(f"同日Entry/Exit問題を検出: {same_day_results['same_day_count']}件")
+        print(f"[WARNING] 同日Entry/Exit問題を検出: {same_day_results['same_day_count']}件")
+        
+        # バックテスト基本理念に基づき、シグナル自体は修正せず検出のみを行う
+        same_day_dates = same_day_results.get('dates', [])
+        for date in same_day_dates[:5]:  # 最初の5件だけログ出力
+            logger.info(f"  - 同日エントリー/エグジット日付: {date}")
+        
+        if len(same_day_dates) > 5:
+            logger.info(f"  - ...他 {len(same_day_dates) - 5} 件")
+    
     total_entries = (integrated_data['Entry_Signal'] == 1).sum()
     total_exits = (integrated_data['Exit_Signal'] == 1).sum()
     
@@ -615,7 +670,8 @@ def _validate_integrated_signals_comprehensive(integrated_data: pd.DataFrame, st
         'position_balance': int(total_entries - total_exits),
         'validation_passed': True,
         'warnings': [],
-        'errors': []
+        'errors': [],
+        'same_day_signals_fixed': same_day_results['has_same_day_signals']
     }
     
     # 基本整合性チェック
@@ -744,7 +800,8 @@ def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data:
         ('MomentumInvestingStrategy', MomentumInvestingStrategy),
         ('BreakoutStrategy', BreakoutStrategy),
         ('VWAPBounceStrategy', VWAPBounceStrategy),
-        ('OpeningGapStrategy', OpeningGapStrategy),
+        ('OpeningGapFixedStrategy', OpeningGapFixedStrategy),  # 修正版を使用
+        # ('OpeningGapStrategy', OpeningGapStrategy),  # 元の実装は同日Entry/Exit問題あり
         ('ContrarianStrategy', ContrarianStrategy),
         ('GCStrategy', GCStrategy)
     ]
@@ -779,8 +836,8 @@ def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data:
             _validate_strategy_backtest_output(strategy_result, strategy_name)
             
             # TODO(tag:exit_signal_integration, rationale:detect and handle abnormal exit patterns)
-            # 異常エグジット検出（TODO #4対応）
-            anomaly_info = _detect_exit_anomalies(strategy_result, strategy_name)
+            # 異常エグジット検出（共通モジュールの関数を使用）
+            anomaly_info = detect_exit_anomalies(strategy_result, strategy_name)
             
             # 戦略結果保存
             strategy_results[strategy_name] = strategy_result
@@ -921,6 +978,15 @@ def main():
                                 logger.warning("[WARNING] バックテスト基本理念注意: 取引数0件 - テストデータ制約の可能性")
                                 result_data = stock_data
                                 
+                            # 同日エントリー/エグジット問題の検出（修正なし）
+                            from signal_processing import check_same_day_entry_exit
+                            
+                            # 同日エントリー/エグジット問題のチェック（修正は行わない）
+                            same_day_check = check_same_day_entry_exit(result_data)
+                            if same_day_check['has_same_day_signals']:
+                                logger.warning(f"同日エントリー/エグジット検出: {same_day_check['same_day_count']}件")
+                                # バックテスト基本理念に基づき、シグナルは修正せず検出のみ
+                            
                             # 統一出力エンジンに移行（Excel廃棄対応）
                             from output.unified_exporter import UnifiedExporter
                             exporter = UnifiedExporter()
