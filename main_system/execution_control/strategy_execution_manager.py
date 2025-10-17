@@ -43,7 +43,7 @@ class StrategyExecutionManager:
         try:
             # データフィード初期化（簡易版）
             self.data_feed = None  # シンプル実装のため無効化
-            self.logger.info("データフィード: シンプルモード（サンプルデータ使用）")
+            self.logger.info("Data feed: Simple mode (data feed disabled - real data required for execution)")
             
             # ペーパーブローカー初期化
             from src.execution.paper_broker import PaperBroker
@@ -209,73 +209,66 @@ class StrategyExecutionManager:
                     self.logger.debug(f"市場データ取得成功: {len(data)}行, {len(symbols)}銘柄")
                     return data
             
-            # フォールバック：簡易データ生成
-            self.logger.warning("データフィード利用不可、サンプルデータを生成")
-            return self._generate_sample_data(symbols, lookback_periods)
+            # ダミーデータ生成フォールバック削除
+            # copilot-instructions.md違反: モック/ダミー/テストデータを使用するフォールバック禁止
+            self.logger.error("CRITICAL: Market data unavailable. Data feed is None. Cannot proceed with backtest.")
+            return pd.DataFrame()  # 空のDataFrameを返してエラーとして扱う
                 
         except Exception as e:
-            self.logger.error(f"市場データ取得エラー: {e}")
+            self.logger.error(f"Market data retrieval error: {e}")
             return pd.DataFrame()
     
-    def _generate_sample_data(self, symbols: List[str], periods: int) -> pd.DataFrame:
-        """サンプルデータ生成（フォールバック用）"""
-        import numpy as np
-        
-        dates = pd.date_range(start=datetime.now() - timedelta(days=periods), 
-                             end=datetime.now(), freq='D')
-        
-        # 基本的なサンプルデータ生成
-        data_dict = {
-            'Date': dates[:periods] if len(dates) >= periods else dates
-        }
-        
-        # 各シンボルの価格データ生成
-        for symbol in symbols:
-            base_price = 100.0
-            prices = [base_price]
-            for i in range(1, len(data_dict['Date'])):
-                change = np.random.normal(0, 0.02)  # 2%のボラティリティ
-                new_price = prices[-1] * (1 + change)
-                prices.append(max(new_price, 10.0))  # 最低価格制限
-            
-            # 戦略で必要なカラム名に合わせる
-            data_dict['Adj Close'] = prices
-            data_dict['High'] = [p * 1.02 for p in prices]  # High価格
-            data_dict['Low'] = [p * 0.98 for p in prices]   # Low価格
-            data_dict['Open'] = prices  # Open価格
-            data_dict['Close'] = prices  # Close価格
-            data_dict['Volume'] = [np.random.randint(1000000, 10000000) for _ in prices]
-            break  # 最初のシンボルのみでサンプル作成
-            
-        return pd.DataFrame(data_dict)
-    
     def _get_strategy_instance(self, strategy_name: str):
-        """戦略インスタンス取得"""
+        """戦略インスタンス取得（拡張版 - 複数名前形式対応）"""
         try:
-            # 既知の戦略マッピング
+            # 戦略名の正規化マッピング（既存形式 + 新形式）
             strategy_mappings = {
+                # 既存形式（アンダースコア区切り）
                 'VWAP_Breakout': 'strategies.VWAP_Breakout.VWAPBreakoutStrategy',
                 'VWAP_Bounce': 'strategies.VWAP_Bounce.VWAPBounceStrategy',
                 'GC_Strategy': 'strategies.gc_strategy_signal.GCStrategy',
                 'Breakout': 'strategies.Breakout.BreakoutStrategy',
-                'Opening_Gap': 'strategies.Opening_Gap.OpeningGapStrategy'
+                'Opening_Gap': 'strategies.Opening_Gap.OpeningGapStrategy',
+                
+                # 新形式（クラス名そのまま）
+                'VWAPBreakoutStrategy': 'strategies.VWAP_Breakout.VWAPBreakoutStrategy',
+                'VWAPBounceStrategy': 'strategies.VWAP_Bounce.VWAPBounceStrategy',
+                'GCStrategy': 'strategies.gc_strategy_signal.GCStrategy',
+                'BreakoutStrategy': 'strategies.Breakout.BreakoutStrategy',
+                'OpeningGapStrategy': 'strategies.Opening_Gap.OpeningGapStrategy',
+                'OpeningGapFixedStrategy': 'strategies.Opening_Gap.OpeningGapStrategy',
+                'MomentumInvestingStrategy': 'strategies.momentum_investing.MomentumInvestingStrategy',
+                'ContrarianStrategy': 'strategies.contrarian.ContrarianStrategy',
             }
             
             module_path = strategy_mappings.get(strategy_name)
-            if module_path:
-                module_name, class_name = module_path.rsplit('.', 1)
-                module = __import__(module_name, fromlist=[class_name])
-                strategy_class = getattr(module, class_name)
-                
-                # 適切なサンプルデータで初期化
-                sample_data = self._generate_sample_data(['AAPL'], 100)
-                index_data = sample_data.copy()  # インデックスデータも同じにする
-                return strategy_class(sample_data, index_data)
+            if not module_path:
+                self.logger.error(f"CRITICAL: Unknown strategy name: '{strategy_name}'. Available strategies: {list(strategy_mappings.keys())}")
+                return None
             
-            return None
+            # モジュールとクラスを分離
+            module_name, class_name = module_path.rsplit('.', 1)
+            module = __import__(module_name, fromlist=[class_name])
+            strategy_class = getattr(module, class_name)
+            
+            # 戦略インスタンス化
+            # NOTE: 既存戦略は初期化時にデータを受け取る設計
+            # データはbacktest()呼び出し側で提供される想定に変更すべきだが、
+            # 現時点では既存の初期化シグネチャに合わせる
+            # TODO: Phase 4で戦略インターフェース統一化
+            
+            # ダミーデータ生成禁止のため、実データ必須に変更
+            # 戦略によってはデータなしでインスタンス化可能な場合がある
+            try:
+                # データなしインスタンス化を試行
+                return strategy_class()
+            except TypeError:
+                # データ必須の場合はエラー
+                self.logger.error(f"CRITICAL: Strategy '{strategy_name}' requires data for initialization, but no real data available. Cannot create instance without violating copilot-instructions.md")
+                return None
             
         except Exception as e:
-            self.logger.error(f"戦略インスタンス取得エラー[{strategy_name}]: {e}")
+            self.logger.error(f"Strategy instance creation error [{strategy_name}]: {e}")
             return None
     
     def _execute_trades(self, signals: pd.DataFrame, symbols: List[str]) -> List[Dict[str, Any]]:
@@ -286,31 +279,27 @@ class StrategyExecutionManager:
             if signals is None or signals.empty:
                 return execution_results
             
+            # trade_executor必須チェック
+            if not self.trade_executor:
+                self.logger.error("CRITICAL: Trade executor not available. Cannot execute trades without violating copilot-instructions.md (no mock execution allowed).")
+                return []
+            
             # シグナルから取引指示を生成
             trade_orders = self._generate_trade_orders(signals, symbols)
             
-            # 各注文を実行
+            # 各注文を実行（実際の実行のみ）
             for order in trade_orders:
                 try:
-                    if self.trade_executor:
-                        result = self.trade_executor.execute_order(order)
-                        execution_results.append(result)
-                    else:
-                        # モック実行
-                        result = {
-                            "order": order,
-                            "status": "executed",
-                            "timestamp": datetime.now().isoformat()
-                        }
-                        execution_results.append(result)
+                    result = self.trade_executor.execute_order(order)
+                    execution_results.append(result)
                 except Exception as e:
-                    self.logger.error(f"取引実行エラー: {e}")
+                    self.logger.error(f"Trade execution error: {e}")
                     execution_results.append({"error": str(e), "order": order})
             
             return execution_results
             
         except Exception as e:
-            self.logger.error(f"取引実行処理エラー: {e}")
+            self.logger.error(f"Trade execution processing error: {e}")
             return []
     
     def _generate_trade_orders(self, signals: pd.DataFrame, symbols: List[str]) -> List[Dict[str, Any]]:

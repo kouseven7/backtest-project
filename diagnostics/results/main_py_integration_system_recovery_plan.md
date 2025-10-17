@@ -260,7 +260,13 @@ def investigate_exit_signal_generation():
     
     return exit_signal_status
 
-# 必要に応じて各戦略のエグジット生成ロジック修正
+# 各戦略のエグジット生成状況を報告
+def report_exit_signal_status(exit_signal_status):
+    for strategy_name, status in exit_signal_status.items():
+        if status:
+            print(f"Strategy: {strategy_name} - Exit signal generated")
+        else:
+            print(f"Strategy: {strategy_name} - No exit signal generated")
 ```
 
 ### **Phase 4: 包括的レポート・パフォーマンス (1週間)**

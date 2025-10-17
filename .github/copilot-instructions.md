@@ -1,30 +1,27 @@
-# Copilot Instructions - Concise Version
+# Copilot Instructions - 日本語版
 
-## 🎯 **Core Principles**
-1. **Actual Backtest Execution Required**: Never skip `strategy.backtest()` calls
-2. **Signal Generation Mandatory**: Always produce `Entry_Signal`/`Exit_Signal` columns
-3. **No Fabricated Responses**: If unsure, say "I don't know" instead of making things up
+## 🎯 **基本原則**
+1. **バックテスト実行必須**: `strategy.backtest()` の呼び出しをスキップしない
+2. **検証なしの報告禁止**: 実際の実行結果を確認せず「成功」と報告しない
+3. **わからないことは正直に**: 不明な場合は推測せず「わかりません」と回答
 
-## 📋 **Response Quality Rules**
-- **Verify before claiming**: Test actual execution, check actual numbers
-- **If output shows profit=0**: Investigate cause, don't say "perfect"
-- **Excel output prohibited**: Use CSV+JSON+TXT instead (since 2025-10-08)
+## 📋 **品質ルール**
+- **報告前に検証**: 実際の実行、実際の数値を確認してから報告
+- **Excel出力禁止**: CSV+JSON+TXTを使用（2025-10-08以降）
 
-## 🔧 **System Architecture**
-- Main entry: `main.py` in project root
-- Strategies: `strategies/*.py` with `backtest()` method
-- Output: `output/unified_exporter.py` (no Excel)
+## ⚠️ **既知の問題**
+- Unicode文字はWindowsターミナルでエラーを起こす
+- テキスト出力でprofit=0と表示されることがあるが、システムは動作している
 
-## ⚠️ **Known Issues**
-- Unicode characters cause Windows terminal errors
-- Two `main.py` files exist (root works, src/main.py has path issues)
-- Text output may show profit=0 even when system runs
+## 🚨 **必須チェック項目**
+- 実際の取引件数 > 0 を検証
+- 出力ファイルの内容を確認（存在確認だけでは不十分）
+- 推測ではなく正確な数値を報告
 
-## 🚨 **Mandatory Checks**
-- Always validate actual trade count > 0
-- Verify signal columns exist
-- Check output file contents, not just file existence
-- Report exact numbers, not assumptions
+## 🚫 **フォールバック機能の制限**
+- **モック/ダミー/テストデータを使用するフォールバック禁止**: 実データと乖離する結果を生成するフォールバック機能は実装しない
+- **テスト継続のみを目的としたフォールバック禁止**: エラーを隠蔽して強制的にテストを継続させるフォールバックは実装しない
+- **フォールバック実行時のログ必須**: フォールバック機能が動作した場合は必ずログに記録し、ユーザーが認識できるようにする
 
 ---
-**Remember: This project exists to run backtests. Any change that prevents actual backtest execution violates the core purpose.**
+**重要**: このプロジェクトの目的はバックテストの実行です。実際のバックテスト実行を妨げる、またはスキップする変更は本来の目的に反します。

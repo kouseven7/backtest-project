@@ -28,6 +28,15 @@ try:
 except ImportError:
     pass
 
+try:
+    from .dynamic_strategy_selector import (
+        DynamicStrategySelector, 
+        StrategySelectionMode, 
+        select_strategies
+    )
+except ImportError:
+    pass
+
 __all__ = [
     'strategy_selector',
     'enhanced_strategy_scoring_model',
