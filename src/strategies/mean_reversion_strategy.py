@@ -209,18 +209,18 @@ class MeanReversionStrategy(BaseStrategy):
         # 保有日数チェック
         hold_days = idx - entry_idx
         if hold_days >= self.params["max_hold_days"]:
-            return 1  # 最大保有日数到達
+            return -1  # 最大保有日数到達
             
         # 損益計算
         pnl_pct = (current_price - entry_price) / entry_price
         
         # ストップロス
         if pnl_pct <= -self.params["stop_loss_pct"]:
-            return 1
+            return -1
             
         # 利益確定
         if pnl_pct >= self.params["take_profit_pct"]:
-            return 1
+            return -1
             
         # ATRベースのストップロス（オプション）
         if self.params["atr_filter"] and 'ATR' in self.data.columns:
@@ -228,21 +228,21 @@ class MeanReversionStrategy(BaseStrategy):
             if pd.notna(atr):
                 atr_stop_loss = self.params["atr_multiplier"] * atr / entry_price
                 if pnl_pct <= -atr_stop_loss:
-                    return 1
+                    return -1
                     
         # 平均回帰完了チェック（Z-scoreベース）
         if 'Z_Score' in self.data.columns:
             z_score = self.data['Z_Score'].iloc[idx]
             if pd.notna(z_score) and z_score >= self.params["zscore_exit_threshold"]:
                 if pnl_pct > 0:  # 利益が出ている場合のみ
-                    return 1
+                    return -1
                     
         # 移動平均回帰チェック
         if 'SMA' in self.data.columns:
             sma = self.data['SMA'].iloc[idx]
             if pd.notna(sma) and current_price >= sma * 0.995:  # 移動平均の99.5%まで戻った
                 if pnl_pct > 0:  # 利益が出ている場合のみ
-                    return 1
+                    return -1
                     
         return 0
         
@@ -273,8 +273,8 @@ class MeanReversionStrategy(BaseStrategy):
                         
                 # エグジットチェック
                 exit_signal = self.generate_exit_signal(i, position_size)
-                if exit_signal == 1:
-                    result_data['Exit_Signal'].iloc[i] = 1
+                if exit_signal == -1:
+                    result_data['Exit_Signal'].iloc[i] = -1
                     position_size = 0
                     
             result_data['Position'].iloc[i] = position_size

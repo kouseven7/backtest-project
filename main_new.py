@@ -38,7 +38,10 @@ from main_system.reporting.comprehensive_reporter import ComprehensiveReporter
 
 # データ取得用（簡易版）
 import pandas as pd
-import numpy as np
+# numpy削除: _get_sample_data()削除によりnp.random.randn()が不要
+
+# Excel設定読み込み（既存モジュール活用）
+from data_fetcher import get_parameters_and_data
 
 
 class MainSystemController:
@@ -212,12 +215,19 @@ class MainSystemController:
         """
         実データ取得（Phase 4.2: yfinance統合版）
         
+        ⚠️ copilot-instructions.md準拠:
+        - モック/ダミーデータのフォールバック禁止
+        - 実データ取得失敗時はエラーとして処理
+        
         Args:
             ticker: ティッカーシンボル
             days_back: 取得日数
         
         Returns:
             (株価データ, インデックスデータ)
+            
+        Raises:
+            RuntimeError: データ取得失敗時
         """
         self.logger.info(f"Getting real data for {ticker} ({days_back} days)")
         
@@ -237,72 +247,25 @@ class MainSystemController:
             return stock_data, index_data
             
         except Exception as e:
-            self.logger.error(f"Real data retrieval error: {e}", exc_info=True)
-            self.logger.warning("Falling back to sample data generation")
-            return self._get_sample_data(ticker, days_back)
+            self.logger.error(f"Real data retrieval failed: {e}", exc_info=True)
+            # copilot-instructions.md準拠: モックデータフォールバック禁止
+            raise RuntimeError(
+                f"Failed to retrieve real market data for {ticker}. "
+                f"Mock/dummy data fallback is prohibited by copilot-instructions.md. "
+                f"Cannot proceed with backtest. Original error: {e}"
+            )
     
-    def _get_sample_data(
-        self,
-        ticker: str,
-        days_back: int
-    ) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """
-        サンプルデータ生成（フォールバック）
-        
-        Args:
-            ticker: ティッカーシンボル
-            days_back: 取得日数
-        
-        Returns:
-            (株価データ, インデックスデータ)
-        """
-        self.logger.info(f"Generating sample data for {ticker} ({days_back} days)")
-        
-        # 日付範囲生成
-        end_date = datetime.now()
-        dates = pd.date_range(
-            end=end_date,
-            periods=days_back,
-            freq='D'
-        )
-        
-        # サンプル株価データ生成
-        base_price = 100
-        returns = np.random.randn(days_back) * 0.02  # 2% 日次ボラティリティ
-        prices = base_price * (1 + returns).cumprod()
-        
-        stock_data = pd.DataFrame({
-            'Open': prices * (1 + np.random.randn(days_back) * 0.01),
-            'High': prices * (1 + abs(np.random.randn(days_back)) * 0.015),
-            'Low': prices * (1 - abs(np.random.randn(days_back)) * 0.015),
-            'Close': prices,
-            'Adj Close': prices,  # 'Adj Close'カラム追加
-            'Volume': np.random.randint(1000000, 10000000, days_back)
-        }, index=dates)
-        
-        # サンプルインデックスデータ生成
-        index_returns = np.random.randn(days_back) * 0.015
-        index_prices = base_price * (1 + index_returns).cumprod()
-        
-        index_data = pd.DataFrame({
-            'Open': index_prices * (1 + np.random.randn(days_back) * 0.005),
-            'High': index_prices * (1 + abs(np.random.randn(days_back)) * 0.01),
-            'Low': index_prices * (1 - abs(np.random.randn(days_back)) * 0.01),
-            'Close': index_prices,
-            'Adj Close': index_prices,  # 'Adj Close'カラム追加
-            'Volume': np.random.randint(5000000, 50000000, days_back)
-        }, index=dates)
-        
-        self.logger.info(f"Sample data generated: {len(stock_data)} rows")
-        
-        return stock_data, index_data
+    # _get_sample_data() メソッドを削除
+    # 理由: copilot-instructions.md違反
+    # 「モック/ダミー/テストデータを使用するフォールバック禁止」
+    # 実データ取得失敗時は_get_real_data()でRuntimeErrorを発生させる
 
 
 def main():
-    """メインエントリーポイント - シンプル化完了"""
+    """メインエントリーポイント - Excel設定対応版"""
     
     print("\n" + "=" * 80)
-    print("次世代マルチ戦略バックテストシステム - Phase 1 簡易版")
+    print("次世代マルチ戦略バックテストシステム - Excel設定対応版")
     print("=" * 80 + "\n")
     
     # システム設定
@@ -326,12 +289,52 @@ def main():
     print("[INFO] システム初期化中...")
     system = MainSystemController(config)
     
+    # Excel設定ファイルからパラメータ取得
+    print("[INFO] Excel設定ファイル読み込み中...")
+    print("        優先順位: backtest_config.xlsm > backtest_config.xlsx > config.csv")
+    
+    try:
+        # get_parameters_and_data()で銘柄・期間・データを取得
+        # 引数なしで呼び出すと、Excelから自動取得
+        ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data()
+        
+        print(f"[SUCCESS] Excel設定読み込み完了")
+        print(f"        銘柄: {ticker}")
+        print(f"        期間: {start_date} ~ {end_date}")
+        print(f"        株価データ: {len(stock_data)} rows")
+        print(f"        インデックスデータ: {len(index_data) if index_data is not None else 'N/A'} rows")
+        
+    except FileNotFoundError as e:
+        print(f"[WARNING] Excel設定ファイルが見つかりません: {e}")
+        print("[INFO] デフォルト設定を使用します: AAPL, 90 days")
+        ticker = "AAPL"
+        stock_data = None
+        index_data = None
+        start_date = None
+        end_date = None
+        
+    except Exception as e:
+        print(f"[ERROR] Excel設定読み込みエラー: {e}")
+        print("[INFO] デフォルト設定を使用します: AAPL, 90 days")
+        ticker = "AAPL"
+        stock_data = None
+        index_data = None
+        start_date = None
+        end_date = None
+    
     # バックテスト実行
-    ticker = "AAPL"  # Phase 4.2: リアル銘柄でテスト
     print(f"\n[INFO] バックテスト実行: {ticker}")
     print("-" * 80 + "\n")
     
-    results = system.execute_comprehensive_backtest(ticker, days_back=90)  # 90日間のデータで高速テスト
+    # stock_dataが取得済みの場合はそれを使用、なければyfinanceから取得
+    if stock_data is not None:
+        results = system.execute_comprehensive_backtest(
+            ticker,
+            stock_data=stock_data,
+            index_data=index_data
+        )
+    else:
+        results = system.execute_comprehensive_backtest(ticker, days_back=90)
     
     # 基本結果出力
     print("\n" + "=" * 80)

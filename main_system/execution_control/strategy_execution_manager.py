@@ -450,41 +450,107 @@ class StrategyExecutionManager:
             return []
     
     def _generate_trade_orders(self, signals: pd.DataFrame, symbols: List[str]) -> List[Dict[str, Any]]:
-        """シグナルから取引注文生成"""
+        """
+        シグナルから取引注文生成（Phase 4.2-9: 全シグナル履歴対応版）
+        
+        Args:
+            signals: バックテスト結果DataFrame (Entry_Signal, Exit_Signal, Position含む)
+            symbols: ティッカーシンボルリスト
+        
+        Returns:
+            取引オーダーリスト
+        
+        copilot-instructions.md準拠:
+        - 実際のシグナルデータのみ使用（モック禁止）
+        - 全シグナル履歴を確認（最新だけでなく）
+        - 詳細ログ出力（デバッグ用）
+        """
         try:
             orders = []
             
-            # 最新のシグナルを確認
+            # DataFrame検証
             if signals.empty:
+                self.logger.warning("_generate_trade_orders: signals DataFrame is empty")
                 return orders
             
-            latest_signals = signals.tail(1).iloc[0]
+            # デバッグログ: signals DataFrame の構造確認
+            self.logger.info(f"_generate_trade_orders: signals shape={signals.shape}, columns={list(signals.columns)}")
             
-            for symbol in symbols:
-                # エントリーシグナルチェック
-                if hasattr(latest_signals, 'Entry_Signal') and latest_signals.Entry_Signal == 1:
-                    orders.append({
-                        "symbol": symbol,
-                        "action": "BUY",
-                        "quantity": self._calculate_position_size(symbol),
-                        "order_type": "MARKET",
-                        "timestamp": datetime.now().isoformat()
-                    })
-                
-                # エグジットシグナルチェック
-                elif hasattr(latest_signals, 'Exit_Signal') and latest_signals.Exit_Signal == 1:
-                    orders.append({
-                        "symbol": symbol,
-                        "action": "SELL",
-                        "quantity": self._get_current_position(symbol),
-                        "order_type": "MARKET",
-                        "timestamp": datetime.now().isoformat()
-                    })
+            # 必須カラムの存在確認
+            if 'Entry_Signal' not in signals.columns or 'Exit_Signal' not in signals.columns:
+                self.logger.error(f"_generate_trade_orders: Required columns missing. Available: {list(signals.columns)}")
+                return orders
+            
+            # シグナル件数カウント
+            entry_count = (signals['Entry_Signal'] == 1).sum()
+            exit_count = (signals['Exit_Signal'] == -1).sum()  # Exit_Signal は -1 が正しい
+            self.logger.info(f"_generate_trade_orders: Entry_Signal==1: {entry_count} 件, Exit_Signal==-1: {exit_count} 件")
+            
+            # Phase 4.2-9-2: ポジション追跡用辞書（銘柄ごとに最新のBUY数量を記録）
+            # 理由: _get_current_position() はオーダー生成時点ではまだ0を返すため
+            # SELLオーダーは直前のBUYオーダーと同じ数量を使用する必要がある
+            position_tracker: dict[str, int] = {}
+            
+            # 全シグナル履歴をスキャン（最新だけでなく全期間）
+            for idx, row in signals.iterrows():
+                for symbol in symbols:
+                    # エントリーシグナル検出
+                    if row.get('Entry_Signal', 0) == 1:
+                        entry_price = row.get('Entry_Price', row.get('Close', 0))
+                        buy_quantity = self._calculate_position_size(symbol)
+                        
+                        # ポジション追跡: BUY実行時に数量を記録
+                        position_tracker[symbol] = buy_quantity
+                        
+                        orders.append({
+                            "symbol": symbol,
+                            "action": "BUY",
+                            "quantity": buy_quantity,
+                            "order_type": "MARKET",
+                            "timestamp": idx.isoformat() if hasattr(idx, 'isoformat') else str(idx),
+                            "entry_price": entry_price,
+                            "signal_date": idx
+                        })
+                        self.logger.debug(f"BUY order generated: {symbol} @ {idx}, quantity={buy_quantity}, price={entry_price}")
+                    
+                    # イグジットシグナル検出（Exit_Signal == -1 が正しい）
+                    if row.get('Exit_Signal', 0) == -1:
+                        exit_price = row.get('Close', 0)
+                        
+                        # Phase 4.2-9-2: SELLオーダー数量修正
+                        # 直前のBUYオーダーの数量を使用（ポジション追跡から取得）
+                        sell_quantity = position_tracker.get(symbol, 0)
+                        
+                        if sell_quantity == 0:
+                            # フォールバック: paper_brokerから現在のポジションを取得
+                            sell_quantity = self._get_current_position(symbol)
+                            self.logger.warning(f"SELL quantity fallback for {symbol}: using position={sell_quantity}")
+                        
+                        orders.append({
+                            "symbol": symbol,
+                            "action": "SELL",
+                            "quantity": sell_quantity,
+                            "order_type": "MARKET",
+                            "timestamp": idx.isoformat() if hasattr(idx, 'isoformat') else str(idx),
+                            "exit_price": exit_price,
+                            "signal_date": idx
+                        })
+                        self.logger.debug(f"SELL order generated: {symbol} @ {idx}, quantity={sell_quantity}, price={exit_price}")
+                        
+                        # ポジションクリア（SELL後はポジション0）
+                        position_tracker[symbol] = 0
+            
+            # 最終ログ: 生成された取引オーダー数
+            self.logger.info(f"_generate_trade_orders: Generated {len(orders)} trade orders from {len(signals)} signals")
+            
+            # copilot-instructions.md: 実際の取引件数 > 0 を検証
+            if len(orders) == 0 and (entry_count > 0 or exit_count > 0):
+                self.logger.warning(f"⚠️  Signal detected but no orders generated! Entry={entry_count}, Exit={exit_count}")
             
             return orders
             
         except Exception as e:
-            self.logger.error(f"取引注文生成エラー: {e}")
+            self.logger.error(f"取引注文生成エラー: {e}", exc_info=True)
             return []
     
     def _calculate_position_size(self, symbol: str) -> int:

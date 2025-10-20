@@ -224,18 +224,18 @@ class PairsTradingStrategy(BaseStrategy):
         # 保有日数チェック
         hold_days = idx - entry_idx
         if hold_days >= self.params["max_hold_days"]:
-            return 1  # 最大保有日数到達
+            return -1  # 最大保有日数到達
             
         # 損益計算
         pnl_pct = (current_price - entry_price) / entry_price
         
         # ストップロス
         if pnl_pct <= -self.params["stop_loss_pct"]:
-            return 1
+            return -1
             
         # 利益確定
         if pnl_pct >= self.params["take_profit_pct"]:
-            return 1
+            return -1
             
         # スプレッド回帰チェック（メイン エグジット条件）
         if not pd.isna(spread_zscore):
@@ -243,7 +243,7 @@ class PairsTradingStrategy(BaseStrategy):
             
             # スプレッドが正常範囲に戻った場合
             if abs(spread_zscore) <= exit_threshold:
-                return 1  # 回帰完了でエグジット
+                return -1  # 回帰完了でエグジット
                 
         return 0
         
@@ -274,8 +274,8 @@ class PairsTradingStrategy(BaseStrategy):
                         
                 # エグジットチェック
                 exit_signal = self.generate_exit_signal(i, position_size)
-                if exit_signal == 1:
-                    result_data['Exit_Signal'].iloc[i] = 1
+                if exit_signal == -1:
+                    result_data['Exit_Signal'].iloc[i] = -1
                     position_size = 0
                     
             result_data['Position'].iloc[i] = position_size
