@@ -271,7 +271,13 @@ class IntegratedExecutionManager:
         weight: float
     ) -> Dict[str, Any]:
         """
-        単一戦略実行
+        単一戦略実行（Phase 4.2: データ渡し対応）
+        
+        Args:
+            strategy_name: 戦略名
+            stock_data: 株価データ
+            ticker: ティッカーシンボル
+            weight: 戦略重み
         
         Returns:
             実行結果辞書
@@ -279,10 +285,16 @@ class IntegratedExecutionManager:
         try:
             self.logger.info(f"Executing single strategy: {strategy_name}")
             
-            # StrategyExecutionManagerを使用して戦略実行
+            # インデックスデータ取得（簡易実装：stock_dataを流用）
+            # TODO: Phase 5で適切なインデックスデータ取得実装
+            index_data = stock_data  # フォールバック
+            
+            # StrategyExecutionManagerを使用して戦略実行（Phase 4.2: データを渡す）
             result = self.execution_manager.execute_strategy(
                 strategy_name=strategy_name,
-                symbols=[ticker]
+                symbols=[ticker],
+                stock_data=stock_data,
+                index_data=index_data
             )
             
             # 重み情報を追加

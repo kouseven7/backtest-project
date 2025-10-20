@@ -1,10 +1,63 @@
+"""
+Trade Executor Module - 取引実行エンジン
+
+このモジュールは、バックテスト、ペーパートレーディング、ライブトレーディングにおける
+取引実行を管理する中核的なコンポーネントです。
+
+主な機能:
+- 成行注文、指値注文、逆指値注文の作成と実行
+- リスク管理チェック(資金残高、ポジションサイズ制限など)
+- ポジションサイジング調整
+- 注文管理と約定処理
+- ポートフォリオトラッキングとの統合
+- 緊急停止とポジション一括決済
+
+統合コンポーネント:
+- OrderManager: 注文の管理と実行
+- PortfolioTracker: ポートフォリオの追跡と記録
+- BrokerInterface: ブローカーとの通信
+- リスク管理システム(portfolio_risk_manager.py)との連携
+- ポジションサイジングシステム(position_size_adjuster.py)との連携
+
+使用例:
+    executor = TradeExecutor(
+        portfolio_tracker=portfolio_tracker,
+        broker=broker,
+        mode=ExecutionMode.BACKTEST
+    )
+    
+    # 成行注文の作成と実行
+    order = executor.create_market_order(
+        symbol="AAPL",
+        side=OrderSide.BUY,
+        quantity=100,
+        strategy_name="MyStrategy"
+    )
+    order_id = executor.submit_order(order)
+    
+    # 緊急停止
+    executor.emergency_stop()
+
+セーフティ機能:
+- 実行モード切り替え(バックテスト/ペーパー/ライブ)
+- 取引実行の有効/無効切り替え
+- リスクチェックの有効/無効切り替え
+- 最大ポジションサイズ制限
+- 銘柄別ポジション制限
+- 緊急停止機能
+
+Author: Backtest Project Team
+Created: 2025-10-20
+Last Modified: 2025-10-20
+"""
+
 from typing import Dict, List, Optional, Callable, Any
 from datetime import datetime
 import logging
 import threading
 from enum import Enum
 
-# 他のモジュールからインポート（実際の実装で調整）
+# 他のモジュールからインポート(実際の実装で調整)
 from .order_manager import Order, OrderType, OrderSide, OrderStatus, OrderManager, BrokerInterface
 from .portfolio_tracker import PortfolioTracker
 

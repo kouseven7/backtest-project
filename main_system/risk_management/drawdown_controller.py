@@ -199,6 +199,17 @@ class DrawdownController:
         
         logger.info("DrawdownController initialized successfully")
     
+    # Phase 4.2-5-4: UnifiedRiskManager連携用プロパティ追加
+    @property
+    def max_drawdown_threshold(self) -> float:
+        """
+        最大ドローダウン閾値を取得（UnifiedRiskManager連携用）
+        
+        Returns:
+            緊急閾値（emergency_threshold）
+        """
+        return self.thresholds.emergency_threshold
+    
     def _load_config(self) -> Dict[str, Any]:
         """設定ファイルの読み込み"""
         default_config = {
@@ -773,6 +784,115 @@ class DrawdownController:
         except Exception as e:
             logger.error(f"Error getting performance summary: {e}")
             return {'status': 'error', 'message': str(e)}
+    
+    # Phase 4.2-5-4: UnifiedRiskManager連携用メソッド追加
+    def calculate_current_drawdown(self, portfolio_value: float) -> float:
+        """
+        現在のドローダウンを計算（UnifiedRiskManager連携用）
+        
+        Args:
+            portfolio_value: 現在のポートフォリオ価値
+        
+        Returns:
+            ドローダウン率（0.0-1.0）
+        """
+        try:
+            # ポートフォリオ価値を更新
+            self.update_portfolio_value(portfolio_value)
+            
+            # 現在のピーク値を取得
+            peak_value = self.performance_tracker.get('portfolio_peak', portfolio_value)
+            
+            if peak_value <= 0:
+                logger.warning("Peak value is zero or negative, returning 0.0 drawdown")
+                return 0.0
+            
+            # ドローダウン計算
+            current_drawdown = peak_value - portfolio_value
+            drawdown_percentage = max(0.0, current_drawdown / peak_value)
+            
+            logger.debug(f"Calculated drawdown: {drawdown_percentage:.2%} (peak: {peak_value:.2f}, current: {portfolio_value:.2f})")
+            return drawdown_percentage
+            
+        except Exception as e:
+            logger.error(f"Error calculating current drawdown: {e}")
+            return 0.0
+    
+    def assess_drawdown_severity(self, current_drawdown: float) -> str:
+        """
+        ドローダウンの深刻度を評価（UnifiedRiskManager連携用）
+        
+        Args:
+            current_drawdown: 現在のドローダウン率（0.0-1.0）
+        
+        Returns:
+            深刻度レベル（"normal", "warning", "critical", "emergency"）
+        """
+        try:
+            severity = self._determine_severity(current_drawdown)
+            severity_str = severity.value
+            
+            logger.debug(f"Assessed drawdown severity: {severity_str} for drawdown {current_drawdown:.2%}")
+            return severity_str
+            
+        except Exception as e:
+            logger.error(f"Error assessing drawdown severity: {e}")
+            return "normal"
+    
+    def determine_control_action(self, severity: str) -> str:
+        """
+        制御アクションを決定（UnifiedRiskManager連携用）
+        
+        Args:
+            severity: 深刻度レベル（"normal", "warning", "critical", "emergency"）
+        
+        Returns:
+            推奨アクション名
+        """
+        try:
+            # 深刻度からDrawdownSeverityに変換
+            severity_enum = DrawdownSeverity(severity)
+            
+            # アクションを決定
+            action = self._determine_control_action_from_severity(severity_enum)
+            action_str = action.value
+            
+            logger.debug(f"Determined control action: {action_str} for severity {severity}")
+            return action_str
+            
+        except Exception as e:
+            logger.error(f"Error determining control action: {e}")
+            return "no_action"
+    
+    def _determine_control_action_from_severity(self, severity: DrawdownSeverity) -> DrawdownControlAction:
+        """深刻度レベルから制御アクションを決定（内部メソッド）"""
+        action_map = {
+            DrawdownSeverity.NORMAL: DrawdownControlAction.NO_ACTION,
+            DrawdownSeverity.WARNING: {
+                DrawdownControlMode.CONSERVATIVE: DrawdownControlAction.POSITION_REDUCTION_LIGHT,
+                DrawdownControlMode.MODERATE: DrawdownControlAction.POSITION_REDUCTION_LIGHT,
+                DrawdownControlMode.AGGRESSIVE: DrawdownControlAction.NO_ACTION
+            },
+            DrawdownSeverity.CRITICAL: {
+                DrawdownControlMode.CONSERVATIVE: DrawdownControlAction.POSITION_REDUCTION_HEAVY,
+                DrawdownControlMode.MODERATE: DrawdownControlAction.POSITION_REDUCTION_MODERATE,
+                DrawdownControlMode.AGGRESSIVE: DrawdownControlAction.POSITION_REDUCTION_LIGHT
+            },
+            DrawdownSeverity.EMERGENCY: {
+                DrawdownControlMode.CONSERVATIVE: DrawdownControlAction.EMERGENCY_STOP,
+                DrawdownControlMode.MODERATE: DrawdownControlAction.EMERGENCY_STOP,
+                DrawdownControlMode.AGGRESSIVE: DrawdownControlAction.POSITION_REDUCTION_HEAVY
+            }
+        }
+        
+        action_or_map = action_map.get(severity, DrawdownControlAction.NO_ACTION)
+        
+        # NORMALの場合は直接アクションを返す
+        if isinstance(action_or_map, DrawdownControlAction):
+            return action_or_map
+        
+        # それ以外は制御モードに応じて選択
+        return action_or_map.get(self.control_mode, DrawdownControlAction.NO_ACTION)
 
 # ユーティリティ関数
 def create_default_drawdown_config() -> Dict[str, Any]:

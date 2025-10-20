@@ -581,8 +581,9 @@ class TrendStrategyIntegrationInterface:
     def _generate_result_cache_key(self, ticker: str, market_data: Optional[pd.DataFrame]) -> str:
         """結果キャッシュキーの生成"""
         if market_data is not None:
-            # データのハッシュを含める
-            data_hash = hashlib.md5(str(market_data.tail(20).values.tobytes())).hexdigest()[:8]
+            # データのハッシュを含める（bytes.tobytes()は既にbytes型なので直接使用）
+            data_bytes = market_data.tail(20).values.tobytes()
+            data_hash = hashlib.md5(data_bytes).hexdigest()[:8]
             return f"result_{ticker}_{data_hash}"
         return f"result_{ticker}"
 

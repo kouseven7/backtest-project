@@ -227,6 +227,106 @@ class FixedPerfectOrderDetector:
             data_norm['Entry_Signal'] = 0
             data_norm['Exit_Signal'] = 0
             return data_norm
+    
+    def detect_perfect_order(self, data: pd.DataFrame) -> Dict[str, Any]:
+        """
+        現在のPerfect Order状態を判定する（MarketAnalyzer用）
+        
+        Args:
+            data: OHLCV価格データ
+            
+        Returns:
+            Dict[str, Any]: Perfect Order状態
+                - is_perfect_order: 完全なPerfect Order状態か
+                - is_quasi_perfect_order: 準Perfect Order状態か（価格 > SMA5 > SMA25）
+                - is_uptrend: 上昇トレンドか（価格 > SMA5）
+                - current_price: 現在価格
+                - sma5: 5日移動平均
+                - sma25: 25日移動平均
+                - sma75: 75日移動平均
+                - strength: シグナル強度 (0.0-1.0)
+        """
+        try:
+            # データ正規化
+            data_norm = self.normalize_data_columns(data)
+            
+            if 'Close' not in data_norm.columns:
+                self.logger.error(f"Close column not found. Available: {list(data_norm.columns)}")
+                return self._empty_perfect_order_result()
+            
+            close_prices = data_norm['Close'].dropna()
+            if len(close_prices) < 75:
+                self.logger.warning(f"Insufficient data: {len(close_prices)} days")
+                return self._empty_perfect_order_result()
+            
+            # SMA計算
+            periods = self.timeframes["daily"]
+            sma5 = close_prices.rolling(window=periods['short']).mean()
+            sma25 = close_prices.rolling(window=periods['medium']).mean()
+            sma75 = close_prices.rolling(window=periods['long']).mean()
+            
+            # 最新の値を取得
+            current_price = float(close_prices.iloc[-1])
+            sma5_val = float(sma5.iloc[-1])
+            sma25_val = float(sma25.iloc[-1])
+            sma75_val = float(sma75.iloc[-1])
+            
+            # Perfect Order判定
+            is_perfect = current_price > sma5_val > sma25_val > sma75_val
+            is_quasi = current_price > sma5_val > sma25_val
+            is_uptrend = current_price > sma5_val
+            
+            # シグナル強度計算
+            if is_perfect:
+                strength = 1.0
+            elif is_quasi:
+                strength = 0.8
+            elif is_uptrend:
+                strength = 0.6
+            else:
+                strength = 0.0
+            
+            result = {
+                'is_perfect_order': is_perfect,
+                'is_quasi_perfect_order': is_quasi,
+                'is_uptrend': is_uptrend,
+                'current_price': current_price,
+                'sma5': sma5_val,
+                'sma25': sma25_val,
+                'sma75': sma75_val,
+                'strength': strength,
+                'timestamp': data_norm.index[-1]
+            }
+            
+            self.logger.debug(f"Perfect Order state: perfect={is_perfect}, quasi={is_quasi}, strength={strength:.2f}")
+            
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"Error detecting perfect order state: {e}")
+            import traceback
+            self.logger.error(traceback.format_exc())
+            return self._empty_perfect_order_result()
+    
+    def _empty_perfect_order_result(self) -> Dict[str, Any]:
+        """
+        エラー時の空のPerfect Order結果を返す
+        
+        Returns:
+            Dict[str, Any]: デフォルト値の結果
+        """
+        return {
+            'is_perfect_order': False,
+            'is_quasi_perfect_order': False,
+            'is_uptrend': False,
+            'current_price': 0.0,
+            'sma5': 0.0,
+            'sma25': 0.0,
+            'sma75': 0.0,
+            'strength': 0.0,
+            'timestamp': None,
+            'error': True
+        }
 
 # テスト実行
 def test_fixed_detector():

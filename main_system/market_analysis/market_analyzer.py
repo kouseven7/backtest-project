@@ -151,7 +151,9 @@ class MarketAnalyzer:
                     )
                     results['trend_analysis'] = trend_result
                     results['components_status']['trend_interface'] = 'success'
-                    self.logger.info(f"Trend analysis completed: {trend_result.get('final_decision', 'N/A')}")
+                    # IntegratedDecisionResultはdataclass - 属性アクセスを使用
+                    trend_type = getattr(trend_result.trend_analysis, 'trend_type', 'N/A') if hasattr(trend_result, 'trend_analysis') else 'N/A'
+                    self.logger.info(f"Trend analysis completed: {trend_type}")
                 except Exception as e:
                     self.logger.warning(f"Trend interface analysis failed: {e}")
                     results['components_status']['trend_interface'] = f'failed: {str(e)}'
@@ -233,10 +235,19 @@ class MarketAnalyzer:
             
             # 1. TrendAnalysisからのスコア
             if trend_analysis:
-                decision = trend_analysis.get('final_decision', '').lower()
-                if 'uptrend' in decision or 'bullish' in decision:
+                # IntegratedDecisionResultの場合はtrend_analysis.trend_typeを参照
+                if hasattr(trend_analysis, 'trend_analysis'):
+                    # IntegratedDecisionResult型
+                    trend_type = getattr(trend_analysis.trend_analysis, 'trend_type', '').lower()
+                elif isinstance(trend_analysis, dict):
+                    # 辞書型（フォールバック用）
+                    trend_type = trend_analysis.get('final_decision', '').lower()
+                else:
+                    trend_type = ''
+                
+                if 'uptrend' in trend_type or 'bullish' in trend_type or 'up' in trend_type:
                     uptrend_score += 2
-                elif 'downtrend' in decision or 'bearish' in decision:
+                elif 'downtrend' in trend_type or 'bearish' in trend_type or 'down' in trend_type:
                     downtrend_score += 2
                 else:
                     sideways_score += 2

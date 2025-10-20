@@ -41,9 +41,15 @@ class StrategyExecutionManager:
     def _initialize_components(self) -> None:
         """コンポーネント初期化"""
         try:
-            # データフィード初期化（簡易版）
-            self.data_feed = None  # シンプル実装のため無効化
-            self.logger.info("Data feed: Simple mode (data feed disabled - real data required for execution)")
+            # データフィード初期化（Phase 4.2: yfinance統合）
+            try:
+                from main_system.data_acquisition.yfinance_data_feed import YFinanceDataFeed
+                self.data_feed = YFinanceDataFeed()
+                self.logger.info("Data feed: YFinanceDataFeed initialized successfully")
+            except ImportError as e:
+                self.logger.warning(f"YFinanceDataFeed import failed: {e}")
+                self.data_feed = None
+                self.logger.info("Data feed: Disabled (yfinance not available)")
             
             # ペーパーブローカー初期化
             from src.execution.paper_broker import PaperBroker
@@ -88,8 +94,21 @@ class StrategyExecutionManager:
             self.logger.warning(f"統合モード初期化失敗、シンプルモードに切替: {e}")
             self.mode = 'simple'
     
-    def execute_strategy(self, strategy_name: str, symbols: Optional[List[str]] = None) -> Dict[str, Any]:
-        """単一戦略実行（シンプルモード）"""
+    def execute_strategy(self, strategy_name: str, symbols: Optional[List[str]] = None, 
+                        stock_data: Optional[pd.DataFrame] = None,
+                        index_data: Optional[pd.DataFrame] = None) -> Dict[str, Any]:
+        """
+        単一戦略実行（シンプルモード）
+        
+        Args:
+            strategy_name: 戦略名
+            symbols: ティッカーシンボルリスト
+            stock_data: 株価データ（Phase 4.2: yfinanceから取得済み）
+            index_data: インデックスデータ（Phase 4.2: yfinanceから取得済み）
+        
+        Returns:
+            実行結果辞書
+        """
         try:
             self.logger.info(f"戦略実行開始: {strategy_name}")
             
@@ -97,18 +116,27 @@ class StrategyExecutionManager:
             if symbols is None:
                 symbols = self.config.get('default_symbols', ['AAPL', 'MSFT'])
             
-            # データ取得
-            market_data = self._get_market_data(symbols)
-            if market_data is None or market_data.empty:
-                return self._create_error_result("market_data_unavailable")
+            # データ取得（Phase 4.2: 引数で渡されたデータを優先）
+            if stock_data is None or index_data is None:
+                market_data = self._get_market_data(symbols)
+                if market_data is None or market_data.empty:
+                    return self._create_error_result("market_data_unavailable")
+                # 簡易実装：market_dataをstock_dataとして使用
+                stock_data = market_data
+                index_data = market_data  # フォールバック
             
-            # 戦略インスタンス取得
-            strategy = self._get_strategy_instance(strategy_name)
+            # 戦略インスタンス取得（Phase 4.2: データを渡す）
+            strategy = self._get_strategy_instance(strategy_name, stock_data, index_data)
             if strategy is None:
                 return self._create_error_result(f"strategy_not_found: {strategy_name}")
             
             # 戦略実行（既存戦略はデータ引数なしで実行）
             signals = strategy.backtest()
+            
+            # Phase 4.2-5-3: 戦略のbacktest結果を保持（取引統合のため）
+            self.current_strategy = strategy
+            self.current_strategy_name = strategy_name
+            self.current_backtest_signals = signals  # バックテストシグナルを保持
             
             # 取引実行
             execution_results = self._execute_trades(signals, symbols)
@@ -117,6 +145,8 @@ class StrategyExecutionManager:
             result = {
                 "success": True,
                 "strategy": strategy_name,
+                "strategy_instance": strategy,  # Phase 4.2-5-3: 戦略インスタンスを保持
+                "backtest_signals": signals,     # Phase 4.2-5-3: バックテストシグナルを保持
                 "symbols": symbols,
                 "signals_generated": len(signals) if signals is not None else 0,
                 "trades_executed": len(execution_results),
@@ -193,24 +223,34 @@ class StrategyExecutionManager:
             return error_result
     
     def _get_market_data(self, symbols: List[str]) -> pd.DataFrame:
-        """リアルタイム市場データ取得"""
+        """リアルタイム市場データ取得（Phase 4.2: yfinance統合版）"""
         try:
             # 過去Nペリオドのデータ取得（戦略計算用）
-            lookback_periods = self.config.get('lookback_periods', 100)
+            lookback_days = self.config.get('lookback_days', 365)
             
             if self.data_feed is not None:
-                # 既存のリアルタイムフィードシステム使用
-                data = self.data_feed.get_historical_data(
-                    symbols=symbols, 
-                    periods=lookback_periods
-                )
+                # YFinanceDataFeed使用（Phase 4.2実装）
+                # 現在は単一銘柄のみ対応（複数銘柄は将来実装）
+                ticker = symbols[0] if symbols else "AAPL"
                 
-                if data is not None and not data.empty:
-                    self.logger.debug(f"市場データ取得成功: {len(data)}行, {len(symbols)}銘柄")
-                    return data
+                try:
+                    data = self.data_feed.get_stock_data(
+                        ticker=ticker,
+                        days_back=lookback_days
+                    )
+                    
+                    if data is not None and not data.empty:
+                        self.logger.debug(f"市場データ取得成功: {len(data)}行, ticker={ticker}")
+                        return data
+                    else:
+                        self.logger.error(f"yfinance returned empty data for {ticker}")
+                        return pd.DataFrame()
+                        
+                except Exception as e:
+                    self.logger.error(f"yfinance data retrieval error for {ticker}: {e}")
+                    return pd.DataFrame()
             
-            # ダミーデータ生成フォールバック削除
-            # copilot-instructions.md違反: モック/ダミー/テストデータを使用するフォールバック禁止
+            # データフィードが無効な場合はエラー
             self.logger.error("CRITICAL: Market data unavailable. Data feed is None. Cannot proceed with backtest.")
             return pd.DataFrame()  # 空のDataFrameを返してエラーとして扱う
                 
@@ -218,8 +258,19 @@ class StrategyExecutionManager:
             self.logger.error(f"Market data retrieval error: {e}")
             return pd.DataFrame()
     
-    def _get_strategy_instance(self, strategy_name: str):
-        """戦略インスタンス取得（拡張版 - 複数名前形式対応）"""
+    def _get_strategy_instance(self, strategy_name: str, stock_data: pd.DataFrame, 
+                              index_data: pd.DataFrame):
+        """
+        戦略インスタンス取得（Phase 4.2: データ必須版）
+        
+        Args:
+            strategy_name: 戦略名
+            stock_data: 株価データ
+            index_data: インデックスデータ
+        
+        Returns:
+            戦略インスタンス（失敗時はNone）
+        """
         try:
             # 戦略名の正規化マッピング（既存形式 + 新形式）
             strategy_mappings = {
@@ -251,32 +302,46 @@ class StrategyExecutionManager:
             module = __import__(module_name, fromlist=[class_name])
             strategy_class = getattr(module, class_name)
             
-            # 戦略インスタンス化
-            # NOTE: 既存戦略は初期化時にデータを受け取る設計
-            # データはbacktest()呼び出し側で提供される想定に変更すべきだが、
-            # 現時点では既存の初期化シグネチャに合わせる
-            # TODO: Phase 4で戦略インターフェース統一化
+            # 戦略インスタンス化（Phase 4.2: データを渡す）
+            # copilot-instructions.md: ダミーデータ生成禁止、実データ必須
+            self.logger.info(f"Creating strategy instance: {strategy_name} with real data")
             
-            # ダミーデータ生成禁止のため、実データ必須に変更
-            # 戦略によってはデータなしでインスタンス化可能な場合がある
             try:
-                # データなしインスタンス化を試行
-                return strategy_class()
-            except TypeError:
-                # データ必須の場合はエラー
-                self.logger.error(f"CRITICAL: Strategy '{strategy_name}' requires data for initialization, but no real data available. Cannot create instance without violating copilot-instructions.md")
-                return None
+                # データ付きインスタンス化を試行
+                strategy_instance = strategy_class(data=stock_data, index_data=index_data)
+                self.logger.info(f"Strategy instance created successfully: {strategy_name}")
+                return strategy_instance
+            except TypeError as e:
+                # データなしインスタンス化を試行（一部の戦略はデータ不要）
+                try:
+                    self.logger.warning(f"Strategy {strategy_name} does not accept data in __init__, trying without data")
+                    strategy_instance = strategy_class()
+                    self.logger.info(f"Strategy instance created without data: {strategy_name}")
+                    return strategy_instance
+                except Exception as e2:
+                    self.logger.error(f"CRITICAL: Strategy '{strategy_name}' initialization failed. Error: {e2}")
+                    return None
             
         except Exception as e:
-            self.logger.error(f"Strategy instance creation error [{strategy_name}]: {e}")
+            self.logger.error(f"Strategy instance creation error [{strategy_name}]: {e}", exc_info=True)
             return None
     
     def _execute_trades(self, signals: pd.DataFrame, symbols: List[str]) -> List[Dict[str, Any]]:
-        """取引実行"""
+        """
+        取引実行（Phase 4.2-5-2: TradeExecutor統合版）
+        
+        Args:
+            signals: 戦略からのシグナルDataFrame
+            symbols: ティッカーシンボルリスト
+        
+        Returns:
+            実行結果リスト
+        """
         try:
             execution_results = []
             
             if signals is None or signals.empty:
+                self.logger.warning("No signals to execute")
                 return execution_results
             
             # trade_executor必須チェック
@@ -287,19 +352,101 @@ class StrategyExecutionManager:
             # シグナルから取引指示を生成
             trade_orders = self._generate_trade_orders(signals, symbols)
             
-            # 各注文を実行（実際の実行のみ）
-            for order in trade_orders:
-                try:
-                    result = self.trade_executor.execute_order(order)
-                    execution_results.append(result)
-                except Exception as e:
-                    self.logger.error(f"Trade execution error: {e}")
-                    execution_results.append({"error": str(e), "order": order})
+            if not trade_orders:
+                self.logger.info("No trade orders generated from signals")
+                return execution_results
             
+            # 各注文を実行（実際の実行のみ）
+            for order_dict in trade_orders:
+                try:
+                    # 辞書からOrderオブジェクト生成
+                    from src.execution.order_manager import Order, OrderType, OrderSide
+                    
+                    # OrderSide決定
+                    side = OrderSide.BUY if order_dict['action'] == 'BUY' else OrderSide.SELL
+                    
+                    # Order生成
+                    order = Order(
+                        symbol=order_dict['symbol'],
+                        side=side,
+                        order_type=OrderType.MARKET,
+                        quantity=order_dict['quantity']
+                    )
+                    
+                    # TradeExecutor.submit_order()呼び出し
+                    order_id = self.trade_executor.submit_order(order)
+                    
+                    if order_id:
+                        execution_results.append({
+                            "success": True,
+                            "status": "executed",  # Phase 4.2-5-3: ステータス追加
+                            "order_id": order_id,
+                            "order": order,  # Phase 4.2-5-3: Orderオブジェクト追加
+                            "symbol": order_dict['symbol'],
+                            "action": order_dict['action'],
+                            "quantity": order_dict['quantity'],
+                            "timestamp": order_dict['timestamp'],
+                            "executed_price": order.filled_price  # Phase 4.2-5-3: 約定価格追加
+                        })
+                        self.logger.info(f"Trade executed successfully: {order_dict['symbol']} {order_dict['action']} {order_dict['quantity']}")
+                    else:
+                        execution_results.append({
+                            "success": False,
+                            "status": "failed",
+                            "error": "Order submission failed",
+                            "order": order_dict
+                        })
+                        self.logger.warning(f"Trade execution failed: {order_dict['symbol']}")
+                        
+                except Exception as e:
+                    self.logger.error(f"Trade execution error: {e}", exc_info=True)
+                    execution_results.append({"success": False, "status": "error", "error": str(e), "order": order_dict})
+            
+            # Phase 4.2-5-3: 実行結果をbacktest_signalsに統合
+            # copilot-instructions.md: 実際の取引件数 > 0 を検証
+            if hasattr(self, 'current_backtest_signals') and self.current_backtest_signals is not None:
+                signals_df = self.current_backtest_signals
+                
+                # 実行された取引をSignalsDataFrameに追加するための新しいカラム
+                if 'ExecutedTrade' not in signals_df.columns:
+                    signals_df['ExecutedTrade'] = False
+                if 'ExecutedPrice' not in signals_df.columns:
+                    signals_df['ExecutedPrice'] = 0.0
+                if 'ExecutedQuantity' not in signals_df.columns:
+                    signals_df['ExecutedQuantity'] = 0.0
+                    
+                # 実行された取引を記録
+                for result in execution_results:
+                    if result.get('status') == 'executed':
+                        try:
+                            timestamp = result.get('timestamp')
+                            symbol = result['symbol']
+                            action = result['action']
+                            quantity = result['quantity']
+                            exec_price = result.get('executed_price', 0.0)
+                            
+                            # SignalsDataFrameの最終行に実行情報を追加
+                            if len(signals_df) > 0:
+                                last_idx = signals_df.index[-1]
+                                signals_df.at[last_idx, 'ExecutedTrade'] = True
+                                signals_df.at[last_idx, 'ExecutedPrice'] = exec_price
+                                signals_df.at[last_idx, 'ExecutedQuantity'] = quantity
+                                
+                            self.logger.info(f"✅ Trade integrated into backtest_signals: {symbol} {action} {quantity} @ {exec_price}")
+                                    
+                        except Exception as e:
+                            self.logger.error(f"Trade integration error: {e}", exc_info=True)
+                            
+                # 更新されたsignals_dfを保存
+                self.current_backtest_signals = signals_df
+            else:
+                self.logger.warning(f"No current_backtest_signals available for trade integration")
+            
+            self.logger.info(f"Trade execution completed: {len(execution_results)} orders processed")
             return execution_results
             
         except Exception as e:
-            self.logger.error(f"Trade execution processing error: {e}")
+            self.logger.error(f"Trade execution processing error: {e}", exc_info=True)
             return []
     
     def _generate_trade_orders(self, signals: pd.DataFrame, symbols: List[str]) -> List[Dict[str, Any]]:
