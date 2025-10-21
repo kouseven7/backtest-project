@@ -364,12 +364,16 @@ class StrategySelector:
                     continue
                 
                 # 強化スコア計算（トレンド適応度を含む）
-                enhanced_score = self.enhanced_calculator.calculate_enhanced_score(
+                # Phase 5-A修正: calculate_enhanced_score → calculate_enhanced_strategy_score
+                enhanced_score_obj = self.enhanced_calculator.calculate_enhanced_strategy_score(
                     strategy_name=strategy_name,
                     ticker=ticker,
                     market_data=market_data,
-                    current_trend=current_trend
+                    use_trend_validation=True
                 )
+                
+                # StrategyScoreオブジェクトからfloat値を抽出
+                enhanced_score = enhanced_score_obj.total_score if enhanced_score_obj else None
                 
                 # 複合スコアの計算
                 final_score = self._calculate_composite_score(
@@ -395,15 +399,19 @@ class StrategySelector:
         # 基本スコア
         composite = base_score.total_score
         
+        logger.debug(f"[COMPOSITE_DEBUG] base_score.total_score={composite}, enhanced_score={enhanced_score}")
+        
         # 強化スコアの重み付け加算
         if enhanced_score is not None:
             trend_weight = criteria.trend_adaptation_weight
             composite = (1 - trend_weight) * composite + trend_weight * enhanced_score
+            logger.debug(f"[COMPOSITE_DEBUG] After trend weighting: composite={composite}, trend_weight={trend_weight}")
         
         # 信頼度による調整
         if hasattr(base_score, 'confidence'):
             confidence_factor = max(0.5, base_score.confidence)
             composite *= confidence_factor
+            logger.debug(f"[COMPOSITE_DEBUG] After confidence adjustment: composite={composite}, confidence_factor={confidence_factor}")
         
         return min(1.0, max(0.0, composite))
 
@@ -416,7 +424,9 @@ class StrategySelector:
         
         for strategy_name, score in strategy_scores.items():
             # スコア閾値チェック
+            # Phase 5-A修正: < を <= に変更せず、そのまま維持（閾値以上を許可）
             if score < criteria.min_score_threshold:
+                logger.debug(f"[FILTER_DEBUG] {strategy_name} filtered out: score={score} < threshold={criteria.min_score_threshold}")
                 continue
             
             # ブラックリストチェック

@@ -174,6 +174,12 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
     """統一トレンド判定システムと連携した強化スコア計算器"""
     
     def __init__(self, data_loader: StrategyCharacteristicsDataLoader = None):
+        # Phase 5-A-11修正: data_loaderがNoneの場合は自動生成
+        if data_loader is None:
+            logger.warning(f"[CONFIG_VERSION] EnhancedStrategyScoreCalculator.__init__ called without data_loader, auto-creating one")
+            data_loader = StrategyCharacteristicsDataLoader()
+        else:
+            logger.warning(f"[CONFIG_VERSION] EnhancedStrategyScoreCalculator.__init__ called with data_loader={data_loader}")
         super().__init__(data_loader)
         self.confidence_integrator = TrendConfidenceIntegrator()
         
@@ -197,11 +203,16 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
             強化されたStrategyScore
         """
         try:
+            # Phase 5-A-11デバッグ: tryブロック開始
+            logger.debug(f"[ENHANCED_START] Calculating enhanced score for {strategy_name}")
             # 基本スコアの計算
             base_score = self.calculate_strategy_score(strategy_name, ticker, market_data)
+            # Phase 5-A-11デバッグ: base_scoreの型と値を確認
+            logger.debug(f"[ENHANCED_DEBUG] base_score type: {type(base_score)}, value: {base_score}")
             if not base_score:
-                logger.warning(f"Base score calculation failed for {strategy_name}")
-                return self._create_fallback_score(strategy_name, ticker)
+                # Phase 5-A-11: フォールバックは禁止、Noneを返す
+                logger.error(f"Base score calculation failed for {strategy_name}, base_score={base_score}, returning None")
+                return None
             
             # 統一トレンド判定による強化
             if use_trend_validation and market_data is not None:
@@ -211,9 +222,12 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
                 
                 # 信頼度統合
                 confidence_score = enhanced_components.get('confidence', 0.5)
+                # Phase 5-A-11デバッグ: 信頼度統合の影響を確認
+                logger.debug(f"[CONFIDENCE_INTEGRATION] {strategy_name}: base_score={base_score.total_score:.3f}, confidence={confidence_score:.3f}")
                 integrated_score = self.confidence_integrator.integrate_confidence(
                     base_score.total_score, confidence_score, integration_method
                 )
+                logger.debug(f"[CONFIDENCE_INTEGRATION] {strategy_name}: integrated_score={integrated_score:.3f} (method={integration_method})")
                 
                 # 強化重みでの再計算
                 weights = EnhancedScoreWeights()
@@ -246,8 +260,9 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
             return base_score
             
         except Exception as e:
-            logger.error(f"Enhanced score calculation failed for {strategy_name}: {e}")
-            return self._create_fallback_score(strategy_name, ticker)
+            # Phase 5-A-11: フォールバックは禁止、Noneを返す
+            logger.error(f"Enhanced score calculation failed for {strategy_name}: {e}, returning None")
+            return None
     
     def _calculate_enhanced_components(self, 
                                      base_score: StrategyScore,
@@ -283,8 +298,8 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
                 components, trend_confidence, trend_accuracy, market_adaptation
             )
             
-            # トレンド適合度の更新
-            components['trend_fitness'] = self._calculate_trend_fitness(
+            # トレンド適合度の更新（Phase 5-A-11: メソッド名変更で親クラスとの衝突回避）
+            components['trend_fitness'] = self._calculate_enhanced_trend_fitness(
                 reliability_info, trend_accuracy, market_adaptation
             )
             
@@ -490,11 +505,11 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
         enhanced_confidence = base_confidence + trend_bonus + accuracy_bonus + adaptation_bonus
         return max(0.0, min(1.0, enhanced_confidence))
     
-    def _calculate_trend_fitness(self,
+    def _calculate_enhanced_trend_fitness(self,
                                reliability_info: Dict[str, Any],
                                trend_accuracy: float,
                                market_adaptation: float) -> float:
-        """トレンド適合度計算"""
+        """強化トレンド適合度計算（Phase 5-A-11: 親クラスメソッドとの衝突回避のため名前変更）"""
         confidence = reliability_info.get("confidence_score", 0.5)
         is_reliable = reliability_info.get("is_reliable", False)
         
@@ -523,27 +538,18 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
         return max(0.0, min(1.0, total_score))
     
     def _create_fallback_score(self, strategy_name: str, ticker: str) -> StrategyScore:
-        """フォールバック用のデフォルトスコア"""
-        return StrategyScore(
-            strategy_name=strategy_name,
-            ticker=ticker,
-            total_score=0.5,
-            component_scores={
-                'performance': 0.5,
-                'stability': 0.5,
-                'risk_adjusted': 0.5,
-                'trend_adaptation': 0.5,
-                'reliability': 0.5,
-                'trend_accuracy': 0.5,
-                'market_adaptation': 0.5,
-                'confidence': 0.5,
-                'trend_fitness': 0.5
-            },
-            trend_fitness=0.5,
-            confidence=0.5,
-            metadata={'fallback': True, 'enhanced': False},
-            calculated_at=datetime.now()
+        """
+        フォールバック用のデフォルトスコア
+        
+        Phase 5-A-11修正: copilot-instructions.md準拠
+        モック/ダミーデータを返すフォールバックは禁止
+        メタデータが存在しない場合はNoneを返し、明示的にエラーとする
+        """
+        logger.error(
+            f"[FALLBACK_FORBIDDEN] Cannot create score for {strategy_name}: "
+            f"No metadata available. Returning None (copilot-instructions.md compliant)"
         )
+        return None
 
 class EnhancedStrategyScoreManager(StrategyScoreManager):
     """強化されたスコア管理クラス"""

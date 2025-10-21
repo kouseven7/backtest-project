@@ -93,6 +93,18 @@ class ComprehensivePerformanceAnalyzer:
         """
         self.logger.info("Executing comprehensive performance analysis")
         
+        # Phase 5-B-2: データフロー追跡ログ
+        self.logger.info(f"[DATA_FLOW_ANALYZER] Input execution_results type: {type(execution_results)}")
+        self.logger.info(f"[DATA_FLOW_ANALYZER] Input execution_results keys: {execution_results.keys() if isinstance(execution_results, dict) else 'NOT_DICT'}")
+        self.logger.info(f"[DATA_FLOW_ANALYZER] Input stock_data shape: {stock_data.shape}")
+        self.logger.info(f"[DATA_FLOW_ANALYZER] Input stock_data columns: {list(stock_data.columns)}")
+        
+        if isinstance(execution_results, dict) and 'execution_results' in execution_results:
+            exec_list = execution_results.get('execution_results', [])
+            self.logger.info(f"[DATA_FLOW_ANALYZER] execution_results list length: {len(exec_list)}")
+            if exec_list and len(exec_list) > 0:
+                self.logger.info(f"[DATA_FLOW_ANALYZER] First execution_result keys: {exec_list[0].keys() if isinstance(exec_list[0], dict) else 'NOT_DICT'}")
+        
         analysis = {
             'timestamp': datetime.now(),
             'basic_performance': None,
@@ -143,39 +155,85 @@ class ComprehensivePerformanceAnalyzer:
         execution_results: Dict[str, Any],
         stock_data: pd.DataFrame
     ) -> Dict[str, Any]:
-        """基本パフォーマンス計算"""
+        """
+        基本パフォーマンス計算（Phase 2: execution_details対応版）
+        
+        ComprehensiveReporterと同じロジックでexecution_detailsから実取引データを抽出
+        
+        copilot-instructions.md準拠:
+        - 実データのみ使用
+        - statusチェック削除（statusがNoneでも取引データがあれば処理）
+        """
         try:
+            # Phase 5-B-2: データフロー追跡ログ
+            self.logger.info(f"[DATA_FLOW_BASIC] stock_data columns in _calculate_basic_performance: {list(stock_data.columns)}")
+            self.logger.info(f"[DATA_FLOW_BASIC] Has Entry_Signal: {'Entry_Signal' in stock_data.columns}")
+            self.logger.info(f"[DATA_FLOW_BASIC] Has Exit_Signal: {'Exit_Signal' in stock_data.columns}")
+            
+            # [DEBUG_PHASE2] execution_results構造確認
+            self.logger.info(f"[DEBUG_PHASE2_BASIC] execution_results type: {type(execution_results)}")
+            self.logger.info(f"[DEBUG_PHASE2_BASIC] execution_results keys: {execution_results.keys() if isinstance(execution_results, dict) else 'NOT_DICT'}")
+            
             # 初期資本・最終価値
             initial_capital = 1000000  # デフォルト100万円
             final_value = initial_capital
+            total_profit = 0
+            total_trades = 0
             
-            # 実行結果から利益計算
-            if 'execution_results' in execution_results:
+            # execution_detailsから実取引データを抽出（ComprehensiveReporterと同じロジック）
+            if 'execution_results' in execution_results and isinstance(execution_results['execution_results'], list):
                 strategies_results = execution_results['execution_results']
-                total_profit = 0
-                total_trades = 0
+                self.logger.info(f"[DEBUG_PHASE2_BASIC] strategies_results length: {len(strategies_results)}")
                 
-                for strategy_result in strategies_results:
-                    if strategy_result.get('status') == 'success':
-                        profit = strategy_result.get('profit', 0)
-                        trades = strategy_result.get('trade_count', 0)
-                        total_profit += profit
-                        total_trades += trades
+                for idx, strategy_result in enumerate(strategies_results):
+                    if not isinstance(strategy_result, dict):
+                        continue
+                    
+                    # execution_detailsの存在確認（statusチェックは削除）
+                    if 'execution_details' not in strategy_result:
+                        self.logger.info(f"[DEBUG_PHASE2_BASIC] Strategy {idx}: No execution_details")
+                        continue
+                    
+                    execution_details = strategy_result.get('execution_details', [])
+                    self.logger.info(
+                        f"[DEBUG_PHASE2_BASIC] Strategy {idx} ({strategy_result.get('strategy_name', 'Unknown')}): "
+                        f"execution_details length={len(execution_details)}"
+                    )
+                    
+                    # execution_detailsから取引データを抽出
+                    trades = self._extract_trades_from_execution_details(execution_details)
+                    
+                    if trades:
+                        # 損益計算
+                        strategy_profit = sum(trade.get('pnl', 0) for trade in trades)
+                        strategy_trades = len(trades)
+                        
+                        total_profit += strategy_profit
+                        total_trades += strategy_trades
+                        
+                        self.logger.info(
+                            f"[DEBUG_PHASE2_BASIC] Strategy {idx}: "
+                            f"extracted {strategy_trades} trades, profit={strategy_profit:.2f}"
+                        )
                 
+                self.logger.info(f"[DEBUG_PHASE2_BASIC] CALCULATED total_profit: {total_profit}, total_trades: {total_trades}")
                 final_value = initial_capital + total_profit
             
             # リターン計算
             total_return = (final_value - initial_capital) / initial_capital
             
-            # 基本メトリクス
-            return {
+            result = {
                 'initial_capital': initial_capital,
                 'final_value': final_value,
                 'total_return': total_return,
                 'total_profit': final_value - initial_capital,
-                'total_trades': total_trades if 'total_trades' in locals() else 0,
+                'total_trades': total_trades,
                 'period_days': len(stock_data) if stock_data is not None else 0
             }
+            
+            self.logger.info(f"[DEBUG_PHASE2_BASIC] RESULT: {result}")
+            
+            return result
             
         except Exception as e:
             self.logger.error(f"Basic performance calculation error: {e}")
@@ -188,6 +246,103 @@ class ComprehensivePerformanceAnalyzer:
                 'period_days': 0,
                 'error': str(e)
             }
+    
+    def _extract_trades_from_execution_details(
+        self,
+        execution_details: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """
+        execution_detailsから取引データを抽出（Phase 2: ComprehensiveReporterと同じロジック）
+        
+        copilot-instructions.md準拠:
+        - 実データのみ使用
+        - BUY/SELLペアの実データのみ抽出
+        - データ不足時は空リスト返却（フォールバック禁止）
+        
+        Args:
+            execution_details: 実行詳細リスト
+        
+        Returns:
+            取引レコードリスト（pnl, return_pctを含む）
+        """
+        try:
+            trades = []
+            
+            # BUY/SELLペアの抽出
+            buy_orders = []
+            sell_orders = []
+            
+            for detail in execution_details:
+                if not isinstance(detail, dict):
+                    continue
+                
+                # 実行成功した取引のみを対象
+                if detail.get('status') != 'executed' or not detail.get('success', False):
+                    continue
+                
+                # BUY/SELL分類
+                action = detail.get('action', '').upper()
+                if action == 'BUY':
+                    buy_orders.append(detail)
+                elif action == 'SELL':
+                    sell_orders.append(detail)
+            
+            # BUY/SELLペアリング（FIFO方式）
+            if len(buy_orders) != len(sell_orders):
+                self.logger.warning(
+                    f"[FALLBACK_PROHIBITED] BUY/SELLペア不一致: "
+                    f"BUY={len(buy_orders)}, SELL={len(sell_orders)}. "
+                    f"copilot-instructions.md準拠: ダミーデータ補完は実行しません。"
+                )
+                # フォールバック禁止: ペアが成立しない場合は空リスト返却
+                return []
+            
+            # ペアリング実行
+            for buy_order, sell_order in zip(buy_orders, sell_orders):
+                try:
+                    # 実データから取引レコード作成
+                    entry_price = buy_order.get('executed_price', 0.0)
+                    exit_price = sell_order.get('executed_price', 0.0)
+                    shares = buy_order.get('quantity', 0)
+                    
+                    # データ検証
+                    if not all([entry_price > 0, exit_price > 0, shares > 0]):
+                        self.logger.error(
+                            f"[DATA_VALIDATION_FAILED] 不正な取引データ: "
+                            f"entry_price={entry_price}, exit_price={exit_price}, shares={shares}. "
+                            f"スキップします（フォールバック禁止）。"
+                        )
+                        continue
+                    
+                    # 損益計算（実データに基づく）
+                    pnl = (exit_price - entry_price) * shares
+                    return_pct = (exit_price - entry_price) / entry_price if entry_price > 0 else 0.0
+                    
+                    trade = {
+                        'pnl': pnl,
+                        'return_pct': return_pct,
+                        'entry_price': entry_price,
+                        'exit_price': exit_price,
+                        'shares': shares
+                    }
+                    
+                    trades.append(trade)
+                    
+                except Exception as trade_error:
+                    self.logger.error(f"[TRADE_EXTRACTION_ERROR] {trade_error}")
+                    continue
+            
+            self.logger.info(
+                f"[REAL_DATA_ONLY] Converted {len(execution_details)} execution details "
+                f"to {len(trades)} trade records (BUY={len(buy_orders)}, SELL={len(sell_orders)})"
+            )
+            
+            return trades
+            
+        except Exception as e:
+            self.logger.error(f"Error extracting trades from execution_details: {e}", exc_info=True)
+            # copilot-instructions.md: フォールバック禁止
+            return []
     
     def _calculate_enhanced_metrics(
         self,
@@ -254,7 +409,11 @@ class ComprehensivePerformanceAnalyzer:
         enhanced_metrics: Dict[str, Any]
     ) -> Dict[str, Any]:
         """サマリー統計計算"""
-        return {
+        # [DEBUG_PHASE1] 入力データ確認
+        self.logger.info(f"[DEBUG_PHASE1_SUMMARY] basic_performance: {basic_performance}")
+        self.logger.info(f"[DEBUG_PHASE1_SUMMARY] enhanced_metrics: {enhanced_metrics}")
+        
+        result = {
             'total_return': basic_performance.get('total_return', 0.0),
             'total_trades': basic_performance.get('total_trades', 0),
             'sharpe_ratio': enhanced_metrics.get('sharpe_ratio', 0.0),
@@ -262,6 +421,10 @@ class ComprehensivePerformanceAnalyzer:
             'win_rate': enhanced_metrics.get('win_rate', 0.0),
             'profit_factor': enhanced_metrics.get('profit_factor', 0.0)
         }
+        
+        self.logger.info(f"[DEBUG_PHASE1_SUMMARY] RESULT summary_statistics: {result}")
+        
+        return result
     
     # ヘルパーメソッド
     def _calculate_sharpe_ratio(self, trades: pd.DataFrame) -> float:

@@ -35,14 +35,16 @@ class MainTextReporter:
     def generate_comprehensive_report(self, 
                                    stock_data: pd.DataFrame, 
                                    ticker: str,
+                                   execution_results: Optional[Dict[str, Any]] = None,
                                    optimized_params: Optional[Dict[str, Dict[str, Any]]] = None,
                                    output_dir: Optional[str] = None) -> str:
         """
-        包括的なテキストレポートを生成
+        包括的なテキストレポートを生成（Phase 5-B-2: execution_results対応版）
         
         Parameters:
             stock_data (pd.DataFrame): バックテスト結果データ
             ticker (str): 銘柄コード
+            execution_results (Optional[Dict]): 実行結果（Phase 5-B-2追加）
             optimized_params (Optional[Dict]): 最適化パラメータ
             output_dir (Optional[str]): 出力ディレクトリ
             
@@ -52,8 +54,14 @@ class MainTextReporter:
         try:
             logger.info(f"包括的テキストレポート生成開始: {ticker}")
             
-            # データ抽出と分析
-            analysis_result = extract_and_analyze_main_data(stock_data, ticker)
+            # Phase 5-B-2: execution_resultsから直接データを取得（copilot-instructions.md準拠）
+            if execution_results:
+                logger.info("[PHASE_5_B_2] Using execution_results for data extraction")
+                analysis_result = self._extract_from_execution_results(execution_results, stock_data, ticker)
+            else:
+                # 後方互換: execution_resultsがない場合は従来の方法
+                logger.warning("[PHASE_5_B_2] execution_results not provided, falling back to stock_data")
+                analysis_result = extract_and_analyze_main_data(stock_data, ticker)
             
             if not analysis_result:
                 logger.error("データ抽出に失敗しました")
@@ -124,6 +132,210 @@ class MainTextReporter:
         report_lines.extend(self._build_statistical_summary_section(analysis_result))
         
         return '\n'.join(report_lines)
+    
+    def _extract_from_execution_results(
+        self,
+        execution_results: Dict[str, Any],
+        stock_data: pd.DataFrame,
+        ticker: str
+    ) -> Dict[str, Any]:
+        """
+        execution_resultsから直接データを抽出（Phase 5-B-2）
+        ComprehensiveReporter._extract_executed_trades()と同様のロジック
+        
+        Args:
+            execution_results: 実行結果
+            stock_data: 株価データ
+            ticker: 銘柄コード
+            
+        Returns:
+            分析結果辞書
+        """
+        logger.info("[PHASE_5_B_2] Extracting data from execution_results")
+        
+        # execution_results['execution_results']から取引データを抽出
+        executed_trades = []
+        
+        if isinstance(execution_results, dict) and 'execution_results' in execution_results:
+            for result in execution_results['execution_results']:
+                if result.get('success') and 'execution_details' in result:
+                    strategy_name = result.get('strategy_name', 'Unknown')
+                    
+                    # execution_detailsから取引データを変換（ComprehensiveReporterと同様のロジック）
+                    for detail in result['execution_details']:
+                        if not isinstance(detail, dict):
+                            continue
+                        
+                        action = detail.get('action')
+                        timestamp = detail.get('timestamp')
+                        # Phase 5-B-2 Step 4-2-2: executed_priceキーを使用（ComprehensiveReporterと同様）
+                        price = detail.get('executed_price', 0)
+                        quantity = detail.get('quantity', 0)
+                        
+                        if action == 'BUY':
+                            # BUY注文を記録
+                            trade_record = {
+                                'strategy': strategy_name,
+                                'entry_date': timestamp,
+                                'entry_price': price,
+                                'shares': quantity,
+                                'entry_idx': None
+                            }
+                            executed_trades.append(trade_record)
+                        
+                        elif action == 'SELL' and executed_trades:
+                            # 未決済の最後のBUY注文を探す
+                            for trade in reversed(executed_trades):
+                                if isinstance(trade, dict) and 'exit_date' not in trade:
+                                    # このBUY注文とペアリング
+                                    trade['exit_date'] = timestamp
+                                    trade['exit_price'] = price
+                                    trade['exit_idx'] = None
+                                    
+                                    # PnLとリターン計算
+                                    entry_price = trade['entry_price']
+                                    exit_price = trade['exit_price']
+                                    shares = trade['shares']
+                                    
+                                    trade['pnl'] = (exit_price - entry_price) * shares
+                                    trade['return_pct'] = (exit_price - entry_price) / entry_price if entry_price > 0 else 0
+                                    break
+        
+        logger.info(f"[PHASE_5_B_2] Extracted {len(executed_trades)} trades from execution_results")
+        
+        # Phase 5-B-2 Step 4-2-2: executed_tradesの内容を詳細ログ出力
+        logger.info(f"[PHASE_5_B_2_DEBUG] executed_trades type: {type(executed_trades)}")
+        if executed_trades:
+            logger.info(f"[PHASE_5_B_2_DEBUG] First trade type: {type(executed_trades[0])}")
+            logger.info(f"[PHASE_5_B_2_DEBUG] First trade content: {executed_trades[0]}")
+            # すべての取引の型をチェック
+            non_dict_items = [i for i, t in enumerate(executed_trades) if not isinstance(t, dict)]
+            if non_dict_items:
+                logger.error(f"[PHASE_5_B_2_DEBUG] Non-dict items found at indices: {non_dict_items}")
+                for idx in non_dict_items[:3]:  # 最初の3件のみログ出力
+                    logger.error(f"[PHASE_5_B_2_DEBUG] Item {idx} type: {type(executed_trades[idx])}, value: {executed_trades[idx]}")
+        
+        # 完了した取引のみフィルタリング（exit_dateがあるもの）
+        completed_trades = [t for t in executed_trades if isinstance(t, dict) and 'exit_date' in t]
+        logger.info(f"[PHASE_5_B_2] Completed trades: {len(completed_trades)}")
+        
+        # パフォーマンス統計を計算
+        performance = self._calculate_performance_from_trades(completed_trades)
+        
+        # 期間情報を計算
+        period = {
+            'start_date': stock_data.index[0] if len(stock_data) > 0 else 'N/A',
+            'end_date': stock_data.index[-1] if len(stock_data) > 0 else 'N/A',
+            'trading_days': len(stock_data)
+        }
+        
+        return {
+            'trades': {
+                'trade_list': completed_trades,
+                'total_trades': len(completed_trades)
+            },
+            'performance': performance,
+            'period': period
+        }
+    
+    def _calculate_performance_from_trades(self, trades: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        取引データからパフォーマンス統計を計算（Phase 5-B-2）
+        
+        Args:
+            trades: 取引データリスト
+            
+        Returns:
+            パフォーマンス統計辞書
+        """
+        if not trades:
+            return {
+                'initial_capital': 1000000,
+                'final_portfolio_value': 1000000,
+                'total_return': 0,
+                'win_rate': 0,
+                'winning_trades': 0,
+                'losing_trades': 0,
+                'avg_profit': 0,
+                'avg_loss': 0,
+                'max_profit': 0,
+                'max_loss': 0,
+                'total_profit': 0,
+                'total_loss': 0,
+                'net_profit': 0,
+                'profit_factor': 0
+            }
+        
+        # Phase 5-B-2: 型チェックとフィルタリング
+        valid_trades = [t for t in trades if isinstance(t, dict)]
+        if len(valid_trades) != len(trades):
+            logger.warning(f"[PHASE_5_B_2] Found {len(trades) - len(valid_trades)} non-dict items in trades list")
+        
+        if not valid_trades:
+            logger.error("[PHASE_5_B_2] No valid trades after filtering")
+            return {
+                'initial_capital': 1000000,
+                'final_portfolio_value': 1000000,
+                'total_return': 0,
+                'win_rate': 0,
+                'winning_trades': 0,
+                'losing_trades': 0,
+                'avg_profit': 0,
+                'avg_loss': 0,
+                'max_profit': 0,
+                'max_loss': 0,
+                'total_profit': 0,
+                'total_loss': 0,
+                'net_profit': 0,
+                'profit_factor': 0
+            }
+        
+        # 勝ちトレード・負けトレード分類
+        winning_trades = [t for t in valid_trades if t.get('pnl', 0) > 0]
+        losing_trades = [t for t in valid_trades if t.get('pnl', 0) < 0]
+        
+        # 利益・損失計算
+        total_profit = sum(t.get('pnl', 0) for t in winning_trades)
+        total_loss = abs(sum(t.get('pnl', 0) for t in losing_trades))
+        net_profit = total_profit - total_loss
+        
+        # プロフィットファクター
+        profit_factor = total_profit / total_loss if total_loss > 0 else float('inf')
+        
+        # 平均利益・損失
+        avg_profit = total_profit / len(winning_trades) if winning_trades else 0
+        avg_loss = total_loss / len(losing_trades) if losing_trades else 0
+        
+        # 最大利益・損失
+        max_profit = max((t.get('pnl', 0) for t in winning_trades), default=0)
+        max_loss = abs(min((t.get('pnl', 0) for t in losing_trades), default=0))
+        
+        # 初期資金と最終資金（仮定）
+        initial_capital = 1000000
+        final_portfolio_value = initial_capital + net_profit
+        
+        # 総リターン
+        total_return = net_profit / initial_capital if initial_capital > 0 else 0
+        
+        # 勝率
+        win_rate = len(winning_trades) / len(valid_trades) if valid_trades else 0
+        
+        return {
+            'initial_capital': initial_capital,
+            'final_portfolio_value': final_portfolio_value,
+            'total_return': total_return,
+            'win_rate': win_rate,
+            'winning_trades': len(winning_trades),
+            'losing_trades': len(losing_trades),
+            'avg_profit': avg_profit,
+            'avg_loss': avg_loss,
+            'max_profit': max_profit,
+            'max_loss': max_loss,
+            'total_profit': total_profit,
+            'total_loss': total_loss,
+            'net_profit': net_profit,
+            'profit_factor': profit_factor
+        }
     
     def _build_header_section(self, ticker: str, timestamp: str) -> List[str]:
         """ヘッダーセクションを構築"""
@@ -224,7 +436,9 @@ class MainTextReporter:
         lines.append("3. 期待値分析")
         lines.append("-" * 40)
         
-        trades = analysis.get('trades', [])
+        # Phase 5-B-2: tradesは辞書型なので、trade_listを取得
+        trades_info = analysis.get('trades', {})
+        trades = trades_info.get('trade_list', []) if isinstance(trades_info, dict) else trades_info
         
         if trades:
             # システム全体の期待値
@@ -333,7 +547,9 @@ class MainTextReporter:
         lines.append("4. 戦略別詳細分析")
         lines.append("-" * 40)
         
-        trades = analysis.get('trades', [])
+        # Phase 5-B-2: tradesは辞書型なので、trade_listを取得
+        trades_info = analysis.get('trades', {})
+        trades = trades_info.get('trade_list', []) if isinstance(trades_info, dict) else trades_info
         
         if trades:
             # 戦略別統計
@@ -416,7 +632,9 @@ class MainTextReporter:
         lines.append("5. 取引詳細")
         lines.append("-" * 40)
         
-        trades = analysis.get('trades', [])
+        # Phase 5-B-2: tradesは辞書型なので、trade_listを取得
+        trades_info = analysis.get('trades', {})
+        trades = trades_info.get('trade_list', []) if isinstance(trades_info, dict) else trades_info
         
         if trades:
             lines.append(f"総取引数: {len(trades)}")
@@ -470,7 +688,9 @@ class MainTextReporter:
         lines.append("7. リスク分析")
         lines.append("-" * 40)
         
-        trades = analysis.get('trades', [])
+        # Phase 5-B-2: tradesは辞書型なので、trade_listを取得
+        trades_info = analysis.get('trades', {})
+        trades = trades_info.get('trade_list', []) if isinstance(trades_info, dict) else trades_info
         
         if trades:
             pnls = [trade.get('pnl', 0) for trade in trades]

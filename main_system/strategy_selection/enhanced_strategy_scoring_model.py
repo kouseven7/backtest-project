@@ -174,6 +174,7 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
     """統一トレンド判定システムと連携した強化スコア計算器"""
     
     def __init__(self, data_loader: StrategyCharacteristicsDataLoader = None):
+        logger.warning(f"[MAIN_SYSTEM_VERSION] EnhancedStrategyScoreCalculator.__init__ called with data_loader={data_loader}")
         super().__init__(data_loader)
         self.confidence_integrator = TrendConfidenceIntegrator()
         
@@ -199,9 +200,12 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
         try:
             # 基本スコアの計算
             base_score = self.calculate_strategy_score(strategy_name, ticker, market_data)
+            # Phase 5-A-11デバッグ: base_scoreの型と値を確認
+            logger.debug(f"[ENHANCED_DEBUG] base_score type: {type(base_score)}, value: {base_score}")
             if not base_score:
-                logger.warning(f"Base score calculation failed for {strategy_name}")
-                return self._create_fallback_score(strategy_name, ticker)
+                # Phase 5-A-11: フォールバックは禁止、Noneを返す
+                logger.error(f"Base score calculation failed for {strategy_name}, base_score={base_score}, returning None")
+                return None
             
             # 統一トレンド判定による強化
             if use_trend_validation and market_data is not None:
@@ -246,8 +250,9 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
             return base_score
             
         except Exception as e:
-            logger.error(f"Enhanced score calculation failed for {strategy_name}: {e}")
-            return self._create_fallback_score(strategy_name, ticker)
+            # Phase 5-A-11: フォールバックは禁止、Noneを返す
+            logger.error(f"Enhanced score calculation failed for {strategy_name}: {e}, returning None")
+            return None
     
     def _calculate_enhanced_components(self, 
                                      base_score: StrategyScore,
@@ -283,9 +288,29 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
                 components, trend_confidence, trend_accuracy, market_adaptation
             )
             
-            # トレンド適合度の更新
+            # トレンド適合度の更新（修正: 新しいメソッド署名に対応）
+            # ticker_data を準備（base_score.metadata から取得）
+            ticker_data = base_score.metadata.get('ticker_data', {})
+            if not ticker_data:
+                # ticker_data が存在しない場合は、メタデータから構築
+                ticker_data = {
+                    'reliability_info': reliability_info,
+                    'trend_adaptability': {},
+                    'volatility_adaptability': {}
+                }
+            else:
+                # reliability_info を更新
+                ticker_data['reliability_info'] = reliability_info
+            
+            # trend_context を準備
+            trend_context = {
+                'current_trend': 'neutral',  # デフォルト
+                'trend_strength': trend_confidence
+            }
+            
+            # 新しいメソッド署名で呼び出し
             components['trend_fitness'] = self._calculate_trend_fitness(
-                reliability_info, trend_accuracy, market_adaptation
+                strategy_name, ticker_data, market_data, trend_context
             )
             
         except Exception as e:
@@ -490,21 +515,86 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
         enhanced_confidence = base_confidence + trend_bonus + accuracy_bonus + adaptation_bonus
         return max(0.0, min(1.0, enhanced_confidence))
     
-    def _calculate_trend_fitness(self,
-                               reliability_info: Dict[str, Any],
-                               trend_accuracy: float,
-                               market_adaptation: float) -> float:
-        """トレンド適合度計算"""
-        confidence = reliability_info.get("confidence_score", 0.5)
-        is_reliable = reliability_info.get("is_reliable", False)
+    def _calculate_trend_fitness(self, 
+                               strategy_name: str, 
+                               ticker_data: Dict[str, Any],
+                               market_data: pd.DataFrame = None,
+                               trend_context: Dict[str, Any] = None) -> float:
+        """
+        トレンド適合度計算（親クラス互換）
         
-        base_fitness = confidence
-        accuracy_bonus = trend_accuracy * 0.3
-        adaptation_bonus = market_adaptation * 0.2
-        reliability_bonus = 0.1 if is_reliable else 0.0
-        
-        fitness = base_fitness + accuracy_bonus + adaptation_bonus + reliability_bonus
-        return max(0.0, min(1.0, fitness))
+        Args:
+            strategy_name: 戦略名
+            ticker_data: ティッカーデータ
+            market_data: 市場データ（オプション）
+            trend_context: トレンドコンテキスト（オプション）
+            
+        Returns:
+            float: トレンド適合度スコア (0.0-1.0)
+        """
+        try:
+            # まず親クラスのメソッドを呼び出して基本スコアを取得
+            base_fitness = super()._calculate_trend_fitness(
+                strategy_name, ticker_data, market_data, trend_context
+            )
+            
+            # 拡張計算: reliability_info, trend_accuracy, market_adaptation を取得
+            reliability_info = ticker_data.get('reliability_info', {
+                'confidence_score': 0.5,
+                'is_reliable': False
+            })
+            
+            # trend_accuracy の計算（簡易版）
+            trend_adaptability = ticker_data.get('trend_adaptability', {})
+            if trend_context and 'current_trend' in trend_context:
+                current_trend = trend_context['current_trend']
+                trend_data = trend_adaptability.get(current_trend, {})
+                
+                # スキーマバージョン対応
+                if 'performance_metrics' in trend_data:
+                    # v2.0 schema
+                    perf = trend_data.get('performance_metrics', {})
+                else:
+                    # v1.0 schema
+                    perf = trend_data
+                
+                win_rate = perf.get('win_rate', 0.5)
+                sharpe = perf.get('sharpe_ratio', 0.0)
+                trend_accuracy = (win_rate * 0.6 + min(sharpe / 2.0, 1.0) * 0.4)
+            else:
+                trend_accuracy = 0.5
+            
+            # market_adaptation の計算（簡易版）
+            volatility_adaptability = ticker_data.get('volatility_adaptability', {})
+            if volatility_adaptability:
+                # 複数のボラティリティ環境での適性を平均
+                scores = []
+                for vol_env, vol_data in volatility_adaptability.items():
+                    score = vol_data.get('suitability_score', vol_data.get('performance_score', 0.5))
+                    scores.append(score)
+                market_adaptation = sum(scores) / len(scores) if scores else 0.5
+            else:
+                market_adaptation = 0.5
+            
+            # 拡張スコア計算
+            confidence = reliability_info.get("confidence_score", 0.5)
+            is_reliable = reliability_info.get("is_reliable", False)
+            
+            accuracy_bonus = trend_accuracy * 0.2
+            adaptation_bonus = market_adaptation * 0.15
+            reliability_bonus = 0.1 if is_reliable else 0.0
+            
+            # 基本スコアと拡張ボーナスを統合
+            enhanced_fitness = base_fitness * 0.55 + accuracy_bonus + adaptation_bonus + reliability_bonus
+            
+            return max(0.0, min(1.0, enhanced_fitness))
+            
+        except Exception as e:
+            logger.warning(f"Enhanced trend fitness calculation failed: {e}, using base calculation")
+            # エラー時は親クラスのメソッドにフォールバック
+            return super()._calculate_trend_fitness(
+                strategy_name, ticker_data, market_data, trend_context
+            )
     
     def _calculate_enhanced_total_score(self, 
                                       components: Dict[str, float], 
@@ -523,27 +613,18 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
         return max(0.0, min(1.0, total_score))
     
     def _create_fallback_score(self, strategy_name: str, ticker: str) -> StrategyScore:
-        """フォールバック用のデフォルトスコア"""
-        return StrategyScore(
-            strategy_name=strategy_name,
-            ticker=ticker,
-            total_score=0.5,
-            component_scores={
-                'performance': 0.5,
-                'stability': 0.5,
-                'risk_adjusted': 0.5,
-                'trend_adaptation': 0.5,
-                'reliability': 0.5,
-                'trend_accuracy': 0.5,
-                'market_adaptation': 0.5,
-                'confidence': 0.5,
-                'trend_fitness': 0.5
-            },
-            trend_fitness=0.5,
-            confidence=0.5,
-            metadata={'fallback': True, 'enhanced': False},
-            calculated_at=datetime.now()
+        """
+        フォールバック用のデフォルトスコア
+        
+        Phase 5-A-11修正: copilot-instructions.md準拠
+        モック/ダミーデータを返すフォールバックは禁止
+        メタデータが存在しない場合はNoneを返し、明示的にエラーとする
+        """
+        logger.error(
+            f"[FALLBACK_FORBIDDEN] Cannot create score for {strategy_name}: "
+            f"No metadata available. Returning None (copilot-instructions.md compliant)"
         )
+        return None
 
 class EnhancedStrategyScoreManager(StrategyScoreManager):
     """強化されたスコア管理クラス"""

@@ -13,6 +13,8 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from config.logger_config import setup_logger
+# Phase 4.2-16: 日本株手数料計算・100株単位対応
+from src.execution.commission_calculator import calculate_max_affordable_quantity, adjust_to_trading_unit
 
 class StrategyExecutionManager:
     """戦略実行管理メインクラス"""
@@ -52,13 +54,22 @@ class StrategyExecutionManager:
                 self.logger.info("Data feed: Disabled (yfinance not available)")
             
             # ペーパーブローカー初期化
+            # Phase 4.2-15: 初期資金設定の修正（broker設定とトップレベル設定の両方を確認）
             from src.execution.paper_broker import PaperBroker
             broker_config = self.config.get('broker', {})
+            
+            # Phase 4.2-15: 初期資金取得ロジック強化
+            # 優先順位: broker.initial_cash > トップレベルinitial_cash > デフォルト1,000,000円
+            initial_cash = broker_config.get('initial_cash') or self.config.get('initial_cash', 1000000)
+            
             self.paper_broker = PaperBroker(
-                initial_balance=broker_config.get('initial_cash', 100000),
+                initial_balance=initial_cash,  # Phase 4.2-15: 修正済み
                 commission_per_trade=broker_config.get('commission_per_trade', 1.0),
-                slippage_pct=broker_config.get('slippage_bps', 5) / 10000.0
+                slippage_pct=broker_config.get('slippage_bps', 5) / 10000.0,
+                backtest_mode=True  # Phase 4.2-11: バックテスト時は市場時間チェックをスキップ
             )
+            
+            self.logger.info(f"PaperBroker initialized: initial_balance={initial_cash}円")
             
             # 取引実行エンジン初期化
             from src.execution.trade_executor import TradeExecutor
@@ -272,7 +283,7 @@ class StrategyExecutionManager:
             戦略インスタンス（失敗時はNone）
         """
         try:
-            # 戦略名の正規化マッピング（既存形式 + 新形式）
+            # Phase 5-A-12修正: 戦略名→ファイル名マッピング（実際のファイル名に合わせる）
             strategy_mappings = {
                 # 既存形式（アンダースコア区切り）
                 'VWAP_Breakout': 'strategies.VWAP_Breakout.VWAPBreakoutStrategy',
@@ -281,15 +292,15 @@ class StrategyExecutionManager:
                 'Breakout': 'strategies.Breakout.BreakoutStrategy',
                 'Opening_Gap': 'strategies.Opening_Gap.OpeningGapStrategy',
                 
-                # 新形式（クラス名そのまま）
+                # 新形式（クラス名そのまま）- Phase 5-A-12: 実ファイル名に合わせて修正
                 'VWAPBreakoutStrategy': 'strategies.VWAP_Breakout.VWAPBreakoutStrategy',
                 'VWAPBounceStrategy': 'strategies.VWAP_Bounce.VWAPBounceStrategy',
                 'GCStrategy': 'strategies.gc_strategy_signal.GCStrategy',
                 'BreakoutStrategy': 'strategies.Breakout.BreakoutStrategy',
                 'OpeningGapStrategy': 'strategies.Opening_Gap.OpeningGapStrategy',
-                'OpeningGapFixedStrategy': 'strategies.Opening_Gap.OpeningGapStrategy',
-                'MomentumInvestingStrategy': 'strategies.momentum_investing.MomentumInvestingStrategy',
-                'ContrarianStrategy': 'strategies.contrarian.ContrarianStrategy',
+                'OpeningGapFixedStrategy': 'strategies.Opening_Gap_Fixed.OpeningGapFixedStrategy',
+                'MomentumInvestingStrategy': 'strategies.Momentum_Investing.MomentumInvestingStrategy',  # Phase 5-A-12修正
+                'ContrarianStrategy': 'strategies.contrarian_strategy.ContrarianStrategy',
             }
             
             module_path = strategy_mappings.get(strategy_name)
@@ -306,21 +317,29 @@ class StrategyExecutionManager:
             # copilot-instructions.md: ダミーデータ生成禁止、実データ必須
             self.logger.info(f"Creating strategy instance: {strategy_name} with real data")
             
+            # Phase 5-A-12修正: 段階的インスタンス化（柔軟な引数対応）
             try:
-                # データ付きインスタンス化を試行
+                # 最初の試行: data + index_data（フル引数）
                 strategy_instance = strategy_class(data=stock_data, index_data=index_data)
-                self.logger.info(f"Strategy instance created successfully: {strategy_name}")
+                self.logger.info(f"Strategy instance created with data+index_data: {strategy_name}")
                 return strategy_instance
-            except TypeError as e:
-                # データなしインスタンス化を試行（一部の戦略はデータ不要）
+            except TypeError as e1:
+                # 2回目の試行: dataのみ
                 try:
-                    self.logger.warning(f"Strategy {strategy_name} does not accept data in __init__, trying without data")
-                    strategy_instance = strategy_class()
-                    self.logger.info(f"Strategy instance created without data: {strategy_name}")
+                    self.logger.warning(f"Strategy {strategy_name} does not accept index_data, trying with data only")
+                    strategy_instance = strategy_class(data=stock_data)
+                    self.logger.info(f"Strategy instance created with data only: {strategy_name}")
                     return strategy_instance
-                except Exception as e2:
-                    self.logger.error(f"CRITICAL: Strategy '{strategy_name}' initialization failed. Error: {e2}")
-                    return None
+                except TypeError as e2:
+                    # 3回目の試行: stock_data（パラメータ名が異なる可能性）
+                    try:
+                        self.logger.warning(f"Strategy {strategy_name} does not accept 'data', trying with stock_data parameter")
+                        strategy_instance = strategy_class(stock_data=stock_data)
+                        self.logger.info(f"Strategy instance created with stock_data: {strategy_name}")
+                        return strategy_instance
+                    except Exception as e3:
+                        self.logger.error(f"CRITICAL: Strategy '{strategy_name}' initialization failed with all attempts. Last error: {e3}")
+                        return None
             
         except Exception as e:
             self.logger.error(f"Strategy instance creation error [{strategy_name}]: {e}", exc_info=True)
@@ -359,6 +378,9 @@ class StrategyExecutionManager:
             # 各注文を実行（実際の実行のみ）
             for order_dict in trade_orders:
                 try:
+                    # Phase 4.2-15: 価格登録は_generate_trade_orders()内で実行済み（重複削除）
+                    symbol = order_dict['symbol']
+                    
                     # 辞書からOrderオブジェクト生成
                     from src.execution.order_manager import Order, OrderType, OrderSide
                     
@@ -367,7 +389,7 @@ class StrategyExecutionManager:
                     
                     # Order生成
                     order = Order(
-                        symbol=order_dict['symbol'],
+                        symbol=symbol,
                         side=side,
                         order_type=OrderType.MARKET,
                         quantity=order_dict['quantity']
@@ -432,7 +454,13 @@ class StrategyExecutionManager:
                                 signals_df.at[last_idx, 'ExecutedPrice'] = exec_price
                                 signals_df.at[last_idx, 'ExecutedQuantity'] = quantity
                                 
-                            self.logger.info(f"✅ Trade integrated into backtest_signals: {symbol} {action} {quantity} @ {exec_price}")
+                            # Phase 4.2-5-3: 実行された取引をbacktest_signalsに記録
+                            symbol = result['symbol']
+                            action = result['action']
+                            quantity = result['quantity']
+                            exec_price = result.get('executed_price', 0)
+                            
+                            self.logger.info(f"[OK] Trade integrated into backtest_signals: {symbol} {action} {quantity} @ {exec_price}")
                                     
                         except Exception as e:
                             self.logger.error(f"Trade integration error: {e}", exc_info=True)
@@ -497,6 +525,13 @@ class StrategyExecutionManager:
                     # エントリーシグナル検出
                     if row.get('Entry_Signal', 0) == 1:
                         entry_price = row.get('Entry_Price', row.get('Close', 0))
+                        
+                        # Phase 4.2-15: 価格登録を_calculate_position_size()より前に実行
+                        # copilot-instructions.md準拠: デフォルト価格使用を回避
+                        if entry_price and entry_price > 0 and self.paper_broker:
+                            self.paper_broker.update_price(symbol, entry_price)
+                            self.logger.debug(f"[BUY] Price registered: {symbol} = {entry_price}円")
+                        
                         buy_quantity = self._calculate_position_size(symbol)
                         
                         # ポジション追跡: BUY実行時に数量を記録
@@ -516,6 +551,12 @@ class StrategyExecutionManager:
                     # イグジットシグナル検出（Exit_Signal == -1 が正しい）
                     if row.get('Exit_Signal', 0) == -1:
                         exit_price = row.get('Close', 0)
+                        
+                        # Phase 4.2-15: 価格登録（SELL注文用）
+                        # copilot-instructions.md準拠: デフォルト価格使用を回避
+                        if exit_price and exit_price > 0 and self.paper_broker:
+                            self.paper_broker.update_price(symbol, exit_price)
+                            self.logger.debug(f"[SELL] Price registered: {symbol} = {exit_price}円")
                         
                         # Phase 4.2-9-2: SELLオーダー数量修正
                         # 直前のBUYオーダーの数量を使用（ポジション追跡から取得）
@@ -545,7 +586,7 @@ class StrategyExecutionManager:
             
             # copilot-instructions.md: 実際の取引件数 > 0 を検証
             if len(orders) == 0 and (entry_count > 0 or exit_count > 0):
-                self.logger.warning(f"⚠️  Signal detected but no orders generated! Entry={entry_count}, Exit={exit_count}")
+                self.logger.warning(f"[WARNING] Signal detected but no orders generated! Entry={entry_count}, Exit={exit_count}")
             
             return orders
             
@@ -554,22 +595,127 @@ class StrategyExecutionManager:
             return []
     
     def _calculate_position_size(self, symbol: str) -> int:
-        """ポジションサイズ計算"""
-        # 簡易実装：固定額での購入
+        """
+        ポジションサイズ計算（Phase 4.2-16: 日本株対応版）
+        
+        Phase 4.2-16の変更点:
+        - 90%資金使用（余剰資金運用のため）
+        - 三菱UFJ eスマート証券手数料体系対応
+        - 100株単位（単元株制度）対応
+        - 手数料・スリッページ込みで最大購入可能株数を計算
+        
+        copilot-instructions.md準拠:
+        - デフォルト価格使用禁止（モック/ダミーデータ禁止）
+        - 実際の利用可能資金とリアルタイム価格を使用
+        - フォールバック禁止（資金不足時は0を返す）
+        
+        Args:
+            symbol: ティッカーシンボル
+        
+        Returns:
+            購入株数（整数、100株単位）
+        """
         try:
-            position_value = self.config.get('position_value', 10000)  # $10,000
-            current_price = 100.0  # デフォルト価格
+            # 1. 総資産を取得（実データ）
+            if not self.paper_broker:
+                self.logger.error(f"[ERROR] PaperBrokerが初期化されていません: {symbol}")
+                raise ValueError("PaperBroker not initialized")
             
+            # Phase 4.2-16: total_equity = 現金 + ポジション評価額
+            available_cash = self.paper_broker.get_account_balance()
+            
+            # ポジション評価額を取得
+            position_value = 0.0
+            if hasattr(self.paper_broker, 'get_positions'):
+                positions = self.paper_broker.get_positions()
+                for pos_symbol, pos_data in positions.items():
+                    if hasattr(pos_data, 'quantity') and hasattr(pos_data, 'current_price'):
+                        position_value += pos_data.quantity * pos_data.current_price
+            
+            total_equity = available_cash + position_value
+            
+            # Phase 4.2-16: 90%を使用（余剰資金運用）
+            available_funds = total_equity * 0.90
+            
+            self.logger.debug(
+                f"資金状況: {symbol} - 総資産={total_equity:,.0f}円, "
+                f"現金={available_cash:,.0f}円, ポジション={position_value:,.0f}円, "
+                f"使用可能額={available_funds:,.0f}円 (90%)"
+            )
+            
+            # 2. リアルタイム価格を取得（実データ）
+            current_price = None
+            
+            # 2-1. data_feedから価格取得を試行
             if self.data_feed:
                 try:
-                    current_price = self.data_feed.get_current_price(symbol) or current_price
-                except:
-                    pass
+                    current_price = self.data_feed.get_current_price(symbol)
+                    if current_price and current_price > 0:
+                        self.logger.debug(f"[OK] DataFeedから価格取得: {symbol} = {current_price:.2f}円")
+                except Exception as e:
+                    self.logger.warning(f"[WARNING] DataFeedからの価格取得失敗: {symbol} - {e}")
             
-            return int(position_value / current_price) if current_price > 0 else 100
+            # 2-2. PaperBrokerから価格取得を試行（フォールバック）
+            if (current_price is None or current_price <= 0) and hasattr(self.paper_broker, 'get_current_price'):
+                try:
+                    current_price = self.paper_broker.get_current_price(symbol)
+                    if current_price and current_price > 0:
+                        self.logger.debug(f"[OK] PaperBrokerから価格取得: {symbol} = {current_price:.2f}円")
+                except Exception as e:
+                    self.logger.warning(f"[WARNING] PaperBrokerからの価格取得失敗: {symbol} - {e}")
+            
+            # 2-3. 価格取得失敗時はエラー（デフォルト価格使用禁止）
+            if current_price is None or current_price <= 0:
+                error_msg = f"[ERROR] 実際の価格取得失敗: {symbol} (copilot-instructions.md: デフォルト価格使用禁止)"
+                self.logger.error(error_msg)
+                return 0  # Phase 4.2-16: エラー時は0を返す（取引しない）
+            
+            # 3. Phase 4.2-16: 手数料込みで最大購入可能株数を計算
+            try:
+                quantity, contract_value, commission, total_cost = calculate_max_affordable_quantity(
+                    available_funds=available_funds,
+                    stock_price=current_price,
+                    unit_size=100,  # 日本株は100株単位
+                    include_slippage=True,
+                    slippage_rate=0.0001  # 0.01% (引数名修正)
+                )
                 
-        except Exception:
-            return 100
+                self.logger.debug(
+                    f"手数料計算結果: {symbol} - "
+                    f"株数={quantity}株, 約定代金={contract_value:,.0f}円, "
+                    f"手数料={commission:.0f}円, 総コスト={total_cost:,.0f}円"
+                )
+                
+            except Exception as e:
+                self.logger.error(f"[ERROR] calculate_max_affordable_quantity失敗: {symbol} - {e}")
+                return 0
+            
+            # 4. Phase 4.2-16: 100株単位に調整（念のため）
+            final_quantity = adjust_to_trading_unit(quantity, unit_size=100)
+            
+            # 5. 最小株数チェック
+            if final_quantity < 100:
+                self.logger.warning(
+                    f"[WARNING] 資金不足で100株未満: {symbol} (計算株数={final_quantity}株, "
+                    f"必要資金={current_price * 100:,.0f}円, 利用可能額={available_funds:,.0f}円)"
+                )
+                return 0  # Phase 4.2-16: 100株未満なら取引しない（copilot-instructions.md準拠）
+            
+            # 6. 成功ログ出力
+            remaining_funds = available_funds - total_cost
+            self.logger.info(
+                f"[OK] {symbol} ポジションサイズ: {final_quantity}株 @ {current_price:.2f}円 "
+                f"(約定代金: {contract_value:,.0f}円, 手数料: {commission:.0f}円, "
+                f"総コスト: {total_cost:,.0f}円, 残金: {remaining_funds:,.0f}円)"
+            )
+            
+            return final_quantity
+                
+        except Exception as e:
+            error_msg = f"[ERROR] ポジションサイズ計算エラー: {symbol} - {e}"
+            self.logger.error(error_msg)
+            # Phase 4.2-16: エラー時は0を返す（copilot-instructions.md: フォールバック禁止）
+            return 0
     
     def _get_current_position(self, symbol: str) -> int:
         """現在のポジション取得"""

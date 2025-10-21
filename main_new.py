@@ -137,6 +137,9 @@ class MainSystemController:
             
             # 3. 動的戦略選択・重み計算
             self.logger.info(f"[STEP 3/7] 動的戦略選択実行")
+            
+            # DynamicStrategySelector復活（Phase 5-B-1）
+            # Phase 5-A完了: strategy_not_foundエラー解決、Entry_Idxバグ修正完了
             strategy_selection = self.strategy_selector.select_optimal_strategies(
                 market_analysis, stock_data
             )
@@ -166,16 +169,30 @@ class MainSystemController:
                 strategy_weights=strategy_selection.get('strategy_weights', {})
             )
             
+            # Phase 5-B-2: backtest_signalsを取得（Entry_Signal/Exit_Signal列を含む）
+            backtest_signals = None
+            if (isinstance(execution_results, dict) and 
+                'execution_results' in execution_results and 
+                len(execution_results['execution_results']) > 0):
+                # 最初の実行結果からbacktest_signalsを取得
+                for result in execution_results['execution_results']:
+                    if result.get('success') and 'backtest_signals' in result:
+                        backtest_signals = result['backtest_signals']
+                        break
+            
+            # backtest_signalsが取得できなければstock_dataを使用（後方互換）
+            data_for_analysis = backtest_signals if backtest_signals is not None else stock_data
+            
             # 6. 包括的パフォーマンス分析
             self.logger.info(f"[STEP 6/7] パフォーマンス分析")
             performance_results = self.performance_analyzer.analyze_comprehensive_performance(
-                execution_results, stock_data, market_analysis
+                execution_results, data_for_analysis, market_analysis
             )
             
             # 7. 包括的レポート生成
             self.logger.info(f"[STEP 7/7] 包括的レポート生成")
             report_results = self.reporter.generate_full_backtest_report(
-                execution_results, stock_data, ticker, config=None
+                execution_results, data_for_analysis, ticker, config=None
             )
             
             # 8. 実行結果統合
@@ -342,7 +359,11 @@ def main():
     print("=" * 80)
     
     if results['status'] == 'SUCCESS':
-        print(f"\n✅ ステータス: 成功")
+        # [DEBUG_PHASE1] データフロー追跡
+        print(f"\n[DEBUG_PHASE1] results keys: {results.keys()}")
+        print(f"[DEBUG_PHASE1] results['status']: {results['status']}")
+        
+        print(f"\n[OK] ステータス: 成功")
         print(f"銘柄: {results['ticker']}")
         print(f"実行時間: {results['execution_timestamp']}")
         
@@ -353,7 +374,13 @@ def main():
         
         # パフォーマンス結果
         performance = results.get('performance_results', {})
+        print(f"[DEBUG_PHASE1] performance type: {type(performance)}")
+        print(f"[DEBUG_PHASE1] performance keys: {performance.keys() if isinstance(performance, dict) else 'NOT_DICT'}")
+        
         summary = performance.get('summary_statistics', {})
+        print(f"[DEBUG_PHASE1] summary_statistics type: {type(summary)}")
+        print(f"[DEBUG_PHASE1] summary_statistics content: {summary}")
+        
         if summary:
             print(f"\n【パフォーマンスサマリー】")
             print(f"  総リターン: {summary.get('total_return', 0):.2%}")
@@ -361,6 +388,8 @@ def main():
             print(f"  シャープレシオ: {summary.get('sharpe_ratio', 0):.2f}")
             print(f"  最大ドローダウン: {summary.get('max_drawdown', 0):.2%}")
             print(f"  勝率: {summary.get('win_rate', 0):.2%}")
+        else:
+            print(f"\n[WARNING] summary_statistics is empty or None")
         
         # レポート結果
         report = results.get('report_results', {})
@@ -368,14 +397,14 @@ def main():
             print(f"\nレポート出力ディレクトリ: {report['output_directory']}")
     
     elif results['status'] == 'EXECUTION_DENIED':
-        print(f"\n⚠️  ステータス: 実行拒否")
+        print(f"\n[WARNING] ステータス: 実行拒否")
         print(f"理由: {results.get('message', 'リスク評価により実行拒否')}")
         
         risk = results.get('risk_assessment', {})
         print(f"リスクレベル: {risk.get('overall_risk_level', 'N/A')}")
     
     else:  # ERROR
-        print(f"\n❌ ステータス: エラー")
+        print(f"\n[ERROR] ステータス: エラー")
         print(f"エラー内容: {results.get('error', '不明なエラー')}")
     
     print("\n" + "=" * 80 + "\n")

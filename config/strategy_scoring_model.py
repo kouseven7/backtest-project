@@ -60,6 +60,8 @@ except ImportError:
 
 # ロガーの設定
 logger = logging.getLogger(__name__)
+# DEBUG レベルでログ出力（Phase 5-A デバッグ用）
+logger.setLevel(logging.DEBUG)
 
 @dataclass
 class ScoreWeights:
@@ -164,16 +166,37 @@ class StrategyScoreCalculator:
                     logger.debug(f"Returning cached score for {cache_key}")
                     return cached_score
             
-            # 戦略特性データを取得
+            # 戦略特性データを取得（修正: メタデータ直接読み込み）
+            # 優先順位: 1. 永続化データ（実行履歴あり） 2. メタデータ（特性情報のみ）
             strategy_data = self.data_loader.load_strategy_data(
                 strategy_name, tickers=[ticker], include_metadata=True
             )
             
-            if not strategy_data or ticker not in strategy_data:
-                logger.warning(f"No data available for strategy {strategy_name}, ticker {ticker}")
-                return None
+            ticker_data = None
             
-            ticker_data = strategy_data[ticker]
+            # 永続化データが存在する場合
+            if strategy_data and ticker in strategy_data:
+                ticker_data = strategy_data[ticker]
+                logger.debug(f"Using persistence data for {strategy_name}, ticker {ticker}")
+            else:
+                # フォールバック: メタデータから直接読み込み
+                logger.info(f"Persistence data not found for {strategy_name}, loading from metadata")
+                
+                # Phase 5-A: キャッシュ無効化 + parameters読み込みスキップ
+                from config.strategy_characteristics_data_loader import LoadOptions
+                load_options = LoadOptions(
+                    use_cache=False,  # キャッシュ無効化
+                    include_parameters=False  # parameters_data の影響を排除
+                )
+                metadata = self.data_loader.load_strategy_characteristics(strategy_name, options=load_options)
+                
+                if not metadata:
+                    logger.warning(f"No metadata available for strategy {strategy_name}")
+                    return None
+                
+                # メタデータを ticker_data 形式に変換
+                ticker_data = self._convert_metadata_to_ticker_data(metadata, ticker)
+                logger.debug(f"Using metadata for {strategy_name}, ticker {ticker}")
             
             # 各コンポーネントスコアを計算
             component_scores = self._calculate_component_scores(
@@ -262,18 +285,42 @@ class StrategyScoreCalculator:
         try:
             performance_metrics = ticker_data.get('performance_metrics', {})
             
+            # DEBUG: performance_metrics の内容をログ出力
+            logger.debug(f"[SCORE_DEBUG] performance_metrics: {performance_metrics}")
+            
             # 主要メトリクスを取得
             total_return = performance_metrics.get('total_return', 0.0)
             win_rate = performance_metrics.get('win_rate', 0.5)
             profit_factor = performance_metrics.get('profit_factor', 1.0)
             
+            # DEBUG: 抽出された値をログ出力
+            logger.debug(f"[SCORE_DEBUG] total_return={total_return}, win_rate={win_rate}, profit_factor={profit_factor}")
+            
             # 正規化（0-1スケール）
-            return_score = min(max(total_return / 100.0, 0), 1)  # 100%を上限
+            # Phase 5-A修正: total_returnが既にパーセント形式(15.0 = 15%)か比率形式(0.15 = 15%)かを判断
+            # 通常、10以上なら percent形式、0.0~1.0なら比率形式と判断
+            if abs(total_return) >= 2.0:
+                # パーセント形式（例: 15.0 = 15%）
+                return_score = min(max(total_return / 100.0, 0), 1)  # 100%を上限
+            else:
+                # 比率形式（例: 0.15 = 15%）or 小さいexpectancy値（例: 0.04）
+                # expectancy値の場合、より大きくスケール（1トレード=0.04なら、年間250トレードで10%程度）
+                if abs(total_return) < 0.2:  # expectancyっぽい小さい値
+                    return_score = min(max(total_return * 10, 0), 1)  # 0.04 * 10 = 0.4
+                else:
+                    return_score = min(max(total_return, 0), 1)  # 既に比率形式
+            
             win_rate_score = win_rate
             profit_score = min(max((profit_factor - 1.0) / 2.0, 0), 1)  # 3.0を上限
             
+            # DEBUG: 正規化後のスコアをログ出力
+            logger.debug(f"[SCORE_DEBUG] return_score={return_score}, win_rate_score={win_rate_score}, profit_score={profit_score}")
+            
             # 加重平均
             performance_score = (return_score * 0.4 + win_rate_score * 0.3 + profit_score * 0.3)
+            
+            # DEBUG: 最終スコアをログ出力
+            logger.debug(f"[SCORE_DEBUG] final performance_score={performance_score}")
             
             return max(min(performance_score, 1.0), 0.0)
             
@@ -406,10 +453,115 @@ class StrategyScoreCalculator:
             logger.warning(f"Error calculating confidence: {e}")
             return 0.5
     
+    def _convert_metadata_to_ticker_data(self, metadata: Dict[str, Any], ticker: str) -> Dict[str, Any]:
+        """
+        メタデータを ticker_data 形式に変換
+        
+        Args:
+            metadata: 戦略メタデータ (v1.0 or v2.0 schema)
+            ticker: ティッカーシンボル
+            
+        Returns:
+            Dict[str, Any]: ticker_data 形式のデータ
+        """
+        try:
+            # DEBUG: メソッド呼び出しを確認
+            strategy_name = metadata.get('strategy_id', metadata.get('strategy_name', 'unknown'))
+            logger.debug(f"[METADATA_DEBUG] Converting metadata for strategy: {strategy_name}")
+            logger.debug(f"[METADATA_DEBUG] Metadata keys: {list(metadata.keys())[:10]}")  # 最初の10キーのみ
+            
+            # スキーマバージョン判定
+            schema_version = metadata.get('schema_version', '1.0')
+            logger.debug(f"[METADATA_DEBUG] Detected schema_version: {schema_version}")
+            
+            # performance_metrics の抽出（スキーマ統一対応）
+            performance_metrics = metadata.get('performance_metrics', {})
+            logger.debug(f"[METADATA_DEBUG] Direct performance_metrics: {performance_metrics}")
+            
+            # v1.0 スキーマの場合、performance_metrics がない場合がある
+            if not performance_metrics and 'trend_adaptability' in metadata:
+                # trend_adaptability から performance_metrics を生成
+                trend_data = metadata.get('trend_adaptability', {})
+                uptrend_data = trend_data.get('uptrend', {})
+                
+                # DEBUG: 抽出元データをログ出力
+                logger.debug(f"[METADATA_DEBUG] schema_version={schema_version}, uptrend_data keys={list(uptrend_data.keys())}")
+                
+                if schema_version == '2.0':
+                    # v2.0: performance_metrics キーを使用
+                    perf = uptrend_data.get('performance_metrics', {})
+                else:
+                    # v1.0: 直接キーを使用
+                    perf = uptrend_data
+                
+                # DEBUG: 抽出したデータをログ出力
+                logger.debug(f"[METADATA_DEBUG] perf data: {perf}")
+                
+                # Phase 5-A修正: expectancy も total_return の候補として考慮
+                # avg_return が 0.0 の場合、expectancy を使用
+                avg_return = perf.get('avg_return', 0.0)
+                expected_return = perf.get('expected_return', avg_return)
+                expectancy = perf.get('expectancy', 0.0)
+                
+                # 優先順位: expected_return > expectancy (avg_return が 0 の場合) > avg_return
+                if expected_return != 0.0:
+                    total_return = expected_return
+                elif avg_return == 0.0 and expectancy != 0.0:
+                    # avg_return が 0 の場合、expectancy を代替として使用（通常は小さい値）
+                    # expectancy は1トレードあたりの期待値なので、適切にスケール
+                    total_return = expectancy * 100  # 仮に100トレードとして年換算
+                    logger.debug(f"[METADATA_DEBUG] Using expectancy {expectancy} as total_return: {total_return}")
+                else:
+                    total_return = avg_return
+                
+                performance_metrics = {
+                    'total_return': total_return,
+                    'win_rate': perf.get('win_rate', 0.6),
+                    'profit_factor': perf.get('profit_factor', 1.5),
+                    'volatility': perf.get('volatility', 0.15),
+                    'max_drawdown': perf.get('max_drawdown', -0.1),
+                    'sharpe_ratio': perf.get('sharpe_ratio', 1.0)
+                }
+                
+                # DEBUG: 生成された performance_metrics をログ出力
+                logger.debug(f"[METADATA_DEBUG] generated performance_metrics: {performance_metrics}")
+            
+            # ticker_data 形式に変換
+            ticker_data = {
+                'strategy_name': metadata.get('strategy_id', metadata.get('strategy_name', 'unknown')),
+                'ticker': ticker,
+                'performance_metrics': performance_metrics,
+                'trend_adaptability': metadata.get('trend_adaptability', {}),
+                'volatility_adaptability': metadata.get('volatility_adaptability', {}),
+                'risk_profile': metadata.get('risk_profile', {}),
+                'last_updated': metadata.get('last_updated', datetime.now().isoformat()),
+                'performance_history': [],  # メタデータには履歴がない
+                'data_source': 'metadata',
+                'schema_version': schema_version
+            }
+            
+            return ticker_data
+            
+        except Exception as e:
+            logger.error(f"Error converting metadata to ticker_data: {e}")
+            # 最小限のデータを返す
+            return {
+                'strategy_name': metadata.get('strategy_id', metadata.get('strategy_name', 'unknown')),
+                'ticker': ticker,
+                'performance_metrics': {},
+                'data_source': 'metadata_fallback'
+            }
+    
     def _assess_data_completeness(self, ticker_data: Dict[str, Any]) -> float:
         """データ完整性を評価"""
         required_fields = ['performance_metrics', 'last_updated', 'performance_history']
         available_fields = sum(1 for field in required_fields if field in ticker_data)
+        
+        # メタデータソースの場合は performance_history がないのは正常
+        if ticker_data.get('data_source') == 'metadata':
+            required_fields = ['performance_metrics', 'last_updated']
+            available_fields = sum(1 for field in required_fields if field in ticker_data)
+        
         return available_fields / len(required_fields)
     
     def _assess_score_consistency(self, component_scores: Dict[str, float]) -> float:

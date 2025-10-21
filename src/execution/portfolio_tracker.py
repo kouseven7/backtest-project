@@ -93,7 +93,7 @@ class PerformanceMetrics:
 class PortfolioTracker:
     """ポートフォリオ追跡クラス"""
     
-    def __init__(self, initial_cash: float = 100000.0):
+    def __init__(self, initial_cash: float = 1000000.0):  # Phase 4.2-16: デフォルト100万円に変更
         self.initial_cash = initial_cash
         self.cash = initial_cash
         self.positions: Dict[str, Position] = {}

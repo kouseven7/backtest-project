@@ -85,14 +85,14 @@ class DynamicStrategySelector:
     def __init__(
         self,
         selection_mode: StrategySelectionMode = StrategySelectionMode.MARKET_ADAPTIVE,
-        min_confidence_threshold: float = 0.5
+        min_confidence_threshold: float = 0.35  # Phase 5-A-11暫定: 0.45→0.35（スコア変換調査は別タスク）
     ):
         """
         DynamicStrategySelector初期化
         
         Args:
             selection_mode: 戦略選択モード
-            min_confidence_threshold: 最小信頼度閾値
+            min_confidence_threshold: 最小信頼度閾値 (Phase 5-A: 0.5→0.45に引き下げ)
             
         注意事項（copilot-instructions.md準拠）:
         - 実際のbacktest実行を妨げないこと
@@ -112,8 +112,11 @@ class DynamicStrategySelector:
             self.selector = None
         
         try:
-            self.score_calculator = EnhancedStrategyScoreCalculator()
-            self.logger.info("EnhancedStrategyScoreCalculator initialized")
+            # Phase 5-A-11修正: data_loaderを渡してメタデータ読み込みを有効化
+            from config.strategy_characteristics_data_loader import StrategyCharacteristicsDataLoader
+            data_loader = StrategyCharacteristicsDataLoader()
+            self.score_calculator = EnhancedStrategyScoreCalculator(data_loader)
+            self.logger.info("EnhancedStrategyScoreCalculator initialized with data_loader")
         except Exception as e:
             self.logger.warning(f"EnhancedStrategyScoreCalculator init failed: {e}")
             self.score_calculator = None
@@ -126,14 +129,16 @@ class DynamicStrategySelector:
             self.characteristics_manager = None
         
         # 利用可能な戦略リスト
+        # Phase 5-A-11修正: OpeningGapFixedStrategy除外（メタデータなし、フォールバックスコア問題）
         self.available_strategies = [
             'VWAPBreakoutStrategy',
             'MomentumInvestingStrategy',
             'BreakoutStrategy',
             'VWAPBounceStrategy',
-            'OpeningGapFixedStrategy',
+            # 'OpeningGapFixedStrategy',  # メタデータ未作成のため除外（copilot-instructions.md準拠）
             'ContrarianStrategy',
-            'GCStrategy'
+            'GCStrategy',
+            'OpeningGapStrategy'  # メタデータありの通常版
         ]
         
         self.logger.info(f"DynamicStrategySelector initialized with mode: {selection_mode.value}")
@@ -193,6 +198,9 @@ class DynamicStrategySelector:
             results['strategy_scores'] = strategy_scores
             results['components_status']['scoring'] = 'success'
             
+            # Phase 5-A-11デバッグ: strategy_scoresの内容を確認
+            self.logger.debug(f"[SCORE_CHECK] strategy_scores before selection: {strategy_scores}")
+            
             # 2. 市場レジームベース戦略選択
             selected_strategies = self._select_strategies_by_regime(
                 strategy_scores, market_analysis['market_regime']
@@ -226,8 +234,10 @@ class DynamicStrategySelector:
             )
             results['selection_rationale'] = selection_rationale
             
+            # Phase 5-A-11修正: 選択された戦略名を明示的にログ出力
             self.logger.info(
                 f"Strategy selection completed - Selected: {len(selected_strategies)}, "
+                f"Strategies: {selected_strategies}, "
                 f"Confidence: {confidence_level:.2f}"
             )
             
@@ -330,31 +340,42 @@ class DynamicStrategySelector:
         )
         
         # 市場レジーム別選択ロジック
+        # Phase 5-A修正: > を >= に変更（スコアが閾値ちょうどの場合も通過させる）
         if self.selection_mode == StrategySelectionMode.MARKET_ADAPTIVE:
             # 市場レジームに応じて選択数を調整
             if 'strong' in market_regime.lower():
                 # 強いトレンド: トップ2戦略
-                selected = [s[0] for s in sorted_strategies[:2] if s[1] > self.min_confidence_threshold]
+                selected = [s[0] for s in sorted_strategies[:2] if s[1] >= self.min_confidence_threshold]
             elif 'sideways' in market_regime.lower() or 'volatile' in market_regime.lower():
                 # レンジ・高ボラ: トップ3戦略（分散）
-                selected = [s[0] for s in sorted_strategies[:3] if s[1] > self.min_confidence_threshold]
+                selected = [s[0] for s in sorted_strategies[:3] if s[1] >= self.min_confidence_threshold]
             else:
                 # 通常トレンド: トップ2-3戦略
-                selected = [s[0] for s in sorted_strategies[:2] if s[1] > self.min_confidence_threshold]
+                selected = [s[0] for s in sorted_strategies[:2] if s[1] >= self.min_confidence_threshold]
         
         elif self.selection_mode == StrategySelectionMode.SINGLE_BEST:
-            selected = [sorted_strategies[0][0]] if sorted_strategies[0][1] > self.min_confidence_threshold else []
+            selected = [sorted_strategies[0][0]] if sorted_strategies[0][1] >= self.min_confidence_threshold else []
         
         elif self.selection_mode == StrategySelectionMode.TOP_N:
-            selected = [s[0] for s in sorted_strategies[:3] if s[1] > self.min_confidence_threshold]
+            selected = [s[0] for s in sorted_strategies[:3] if s[1] >= self.min_confidence_threshold]
         
         else:
             # デフォルト: トップ2
-            selected = [s[0] for s in sorted_strategies[:2] if s[1] > self.min_confidence_threshold]
+            selected = [s[0] for s in sorted_strategies[:2] if s[1] >= self.min_confidence_threshold]
         
-        # 最低1戦略は選択
-        if not selected and sorted_strategies:
-            selected = [sorted_strategies[0][0]]
+        # copilot-instructions.md準拠: フォールバック禁止
+        # エラー隠蔽して強制的にテスト継続させるフォールバックは実装しない
+        if not selected:
+            # スコアが全て閾値未満の場合はエラーとして扱う
+            max_score = sorted_strategies[0][1] if sorted_strategies else 0.0
+            raise ValueError(
+                f"No strategies passed confidence threshold. "
+                f"Market regime: {market_regime}, "
+                f"Min threshold: {self.min_confidence_threshold}, "
+                f"Max score: {max_score:.3f}. "
+                f"This indicates strategy scoring failure or extremely unfavorable market conditions. "
+                f"Fallback selection is prohibited by copilot-instructions.md."
+            )
         
         return selected
     

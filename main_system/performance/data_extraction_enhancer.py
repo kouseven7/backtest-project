@@ -47,6 +47,11 @@ class MainDataExtractor:
         trades: List[Dict[str, Any]] = []
         current_positions: Dict[str, Dict[str, Any]] = {}  # 戦略別ポジション管理
         
+        # Phase 5-B-2: データフロー追跡ログ
+        self.logger.info(f"[DATA_FLOW_ENHANCER] stock_data type: {type(stock_data)}")
+        self.logger.info(f"[DATA_FLOW_ENHANCER] stock_data shape: {stock_data.shape}")
+        self.logger.info(f"[DATA_FLOW_ENHANCER] stock_data columns: {list(stock_data.columns)}")
+        
         if stock_data.empty:
             self.logger.warning("空のDataFrameが渡されました")
             return trades
@@ -54,11 +59,22 @@ class MainDataExtractor:
         # 必要な列の確認
         required_cols = ['Entry_Signal', 'Exit_Signal', 'Close']
         missing_cols = [col for col in required_cols if col not in stock_data.columns]
+        
+        # Phase 5-B-2: 列不足の詳細ログ
+        self.logger.info(f"[DATA_FLOW_ENHANCER] Required columns: {required_cols}")
+        self.logger.info(f"[DATA_FLOW_ENHANCER] Missing columns: {missing_cols}")
+        
         if missing_cols:
             self.logger.error(f"必要な列が不足: {missing_cols}")
             return trades
         
         self.logger.info(f"データ解析開始: {len(stock_data)}行, 期間: {stock_data.index[0]} - {stock_data.index[-1]}")
+        
+        # Phase 5-B-2 Step 4-1: Entry_Signal/Exit_Signalの値分布確認
+        entry_signal_values = stock_data['Entry_Signal'].value_counts().to_dict()
+        exit_signal_values = stock_data['Exit_Signal'].value_counts().to_dict()
+        self.logger.info(f"[DATA_FLOW_ENHANCER] Entry_Signal value counts: {entry_signal_values}")
+        self.logger.info(f"[DATA_FLOW_ENHANCER] Exit_Signal value counts: {exit_signal_values}")
         
         for idx, row in stock_data.iterrows():
             try:
@@ -67,8 +83,8 @@ class MainDataExtractor:
                     strategy = row.get('Strategy', 'Unknown')
                     self._process_entry_signal(current_positions, idx, row, strategy)
                     
-                # エグジットシグナル検出
-                if row.get('Exit_Signal', 0) == 1:
+                # エグジットシグナル検出（Exit_Signal == -1 が正しい仕様）
+                if row.get('Exit_Signal', 0) == -1:
                     strategy = row.get('Strategy', 'Unknown')
                     completed_trade = self._process_exit_signal(current_positions, idx, row, strategy)
                     if completed_trade:

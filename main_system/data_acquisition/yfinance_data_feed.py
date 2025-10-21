@@ -4,7 +4,7 @@ yfinance_data_feed.py - yfinance統合データフィード実装（シンプル
 Phase 4.2実装: リアルデータ取得機能
 - yfinance APIを使用した株価データ取得
 - エラーハンドリング実装
-- フォールバック機能（サンプルデータ生成）
+- copilot-instructions.md準拠: フォールバック機能削除（モック/ダミーデータ禁止）
 
 Author: imega
 Created: 2025-10-20
@@ -16,7 +16,6 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Optional
 import pandas as pd
-import numpy as np
 
 # プロジェクトパス設定
 project_root = Path(__file__).parent.parent.parent
@@ -32,7 +31,7 @@ class YFinanceDataFeed:
     機能:
     - yfinanceを使用したリアルデータ取得
     - エラーハンドリング
-    - フォールバック（サンプルデータ生成）
+    - copilot-instructions.md準拠: データ取得失敗時はエラー発生（フォールバック禁止）
     """
     
     def __init__(self):
@@ -49,15 +48,23 @@ class YFinanceDataFeed:
         self.logger.info("YFinanceDataFeed initialized")
     
     def _import_yfinance(self):
-        """yfinance遅延インポート"""
+        """
+        yfinance遅延インポート
+        
+        Raises:
+            RuntimeError: yfinanceインポート失敗時
+        """
         try:
             import yfinance as yf
             self.yf = yf
             self.logger.info("yfinance imported successfully")
         except ImportError as e:
             self.logger.error(f"Failed to import yfinance: {e}")
-            self.logger.warning("yfinance not available. Will use sample data generation.")
-            self.yf = None
+            raise RuntimeError(
+                "yfinance is not installed. "
+                "Please install it with: pip install yfinance. "
+                "Mock/dummy data fallback is prohibited by copilot-instructions.md"
+            ) from e
     
     def get_stock_data(
         self,
@@ -77,6 +84,9 @@ class YFinanceDataFeed:
         
         Returns:
             株価データ（OHLCV + Adj Close）
+            
+        Raises:
+            RuntimeError: データ取得失敗時（copilot-instructions.md準拠）
         """
         self.logger.info(f"Getting stock data for {ticker}")
         
@@ -90,21 +100,34 @@ class YFinanceDataFeed:
         
         self.logger.info(f"Date range: {start_date} to {end_date}")
         
-        # yfinanceが利用可能な場合はリアルデータ取得
-        if self.yf is not None:
-            try:
-                data = self._get_yfinance_data(ticker, start_date, end_date)
-                if data is not None and len(data) > 0:
-                    self.logger.info(f"Successfully retrieved {len(data)} rows from yfinance")
-                    return data
-                else:
-                    self.logger.warning(f"yfinance returned empty data for {ticker}")
-            except Exception as e:
-                self.logger.error(f"yfinance data retrieval error: {e}", exc_info=True)
+        # yfinanceからリアルデータ取得（必須）
+        if self.yf is None:
+            raise RuntimeError(
+                f"Cannot retrieve data for {ticker}: yfinance is not available. "
+                "Mock/dummy data fallback is prohibited by copilot-instructions.md"
+            )
         
-        # フォールバック: サンプルデータ生成
-        self.logger.warning(f"Using sample data generation for {ticker}")
-        return self._generate_sample_data(ticker, start_date, end_date)
+        try:
+            data = self._get_yfinance_data(ticker, start_date, end_date)
+            if data is not None and len(data) > 0:
+                self.logger.info(f"Successfully retrieved {len(data)} rows from yfinance")
+                return data
+            else:
+                self.logger.error(f"yfinance returned empty data for {ticker}")
+                raise RuntimeError(
+                    f"Failed to retrieve data for {ticker}: yfinance returned empty dataset. "
+                    f"Date range: {start_date} to {end_date}. "
+                    "Mock/dummy data fallback is prohibited by copilot-instructions.md"
+                )
+        except RuntimeError:
+            # RuntimeErrorはそのまま再送出
+            raise
+        except Exception as e:
+            self.logger.error(f"yfinance data retrieval error: {e}", exc_info=True)
+            raise RuntimeError(
+                f"Failed to retrieve data for {ticker}: {e}. "
+                "Mock/dummy data fallback is prohibited by copilot-instructions.md"
+            ) from e
     
     def _get_yfinance_data(
         self,
@@ -170,49 +193,10 @@ class YFinanceDataFeed:
             self.logger.error(f"yfinance data retrieval failed: {e}", exc_info=True)
             return None
     
-    def _generate_sample_data(
-        self,
-        ticker: str,
-        start_date: str,
-        end_date: str
-    ) -> pd.DataFrame:
-        """
-        サンプルデータ生成（フォールバック）
-        
-        Args:
-            ticker: ティッカーシンボル
-            start_date: 開始日
-            end_date: 終了日
-        
-        Returns:
-            サンプル株価データ
-        """
-        self.logger.info(f"Generating sample data for {ticker}")
-        
-        # 日付範囲生成
-        start_dt = pd.to_datetime(start_date)
-        end_dt = pd.to_datetime(end_date)
-        dates = pd.date_range(start=start_dt, end=end_dt, freq='D')
-        days_count = len(dates)
-        
-        # サンプル価格生成
-        base_price = 100
-        returns = np.random.randn(days_count) * 0.02  # 2% 日次ボラティリティ
-        prices = base_price * (1 + returns).cumprod()
-        
-        # OHLCV データ生成
-        data = pd.DataFrame({
-            'Open': prices * (1 + np.random.randn(days_count) * 0.01),
-            'High': prices * (1 + abs(np.random.randn(days_count)) * 0.015),
-            'Low': prices * (1 - abs(np.random.randn(days_count)) * 0.015),
-            'Close': prices,
-            'Adj Close': prices,
-            'Volume': np.random.randint(1000000, 10000000, days_count)
-        }, index=dates)
-        
-        self.logger.info(f"Sample data generated: {len(data)} rows")
-        
-        return data
+    # _generate_sample_data() メソッドを削除
+    # 理由: copilot-instructions.md違反
+    # 「モック/ダミー/テストデータを使用するフォールバック禁止」
+    # 実データ取得失敗時はget_stock_data()でRuntimeErrorを発生させる
     
     def get_index_data(
         self,

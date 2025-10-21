@@ -130,6 +130,15 @@ class ComprehensiveReporter:
         try:
             self.logger.info(f"Generating comprehensive report for {ticker}")
             
+            # Phase 5-B-2: execution_resultsを保存（_generate_text_reportで使用）
+            self._current_execution_results = execution_results
+            
+            # Phase 5-B-2: データフロー追跡ログ
+            self.logger.info(f"[DATA_FLOW_REPORTER] execution_results type: {type(execution_results)}")
+            self.logger.info(f"[DATA_FLOW_REPORTER] execution_results keys: {execution_results.keys() if isinstance(execution_results, dict) else 'NOT_DICT'}")
+            self.logger.info(f"[DATA_FLOW_REPORTER] stock_data shape: {stock_data.shape}")
+            self.logger.info(f"[DATA_FLOW_REPORTER] stock_data columns: {list(stock_data.columns)}")
+            
             # タイムスタンプ付きディレクトリ作成
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             report_dir = self.output_base_dir / f"{ticker}_{timestamp}"
@@ -138,6 +147,11 @@ class ComprehensiveReporter:
             # 1. データ抽出と分析
             self.logger.info("Step 1: Data extraction and analysis")
             extracted_data = self._extract_and_analyze_data(stock_data, execution_results)
+            
+            # Phase 5-B-2: 抽出結果ログ
+            self.logger.info(f"[DATA_FLOW_REPORTER] extracted_data type: {type(extracted_data)}")
+            if isinstance(extracted_data, dict) and 'executed_trades' in extracted_data:
+                self.logger.info(f"[DATA_FLOW_REPORTER] Extracted {len(extracted_data['executed_trades'])} trades")
             
             # 2. パフォーマンス計算
             self.logger.info("Step 2: Performance calculation")
@@ -231,7 +245,7 @@ class ComprehensiveReporter:
             executed_trades = self._extract_executed_trades(execution_results)
             
             if executed_trades:
-                self.logger.info(f"✅ Adding {len(executed_trades)} executed trades to report")
+                self.logger.info(f"[OK] Adding {len(executed_trades)} executed trades to report")
                 # 実行された取引をマージ
                 extracted_trades.extend(executed_trades)
                 self.logger.info(f"Total trades after merge: {len(extracted_trades)}")
@@ -268,7 +282,11 @@ class ComprehensiveReporter:
         execution_results: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
         """
-        execution_resultsから実行された取引を抽出（Phase 4.2-5-3）
+        execution_resultsから実行された取引を抽出（Phase 5-B-1 Step 3-2: フォールバック削除版）
+        
+        copilot-instructions.md準拠:
+        - 実データのみ抽出
+        - データ不足時はエラーログ、空リスト返却（フォールバック禁止）
         
         Args:
             execution_results: 戦略実行結果
@@ -289,17 +307,33 @@ class ComprehensiveReporter:
                     if isinstance(result, dict) and 'execution_details' in result:
                         trades = self._convert_execution_details_to_trades(result['execution_details'])
                         executed_trades.extend(trades)
+                        self.logger.info(
+                            f"[REAL_DATA] Extracted {len(trades)} trades from "
+                            f"strategy: {result.get('strategy_name', 'Unknown')}"
+                        )
             
             # パターン2: execution_results['execution_details']（単一戦略結果）
             elif 'execution_details' in execution_results:
                 trades = self._convert_execution_details_to_trades(execution_results['execution_details'])
                 executed_trades.extend(trades)
+                self.logger.info(f"[REAL_DATA] Extracted {len(trades)} trades from execution_details")
             
-            self.logger.info(f"Extracted {len(executed_trades)} executed trades from execution_results")
+            # データ検証（copilot-instructions.md: 実際の取引件数 > 0 を検証）
+            if not executed_trades:
+                self.logger.warning(
+                    "[FALLBACK_PROHIBITED] execution_resultsから取引データを抽出できませんでした。"
+                    "copilot-instructions.md準拠: ダミーデータは生成しません。"
+                )
+            else:
+                self.logger.info(
+                    f"[SUCCESS] Extracted {len(executed_trades)} real trades from execution_results"
+                )
+            
             return executed_trades
             
         except Exception as e:
             self.logger.error(f"Error extracting executed trades: {e}", exc_info=True)
+            # copilot-instructions.md: フォールバック禁止
             return []
     
     def _convert_execution_details_to_trades(
@@ -307,16 +341,31 @@ class ComprehensiveReporter:
         execution_details: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """
-        execution_detailsを取引レコード形式に変換
+        execution_detailsを取引レコード形式に変換（Phase 5-B-1 Step 3-2: フォールバック削除版）
+        
+        copilot-instructions.md準拠:
+        - ダミーデータ生成フォールバック禁止
+        - BUY/SELLペアの実データのみ抽出
+        - データ不足時はエラーログのみ、空リスト返却
         
         Args:
             execution_details: 実行詳細リスト
         
         Returns:
             取引レコードリスト（MainDataExtractor形式）
+        
+        Raises:
+            ValueError: データ構造が不正な場合（フォールバック禁止）
         """
         try:
             trades = []
+            
+            # BUY/SELLペアの抽出（実データのみ）
+            # execution_detailsは個別の注文実行記録のリスト
+            # BUY→SELLのペアを構成する必要がある
+            
+            buy_orders = []
+            sell_orders = []
             
             for detail in execution_details:
                 if not isinstance(detail, dict):
@@ -326,29 +375,96 @@ class ComprehensiveReporter:
                 if detail.get('status') != 'executed' or not detail.get('success', False):
                     continue
                 
-                # 取引レコード作成（MainDataExtractorと同じ形式）
-                trade_record = {
-                    'entry_date': detail.get('timestamp', datetime.now()),
-                    'exit_date': detail.get('timestamp', datetime.now()),  # 同日決済と仮定
-                    'entry_price': detail.get('executed_price', 0.0),
-                    'exit_price': detail.get('executed_price', 0.0),  # 即時決済の場合は同価格
-                    'shares': detail.get('quantity', 0),
-                    'pnl': 0.0,  # 即時決済の場合は利益なし
-                    'return_pct': 0.0,
-                    'holding_period_days': 0,
-                    'strategy': detail.get('symbol', 'Unknown'),  # 暫定的にsymbolを使用
-                    'position_value': detail.get('executed_price', 0.0) * detail.get('quantity', 0),
-                    'is_forced_exit': False,
-                    'is_executed_trade': True  # Phase 4.2-5-3: 実行取引フラグ
-                }
-                
-                trades.append(trade_record)
-                
-            self.logger.debug(f"Converted {len(trades)} execution details to trade records")
+                # BUY/SELL分類
+                action = detail.get('action', '').upper()
+                if action == 'BUY':
+                    buy_orders.append(detail)
+                elif action == 'SELL':
+                    sell_orders.append(detail)
+            
+            # BUY/SELLペアリング（FIFO方式）
+            # copilot-instructions.md: 実データのみ使用、推測による補完禁止
+            if len(buy_orders) != len(sell_orders):
+                self.logger.warning(
+                    f"[FALLBACK_PROHIBITED] BUY/SELLペア不一致: "
+                    f"BUY={len(buy_orders)}, SELL={len(sell_orders)}. "
+                    f"copilot-instructions.md準拠: ダミーデータ補完は実行しません。"
+                )
+                # フォールバック禁止: ペアが成立しない場合は空リスト返却
+                return []
+            
+            # ペアリング実行
+            for buy_order, sell_order in zip(buy_orders, sell_orders):
+                try:
+                    # 実データから取引レコード作成
+                    entry_date = buy_order.get('timestamp')
+                    exit_date = sell_order.get('timestamp')
+                    entry_price = buy_order.get('executed_price', 0.0)
+                    exit_price = sell_order.get('executed_price', 0.0)
+                    shares = buy_order.get('quantity', 0)
+                    
+                    # データ検証（copilot-instructions.md: 推測ではなく正確な数値）
+                    if not all([entry_date, exit_date, entry_price > 0, exit_price > 0, shares > 0]):
+                        self.logger.error(
+                            f"[DATA_VALIDATION_FAILED] 不正な取引データ: "
+                            f"entry_date={entry_date}, exit_date={exit_date}, "
+                            f"entry_price={entry_price}, exit_price={exit_price}, shares={shares}. "
+                            f"スキップします（フォールバック禁止）。"
+                        )
+                        continue
+                    
+                    # 損益計算（実データに基づく）
+                    pnl = (exit_price - entry_price) * shares
+                    return_pct = (exit_price - entry_price) / entry_price if entry_price > 0 else 0.0
+                    
+                    # 保有期間計算
+                    holding_period_days = 0
+                    try:
+                        if isinstance(entry_date, (pd.Timestamp, datetime)):
+                            entry_dt = entry_date
+                        else:
+                            entry_dt = pd.to_datetime(entry_date)
+                        
+                        if isinstance(exit_date, (pd.Timestamp, datetime)):
+                            exit_dt = exit_date
+                        else:
+                            exit_dt = pd.to_datetime(exit_date)
+                        
+                        holding_period_days = (exit_dt - entry_dt).days
+                    except Exception as e:
+                        self.logger.warning(f"保有期間計算エラー: {e}")
+                    
+                    # 取引レコード作成（実データのみ）
+                    trade_record = {
+                        'entry_date': entry_date,
+                        'exit_date': exit_date,
+                        'entry_price': entry_price,
+                        'exit_price': exit_price,
+                        'shares': shares,
+                        'pnl': pnl,
+                        'return_pct': return_pct,
+                        'holding_period_days': holding_period_days,
+                        'strategy': buy_order.get('symbol', 'Unknown'),
+                        'position_value': entry_price * shares,
+                        'is_forced_exit': False,
+                        'is_executed_trade': True  # Phase 4.2-5-3: 実行取引フラグ
+                    }
+                    
+                    trades.append(trade_record)
+                    
+                except Exception as e:
+                    self.logger.error(f"取引レコード作成エラー: {e}")
+                    continue
+            
+            self.logger.info(
+                f"[REAL_DATA_ONLY] Converted {len(trades)} execution details to trade records "
+                f"(BUY={len(buy_orders)}, SELL={len(sell_orders)})"
+            )
             return trades
             
         except Exception as e:
             self.logger.error(f"Error converting execution details: {e}", exc_info=True)
+            # copilot-instructions.md: フォールバック禁止、エラー時は空リスト返却
             return []
     
     def _calculate_basic_performance(
@@ -523,12 +639,17 @@ class ComprehensiveReporter:
         performance_metrics: Dict[str, Any],
         report_dir: Path
     ) -> str:
-        """テキストレポート生成"""
+        """テキストレポート生成（Phase 5-B-2: execution_results対応版）"""
         try:
+            # Phase 5-B-2: execution_resultsを取得
+            # self.execution_resultsはgenerate_full_backtest_report()で保存される
+            execution_results_to_pass = getattr(self, '_current_execution_results', None)
+            
             # MainTextReporterを使用
             text_report_path = self.text_reporter.generate_comprehensive_report(
                 stock_data=stock_data,
                 ticker=ticker,
+                execution_results=execution_results_to_pass,  # Phase 5-B-2追加
                 optimized_params=None,  # 最適化パラメータは別途実装時に追加
                 output_dir=str(report_dir)
             )

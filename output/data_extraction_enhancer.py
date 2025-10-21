@@ -67,8 +67,8 @@ class MainDataExtractor:
                     strategy = row.get('Strategy', 'Unknown')
                     self._process_entry_signal(current_positions, idx, row, strategy)
                     
-                # エグジットシグナル検出
-                if row.get('Exit_Signal', 0) == 1:
+                # エグジットシグナル検出（Exit_Signal == -1 が正しい仕様）
+                if row.get('Exit_Signal', 0) == -1:
                     strategy = row.get('Strategy', 'Unknown')
                     completed_trade = self._process_exit_signal(current_positions, idx, row, strategy)
                     if completed_trade:

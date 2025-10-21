@@ -1,6 +1,22 @@
 """
-戦略実行管理システム
-既存の戦略システムとの統合 + シンプル実行
+【非推奨 - DEPRECATED】
+このファイルは旧バージョンです。新規開発・修正では使用しないでください。
+
+⚠️ 警告: このモジュールは非推奨です
+現在のメインシステムでは main_system/execution_control/strategy_execution_manager.py を使用してください。
+
+このファイルは後方互換性のためにのみ保持されています。
+- 旧スクリプト (performance_monitor*.py, paper_trade_runner.py等) がインポートエラーを起こさないための措置
+- 新規機能追加・バグ修正は行われません
+- 将来的には deprecated/ フォルダへ移動または削除予定
+
+推奨される移行先:
+    from main_system.execution_control.strategy_execution_manager import StrategyExecutionManager
+
+Author: Backtest Project Team
+Created: 2024-XX-XX (旧版)
+Deprecated: 2025-10-20
+Last Modified: 2025-10-20
 """
 import sys
 from pathlib import Path
@@ -13,9 +29,22 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from config.logger_config import setup_logger
+# Phase 4.2-16: 手数料計算モジュールのインポート
+from src.execution.commission_calculator import calculate_max_affordable_quantity, adjust_to_trading_unit
 
 class StrategyExecutionManager:
-    """戦略実行管理メインクラス"""
+    """
+    戦略実行管理メインクラス
+    
+    ⚠️⚠️⚠️ 【非推奨 - DEPRECATED】 ⚠️⚠️⚠️
+    このクラスは main_system/execution_control/strategy_execution_manager.py に移行されました。
+    新規開発では main_system 版を使用してください。
+    
+    参照している旧スクリプトは deprecated/ フォルダに移動されています:
+    - paper_trade_runner.py
+    - performance_monitor*.py
+    - demo_paper_trade_runner.py
+    """
     
     def __init__(self, config: Dict[str, Any]):
         self.config = config
@@ -352,22 +381,88 @@ class StrategyExecutionManager:
             return []
     
     def _calculate_position_size(self, symbol: str) -> int:
-        """ポジションサイズ計算"""
-        # 簡易実装：固定額での購入
+        """
+        ポジションサイズ計算（Phase 4.2-16: 日本株対応版）
+        
+        手数料・単元株制度を考慮した正確な計算を実行します。
+        利用可能資金の90%を使用し、100株単位で購入可能な最大株数を返します。
+        
+        Returns:
+            int: 100株単位に調整された株数（購入不可の場合は0）
+        """
         try:
-            position_value = self.config.get('position_value', 10000)  # $10,000
-            current_price = 100.0  # デフォルト価格
+            # 1. 利用可能資金の90%を使用（Phase 4.2-16要件）
+            if not self.paper_broker:
+                self.logger.error("❌ PaperBrokerが初期化されていません")
+                return 0
             
+            total_equity = self.paper_broker.account_balance
+            available_funds = total_equity * 0.90  # 90%使用
+            
+            self.logger.debug(f"📊 資金確認: 総資産={total_equity:.0f}円, 利用可能(90%)={available_funds:.0f}円")
+            
+            # 2. 現在価格取得（実データのみ使用 - copilot-instructions.md準拠）
+            current_price = None
+            
+            # DataFeedから取得試行
             if self.data_feed:
                 try:
-                    current_price = self.data_feed.get_current_price(symbol) or current_price
-                except:
-                    pass
+                    current_price = self.data_feed.get_current_price(symbol)
+                    if current_price and current_price > 0:
+                        self.logger.debug(f"💰 DataFeedから価格取得: {symbol} = {current_price:.2f}円")
+                except Exception as e:
+                    self.logger.warning(f"⚠️ DataFeedから価格取得失敗: {e}")
             
-            return int(position_value / current_price) if current_price > 0 else 100
-                
-        except Exception:
-            return 100
+            # PaperBrokerから取得（DataFeedが失敗した場合）
+            if current_price is None or current_price <= 0:
+                if self.paper_broker:
+                    current_price = self.paper_broker.get_current_price(symbol)
+                    if current_price and current_price > 0:
+                        self.logger.debug(f"💰 PaperBrokerから価格取得: {symbol} = {current_price:.2f}円")
+            
+            # 価格検証
+            if current_price is None or current_price <= 0:
+                self.logger.error(f"❌ 有効な価格が取得できません: {symbol} (price={current_price})")
+                return 0
+            
+            # 3. 手数料を考慮した購入可能株数を計算
+            # commission_calculator.pyの関数を使用
+            quantity, contract_value, commission, total_cost = calculate_max_affordable_quantity(
+                available_funds=available_funds,
+                stock_price=current_price,
+                unit_size=100,  # 日本株は100株単位
+                include_slippage=True,
+                slippage_rate=0.0001  # 0.01%
+            )
+            
+            if quantity == 0:
+                self.logger.warning(
+                    f"⚠️ 資金不足: {symbol} 価格={current_price:.2f}円, "
+                    f"利用可能={available_funds:.0f}円では100株も購入できません"
+                )
+                return 0
+            
+            # 4. 単元株数に調整（念のため再確認）
+            final_quantity = adjust_to_trading_unit(quantity, unit_size=100, round_up=False)
+            
+            if final_quantity != quantity:
+                self.logger.warning(
+                    f"⚠️ 株数調整: {quantity}株 → {final_quantity}株（100株単位）"
+                )
+            
+            # 5. 詳細ログ出力
+            self.logger.info(
+                f"✅ ポジションサイズ計算完了: {symbol} "
+                f"{final_quantity}株 @ {current_price:.2f}円 "
+                f"(約定代金: {contract_value:,.0f}円, 手数料: {commission:.0f}円, "
+                f"総コスト: {total_cost:,.0f}円, 残金: {available_funds - total_cost:,.0f}円)"
+            )
+            
+            return final_quantity
+            
+        except Exception as e:
+            self.logger.error(f"❌ ポジションサイズ計算エラー: {e}", exc_info=True)
+            return 0
     
     def _get_current_position(self, symbol: str) -> int:
         """現在のポジション取得"""

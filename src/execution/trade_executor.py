@@ -60,6 +60,8 @@ from enum import Enum
 # 他のモジュールからインポート(実際の実装で調整)
 from .order_manager import Order, OrderType, OrderSide, OrderStatus, OrderManager, BrokerInterface
 from .portfolio_tracker import PortfolioTracker
+# Phase 4.2-16: 手数料計算モジュールのインポート
+from .commission_calculator import calculate_japanese_stock_commission
 
 class ExecutionMode(Enum):
     """実行モード"""
@@ -81,11 +83,16 @@ class TradeExecutor:
         self.order_manager = OrderManager(broker)
         self.logger = logging.getLogger(__name__)
         
+        # Phase 4.2-11: バックテストモードの場合、brokerに伝播
+        if mode == ExecutionMode.BACKTEST and hasattr(broker, 'backtest_mode'):
+            broker.backtest_mode = True
+            self.logger.info("Backtest mode enabled: market hours check disabled")
+        
         # 実行設定
         self.execution_enabled = True
         self.risk_check_enabled = True
         self.position_limits: Dict[str, float] = {}  # シンボル別ポジション制限
-        self.max_position_size_pct = 20.0  # 最大ポジションサイズ（ポートフォリオの%）
+        self.max_position_size_pct = 90.0  # Phase 4.2-16: 最大ポジションサイズ90%に変更
         self.max_daily_loss_pct = 5.0  # 最大日次損失（%）
         
         # 注文実行待ちキュー
@@ -233,14 +240,37 @@ class TradeExecutor:
             return 0
     
     def _risk_check(self, order: Order) -> bool:
-        """リスク管理チェック"""
+        """
+        リスク管理チェック（Phase 4.2-16: 手数料・単元株対応版）
+        """
         try:
-            # 1. 現金残高チェック
+            # 1. 現金残高チェック（手数料込み）
             if order.side == OrderSide.BUY:
                 current_price = self.broker.get_current_price(order.symbol)
-                required_cash = order.quantity * current_price * 1.1  # 10%マージン
-                if self.portfolio_tracker.get_cash_balance() < required_cash:
-                    self.logger.warning(f"資金不足: 必要 {required_cash}, 利用可能 {self.portfolio_tracker.get_cash_balance()}")
+                if current_price <= 0:
+                    self.logger.error(f"[ERROR] 無効な価格: {order.symbol}")
+                    return False
+                
+                # 約定代金
+                contract_value = order.quantity * current_price
+                
+                # 手数料計算
+                commission = calculate_japanese_stock_commission(contract_value)
+                
+                # スリッページ（0.01%）
+                slippage = contract_value * 0.0001
+                
+                # 必要資金 = 約定代金 + 手数料 + スリッページ
+                required_cash = contract_value + commission + slippage
+                
+                available_cash = self.portfolio_tracker.get_cash_balance()
+                
+                if available_cash < required_cash:
+                    self.logger.warning(
+                        f"[WARNING] 資金不足: 必要 {required_cash:.2f}円 "
+                        f"(約定代金 {contract_value:.2f}円 + 手数料 {commission:.0f}円 + スリッページ {slippage:.2f}円), "
+                        f"利用可能 {available_cash:.2f}円"
+                    )
                     return False
             
             # 2. ポジションサイズ制限チェック
@@ -252,17 +282,35 @@ class TradeExecutor:
                     self.logger.warning(f"ポジション制限超過: {order.symbol}")
                     return False
             
-            # 3. 最大ポジションサイズチェック
+            # 3. 最大ポジションサイズチェック（正確な計算）
             total_equity = self.portfolio_tracker.get_total_equity()
+            
+            if total_equity <= 0:
+                self.logger.error(f"[ERROR] total_equity が無効: {total_equity}")
+                return False
+            
             current_price = self.broker.get_current_price(order.symbol)
             position_value = abs(order.quantity) * current_price
             position_pct = (position_value / total_equity) * 100
             
+            self.logger.debug(
+                f"[INFO] ポジションサイズチェック: {order.symbol} "
+                f"注文額={position_value:.2f}円, 総資産={total_equity:.2f}円, "
+                f"比率={position_pct:.1f}%, 上限={self.max_position_size_pct}%"
+            )
+            
             if position_pct > self.max_position_size_pct:
-                self.logger.warning(f"最大ポジションサイズ超過: {position_pct:.1f}% > {self.max_position_size_pct}%")
+                self.logger.warning(
+                    f"[WARNING] 最大ポジションサイズ超過: {position_pct:.1f}% > {self.max_position_size_pct}%"
+                )
                 return False
             
-            # 4. 外部リスク管理システム連携
+            # 4. 単元株チェック（日本株）
+            if order.quantity % 100 != 0:
+                self.logger.warning(f"[WARNING] 単元未満株: {order.quantity}株（100株単位必須）")
+                return False
+            
+            # 5. 外部リスク管理システム連携
             if self.risk_manager:
                 try:
                     # 既存のportfolio_risk_manager.pyと連携
@@ -282,7 +330,7 @@ class TradeExecutor:
             return True
             
         except Exception as e:
-            self.logger.error(f"リスク管理チェックエラー: {e}")
+            self.logger.error(f"[ERROR] リスク管理チェックエラー: {e}", exc_info=True)
             return False
     
     def _adjust_position_size(self, order: Order) -> float:

@@ -43,10 +43,11 @@ class IntegratedExecutionManager:
         # コンポーネント初期化
         try:
             # 実行管理コンポーネント
+            # Phase 4.2-14: デフォルト初期資金を1,000,000円に変更（ハードコード修正）
             execution_config = self.config.get('execution', {
                 'execution_mode': 'simple',
                 'broker': {
-                    'initial_cash': 100000,
+                    'initial_cash': 1000000,  # Phase 4.2-14: 100,000円 → 1,000,000円
                     'commission_per_trade': 1.0,
                     'slippage_bps': 5
                 }

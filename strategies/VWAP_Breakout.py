@@ -42,18 +42,23 @@ if not logger.hasHandlers():
 logger.setLevel(logging.DEBUG)
 
 class VWAPBreakoutStrategy(BaseStrategy):
-    def __init__(self, data: pd.DataFrame, index_data: pd.DataFrame, params=None, price_column: str = "Adj Close", volume_column: str = "Volume"):
+    def __init__(self, data: pd.DataFrame, index_data: pd.DataFrame = None, params=None, price_column: str = "Adj Close", volume_column: str = "Volume"):
         """
         VWAPアウトブレイク戦略の初期化。
 
         Parameters:
             data (pd.DataFrame): 株価データ
-            index_data (pd.DataFrame): 市場全体のインデックスデータ
+            index_data (pd.DataFrame, optional): 市場全体のインデックスデータ（Noneの場合はstock_dataを使用）
             params (dict, optional): 戦略パラメータ（オーバーライド用）
             price_column (str): 株価カラム名（デフォルトは "Adj Close"）
             volume_column (str): 出来高カラム名（デフォルトは "Volume"）
         """
         # 戦略固有の属性を先に設定
+        # TODO #12: index_dataがNoneの場合は株価データをコピーして使用（緊急対応）
+        if index_data is None:
+            index_data = data.copy()
+            logger.info("VWAPBreakoutStrategy: index_data not provided, using stock_data as proxy")
+        
         self.index_data = index_data
         self.price_column = price_column
         self.volume_column = volume_column
@@ -406,6 +411,9 @@ class VWAPBreakoutStrategy(BaseStrategy):
             # 前日までのポジション状態を確認
             if idx > 0:
                 self.data.loc[self.data.index[idx], 'Position'] = self.data['Position'].iloc[idx-1]
+                # Entry_Idxも伝播（ポジション保有中は同じEntry_Idxを維持）
+                if self.data['Position'].iloc[idx-1] == 1:
+                    self.data.loc[self.data.index[idx], 'Entry_Idx'] = self.data['Entry_Idx'].iloc[idx-1]
             
             # ポジションがない場合、エントリーシグナルをチェック
             if self.data['Position'].iloc[idx] == 0:
@@ -419,19 +427,17 @@ class VWAPBreakoutStrategy(BaseStrategy):
             
             # ポジションがある場合、イグジットシグナルをチェック
             elif self.data['Position'].iloc[idx] == 1:
-                # エントリーインデックスを取得
+                # エントリーインデックスを取得（伝播により正しく設定されているはず）
                 entry_idx_val = self.data['Entry_Idx'].iloc[idx]
                 
-                # エントリーインデックスが無効値(-1)またはNaNの場合は現在のインデックスを使用
+                # Entry_Idxが無効な場合はエラー（フォールバック削除、copilot-instructions.md準拠）
                 if pd.isna(entry_idx_val) or entry_idx_val == -1:
-                    logger.warning(f"有効なEntry_Idxがありません: idx={idx}, 日付={self.data.index[idx]}. 現在のインデックスを使用します。")
-                    entry_idx = idx  # フォールバックとして現在のインデックスを使用
-                else:
-                    try:
-                        entry_idx = int(entry_idx_val)
-                    except (ValueError, TypeError):
-                        logger.warning(f"Entry_Idxの変換に失敗しました: {entry_idx_val}. 現在のインデックスを使用します。")
-                        entry_idx = idx  # 変換失敗時も現在のインデックスを使用
+                    raise ValueError(
+                        f"Entry_Idx伝播エラー: idx={idx}, 日付={self.data.index[idx]}, "
+                        f"entry_idx_val={entry_idx_val}. ポジション保有中にEntry_Idxが無効です。"
+                    )
+                
+                entry_idx = int(entry_idx_val)
                 
                 # エントリー後の最大保有期間チェック
                 days_held = idx - entry_idx
