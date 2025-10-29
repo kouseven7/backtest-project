@@ -23,15 +23,20 @@ from typing import Dict, Any
 from strategies.base_strategy import BaseStrategy
 
 class BreakoutStrategy(BaseStrategy):
-    def __init__(self, data: pd.DataFrame, params=None, price_column: str = "Adj Close", volume_column: str = "Volume"):
+    def __init__(self, data: pd.DataFrame, params=None, price_column: str = "Close", volume_column: str = "Volume"):
         """
         ブレイクアウト戦略の初期化。
 
         Parameters:
             data (pd.DataFrame): 株価データ
             params (dict, optional): 戦略パラメータ（オーバーライド用）
-            price_column (str): 株価カラム名（デフォルトは "Adj Close"）
+            price_column (str): 株価カラム名（デフォルトは "Close"）
             volume_column (str): 出来高カラム名（デフォルトは "Volume"）
+        
+        Note:
+            price_columnは "Close" を使用してください。"Adj Close" (調整後終値) を使用すると、
+            配当調整により過去の価格が下方修正され、High (未調整) との比較が不正確になります。
+            これにより配当支払い銘柄でシグナルが生成されなくなります。
         """
         # 戦略固有の属性を先に設定
         self.price_column = price_column
@@ -257,16 +262,16 @@ class BreakoutStrategy(BaseStrategy):
             ticker = getattr(self, 'ticker', 'DEFAULT')
             
             # 承認済みの最適化パラメータを取得
-            params = manager.get_latest_approved_parameters('breakout', ticker)
+            params = manager.load_approved_params('breakout', ticker)
             
             if params:
                 # パラメータを更新
                 self.params.update(params['parameters'])
                 self._approved_params = params
-                print(f"[OK] 最適化パラメータを読み込みました (ID: {params.get('parameter_id', 'N/A')})")
+                print(f"[OK] 最適化パラメータを読み込みました (Date: {params.get('optimization_date', 'N/A')})")
                 return True
             else:
-                print(f"[WARNING] 承認済みの最適化パラメータが見つかりません")
+                print(f"[WARNING] 承認済みの最適化パラメータが見つかりません (ticker: {ticker})")
                 return False
                 
         except Exception as e:

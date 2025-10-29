@@ -336,15 +336,17 @@ class IntegratedExecutionManager:
                     'execution_results': []
                 }
             
-            # 成功した戦略をカウント
+            # 成功した戦略をカウント（Phase 4.2-20: バグ修正）
+            # BUG FIX: r.get('status') は存在しないキー
+            # 正解: r.get('success') == True
             successful_strategies = [
                 r for r in execution_results
-                if r.get('status') == 'success'
+                if r.get('success') == True
             ]
             
             failed_strategies = [
                 r for r in execution_results
-                if r.get('status') != 'success'
+                if r.get('success') != True
             ]
             
             # 重み付き集約

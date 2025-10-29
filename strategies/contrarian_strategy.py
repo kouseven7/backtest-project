@@ -41,7 +41,7 @@ class ContrarianStrategy(BaseStrategy):
         default_params = {
             "rsi_period": 14,        # RSI計算期間
             "rsi_oversold": 30,      # RSI過売り閾値
-            "gap_threshold": 0.05,   # ギャップダウン閾値
+            "gap_threshold": 0.02,   # ギャップダウン閾値（A: 5%→2%に緩和）
             "stop_loss": 0.04,       # ストップロス
             "take_profit": 0.05,     # 利益確定
             "pin_bar_ratio": 2.0,    # ピンバー判定比率
@@ -49,9 +49,9 @@ class ContrarianStrategy(BaseStrategy):
             "rsi_exit_level": 50,    # RSI中立域でのイグジット
             "trailing_stop_pct": 0.02,  # トレーリングストップ率
             
-            # トレンドフィルター設定
-            "trend_filter_enabled": True,  # 統一トレンド判定の有効化
-            "allowed_trends": ["range-bound"]  # 許可するトレンド（レンジ相場のみ）
+            # トレンドフィルター設定（Option 4: レンジ相場のみに戻す）
+            "trend_filter_enabled": True,  # トレンドフィルター有効化
+            "allowed_trends": ["range-bound"]  # レンジ相場のみ許可
         }
         merged_params = {**default_params, **(params or {})}
         super().__init__(data, merged_params)
@@ -63,6 +63,10 @@ class ContrarianStrategy(BaseStrategy):
         super().initialize_strategy()
         # RSIを計算してデータに追加
         self.data['RSI'] = calculate_rsi(self.data[self.price_column], period=self.params["rsi_period"])
+        
+        # Openカラムの確認（ピンバー判定に必要）
+        if 'Open' not in self.data.columns:
+            raise ValueError("ピンバー判定にはOpenカラムが必要です")
         
         # 統一トレンド判定の初期結果を表示（データがある場合）
         if len(self.data) > 20:  # データが十分ある場合のみ
@@ -88,6 +92,48 @@ class ContrarianStrategy(BaseStrategy):
             except Exception as e:
                 print(f"トレンド判定初期化エラー: {e}")
 
+    def _is_valid_pinbar(self, high: float, low: float, close: float, open_price: float) -> bool:
+        """
+        改善版ピンバー判定（案B - 緩和版）
+        
+        条件:
+        1. 下ヒゲの最小値チェック（1.0円以上）← 2.0円から緩和
+        2. 上ヒゲが下ヒゲの2倍以上
+        3. 上ヒゲが全体レンジの50%以上
+        4. 実体が小さい（全体レンジの30%以下）
+        
+        Args:
+            high: 高値
+            low: 安値
+            close: 終値
+            open_price: 始値
+            
+        Returns:
+            bool: ピンバーと判定された場合True
+        """
+        upper_shadow = high - max(close, open_price)
+        lower_shadow = min(close, open_price) - low
+        body = abs(close - open_price)
+        total_range = high - low
+        
+        # 条件1: 下ヒゲの最小値チェック（緩和: 2.0円 → 1.0円）
+        if lower_shadow < 1.0:
+            return False
+        
+        # 条件2: 上ヒゲが下ヒゲの2倍以上
+        if upper_shadow <= self.params["pin_bar_ratio"] * lower_shadow:
+            return False
+        
+        # 条件3: 上ヒゲが全体レンジの50%以上
+        if total_range > 0 and upper_shadow < 0.5 * total_range:
+            return False
+        
+        # 条件4: 実体が小さい（全体レンジの30%以下）
+        if total_range > 0 and body > 0.3 * total_range:
+            return False
+        
+        return True
+
     def generate_entry_signal(self, idx: int) -> int:
         """
         エントリーシグナルを生成する。
@@ -102,11 +148,12 @@ class ContrarianStrategy(BaseStrategy):
         # ギャップダウンの判定
         gap_down = current_price < previous_close * (1.0 - self.params["gap_threshold"])
 
-        # ピンバーの判定
-        if 'High' in self.data.columns and 'Low' in self.data.columns:
+        # ピンバーの判定（改善版）
+        if 'High' in self.data.columns and 'Low' in self.data.columns and 'Open' in self.data.columns:
             high = self.data['High'].iloc[idx]
             low = self.data['Low'].iloc[idx]
-            pin_bar = (high - current_price) > self.params["pin_bar_ratio"] * (current_price - low)
+            open_price = self.data['Open'].iloc[idx]
+            pin_bar = self._is_valid_pinbar(high, low, current_price, open_price)
         else:
             pin_bar = False
 
@@ -122,18 +169,15 @@ class ContrarianStrategy(BaseStrategy):
             # 許可されたトレンド内にあるか確認
             if trend not in self.params["allowed_trends"]:
                 return 0
-        else:
-            # 従来のトレンド判定を使用
-            trend = detect_trend(self.data.iloc[:idx + 1], price_column=self.price_column)
-            range_market = (trend == "range-bound")
-            if not range_market:
-                return 0
+        # trend_filter_enabled=Falseの場合、トレンドチェックをスキップ
 
-        # エントリー条件
+        # エントリー条件（B: RSI条件を両方に適用）
+        # 条件1: RSI過売り + ギャップダウン
         if rsi <= self.params["rsi_oversold"] and gap_down:
             self.entry_prices[idx] = current_price
             return 1
-        if pin_bar:
+        # 条件2: RSI過売り + ピンバー（RSI条件追加）
+        if rsi <= self.params["rsi_oversold"] and pin_bar:
             self.entry_prices[idx] = current_price
             return 1
 
@@ -146,7 +190,7 @@ class ContrarianStrategy(BaseStrategy):
         if idx < 1:
             return 0
 
-        # ✅ ポジション状態管理を追加
+        # ポジション状態管理を追加
         # 現在までのエントリー・エグジット数を計算
         current_entries = (self.data['Entry_Signal'].iloc[:idx+1] == 1).sum()
         current_exits = abs((self.data['Exit_Signal'].iloc[:idx+1] == -1).sum())

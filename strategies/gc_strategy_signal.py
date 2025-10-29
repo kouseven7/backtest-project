@@ -31,15 +31,17 @@ class GCStrategy(BaseStrategy):
     短期移動平均と長期移動平均のゴールデンクロス／デッドクロスを基にエントリー／イグジットシグナルを生成し、
     Excelから取得した戦略パラメータ（例: 利益確定％、損切割合％、短期・長期移動平均期間）を反映させます。
     """
-    def __init__(self, data: pd.DataFrame, params=None, price_column: str = "Adj Close"):
+    def __init__(self, data: pd.DataFrame, params=None, price_column: str = "Adj Close", ticker: str = None):
         """
         Parameters:
             data (pd.DataFrame): 株価データ
             params (dict, optional): 戦略パラメータ（例: {"short_window": 5, "long_window": 25, ...}）
             price_column (str): インジケーター計算に使用する価格カラム（デフォルトは "Adj Close"）
+            ticker (str, optional): 銘柄コード（最適化パラメータ読み込み用）
         """
         # 戦略固有の属性を先に設定
         self.price_column = price_column
+        self.ticker = ticker  # 銘柄コードを保存（最適化パラメータ用）
         self.entry_prices = {}  # エントリー価格を記録する辞書
         self.high_prices = {}  # トレーリングストップ用の最高価格を記録する辞書
         
@@ -59,7 +61,7 @@ class GCStrategy(BaseStrategy):
             "exit_on_death_cross": True,  # デッドクロスでイグジットするかどうか
             
             # トレンドフィルター設定
-            "trend_filter_enabled": True,  # 統一トレンド判定の有効化
+            "trend_filter_enabled": False,  # デフォルトは無効（マルチ戦略システムで既にフィルタリング済み）  # 統一トレンド判定の有効化
             "allowed_trends": ["uptrend"]  # 許可するトレンド（上昇トレンド）
         }
         
@@ -72,6 +74,10 @@ class GCStrategy(BaseStrategy):
         戦略の初期化処理
         """
         super().initialize_strategy()
+        
+        # 辞書を初期化（再実行時のクリーンアップ）
+        self.entry_prices = {}
+        self.high_prices = {}
         
         # 戦略パラメータの読み込み
         self.short_window = int(self.params.get("short_window", 5))
@@ -96,14 +102,14 @@ class GCStrategy(BaseStrategy):
         
         self.logger.info(
             f"GCStrategy initialized with short_window={self.short_window}, long_window={self.long_window}, "
-            f"take_profit={self.params['take_profit']}, stop_loss={self.params['stop_loss']}"
+            f"take_profit_pct={self.params.get('take_profit_pct', self.params.get('take_profit', 0.05))}, "
+            f"stop_loss_pct={self.params.get('stop_loss_pct', self.params.get('stop_loss', 0.03))}"
         )
         
-        # 移動平均の計算（指定した価格カラムを使用）
-        self.data[f"SMA_{self.short_window}"] = self.data[self.price_column].rolling(window=self.short_window).mean()
-        self.data[f"SMA_{self.long_window}"] = self.data[self.price_column].rolling(window=self.long_window).mean()
-
-        # ベクトル化操作の例
+        # 移動平均は上記（Lines 82-85）で既に計算済み（存在しない場合のみ）
+        # 重複計算を削除し、GC_Signalのみ追加計算
+        
+        # ベクトル化操作: ゴールデンクロスシグナル
         self.data['GC_Signal'] = np.where(
             (self.data[f'SMA_{self.short_window}'] > self.data[f'SMA_{self.long_window}']) & 
             (self.data[f'SMA_{self.short_window}'].shift(1) <= self.data[f'SMA_{self.long_window}'].shift(1)),
@@ -157,43 +163,41 @@ class GCStrategy(BaseStrategy):
             
         return 0
 
-    def generate_exit_signal(self, idx: int) -> int:
-        """イグジットシグナルを生成する"""
+    def generate_exit_signal(self, idx: int, entry_idx: int = -1) -> int:
+        """
+        イグジットシグナルを生成する
+        
+        Parameters:
+            idx (int): 現在のインデックス
+            entry_idx (int): エントリー時のインデックス（BaseStrategyから渡される）
+            
+        Returns:
+            int: イグジットシグナル（-1: イグジット, 0: なし）
+        """
         if idx < self.params["long_window"]:
             return 0
         
-        # ✅ ポジション状態管理を追加（ContrarianStrategyと同じパターン）
-        # 現在までのエントリー・エグジット数を計算
-        current_entries = (self.data['Entry_Signal'].iloc[:idx+1] == 1).sum()
-        current_exits = abs((self.data['Exit_Signal'].iloc[:idx+1] == -1).sum())
-        
-        # アクティブなポジションがない場合はエグジット不可
-        if current_entries <= current_exits:
+        # entry_idxが渡されていない場合はシグナルを返さない
+        # （BaseStrategy.backtest()は必ずentry_idxを渡すため、ここには来ない）
+        if entry_idx < 0:
+            self.logger.debug(f"[EXIT CHECK] idx={idx}, entry_idx={entry_idx} (< 0), returning 0")
             return 0
         
-        # ポジションがあるか確認
-        entry_indices = self.data[self.data['Entry_Signal'] == 1].index
-        if not len(entry_indices) or entry_indices[-1] >= self.data.index[idx]:
-            return 0
-    
-        entry_idx = self.data.index.get_loc(entry_indices[-1])
+        # エントリー価格を取得
         entry_price = self.entry_prices.get(entry_idx)
         current_price = self.data[self.price_column].iloc[idx]
         
-        # entry_priceがNoneの場合、代替値を設定する
+        # デバッグログ: 価格情報
+        self.logger.debug(f"[EXIT CHECK] idx={idx}, entry_idx={entry_idx}, entry_price={entry_price}, current_price={current_price:.2f}")
+        
+        # entry_priceがNoneの場合はエラー（フォールバック禁止）
         if entry_price is None:
-            # インデックスの範囲内かチェック
-            if 0 <= entry_idx < len(self.data):
-                # エントリー時の価格を代替値として使用
-                entry_price = self.data[self.price_column].iloc[entry_idx]
-                self.entry_prices[entry_idx] = entry_price
-                self.logger.warning(f"エントリー価格がNoneでした。代替値を使用: {entry_price}")
-            else:
-                # 安全なフォールバック：現在の価格を使用
-                self.logger.warning(f"有効なエントリー価格を特定できません。現在価格を使用: {current_price}")
-                entry_price = current_price
+            error_msg = f"CRITICAL ERROR: エントリー価格がNoneです。entry_idx={entry_idx}, idx={idx}, date={self.data.index[idx]}"
+            self.logger.error(error_msg)
+            self.logger.error(f"  entry_prices辞書の内容: {self.entry_prices}")
+            self.logger.error(f"  BaseStrategy.backtest()がentry_idxでエントリー価格を記録していない可能性があります")
+            raise ValueError(error_msg)
                 
-        # 以下は変更なし - 既存のイグジットロジック
         # 1. デッドクロスでイグジット（オプション）
         if self.params.get("exit_on_death_cross", True):
             short_ma = self.data[f'SMA_{self.params["short_window"]}'].iloc[idx]
@@ -204,6 +208,7 @@ class GCStrategy(BaseStrategy):
             # デッドクロス（短期MAが長期MAを下回る）
             if prev_short_ma >= prev_long_ma and short_ma < long_ma:
                 self.logger.info(f"デッドクロスによるイグジット: 日付={self.data.index[idx]}")
+                self.logger.debug(f"[EXIT REASON] Death Cross: prev_short={prev_short_ma:.2f}, prev_long={prev_long_ma:.2f}, short={short_ma:.2f}, long={long_ma:.2f}")
                 return -1
     
         # 2. トレーリングストップ
@@ -213,18 +218,25 @@ class GCStrategy(BaseStrategy):
             self.high_prices[entry_idx] = max(self.high_prices[entry_idx], current_price)
     
         trailing_stop = self.high_prices[entry_idx] * (1 - self.params.get("trailing_stop_pct", 0.03))
+        self.logger.debug(f"[TRAILING] high_price={self.high_prices[entry_idx]:.2f}, trailing_stop={trailing_stop:.2f}, current_price={current_price:.2f}")
+        
         if current_price < trailing_stop:
             self.logger.info(f"トレーリングストップによるイグジット: 日付={self.data.index[idx]}")
+            self.logger.debug(f"[EXIT REASON] Trailing Stop: {current_price:.2f} < {trailing_stop:.2f}")
             return -1
     
         # 3. 利益確定
-        if current_price >= entry_price * (1 + self.params.get("take_profit", 0.05)):
+        take_profit_price = entry_price * (1 + self.params.get("take_profit", 0.05))
+        if current_price >= take_profit_price:
             self.logger.info(f"利益確定によるイグジット: 日付={self.data.index[idx]}")
+            self.logger.debug(f"[EXIT REASON] Take Profit: {current_price:.2f} >= {take_profit_price:.2f}")
             return -1
     
         # 4. 損切り
-        if current_price <= entry_price * (1 - self.params.get("stop_loss", 0.03)):
+        stop_loss_price = entry_price * (1 - self.params.get("stop_loss", 0.03))
+        if current_price <= stop_loss_price:
             self.logger.info(f"損切りによるイグジット: 日付={self.data.index[idx]}")
+            self.logger.debug(f"[EXIT REASON] Stop Loss: {current_price:.2f} <= {stop_loss_price:.2f}")
             return -1
     
         # 5. 最大保有期間
@@ -234,33 +246,6 @@ class GCStrategy(BaseStrategy):
             return -1
     
         return 0
-
-    def backtest(self):
-        """
-        GC戦略のバックテストを実行する。
-        
-        Returns:
-            pd.DataFrame: エントリー/イグジットシグナルが追加されたデータフレーム
-        """
-        # シグナル列の初期化
-        self.data['Entry_Signal'] = 0
-        self.data['Exit_Signal'] = 0
-        self.data['Position'] = 0  # 0: ポジションなし、1: ロング、-1: ショート
-
-        # 各日にちについてシグナルを計算
-        for idx in range(len(self.data)):
-            # Entry_Signalがまだ立っていない場合のみエントリーシグナルをチェック
-            if not self.data['Entry_Signal'].iloc[max(0, idx-1):idx+1].any():
-                entry_signal = self.generate_entry_signal(idx)
-                if entry_signal == 1:
-                    self.data.at[self.data.index[idx], 'Entry_Signal'] = 1
-            
-            # イグジットシグナルを確認
-            exit_signal = self.generate_exit_signal(idx)
-            if exit_signal == -1:
-                self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
-
-        return self.data
 
     def load_optimized_parameters(self) -> bool:
         """

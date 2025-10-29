@@ -350,31 +350,55 @@ class ComprehensivePerformanceAnalyzer:
         stock_data: pd.DataFrame,
         market_analysis: Optional[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """強化メトリクス計算"""
+        """
+        強化メトリクス計算（Phase 2: 実データ抽出版）
+        
+        copilot-instructions.md準拠:
+        - ダミーデータ生成フォールバック禁止
+        - 実データのみ使用
+        - データ不足時は0.0を返却
+        """
         try:
-            # EnhancedPerformanceCalculatorを使用
-            # サンプルデータ生成（実際の実装では実行結果から抽出）
-            sample_trades = pd.DataFrame({
-                'entry_date': pd.date_range(start='2023-01-01', periods=10, freq='M'),
-                'exit_date': pd.date_range(start='2023-02-01', periods=10, freq='M'),
-                'pnl': np.random.randn(10) * 10000,
-                'return_pct': np.random.randn(10) * 0.05
-            })
+            # execution_resultsから実取引データを抽出
+            trades_list = []
             
-            # メトリクス計算
+            if 'execution_results' in execution_results and isinstance(execution_results['execution_results'], list):
+                for strategy_result in execution_results['execution_results']:
+                    if isinstance(strategy_result, dict) and 'execution_details' in strategy_result:
+                        execution_details = strategy_result.get('execution_details', [])
+                        # _extract_trades_from_execution_details()を使用
+                        trades = self._extract_trades_from_execution_details(execution_details)
+                        trades_list.extend(trades)
+            
+            # DataFrame変換（実データのみ）
+            if trades_list:
+                trades_df = pd.DataFrame(trades_list)
+                self.logger.info(
+                    f"[REAL_DATA_ONLY] Extracted {len(trades_df)} real trades for enhanced metrics calculation"
+                )
+            else:
+                # データなし時は空DataFrame（copilot-instructions.md: ダミーデータ生成禁止）
+                trades_df = pd.DataFrame()
+                self.logger.warning(
+                    "[FALLBACK_PROHIBITED] No real trades found in execution_results. "
+                    "copilot-instructions.md準拠: ダミーデータは生成しません。"
+                )
+            
+            # メトリクス計算（実データに基づく）
             metrics = {
-                'sharpe_ratio': self._calculate_sharpe_ratio(sample_trades),
-                'sortino_ratio': self._calculate_sortino_ratio(sample_trades),
-                'max_drawdown': self._calculate_max_drawdown(sample_trades),
-                'win_rate': self._calculate_win_rate(sample_trades),
-                'profit_factor': self._calculate_profit_factor(sample_trades),
-                'average_trade_duration': self._calculate_avg_trade_duration(sample_trades)
+                'sharpe_ratio': self._calculate_sharpe_ratio(trades_df),
+                'sortino_ratio': self._calculate_sortino_ratio(trades_df),
+                'max_drawdown': self._calculate_max_drawdown(trades_df),
+                'win_rate': self._calculate_win_rate(trades_df),
+                'profit_factor': self._calculate_profit_factor(trades_df),
+                'average_trade_duration': self._calculate_avg_trade_duration(trades_df)
             }
             
             return metrics
             
         except Exception as e:
-            self.logger.error(f"Enhanced metrics calculation error: {e}")
+            self.logger.error(f"Enhanced metrics calculation error: {e}", exc_info=True)
+            # copilot-instructions.md: エラー時もダミーデータ生成禁止、0.0を返却
             return {
                 'sharpe_ratio': 0.0,
                 'sortino_ratio': 0.0,
@@ -447,12 +471,29 @@ class ComprehensivePerformanceAnalyzer:
         return (returns.mean() / negative_returns.std()) * np.sqrt(252)
     
     def _calculate_max_drawdown(self, trades: pd.DataFrame) -> float:
-        """最大ドローダウン計算"""
+        """
+        最大ドローダウン計算（Phase 4.2-20修正）
+        
+        修正内容:
+        - 分母を累積PnL最大値から初期資本に変更
+        - これにより100%を超える異常値を防止
+        - ドローダウンは初期資本に対する最大下落率として計算
+        """
         if trades.empty or 'pnl' not in trades.columns:
             return 0.0
+        
+        # 累積PnLの推移を計算
         cumulative_pnl = trades['pnl'].cumsum()
         running_max = cumulative_pnl.cummax()
-        drawdown = (cumulative_pnl - running_max) / running_max.where(running_max != 0, 1)
+        
+        # 初期資本を取得（デフォルト1,000,000円）
+        initial_capital = 1000000.0
+        
+        # ドローダウンを初期資本に対する比率で計算
+        # drawdown = (現在の累積PnL - 過去最大の累積PnL) / 初期資本
+        drawdown = (cumulative_pnl - running_max) / initial_capital
+        
+        # 最大ドローダウンを返す（負の値の絶対値）
         return abs(drawdown.min())
     
     def _calculate_win_rate(self, trades: pd.DataFrame) -> float:

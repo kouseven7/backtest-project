@@ -136,8 +136,10 @@ class StrategyExecutionManager:
                 stock_data = market_data
                 index_data = market_data  # フォールバック
             
-            # 戦略インスタンス取得（Phase 4.2: データを渡す）
-            strategy = self._get_strategy_instance(strategy_name, stock_data, index_data)
+            # 戦略インスタンス取得（Phase 4.2: データを渡す + ticker対応）
+            # Phase 5.3: マルチ戦略システム対応 - tickerパラメータ追加
+            ticker = symbols[0] if symbols else None  # 最初のティッカーシンボルを取得
+            strategy = self._get_strategy_instance(strategy_name, stock_data, index_data, ticker=ticker)
             if strategy is None:
                 return self._create_error_result(f"strategy_not_found: {strategy_name}")
             
@@ -270,14 +272,15 @@ class StrategyExecutionManager:
             return pd.DataFrame()
     
     def _get_strategy_instance(self, strategy_name: str, stock_data: pd.DataFrame, 
-                              index_data: pd.DataFrame):
+                              index_data: pd.DataFrame, ticker: Optional[str] = None):
         """
-        戦略インスタンス取得（Phase 4.2: データ必須版）
+        戦略インスタンス取得（Phase 4.2: データ必須版 + Phase 5.3: ticker対応）
         
         Args:
             strategy_name: 戦略名
             stock_data: 株価データ
             index_data: インデックスデータ
+            ticker: ティッカーシンボル（最適化パラメータ読み込み用）
         
         Returns:
             戦略インスタンス（失敗時はNone）
@@ -317,29 +320,36 @@ class StrategyExecutionManager:
             # copilot-instructions.md: ダミーデータ生成禁止、実データ必須
             self.logger.info(f"Creating strategy instance: {strategy_name} with real data")
             
-            # Phase 5-A-12修正: 段階的インスタンス化（柔軟な引数対応）
+            # Phase 5-A-12修正: 段階的インスタンス化（柔軟な引数対応 + Phase 5.3: ticker対応）
             try:
-                # 最初の試行: data + index_data（フル引数）
-                strategy_instance = strategy_class(data=stock_data, index_data=index_data)
-                self.logger.info(f"Strategy instance created with data+index_data: {strategy_name}")
+                # 最初の試行: data + index_data + ticker（フル引数）
+                strategy_instance = strategy_class(data=stock_data, index_data=index_data, ticker=ticker)
+                self.logger.info(f"Strategy instance created with data+index_data+ticker: {strategy_name}")
                 return strategy_instance
             except TypeError as e1:
-                # 2回目の試行: dataのみ
+                # 2回目の試行: dataのみ + ticker
                 try:
-                    self.logger.warning(f"Strategy {strategy_name} does not accept index_data, trying with data only")
-                    strategy_instance = strategy_class(data=stock_data)
-                    self.logger.info(f"Strategy instance created with data only: {strategy_name}")
+                    self.logger.warning(f"Strategy {strategy_name} does not accept index_data, trying with data+ticker only")
+                    strategy_instance = strategy_class(data=stock_data, ticker=ticker)
+                    self.logger.info(f"Strategy instance created with data+ticker only: {strategy_name}")
                     return strategy_instance
                 except TypeError as e2:
-                    # 3回目の試行: stock_data（パラメータ名が異なる可能性）
+                    # 3回目の試行: stock_data + ticker（パラメータ名が異なる可能性）
                     try:
-                        self.logger.warning(f"Strategy {strategy_name} does not accept 'data', trying with stock_data parameter")
-                        strategy_instance = strategy_class(stock_data=stock_data)
-                        self.logger.info(f"Strategy instance created with stock_data: {strategy_name}")
+                        self.logger.warning(f"Strategy {strategy_name} does not accept 'data', trying with stock_data+ticker parameter")
+                        strategy_instance = strategy_class(stock_data=stock_data, ticker=ticker)
+                        self.logger.info(f"Strategy instance created with stock_data+ticker: {strategy_name}")
                         return strategy_instance
                     except Exception as e3:
-                        self.logger.error(f"CRITICAL: Strategy '{strategy_name}' initialization failed with all attempts. Last error: {e3}")
-                        return None
+                        # 4回目の試行: dataのみ（ticker非対応の旧戦略）
+                        try:
+                            self.logger.warning(f"Strategy {strategy_name} does not accept ticker, trying data only (legacy)")
+                            strategy_instance = strategy_class(data=stock_data)
+                            self.logger.info(f"Strategy instance created with data only (legacy): {strategy_name}")
+                            return strategy_instance
+                        except Exception as e4:
+                            self.logger.error(f"CRITICAL: Strategy '{strategy_name}' initialization failed with all attempts. Errors: {e1}, {e2}, {e3}, {e4}")
+                            return None
             
         except Exception as e:
             self.logger.error(f"Strategy instance creation error [{strategy_name}]: {e}", exc_info=True)
