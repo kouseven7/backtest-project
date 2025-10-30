@@ -65,12 +65,12 @@ class MeanReversionStrategy(BaseStrategy):
         """戦略初期化処理"""
         super().initialize_strategy()
         
-        # 移動平均の計算
+        # ルックアヘッドバイアス修正: 移動平均の計算
         self.data['SMA'] = self.data[self.price_column].rolling(
             window=self.params["sma_period"]
-        ).mean()
+        ).mean().shift(1)
         
-        # ボリンジャーバンドの計算
+        # ルックアヘッドバイアス修正: ボリンジャーバンドの計算
         bb_sma = self.data[self.price_column].rolling(
             window=self.params["bb_period"]
         ).mean()
@@ -78,11 +78,11 @@ class MeanReversionStrategy(BaseStrategy):
             window=self.params["bb_period"]
         ).std()
         
-        self.data['BB_Upper'] = bb_sma + (bb_std * self.params["bb_std_dev"])
-        self.data['BB_Lower'] = bb_sma - (bb_std * self.params["bb_std_dev"])
-        self.data['BB_Middle'] = bb_sma
+        self.data['BB_Upper'] = (bb_sma + (bb_std * self.params["bb_std_dev"])).shift(1)
+        self.data['BB_Lower'] = (bb_sma - (bb_std * self.params["bb_std_dev"])).shift(1)
+        self.data['BB_Middle'] = bb_sma.shift(1)
         
-        # Z-score計算（統計的異常値検出）
+        # ルックアヘッドバイアス修正: Z-score計算（統計的異常値検出）
         z_sma = self.data[self.price_column].rolling(
             window=self.params["zscore_period"]
         ).mean()
@@ -90,21 +90,21 @@ class MeanReversionStrategy(BaseStrategy):
             window=self.params["zscore_period"]
         ).std()
         
-        self.data['Z_Score'] = (self.data[self.price_column] - z_sma) / z_std
+        self.data['Z_Score'] = ((self.data[self.price_column] - z_sma) / z_std).shift(1)
         
-        # RSIフィルター（オプション）
+        # ルックアヘッドバイアス修正: RSIフィルター（オプション）
         if self.params["rsi_filter"]:
-            self.data['RSI'] = self._calculate_rsi()
+            self.data['RSI'] = self._calculate_rsi().shift(1)
         
-        # ATR（ボラティリティベースのストップロス）
+        # ルックアヘッドバイアス修正: ATR（ボラティリティベースのストップロス）
         if self.params["atr_filter"]:
-            self.data['ATR'] = self._calculate_atr()
+            self.data['ATR'] = self._calculate_atr().shift(1)
             
-        # ボリューム移動平均
+        # ルックアヘッドバイアス修正: ボリューム移動平均
         if self.params["volume_confirmation"]:
             self.data['Volume_MA'] = self.data['Volume'].rolling(
                 window=self.params["sma_period"]
-            ).mean()
+            ).mean().shift(1)
             
         print(f"Mean Reversion Strategy Initialized")
         print(f"Parameters: SMA={self.params['sma_period']}, BB_StdDev={self.params['bb_std_dev']}, Z-Score_Threshold={self.params['zscore_entry_threshold']}")

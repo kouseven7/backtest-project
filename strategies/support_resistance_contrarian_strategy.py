@@ -66,14 +66,14 @@ class SupportResistanceContrarianStrategy(BaseStrategy):
         """戦略初期化処理"""
         super().initialize_strategy()
         
-        # RSI計算（確認シグナル用）
+        # ルックアヘッドバイアス修正: RSI計算（確認シグナル用）
         if self.params["rsi_confirmation"]:
-            self.data['RSI'] = self._calculate_rsi()
+            self.data['RSI'] = self._calculate_rsi().shift(1)
         
-        # ボリューム移動平均
+        # ルックアヘッドバイアス修正: ボリューム移動平均
         self.data['Volume_MA'] = self.data['Volume'].rolling(
             window=self.params["lookback_period"]
-        ).mean()
+        ).mean().shift(1)
         
         # 支持線・抵抗線の初期計算
         self._calculate_support_resistance_levels()

@@ -109,16 +109,21 @@ class VWAPBreakoutStrategy(BaseStrategy):
         sma_long = self.params["sma_long"]
         rsi_period = self.params["rsi_period"]
         
-        self.data['SMA_' + str(sma_short)] = calculate_sma(self.data, self.price_column, sma_short)
-        self.data['SMA_' + str(sma_long)] = calculate_sma(self.data, self.price_column, sma_long)
-        self.data['VWAP'] = calculate_vwap(self.data, self.price_column, self.volume_column)
-        self.data['RSI'] = calculate_rsi(self.data[self.price_column], rsi_period)
-        self.data['MACD'], self.data['Signal_Line'] = calculate_macd(self.data, self.price_column)
+        # ルックアヘッドバイアス修正: 全てのインジケーターにshift(1)を適用して前日の値を使用
+        self.data['SMA_' + str(sma_short)] = calculate_sma(self.data, self.price_column, sma_short).shift(1)
+        self.data['SMA_' + str(sma_long)] = calculate_sma(self.data, self.price_column, sma_long).shift(1)
+        self.data['VWAP'] = calculate_vwap(self.data, self.price_column, self.volume_column).shift(1)
+        self.data['RSI'] = calculate_rsi(self.data[self.price_column], rsi_period).shift(1)
+        
+        # MACDも同様にshift(1)を適用
+        macd_raw, signal_raw = calculate_macd(self.data, self.price_column)
+        self.data['MACD'] = macd_raw.shift(1)
+        self.data['Signal_Line'] = signal_raw.shift(1)
 
         # 市場全体のトレンドを確認するためのインデックスの移動平均線
         if self.index_data is not None:
-            self.index_data['SMA_' + str(sma_short)] = calculate_sma(self.index_data, self.price_column, sma_short)
-            self.index_data['SMA_' + str(sma_long)] = calculate_sma(self.index_data, self.price_column, sma_long)
+            self.index_data['SMA_' + str(sma_short)] = calculate_sma(self.index_data, self.price_column, sma_short).shift(1)
+            self.index_data['SMA_' + str(sma_long)] = calculate_sma(self.index_data, self.price_column, sma_long).shift(1)
 
         logger.info(f"[init] data.columns: {self.data.columns.tolist()}")
         logger.info(f"[init] data.index[:5]: {self.data.index[:5].tolist()}")

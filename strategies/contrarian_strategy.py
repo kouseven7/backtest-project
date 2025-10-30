@@ -62,7 +62,8 @@ class ContrarianStrategy(BaseStrategy):
         """
         super().initialize_strategy()
         # RSIを計算してデータに追加
-        self.data['RSI'] = calculate_rsi(self.data[self.price_column], period=self.params["rsi_period"])
+        # ルックアヘッドバイアス修正: shift(1)を追加して前日のRSIを使用
+        self.data['RSI'] = calculate_rsi(self.data[self.price_column], period=self.params["rsi_period"]).shift(1)
         
         # Openカラムの確認（ピンバー判定に必要）
         if 'Open' not in self.data.columns:

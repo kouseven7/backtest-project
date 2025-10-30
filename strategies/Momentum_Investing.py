@@ -86,23 +86,25 @@ class MomentumInvestingStrategy(BaseStrategy):
         sma_short = self.params["sma_short"]
         sma_long = self.params["sma_long"]
 
-        # 既に指標列がある場合は再計算しない
+        # ルックアヘッドバイアス修正: 既に指標列がある場合は再計算しない
         if f'MA_{sma_short}' not in self.data.columns:
             if ma_type == "SMA":
-                self.data[f'MA_{sma_short}'] = calculate_sma(self.data, self.price_column, sma_short)
+                self.data[f'MA_{sma_short}'] = calculate_sma(self.data, self.price_column, sma_short).shift(1)
             elif ma_type == "EMA":
-                self.data[f'MA_{sma_short}'] = self.data[self.price_column].ewm(span=sma_short, adjust=False).mean()
+                self.data[f'MA_{sma_short}'] = self.data[self.price_column].ewm(span=sma_short, adjust=False).mean().shift(1)
         if f'MA_{sma_long}' not in self.data.columns:
             if ma_type == "SMA":
-                self.data[f'MA_{sma_long}'] = calculate_sma(self.data, self.price_column, sma_long)
+                self.data[f'MA_{sma_long}'] = calculate_sma(self.data, self.price_column, sma_long).shift(1)
             elif ma_type == "EMA":
-                self.data[f'MA_{sma_long}'] = self.data[self.price_column].ewm(span=sma_long, adjust=False).mean()
+                self.data[f'MA_{sma_long}'] = self.data[self.price_column].ewm(span=sma_long, adjust=False).mean().shift(1)
         if 'RSI' not in self.data.columns:
-            self.data['RSI'] = calculate_rsi(self.data[self.price_column], self.params["rsi_period"])
+            self.data['RSI'] = calculate_rsi(self.data[self.price_column], self.params["rsi_period"]).shift(1)
         if 'MACD' not in self.data.columns or 'Signal_Line' not in self.data.columns:
-            self.data['MACD'], self.data['Signal_Line'] = calculate_macd(self.data, self.price_column)
+            macd_raw, signal_raw = calculate_macd(self.data, self.price_column)
+            self.data['MACD'] = macd_raw.shift(1)
+            self.data['Signal_Line'] = signal_raw.shift(1)
         if 'ATR' not in self.data.columns:
-            self.data['ATR'] = calculate_atr(self.data, self.price_column)
+            self.data['ATR'] = calculate_atr(self.data, self.price_column).shift(1)
 
     def generate_entry_signal(self, idx: int) -> int:
         """

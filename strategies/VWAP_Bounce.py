@@ -96,17 +96,18 @@ class VWAPBounceStrategy(BaseStrategy):
         # データフレームのコピーを作成してSettingWithCopyWarningを回避
         self.data = self.data.copy()
         
-        # VWAPを計算してデータに追加
-        self.data['VWAP'] = calculate_vwap(self.data, price_column=self.price_column, volume_column=self.volume_column)
+        # ルックアヘッドバイアス修正: VWAPを計算してデータに追加
+        self.data['VWAP'] = calculate_vwap(self.data, price_column=self.price_column, volume_column=self.volume_column).shift(1)
         
-        # ATRの計算
+        # ルックアヘッドバイアス修正: ATRの計算
         from indicators.volatility_indicators import calculate_atr
-        self.data['ATR'] = calculate_atr(self.data, self.price_column)
+        self.data['ATR'] = calculate_atr(self.data, self.price_column).shift(1)
         
-        # ATRパーセンタイルの計算（20日間ローリング）
-        self.data['ATR_Percentile'] = self.data['ATR'].rolling(20).apply(
+        # ルックアヘッドバイアス修正: ATRパーセンタイルの計算（20日間ローリング）
+        atr_percentile_raw = self.data['ATR'].rolling(20).apply(
             lambda x: pd.Series(x).rank(pct=True).iloc[-1] * 100
         )
+        self.data['ATR_Percentile'] = atr_percentile_raw.shift(1)
 
     def generate_entry_signal(self, idx: int) -> int:
         """
