@@ -44,7 +44,11 @@ try:
     from src.strategies.VWAP_Breakout import VWAPBreakoutStrategy
     from src.strategies.Momentum_Investing import MomentumInvestingStrategy  
     from src.strategies.Breakout import BreakoutStrategy
-    from src.strategies.VWAP_Bounce import VWAPBounceStrategy
+    # 除外理由: 9101.T 2年間テスト結果
+    # - Range-bound市場向け設計だがVWAP条件はuptrend日のみ発動
+    # - 118日のrange-bound日でエントリー0回
+    # - Trend filter OFFで2エントリーだが両方損失 (勝率0%)
+    # from src.strategies.VWAP_Bounce import VWAPBounceStrategy
     from src.strategies.Opening_Gap import OpeningGapStrategy
     from src.strategies.contrarian_strategy import ContrarianStrategy
     from src.strategies.gc_strategy_signal import GCStrategy
@@ -66,7 +70,7 @@ except ImportError as e:
                 'VWAPBreakoutStrategy': 'VWAPBreakoutStrategy',
                 'MomentumInvestingStrategy': 'MomentumInvestingStrategy',
                 'BreakoutStrategy': 'BreakoutStrategy',
-                'VWAPBounceStrategy': 'VWAPBounceStrategy',
+                # 'VWAPBounceStrategy': 'VWAPBounceStrategy',  # 除外: 2年間テストで0エントリー
                 'OpeningGapStrategy': 'OpeningGapStrategy', 
                 'ContrarianStrategy': 'ContrarianStrategy',
                 'GCStrategy': 'GCStrategy'
@@ -281,7 +285,7 @@ class MultiStrategyManager:
                 'VWAPBreakoutStrategy': VWAPBreakoutStrategy,
                 'MomentumInvestingStrategy': MomentumInvestingStrategy,
                 'BreakoutStrategy': BreakoutStrategy,
-                'VWAPBounceStrategy': VWAPBounceStrategy,
+                # 'VWAPBounceStrategy': VWAPBounceStrategy,  # 除外: 9101.T 2年間0エントリー
                 'OpeningGapStrategy': OpeningGapStrategy,
                 'ContrarianStrategy': ContrarianStrategy,
                 'GCStrategy': GCStrategy
@@ -606,7 +610,7 @@ class MultiStrategyManager:
                 ('VWAPBreakoutStrategy', 'VWAP_Breakout'),
                 ('MomentumInvestingStrategy', 'Momentum_Investing'), 
                 ('BreakoutStrategy', 'Breakout'),
-                ('VWAPBounceStrategy', 'VWAP_Bounce'),
+                # ('VWAPBounceStrategy', 'VWAP_Bounce'),  # 除外: 9101.T 2年間0エントリー
                 ('OpeningGapStrategy', 'Opening_Gap'),
                 ('ContrarianStrategy', 'contrarian_strategy'),
                 ('GCStrategy', 'gc_strategy_signal')
@@ -805,7 +809,7 @@ class MultiStrategyManager:
                 'VWAPBreakoutStrategy',
                 'MomentumInvestingStrategy', 
                 'BreakoutStrategy',
-                'VWAPBounceStrategy',
+                # 'VWAPBounceStrategy',  # 除外: 9101.T 2年間0エントリー
                 'OpeningGapStrategy',
                 'ContrarianStrategy',
                 'GCStrategy'
@@ -899,11 +903,11 @@ class MultiStrategyManager:
                     'file_path': 'src/strategies/gc_strategy_signal.py'
                 },
                 # 追加戦略（TODO #8で検出された全戦略）
-                'VWAPBounceStrategy': {
-                    'module_path': 'src.strategies.VWAP_Bounce',
-                    'class_name': 'VWAPBounceStrategy',
-                    'file_path': 'src/strategies/VWAP_Bounce.py'
-                }
+                # 'VWAPBounceStrategy': {  # 除外: 9101.T 2年間0エントリー
+                #     'module_path': 'src.strategies.VWAP_Bounce',
+                #     'class_name': 'VWAPBounceStrategy',
+                #     'file_path': 'src/strategies/VWAP_Bounce.py'
+                # }
             }
             
             # 戦略クラス自動登録システム
@@ -1204,14 +1208,14 @@ class MultiStrategyManager:
                     instance_kwargs['dow_data'] = kwargs['dow_data']
                     self.logger.info(f"{strategy_name}: Real dow_data provided manually")
             
-            # TODO #12 RA_005: VWAPBounceStrategy等の他の戦略（index_data不要）
-            elif strategy_name in ['VWAPBounceStrategy']:
-                # VWAPBounceStrategyはindex_dataパラメータを受け取らない設計
-                # volume_columnやprice_columnのみを渡す
-                if 'volume_column' in kwargs:
-                    instance_kwargs['volume_column'] = kwargs['volume_column']
-                # index_dataは除外して他のkwargsは渡す
-                instance_kwargs.update({k: v for k, v in kwargs.items() if k not in ['index_data']})
+            # TODO #12 RA_005: 除外された戦略 (VWAPBounceStrategy等)
+            # elif strategy_name in ['VWAPBounceStrategy']:  # 除外: 9101.T 2年間0エントリー
+            #     # VWAPBounceStrategyはindex_dataパラメータを受け取らない設計
+            #     # volume_columnやprice_columnのみを渡す
+            #     if 'volume_column' in kwargs:
+            #         instance_kwargs['volume_column'] = kwargs['volume_column']
+            #     # index_dataは除外して他のkwargsは渡す
+            #     instance_kwargs.update({k: v for k, v in kwargs.items() if k not in ['index_data']})
             
             else:
                 # その他の戦略: 追加パラメータをそのまま渡す

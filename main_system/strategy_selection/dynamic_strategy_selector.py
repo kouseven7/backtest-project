@@ -130,6 +130,7 @@ class DynamicStrategySelector:
         
         # 利用可能な戦略リスト
         # Phase 5-A-11修正: OpeningGapFixedStrategy除外（メタデータなし、フォールバックスコア問題）
+        # Phase B-3完了: OpeningGapStrategy除外（2022-2024データで壊滅的性能: 3.7%勝率, -231% P&L）
         self.available_strategies = [
             'VWAPBreakoutStrategy',
             'MomentumInvestingStrategy',
@@ -138,7 +139,7 @@ class DynamicStrategySelector:
             # 'OpeningGapFixedStrategy',  # メタデータ未作成のため除外（copilot-instructions.md準拠）
             'ContrarianStrategy',
             'GCStrategy',
-            'OpeningGapStrategy'  # メタデータありの通常版
+            # 'OpeningGapStrategy'  # Phase B-3完了: 使用不可（2022-2024データで壊滅的性能確認）
         ]
         
         self.logger.info(f"DynamicStrategySelector initialized with mode: {selection_mode.value}")

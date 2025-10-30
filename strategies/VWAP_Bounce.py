@@ -1,4 +1,8 @@
 """
+Phase B-3検証完了: VWAP_Bounce戦略は2023-2024の2年間でエントリー0回（range-bound条件）
+条件緩和+トレンドフィルターOFFでも2回のみ（両方とも損失）
+実用性が極めて低く、マルチ戦略システムに含める価値がないと判断しました。
+よって、本戦略は開発・保守コスト削減のため廃止します。
 Module: VWAP_Bounce
 File: VWAP_Bounce.py
 Description: 
@@ -117,8 +121,9 @@ class VWAPBounceStrategy(BaseStrategy):
         # レンジ相場の判定（統一トレンド判定を使用）
         trend = detect_unified_trend(self.data.iloc[:idx + 1], price_column=self.price_column, 
                                     strategy="VWAP_Bounce")
-        if trend != "range-bound":
-            return 0  # レンジ相場でない場合はエントリーしない
+        if self.params.get("trend_filter_enabled", True):  # フィルターが有効な場合のみチェック
+            if trend not in self.params["allowed_trends"]:
+                return 0  # 許可されたトレンドでない場合はエントリーしない
 
         current_price = self.data[self.price_column].iloc[idx]
         vwap = self.data['VWAP'].iloc[idx]

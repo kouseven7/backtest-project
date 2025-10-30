@@ -1,11 +1,24 @@
 """
 Module: Opening_Gap_Fixed
+
+*** 警告: この戦略は使用不可と結論されました ***
+
+Phase B-3検証結果（2025-10-30）:
+- 親クラスOpeningGapStrategyが2022-2024データで壊滅的性能を示したため、
+  この修正版も使用不可と判断されました。
+- 元の戦略の結果: 全銘柄で3.7%～19.1%勝率, -100%～-231% P&L
+- 結論: 同日Entry/Exit問題の修正だけでは根本的な性能問題は解決できません
+
+このファイルは参考・アーカイブ目的でのみ保持されています。
+実運用・バックテストでは使用しないでください。
+
 Description:
   Opening Gapストラテジーの修正版。
   同日のEntry/Exit問題を修正したバージョン。
 
 Author: imega
 Created: 2025-10-15
+Modified: 2025-10-30 (Phase B-3完了: 使用不可と結論)
 """
 
 from strategies.Opening_Gap import OpeningGapStrategy

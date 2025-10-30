@@ -1,12 +1,25 @@
 """
 Module: opening_gap_enhanced
 File: Opening_Gap_Enhanced.py
+
+*** 警告: この戦略は使用不可と結論されました ***
+
+Phase B-3検証結果（2025-10-30）:
+- 元のOpeningGapStrategyが2022-2024データで壊滅的性能を示したため、
+  この強化版も使用不可と判断されました。
+- 元の戦略の結果: 全銘柄で3.7%～19.1%勝率, -100%～-231% P&L
+- 結論: ポジション管理の改善だけでは根本的な戦略の欠陥は解決できません
+
+このファイルは参考・アーカイブ目的でのみ保持されています。
+実運用・バックテストでは使用しないでください。
+
 Description: 
   拡張基底クラスを使用したOpeningGapStrategyの強化版。
   同日のエントリー/エグジット問題を解決し、ポジション管理を改善した戦略。
 
 Author: imega
 Created: 2025-10-15
+Modified: 2025-10-30 (Phase B-3完了: 使用不可と結論)
 """
 
 import pandas as pd

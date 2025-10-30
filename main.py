@@ -70,9 +70,15 @@ from indicators.unified_trend_detector import detect_unified_trend, detect_unifi
 from strategies.VWAP_Breakout import VWAPBreakoutStrategy
 from strategies.Momentum_Investing import MomentumInvestingStrategy
 from strategies.Breakout import BreakoutStrategy
-from strategies.VWAP_Bounce import VWAPBounceStrategy
-from strategies.Opening_Gap import OpeningGapStrategy
-from strategies.Opening_Gap_Fixed import OpeningGapFixedStrategy  # 修正版戦略追加
+# Phase B-3完了: VWAP_Bounce使用不可
+# 検証結果（9101.T 2023-2024, 2年間491取引日）:
+#   - デフォルト（range-bound）: エントリー0回
+#   - 条件緩和（range-bound）: エントリー0回（VWAP条件該当5日すべてuptrend）
+#   - トレンドフィルターOFF: エントリー2回、総損益-14,129円（-1.41%）、勝率0.00%
+# 結論: 元の設計意図（range-boundでのVWAP反発）が2年間で1回も発生せず実用性なし
+# from strategies.VWAP_Bounce import VWAPBounceStrategy
+# from strategies.Opening_Gap import OpeningGapStrategy  # Phase B-3完了: 使用不可（2022-2024データで壊滅的性能）
+# from strategies.Opening_Gap_Fixed import OpeningGapFixedStrategy  # Phase B-3完了: 使用不可（親クラスが使用不可のため）
 from strategies.contrarian_strategy import ContrarianStrategy
 from strategies.gc_strategy_signal import GCStrategy
 from data_processor import preprocess_data
@@ -101,8 +107,8 @@ def load_optimized_parameters(ticker: str) -> Dict[str, Dict[str, Any]]:
         'VWAPBreakoutStrategy',
         'MomentumInvestingStrategy', 
         'BreakoutStrategy',
-        'VWAPBounceStrategy',
-        'OpeningGapStrategy',
+        # 'VWAPBounceStrategy',  # Phase B-3完了: 使用不可（2年間エントリー0回）
+        # 'OpeningGapStrategy',  # Phase B-3完了: 使用不可（2022-2024データで壊滅的性能）
         'ContrarianStrategy',
         'GCStrategy'
     ]
@@ -160,20 +166,20 @@ def get_default_parameters(strategy_name: str) -> Dict[str, Any]:
             'stop_loss_pct': 0.05,
             'take_profit_pct': 0.10
         },
-        'VWAPBounceStrategy': {
-            'vwap_period': 20,
-            'deviation_threshold': 0.02,
-            'volume_threshold': 1.2,
-            'stop_loss_pct': 0.03,
-            'take_profit_pct': 0.06
-        },
-        'OpeningGapStrategy': {
-            'gap_threshold': 0.02,
-            'volume_threshold': 1.5,
-            'confirmation_period': 3,
-            'stop_loss_pct': 0.05,
-            'take_profit_pct': 0.10
-        },
+        # 'VWAPBounceStrategy': {  # 除外: 2年間テストで0エントリー (range-bound用だがVWAP条件はuptrend日のみ発動)
+        #     'vwap_period': 20,
+        #     'deviation_threshold': 0.02,
+        #     'volume_threshold': 1.2,
+        #     'stop_loss_pct': 0.03,
+        #     'take_profit_pct': 0.06
+        # },
+        # 'OpeningGapStrategy': {  # Phase B-3完了: 使用不可
+        #     'gap_threshold': 0.02,
+        #     'volume_threshold': 1.5,
+        #     'confirmation_period': 3,
+        #     'stop_loss_pct': 0.05,
+        #     'take_profit_pct': 0.10
+        # },
         'ContrarianStrategy': {
             'rsi_period': 14,
             'rsi_oversold': 30,
@@ -335,13 +341,13 @@ def _execute_individual_strategy(stock_data, index_data, strategy_name, strategy
                 params=params,
                 price_column="Adj Close"
             )
-        elif strategy_name in ['OpeningGapStrategy', 'OpeningGapFixedStrategy']:
-            strategy = strategy_class(
-                data=stock_data.copy(),
-                dow_data=index_data,
-                params=params,
-                price_column="Adj Close"
-            )
+        # elif strategy_name in ['OpeningGapStrategy', 'OpeningGapFixedStrategy']:  # Phase B-3完了: 使用不可
+        #     strategy = strategy_class(
+        #         data=stock_data.copy(),
+        #         dow_data=index_data,
+        #         params=params,
+        #         price_column="Adj Close"
+        #     )
         else:
             # その他の戦略は共通パラメータで初期化
             strategy = strategy_class(
@@ -799,9 +805,9 @@ def apply_strategies_with_optimized_params(stock_data: pd.DataFrame, index_data:
         ('VWAPBreakoutStrategy', VWAPBreakoutStrategy),
         ('MomentumInvestingStrategy', MomentumInvestingStrategy),
         ('BreakoutStrategy', BreakoutStrategy),
-        ('VWAPBounceStrategy', VWAPBounceStrategy),
-        ('OpeningGapFixedStrategy', OpeningGapFixedStrategy),  # 修正版を使用
-        # ('OpeningGapStrategy', OpeningGapStrategy),  # 元の実装は同日Entry/Exit問題あり
+        # ('VWAPBounceStrategy', VWAPBounceStrategy),  # 除外: 9101.T 2年間テストで0エントリー
+        # ('OpeningGapFixedStrategy', OpeningGapFixedStrategy),  # Phase B-3完了: 使用不可
+        # ('OpeningGapStrategy', OpeningGapStrategy),  # Phase B-3完了: 使用不可（元の実装は同日Entry/Exit問題あり）
         ('ContrarianStrategy', ContrarianStrategy),
         ('GCStrategy', GCStrategy)
     ]
