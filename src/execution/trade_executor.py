@@ -173,12 +173,22 @@ class TradeExecutor:
     def submit_order(self, order: Order, 
                     callback: Optional[Callable[[Order], None]] = None) -> Optional[str]:
         """注文を提出"""
+        # Phase 4.2-32-2: submit_order()開始ログ
+        self.logger.info(
+            f"[PHASE_4_2_32_2] submit_order() 開始: {order.symbol} {order.side.value}, quantity={order.quantity}"
+        )
+        
         if not self.execution_enabled:
             self.logger.warning("取引実行が無効化されています")
             return None
             
         try:
             with self.execution_lock:
+                # Phase 4.2-32-2: リスク管理チェック前ログ
+                self.logger.info(
+                    f"[PHASE_4_2_32_2] リスク管理チェック前: risk_check_enabled={self.risk_check_enabled}"
+                )
+                
                 # リスク管理チェック
                 if self.risk_check_enabled and not self._risk_check(order):
                     order.status = OrderStatus.REJECTED
@@ -195,7 +205,19 @@ class TradeExecutor:
                 # 注文管理システムに提出
                 order_id = self.order_manager.submit_order(order, self._create_order_callback(callback))
                 
-                self.logger.info(f"注文提出: {order.symbol} {order.side.value} {order.quantity}")
+                # Phase 4.2-30: order_id検証とorder.status確認
+                self.logger.info(
+                    f"[PHASE_4_2_30] 注文提出完了: {order.symbol} {order.side.value} {order.quantity}, "
+                    f"order_id={order_id}, order.status={order.status.value}"
+                )
+                
+                # Phase 4.2-30: REJECTEDの場合はNoneを返す
+                if order.status == OrderStatus.REJECTED:
+                    self.logger.warning(
+                        f"[PHASE_4_2_30] 注文がREJECTED状態のためNoneを返却: {order.symbol} {order.side.value}"
+                    )
+                    return None
+                
                 return order_id
                 
         except Exception as e:
@@ -244,6 +266,11 @@ class TradeExecutor:
         リスク管理チェック（Phase 4.2-16: 手数料・単元株対応版）
         """
         try:
+            # Phase 4.2-32-2: _risk_check()開始ログ
+            self.logger.info(
+                f"[PHASE_4_2_32_2] _risk_check() 開始: {order.symbol} {order.side.value}, quantity={order.quantity}"
+            )
+            
             # 1. 現金残高チェック（手数料込み）
             if order.side == OrderSide.BUY:
                 current_price = self.broker.get_current_price(order.symbol)
@@ -273,37 +300,149 @@ class TradeExecutor:
                     )
                     return False
             
-            # 2. ポジションサイズ制限チェック
-            current_position = self.portfolio_tracker.get_position(order.symbol)
-            current_qty = current_position.quantity if current_position else 0
+            # Phase 4.2-27: SELL注文のポジション数量チェック
+            # Phase 4.2-28: PaperBrokerから直接ポジション取得（PortfolioTracker同期問題の解決）
+            if order.side == OrderSide.SELL:
+                # Phase 4.2-32-2: SELL注文チェック開始ログ
+                self.logger.info(
+                    f"[PHASE_4_2_32_2] _risk_check() SELL注文チェック開始: {order.symbol}, "
+                    f"注文数量={order.quantity}"
+                )
+                
+                # Brokerから現在のポジションを取得
+                broker_positions = self.broker.get_positions()
+                current_qty = 0
+                
+                # Phase 4.2-32-2: broker_positions詳細ログ
+                self.logger.info(
+                    f"[PHASE_4_2_32_2] broker_positions keys: {list(broker_positions.keys())}, "
+                    f"has {order.symbol}: {order.symbol in broker_positions}"
+                )
+                
+                if order.symbol in broker_positions:
+                    position_data = broker_positions[order.symbol]
+                    current_qty = position_data.get('quantity', 0)
+                    
+                    # Phase 4.2-32-2: position_data詳細ログ
+                    self.logger.info(
+                        f"[PHASE_4_2_32_2] position_data: {position_data}"
+                    )
+                
+                self.logger.info(
+                    f"[PHASE_4_2_28] SELL注文チェック: {order.symbol}, "
+                    f"注文数量={order.quantity}, 保有数量={current_qty} (from PaperBroker)"
+                )
+                
+                if current_qty <= 0:
+                    self.logger.warning(
+                        f"[PHASE_4_2_28] SELL注文拒否: {order.symbol} "
+                        f"(理由=ポジション未保有, 保有数量={current_qty})"
+                    )
+                    # Phase 4.2-32-2: 拒否理由詳細ログ
+                    self.logger.info(
+                        f"[PHASE_4_2_32_2] SELL注文REJECTED: current_qty={current_qty} <= 0"
+                    )
+                    return False
+                
+                if order.quantity > current_qty:
+                    self.logger.warning(
+                        f"[PHASE_4_2_28] SELL注文拒否: {order.symbol} "
+                        f"(理由=数量超過, 注文={order.quantity}, 保有={current_qty})"
+                    )
+                    # Phase 4.2-32-2: 拒否理由詳細ログ
+                    self.logger.info(
+                        f"[PHASE_4_2_32_2] SELL注文REJECTED: order.quantity={order.quantity} > current_qty={current_qty}"
+                    )
+                    return False
+                
+                # Phase 4.2-32-2: SELL注文チェック通過ログ
+                self.logger.info(
+                    f"[PHASE_4_2_32_2] _risk_check() SELL注文チェック通過: {order.symbol}"
+                )
+            
+            # 2. ポジションサイズ制限チェック（Phase 4.2-27: SELL注文の数量反転対応）
+            # Phase 4.2-28: PaperBrokerから直接ポジション取得
+            broker_positions = self.broker.get_positions()
+            current_qty = 0
+            
+            if order.symbol in broker_positions:
+                position_data = broker_positions[order.symbol]
+                current_qty = position_data.get('quantity', 0)
             
             if order.symbol in self.position_limits:
-                if abs(current_qty + order.quantity) > self.position_limits[order.symbol]:
-                    self.logger.warning(f"ポジション制限超過: {order.symbol}")
+                # Phase 4.2-27: SELL注文の場合は減算
+                if order.side == OrderSide.SELL:
+                    new_qty = current_qty - order.quantity
+                else:
+                    new_qty = current_qty + order.quantity
+                
+                if abs(new_qty) > self.position_limits[order.symbol]:
+                    self.logger.warning(
+                        f"[PHASE_4_2_27] ポジション制限超過: {order.symbol}, "
+                        f"現在={current_qty}, 注文後={new_qty}, 上限={self.position_limits[order.symbol]}"
+                    )
                     return False
             
             # 3. 最大ポジションサイズチェック（正確な計算）
-            total_equity = self.portfolio_tracker.get_total_equity()
-            
-            if total_equity <= 0:
-                self.logger.error(f"[ERROR] total_equity が無効: {total_equity}")
-                return False
-            
+            # Phase 4.2-32-3: current_priceを事前取得（外部リスク管理システム連携でも使用）
             current_price = self.broker.get_current_price(order.symbol)
-            position_value = abs(order.quantity) * current_price
-            position_pct = (position_value / total_equity) * 100
             
-            self.logger.debug(
-                f"[INFO] ポジションサイズチェック: {order.symbol} "
-                f"注文額={position_value:.2f}円, 総資産={total_equity:.2f}円, "
-                f"比率={position_pct:.1f}%, 上限={self.max_position_size_pct}%"
-            )
-            
-            if position_pct > self.max_position_size_pct:
-                self.logger.warning(
-                    f"[WARNING] 最大ポジションサイズ超過: {position_pct:.1f}% > {self.max_position_size_pct}%"
+            # Phase 4.2-32-3: SELL注文はポジション減少のため、最大ポジションサイズチェックをスキップ
+            if order.side == OrderSide.SELL:
+                self.logger.info(
+                    f"[PHASE_4_2_32_3] SELL注文のため、最大ポジションサイズチェックをスキップ: {order.symbol}"
                 )
-                return False
+            else:
+                # BUY注文のみチェック
+                # Phase 4.2-32-2: total_equity取得前ログ
+                self.logger.info(
+                    f"[PHASE_4_2_32_2] 最大ポジションサイズチェック開始: {order.symbol} {order.side.value}"
+                )
+                
+                total_equity = self.portfolio_tracker.get_total_equity()
+                
+                # Phase 4.2-32-2: total_equity取得後ログ
+                self.logger.info(
+                    f"[PHASE_4_2_32_2] total_equity={total_equity:.2f}円"
+                )
+                
+                if total_equity <= 0:
+                    self.logger.error(f"[ERROR] total_equity が無効: {total_equity}")
+                    # Phase 4.2-32-2: 拒否理由詳細ログ
+                    self.logger.info(
+                        f"[PHASE_4_2_32_2] REJECTED: total_equity={total_equity} <= 0"
+                    )
+                    return False
+                
+                position_value = abs(order.quantity) * current_price
+                position_pct = (position_value / total_equity) * 100
+                
+                # Phase 4.2-32-2: ポジションサイズ計算結果ログ
+                self.logger.info(
+                    f"[PHASE_4_2_32_2] ポジションサイズ計算: position_value={position_value:.2f}円, "
+                    f"position_pct={position_pct:.1f}%, max={self.max_position_size_pct}%"
+                )
+                
+                self.logger.debug(
+                    f"[INFO] ポジションサイズチェック: {order.symbol} "
+                    f"注文額={position_value:.2f}円, 総資産={total_equity:.2f}円, "
+                    f"比率={position_pct:.1f}%, 上限={self.max_position_size_pct}%"
+                )
+                
+                if position_pct > self.max_position_size_pct:
+                    self.logger.warning(
+                        f"[WARNING] 最大ポジションサイズ超過: {position_pct:.1f}% > {self.max_position_size_pct}%"
+                    )
+                    # Phase 4.2-32-2: 拒否理由詳細ログ
+                    self.logger.info(
+                        f"[PHASE_4_2_32_2] REJECTED: position_pct={position_pct:.1f}% > max={self.max_position_size_pct}%"
+                    )
+                    return False
+                
+                # Phase 4.2-32-2: ポジションサイズチェック通過ログ
+                self.logger.info(
+                    f"[PHASE_4_2_32_2] 最大ポジションサイズチェック通過: {order.symbol}"
+                )
             
             # 4. 単元株チェック（日本株）
             if order.quantity % 100 != 0:

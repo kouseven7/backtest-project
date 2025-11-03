@@ -272,26 +272,57 @@ class ComprehensivePerformanceAnalyzer:
             buy_orders = []
             sell_orders = []
             
-            for detail in execution_details:
+            # Phase 4.2-31-B: execution_detailsの詳細ログ
+            self.logger.info(
+                f"[PHASE_4_2_31_B] execution_details総数: {len(execution_details)}"
+            )
+            
+            for idx, detail in enumerate(execution_details):
                 if not isinstance(detail, dict):
                     continue
                 
-                # 実行成功した取引のみを対象
-                if detail.get('status') != 'executed' or not detail.get('success', False):
+                # Phase 4.2-31-B: force_closedは対応するBUYペアがないため除外
+                # 実行成功した取引のみを対象（status: executed のみ）
+                status = detail.get('status', '')
+                success = detail.get('success', False)
+                
+                if status != 'executed' or not success:
                     continue
                 
                 # BUY/SELL分類
                 action = detail.get('action', '').upper()
                 if action == 'BUY':
                     buy_orders.append(detail)
+                    # Phase 4.2-31-B: BUY注文の詳細ログ
+                    self.logger.info(
+                        f"[PHASE_4_2_31_B] BUY注文#{idx}: symbol={detail.get('symbol')}, "
+                        f"status={status}, success={success}"
+                    )
                 elif action == 'SELL':
                     sell_orders.append(detail)
+                    # Phase 4.2-31-B: SELL注文の詳細ログ
+                    self.logger.info(
+                        f"[PHASE_4_2_31_B] SELL注文#{idx}: symbol={detail.get('symbol')}, "
+                        f"status={status}, success={success}, "
+                        f"executed_price={detail.get('executed_price')}, "
+                        f"quantity={detail.get('quantity')}"
+                    )
+            
+            # Phase 4.2-23デバッグ: BUY/SELL詳細出力
+            self.logger.debug(
+                f"[PAIR_DEBUG] Total execution_details: {len(execution_details)}, "
+                f"Filtered BUY: {len(buy_orders)}, SELL: {len(sell_orders)}"
+            )
             
             # BUY/SELLペアリング（FIFO方式）
             if len(buy_orders) != len(sell_orders):
+                # Phase 4.2-23: 差分詳細をログ出力
+                diff = abs(len(buy_orders) - len(sell_orders))
+                excess_type = "BUY" if len(buy_orders) > len(sell_orders) else "SELL"
+                
                 self.logger.warning(
                     f"[FALLBACK_PROHIBITED] BUY/SELLペア不一致: "
-                    f"BUY={len(buy_orders)}, SELL={len(sell_orders)}. "
+                    f"BUY={len(buy_orders)}, SELL={len(sell_orders)} (差分={diff}, 超過={excess_type}). "
                     f"copilot-instructions.md準拠: ダミーデータ補完は実行しません。"
                 )
                 # フォールバック禁止: ペアが成立しない場合は空リスト返却

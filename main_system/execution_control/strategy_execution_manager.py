@@ -15,6 +15,8 @@ sys.path.insert(0, str(project_root))
 from config.logger_config import setup_logger
 # Phase 4.2-16: 日本株手数料計算・100株単位対応
 from src.execution.commission_calculator import calculate_max_affordable_quantity, adjust_to_trading_unit
+# Phase 4.2-32: OrderStatusインポート
+from src.execution.order_manager import OrderStatus
 
 class StrategyExecutionManager:
     """戦略実行管理メインクラス"""
@@ -378,8 +380,14 @@ class StrategyExecutionManager:
                 self.logger.error("CRITICAL: Trade executor not available. Cannot execute trades without violating copilot-instructions.md (no mock execution allowed).")
                 return []
             
-            # シグナルから取引指示を生成
-            trade_orders = self._generate_trade_orders(signals, symbols)
+            # Phase 4.2-31-B-1: REJECTEDされたBUY注文をトラッキング
+            # Phase 4.2-31-B-4-2: symbol単位→インデックス単位に変更
+            # copilot-instructions.md準拠: 実データのみ、モック禁止
+            rejected_buy_indices = set()  # REJECTEDされたBUY注文のorder_index集合
+            
+            # シグナルから取引指示を生成（Phase 5.3: strategy_name追加）
+            strategy_name = getattr(self, 'current_strategy_name', 'Unknown')
+            trade_orders = self._generate_trade_orders(signals, symbols, strategy_name)
             
             if not trade_orders:
                 self.logger.info("No trade orders generated from signals")
@@ -388,11 +396,104 @@ class StrategyExecutionManager:
             # 各注文を実行（実際の実行のみ）
             for order_dict in trade_orders:
                 try:
-                    # Phase 4.2-15: 価格登録は_generate_trade_orders()内で実行済み（重複削除）
                     symbol = order_dict['symbol']
+                    order_index = order_dict.get('order_index', -1)  # Phase 4.2-31-B-4-3
+                    
+                    # Phase 4.2-32-2: ループ開始ログ
+                    self.logger.info(
+                        f"[PHASE_4_2_32_2] 注文処理開始: order_index={order_index}, "
+                        f"symbol={symbol}, action={order_dict['action']}, quantity={order_dict['quantity']}"
+                    )
+                    
+                    # Phase 4.2-31-B-4-3: SELL注文の場合、対応するBUY注文（order_index - 1）がREJECTEDされていればスキップ
+                    # copilot-instructions.md準拠: BUY/SELLペア不一致を防ぐ（実データのみ）
+                    # 仮定: BUY注文の直後にSELL注文が生成される（order_index順）
+                    if order_dict['action'] == 'SELL':
+                        # 対応するBUY注文のインデックスを特定（SELL注文の直前）
+                        corresponding_buy_index = order_index - 1
+                        
+                        # Phase 4.2-32-2: SELL注文チェック詳細ログ
+                        self.logger.info(
+                            f"[PHASE_4_2_32_2] SELL注文チェック: order_index={order_index}, "
+                            f"corresponding_buy_index={corresponding_buy_index}, "
+                            f"rejected_buy_indices={rejected_buy_indices}"
+                        )
+                        
+                        if corresponding_buy_index in rejected_buy_indices:
+                            self.logger.warning(
+                                f"[PHASE_4_2_31_B] SELL注文スキップ（対応BUY REJECTED）: {symbol}, "
+                                f"order_index={order_index}, corresponding_buy_index={corresponding_buy_index}, "
+                                f"quantity={order_dict['quantity']}, "
+                                f"理由=対応するBUY注文（index={corresponding_buy_index}）がREJECTEDされているため"
+                            )
+                            continue  # SELL注文をスキップ（execution_resultsに追加しない）
+                        
+                        # Phase 4.2-32-2: SELL注文スキップされなかったログ
+                        self.logger.info(
+                            f"[PHASE_4_2_32_2] SELL注文スキップされず、処理継続: order_index={order_index}"
+                        )
+                    
+                    # Phase 4.2-22: 注文実行前に保存された価格をPaperBrokerに再登録
+                    # 理由: _generate_trade_orders()ループ終了後に最終価格（4968.46円）で上書きされるため
+                    # copilot-instructions.md: 実データのみ使用（各注文の正しい価格を再登録）
+                    execution_price = order_dict.get('execution_price')
+                    if execution_price and execution_price > 0 and self.paper_broker:
+                        self.paper_broker.update_price(symbol, execution_price)
+                        self.logger.info(f"[PHASE_4_2_22] 注文実行用価格再登録: {symbol} = {execution_price:.2f}円 (action={order_dict['action']})")
+                    
+                    # Phase 4.2-29-2: SELL注文の場合は実際の保有数量と照合・調整
+                    # BUG FIX: _generate_trade_orders()で生成された注文数量は「予定数量」であり、
+                    #          実際の実行時には前のSELL注文で減少している可能性がある
+                    # copilot-instructions.md準拠: 実データのみ使用、モック注文禁止
+                    if order_dict['action'] == 'SELL' and self.paper_broker:
+                        broker_positions = self.paper_broker.get_positions()
+                        actual_quantity = 0
+                        
+                        if symbol in broker_positions:
+                            position_data = broker_positions[symbol]
+                            actual_quantity = position_data.get('quantity', 0)
+                        
+                        requested_quantity = order_dict['quantity']
+                        
+                        self.logger.info(
+                            f"[PHASE_4_2_29] SELL注文数量チェック: {symbol}, "
+                            f"予定数量={requested_quantity}株, 実際の保有={actual_quantity}株"
+                        )
+                        
+                        # Phase 4.2-29-2: 実際の保有数量に調整
+                        if actual_quantity <= 0:
+                            self.logger.warning(
+                                f"[PHASE_4_2_29] SELL注文スキップ（実行時）: {symbol}, "
+                                f"理由=ポジション未保有（実際の保有=0株）"
+                            )
+                            # Phase 4.2-32-2: スキップ詳細ログ
+                            self.logger.info(
+                                f"[PHASE_4_2_32_2] SELL注文がPhase 4.2-29でスキップされました: "
+                                f"order_index={order_index}, actual_quantity=0"
+                            )
+                            continue  # 注文スキップ
+                        
+                        if requested_quantity > actual_quantity:
+                            self.logger.warning(
+                                f"[PHASE_4_2_29] SELL注文数量調整: {symbol}, "
+                                f"{requested_quantity}株 -> {actual_quantity}株（実際の保有に合わせる）"
+                            )
+                            order_dict['quantity'] = actual_quantity  # 数量を実際の保有に調整
+                        
+                        # Phase 4.2-32-2: Phase 4.2-29通過ログ
+                        self.logger.info(
+                            f"[PHASE_4_2_32_2] Phase 4.2-29通過: order_index={order_index}, "
+                            f"最終数量={order_dict['quantity']}株"
+                        )
                     
                     # 辞書からOrderオブジェクト生成
                     from src.execution.order_manager import Order, OrderType, OrderSide
+                    
+                    # Phase 4.2-32-2: Order生成前ログ
+                    self.logger.info(
+                        f"[PHASE_4_2_32_2] Order生成準備: order_index={order_index}, "
+                        f"action={order_dict['action']}, quantity={order_dict['quantity']}"
+                    )
                     
                     # OrderSide決定
                     side = OrderSide.BUY if order_dict['action'] == 'BUY' else OrderSide.SELL
@@ -405,10 +506,25 @@ class StrategyExecutionManager:
                         quantity=order_dict['quantity']
                     )
                     
-                    # TradeExecutor.submit_order()呼び出し
-                    order_id = self.trade_executor.submit_order(order)
+                    # Phase 4.2-32-2: Order生成完了ログ
+                    self.logger.info(
+                        f"[PHASE_4_2_32_2] Order生成完了: order_index={order_index}, "
+                        f"order.id={order.id}, order.side={order.side.value}"
+                    )
                     
-                    if order_id:
+                    # TradeExecutor.submit_order()呼び出し
+                    self.logger.info(
+                        f"[PHASE_4_2_32_2] TradeExecutor.submit_order()呼び出し: order_index={order_index}"
+                    )
+                    order_id = self.trade_executor.submit_order(order)
+                    self.logger.info(
+                        f"[PHASE_4_2_32_2] TradeExecutor.submit_order()完了: order_index={order_index}, "
+                        f"order_id={order_id}, order.status={order.status.value}"
+                    )
+                    
+                    # Phase 4.2-32: order_idだけでなくorder.statusもチェック（order_managerは常にorder.idを返すため）
+                    # copilot-instructions.md準拠: 実データのみ（REJECTEDされた注文はexecution_resultsに追加しない）
+                    if order_id and order.status == OrderStatus.FILLED:
                         execution_results.append({
                             "success": True,
                             "status": "executed",  # Phase 4.2-5-3: ステータス追加
@@ -418,10 +534,37 @@ class StrategyExecutionManager:
                             "action": order_dict['action'],
                             "quantity": order_dict['quantity'],
                             "timestamp": order_dict['timestamp'],
-                            "executed_price": order.filled_price  # Phase 4.2-5-3: 約定価格追加
+                            "executed_price": order.filled_price,  # Phase 4.2-5-3: 約定価格追加
+                            "strategy_name": order_dict.get('strategy_name', 'Unknown')  # Phase 5.3: 戦略名追加
                         })
-                        self.logger.info(f"Trade executed successfully: {order_dict['symbol']} {order_dict['action']} {order_dict['quantity']}")
+                        self.logger.info(f"Trade executed successfully: {order_dict['symbol']} {order_dict['action']} {order_dict['quantity']} strategy={order_dict.get('strategy_name', 'Unknown')}")
                     else:
+                        # Phase 4.2-31-B-4-4: BUY注文がREJECTEDされた場合、order_indexをトラッキング
+                        if order_dict['action'] == 'BUY':
+                            rejected_buy_indices.add(order_index)
+                            self.logger.warning(
+                                f"[PHASE_4_2_31_B] BUY注文REJECTED（トラッキング追加）: {symbol}, "
+                                f"order_index={order_index}, quantity={order_dict['quantity']}, "
+                                f"rejected_buy_indices={rejected_buy_indices}"
+                            )
+                        
+                        # Phase 4.2-27: 失敗原因の詳細ログ
+                        self.logger.warning(
+                            f"[PHASE_4_2_27] Trade execution failed: {order_dict['symbol']} {order_dict['action']} "
+                            f"quantity={order_dict['quantity']}, execution_price={execution_price}, "
+                            f"order_id={order_id} (None=失敗)"
+                        )
+                        
+                        # 現在のポジション確認（SELL失敗の場合）
+                        if order_dict['action'] == 'SELL' and self.paper_broker:
+                            current_positions = self.paper_broker.get_positions()
+                            has_position = symbol in current_positions and current_positions[symbol]['quantity'] > 0
+                            self.logger.warning(
+                                f"[PHASE_4_2_27] SELL失敗時のポジション確認: {symbol}, "
+                                f"has_position={has_position}, "
+                                f"positions={current_positions.get(symbol, 'NO_POSITION')}"
+                            )
+                        
                         execution_results.append({
                             "success": False,
                             "status": "failed",
@@ -480,6 +623,86 @@ class StrategyExecutionManager:
             else:
                 self.logger.warning(f"No current_backtest_signals available for trade integration")
             
+            # Phase 4.2-23: 未決済ポジション強制決済（Option A: PaperBroker直接呼び出し）
+            # copilot-instructions.md準拠: バックテスト終了時に未決済ポジションがあれば強制決済
+            # 理由: TradeExecutorのリスク管理チェックをバイパスする必要があるため
+            if self.paper_broker:
+                open_positions = self.paper_broker.get_positions()
+                if open_positions:
+                    self.logger.warning(f"[PHASE_4_2_23] 未決済ポジション検出: {len(open_positions)}件")
+                    
+                    for symbol, position in open_positions.items():
+                        try:
+                            quantity = position['quantity']
+                            entry_price = position.get('entry_price', 0)
+                            
+                            # 最終価格を取得
+                            final_price = self.paper_broker.get_current_price(symbol)
+                            
+                            # Option A実装: PaperBrokerを直接呼び出し（リスク管理バイパス）
+                            from src.execution.order_manager import Order, OrderType, OrderSide
+                            
+                            force_close_order = Order(
+                                symbol=symbol,
+                                side=OrderSide.SELL,
+                                order_type=OrderType.MARKET,
+                                quantity=quantity
+                            )
+                            
+                            # PaperBroker.submit_order()を直接呼び出し
+                            # TradeExecutorをバイパスするため、リスク管理チェックは実行されない
+                            success = self.paper_broker.submit_order(force_close_order)
+                            
+                            if success:
+                                # 約定価格を取得（PaperBrokerが設定）
+                                executed_price = force_close_order.filled_price or final_price
+                                
+                                profit_pct = 0
+                                if entry_price > 0:
+                                    profit_pct = (executed_price - entry_price) / entry_price * 100
+                                
+                                # Phase 4.2-23: PortfolioTrackerへの手動記録
+                                # Option A実装の重要ポイント: TradeExecutorをバイパスするため、
+                                # PortfolioTrackerへの記録は手動で行う必要がある
+                                if hasattr(self, 'portfolio_tracker') and self.portfolio_tracker:
+                                    try:
+                                        self.portfolio_tracker.execute_trade(
+                                            symbol=symbol,
+                                            quantity=-abs(quantity),  # SELLなので負の値
+                                            price=executed_price,
+                                            commission=force_close_order.commission or 0,
+                                            slippage=force_close_order.slippage or 0,
+                                            strategy_name="ForceClose",
+                                            trade_id=force_close_order.id
+                                        )
+                                        self.logger.debug(f"[FORCE_CLOSE] PortfolioTrackerに記録完了: {symbol}")
+                                    except Exception as pt_error:
+                                        self.logger.warning(f"[FORCE_CLOSE] PortfolioTracker記録エラー ({symbol}): {pt_error}")
+                                
+                                execution_results.append({
+                                    "success": True,
+                                    "status": "force_closed",  # 強制決済フラグ
+                                    "order_id": force_close_order.id,
+                                    "symbol": symbol,
+                                    "action": "SELL",
+                                    "quantity": quantity,
+                                    "timestamp": pd.Timestamp.now(),
+                                    "executed_price": executed_price,
+                                    "strategy_name": "ForceClose",
+                                    "profit_pct": profit_pct
+                                })
+                                
+                                self.logger.info(
+                                    f"[FORCE_CLOSE] {symbol} 強制決済完了: "
+                                    f"数量={quantity}株, エントリー={entry_price:.2f}円, "
+                                    f"決済={executed_price:.2f}円, 損益={profit_pct:.2f}%"
+                                )
+                            else:
+                                self.logger.error(f"[PHASE_4_2_23] 強制決済失敗 ({symbol}): PaperBroker.submit_order() returned False")
+                                
+                        except Exception as e:
+                            self.logger.error(f"[PHASE_4_2_23] 強制決済エラー ({symbol}): {e}", exc_info=True)
+            
             self.logger.info(f"Trade execution completed: {len(execution_results)} orders processed")
             return execution_results
             
@@ -487,13 +710,14 @@ class StrategyExecutionManager:
             self.logger.error(f"Trade execution processing error: {e}", exc_info=True)
             return []
     
-    def _generate_trade_orders(self, signals: pd.DataFrame, symbols: List[str]) -> List[Dict[str, Any]]:
+    def _generate_trade_orders(self, signals: pd.DataFrame, symbols: List[str], strategy_name: str = 'Unknown') -> List[Dict[str, Any]]:
         """
-        シグナルから取引注文生成（Phase 4.2-9: 全シグナル履歴対応版）
+        シグナルから取引注文生成（Phase 4.2-9: 全シグナル履歴対応版 + Phase 5.3: strategy_name追加）
         
         Args:
             signals: バックテスト結果DataFrame (Entry_Signal, Exit_Signal, Position含む)
             symbols: ティッカーシンボルリスト
+            strategy_name: 戦略名（Phase 5.3追加: CSV出力のstrategy列に使用）
         
         Returns:
             取引オーダーリスト
@@ -529,24 +753,61 @@ class StrategyExecutionManager:
             # SELLオーダーは直前のBUYオーダーと同じ数量を使用する必要がある
             position_tracker: dict[str, int] = {}
             
+            # Phase 4.2-26: 注文生成カウンター（デバッグ用）
+            buy_order_count = 0
+            sell_order_count = 0
+            
+            # Phase 4.2-31-B-4-1: 注文インデックスカウンター（BUY/SELLペアトラッキング用）
+            # copilot-instructions.md準拠: 実データのみ、推測なし
+            order_index = 0
+            
             # 全シグナル履歴をスキャン（最新だけでなく全期間）
             for idx, row in signals.iterrows():
                 for symbol in symbols:
                     # エントリーシグナル検出
                     if row.get('Entry_Signal', 0) == 1:
+                        # Phase 4.2-25: 既存ポジションチェック（重複BUY防止）
+                        # copilot-instructions.md準拠: 実データのみ使用、モック注文禁止
+                        if symbol in position_tracker and position_tracker[symbol] > 0:
+                            self.logger.warning(
+                                f"[PHASE_4_2_25] BUY注文スキップ: {symbol} @ {idx} "
+                                f"(理由=既存ポジション保有中, 数量={position_tracker[symbol]}株)"
+                            )
+                            continue  # 既にポジションを持っている場合はスキップ
+                        
+                        self.logger.info(f"[PHASE_4_2_25] Entry_Signal==1検出: {symbol} @ {idx}, position_tracker={position_tracker.get(symbol, 0)}")
+                        
+                        # Phase 4.2-21 DEBUG: 価格カラム優先順位とデータ内容確認
+                        entry_price_col = row.get('Entry_Price', None)
+                        close_col = row.get('Close', None)
+                        adj_close_col = row.get('Adj Close', None)
+                        self.logger.info(f"[PRICE_SOURCE] Row {idx}: Entry_Price={entry_price_col} | Close={close_col} | Adj Close={adj_close_col}")
+                        
                         entry_price = row.get('Entry_Price', row.get('Close', 0))
                         
-                        # Phase 4.2-15: 価格登録を_calculate_position_size()より前に実行
-                        # copilot-instructions.md準拠: デフォルト価格使用を回避
-                        if entry_price and entry_price > 0 and self.paper_broker:
-                            self.paper_broker.update_price(symbol, entry_price)
-                            self.logger.debug(f"[BUY] Price registered: {symbol} = {entry_price}円")
+                        # Phase 4.2-20: 価格登録を_calculate_position_size()より前に実行
+                        # BUG FIX: PaperBrokerに確実に価格登録（デフォルト100円使用を防ぐ）
+                        if entry_price and entry_price > 0:
+                            if self.paper_broker:
+                                self.paper_broker.update_price(symbol, entry_price)
+                                self.logger.info(f"[PRICE_REGISTER] PaperBrokerへ登録: {symbol} = {entry_price:.2f}円 (Row {idx})")
                         
                         buy_quantity = self._calculate_position_size(symbol)
+                        
+                        # Phase 4.2-24: ゼロ数量チェック（資金不足・価格取得失敗時のスキップ）
+                        # copilot-instructions.md準拠: 実データのみ使用、モック注文禁止
+                        if buy_quantity <= 0:
+                            self.logger.warning(
+                                f"[PHASE_4_2_24] BUY注文スキップ: {symbol} @ {idx} "
+                                f"(数量={buy_quantity}株, 理由=資金不足または価格取得失敗)"
+                            )
+                            continue  # 注文をスキップ（execution_detailsに追加しない）
                         
                         # ポジション追跡: BUY実行時に数量を記録
                         position_tracker[symbol] = buy_quantity
                         
+                        # Phase 4.2-22: execution_price追加（注文実行時に使用）
+                        # copilot-instructions.md: 実データ保持（ループ終了後の最終価格上書きを防ぐ）
                         orders.append({
                             "symbol": symbol,
                             "action": "BUY",
@@ -554,29 +815,56 @@ class StrategyExecutionManager:
                             "order_type": "MARKET",
                             "timestamp": idx.isoformat() if hasattr(idx, 'isoformat') else str(idx),
                             "entry_price": entry_price,
-                            "signal_date": idx
+                            "execution_price": entry_price,  # Phase 4.2-22: 注文実行用価格
+                            "signal_date": idx,
+                            "strategy_name": strategy_name,  # Phase 5.3: 戦略名追加
+                            "order_index": order_index  # Phase 4.2-31-B-4-1: 注文インデックス追加
                         })
-                        self.logger.debug(f"BUY order generated: {symbol} @ {idx}, quantity={buy_quantity}, price={entry_price}")
+                        buy_order_count += 1  # Phase 4.2-26: BUY注文カウント
+                        order_index += 1  # Phase 4.2-31-B-4-1: インデックスインクリメント
+                        # Phase 4.2-32: order_index詳細ログ
+                        self.logger.info(f"[PHASE_4_2_32] BUY order generated: {symbol}, order_index={order_index-1}, quantity={buy_quantity}, price={entry_price}")
+                        self.logger.debug(f"BUY order generated: {symbol} @ {idx}, quantity={buy_quantity}, price={entry_price}, strategy={strategy_name}, order_index={order_index-1}")
                     
                     # イグジットシグナル検出（Exit_Signal == -1 が正しい）
                     if row.get('Exit_Signal', 0) == -1:
+                        self.logger.info(f"[PHASE_4_2_29] Exit_Signal==-1検出: {symbol} @ {idx}, position_tracker={position_tracker.get(symbol, 0)}")
+                        
+                        # Phase 4.2-29-2: position_trackerでポジション保有チェック
+                        # 理由: _generate_trade_orders()は注文「生成」のみ担当
+                        #       実際の実行後の数量調整は_execute_trades()で行う
+                        # copilot-instructions.md準拠: 実データのみ使用、モック注文禁止
+                        if symbol not in position_tracker or position_tracker[symbol] <= 0:
+                            self.logger.warning(
+                                f"[PHASE_4_2_29] SELL注文スキップ: {symbol} @ {idx} "
+                                f"(理由=ポジション未保有, tracker={position_tracker.get(symbol, 'NOT_IN_DICT')})"
+                            )
+                            continue  # ポジションを持っていない場合はスキップ
+                        
                         exit_price = row.get('Close', 0)
                         
-                        # Phase 4.2-15: 価格登録（SELL注文用）
-                        # copilot-instructions.md準拠: デフォルト価格使用を回避
+                        # Phase 4.2-20: 価格登録（SELL注文用）
+                        # BUG FIX: PaperBrokerに確実に価格登録（デフォルト100円使用を防ぐ）
                         if exit_price and exit_price > 0 and self.paper_broker:
                             self.paper_broker.update_price(symbol, exit_price)
-                            self.logger.debug(f"[SELL] Price registered: {symbol} = {exit_price}円")
+                            self.logger.debug(f"[SELL] Price registered to PaperBroker: {symbol} = {exit_price}円")
                         
-                        # Phase 4.2-9-2: SELLオーダー数量修正
-                        # 直前のBUYオーダーの数量を使用（ポジション追跡から取得）
+                        # Phase 4.2-29-2: position_trackerから予定数量を取得
+                        # 注意: これは「注文生成時の予定数量」であり、
+                        #       実際の実行時には_execute_trades()で実際の保有数量に調整される
                         sell_quantity = position_tracker.get(symbol, 0)
                         
-                        if sell_quantity == 0:
-                            # フォールバック: paper_brokerから現在のポジションを取得
-                            sell_quantity = self._get_current_position(symbol)
-                            self.logger.warning(f"SELL quantity fallback for {symbol}: using position={sell_quantity}")
+                        # Phase 4.2-29-2: ゼロ数量チェック（念のため）
+                        # copilot-instructions.md準拠: 実データのみ使用、モック注文禁止
+                        if sell_quantity <= 0:
+                            self.logger.warning(
+                                f"[PHASE_4_2_29] SELL注文スキップ: {symbol} @ {idx} "
+                                f"(数量={sell_quantity}株, 理由=position_tracker数量が0)"
+                            )
+                            continue  # 注文をスキップ（execution_detailsに追加しない）
                         
+                        # Phase 4.2-22: execution_price追加（注文実行時に使用）
+                        # copilot-instructions.md: 実データ保持（ループ終了後の最終価格上書きを防ぐ）
                         orders.append({
                             "symbol": symbol,
                             "action": "SELL",
@@ -584,15 +872,24 @@ class StrategyExecutionManager:
                             "order_type": "MARKET",
                             "timestamp": idx.isoformat() if hasattr(idx, 'isoformat') else str(idx),
                             "exit_price": exit_price,
-                            "signal_date": idx
+                            "execution_price": exit_price,  # Phase 4.2-22: 注文実行用価格
+                            "signal_date": idx,
+                            "strategy_name": strategy_name,  # Phase 5.3: 戦略名追加
+                            "order_index": order_index  # Phase 4.2-31-B-4-1: 注文インデックス追加
                         })
-                        self.logger.debug(f"SELL order generated: {symbol} @ {idx}, quantity={sell_quantity}, price={exit_price}")
+                        sell_order_count += 1  # Phase 4.2-26: SELL注文カウント
+                        order_index += 1  # Phase 4.2-31-B-4-1: インデックスインクリメント
+                        # Phase 4.2-32: order_index詳細ログ
+                        self.logger.info(f"[PHASE_4_2_32] SELL order generated: {symbol}, order_index={order_index-1}, quantity={sell_quantity}, price={exit_price}")
+                        self.logger.debug(f"[PHASE_4_2_29] SELL order generated: {symbol} @ {idx}, quantity={sell_quantity}, price={exit_price}, strategy={strategy_name}, order_index={order_index-1}")
                         
-                        # ポジションクリア（SELL後はポジション0）
+                        # Phase 4.2-29: ポジションクリア（SELL後はposition_trackerも0にする）
+                        # 注意: これは次のBUY注文の重複防止用のみ
                         position_tracker[symbol] = 0
             
             # 最終ログ: 生成された取引オーダー数
             self.logger.info(f"_generate_trade_orders: Generated {len(orders)} trade orders from {len(signals)} signals")
+            self.logger.info(f"[PHASE_4_2_26] Order generation summary: BUY={buy_order_count}, SELL={sell_order_count}, Total={buy_order_count + sell_order_count}")
             
             # copilot-instructions.md: 実際の取引件数 > 0 を検証
             if len(orders) == 0 and (entry_count > 0 or exit_count > 0):
@@ -654,25 +951,28 @@ class StrategyExecutionManager:
             )
             
             # 2. リアルタイム価格を取得（実データ）
+            # Phase 4.2-20: 価格取得優先順位変更（PaperBrokerを優先）
             current_price = None
             
-            # 2-1. data_feedから価格取得を試行
-            if self.data_feed:
+            # 2-1. PaperBrokerから価格取得を試行（優先）
+            # 理由: _generate_trade_orders()でupdate_price()済みのため
+            if self.paper_broker and hasattr(self.paper_broker, 'get_current_price'):
+                try:
+                    current_price = self.paper_broker.get_current_price(symbol)
+                    if current_price and current_price > 0:
+                        # Phase 4.2-21 DEBUG: 価格取得詳細ログ
+                        self.logger.info(f"[CALC_POS_SIZE] PaperBroker価格取得: {symbol} = {current_price:.2f}円")
+                except Exception as e:
+                    self.logger.warning(f"[WARNING] PaperBrokerからの価格取得失敗: {symbol} - {e}")
+            
+            # 2-2. data_feedから価格取得を試行（フォールバック）
+            if (current_price is None or current_price <= 0) and self.data_feed:
                 try:
                     current_price = self.data_feed.get_current_price(symbol)
                     if current_price and current_price > 0:
                         self.logger.debug(f"[OK] DataFeedから価格取得: {symbol} = {current_price:.2f}円")
                 except Exception as e:
                     self.logger.warning(f"[WARNING] DataFeedからの価格取得失敗: {symbol} - {e}")
-            
-            # 2-2. PaperBrokerから価格取得を試行（フォールバック）
-            if (current_price is None or current_price <= 0) and hasattr(self.paper_broker, 'get_current_price'):
-                try:
-                    current_price = self.paper_broker.get_current_price(symbol)
-                    if current_price and current_price > 0:
-                        self.logger.debug(f"[OK] PaperBrokerから価格取得: {symbol} = {current_price:.2f}円")
-                except Exception as e:
-                    self.logger.warning(f"[WARNING] PaperBrokerからの価格取得失敗: {symbol} - {e}")
             
             # 2-3. 価格取得失敗時はエラー（デフォルト価格使用禁止）
             if current_price is None or current_price <= 0:

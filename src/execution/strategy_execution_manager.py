@@ -343,7 +343,7 @@ class StrategyExecutionManager:
             return []
     
     def _generate_trade_orders(self, signals: pd.DataFrame, symbols: List[str]) -> List[Dict[str, Any]]:
-        """シグナルから取引注文生成"""
+        """シグナルから取引注文生成（Phase 4.2-20: 価格登録BUG FIX）"""
         try:
             orders = []
             
@@ -353,7 +353,42 @@ class StrategyExecutionManager:
             
             latest_signals = signals.tail(1).iloc[0]
             
+            # Phase 4.2-21 DEBUG: latest_signalsの構造確認
+            self.logger.info(f"[SIGNALS_DEBUG] latest_signals type: {type(latest_signals)}")
+            self.logger.info(f"[SIGNALS_DEBUG] latest_signals columns: {list(latest_signals.index)}")
+            self.logger.info(f"[SIGNALS_DEBUG] latest_signals values sample: {dict(list(latest_signals.items())[:5])}")
+            
             for symbol in symbols:
+                # Phase 4.2-20: BUY/SELL実行前に、必ずPaperBrokerに正しい価格を登録
+                # これにより_calculate_position_size()でデフォルト100円が使われるバグを防ぐ
+                # Phase 4.2-21 BUG FIX: 'Close'だけでなく'Adj Close'もチェック
+                current_price = None
+                
+                # 価格カラムの優先順位: Close > Adj Close > 他の価格カラム
+                price_columns_to_check = ['Close', 'Adj Close', 'close', 'adj_close', 'price']
+                for price_col in price_columns_to_check:
+                    if price_col in latest_signals:
+                        price_value = latest_signals[price_col]
+                        if pd.notna(price_value) and price_value > 0:
+                            current_price = float(price_value)
+                            self.logger.debug(f"[PRICE_SOURCE] {symbol}: 使用カラム='{price_col}', 価格={current_price:.2f}円")
+                            break
+                
+                if current_price is not None and self.paper_broker:
+                    # Phase 4.2-21: symbol文字列検証デバッグログ
+                    self.logger.info(f"[PRICE_REG_DEBUG] symbol='{symbol}' | len={len(symbol)} | repr={repr(symbol)} | type={type(symbol).__name__}")
+                    self.logger.info(f"[PRICE_REG_DEBUG] price={current_price:.2f} | type={type(current_price).__name__}")
+                    
+                    self.paper_broker.update_price(symbol, current_price)
+                    self.logger.debug(f"[PRICE_REG] PaperBrokerに価格登録: {symbol} = {current_price:.2f}円")
+                    
+                    # Phase 4.2-21: 登録直後の取得テスト
+                    verify_price = self.paper_broker.get_current_price(symbol)
+                    match_status = "OK" if abs(verify_price - current_price) < 0.01 else "NG"
+                    self.logger.info(f"[PRICE_REG_VERIFY] 登録直後の取得: {verify_price:.2f}円 (expected: {current_price:.2f}円) [{match_status}]")
+                else:
+                    self.logger.warning(f"[PRICE_REG_WARN] {symbol}: 価格カラムが見つからない、または価格が無効です。available columns: {list(latest_signals.index)}")
+                
                 # エントリーシグナルチェック
                 if hasattr(latest_signals, 'Entry_Signal') and latest_signals.Entry_Signal == 1:
                     orders.append({

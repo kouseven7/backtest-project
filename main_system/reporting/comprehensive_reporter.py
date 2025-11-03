@@ -444,7 +444,7 @@ class ComprehensiveReporter:
                         'pnl': pnl,
                         'return_pct': return_pct,
                         'holding_period_days': holding_period_days,
-                        'strategy': buy_order.get('symbol', 'Unknown'),
+                        'strategy': buy_order.get('strategy_name', 'Unknown'),  # Phase 5.3: 修正 - symbolではなくstrategy_name
                         'position_value': entry_price * shares,
                         'is_forced_exit': False,
                         'is_executed_trade': True  # Phase 4.2-5-3: 実行取引フラグ

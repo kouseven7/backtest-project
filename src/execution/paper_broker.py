@@ -41,6 +41,10 @@ class PaperBroker(BrokerInterface):
         self.pending_orders: Dict[str, Order] = {}
         self.filled_orders: List[Order] = []
         
+        # Phase 4.2-23: ポジション管理
+        # 形式: {symbol: {'quantity': int, 'entry_price': float, 'entry_time': datetime}}
+        self.positions: Dict[str, Dict[str, Any]] = {}
+        
         # 市場シミュレーション
         self.market_state = MarketState.OPEN
         self.market_hours = {
@@ -130,6 +134,19 @@ class PaperBroker(BrokerInterface):
     def get_account_balance(self) -> float:
         """口座残高を取得"""
         return self.account_balance
+    
+    def get_positions(self) -> Dict[str, Dict[str, Any]]:
+        """
+        現在のポジション一覧を取得（Phase 4.2-23）
+        
+        Returns:
+            Dict[symbol, position_info]: ポジション情報
+            position_info = {'quantity': int, 'entry_price': float, 'entry_time': datetime}
+        
+        copilot-instructions.md準拠:
+        - 実データのみ返却（モック/ダミー禁止）
+        """
+        return self.positions.copy()
     
     def execute_order(self, order: Order) -> bool:
         """オーダーを実行（レガシーメソッド）"""
@@ -230,8 +247,19 @@ class PaperBroker(BrokerInterface):
             if self.latency_ms > 0:
                 time_module.sleep(self.latency_ms / 1000.0)
             
+            # Phase 4.2-21: symbol文字列検証デバッグログ
+            self.logger.info(f"[PRICE_GET_DEBUG] order.symbol='{order.symbol}' | len={len(order.symbol)} | repr={repr(order.symbol)} | type={type(order.symbol).__name__}")
+            self.logger.info(f"[PRICE_GET_DEBUG] 登録済みkeys: {list(self.current_prices.keys())}")
+            if self.current_prices:
+                first_key = list(self.current_prices.keys())[0]
+                self.logger.info(f"[PRICE_GET_DEBUG] 最初のkey='{first_key}' | len={len(first_key)} | repr={repr(first_key)}")
+            
             # 実行価格決定
             base_price = self.get_current_price(order.symbol)
+            
+            # Phase 4.2-21: 価格取得結果ログ
+            self.logger.info(f"[PRICE_GET_DEBUG] 取得結果: base_price={base_price:.2f}円 | is_default={'YES' if base_price == 100.0 else 'NO'}")
+            
             execution_price = self._apply_slippage(order, base_price)
             
             # 手数料計算
@@ -249,9 +277,64 @@ class PaperBroker(BrokerInterface):
                     self.logger.warning(f"資金不足で実行拒否: {total_cost} > {self.account_balance}")
                     return False
                 self.account_balance -= total_cost
+                
+                # Phase 4.2-23: ポジション追加/更新
+                if order.symbol not in self.positions:
+                    self.positions[order.symbol] = {
+                        'quantity': order.quantity,
+                        'entry_price': execution_price,
+                        'entry_time': datetime.now()
+                    }
+                else:
+                    # 既存ポジションに追加（平均取得単価計算）
+                    existing = self.positions[order.symbol]
+                    total_qty = existing['quantity'] + order.quantity
+                    avg_price = (
+                        (existing['entry_price'] * existing['quantity'] + execution_price * order.quantity) 
+                        / total_qty
+                    )
+                    self.positions[order.symbol] = {
+                        'quantity': total_qty,
+                        'entry_price': avg_price,
+                        'entry_time': existing['entry_time']
+                    }
+                    
             else:  # SELL
                 proceeds = trade_value - commission
                 self.account_balance += proceeds
+                
+                # Phase 4.2-30: SELL処理デバッグログ
+                self.logger.info(
+                    f"[PHASE_4_2_30] SELL処理開始: {order.symbol}, "
+                    f"注文数量={order.quantity}, "
+                    f"ポジション有無={order.symbol in self.positions}, "
+                    f"現在のpositions keys={list(self.positions.keys())}"
+                )
+                
+                # Phase 4.2-23: ポジション削減/クローズ
+                if order.symbol in self.positions:
+                    existing_qty = self.positions[order.symbol]['quantity']
+                    new_qty = existing_qty - order.quantity
+                    
+                    self.logger.info(
+                        f"[PHASE_4_2_30] ポジション削減: {order.symbol}, "
+                        f"既存数量={existing_qty}, 注文数量={order.quantity}, 残数量={new_qty}"
+                    )
+                    
+                    if new_qty <= 0:
+                        # ポジション完全クローズ
+                        del self.positions[order.symbol]
+                        self.logger.info(f"[PHASE_4_2_30] ポジション完全クローズ: {order.symbol}")
+                    else:
+                        # 部分決済
+                        self.positions[order.symbol]['quantity'] = new_qty
+                        self.logger.info(f"[PHASE_4_2_30] 部分決済完了: {order.symbol}, 残={new_qty}株")
+                else:
+                    # Phase 4.2-30: ポジション未保有の場合の警告
+                    self.logger.warning(
+                        f"[PHASE_4_2_30] SELL注文実行時にポジション未保有: {order.symbol}, "
+                        f"注文数量={order.quantity}株 (proceed anyway)"
+                    )
             
             # 注文情報更新
             order.status = OrderStatus.FILLED
