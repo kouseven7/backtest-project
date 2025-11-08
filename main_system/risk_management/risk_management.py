@@ -96,6 +96,10 @@ class RiskManagement:
     def check_drawdown(self, current_assets: float) -> bool:
         """
         ドローダウンが最大許容値を超えていないか確認。
+        
+        .. deprecated:: Phase 5-B-4
+            このメソッドは完全に未使用です。代わりにDrawdownController.check_drawdown()を使用してください。
+            UnifiedRiskManager経由でDrawdownControllerにアクセスすることを推奨します。
 
         Parameters:
             current_assets (float): 現在の総資産額
@@ -103,6 +107,15 @@ class RiskManagement:
         Returns:
             bool: ドローダウンが許容範囲内の場合は True、それ以外は False
         """
+        import warnings
+        warnings.warn(
+            "risk_management.RiskManagement.check_drawdown() is deprecated and unused. "
+            "Use DrawdownController.check_drawdown() via UnifiedRiskManager instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        self.logger.warning("[DEPRECATED] RiskManagement.check_drawdown() called - use DrawdownController instead")
+        
         self.current_drawdown = (self.total_assets - current_assets) / self.total_assets
         return self.current_drawdown <= self.max_drawdown
 

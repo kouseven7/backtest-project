@@ -135,6 +135,53 @@ class PaperBroker(BrokerInterface):
         """口座残高を取得"""
         return self.account_balance
     
+    def get_total_equity(self) -> float:
+        """
+        総資産を取得（Phase 5-B-4追加）
+        口座残高 + 全ポジションの時価評価額
+        
+        Returns:
+            float: 総資産額
+        """
+        total = self.account_balance
+        
+        # 全ポジションの時価評価額を加算
+        for symbol, position in self.positions.items():
+            try:
+                current_price = self.get_current_price(symbol)
+                position_value = current_price * position['quantity']
+                total += position_value
+            except Exception as e:
+                self.logger.warning(f"Position value calculation error for {symbol}: {e}")
+                # エラー時は簿価で計算
+                position_value = position['entry_price'] * position['quantity']
+                total += position_value
+        
+        return total
+    
+    def get_position_value(self) -> float:
+        """
+        全ポジションの時価評価額を取得（Phase 5-B-5追加）
+        
+        Returns:
+            float: ポジション時価評価額の合計
+        
+        copilot-instructions.md準拠:
+        - 実データのみ使用（モック/ダミーデータ禁止）
+        """
+        position_value = 0.0
+        
+        for symbol, position in self.positions.items():
+            try:
+                current_price = self.get_current_price(symbol)
+                position_value += current_price * position['quantity']
+            except Exception as e:
+                self.logger.warning(f"Position value calculation error for {symbol}: {e}")
+                # エラー時は簿価で計算
+                position_value += position['entry_price'] * position['quantity']
+        
+        return position_value
+    
     def get_positions(self) -> Dict[str, Dict[str, Any]]:
         """
         現在のポジション一覧を取得（Phase 4.2-23）

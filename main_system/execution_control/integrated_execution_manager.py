@@ -19,6 +19,9 @@ from config.logger_config import setup_logger
 from main_system.execution_control.strategy_execution_manager import StrategyExecutionManager
 from main_system.risk_management.drawdown_controller import DrawdownController
 
+# Phase 5-B-5: 損益推移記録モジュール
+from main_system.performance.equity_curve_recorder import EquityCurveRecorder
+
 # Phase 2完成モジュール
 from main_system.strategy_selection.dynamic_strategy_selector import DynamicStrategySelector
 from main_system.market_analysis.market_analyzer import MarketAnalyzer
@@ -53,6 +56,14 @@ class IntegratedExecutionManager:
                 }
             })
             self.execution_manager = StrategyExecutionManager(execution_config)
+            
+            # Phase 5-B-4: StrategyExecutionManagerにIntegratedExecutionManagerを設定
+            self.execution_manager.set_integrated_manager(self)
+            
+            # Phase 5-B-5: EquityCurveRecorderを初期化してStrategyExecutionManagerに設定
+            self.equity_recorder = EquityCurveRecorder()
+            self.execution_manager.equity_recorder = self.equity_recorder
+            self.logger.info("EquityCurveRecorder initialized and integrated")
             
             # バッチテスト実行器（テスト関数は後で設定）
             self.batch_executor = None
@@ -221,48 +232,149 @@ class IntegratedExecutionManager:
     def _check_execution_risk(
         self,
         stock_data: pd.DataFrame,
-        ticker: str
+        ticker: str,
+        portfolio_value: Optional[float] = None
     ) -> Dict[str, Any]:
         """
-        実行前リスクチェック
+        実行前リスクチェック（Phase 5-B-4修正）
+        
+        Args:
+            stock_data: 株価データ
+            ticker: ティッカーシンボル
+            portfolio_value: ポートフォリオ価値（Noneの場合はPaperBrokerから取得）
         
         Returns:
-            {'can_execute': bool, 'reason': str, 'drawdown_status': dict}
+            {'can_execute': bool, 'reason': str, 'current_drawdown': float, 'threshold': float}
         """
         try:
-            # 現在のドローダウン状況を確認
-            performance_summary = self.risk_controller.get_performance_summary()
+            # [診断ログ] メソッド開始
+            self.logger.info(
+                f"[RISK_CHECK] _check_execution_risk() called: "
+                f"ticker={ticker}, portfolio_value={'provided' if portfolio_value else 'to_fetch'}"
+            )
             
-            current_dd_pct = performance_summary.get('current_drawdown_pct', 0.0)
+            # [Phase 5-B-4] ポートフォリオ価値を更新
+            if portfolio_value is None:
+                # PaperBrokerから取得
+                portfolio_value = self.execution_manager.paper_broker.get_total_equity()
+                self.logger.info(f"[RISK_CHECK] Fetched portfolio value from broker: {portfolio_value:,.0f}円")
+            
+            # [Phase 5-B-4] DrawdownControllerにポートフォリオ価値を更新
+            self.logger.info(f"[RISK_CHECK] Updating DrawdownController with portfolio value: {portfolio_value:,.0f}円")
+            self.risk_controller.update_portfolio_value(
+                portfolio_value=portfolio_value
+            )
+            
+            # [Phase 5-B-4] DrawdownControllerから現在のドローダウンを計算
+            self.logger.info("[RISK_CHECK] Calculating current drawdown...")
+            current_dd = self.risk_controller.calculate_current_drawdown(portfolio_value)
+            
+            # [Phase 5-B-4] ログ出力（copilot-instructions.md準拠）
+            self.logger.info(
+                f"[RISK_CHECK] Portfolio value: {portfolio_value:,.0f}円, "
+                f"Drawdown: {current_dd:.2%}, "
+                f"Threshold: {self.risk_controller.max_drawdown_threshold:.2%}"
+            )
             
             # 緊急停止閾値チェック（15%以上のドローダウン）
-            emergency_threshold = 0.15
-            if current_dd_pct >= emergency_threshold:
+            emergency_threshold = self.risk_controller.max_drawdown_threshold
+            if current_dd >= emergency_threshold:
+                self.logger.critical(
+                    f"[RISK_BLOCKED] Emergency drawdown level: {current_dd:.2%} >= {emergency_threshold:.2%}"
+                )
                 return {
                     'can_execute': False,
-                    'reason': f'Emergency drawdown level: {current_dd_pct:.2%}',
-                    'drawdown_status': performance_summary
+                    'reason': f'Emergency drawdown level: {current_dd:.2%}',
+                    'current_drawdown': current_dd,
+                    'threshold': emergency_threshold
                 }
             
             # 警告レベルチェック（10%以上のドローダウン）
             warning_threshold = 0.10
-            if current_dd_pct >= warning_threshold:
-                self.logger.warning(f"Drawdown warning level: {current_dd_pct:.2%}")
+            if current_dd >= warning_threshold:
+                self.logger.warning(
+                    f"[RISK_WARNING] Drawdown warning level: {current_dd:.2%} >= {warning_threshold:.2%}"
+                )
             
             return {
                 'can_execute': True,
                 'reason': 'Risk check passed',
-                'drawdown_status': performance_summary
+                'current_drawdown': current_dd,
+                'threshold': emergency_threshold
             }
             
         except Exception as e:
-            self.logger.error(f"Risk check error: {e}")
+            self.logger.error(f"[RISK_CHECK_ERROR] Risk check error: {e}")
             # エラー時は安全のため実行を許可（リスク管理モジュールの問題でビジネス停止しない）
             return {
                 'can_execute': True,
                 'reason': f'Risk check error (allowing execution): {e}',
-                'drawdown_status': {}
+                'current_drawdown': 0.0,
+                'threshold': 0.15
             }
+    
+    def check_trade_risk(self, order_dict: Dict[str, Any]) -> bool:
+        """
+        取引実行前のリスクチェック（Phase 5-B-4追加）
+        StrategyExecutionManagerから呼び出される
+        
+        Args:
+            order_dict: 取引オーダー辞書
+        
+        Returns:
+            True: 取引可能、False: リスク超過（取引ブロック）
+        """
+        try:
+            # [診断ログ] メソッド開始
+            self.logger.info(
+                f"[TRADE_RISK_CHECK] check_trade_risk() called: "
+                f"symbol={order_dict.get('symbol', 'UNKNOWN')}, "
+                f"action={order_dict.get('action', 'UNKNOWN')}, "
+                f"quantity={order_dict.get('quantity', 0)}"
+            )
+            
+            # ポートフォリオ価値を取得
+            portfolio_value = self.execution_manager.paper_broker.get_total_equity()
+            
+            # [診断ログ] ポートフォリオ価値取得完了
+            self.logger.info(f"[TRADE_RISK_CHECK] Portfolio value retrieved: {portfolio_value:,.0f}円")
+            
+            # リスクチェック実行
+            risk_result = self._check_execution_risk(
+                stock_data=pd.DataFrame(),  # 暫定（実際は不要）
+                ticker=order_dict.get('symbol', ''),
+                portfolio_value=portfolio_value
+            )
+            
+            # [診断ログ] リスクチェック完了
+            self.logger.info(
+                f"[TRADE_RISK_CHECK] Risk check completed: "
+                f"can_execute={risk_result['can_execute']}, "
+                f"reason={risk_result['reason']}"
+            )
+            
+            # ログ出力
+            if not risk_result['can_execute']:
+                self.logger.warning(
+                    f"[RISK_BLOCKED] Trade blocked by risk check: {order_dict.get('symbol', 'UNKNOWN')} "
+                    f"{order_dict.get('action', 'UNKNOWN')}, Reason: {risk_result['reason']}"
+                )
+                
+                # [Phase 5-B-5] リスクブロック時のスナップショット更新（Q3: A案 - 累積）
+                if hasattr(self.execution_manager, 'equity_recorder') and self.execution_manager.equity_recorder:
+                    try:
+                        self.execution_manager.equity_recorder.update_blocked_trades(
+                            date=datetime.now(),
+                            count=1
+                        )
+                    except Exception as e:
+                        self.logger.error(f"[EQUITY_CURVE] Blocked trades update failed: {e}")
+            
+            return risk_result['can_execute']
+            
+        except Exception as e:
+            self.logger.error(f"[TRADE_RISK_CHECK_ERROR] Trade risk check error: {e}")
+            return True  # エラー時は実行を許可
     
     def _execute_single_strategy(
         self,

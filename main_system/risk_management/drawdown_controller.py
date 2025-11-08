@@ -345,9 +345,21 @@ class DrawdownController:
         except Exception as e:
             logger.error(f"Error updating portfolio value: {e}")
     
-    def _check_drawdown(self) -> Optional[DrawdownEvent]:
-        """ドローダウンチェックを実行"""
+    def check_drawdown(self, portfolio_value: Optional[float] = None) -> Optional[DrawdownEvent]:
+        """
+        ドローダウンチェックを実行（Phase 5-B-4: パブリックメソッド化）
+        
+        Args:
+            portfolio_value: 現在のポートフォリオ価値（Noneの場合は履歴から取得）
+        
+        Returns:
+            DrawdownEvent（ドローダウン発生時のみ）
+        """
         try:
+            # ポートフォリオ価値が指定されている場合は更新
+            if portfolio_value is not None:
+                self.update_portfolio_value(portfolio_value)
+            
             if not self.performance_tracker['portfolio_history']:
                 return None
             
@@ -361,6 +373,12 @@ class DrawdownController:
             
             current_drawdown = peak_value - current_value
             drawdown_percentage = current_drawdown / peak_value
+            
+            # [Phase 5-B-4] ログ出力（copilot-instructions.md準拠）
+            logger.debug(
+                f"[DRAWDOWN_CHECK] Current: {current_value:,.0f}円, "
+                f"Peak: {peak_value:,.0f}円, DD: {drawdown_percentage:.2%}"
+            )
             
             # 閾値チェック
             severity = self._determine_severity(drawdown_percentage)
@@ -378,6 +396,12 @@ class DrawdownController:
                     triggering_factor=self._identify_triggering_factor()
                 )
                 
+                # [Phase 5-B-4] ログ出力（copilot-instructions.md準拠）
+                logger.warning(
+                    f"[DRAWDOWN_EVENT] Severity: {severity.value}, DD: {drawdown_percentage:.2%}, "
+                    f"Value: {current_value:,.0f}円, Peak: {peak_value:,.0f}円"
+                )
+                
                 # 制御アクション実行
                 self._execute_drawdown_control(event)
                 
@@ -388,6 +412,12 @@ class DrawdownController:
         except Exception as e:
             logger.error(f"Error checking drawdown: {e}")
             return None
+    
+    def _check_drawdown(self) -> Optional[DrawdownEvent]:
+        """
+        【Deprecated】内部用メソッド - check_drawdown()を使用してください
+        """
+        return self.check_drawdown()
     
     def _determine_severity(self, drawdown_percentage: float) -> DrawdownSeverity:
         """ドローダウンの深刻度を判定"""

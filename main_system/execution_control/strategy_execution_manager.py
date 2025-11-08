@@ -17,6 +17,8 @@ from config.logger_config import setup_logger
 from src.execution.commission_calculator import calculate_max_affordable_quantity, adjust_to_trading_unit
 # Phase 4.2-32: OrderStatusインポート
 from src.execution.order_manager import OrderStatus
+# Phase 5-B-5: 損益推移記録
+from main_system.performance.equity_curve_recorder import EquityCurveRecorder
 
 class StrategyExecutionManager:
     """戦略実行管理メインクラス"""
@@ -35,6 +37,12 @@ class StrategyExecutionManager:
         self.strategy_manager = None
         self.strategy_selector = None
         self.multi_strategy_manager = None
+        
+        # [Phase 5-B-4] リスク管理統合
+        self.integrated_manager = None
+        
+        # [Phase 5-B-5] 損益推移記録
+        self.equity_recorder: Optional[EquityCurveRecorder] = None
         
         # 実行履歴
         self.execution_history: List[Dict[str, Any]] = []
@@ -106,6 +114,16 @@ class StrategyExecutionManager:
         except Exception as e:
             self.logger.warning(f"統合モード初期化失敗、シンプルモードに切替: {e}")
             self.mode = 'simple'
+    
+    def set_integrated_manager(self, integrated_manager):
+        """
+        IntegratedExecutionManagerを設定（Phase 5-B-4追加）
+        
+        Args:
+            integrated_manager: IntegratedExecutionManagerインスタンス
+        """
+        self.integrated_manager = integrated_manager
+        self.logger.info("[PHASE_5_B_4] IntegratedExecutionManager設定完了")
     
     def execute_strategy(self, strategy_name: str, symbols: Optional[List[str]] = None, 
                         stock_data: Optional[pd.DataFrame] = None,
@@ -512,6 +530,43 @@ class StrategyExecutionManager:
                         f"order.id={order.id}, order.side={order.side.value}"
                     )
                     
+                    # [Phase 5-B-4] 取引実行前のリスクチェック
+                    # 診断ログ
+                    has_attr = hasattr(self, 'integrated_manager')
+                    is_not_none = self.integrated_manager if has_attr else None
+                    self.logger.info(
+                        f"[PHASE_5_B_4_DEBUG] Risk check condition: "
+                        f"hasattr={has_attr}, integrated_manager={is_not_none is not None}"
+                    )
+                    
+                    if hasattr(self, 'integrated_manager') and self.integrated_manager:
+                        self.logger.info(f"[PHASE_5_B_4_DEBUG] Entering risk check block for order {order_index}")
+                        
+                        order_dict_for_check = {
+                            'symbol': symbol,
+                            'action': order_dict['action'],
+                            'quantity': order_dict['quantity']
+                        }
+                        
+                        self.logger.info(
+                            f"[PHASE_5_B_4_DEBUG] Calling check_trade_risk: "
+                            f"symbol={symbol}, action={order_dict['action']}, quantity={order_dict['quantity']}"
+                        )
+                        
+                        can_execute = self.integrated_manager.check_trade_risk(order_dict_for_check)
+                        
+                        self.logger.info(f"[PHASE_5_B_4_DEBUG] check_trade_risk returned: {can_execute}")
+                        
+                        if not can_execute:
+                            self.logger.warning(
+                                f"[RISK_BLOCKED] Trade execution blocked by risk check: {symbol} "
+                                f"{order_dict['action']} {order_dict['quantity']}"
+                            )
+                            # BUY注文がブロックされた場合もトラッキング
+                            if order_dict['action'] == 'BUY':
+                                rejected_buy_indices.add(order_index)
+                            continue  # 取引をスキップ
+                    
                     # TradeExecutor.submit_order()呼び出し
                     self.logger.info(
                         f"[PHASE_4_2_32_2] TradeExecutor.submit_order()呼び出し: order_index={order_index}"
@@ -538,6 +593,64 @@ class StrategyExecutionManager:
                             "strategy_name": order_dict.get('strategy_name', 'Unknown')  # Phase 5.3: 戦略名追加
                         })
                         self.logger.info(f"Trade executed successfully: {order_dict['symbol']} {order_dict['action']} {order_dict['quantity']} strategy={order_dict.get('strategy_name', 'Unknown')}")
+                        
+                        # [Phase 5-B-5] 取引実行後のスナップショット記録（Q1: C案 - 取引時）
+                        if self.equity_recorder and self.paper_broker:
+                            try:
+                                portfolio_value = self.paper_broker.get_total_equity()
+                                cash_balance = self.paper_broker.get_account_balance()
+                                position_value = self.paper_broker.get_position_value()
+                                
+                                # DrawdownControllerからリスク情報取得（Q2: 案1）
+                                peak_value = portfolio_value  # デフォルト値
+                                drawdown_pct = 0.0
+                                risk_status = "NORMAL"
+                                
+                                if self.integrated_manager and hasattr(self.integrated_manager, 'risk_controller'):
+                                    try:
+                                        perf_tracker = self.integrated_manager.risk_controller.performance_tracker
+                                        peak_value = perf_tracker.get('portfolio_peak', portfolio_value)
+                                        
+                                        # ドローダウン計算
+                                        if peak_value > 0:
+                                            drawdown_pct = (peak_value - portfolio_value) / peak_value
+                                        
+                                        # リスク状態取得
+                                        risk_status = self.integrated_manager.risk_controller.get_current_severity()
+                                    except Exception as e:
+                                        self.logger.warning(f"[EQUITY_CURVE] Risk info retrieval failed: {e}")
+                                
+                                # 累積損益計算
+                                initial_balance = self.paper_broker.initial_balance
+                                cumulative_pnl = portfolio_value - initial_balance
+                                
+                                # 当日損益（前回スナップショットとの差分、簡易版）
+                                daily_pnl = 0.0
+                                if self.equity_recorder.get_snapshot_count() > 0:
+                                    last_snapshot = self.equity_recorder.get_latest_snapshot()
+                                    if last_snapshot:
+                                        daily_pnl = portfolio_value - last_snapshot['portfolio_value']
+                                
+                                # スナップショット記録
+                                self.equity_recorder.record_snapshot(
+                                    date=datetime.now(),
+                                    portfolio_value=portfolio_value,
+                                    cash_balance=cash_balance,
+                                    position_value=position_value,
+                                    peak_value=peak_value,
+                                    drawdown_pct=drawdown_pct,
+                                    cumulative_pnl=cumulative_pnl,
+                                    daily_pnl=daily_pnl,
+                                    total_trades=len(execution_results),
+                                    active_positions=len(self.paper_broker.get_positions()),
+                                    risk_status=risk_status,
+                                    blocked_trades=0,  # 取引成功時は0
+                                    risk_action="NONE",
+                                    snapshot_type="TRADE"
+                                )
+                            except Exception as e:
+                                self.logger.error(f"[EQUITY_CURVE] Snapshot recording failed: {e}")
+                        
                     else:
                         # Phase 4.2-31-B-4-4: BUY注文がREJECTEDされた場合、order_indexをトラッキング
                         if order_dict['action'] == 'BUY':

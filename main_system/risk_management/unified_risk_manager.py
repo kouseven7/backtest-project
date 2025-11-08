@@ -302,6 +302,51 @@ class UnifiedRiskManager:
         elif assessment['overall_risk_level'] == RiskAssessmentLevel.WARNING:
             assessment['recommended_actions'].append("Execute with reduced position sizes")
     
+    def check_trade_risk(
+        self,
+        order_dict: Dict[str, Any],
+        portfolio_value: float
+    ) -> Tuple[bool, str]:
+        """
+        個別取引のリスク評価（Phase 5-B-4追加）
+        
+        Args:
+            order_dict: 取引オーダー辞書
+            portfolio_value: 現在のポートフォリオ価値
+        
+        Returns:
+            (can_execute: bool, reason: str)
+        """
+        try:
+            # ドローダウンチェック
+            current_dd = self.drawdown_controller.calculate_current_drawdown(portfolio_value)
+            max_threshold = self.drawdown_controller.max_drawdown_threshold
+            
+            # [Phase 5-B-4] ログ出力（copilot-instructions.md準拠）
+            self.logger.info(
+                f"[TRADE_RISK_CHECK] {order_dict.get('symbol', 'UNKNOWN')} {order_dict.get('action', 'UNKNOWN')}, "
+                f"Portfolio DD: {current_dd:.2%}, Threshold: {max_threshold:.2%}"
+            )
+            
+            # 緊急停止閾値チェック
+            if current_dd >= max_threshold:
+                reason = f"Portfolio drawdown {current_dd:.2%} >= {max_threshold:.2%}"
+                self.logger.warning(f"[TRADE_RISK_BLOCKED] {reason}")
+                return False, reason
+            
+            # 警告レベルチェック
+            warning_threshold = 0.10
+            if current_dd >= warning_threshold:
+                self.logger.warning(
+                    f"[TRADE_RISK_WARNING] Portfolio DD {current_dd:.2%} >= {warning_threshold:.2%}"
+                )
+            
+            return True, "Trade risk check passed"
+            
+        except Exception as e:
+            self.logger.error(f"Trade risk check error: {e}")
+            return True, f"Risk check error (allowing trade): {e}"
+    
     def get_risk_summary(self) -> Dict[str, Any]:
         """リスク評価サマリー取得"""
         if not self.risk_assessment_history:

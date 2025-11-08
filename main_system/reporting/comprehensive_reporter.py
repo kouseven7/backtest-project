@@ -190,6 +190,19 @@ class ComprehensiveReporter:
                 trade_analysis, report_dir, ticker
             )
             
+            # [Phase 5-B-5] 8. 損益推移CSV出力
+            equity_curve_csv = None
+            if hasattr(execution_results, 'get') and 'equity_recorder' in execution_results:
+                try:
+                    self.logger.info("Step 8: Equity curve CSV export")
+                    equity_recorder = execution_results['equity_recorder']
+                    if equity_recorder and hasattr(equity_recorder, 'export_to_csv'):
+                        equity_curve_path = report_dir / 'portfolio_equity_curve.csv'
+                        equity_curve_csv = equity_recorder.export_to_csv(str(equity_curve_path))
+                        self.logger.info(f"[EQUITY_CURVE] CSV exported: {equity_curve_csv}")
+                except Exception as e:
+                    self.logger.error(f"[EQUITY_CURVE] CSV export failed: {e}")
+            
             # 統合結果
             comprehensive_result = {
                 'status': 'SUCCESS',
@@ -199,6 +212,7 @@ class ComprehensiveReporter:
                 'text_report_path': text_report_path,
                 'csv_outputs': csv_outputs,
                 'json_outputs': json_outputs,
+                'equity_curve_csv': equity_curve_csv,  # [Phase 5-B-5] 追加
                 'summary_report': summary_report,
                 'performance_metrics': performance_metrics,
                 'trade_analysis': trade_analysis,
