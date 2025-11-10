@@ -355,60 +355,65 @@ class ComprehensiveReporter:
         execution_details: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """
-        execution_detailsを取引レコード形式に変換（Phase 5-B-1 Step 3-2: フォールバック削除版）
+        execution_detailsを取引レコード形式に変換（Phase 5-B-6: 事前チェック緩和版）
         
         copilot-instructions.md準拠:
         - ダミーデータ生成フォールバック禁止
-        - BUY/SELLペアの実データのみ抽出
-        - データ不足時はエラーログのみ、空リスト返却
+        - BUY/SELLペア不一致時は警告ログのみ、ペアリング可能な分のみ抽出
+        - 強制決済SELL対応
         
         Args:
             execution_details: 実行詳細リスト
         
         Returns:
             取引レコードリスト（MainDataExtractor形式）
-        
-        Raises:
-            ValueError: データ構造が不正な場合（フォールバック禁止）
         """
         try:
             trades = []
             
-            # BUY/SELLペアの抽出（実データのみ）
-            # execution_detailsは個別の注文実行記録のリスト
-            # BUY→SELLのペアを構成する必要がある
+            # Phase 5-B-6: 型チェック厳密化
+            if not isinstance(execution_details, list):
+                self.logger.warning(f"[TYPE_ERROR] execution_details is not list: {type(execution_details)}")
+                return []
             
+            # BUY/SELL注文を分類
             buy_orders = []
             sell_orders = []
             
             for detail in execution_details:
+                # Phase 5-B-2: 厳密な型チェック
                 if not isinstance(detail, dict):
+                    self.logger.warning(f"[TYPE_ERROR] execution_detail is not dict: {type(detail)}")
                     continue
                 
-                # 実行成功した取引のみを対象
-                if detail.get('status') != 'executed' or not detail.get('success', False):
-                    continue
-                
-                # BUY/SELL分類
+                # actionフィールドの取得
                 action = detail.get('action', '').upper()
+                
                 if action == 'BUY':
                     buy_orders.append(detail)
                 elif action == 'SELL':
                     sell_orders.append(detail)
+                else:
+                    self.logger.debug(f"[SKIP] Unknown action: {action}")
             
-            # BUY/SELLペアリング（FIFO方式）
-            # copilot-instructions.md: 実データのみ使用、推測による補完禁止
+            # Phase 5-B-6: BUY/SELLペア不一致時の処理変更
+            # 事前チェックを警告のみに変更、ペアリングは継続
             if len(buy_orders) != len(sell_orders):
                 self.logger.warning(
-                    f"[FALLBACK_PROHIBITED] BUY/SELLペア不一致: "
-                    f"BUY={len(buy_orders)}, SELL={len(sell_orders)}. "
-                    f"copilot-instructions.md準拠: ダミーデータ補完は実行しません。"
+                    f"[BUY_SELL_MISMATCH] BUY/SELLペア不一致: "
+                    f"BUY={len(buy_orders)}, SELL={len(sell_orders)} "
+                    f"(差分={abs(len(buy_orders) - len(sell_orders))}, "
+                    f"超過={'BUY' if len(buy_orders) > len(sell_orders) else 'SELL'}). "
+                    f"ペアリング可能な{min(len(buy_orders), len(sell_orders))}件のみ処理します。"
                 )
-                # フォールバック禁止: ペアが成立しない場合は空リスト返却
-                return []
             
-            # ペアリング実行
-            for buy_order, sell_order in zip(buy_orders, sell_orders):
+            # Phase 5-B-6: ペアリング可能な分のみ処理（FIFO方式）
+            paired_count = min(len(buy_orders), len(sell_orders))
+            
+            for i in range(paired_count):
+                buy_order = buy_orders[i]
+                sell_order = sell_orders[i]
+                
                 try:
                     # 実データから取引レコード作成
                     entry_date = buy_order.get('timestamp')
@@ -420,10 +425,10 @@ class ComprehensiveReporter:
                     # データ検証（copilot-instructions.md: 推測ではなく正確な数値）
                     if not all([entry_date, exit_date, entry_price > 0, exit_price > 0, shares > 0]):
                         self.logger.error(
-                            f"[DATA_VALIDATION_FAILED] 不正な取引データ: "
+                            f"[DATA_VALIDATION_FAILED] 不正な取引データ（ペア{i+1}）: "
                             f"entry_date={entry_date}, exit_date={exit_date}, "
                             f"entry_price={entry_price}, exit_price={exit_price}, shares={shares}. "
-                            f"スキップします（フォールバック禁止）。"
+                            f"スキップします。"
                         )
                         continue
                     
@@ -446,7 +451,13 @@ class ComprehensiveReporter:
                         
                         holding_period_days = (exit_dt - entry_dt).days
                     except Exception as e:
-                        self.logger.warning(f"保有期間計算エラー: {e}")
+                        self.logger.warning(f"保有期間計算エラー（ペア{i+1}）: {e}")
+                    
+                    # Phase 5-B-6: 強制決済フラグ検出
+                    is_forced_exit = (
+                        sell_order.get('status') == 'force_closed' or
+                        sell_order.get('strategy_name') == 'ForceClose'
+                    )
                     
                     # 取引レコード作成（実データのみ）
                     trade_record = {
@@ -458,21 +469,36 @@ class ComprehensiveReporter:
                         'pnl': pnl,
                         'return_pct': return_pct,
                         'holding_period_days': holding_period_days,
-                        'strategy': buy_order.get('strategy_name', 'Unknown'),  # Phase 5.3: 修正 - symbolではなくstrategy_name
+                        'strategy': buy_order.get('strategy_name', 'Unknown'),
                         'position_value': entry_price * shares,
-                        'is_forced_exit': False,
-                        'is_executed_trade': True  # Phase 4.2-5-3: 実行取引フラグ
+                        'is_forced_exit': is_forced_exit,  # Phase 5-B-6追加
+                        'is_executed_trade': True
                     }
                     
                     trades.append(trade_record)
                     
                 except Exception as e:
-                    self.logger.error(f"取引レコード作成エラー: {e}")
+                    self.logger.error(f"取引レコード作成エラー（ペア{i+1}）: {e}")
                     continue
+            
+            # Phase 5-B-6: 未ペアリング注文のログ出力
+            if len(buy_orders) > paired_count:
+                unpaired_buys = len(buy_orders) - paired_count
+                self.logger.warning(
+                    f"[UNPAIRED_ORDERS] 未決済BUY注文: {unpaired_buys}件 "
+                    f"（強制決済SELLが不足している可能性）"
+                )
+            
+            if len(sell_orders) > paired_count:
+                unpaired_sells = len(sell_orders) - paired_count
+                self.logger.warning(
+                    f"[UNPAIRED_ORDERS] 対応BUYのないSELL注文: {unpaired_sells}件 "
+                    f"（強制決済SELLの可能性）"
+                )
             
             self.logger.info(
                 f"[REAL_DATA_ONLY] Converted {len(trades)} execution details to trade records "
-                f"(BUY={len(buy_orders)}, SELL={len(sell_orders)})"
+                f"(BUY={len(buy_orders)}, SELL={len(sell_orders)}, Paired={paired_count})"
             )
             return trades
             

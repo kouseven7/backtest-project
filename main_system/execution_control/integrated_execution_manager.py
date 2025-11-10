@@ -431,21 +431,22 @@ class IntegratedExecutionManager:
         strategy_weights: Dict[str, float]
     ) -> Dict[str, Any]:
         """
-        実行結果統合
+        実行結果統合（Phase 5-B-6: execution_detailsキー追加版）
         
         Args:
             execution_results: 各戦略の実行結果リスト
             strategy_weights: 戦略重み
         
         Returns:
-            統合結果辞書
+            統合結果辞書（execution_detailsキー含む）
         """
         try:
             if not execution_results:
                 return {
                     'status': 'FAILED',
                     'error': 'No execution results',
-                    'execution_results': []
+                    'execution_results': [],
+                    'execution_details': []  # Phase 5-B-6追加
                 }
             
             # 成功した戦略をカウント（Phase 4.2-20: バグ修正）
@@ -472,6 +473,17 @@ class IntegratedExecutionManager:
                 performance = result.get('performance_metric', 0.0)
                 weighted_performance += performance * weight
             
+            # Phase 5-B-6: 全戦略のexecution_detailsを統合
+            all_execution_details = []
+            for result in execution_results:
+                if 'execution_details' in result and isinstance(result['execution_details'], list):
+                    all_execution_details.extend(result['execution_details'])
+            
+            self.logger.info(
+                f"[EXECUTION_DETAILS_INTEGRATION] Integrated {len(all_execution_details)} "
+                f"execution details from {len(execution_results)} strategies"
+            )
+            
             # 統合ステータス
             if len(successful_strategies) == 0:
                 status = 'ALL_FAILED'
@@ -488,6 +500,7 @@ class IntegratedExecutionManager:
                 'weighted_performance': weighted_performance,
                 'total_portfolio_value': self.current_portfolio_value,
                 'execution_results': execution_results,
+                'execution_details': all_execution_details,  # Phase 5-B-6追加
                 'strategy_weights': strategy_weights
             }
             
@@ -496,7 +509,8 @@ class IntegratedExecutionManager:
             return {
                 'status': 'ERROR',
                 'error': str(e),
-                'execution_results': execution_results
+                'execution_results': execution_results,
+                'execution_details': []  # Phase 5-B-6追加
             }
     
     def _update_risk_tracking(

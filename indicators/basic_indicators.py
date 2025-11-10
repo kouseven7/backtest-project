@@ -35,23 +35,34 @@ def calculate_sma(data: pd.DataFrame, column: str, window: int) -> pd.Series:
         pd.Series: 移動平均の算出結果
     """
     try:
+        # Phase 1 (緊急): カラム名フォールバック機構実装
+        # 'Adj Close' が存在しない場合は 'Close' を使用
+        # 'Close' が存在しない場合は 'Adj Close' を使用
+        actual_column = column
         if column not in data.columns:
-            logger.error(f"カラム '{column}' がデータフレームに存在しません。利用可能なカラム: {data.columns.tolist()}")
-            raise KeyError(f"カラム '{column}' がデータフレームに存在しません。")
+            if column == 'Adj Close' and 'Close' in data.columns:
+                actual_column = 'Close'
+                logger.warning(f"カラム '{column}' が存在しないため、'{actual_column}' を使用します。")
+            elif column == 'Close' and 'Adj Close' in data.columns:
+                actual_column = 'Adj Close'
+                logger.warning(f"カラム '{column}' が存在しないため、'{actual_column}' を使用します。")
+            else:
+                logger.error(f"カラム '{column}' がデータフレームに存在しません。利用可能なカラム: {data.columns.tolist()}")
+                raise KeyError(f"カラム '{column}' がデータフレームに存在しません。")
         
         # カラムが数値型かチェック
-        if not pd.api.types.is_numeric_dtype(data[column]):
-            logger.warning(f"カラム '{column}' が数値型ではありません。型変換を試みます。現在の型: {data[column].dtype}")
+        if not pd.api.types.is_numeric_dtype(data[actual_column]):
+            logger.warning(f"カラム '{actual_column}' が数値型ではありません。型変換を試みます。現在の型: {data[actual_column].dtype}")
             try:
                 # 数値型に変換を試みる
-                data[column] = pd.to_numeric(data[column], errors='coerce')
-                logger.info(f"カラム '{column}' を数値型に変換しました。")
+                data[actual_column] = pd.to_numeric(data[actual_column], errors='coerce')
+                logger.info(f"カラム '{actual_column}' を数値型に変換しました。")
             except Exception as e:
-                logger.error(f"カラム '{column}' の数値変換に失敗しました: {e}")
+                logger.error(f"カラム '{actual_column}' の数値変換に失敗しました: {e}")
                 # 失敗した場合はデフォルト値（NaN）のSeriesを返す
                 return pd.Series(index=data.index, dtype=float)
         
-        return data[column].rolling(window=window).mean()
+        return data[actual_column].rolling(window=window).mean()
     except Exception as e:
         logger.error(f"SMA計算中にエラーが発生しました: {e}")
         # エラーが発生した場合はデフォルト値（NaN）のSeriesを返す
@@ -99,8 +110,21 @@ def calculate_vwap(data: pd.DataFrame, price_column: str, volume_column: str) ->
         pd.Series: VWAP値
     """
     try:
+        # Phase 1 (緊急): カラム名フォールバック機構実装
+        actual_price_column = price_column
+        if price_column not in data.columns:
+            if price_column == 'Adj Close' and 'Close' in data.columns:
+                actual_price_column = 'Close'
+                logger.warning(f"カラム '{price_column}' が存在しないため、'{actual_price_column}' を使用します。")
+            elif price_column == 'Close' and 'Adj Close' in data.columns:
+                actual_price_column = 'Adj Close'
+                logger.warning(f"カラム '{price_column}' が存在しないため、'{actual_price_column}' を使用します。")
+            else:
+                logger.error(f"カラム '{price_column}' がデータフレームに存在しません。利用可能なカラム: {data.columns.tolist()}")
+                raise KeyError(f"カラム '{price_column}' がデータフレームに存在しません。")
+        
         # 必要なカラムが存在するか確認
-        required_columns = ['High', 'Low', price_column, volume_column]
+        required_columns = ['High', 'Low', actual_price_column, volume_column]
         for col in required_columns:
             if col not in data.columns:
                 logger.error(f"カラム '{col}' がデータフレームに存在しません。利用可能なカラム: {data.columns.tolist()}")
@@ -110,7 +134,7 @@ def calculate_vwap(data: pd.DataFrame, price_column: str, volume_column: str) ->
             if not pd.api.types.is_numeric_dtype(data[col]):
                 data[col] = pd.to_numeric(data[col], errors='coerce')
         
-        typical_price = (data['High'] + data['Low'] + data[price_column]) / 3
+        typical_price = (data['High'] + data['Low'] + data[actual_price_column]) / 3
         cumulative_vwap = (typical_price * data[volume_column]).cumsum()
         cumulative_volume = data[volume_column].cumsum()
         
