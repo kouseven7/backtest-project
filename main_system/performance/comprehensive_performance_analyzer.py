@@ -24,6 +24,13 @@ from config.logger_config import setup_logger
 # 既存パフォーマンス計算モジュール
 from main_system.performance.enhanced_performance_calculator import EnhancedPerformanceCalculator
 
+# Phase 5-B-12: 共通ユーティリティ（execution_details抽出ロジック統一）
+from main_system.execution_control.execution_detail_utils import (
+    extract_buy_sell_orders,
+    validate_buy_sell_pairing,
+    get_execution_detail_summary
+)
+
 # パフォーマンス集計モジュール
 try:
     from main_system.performance.performance_aggregator import (
@@ -252,12 +259,13 @@ class ComprehensivePerformanceAnalyzer:
         execution_details: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """
-        execution_detailsから取引データを抽出（Phase 2: ComprehensiveReporterと同じロジック）
+        execution_detailsから取引データを抽出（Phase 5-B-12: 共通ユーティリティ使用版）
         
         copilot-instructions.md準拠:
         - 実データのみ使用
         - BUY/SELLペアの実データのみ抽出
         - データ不足時は空リスト返却（フォールバック禁止）
+        - 強制決済（status='force_closed'）も有効な取引として認識
         
         Args:
             execution_details: 実行詳細リスト
@@ -268,68 +276,38 @@ class ComprehensivePerformanceAnalyzer:
         try:
             trades = []
             
-            # BUY/SELLペアの抽出
-            buy_orders = []
-            sell_orders = []
-            
-            # Phase 4.2-31-B: execution_detailsの詳細ログ
+            # Phase 5-B-12: 共通ユーティリティでBUY/SELL抽出
             self.logger.info(
-                f"[PHASE_4_2_31_B] execution_details総数: {len(execution_details)}"
+                f"[PHASE_5_B_12] execution_details総数: {len(execution_details)}"
             )
             
-            for idx, detail in enumerate(execution_details):
-                if not isinstance(detail, dict):
-                    continue
-                
-                # Phase 4.2-31-B: force_closedは対応するBUYペアがないため除外
-                # 実行成功した取引のみを対象（status: executed のみ）
-                status = detail.get('status', '')
-                success = detail.get('success', False)
-                
-                if status != 'executed' or not success:
-                    continue
-                
-                # BUY/SELL分類
-                action = detail.get('action', '').upper()
-                if action == 'BUY':
-                    buy_orders.append(detail)
-                    # Phase 4.2-31-B: BUY注文の詳細ログ
-                    self.logger.info(
-                        f"[PHASE_4_2_31_B] BUY注文#{idx}: symbol={detail.get('symbol')}, "
-                        f"status={status}, success={success}"
-                    )
-                elif action == 'SELL':
-                    sell_orders.append(detail)
-                    # Phase 4.2-31-B: SELL注文の詳細ログ
-                    self.logger.info(
-                        f"[PHASE_4_2_31_B] SELL注文#{idx}: symbol={detail.get('symbol')}, "
-                        f"status={status}, success={success}, "
-                        f"executed_price={detail.get('executed_price')}, "
-                        f"quantity={detail.get('quantity')}"
-                    )
-            
-            # Phase 4.2-23デバッグ: BUY/SELL詳細出力
-            self.logger.debug(
-                f"[PAIR_DEBUG] Total execution_details: {len(execution_details)}, "
-                f"Filtered BUY: {len(buy_orders)}, SELL: {len(sell_orders)}"
+            # 共通ユーティリティを使用してBUY/SELL抽出
+            buy_orders, sell_orders = extract_buy_sell_orders(
+                execution_details,
+                logger_instance=self.logger
             )
             
-            # BUY/SELLペアリング（FIFO方式）
-            if len(buy_orders) != len(sell_orders):
-                # Phase 4.2-23: 差分詳細をログ出力
-                diff = abs(len(buy_orders) - len(sell_orders))
-                excess_type = "BUY" if len(buy_orders) > len(sell_orders) else "SELL"
-                
+            # ペアリング検証
+            pairing_result = validate_buy_sell_pairing(
+                buy_orders,
+                sell_orders,
+                logger_instance=self.logger
+            )
+            
+            # ペア不一致の場合は空リスト返却（copilot-instructions.md: フォールバック禁止）
+            if not pairing_result['is_valid']:
                 self.logger.warning(
-                    f"[FALLBACK_PROHIBITED] BUY/SELLペア不一致: "
-                    f"BUY={len(buy_orders)}, SELL={len(sell_orders)} (差分={diff}, 超過={excess_type}). "
+                    f"[FALLBACK_PROHIBITED] {pairing_result['warning_message']} "
                     f"copilot-instructions.md準拠: ダミーデータ補完は実行しません。"
                 )
-                # フォールバック禁止: ペアが成立しない場合は空リスト返却
                 return []
             
-            # ペアリング実行
-            for buy_order, sell_order in zip(buy_orders, sell_orders):
+            # ペアリング実行（FIFO方式）
+            paired_count = pairing_result['paired_count']
+            for i in range(paired_count):
+                buy_order = buy_orders[i]
+                sell_order = sell_orders[i]
+                
                 try:
                     # 実データから取引レコード作成
                     entry_price = buy_order.get('executed_price', 0.0)
@@ -339,7 +317,7 @@ class ComprehensivePerformanceAnalyzer:
                     # データ検証
                     if not all([entry_price > 0, exit_price > 0, shares > 0]):
                         self.logger.error(
-                            f"[DATA_VALIDATION_FAILED] 不正な取引データ: "
+                            f"[DATA_VALIDATION_FAILED] 不正な取引データ（ペア{i+1}）: "
                             f"entry_price={entry_price}, exit_price={exit_price}, shares={shares}. "
                             f"スキップします（フォールバック禁止）。"
                         )
@@ -360,12 +338,12 @@ class ComprehensivePerformanceAnalyzer:
                     trades.append(trade)
                     
                 except Exception as trade_error:
-                    self.logger.error(f"[TRADE_EXTRACTION_ERROR] {trade_error}")
+                    self.logger.error(f"[TRADE_EXTRACTION_ERROR] ペア{i+1}: {trade_error}")
                     continue
             
             self.logger.info(
-                f"[REAL_DATA_ONLY] Converted {len(execution_details)} execution details "
-                f"to {len(trades)} trade records (BUY={len(buy_orders)}, SELL={len(sell_orders)})"
+                f"[PHASE_5_B_12] Converted {len(execution_details)} execution details "
+                f"to {len(trades)} trade records (BUY={len(buy_orders)}, SELL={len(sell_orders)}, Paired={paired_count})"
             )
             
             return trades

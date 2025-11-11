@@ -33,6 +33,13 @@ from main_system.performance.trade_analyzer import TradeAnalyzer
 from main_system.performance.enhanced_performance_calculator import EnhancedPerformanceCalculator
 from main_system.performance.data_extraction_enhancer import MainDataExtractor
 
+# Phase 5-B-12: 共通ユーティリティ（execution_details抽出ロジック統一）
+from main_system.execution_control.execution_detail_utils import (
+    extract_buy_sell_orders,
+    validate_buy_sell_pairing,
+    get_execution_detail_summary
+)
+
 
 class SafeJSONEncoder(json.JSONEncoder):
     """
@@ -355,12 +362,13 @@ class ComprehensiveReporter:
         execution_details: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """
-        execution_detailsを取引レコード形式に変換（Phase 5-B-6: 事前チェック緩和版）
+        execution_detailsを取引レコード形式に変換（Phase 5-B-12: 共通ユーティリティ統一版）
         
         copilot-instructions.md準拠:
         - ダミーデータ生成フォールバック禁止
         - BUY/SELLペア不一致時は警告ログのみ、ペアリング可能な分のみ抽出
-        - 強制決済SELL対応
+        - 強制決済SELL対応（status='force_closed'も有効な取引として扱う）
+        - Phase 5-B-12: execution_detail_utilsの共通抽出ロジックを使用
         
         Args:
             execution_details: 実行詳細リスト
@@ -376,36 +384,11 @@ class ComprehensiveReporter:
                 self.logger.warning(f"[TYPE_ERROR] execution_details is not list: {type(execution_details)}")
                 return []
             
-            # BUY/SELL注文を分類
-            buy_orders = []
-            sell_orders = []
+            # Phase 5-B-12: 共通ユーティリティでBUY/SELL抽出（status='force_closed'も含む）
+            buy_orders, sell_orders = extract_buy_sell_orders(execution_details, self.logger)
             
-            for detail in execution_details:
-                # Phase 5-B-2: 厳密な型チェック
-                if not isinstance(detail, dict):
-                    self.logger.warning(f"[TYPE_ERROR] execution_detail is not dict: {type(detail)}")
-                    continue
-                
-                # actionフィールドの取得
-                action = detail.get('action', '').upper()
-                
-                if action == 'BUY':
-                    buy_orders.append(detail)
-                elif action == 'SELL':
-                    sell_orders.append(detail)
-                else:
-                    self.logger.debug(f"[SKIP] Unknown action: {action}")
-            
-            # Phase 5-B-6: BUY/SELLペア不一致時の処理変更
-            # 事前チェックを警告のみに変更、ペアリングは継続
-            if len(buy_orders) != len(sell_orders):
-                self.logger.warning(
-                    f"[BUY_SELL_MISMATCH] BUY/SELLペア不一致: "
-                    f"BUY={len(buy_orders)}, SELL={len(sell_orders)} "
-                    f"(差分={abs(len(buy_orders) - len(sell_orders))}, "
-                    f"超過={'BUY' if len(buy_orders) > len(sell_orders) else 'SELL'}). "
-                    f"ペアリング可能な{min(len(buy_orders), len(sell_orders))}件のみ処理します。"
-                )
+            # Phase 5-B-12: 共通ユーティリティでペアリング検証
+            validate_buy_sell_pairing(buy_orders, sell_orders, self.logger)
             
             # Phase 5-B-6: ペアリング可能な分のみ処理（FIFO方式）
             paired_count = min(len(buy_orders), len(sell_orders))
