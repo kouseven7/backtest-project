@@ -501,7 +501,8 @@ class IntegratedExecutionManager:
                 'total_portfolio_value': self.current_portfolio_value,
                 'execution_results': execution_results,
                 'execution_details': all_execution_details,  # Phase 5-B-6追加
-                'strategy_weights': strategy_weights
+                'strategy_weights': strategy_weights,
+                'equity_recorder': self.equity_recorder  # [Phase 1-A] 損益推移記録追加
             }
             
         except Exception as e:

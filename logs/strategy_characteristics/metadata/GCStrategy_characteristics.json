@@ -1,106 +1,196 @@
 {
-  "strategy_name": "GCStrategy",
-  "description": "ゴールデンクロス戦略（移動平均線の上抜け）",
-  "created_at": "2025-07-10T21:22:00",
-  "last_updated": "2025-07-10T21:22:00",
+  "schema_version": "2.0",
+  "strategy_id": "GCStrategy",
+  "strategy_name": "ゴールデンクロス戦略",
+  "strategy_class": "GCStrategy",
+  "strategy_module": "strategies.gc_strategy_signal",
   "version": "1.0",
+  "created_at": "2025-11-12T11:08:10.991827",
+  "last_updated": "2025-11-12T11:08:10.991838",
   "trend_adaptability": {
     "uptrend": {
-      "performance_score": 9.2,
+      "suitability_score": 0.92,
       "confidence_level": "high",
-      "risk_profile": "medium",
-      "optimal_conditions": [
-        "strong_uptrend",
-        "ma_crossover_confirmation",
-        "volume_increase"
-      ],
-      "expected_return": 0.12,
-      "volatility": 0.13,
-      "max_drawdown": 0.09
+      "performance_metrics": {
+        "sharpe_ratio": 1.62,
+        "max_drawdown": 0.09,
+        "win_rate": 0.65,
+        "expectancy": 0.025,
+        "avg_return": 0.12,
+        "volatility": 0.13,
+        "calmar_ratio": 1.67,
+        "sortino_ratio": 1.94
+      },
+      "sample_size": 120,
+      "data_period": "2023-01-01_to_2024-12-31",
+      "reliability": "high",
+      "risk_characteristics": {
+        "max_consecutive_losses": 3,
+        "avg_holding_period": 28.0,
+        "profit_factor": 2.12
+      }
     },
     "downtrend": {
-      "performance_score": 2.8,
+      "suitability_score": 0.28,
       "confidence_level": "low",
-      "risk_profile": "high",
-      "optimal_conditions": [
-        "market_reversal_signals",
-        "oversold_conditions"
-      ],
-      "expected_return": -0.05,
-      "volatility": 0.28,
-      "max_drawdown": 0.35
+      "performance_metrics": {
+        "sharpe_ratio": -0.3,
+        "max_drawdown": 0.35,
+        "win_rate": 0.35,
+        "expectancy": -0.015,
+        "avg_return": -0.05,
+        "volatility": 0.28,
+        "calmar_ratio": -0.14,
+        "sortino_ratio": -0.36
+      },
+      "sample_size": 60,
+      "data_period": "2023-01-01_to_2024-12-31",
+      "reliability": "low",
+      "risk_characteristics": {
+        "max_consecutive_losses": 6,
+        "avg_holding_period": 15.0,
+        "profit_factor": 0.75
+      }
     },
-    "sideways": {
-      "performance_score": 5.5,
+    "range-bound": {
+      "suitability_score": 0.55,
       "confidence_level": "medium",
-      "risk_profile": "medium",
-      "optimal_conditions": [
-        "trending_within_range",
-        "clear_ma_signals"
-      ],
-      "expected_return": 0.04,
-      "volatility": 0.11,
-      "max_drawdown": 0.07
+      "performance_metrics": {
+        "sharpe_ratio": 0.85,
+        "max_drawdown": 0.07,
+        "win_rate": 0.55,
+        "expectancy": 0.012,
+        "avg_return": 0.04,
+        "volatility": 0.11,
+        "calmar_ratio": 0.57,
+        "sortino_ratio": 1.02
+      },
+      "sample_size": 90,
+      "data_period": "2023-01-01_to_2024-12-31",
+      "reliability": "medium",
+      "risk_characteristics": {
+        "max_consecutive_losses": 4,
+        "avg_holding_period": 20.0,
+        "profit_factor": 1.35
+      }
     }
   },
   "volatility_adaptability": {
-    "low_volatility": {
-      "performance_score": 7.2,
-      "confidence_level": "high",
-      "recommended": true,
-      "notes": "安定したトレンドフォロー"
+    "high_volatility": {
+      "suitability_score": 0.48,
+      "confidence_level": "low",
+      "performance_metrics": {
+        "sharpe_ratio": 0.65,
+        "max_drawdown": 0.18,
+        "win_rate": 0.52,
+        "expectancy": 0.008,
+        "avg_return": 0.0,
+        "volatility": 0.0,
+        "calmar_ratio": 0.0,
+        "max_holding_period": 0
+      },
+      "sample_size": 80,
+      "data_period": "2023-01-01_to_2024-12-31",
+      "reliability": "medium",
+      "risk_characteristics": {
+        "position_sizing_multiplier": 0.7,
+        "stop_loss_adjustment": 1.4,
+        "entry_frequency": "reduced",
+        "volatility_threshold": 0.35
+      }
     },
     "medium_volatility": {
-      "performance_score": 8.5,
+      "suitability_score": 0.85,
       "confidence_level": "high",
-      "recommended": true,
-      "notes": "最適な環境"
+      "performance_metrics": {
+        "sharpe_ratio": 1.55,
+        "max_drawdown": 0.09,
+        "win_rate": 0.68,
+        "expectancy": 0.028,
+        "avg_return": 0.0,
+        "volatility": 0.0,
+        "calmar_ratio": 0.0,
+        "max_holding_period": 0
+      },
+      "sample_size": 150,
+      "data_period": "2023-01-01_to_2024-12-31",
+      "reliability": "high",
+      "risk_characteristics": {
+        "position_sizing_multiplier": 1.0,
+        "stop_loss_adjustment": 1.0,
+        "entry_frequency": "normal",
+        "volatility_threshold": 0.2
+      }
     },
-    "high_volatility": {
-      "performance_score": 4.8,
-      "confidence_level": "medium",
-      "recommended": false,
-      "notes": "偽シグナルリスク増加"
+    "low_volatility": {
+      "suitability_score": 0.72,
+      "confidence_level": "high",
+      "performance_metrics": {
+        "sharpe_ratio": 1.25,
+        "max_drawdown": 0.06,
+        "win_rate": 0.7,
+        "expectancy": 0.015,
+        "avg_return": 0.0,
+        "volatility": 0.0,
+        "calmar_ratio": 0.0,
+        "max_holding_period": 0
+      },
+      "sample_size": 100,
+      "data_period": "2023-01-01_to_2024-12-31",
+      "reliability": "high",
+      "risk_characteristics": {
+        "position_sizing_multiplier": 1.2,
+        "stop_loss_adjustment": 0.8,
+        "entry_frequency": "increased",
+        "volatility_threshold": 0.1
+      }
     }
   },
-  "parameter_optimization_history": [
-    {
-      "date": "2025-07-10",
-      "ticker": "8306.T",
-      "parameters": {
-        "trend_up_score": 5,
-        "short_ma_period": 25,
-        "long_ma_period": 75,
-        "volume_confirmation": true
-      },
-      "performance": {
-        "sharpe_ratio": 1.62,
-        "total_return": 0.15,
-        "max_drawdown": 0.09
-      },
-      "market_conditions": "medium_volatility_uptrend"
-    }
-  ],
   "risk_profile": {
-    "overall_risk_level": "medium",
-    "max_position_size": 0.20,
-    "recommended_stop_loss": 0.08,
-    "correlation_with_market": 0.85,
-    "tail_risk": "low"
+    "volatility_tolerance": "medium",
+    "max_position_size": 0.2,
+    "holding_period_avg": 21.0,
+    "drawdown_tolerance": 0.35,
+    "preferred_volatility_range": {
+      "optimal_range": "medium",
+      "atr_percentile_range": [
+        33,
+        67
+      ],
+      "volatility_score_range": [
+        0.15,
+        0.25
+      ]
+    }
   },
   "dependencies": {
-    "required_indicators": ["moving_averages", "volume", "trend_indicators"],
-    "data_requirements": ["daily_ohlcv", "extended_history"],
-    "minimum_backtest_period": "2_years",
-    "recommended_instruments": ["stocks", "indices", "etfs"]
+    "required_indicators": [
+      "SMA"
+    ],
+    "market_data_requirements": [
+      "daily_ohlcv"
+    ],
+    "index_data_required": false,
+    "volatility_calculation_required": true,
+    "additional_columns": [
+      "SMA_short",
+      "SMA_long"
+    ]
   },
-  "performance_metrics": {
-    "historical_sharpe": 1.58,
-    "historical_sortino": 1.89,
-    "historical_calmar": 1.75,
-    "win_rate": 0.65,
-    "profit_factor": 2.12,
-    "avg_trade_duration": 28,
-    "max_consecutive_losses": 3
+  "data_quality": {
+    "sample_size_total": 270,
+    "confidence_score": 0.9,
+    "last_validation": "2025-11-12T11:08:10.991918",
+    "volatility_validation_complete": true,
+    "validation_status": "pending"
+  },
+  "custom_parameters": {},
+  "parameter_history": {
+    "enabled": true,
+    "history_file": "GCStrategy_param_history.json",
+    "retention_days": 365,
+    "auto_update": true,
+    "version_control": true,
+    "optimization_tracking": true
   }
 }

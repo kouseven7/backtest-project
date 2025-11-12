@@ -266,3 +266,151 @@ class EquityCurveRecorder:
         self.current_date = None
         self.daily_blocked_count = 0
         self.logger.info("[EQUITY_CURVE] Snapshots cleared")
+    
+    def _calculate_underwater_days(self, snapshots_df: pd.DataFrame) -> pd.Series:
+        """
+        ドローダウン継続日数（underwater_days）を計算
+        
+        ドローダウン中（portfolio_value < peak_value）の連続日数を記録。
+        新しいピークに到達した場合はリセット。
+        
+        Args:
+            snapshots_df: スナップショットのDataFrame
+        
+        Returns:
+            pd.Series: 各行のunderwater_days
+        
+        Note:
+            copilot-instructions.md準拠: 実データのみ使用、フォールバック禁止
+        """
+        try:
+            underwater_days = []
+            current_underwater = 0
+            
+            for idx, row in snapshots_df.iterrows():
+                portfolio_value = row['portfolio_value']
+                peak_value = row['peak_value']
+                
+                # ドローダウン判定（peak_valueに到達していない）
+                if portfolio_value < peak_value:
+                    current_underwater += 1
+                else:
+                    # 新しいピークに到達、リセット
+                    current_underwater = 0
+                
+                underwater_days.append(current_underwater)
+            
+            return pd.Series(underwater_days, index=snapshots_df.index)
+            
+        except Exception as e:
+            self.logger.error(f"[EQUITY_CURVE] Failed to calculate underwater_days: {e}")
+            # copilot-instructions.md準拠: フォールバック禁止
+            raise
+    
+    def export_daily_portfolio_csv(self, output_path: str, ticker: str = "UNKNOWN") -> str:
+        """
+        日次ポートフォリオ推移CSV出力（Phase 1-A仕様）
+        
+        出力カラム:
+        - date: 日付（YYYY-MM-DD形式）
+        - portfolio_value: ポートフォリオ総額
+        - cash: 現金残高
+        - position_value: ポジション時価
+        - daily_pnl: 当日損益
+        - cumulative_pnl: 累積損益
+        - drawdown: ドローダウン額（peak_value - portfolio_value）
+        - drawdown_pct: ドローダウン率（0-1スケール）
+        - peak_value: ピーク資産額
+        - underwater_days: ドローダウン継続日数
+        
+        Args:
+            output_path: 出力ファイルパス
+            ticker: 銘柄コード（ファイル名用）
+        
+        Returns:
+            str: 出力ファイルパス
+        
+        Raises:
+            ValueError: スナップショットが空の場合
+        
+        Note:
+            copilot-instructions.md準拠:
+            - Excel出力禁止（CSV使用）
+            - 実データのみ記録
+            - フォールバック禁止
+        """
+        try:
+            if not self.snapshots:
+                raise ValueError("No snapshots to export")
+            
+            # DataFrameに変換
+            df = pd.DataFrame(self.snapshots)
+            
+            # 日付フォーマット（YYYY-MM-DD形式）
+            df['date'] = pd.to_datetime(df['date']).dt.strftime('%Y-%m-%d')
+            
+            # 日次データのみ抽出（重複排除）
+            # 同一日付の最後のスナップショットを使用
+            df_daily = df.drop_duplicates(subset=['date'], keep='last').copy()
+            
+            # drawdown計算（額）
+            df_daily['drawdown'] = df_daily['peak_value'] - df_daily['portfolio_value']
+            
+            # underwater_days計算
+            df_daily['underwater_days'] = self._calculate_underwater_days(df_daily)
+            
+            # カラム名をリネーム（仕様に合わせる）
+            df_daily = df_daily.rename(columns={
+                'cash_balance': 'cash',
+                'drawdown_pct': 'drawdown_pct'  # 0-1スケールのまま
+            })
+            
+            # 必要なカラムのみ選択（仕様通りの順序）
+            columns_order = [
+                'date',
+                'portfolio_value',
+                'cash',
+                'position_value',
+                'daily_pnl',
+                'cumulative_pnl',
+                'drawdown',
+                'drawdown_pct',
+                'peak_value',
+                'underwater_days'
+            ]
+            
+            df_output = df_daily[columns_order].copy()
+            
+            # 数値フォーマット（小数点以下処理）
+            df_output['drawdown_pct'] = df_output['drawdown_pct'].round(4)
+            
+            # ファイル名生成
+            output_file = Path(output_path).parent / f"{ticker}_daily_portfolio.csv"
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            
+            # CSV出力（UTF-8 BOM付き、Excel対応）
+            df_output.to_csv(output_file, index=False, encoding='utf-8-sig')
+            
+            self.logger.info(
+                f"[EQUITY_CURVE] Daily portfolio CSV exported: {output_file} | "
+                f"Records={len(df_output)} | "
+                f"Date range={df_output['date'].min()} to {df_output['date'].max()}"
+            )
+            
+            # 統計情報ログ
+            max_dd = df_output['drawdown'].max()
+            max_dd_pct = df_output['drawdown_pct'].max()
+            max_underwater = df_output['underwater_days'].max()
+            
+            self.logger.info(
+                f"[EQUITY_CURVE] Portfolio statistics: "
+                f"Max DD={max_dd:,.0f} ({max_dd_pct:.2%}) | "
+                f"Max underwater={max_underwater} days"
+            )
+            
+            return str(output_file)
+            
+        except Exception as e:
+            self.logger.error(f"[EQUITY_CURVE] Daily portfolio CSV export failed: {e}")
+            # copilot-instructions.md準拠: フォールバック禁止
+            raise
