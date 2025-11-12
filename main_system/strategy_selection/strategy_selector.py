@@ -263,8 +263,9 @@ class StrategySelector:
             return selection_result
             
         except Exception as e:
+            # 修正: copilot-instructions.md準拠 - フォールバック禁止、例外を伝播
             logger.error(f"Strategy selection failed for {ticker}: {e}")
-            return self._create_fallback_selection(ticker, e)
+            raise
 
     def _create_default_criteria(self) -> SelectionCriteria:
         """デフォルト選択基準の作成"""
@@ -623,23 +624,8 @@ class StrategySelector:
         
         self._last_selection_time = selection.selection_timestamp
 
-    def _create_fallback_selection(self, ticker: str, error: Exception) -> StrategySelection:
-        """フォールバック選択の作成"""
-        logger.warning(f"Creating fallback selection for {ticker} due to error: {error}")
-        
-        # デフォルト戦略を選択
-        fallback_strategies = ["VWAPBounceStrategy", "MomentumInvestingStrategy"]
-        
-        return StrategySelection(
-            selected_strategies=fallback_strategies,
-            strategy_scores={s: 0.5 for s in fallback_strategies},
-            strategy_weights={s: 1.0/len(fallback_strategies) for s in fallback_strategies},
-            selection_reason=f"Fallback selection due to error: {error}",
-            trend_analysis={"trend": "unknown", "confidence": 0.5},
-            confidence_level=0.5,
-            total_score=0.5,
-            metadata={"error": str(error), "ticker": ticker}
-        )
+    # 削除: _create_fallback_selection() - copilot-instructions.md違反のため削除
+    # 理由: 「エラーを隠蔽して強制的にテストを継続させるフォールバック」に該当
 
     # 公開API
     def get_available_strategies(self) -> List[str]:

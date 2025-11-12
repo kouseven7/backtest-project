@@ -48,8 +48,13 @@ class StrategyCharacteristicsManager:
             base_path: データ保存ベースパス（デフォルト: logs/strategy_characteristics）
         """
         if base_path is None:
-            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            # 修正: main_system/strategy_selection/ から3階層上のプロジェクトルートを取得
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             base_path = os.path.join(project_root, "logs", "strategy_characteristics")
+            # デバッグ: パス計算結果をログ出力
+            logger.info(f"[PATH_DEBUG] __file__ = {__file__}")
+            logger.info(f"[PATH_DEBUG] project_root = {project_root}")
+            logger.info(f"[PATH_DEBUG] base_path = {base_path}")
         
         self.base_path = base_path
         self.metadata_path = os.path.join(base_path, "metadata")
@@ -100,8 +105,17 @@ class StrategyCharacteristicsManager:
     
     def _ensure_directories(self):
         """必要なディレクトリを作成"""
+        # デバッグ: ディレクトリパスをログ出力
+        logger.info(f"[DIR_DEBUG] metadata_path = {self.metadata_path}")
+        logger.info(f"[DIR_DEBUG] performance_path = {self.performance_path}")
+        logger.info(f"[DIR_DEBUG] param_history_path = {self.param_history_path}")
+        
         for path in [self.metadata_path, self.performance_path, self.param_history_path]:
             os.makedirs(path, exist_ok=True)
+            # デバッグ: ディレクトリ存在確認
+            if os.path.exists(path):
+                files = os.listdir(path) if path == self.metadata_path else []
+                logger.info(f"[DIR_DEBUG] {path} exists, files: {len(files)}")
             
         # README.mdの作成
         readme_path = os.path.join(self.base_path, "README.md")
