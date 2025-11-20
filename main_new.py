@@ -295,7 +295,8 @@ def main():
             }
         },
         'risk_management': {
-            'use_enhanced_risk': False
+            'use_enhanced_risk': False,
+            'max_drawdown_threshold': 0.15
         },
         'performance': {
             'use_aggregator': False

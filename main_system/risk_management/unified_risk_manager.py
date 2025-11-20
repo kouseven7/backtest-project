@@ -67,7 +67,11 @@ class UnifiedRiskManager:
         try:
             # ドローダウン制御（パラメータなしで初期化）
             self.drawdown_controller = DrawdownController()
-            self.logger.info("DrawdownController initialized")
+            
+            # config から max_drawdown_threshold を取得して上書き
+            max_dd_threshold = self.config.get('max_drawdown_threshold', 0.15)
+            self.drawdown_controller.thresholds.emergency_threshold = max_dd_threshold
+            self.logger.info(f"DrawdownController initialized with max_drawdown_threshold={max_dd_threshold:.1%}")
             
             # 強化リスク管理システム
             if HAS_ENHANCED_RISK_SYSTEM and self.config.get('use_enhanced_risk', False):
