@@ -632,8 +632,12 @@ class StrategyExecutionManager:
                                         daily_pnl = portfolio_value - last_snapshot['portfolio_value']
                                 
                                 # スナップショット記録
+                                # タイムスタンプ変換（文字列→datetime）
+                                from datetime import datetime as dt
+                                timestamp_dt = dt.fromisoformat(order_dict['timestamp']) if isinstance(order_dict['timestamp'], str) else order_dict['timestamp']
+                                
                                 self.equity_recorder.record_snapshot(
-                                    date=datetime.now(),
+                                    date=timestamp_dt,
                                     portfolio_value=portfolio_value,
                                     cash_balance=cash_balance,
                                     position_value=position_value,
