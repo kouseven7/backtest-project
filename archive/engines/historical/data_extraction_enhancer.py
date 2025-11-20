@@ -97,6 +97,13 @@ class MainDataExtractor:
         position_key = f"{strategy}_{date}"
         shares = self._calculate_shares(entry_price)
         
+        # Phase 2 Task 1: 0株の場合はポジションを生成しない
+        if shares == 0:
+            self.logger.warning(
+                f"資金不足によりポジション生成スキップ: {strategy} @{entry_price:.2f} (0株)"
+            )
+            return
+        
         positions[position_key] = {
             'entry_date': date,
             'entry_price': entry_price,
@@ -171,11 +178,35 @@ class MainDataExtractor:
         }
     
     def _calculate_shares(self, price: float, capital_per_trade: Optional[float] = None) -> int:
-        """1取引あたりの株数計算"""
+        """
+        1取引あたりの株数計算(日本株の単元株制度対応版)
+        
+        Args:
+            price: 株価
+            capital_per_trade: 1取引あたりの資本(Noneの場合は初期資本の10%)
+        
+        Returns:
+            int: 100株単位に調整された株数(購入不可の場合は0)
+        """
         if capital_per_trade is None:
             capital_per_trade = self.initial_capital * 0.1  # 10%ポジションサイズ
         
-        return max(1, int(capital_per_trade / price))
+        # 理論上の最大株数
+        raw_shares = int(capital_per_trade / price)
+        
+        # Phase 2 Task 1: 100株単位に調整(切り捨て)
+        unit_size = 100
+        adjusted_shares = (raw_shares // unit_size) * unit_size
+        
+        # 0株の場合は警告ログ
+        if adjusted_shares == 0 and raw_shares > 0:
+            self.logger.debug(
+                f"資金不足により購入不可: "
+                f"価格={price:.2f}, 必要資金={capital_per_trade:.2f}, "
+                f"理論株数={raw_shares}, 単元株調整後=0"
+            )
+        
+        return adjusted_shares
     
     def calculate_portfolio_performance(self, stock_data: pd.DataFrame, 
                                       trades: List[Dict[str, Any]]) -> Dict[str, float]:
