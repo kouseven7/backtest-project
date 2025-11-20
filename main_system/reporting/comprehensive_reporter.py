@@ -32,6 +32,7 @@ from main_system.reporting.main_text_reporter import MainTextReporter
 from main_system.performance.trade_analyzer import TradeAnalyzer
 from main_system.performance.enhanced_performance_calculator import EnhancedPerformanceCalculator
 from main_system.performance.data_extraction_enhancer import MainDataExtractor
+from main_system.performance.equity_curve_recorder import EquityCurveRecorder
 
 # Phase 5-B-12: 共通ユーティリティ（execution_details抽出ロジック統一）
 from main_system.execution_control.execution_detail_utils import (
@@ -180,7 +181,8 @@ class ComprehensiveReporter:
             # 5. CSV出力生成
             self.logger.info("Step 5: CSV outputs generation")
             csv_outputs = self._generate_csv_outputs(
-                extracted_data, performance_metrics, report_dir, ticker
+                extracted_data, performance_metrics, report_dir, ticker, 
+                execution_results, stock_data
             )
             
             # 6. JSON出力生成
@@ -198,18 +200,24 @@ class ComprehensiveReporter:
             )
             
             # [Phase 5-B-5] 8. 損益推移CSV出力
+            # 方針A実装: Step 5で245行のportfolio_equity_curve.csvを生成済み
+            # 既存のequity_recorder（18行）による上書きを防止
             equity_curve_csv = None
             daily_portfolio_csv = None  # [Phase 1-A] 日次ポートフォリオCSV
-            if hasattr(execution_results, 'get') and 'equity_recorder' in execution_results:
+            
+            # Step 5で生成したCSVが存在する場合はスキップ
+            equity_curve_generated_in_step5 = 'portfolio_equity_curve' in csv_outputs
+            
+            if not equity_curve_generated_in_step5 and hasattr(execution_results, 'get') and 'equity_recorder' in execution_results:
                 try:
-                    self.logger.info("Step 8: Equity curve CSV export")
+                    self.logger.info("Step 8: Equity curve CSV export (fallback)")
                     equity_recorder = execution_results['equity_recorder']
                     
-                    # 既存のequity_curve CSV出力
+                    # 既存のequity_curve CSV出力（Step 5で生成されていない場合のみ）
                     if equity_recorder and hasattr(equity_recorder, 'export_to_csv'):
                         equity_curve_path = report_dir / 'portfolio_equity_curve.csv'
                         equity_curve_csv = equity_recorder.export_to_csv(str(equity_curve_path))
-                        self.logger.info(f"[EQUITY_CURVE] CSV exported: {equity_curve_csv}")
+                        self.logger.info(f"[EQUITY_CURVE] CSV exported (fallback): {equity_curve_csv}")
                     
                     # [Phase 1-A] 日次ポートフォリオCSV出力（仕様準拠）
                     if equity_recorder and hasattr(equity_recorder, 'export_daily_portfolio_csv'):
@@ -221,6 +229,9 @@ class ComprehensiveReporter:
                     
                 except Exception as e:
                     self.logger.error(f"[EQUITY_CURVE] CSV export failed: {e}")
+            elif equity_curve_generated_in_step5:
+                self.logger.info("Step 8: Equity curve CSV already generated in Step 5 (245 snapshots), skipping fallback")
+                equity_curve_csv = csv_outputs.get('portfolio_equity_curve')
             
             # 統合結果
             comprehensive_result = {
@@ -701,12 +712,80 @@ class ComprehensiveReporter:
         extracted_data: Dict[str, Any],
         performance_metrics: Dict[str, Any],
         report_dir: Path,
-        ticker: str
+        ticker: str,
+        execution_results: Dict[str, Any],
+        stock_data: pd.DataFrame
     ) -> Dict[str, str]:
-        """CSV出力生成"""
+        """
+        CSV出力生成（方針A: equity_curve再構築対応版）
+        
+        copilot-instructions.md準拠:
+        - 実データのみ使用
+        - Excel出力禁止（CSV使用）
+        """
         csv_outputs = {}
         
         try:
+            # 方針A: portfolio_equity_curve.csv生成（日次スナップショット再構築）
+            self.logger.info("[CSV_GEN] Starting portfolio equity curve reconstruction")
+            
+            # execution_resultsからbacktest_signalsを取得
+            signals_df = None
+            execution_details = []
+            
+            if 'execution_results' in execution_results:
+                exec_results_list = execution_results['execution_results']
+                if exec_results_list and len(exec_results_list) > 0:
+                    first_result = exec_results_list[0]
+                    
+                    # backtest_signals取得
+                    if 'backtest_signals' in first_result:
+                        signals_data = first_result['backtest_signals']
+                        signals_df = pd.DataFrame(signals_data)
+                        
+                        # DatetimeIndex設定（方針A要件）
+                        if 'Date' in signals_df.columns:
+                            signals_df['Date'] = pd.to_datetime(signals_df['Date'])
+                            signals_df = signals_df.set_index('Date')
+                        elif not isinstance(signals_df.index, pd.DatetimeIndex):
+                            self.logger.error("[CSV_GEN] backtest_signals does not have DatetimeIndex")
+                            signals_df = None
+                    
+                    # execution_details取得
+                    if 'execution_details' in first_result:
+                        execution_details = first_result['execution_details']
+            
+            # equity_curve再構築と出力
+            if signals_df is not None and isinstance(signals_df.index, pd.DatetimeIndex):
+                try:
+                    equity_recorder = EquityCurveRecorder()
+                    
+                    # 初期資金（performance_metricsから取得、なければデフォルト）
+                    initial_balance = performance_metrics.get('basic_metrics', {}).get('initial_capital', 1000000)
+                    
+                    # 日次スナップショット再構築
+                    equity_recorder.reconstruct_daily_snapshots(
+                        signals_df=signals_df,
+                        initial_balance=initial_balance,
+                        execution_details=execution_details
+                    )
+                    
+                    # CSV出力
+                    equity_curve_path = report_dir / 'portfolio_equity_curve.csv'
+                    equity_recorder.export_to_csv(str(equity_curve_path))
+                    csv_outputs['portfolio_equity_curve'] = str(equity_curve_path)
+                    
+                    self.logger.info(
+                        f"[CSV_GEN] Portfolio equity curve reconstructed: {len(signals_df)} days -> "
+                        f"{equity_recorder.get_snapshot_count()} snapshots"
+                    )
+                    
+                except Exception as e:
+                    self.logger.error(f"[CSV_GEN] Equity curve reconstruction failed: {e}")
+                    # copilot-instructions.md準拠: フォールバック禁止、エラーログのみ
+            else:
+                self.logger.warning("[CSV_GEN] Cannot reconstruct equity curve: signals_df unavailable or missing DatetimeIndex")
+            
             # 取引履歴CSV
             trades = extracted_data.get('trades', [])
             if trades:

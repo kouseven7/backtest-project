@@ -307,6 +307,145 @@ class EquityCurveRecorder:
             # copilot-instructions.md準拠: フォールバック禁止
             raise
     
+    def reconstruct_daily_snapshots(
+        self,
+        signals_df: pd.DataFrame,
+        initial_balance: float,
+        execution_details: List[Dict[str, Any]]
+    ) -> None:
+        """
+        バックテスト用: signalsから日次スナップショット再構築（方針A実装）
+        
+        copilot-instructions.md準拠:
+        - 実データのみ使用（フォールバック禁止）
+        - DatetimeIndex必須
+        - 取引日+非取引日の全日付スナップショット生成
+        
+        Args:
+            signals_df: バックテスト結果（DatetimeIndex必須）
+            initial_balance: 初期資金
+            execution_details: 実行詳細（取引情報）
+        
+        Raises:
+            ValueError: DatetimeIndexでない場合
+        """
+        try:
+            # DatetimeIndex検証
+            if not isinstance(signals_df.index, pd.DatetimeIndex):
+                raise ValueError(f"signals_df must have DatetimeIndex, got {type(signals_df.index)}")
+            
+            self.logger.info(f"[EQUITY_CURVE] Reconstructing daily snapshots: {len(signals_df)} days")
+            
+            # 既存スナップショットをクリア
+            self.snapshots.clear()
+            
+            # 取引情報を日付ごとに整理
+            trades_by_date = {}
+            for detail in execution_details:
+                timestamp = detail.get('timestamp')
+                if timestamp:
+                    # datetimeに変換
+                    if isinstance(timestamp, str):
+                        timestamp = pd.to_datetime(timestamp)
+                    
+                    date_str = timestamp.strftime('%Y-%m-%d')
+                    
+                    if date_str not in trades_by_date:
+                        trades_by_date[date_str] = []
+                    
+                    trades_by_date[date_str].append(detail)
+            
+            # ポートフォリオ状態を追跡
+            cash_balance = initial_balance
+            position_qty = 0
+            position_entry_price = 0.0
+            peak_value = initial_balance
+            cumulative_pnl = 0.0
+            total_trades = 0
+            
+            # 全日付をループ
+            for date_idx, row in signals_df.iterrows():
+                date_str = date_idx.strftime('%Y-%m-%d')
+                close_price = row.get('Close', 0.0)
+                
+                # その日の取引を処理
+                day_trades = trades_by_date.get(date_str, [])
+                daily_pnl = 0.0
+                
+                for trade in day_trades:
+                    action = trade.get('action')
+                    qty = trade.get('quantity', 0)
+                    price = trade.get('executed_price', 0.0)
+                    
+                    if action == 'BUY':
+                        cost = qty * price
+                        cash_balance -= cost
+                        position_qty += qty
+                        position_entry_price = price
+                        total_trades += 1
+                        
+                    elif action == 'SELL':
+                        proceeds = qty * price
+                        cash_balance += proceeds
+                        
+                        # 損益計算（実現損益）
+                        if position_entry_price > 0:
+                            pnl = (price - position_entry_price) * qty
+                            daily_pnl += pnl
+                            cumulative_pnl += pnl
+                        
+                        position_qty -= qty
+                        if position_qty <= 0:
+                            position_qty = 0
+                            position_entry_price = 0.0
+                        
+                        total_trades += 1
+                
+                # ポジション時価評価
+                if position_qty > 0 and close_price > 0:
+                    position_value = position_qty * close_price
+                else:
+                    position_value = 0.0
+                
+                # ポートフォリオ総額
+                portfolio_value = cash_balance + position_value
+                
+                # ピーク更新
+                if portfolio_value > peak_value:
+                    peak_value = portfolio_value
+                
+                # ドローダウン計算
+                drawdown_pct = (peak_value - portfolio_value) / peak_value if peak_value > 0 else 0.0
+                
+                # スナップショット記録
+                snapshot = {
+                    'date': date_idx,
+                    'portfolio_value': float(portfolio_value),
+                    'cash_balance': float(cash_balance),
+                    'position_value': float(position_value),
+                    'peak_value': float(peak_value),
+                    'drawdown_pct': float(drawdown_pct),
+                    'cumulative_pnl': float(cumulative_pnl),
+                    'daily_pnl': float(daily_pnl),
+                    'total_trades': int(total_trades),
+                    'active_positions': 1 if position_qty > 0 else 0,
+                    'risk_status': 'NORMAL',
+                    'blocked_trades': 0,
+                    'risk_action': 'NONE',
+                    'snapshot_type': 'DAILY' if not day_trades else 'TRADE'
+                }
+                
+                self.snapshots.append(snapshot)
+            
+            self.logger.info(
+                f"[EQUITY_CURVE] Reconstruction completed: {len(self.snapshots)} snapshots | "
+                f"Total trades={total_trades} | Final value={portfolio_value:,.0f}"
+            )
+            
+        except Exception as e:
+            self.logger.error(f"[EQUITY_CURVE] Reconstruction failed: {e}")
+            raise
+    
     def export_daily_portfolio_csv(self, output_path: str, ticker: str = "UNKNOWN") -> str:
         """
         日次ポートフォリオ推移CSV出力（Phase 1-A仕様）
