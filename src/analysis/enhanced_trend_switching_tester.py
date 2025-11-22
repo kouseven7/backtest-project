@@ -1041,28 +1041,28 @@ class EnhancedTrendSwitchingTester:
             
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: with pd.ExcelWriter(excel_file, engine='openpyxl') as writer:
-                # 実行サマリー
-                summary_df = pd.DataFrame([batch_results.get('execution_summary', {})])
+            # 実行サマリー
+            summary_df = pd.DataFrame([batch_results.get('execution_summary', {})])
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: summary_df.to_excel(writer, sheet_name='ExecutionSummary', index=False)
+            
+            # 詳細結果（簡略化）
+            detailed_results = batch_results.get('detailed_results', [])
+            if detailed_results:
+                results_data = []
+                for result in detailed_results:
+                    if result.get('success', False):
+                        summary = result.get('test_summary', {})
+                        results_data.append({
+                            'Symbol': result.get('symbol', ''),
+                            'Timeframe': result.get('timeframe', ''),
+                            'Days': result.get('days', 0),
+                            'Success_Rate': summary.get('success_rate', 0),
+                            'Execution_Time': summary.get('total_execution_time', 0)
+                        })
                 
-                # 詳細結果（簡略化）
-                detailed_results = batch_results.get('detailed_results', [])
-                if detailed_results:
-                    results_data = []
-                    for result in detailed_results:
-                        if result.get('success', False):
-                            summary = result.get('test_summary', {})
-                            results_data.append({
-                                'Symbol': result.get('symbol', ''),
-                                'Timeframe': result.get('timeframe', ''),
-                                'Days': result.get('days', 0),
-                                'Success_Rate': summary.get('success_rate', 0),
-                                'Execution_Time': summary.get('total_execution_time', 0)
-                            })
-                    
-                    if results_data:
-                        results_df = pd.DataFrame(results_data)
+                if results_data:
+                    results_df = pd.DataFrame(results_data)
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: results_df.to_excel(writer, sheet_name='DetailedResults', index=False)
             

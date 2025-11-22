@@ -85,6 +85,7 @@ _lazy_openpyxl = OpenpyxlLazyWrapper()
 def Workbook(*args, **kwargs):
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: return _lazy_openpyxl.Workbook(*args, **kwargs)
+    raise NotImplementedError("Excel output eliminated 2025-10-08. Use CSV/JSON/TXT instead.")
 
 def load_workbook(*args, **kwargs):
     return _lazy_openpyxl.load_workbook(*args, **kwargs)

@@ -488,10 +488,7 @@ class DSSMSUnifiedOutputEngine:
         output_files = {}
         
         try:
-            # Excel出力
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
-# ORIGINAL: excel_path = self._generate_excel_output(output_dir)
-            output_files['excel'] = excel_path
+            # Excel出力は2025-10-08以降廃止（CSV+JSON+TXTを使用）
             
             # テキストレポート出力
             text_path = self._generate_text_output(output_dir)
@@ -508,51 +505,47 @@ class DSSMSUnifiedOutputEngine:
             logger.error(f"[ERROR] 出力生成エラー: {e}")
             raise
     
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
-# ORIGINAL: def _generate_excel_output(self, output_dir: str) -> str:
-        """Excel出力の生成"""
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
-# ORIGINAL: excel_path = Path(output_dir) / f"dssms_unified_backtest_{self.output_timestamp}.xlsx"
-        
-        try:
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
-# ORIGINAL: with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
-                # サマリーシート
-                summary_df = self._create_summary_sheet()
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
-# ORIGINAL: summary_df.to_excel(writer, sheet_name='サマリー', index=False)
-                
-                # パフォーマンス指標シート
-                performance_df = self._create_performance_sheet()
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
-# ORIGINAL: performance_df.to_excel(writer, sheet_name='パフォーマンス指標', index=False)
-                
-                # 取引履歴シート
-                trade_history = self._create_trade_history_sheet()
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
-# ORIGINAL: trade_history.to_excel(writer, sheet_name='取引履歴', index=False)
-                
-                # 損益推移シート
-                pnl_history = self._create_pnl_history_sheet()
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
-# ORIGINAL: pnl_history.to_excel(writer, sheet_name='損益推移', index=True)
-                
-                # 戦略別統計シート
-                strategy_stats = self._create_strategy_stats_sheet()
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
-# ORIGINAL: strategy_stats.to_excel(writer, sheet_name='戦略別統計', index=False)
-                
-                # 切り替え分析シート
-                switch_analysis = self._create_switch_analysis_sheet()
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
-# ORIGINAL: switch_analysis.to_excel(writer, sheet_name='切替分析', index=False)
-            
-            logger.info(f"[CHART] Excel出力完了: {excel_path}")
-            return str(excel_path)
-            
-        except Exception as e:
-            logger.error(f"[ERROR] Excel生成エラー: {e}")
-            raise
+    # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08)
+    # BACKTEST_IMPACT: Trading data output affected
+    # Excel output functionality has been deprecated and commented out.
+    # The following _generate_excel_output method is no longer used.
+    # ORIGINAL CODE (commented out):
+    # def _generate_excel_output(self, output_dir: str) -> str:
+    #     """Excel出力の生成"""
+    #     excel_path = Path(output_dir) / f"dssms_unified_backtest_{self.output_timestamp}.xlsx"
+    #     
+    #     try:
+    #         with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
+    #             # サマリーシート
+    #             summary_df = self._create_summary_sheet()
+    #             summary_df.to_excel(writer, sheet_name='サマリー', index=False)
+    #             
+    #             # パフォーマンス指標シート
+    #             performance_df = self._create_performance_sheet()
+    #             performance_df.to_excel(writer, sheet_name='パフォーマンス指標', index=False)
+    #             
+    #             # 取引履歴シート
+    #             trade_history = self._create_trade_history_sheet()
+    #             trade_history.to_excel(writer, sheet_name='取引履歴', index=False)
+    #             
+    #             # 損益推移シート
+    #             pnl_history = self._create_pnl_history_sheet()
+    #             pnl_history.to_excel(writer, sheet_name='損益推移', index=True)
+    #             
+    #             # 戦略別統計シート
+    #             strategy_stats = self._create_strategy_stats_sheet()
+    #             strategy_stats.to_excel(writer, sheet_name='戦略別統計', index=False)
+    #             
+    #             # 切り替え分析シート
+    #             switch_analysis = self._create_switch_analysis_sheet()
+    #             switch_analysis.to_excel(writer, sheet_name='切替分析', index=False)
+    #         
+    #         logger.info(f"[CHART] Excel出力完了: {excel_path}")
+    #         return str(excel_path)
+    #         
+    #     except Exception as e:
+    #         logger.error(f"[ERROR] Excel生成エラー: {e}")
+    #         raise
     
     def _create_summary_sheet(self) -> pd.DataFrame:
         """サマリーシートの作成"""

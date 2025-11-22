@@ -266,6 +266,18 @@ class DSSMSBacktester:
         # 決定論的モード設定
         self._setup_deterministic_mode()
         
+        # Problem 10 Phase 1: initial_capital属性を最優先で初期化（328行目での使用前に設定）
+        try:
+            initial_capital_config = self.config.get('initial_capital', 1000000)
+            if not isinstance(initial_capital_config, (int, float)) or initial_capital_config <= 0:
+                self.logger.warning(f"無効なinitial_capital値: {initial_capital_config}, デフォルト値を使用")
+                self.initial_capital = 1000000.0
+            else:
+                self.initial_capital = float(initial_capital_config)
+        except (ValueError, TypeError) as e:
+            self.logger.error(f"initial_capital初期化エラー: {e}, デフォルト値を使用")
+            self.initial_capital = 1000000.0
+        
         # 既存DSSMSコンポーネントの初期化
         try:
             if HierarchicalRankingSystem:
@@ -383,19 +395,6 @@ class DSSMSBacktester:
         except ImportError:
             self.enhanced_reporter = None
             self.logger.warning("強化レポート未使用")
-        
-        # Problem 10 Phase 1: Critical attributes安全初期化
-        # 初期設定（initial_capitalの安全な初期化）
-        try:
-            initial_capital_config = self.config.get('initial_capital', 1000000)
-            if not isinstance(initial_capital_config, (int, float)) or initial_capital_config <= 0:
-                self.logger.warning(f"無効なinitial_capital値: {initial_capital_config}, デフォルト値を使用")
-                self.initial_capital = 1000000.0
-            else:
-                self.initial_capital = float(initial_capital_config)
-        except (ValueError, TypeError) as e:
-            self.logger.error(f"initial_capital初期化エラー: {e}, デフォルト値を使用")
-            self.initial_capital = 1000000.0
         
         # daily_returns安全初期化（performance_historyで既に初期化済みだが検証）
         if 'daily_returns' not in self.performance_history:
@@ -594,6 +593,32 @@ class DSSMSBacktester:
                     self.logger.warning(f"日次処理エラー {current_date}: {e}")
                     current_date += timedelta(days=1)
                     continue
+            
+            # [調査用] performance_history['portfolio_value']の詳細確認
+            pf_values = self.performance_history.get('portfolio_value', [])
+            pf_timestamps = self.performance_history.get('timestamps', [])
+            self.logger.critical(f"[INVESTIGATION] performance_history['portfolio_value']配列長: {len(pf_values)}")
+            self.logger.critical(f"[INVESTIGATION] performance_history['timestamps']配列長: {len(pf_timestamps)}")
+            
+            # 最終日（2023-12-31）に対応するportfolio_value値を全て抽出
+            final_date = end_date
+            final_date_values = []
+            for idx, ts in enumerate(pf_timestamps):
+                if ts == final_date:
+                    if idx < len(pf_values):
+                        final_date_values.append((idx, pf_values[idx]))
+            
+            self.logger.critical(f"[INVESTIGATION] 最終日（{final_date}）のportfolio_value記録:")
+            for idx, val in final_date_values:
+                self.logger.critical(f"[INVESTIGATION]   インデックス{idx}: {val:,.2f}円")
+            
+            # 最終日以降のportfolio_value値（timestamps欠落）
+            self.logger.critical(f"[INVESTIGATION] timestamps欠落のportfolio_value記録:")
+            for idx in range(len(pf_timestamps), len(pf_values)):
+                self.logger.critical(f"[INVESTIGATION]   インデックス{idx}: {pf_values[idx]:,.2f}円")
+            
+            self.logger.critical(f"[INVESTIGATION] portfolio_value変数（600行ログ出力値）: {portfolio_value:,.2f}円")
+            self.logger.critical(f"[INVESTIGATION] 開始日: {start_date}, 終了日: {end_date}")
             
             # 最終結果計算
             simulation_result = self._finalize_simulation_result(start_date, end_date, portfolio_value)
@@ -990,39 +1015,45 @@ class DSSMSBacktester:
             use_deterministic_scoring = False  # [TOOL] 決定論的計算を完全無効化
             ranking_scores = {}  # 初期化
             
-            self.logger.info("[TOOL] 決定論的計算除去: ComprehensiveScoringEngine実データ分析開始")
+            self.logger.info("[TOOL] ComprehensiveScoringEngine実データスコア計算開始")
             
-            # ComprehensiveScoringEngineによる実データスコア計算
-            if self.scoring_engine:
+            # ComprehensiveScoringEngineによる実データスコア計算（フォールバック禁止）
+            if self.ranking_system:
                 ranking_scores = {}
                 for symbol in symbols:
                     try:
-                        # 実データベースの動的スコア計算（引数はsymbolのみ）
-                        real_score = self.scoring_engine.calculate_composite_score(symbol)
-                        if not pd.isna(real_score):
-                            ranking_scores[symbol] = float(real_score)
-                            self.logger.debug(f"実データスコア {symbol}: {real_score:.4f}")
-                        else:
-                            # スコアがNoneの場合のフォールバック
-                            fallback_score = self._calculate_market_based_fallback_score(symbol, date)
-                            ranking_scores[symbol] = fallback_score
-                            self.logger.debug(f"フォールバック使用 {symbol}: {fallback_score:.4f}")
+                        # HierarchicalRankingSystemによる実データベースの動的スコア計算
+                        score_obj = self.ranking_system._calculate_comprehensive_score(symbol)
+                        
+                        # Noneチェック（スコア計算失敗）
+                        if score_obj is None:
+                            self.logger.warning(f"[INFO] スコア計算失敗 {symbol} - スキップ")
+                            continue
+                        
+                        # total_scoreを取得（float値）
+                        real_score = score_obj.total_score
+                        
+                        # 無効な値もスキップ
+                        if pd.isna(real_score):
+                            self.logger.warning(f"[INFO] 無効なスコア {symbol}: {real_score} - スキップ")
+                            continue
+                        
+                        # 有効なスコアのみ記録
+                        ranking_scores[symbol] = float(real_score)
+                        self.logger.debug(f"実データスコア {symbol}: {real_score:.4f}")
                             
                     except Exception as e:
-                        self.logger.warning(f"実データスコア計算失敗 {symbol}: {e}")
-                        # フォールバック: 市場データ基準の動的スコア
-                        fallback_score = self._calculate_market_based_fallback_score(symbol, date)
-                        ranking_scores[symbol] = fallback_score
+                        self.logger.warning(f"[INFO] スコア計算エラー {symbol}: {e} - スキップ")
+                        continue
                 
-                self.logger.info(f"実データスコア計算完了: {len(ranking_scores)}銘柄, 範囲={min(ranking_scores.values()):.3f}-{max(ranking_scores.values()):.3f}")
+                if ranking_scores:
+                    self.logger.info(f"実データスコア計算完了: {len(ranking_scores)}銘柄, 範囲={min(ranking_scores.values()):.3f}-{max(ranking_scores.values()):.3f}")
+                else:
+                    self.logger.error("[CRITICAL] 全銘柄でスコア計算失敗 - HierarchicalRankingSystemの実装を確認してください")
             
             else:
-                self.logger.warning("ComprehensiveScoringEngine未使用: 市場データベース動的スコア使用")
-                # ComprehensiveScoringEngine未使用時の市場データベース動的スコア
+                self.logger.error("[CRITICAL] HierarchicalRankingSystem未初期化 - ランキング計算不可")
                 ranking_scores = {}
-                for symbol in symbols:
-                    market_score = self._calculate_market_based_fallback_score(symbol, date)
-                    ranking_scores[symbol] = market_score
             
             # 上位銘柄選択（変更を最小限に）
             sorted_symbols = sorted(ranking_scores.items(), key=lambda x: x[1], reverse=True)
@@ -2582,6 +2613,10 @@ class DSSMSBacktester:
             
             # 実際のperformance_historyからポートフォリオ価値を取得 (Problem 6対応)
             if self.portfolio_manager:
+                # [調査用] 生データ長さを記録
+                raw_portfolio_values = self.performance_history.get('portfolio_value', [])
+                self.logger.critical(f"[INVESTIGATION] 生performance_history['portfolio_value']配列長: {len(raw_portfolio_values)}")
+                
                 # ポートフォリオマネージャ経由での統一データ取得
                 snapshot = self.portfolio_manager.get_portfolio_values(
                     performance_history=self.performance_history,
@@ -2593,6 +2628,7 @@ class DSSMSBacktester:
                 daily_returns = self.performance_history.get('daily_returns', [])
                 
                 self.logger.info(f"ポートフォリオマネージャ経由データ取得: {len(portfolio_values)}値")
+                self.logger.critical(f"[INVESTIGATION] portfolio_manager変換後の配列長: {len(portfolio_values)}")
             else:
                 # フォールバック: 従来の直接アクセス
                 portfolio_values = self.performance_history.get('portfolio_value', [])
@@ -3993,32 +4029,42 @@ class DSSMSBacktester:
             symbols = partial_result['symbols']
             base_structure['total_symbols'] = len(symbols)
             
-            # ComprehensiveScoringEngine による再計算
-            if symbols and hasattr(self, 'scoring_engine') and self.scoring_engine:
+            # HierarchicalRankingSystem による再計算
+            if symbols and hasattr(self, 'ranking_system') and self.ranking_system:
                 scores = {}
                 for symbol in symbols:
                     try:
-                        score = self.scoring_engine.calculate_composite_score(symbol)
-                        if not pd.isna(score):
-                            scores[symbol] = float(score)
+                        score_obj = self.ranking_system._calculate_comprehensive_score(symbol)
+                        # Noneチェック
+                        if score_obj is None:
+                            self.logger.warning(f"[INFO] 修復時スコア計算失敗 {symbol} - スキップ")
+                            continue
+                        # total_scoreを取得
+                        score = score_obj.total_score
+                        # 無効な値もスキップ
+                        if pd.isna(score):
+                            self.logger.warning(f"[INFO] 修復時無効なスコア {symbol}: {score} - スキップ")
+                            continue
+                        # 有効なスコアのみ記録
+                        scores[symbol] = float(score)
                     except Exception as e:
-                        # フォールバックスコア
-                        scores[symbol] = 0.5
-                        self.logger.debug(f"修復時スコア計算失敗 {symbol}: {e}")
+                        self.logger.warning(f"[INFO] 修復時スコア計算エラー {symbol}: {e} - スキップ")
+                        continue
                 
-                base_structure['rankings'] = scores
-                
-                # top_symbol の決定
                 if scores:
+                    base_structure['rankings'] = scores
+                    # top_symbol の決定
                     top_item = max(scores.items(), key=lambda x: x[1])
                     base_structure['top_symbol'] = top_item[0]
                     base_structure['top_score'] = top_item[1]
+                else:
+                    self.logger.error("[CRITICAL] 修復時に全銘柄でスコア計算失敗")
+                    # 修復失敗時は空の構造を返す
+                    base_structure['rankings'] = {}
             else:
-                # ComprehensiveScoringEngine 利用不可時
-                if symbols:
-                    base_structure['top_symbol'] = symbols[0]
-                    base_structure['top_score'] = 0.5
-                    base_structure['rankings'] = {symbol: 0.5 for symbol in symbols}
+                # ComprehensiveScoringEngine 利用不可時は構造修復不可
+                self.logger.error("[CRITICAL] ComprehensiveScoringEngine未初期化 - 構造修復不可")
+                base_structure['rankings'] = {}
         
         # 既存のrankingsデータを利用
         elif 'rankings' in partial_result and partial_result['rankings']:
@@ -4031,71 +4077,74 @@ class DSSMSBacktester:
                 base_structure['top_symbol'] = top_item[0]
                 base_structure['top_score'] = top_item[1]
         
-        self.logger.info(f"[TOOL] 構造修復完了: top_symbol={base_structure['top_symbol']}, total_symbols={base_structure['total_symbols']}")
+        self.logger.info(f"[TOOL] 構造修復完了: top_symbol={base_structure.get('top_symbol', 'N/A')}, total_symbols={base_structure['total_symbols']}")
         return base_structure
 
     def _emergency_ranking_fallback(self, date: datetime, symbols: List[str], error_msg: str = "") -> Dict[str, Any]:
         """
-        Phase 2: 全診断失敗時の緊急フォールバック
-        ComprehensiveScoringEngine 直接利用による最低限ランキング生成
+        Phase 2: 全診断失敗時の緊急エラーレポート（フォールバック禁止対応）
+        ComprehensiveScoringEngine の実装不備を明示的に報告
         """
-        self.logger.error(f"[ALERT] 緊急フォールバック実行: {error_msg}")
+        self.logger.error(f"[CRITICAL] ランキング計算完全失敗: {error_msg}")
+        self.logger.error("[CRITICAL] calculate_scoresメソッドの実装を確認してください")
+        self.logger.error("[POLICY] フォールバック禁止ポリシーに準拠 - ランダム値/ダミーデータは使用しません")
         
         emergency_result = {
             'date': date,
             'rankings': {},
             'top_symbol': None,
             'top_score': 0.0,
-            'total_symbols': len(symbols),
-            'data_source': 'emergency_fallback',
+            'total_symbols': 0,
+            'data_source': 'emergency_error_report',
             'diagnostic_info': {
                 'emergency_mode': True,
                 'error_message': error_msg,
-                'timestamp': datetime.now().isoformat()
+                'timestamp': datetime.now().isoformat(),
+                'policy_compliance': 'フォールバック禁止ポリシー準拠',
+                'action_required': 'calculate_scoresメソッドの実装修正が必要'
             }
         }
         
         try:
-            # ComprehensiveScoringEngine による直接スコア計算
-            if hasattr(self, 'scoring_engine') and self.scoring_engine:
+            # HierarchicalRankingSystem による直接スコア計算
+            if hasattr(self, 'ranking_system') and self.ranking_system:
                 scores = {}
                 for symbol in symbols:
                     try:
-                        score = self.scoring_engine.calculate_composite_score(symbol)
-                        if not pd.isna(score):
-                            scores[symbol] = float(score)
-                        else:
-                            scores[symbol] = 0.5  # フォールバック
+                        score_obj = self.ranking_system._calculate_comprehensive_score(symbol)
+                        # Noneチェック
+                        if score_obj is None:
+                            self.logger.warning(f"[INFO] 緊急時スコア計算失敗 {symbol} - スキップ")
+                            continue
+                        # total_scoreを取得
+                        score = score_obj.total_score
+                        # 無効な値もスキップ
+                        if pd.isna(score):
+                            self.logger.warning(f"[INFO] 緊急時無効なスコア {symbol}: {score} - スキップ")
+                            continue
+                        # 有効なスコアのみ記録
+                        scores[symbol] = float(score)
                     except Exception as e:
-                        scores[symbol] = 0.5  # フォールバック
-                        self.logger.debug(f"緊急フォールバック中スコア計算失敗 {symbol}: {e}")
-                
-                emergency_result['rankings'] = scores
+                        self.logger.warning(f"[INFO] 緊急時スコア計算エラー {symbol}: {e} - スキップ")
+                        continue
                 
                 if scores:
+                    emergency_result['rankings'] = scores
+                    emergency_result['total_symbols'] = len(scores)
                     top_item = max(scores.items(), key=lambda x: x[1])
                     emergency_result['top_symbol'] = top_item[0]
                     emergency_result['top_score'] = top_item[1]
-                    
-                self.logger.info(f"[ALERT] 緊急フォールバック成功: top_symbol={emergency_result['top_symbol']}")
+                    self.logger.warning(f"[ALERT] 緊急処理で{len(scores)}銘柄のスコア取得成功: top_symbol={emergency_result['top_symbol']}")
+                else:
+                    self.logger.error("[CRITICAL] 緊急処理でも全銘柄でスコア計算失敗")
                 
             else:
-                # ComprehensiveScoringEngine 利用不可時: ランダム選択
-                if symbols:
-                    import random
-                    emergency_result['top_symbol'] = random.choice(symbols)
-                    emergency_result['top_score'] = 0.5
-                    emergency_result['rankings'] = {symbol: 0.5 for symbol in symbols}
-                    emergency_result['diagnostic_info']['random_selection'] = True
-                    self.logger.warning("[ALERT] 緊急フォールバック: ランダム選択実行")
+                # ComprehensiveScoringEngine 利用不可
+                self.logger.error("[CRITICAL] ComprehensiveScoringEngine未初期化 - 緊急処理も不可")
                 
         except Exception as e:
-            self.logger.error(f"[ALERT] 緊急フォールバック失敗: {str(e)}")
-            # 最後の手段: 最小構造
-            if symbols:
-                emergency_result['top_symbol'] = symbols[0]
-                emergency_result['top_score'] = 0.5
-                emergency_result['rankings'] = {symbols[0]: 0.5}
+            self.logger.error(f"[CRITICAL] 緊急処理失敗: {str(e)}")
+        
         
         return emergency_result
 

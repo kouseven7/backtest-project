@@ -165,10 +165,16 @@ class PortfolioDataManager:
         raw_values = performance_history.get('portfolio_value', [])
         raw_timestamps = performance_history.get('timestamps', [])
         
+        # [調査用] 生データ長さ記録
+        self.logger.critical(f"[INVESTIGATION] get_portfolio_values: raw_values長={len(raw_values)}, raw_timestamps長={len(raw_timestamps)}")
+        
         # データ検証
         validated_values, validated_timestamps = self._validate_portfolio_data(
             raw_values, raw_timestamps
         )
+        
+        # [調査用] 検証後の長さ記録
+        self.logger.critical(f"[INVESTIGATION] _validate_portfolio_data後: validated_values長={len(validated_values)}, validated_timestamps長={len(validated_timestamps)}")
         
         # 日付正規化 (pd.to_datetime削減ポイント)
         normalized_timestamps = self.date_processor.normalize_date_list(validated_timestamps)
