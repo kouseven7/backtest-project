@@ -559,6 +559,12 @@ class DSSMSBacktester:
             
             while current_date <= end_date:
                 try:
+                    # [修正1] 営業日チェック
+                    if not self._is_trading_day(current_date):
+                        self.logger.debug(f"非営業日をスキップ: {current_date.strftime('%Y-%m-%d')}")
+                        current_date += timedelta(days=1)
+                        continue
+                    
                     # 1. 日次市場状況評価
                     market_condition = self._evaluate_market_condition(current_date)
                     
@@ -952,11 +958,71 @@ class DSSMSBacktester:
 
     # ヘルパーメソッド群
     def _initialize_simulation(self, start_date: datetime, symbol_universe: List[str]):
-        """シミュレーション初期化"""
+        """
+        シミュレーション初期化 + market_data_index構築
+        
+        Args:
+            start_date: バックテスト開始日
+            symbol_universe: 対象銘柄リスト
+            
+        Raises:
+            ValueError: 市場データ取得失敗時
+        """
         self.switch_history.clear()
         self.portfolio_history.clear()
         for key in self.performance_history:
             self.performance_history[key].clear()
+        
+        # market_data_index構築（全銘柄の営業日を統合）
+        try:
+            self.logger.info("市場営業日カレンダー構築中...")
+            
+            # サンプル銘柄からデータ取得（代表銘柄1つで営業日を取得）
+            sample_symbol = symbol_universe[0] if symbol_universe else "7203"
+            
+            # バックテスト期間より広めにデータ取得（前後1ヶ月の余裕）
+            data_start = (start_date - timedelta(days=30)).strftime('%Y-%m-%d')
+            data_end = (start_date + timedelta(days=400)).strftime('%Y-%m-%d')
+            
+            self.logger.info(f"営業日データ取得: {sample_symbol} ({data_start} - {data_end})")
+            
+            sample_data = fetch_stock_data(sample_symbol, data_start, data_end)
+            
+            if sample_data is not None and not sample_data.empty:
+                # 日付のみを抽出（時刻情報を削除）
+                trading_days_set = set(sample_data.index.date)
+                
+                # DatetimeIndexに変換（時刻は00:00:00）
+                self.market_data_index = pd.DatetimeIndex([
+                    datetime.combine(d, datetime.min.time()) 
+                    for d in sorted(trading_days_set)
+                ])
+                
+                self.logger.info(
+                    f"市場営業日カレンダー構築完了: {len(self.market_data_index)}営業日 "
+                    f"({self.market_data_index[0].strftime('%Y-%m-%d')} - "
+                    f"{self.market_data_index[-1].strftime('%Y-%m-%d')})"
+                )
+                
+                # 営業日サンプル表示（最初の5日と最後の5日）
+                if len(self.market_data_index) >= 10:
+                    first_days = [d.strftime('%Y-%m-%d') for d in self.market_data_index[:5]]
+                    last_days = [d.strftime('%Y-%m-%d') for d in self.market_data_index[-5:]]
+                    self.logger.debug(f"営業日（最初5日）: {', '.join(first_days)}")
+                    self.logger.debug(f"営業日（最後5日）: {', '.join(last_days)}")
+                
+            else:
+                error_msg = (
+                    f"市場データ取得失敗: {sample_symbol}のデータが空です。"
+                    f"営業日カレンダーを構築できません。"
+                )
+                self.logger.error(error_msg)
+                raise ValueError(error_msg)
+                
+        except Exception as e:
+            error_msg = f"market_data_index構築エラー: {e}"
+            self.logger.error(error_msg)
+            raise ValueError(error_msg) from e
         
         self.logger.info(f"シミュレーション初期化完了: {len(symbol_universe)} 銘柄")
 
@@ -1718,16 +1784,14 @@ class DSSMSBacktester:
             # 2. 連続配列への格納  
             self.portfolio_values_raw.append(value)
             
-            # 3. performance_historyとの同期
-            if 'portfolio_value' not in self.performance_history:
-                self.performance_history['portfolio_value'] = []
-            self.performance_history['portfolio_value'].append(value)
+            # [修正3] performance_historyへの追加は_record_daily_stateで一元化
+            # 削除: self.performance_history['portfolio_value'].append(value)
             
             # 4. サイズ制限（メモリ管理）
             max_history = self.config.get('max_portfolio_history', 10000)
             if len(self.portfolio_values_raw) > max_history:
                 self.portfolio_values_raw = self.portfolio_values_raw[-max_history:]
-                self.performance_history['portfolio_value'] = self.performance_history['portfolio_value'][-max_history:]
+                # [修正3] performance_historyの切り詰めは削除（_record_daily_stateで管理）
                 
             self.logger.debug(f"Portfolio値同期完了: {date} = {value:.2f}")
             
@@ -1924,10 +1988,10 @@ class DSSMSBacktester:
             # ポートフォリオ価値更新（損益とコストを反映）
             new_portfolio_value = portfolio_value + profit_loss - switch_cost
             
-            # パフォーマンス履歴更新
-            self.performance_history['portfolio_value'].append(float(new_portfolio_value))
-            self.performance_history['positions'].append(target_symbol)
-            self.performance_history['timestamps'].append(date)
+            # [修正2] performance_history記録は_record_daily_stateで実施
+            # self.performance_history['portfolio_value'].append(float(new_portfolio_value))
+            # self.performance_history['positions'].append(target_symbol)
+            # self.performance_history['timestamps'].append(date)
             
             # 日次リターン計算
             if len(self.performance_history['portfolio_value']) > 1:
@@ -1936,7 +2000,8 @@ class DSSMSBacktester:
             else:
                 daily_return = 0.0
             
-            self.performance_history['daily_returns'].append(float(daily_return))
+            # [修正2] daily_returns記録も_record_daily_stateで実施
+            # self.performance_history['daily_returns'].append(float(daily_return))
             
             self.logger.info(f"切替実行: {current_position} -> {target_symbol}, "
                            f"損益: {profit_loss:+,.0f}円, コスト: {switch_cost:,.0f}円, "
@@ -1963,8 +2028,7 @@ class DSSMSBacktester:
         """修正版: ポートフォリオ価値更新"""
         try:
             if not position or position == "CASH":
-                # Problem 6 Phase 1: portfolio_values同期
-                self._sync_portfolio_values(date, current_value)
+                # [修正4] 記録は_record_daily_stateで実施
                 return current_value
             
             # 現実的な日次リターン生成（年率10-15%程度を想定）
@@ -1976,8 +2040,7 @@ class DSSMSBacktester:
             # 最小値チェック（完全に0にならないようにする）
             new_value = max(new_value, current_value * 0.8)  # 最大でも20%の日次下落まで
             
-            # Problem 6 Phase 1: portfolio_values同期
-            self._sync_portfolio_values(date, new_value)
+            # [修正4] 記録は_record_daily_stateで実施
             
             self.logger.debug(f"価値更新: {position} {daily_return:+.4f} "
                             f"{current_value:,.0f} -> {new_value:,.0f}")
@@ -1988,8 +2051,7 @@ class DSSMSBacktester:
             self.logger.warning(f"価値更新エラー {date}: {e}")
             # エラー時は小幅な変動のみ
             fallback_value = current_value * (1 + np.random.uniform(-0.01, 0.01))
-            # Problem 6 Phase 1: エラー時もportfolio_values同期
-            self._sync_portfolio_values(date, fallback_value)
+            # [修正4] 記録は_record_daily_stateで実施
             return fallback_value
 
     def _record_daily_state(self, date: datetime, position: Optional[str], 
@@ -1999,6 +2061,15 @@ class DSSMSBacktester:
             self.performance_history['portfolio_value'].append(portfolio_value)
             self.performance_history['positions'].append(position)
             self.performance_history['timestamps'].append(date)
+            
+            # [修正6] daily_returns計算と追加
+            if len(self.performance_history['portfolio_value']) > 1:
+                prev_value = self.performance_history['portfolio_value'][-2]
+                daily_return = (portfolio_value - prev_value) / prev_value if prev_value > 0 else 0.0
+            else:
+                daily_return = 0.0
+            
+            self.performance_history['daily_returns'].append(float(daily_return))
             
             # ポートフォリオ履歴記録
             daily_record = {
@@ -2011,6 +2082,48 @@ class DSSMSBacktester:
             
         except Exception as e:
             self.logger.warning(f"日次状態記録エラー {date}: {e}")
+
+    def _is_trading_day(self, date: datetime) -> bool:
+        """
+        営業日判定（祝日考慮・フォールバック削除版）
+        
+        yfinanceデータのindexに基づいて営業日を判定します。
+        土日だけでなく祝日も自動的に除外されます。
+        
+        Args:
+            date: 判定対象日
+            
+        Returns:
+            bool: 営業日の場合True
+            
+        Raises:
+            ValueError: market_data_indexが未設定の場合
+            
+        Note:
+            _initialize_simulationメソッドで事前にmarket_data_indexを
+            構築する必要があります。
+        """
+        # market_data_index必須チェック
+        if not hasattr(self, 'market_data_index') or self.market_data_index is None:
+            error_msg = (
+                "market_data_indexが未設定です。"
+                "_initialize_simulationを先に実行してください。"
+            )
+            self.logger.error(error_msg)
+            raise ValueError(error_msg)
+        
+        # yfinanceデータのindexに存在するか確認（祝日自動除外）
+        is_trading = date in self.market_data_index
+        
+        if not is_trading:
+            # デバッグ用: 非営業日の理由を判定
+            if date.weekday() >= 5:
+                reason = "週末"
+            else:
+                reason = "祝日または休場日"
+            self.logger.debug(f"非営業日: {date.strftime('%Y-%m-%d')} ({reason})")
+        
+        return is_trading
 
     def _finalize_simulation_result(self, start_date: datetime, end_date: datetime, 
                                   final_value: float) -> Dict[str, Any]:
@@ -2609,7 +2722,16 @@ class DSSMSBacktester:
             
             # DSSMSの実際のperformance_historyからデータを取得
             portfolio_data = []
-            start_date = datetime(2023, 1, 1)  # 強制的に2023年にする
+            
+            # timestamps配列から実際のstart_dateを取得（フォールバック削除版）
+            timestamps_array = self.performance_history.get('timestamps', [])
+            if not timestamps_array or len(timestamps_array) == 0:
+                error_msg = "timestamps配列が空です。バックテスト実行に異常があります。"
+                self.logger.error(error_msg)
+                raise ValueError(error_msg)
+            
+            start_date = timestamps_array[0]
+            self.logger.info(f"バックテスト開始日（timestamps使用）: {start_date.strftime('%Y-%m-%d')}")
             
             # 実際のperformance_historyからポートフォリオ価値を取得 (Problem 6対応)
             if self.portfolio_manager:
@@ -2640,9 +2762,16 @@ class DSSMSBacktester:
             self.logger.info(f"DSSMSデータ取得: portfolio_values={len(portfolio_values)}, timestamps={len(timestamps)}")
             
             if portfolio_values and len(portfolio_values) > 0:
+                # データ整合性チェック（フォールバック削除版）
+                if len(timestamps) != len(portfolio_values):
+                    error_msg = f"データ不整合: portfolio_values[{len(portfolio_values)}件] != timestamps[{len(timestamps)}件]"
+                    self.logger.error(error_msg)
+                    raise ValueError(error_msg)
+                
                 # 実際のデータを使用
                 for i, value in enumerate(portfolio_values):
-                    current_date = start_date + timedelta(days=i)
+                    # timestamps配列から実際の日付を取得
+                    current_date = timestamps[i]
                     val = float(value)
                     
                     # 日次リターン計算
@@ -2664,45 +2793,15 @@ class DSSMSBacktester:
                         'cumulative_return': cumulative_return
                     })
                     
+                # end_date取得（timestamps配列の末尾）
+                end_date = timestamps[-1]
                 self.logger.info(f"実際のDSSMSデータ使用: {len(portfolio_data)}日分")
+                self.logger.info(f"バックテスト終了日（timestamps使用）: {end_date.strftime('%Y-%m-%d')}")
             else:
-                # フォールバック: simulation_resultからデータを探す
-                self.logger.warning("performance_historyが空のため、simulation_resultを確認")
-                if simulation_result and 'final_portfolio_value' in simulation_result:
-                    final_value = simulation_result['final_portfolio_value']
-                    # 線形補間で日々のデータを作成
-                    for i in range(365):
-                        current_date = start_date + timedelta(days=i)
-                        progress = i / 364  # 0から1へ
-                        val = self.initial_capital + (final_value - self.initial_capital) * progress
-                        
-                        daily_return = 0.0
-                        if i > 0:
-                            prev_val = self.initial_capital + (final_value - self.initial_capital) * ((i-1) / 364)
-                            if prev_val > 0:
-                                daily_return = (val / prev_val - 1) * 100
-                        
-                        cumulative_return = (val / self.initial_capital - 1) * 100
-                        
-                        portfolio_data.append({
-                            'date': current_date,
-                            'value': val,
-                            'daily_return': daily_return,
-                            'cumulative_return': cumulative_return
-                        })
-                    self.logger.info(f"simulation_resultからデータ構築: 最終価値{final_value}")
-                else:
-                    # 最後の手段: ダミーデータ
-                    self.logger.warning("ポートフォリオデータがないため、ダミーデータを作成")
-                    for i in range(365):
-                        current_date = start_date + timedelta(days=i)
-                        val = self.initial_capital * (1 + np.random.uniform(-0.02, 0.02))
-                        portfolio_data.append({
-                            'date': current_date,
-                            'value': val,
-                            'daily_return': np.random.uniform(-2, 2),
-                            'cumulative_return': (val / self.initial_capital - 1) * 100
-                        })
+                # performance_historyが空は異常事態
+                error_msg = "portfolio_valuesが空です。バックテスト実行に異常があります。"
+                self.logger.error(error_msg)
+                raise ValueError(error_msg)
             
             import pandas as pd
             portfolio_df = pd.DataFrame(portfolio_data)
