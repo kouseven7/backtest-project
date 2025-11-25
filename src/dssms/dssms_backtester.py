@@ -89,7 +89,8 @@ except ImportError:
 # 既存システムインポート
 from config.logger_config import setup_logger
 from config.risk_management import RiskManagement
-from src.dssms.dssms_excel_exporter import DSSMSExcelExporter  # 統合エクスポーター
+# Excel出力は2025-10-08以降廃止（copilot-instructions.md準拠）
+# from src.dssms.dssms_excel_exporter import DSSMSExcelExporter
 from data_fetcher import fetch_stock_data
 from trade_simulation import simulate_trades
 
@@ -1429,30 +1430,27 @@ class DSSMSBacktester:
         """
         市場スコア計算フォールバック関数
         
-        TODO(tag:phase2, rationale:eliminate after advanced ranking integration)
+        copilot-instructions.md準拠: ランダム値生成削除
+        変更日: 2025-11-25
+        変更内容: randomモジュールを使用したランダム値生成を削除し、デフォルトスコア0.0を返却
         
         Args:
             symbol: 銘柄コード
             date: 対象日付
             
         Returns:
-            float: 0.05-0.95範囲のフォールバックスコア
+            float: デフォルトスコア0.0（実データ取得失敗時）
         """
-        import random
-        # 決定論的シードで再現性確保
-        random.seed(hash(f"{symbol}_{date.strftime('%Y-%m-%d')}"))
-        
-        # 拡張範囲でのフォールバックスコア生成
-        base_score = 0.05 + random.random() * 0.90  # 0.05-0.95範囲
-        
-        # 日付ベースの調整（市場の季節性を模倣）
-        seasonal_adjustment = (date.month % 12) / 120  # 0-0.1範囲
-        final_score = max(0.05, min(0.95, base_score + seasonal_adjustment))
-        
+        # copilot-instructions.md準拠: ランダム値生成は「実データと乖離する結果」を生成するため禁止
+        # 実データ取得失敗時はデフォルトスコア0.0を返す
         self.logger.warning(
-            f"FALLBACK: 市場スコア計算フォールバック使用 {symbol} @ {date.strftime('%Y-%m-%d')}: {final_score:.3f}"
+            f"FALLBACK: 市場スコア計算フォールバック使用 {symbol} @ {date.strftime('%Y-%m-%d')}: デフォルトスコア0.0を返却"
         )
-        return final_score
+        # フォールバック実行時のログ必須（copilot-instructions.md準拠）
+        self.logger.critical(
+            f"警告: {symbol}の市場データが取得できないため、スコア0.0を使用します。ランキングに影響する可能性があります。"
+        )
+        return 0.0
 
     def _calculate_market_based_fallback_score(self, symbol: str, date: datetime) -> float:
         """
@@ -2597,59 +2595,9 @@ class DSSMSBacktester:
             self.logger.warning(f"推奨事項生成エラー: {e}")
             return "推奨事項生成中にエラーが発生しました。"
 
-    def export_results_to_excel(self, simulation_result: Dict[str, Any], 
-                              performance_metrics: DSSMSPerformanceMetrics,
-                              comparison_result: Dict[str, Any],
-                              output_dir: str = None) -> str:
-        """
-        結果をExcelファイルに出力
-        
-        Args:
-            simulation_result: シミュレーション結果
-            performance_metrics: パフォーマンス指標
-            comparison_result: 比較分析結果
-            output_dir: 出力ディレクトリ
-            
-        Returns:
-            str: 出力ファイルパス
-        """
-        try:
-            if not self.config.get('output_excel', True):
-                self.logger.info("Excel出力が無効化されています")
-                return ""
-            
-            self.logger.info("DSSMS専用Excel出力システムV2での出力開始")
-            
-            # 出力ディレクトリ設定
-            if output_dir is None:
-                output_dir = "backtest_results/dssms_results"
-            
-            # バックテスト結果データを準備
-            backtest_result = self._prepare_dssms_result_data()
-            
-            # 統合DSSMS Excel Exporterを使用
-            exporter = DSSMSExcelExporter(initial_capital=self.initial_capital)
-            output_path = exporter.export_dssms_results(backtest_result, None)
-            
-            if output_path:
-                self.logger.info(f"DSSMS結果を統合Excelエクスポーターで出力しました: {output_path}")
-                self.logger.info(f"銘柄切り替え回数: {len(self.switch_history)}回")
-                self.logger.info(f"ポートフォリオ履歴: {len(self.portfolio_history)}日分")
-                return output_path
-            else:
-                self.logger.error("統合Excelエクスポーター出力に失敗しました")
-                return ""
-                
-        except Exception as e:
-            self.logger.error(f"Excel出力エラー: {e}")
-            import traceback
-            self.logger.error(traceback.format_exc())
-                
-        except Exception as e:
-            self.logger.error(f"Excel V2出力エラー: {e}")
-            import traceback
-            self.logger.error(traceback.format_exc())
-            return ""
+    # Excel出力機能は2025-10-08以降廃止（copilot-instructions.md準拠）
+    # 統一出力エンジン（CSV+JSON+TXT）を使用してください
+    # 旧export_results_to_excel()メソッドは削除されました
     
     def _prepare_dssms_result_data(self) -> Dict[str, Any]:
         """
@@ -3123,45 +3071,15 @@ class DSSMSBacktester:
             self.logger.error(f"統一形式変換エラー: {e}")
             import traceback
             self.logger.error(traceback.format_exc())
-            # エラー時はダミーデータを返す
-            return self._create_dummy_unified_data()
+            # copilot-instructions.md準拠: ダミーデータ生成禁止
+            # エラー時は正直にNoneを返す（フォールバック実行時のログ必須）
+            self.logger.critical("統一形式変換失敗 - ダミーデータ生成は禁止されているため処理を中断します")
+            raise RuntimeError("統一形式変換に失敗しました。実データが取得できません。") from e
     
-    def _create_dummy_unified_data(self):
-        """エラー時用のダミーデータ作成"""
-        import pandas as pd
-        from datetime import datetime, timedelta
-        
-        start_date = datetime(2023, 1, 1)
-        
-        # ダミーポートフォリオデータ
-        portfolio_data = []
-        for i in range(30):
-            current_date = start_date + timedelta(days=i)
-            val = self.initial_capital * (1 + 0.01 * i)
-            portfolio_data.append({
-                'date': current_date,
-                'value': val,
-                'daily_return': 1.0,
-                'cumulative_return': i * 1.0
-            })
-        
-        portfolio_df = pd.DataFrame(portfolio_data)
-        portfolio_df.set_index('date', inplace=True)
-        
-        return {
-            'portfolio_values': portfolio_df,
-            'trades': pd.DataFrame(),
-            'switches': pd.DataFrame(),
-            'performance_metrics': {
-                'total_return': 30.0,
-                'annual_return': 30.0,
-                'volatility': 15.0,
-                'sharpe_ratio': 1.2,
-                'max_drawdown': -5.0,
-                'win_rate': 0.7
-            },
-            'strategy_statistics': {}
-        }
+    # copilot-instructions.md準拠: _create_dummy_unified_data()メソッド削除
+    # 理由: 固定リターン30%のダミーデータ生成は「実データと乖離する結果を生成するフォールバック」に該当
+    # 削除日: 2025-11-25
+    # 影響: _convert_to_unified_formatのexceptブロックで明示的にエラーを発生させるよう修正済み
 
     def _calculate_daily_returns(self) -> List[float]:
         """日次リターン計算"""
@@ -4341,18 +4259,17 @@ def main():
         
         if engine.set_data_source(unified_data):
             output_files = engine.generate_all_outputs("backtest_results/dssms_results")
-            excel_path = output_files.get('excel', 'N/A')
+            json_path = output_files.get('json', 'N/A')
             report_path = output_files.get('text', 'N/A')
-            logger.info(f"統一出力完了: Excel={excel_path}, Report={report_path}")
+            logger.info(f"統一出力完了: JSON={json_path}, Report={report_path}")
         else:
             logger.error("統一出力エンジンでのデータ設定に失敗")
-            # フォールバック: 従来の出力を使用
-            excel_path = backtester.export_results_to_excel(
-                simulation_result, performance_metrics, comparison_result
-            )
+            # フォールバック: 詳細レポートのみ生成（Excel出力は廃止）
+            json_path = 'N/A'
             report_path = backtester.generate_detailed_report(
                 simulation_result, performance_metrics, comparison_result
             )
+            logger.warning("統一出力エンジン失敗のため詳細レポートのみ生成")
         
         # 結果サマリー表示
         logger.info("=" * 60)
@@ -4374,7 +4291,7 @@ def main():
         logger.info(f"参考: パフォーマンス指標値: {performance_metrics.total_return:.2%}")
         logger.info(f"銘柄切替回数: {performance_metrics.symbol_switches_count}")
         logger.info(f"切替成功率: {performance_metrics.switch_success_rate:.2%}")
-        logger.info(f"Excel出力: {excel_path}")
+        logger.info(f"JSON出力: {json_path}")
         logger.info(f"詳細レポート: {report_path}")
         logger.info("=" * 60)
         

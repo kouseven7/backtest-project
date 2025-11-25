@@ -117,6 +117,9 @@ class DSSMSReportGenerator:
         
         Args:
             all_data: 全統合データ（バックテスト結果、パフォーマンス、切替データ等）
+                     2つの形式をサポート:
+                     形式1(推奨): {'backtest_results': {...}, 'performance_data': {...}, 'switch_data': {...}}
+                     形式2(互換): {'portfolio_performance': {...}, 'switch_history': [...], ...}
             output_path: 出力ファイルパス
         
         Returns:
@@ -137,38 +140,41 @@ class DSSMSReportGenerator:
         try:
             self.logger.info("包括的レポート生成開始")
             
+            # データ構造正規化（フェーズ2: 両形式対応）
+            normalized_data = self._normalize_report_data(all_data)
+            
             # 1. エグゼクティブサマリー生成
-            executive_summary = self._generate_executive_summary(all_data)
+            executive_summary = self._generate_executive_summary(normalized_data)
             
             # 2. 詳細分析実行
-            detailed_analysis = self._perform_detailed_analysis(all_data) if self.include_detailed_analysis else {}
+            detailed_analysis = self._perform_detailed_analysis(normalized_data) if self.include_detailed_analysis else {}
             
             # 3. パフォーマンス分析
-            performance_analysis = self._analyze_performance_metrics(all_data)
+            performance_analysis = self._analyze_performance_metrics(normalized_data)
             
             # 4. 切替分析
-            switch_analysis = self._analyze_switch_patterns(all_data)
+            switch_analysis = self._analyze_switch_patterns(normalized_data)
             
             # 5. トレンド分析
-            trend_analysis = self._perform_trend_analysis(all_data) if self.include_trend_analysis else {}
+            trend_analysis = self._perform_trend_analysis(normalized_data) if self.include_trend_analysis else {}
             
             # 6. ベンチマーク比較
-            benchmark_analysis = self._perform_benchmark_analysis(all_data) if self.include_benchmarks else {}
+            benchmark_analysis = self._perform_benchmark_analysis(normalized_data) if self.include_benchmarks else {}
             
             # 7. 推奨事項生成
-            recommendations = self._generate_recommendations(all_data) if self.include_recommendations else []
+            recommendations = self._generate_recommendations(normalized_data) if self.include_recommendations else []
             
             # 8. リスク分析
-            risk_analysis = self._analyze_risk_factors(all_data)
+            risk_analysis = self._analyze_risk_factors(normalized_data)
             
             # 9. 戦略効果分析
-            strategy_effectiveness = self._analyze_strategy_effectiveness(all_data)
+            strategy_effectiveness = self._analyze_strategy_effectiveness(normalized_data)
             
             # 10. 将来予測
-            future_outlook = self._generate_future_outlook(all_data)
+            future_outlook = self._generate_future_outlook(normalized_data)
             
             # 11. 高度パフォーマンス指標 (Phase 4)
-            advanced_performance = self._calculate_advanced_performance_metrics(all_data)
+            advanced_performance = self._calculate_advanced_performance_metrics(normalized_data)
             
             # 統合レポート構築
             comprehensive_report = {
@@ -213,22 +219,88 @@ class DSSMSReportGenerator:
             self.logger.error(f"包括的レポート生成エラー: {e}")
             raise ReportError(f"レポート生成失敗: {e}")
     
+    def _normalize_report_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        レポートデータ構造を正規化（フェーズ2: 柔軟な入力対応）
+        
+        Args:
+            data: 入力データ（形式1または形式2）
+        
+        Returns:
+            正規化されたデータ（標準形式）
+        
+        形式判定ロジック:
+        - 'backtest_results'キーが存在 → 形式1（推奨）そのまま返す
+        - 'portfolio_performance'キーが存在 → 形式2（互換）変換する
+        """
+        try:
+            # 形式1チェック（推奨形式）
+            if 'backtest_results' in data:
+                self.logger.debug("データ形式1（推奨）を検出: そのまま使用")
+                return data
+            
+            # 形式2チェック（互換形式）
+            if 'portfolio_performance' in data or 'switch_history' in data:
+                self.logger.info("データ形式2（互換）を検出: 形式1に変換中")
+                
+                # 形式2→形式1への変換
+                normalized = {
+                    'backtest_results': {
+                        'portfolio_performance': data.get('portfolio_performance', {}),
+                        'statistics': data.get('statistics', {}),
+                        'switch_history': data.get('switch_history', []),
+                        'position_updates': data.get('position_updates', []),
+                        'strategy_statistics': data.get('strategy_statistics', {}),
+                        'daily_results': data.get('daily_results', data.get('position_updates', [])),
+                        'execution_metadata': data.get('execution_metadata', {}),
+                        'performance_summary': data.get('performance_summary', {})
+                    },
+                    'performance_data': data.get('performance_data', {}),
+                    'switch_data': data.get('switch_data', {
+                        'total_switches': len(data.get('switch_history', [])),
+                        'success_rate': data.get('statistics', {}).get('success_rate', 0),
+                        'average_cost': 0
+                    })
+                }
+                
+                self.logger.info("データ形式変換完了: 形式2 → 形式1")
+                return normalized
+            
+            # どちらでもない場合は警告してそのまま返す
+            self.logger.warning(
+                "不明なデータ形式を検出。'backtest_results'キーがないため、"
+                "そのままラップして返します。"
+            )
+            return {'backtest_results': data, 'performance_data': {}, 'switch_data': {}}
+            
+        except Exception as e:
+            self.logger.error(f"データ正規化エラー: {e}")
+            # エラー時はそのまま返す（後続処理でエラーハンドリング）
+            return data
+    
     def _generate_executive_summary(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """エグゼクティブサマリー生成"""
         try:
             backtest_results = data.get('backtest_results', {})
             performance_data = data.get('performance_data', {})
             
-            # 主要KPI抽出（実際のバックテスト結果構造に対応）
-            portfolio_performance = data.get('portfolio_performance', {})
-            execution_metadata = data.get('execution_metadata', {})
-            performance_summary = data.get('performance_summary', {})
+            # 主要KPI抽出（ネストされたデータ構造に対応）
+            # backtest_results配下からデータを取得
+            portfolio_performance = backtest_results.get('portfolio_performance', {})
+            execution_metadata = backtest_results.get('execution_metadata', {})
+            performance_summary = backtest_results.get('performance_summary', {})
+            
+            # performance_dataからも平均実行時間を取得（フォールバック）
+            avg_exec_time = performance_summary.get('average_execution_time_ms', 0)
+            if avg_exec_time == 0 and performance_data:
+                execution_perf = performance_data.get('execution', {})
+                avg_exec_time = execution_perf.get('average_time_ms', 0)
             
             key_metrics = {
                 'total_return_rate': portfolio_performance.get('total_return_rate', 0),
                 'success_rate': portfolio_performance.get('success_rate', 0),
-                'average_execution_time_ms': performance_summary.get('average_execution_time_ms', 0),
-                'switch_count': len(data.get('switch_history', [])),
+                'average_execution_time_ms': avg_exec_time,
+                'switch_count': len(backtest_results.get('switch_history', [])),
                 'analysis_period_days': execution_metadata.get('trading_days', 0)
             }
             
@@ -792,6 +864,58 @@ class DSSMSReportGenerator:
         """低パフォーマンスメトリクス特定"""
         return ['memory_usage_mb']
     
+    def _analyze_system_risk(self, performance_data: Dict[str, Any]) -> Dict[str, Any]:
+        """システムリスク分析"""
+        try:
+            execution = performance_data.get('execution', {})
+            memory = performance_data.get('memory', {})
+            reliability = performance_data.get('reliability', {})
+            
+            # 実行時間リスク評価
+            avg_time = execution.get('average_time_ms', 0)
+            time_risk = 'high' if avg_time > 2000 else 'medium' if avg_time > 1000 else 'low'
+            
+            # メモリリスク評価
+            avg_memory = memory.get('average_usage_mb', 0)
+            memory_risk = 'high' if avg_memory > 512 else 'medium' if avg_memory > 256 else 'low'
+            
+            # 信頼性リスク評価
+            success_rate = reliability.get('success_rate', 0)
+            reliability_risk = 'high' if success_rate < 0.80 else 'medium' if success_rate < 0.90 else 'low'
+            
+            # 総合リスクレベル
+            risk_scores = {'high': 3, 'medium': 2, 'low': 1}
+            total_risk = (risk_scores[time_risk] + risk_scores[memory_risk] + risk_scores[reliability_risk]) / 3
+            overall_risk = 'high' if total_risk >= 2.5 else 'medium' if total_risk >= 1.5 else 'low'
+            
+            return {
+                'execution_time_risk': time_risk,
+                'memory_usage_risk': memory_risk,
+                'reliability_risk': reliability_risk,
+                'overall_system_risk': overall_risk,
+                'risk_score': total_risk,
+                'recommendations': self._generate_system_risk_recommendations(overall_risk)
+            }
+        except Exception as e:
+            self.logger.error(f"システムリスク分析エラー: {e}")
+            return {'overall_system_risk': 'unknown', 'error': str(e)}
+    
+    def _generate_system_risk_recommendations(self, risk_level: str) -> List[str]:
+        """システムリスク推奨事項生成"""
+        if risk_level == 'high':
+            return [
+                'システムパフォーマンスの緊急改善が必要',
+                '実行時間とメモリ使用量の最適化を優先',
+                'エラーハンドリングの強化を検討'
+            ]
+        elif risk_level == 'medium':
+            return [
+                'システムパフォーマンスの継続的監視を推奨',
+                '負荷テストによる安定性確認'
+            ]
+        else:
+            return ['現在のシステムリスクは許容範囲内']
+    
     # 推奨事項生成メソッド群（簡略実装）
     def _generate_performance_recommendations(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
         return [{'title': '実行時間最適化', 'priority_score': 0.8, 'description': 'データアクセスパターンの見直し'}]
@@ -808,6 +932,45 @@ class DSSMSReportGenerator:
     def _generate_strategy_recommendations(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
         return [{'title': '戦略パラメータ調整', 'priority_score': 0.9, 'description': '成功率向上のための最適化'}]
     
+    def _generate_strategy_optimization_suggestions(self, strategy_analysis: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """戦略最適化提案生成"""
+        try:
+            suggestions = []
+            
+            # 各戦略の効果スコアを分析
+            for strategy_name, analysis in strategy_analysis.items():
+                effectiveness = analysis.get('effectiveness_score', 0)
+                
+                if effectiveness < 0.6:
+                    suggestions.append({
+                        'strategy': strategy_name,
+                        'priority': 'high',
+                        'suggestion': f'{strategy_name}のパラメータ調整が必要（効果スコア: {effectiveness:.2f}）',
+                        'expected_improvement': '10-20%の成功率向上'
+                    })
+                elif effectiveness < 0.8:
+                    suggestions.append({
+                        'strategy': strategy_name,
+                        'priority': 'medium',
+                        'suggestion': f'{strategy_name}の微調整を推奨（効果スコア: {effectiveness:.2f}）',
+                        'expected_improvement': '5-10%の成功率向上'
+                    })
+            
+            # 提案がない場合
+            if not suggestions:
+                suggestions.append({
+                    'strategy': 'all',
+                    'priority': 'low',
+                    'suggestion': '現在の戦略設定は良好です',
+                    'expected_improvement': '継続的な監視を推奨'
+                })
+            
+            return suggestions
+            
+        except Exception as e:
+            self.logger.error(f"戦略最適化提案生成エラー: {e}")
+            return [{'strategy': 'error', 'suggestion': f'生成エラー: {str(e)}'}]
+    
     # その他の簡略メソッド
     def _analyze_return_trend(self, daily_results: List[Dict[str, Any]]) -> Dict[str, Any]:
         return {'direction': 'upward', 'strength': 0.65}
@@ -823,6 +986,53 @@ class DSSMSReportGenerator:
     
     def _detect_trend_changes(self, daily_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         return [{'date': '2023-06-15', 'change_type': 'performance_improvement'}]
+    
+    def _perform_scenario_analysis(self, daily_results: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """シナリオ分析実行"""
+        try:
+            if len(daily_results) < 30:
+                return {'status': 'insufficient_data', 'scenarios': []}
+            
+            # 最近のパフォーマンス分析
+            recent_returns = [r.get('daily_return_rate', 0) for r in daily_results[-30:]]
+            avg_return = sum(recent_returns) / len(recent_returns) if recent_returns else 0
+            
+            # シナリオ定義
+            scenarios = [
+                {
+                    'scenario': 'best_case',
+                    'description': '最良シナリオ（現在のトレンド継続+10%改善）',
+                    'expected_return': avg_return * 1.1,
+                    'probability': 0.25
+                },
+                {
+                    'scenario': 'base_case',
+                    'description': '基本シナリオ（現在のトレンド継続）',
+                    'expected_return': avg_return,
+                    'probability': 0.50
+                },
+                {
+                    'scenario': 'worst_case',
+                    'description': '最悪シナリオ（現在のトレンド-10%悪化）',
+                    'expected_return': avg_return * 0.9,
+                    'probability': 0.25
+                }
+            ]
+            
+            # 期待値計算
+            expected_value = sum(s['expected_return'] * s['probability'] for s in scenarios)
+            
+            return {
+                'status': 'success',
+                'scenarios': scenarios,
+                'expected_value': expected_value,
+                'analysis_period': '30日間のデータ基準',
+                'confidence': 'medium'
+            }
+            
+        except Exception as e:
+            self.logger.error(f"シナリオ分析エラー: {e}")
+            return {'status': 'error', 'error': str(e), 'scenarios': []}
     
     def get_report_statistics(self) -> Dict[str, Any]:
         """レポート統計取得"""
@@ -1107,12 +1317,19 @@ class DSSMSReportGenerator:
             self.logger.warning(f"戦略分析エラー ({strategy_name}): {e}")
             return {'strategy_name': strategy_name, 'error': str(e)}
 
-    def _generate_short_term_outlook(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_short_term_outlook(self, daily_results: List[Dict[str, Any]]) -> Dict[str, Any]:
         """短期見通し生成"""
         try:
-            backtest_results = data.get('backtest_results', {})
-            recent_results = backtest_results.get('daily_results', [])[-30:]  # 直近30日
-            performance_data = data.get('performance_data', {})
+            # 直近30日のデータを使用
+            recent_results = daily_results[-30:] if len(daily_results) >= 30 else daily_results
+            
+            if len(recent_results) < 10:
+                return {
+                    'status': 'insufficient_data',
+                    'outlook_period': '短期（1-2週間）',
+                    'recommendation': 'neutral',
+                    'confidence': 'low'
+                }
             
             # 最近のトレンド分析
             recent_returns = [r.get('daily_return_rate', 0) for r in recent_results]
@@ -1218,8 +1435,14 @@ class DSSMSReportGenerator:
     def _generate_medium_term_outlook(self, daily_results: List[Dict[str, Any]]) -> Dict[str, Any]:
         """中期見通し生成（1-3ヶ月）"""
         try:
-            if not daily_results:
-                return {'outlook': 'neutral', 'confidence': 0}
+            if not daily_results or len(daily_results) < 60:
+                return {
+                    'status': 'insufficient_data',
+                    'outlook_period': '中期（1-3ヶ月）',
+                    'outlook': 'neutral',
+                    'confidence': 0,
+                    'recommendation': 'データ不足のため分析不可'
+                }
             
             # 長期データ分析（過去3ヶ月相当）
             long_term_results = daily_results[-90:] if len(daily_results) >= 90 else daily_results
@@ -1496,34 +1719,48 @@ class DSSMSReportGenerator:
                 'recommendations': [f'分析エラー: {str(e)}']
             }
     
-    def _generate_long_term_outlook(self, backtest_results: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_long_term_outlook(self, daily_results: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         長期見通し生成を実行
         
         Args:
-            backtest_results: バックテスト実行結果
+            daily_results: 日次バックテスト結果のリスト
             
         Returns:
             長期見通し分析結果
         """
         try:
-            portfolio_performance = backtest_results.get('portfolio_performance', {})
-            execution_metadata = backtest_results.get('execution_metadata', {})
-            
-            if not portfolio_performance:
+            if not daily_results or len(daily_results) < 90:
                 return {
+                    'status': 'insufficient_data',
+                    'outlook_period': '長期（3-6ヶ月）',
                     'outlook_score': 0.0,
                     'trend_direction': 'unknown',
                     'risk_assessment': 'insufficient_data',
                     'growth_potential': 0.0,
                     'sustainability_index': 0.0,
-                    'long_term_recommendations': ['データが不足しています']
+                    'long_term_recommendations': ['分析に十分なデータがありません（90日以上必要）']
                 }
             
-            # 基本指標取得
-            total_return = portfolio_performance.get('total_return_rate', 0.0)
-            success_rate = portfolio_performance.get('success_rate', 0.0)
-            total_days = execution_metadata.get('total_execution_days', 0)
+            # 基本指標取得（daily_resultsから直接計算）
+            portfolio_values = [r.get('portfolio_value', 0) for r in daily_results]
+            if not portfolio_values or portfolio_values[0] == 0:
+                return {
+                    'status': 'error',
+                    'error': 'portfolio_valueデータが不完全',
+                    'long_term_recommendations': ['ポートフォリオ価値データを確認してください']
+                }
+            
+            initial_value = portfolio_values[0]
+            final_value = portfolio_values[-1]
+            total_return_rate = (final_value - initial_value) / initial_value if initial_value > 0 else 0
+            total_return = total_return_rate * 100  # パーセント表記
+            
+            # 成功率計算
+            positive_days = sum(1 for r in daily_results if r.get('daily_return_rate', 0) > 0)
+            success_rate = (positive_days / len(daily_results)) * 100 if daily_results else 0
+            
+            total_days = len(daily_results)
             
             # 成長ポテンシャル計算
             if total_days > 0:
@@ -1668,6 +1905,12 @@ class DSSMSReportGenerator:
         Returns:
             基本指標
         """
+        # フォールバック実行をログに記録（copilot-instructions.md準拠）
+        self.logger.warning(
+            "[FALLBACK] 高度パフォーマンス指標計算に失敗。フォールバック値（全指標0.0）を使用します。"
+            "データ不足または計算エラーの可能性があります。"
+        )
+        
         stats = backtest_results.get('statistics', {})
         return {
             'advanced_metrics_status': 'fallback',

@@ -120,9 +120,8 @@ class DSSMSIntegratedBacktester:
             
             # DSSMS統合コンポーネント初期化（遅延ロード対応）
             self.switch_manager = None
-            self.data_cache = None  
+            self.data_cache = None
             self.performance_tracker = None
-            self.excel_exporter = None
             self.report_generator = None
             self.nikkei225_screener = None
             self._components_initialized = False
@@ -224,7 +223,6 @@ class DSSMSIntegratedBacktester:
                 # 他のコンポーネントを個別に初期化
                 self._initialize_data_cache()
                 self._initialize_performance_tracker()
-                self._initialize_excel_exporter()
                 self._initialize_report_generator()
                 self._initialize_nikkei225_screener()
                 
@@ -247,14 +245,6 @@ class DSSMSIntegratedBacktester:
             self.performance_tracker = PerformanceTracker()
         except ImportError:
             self.performance_tracker = None
-
-    def _initialize_excel_exporter(self):
-        try:
-            from src.dssms.dssms_excel_exporter import DSSMSExcelExporter
-            export_config = self.config.get('export_settings', {})
-            self.excel_exporter = DSSMSExcelExporter(export_config)
-        except ImportError:
-            self.excel_exporter = None
 
     def _initialize_report_generator(self):
         try:
@@ -1989,17 +1979,11 @@ class DSSMSIntegratedBacktester:
             return {}
     
     def _generate_outputs(self, final_results: Dict[str, Any]) -> None:
-        """出力・レポート生成"""
+        """出力・レポート生成 (CSV+JSON+TXT形式、Excel出力は2025-10-08に廃止)"""
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             
-            # 1. Excelエクスポート
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
-# ORIGINAL: excel_path = f"output/dssms_integration/backtest_results_{timestamp}.xlsx"
-            self.excel_exporter.export_dssms_results(final_results, excel_path)
-            self.logger.info(f"Excelエクスポート完了: {excel_path}")
-            
-            # 2. 包括レポート生成
+            # 1. 包括レポート生成 (JSON+TXT形式)
             report_data = {
                 'backtest_results': final_results,
                 'performance_data': final_results.get('performance_summary', {}),
