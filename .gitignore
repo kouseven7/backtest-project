@@ -116,3 +116,13 @@ htmlcov/
 # Reports directory (temporary analysis files)
 reports/
 *.json
+
+# 一時テストフォルダ (tests/temp/)
+# 成功後削除される一時的な検証テスト
+tests/temp/*.py
+tests/temp/*.log
+tests/temp/*.json
+tests/temp/*.txt
+# ただしREADMEとgitignoreは保持
+!tests/temp/README.md
+!tests/temp/.gitignore

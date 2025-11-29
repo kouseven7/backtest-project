@@ -744,8 +744,51 @@ class DSSMSReportGenerator:
     
     # 追加の簡略メソッド実装
     def _extract_data_period(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """データ期間抽出"""
-        return {'start_date': '2023-01-01', 'end_date': '2023-12-31', 'days': 365}
+        """データ期間抽出（実データベース）"""
+        try:
+            # 正規化されたデータから期間情報を抽出
+            backtest_results = data.get('backtest_results', {})
+            exec_metadata = backtest_results.get('execution_metadata', {})
+            
+            start_date = exec_metadata.get('start_date')
+            end_date = exec_metadata.get('end_date')
+            
+            if start_date and end_date:
+                # 日付文字列をdatetimeに変換（必要な場合）
+                if isinstance(start_date, str):
+                    start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
+                else:
+                    start_date_obj = start_date
+                    
+                if isinstance(end_date, str):
+                    end_date_obj = datetime.strptime(end_date, '%Y-%m-%d')
+                else:
+                    end_date_obj = end_date
+                
+                # 日数計算
+                days = (end_date_obj - start_date_obj).days + 1
+                
+                return {
+                    'start_date': start_date if isinstance(start_date, str) else start_date.strftime('%Y-%m-%d'),
+                    'end_date': end_date if isinstance(end_date, str) else end_date.strftime('%Y-%m-%d'),
+                    'days': days
+                }
+            
+            # データなしの場合はNoneを返す（エラーにしない）
+            self.logger.warning("データ期間情報が取得できません: execution_metadataにstart_date/end_dateが存在しません")
+            return {
+                'start_date': None,
+                'end_date': None,
+                'days': 0
+            }
+            
+        except Exception as e:
+            self.logger.error(f"データ期間抽出エラー: {e}")
+            return {
+                'start_date': None,
+                'end_date': None,
+                'days': 0
+            }
     
     def _assess_data_completeness(self, data: Dict[str, Any]) -> float:
         """データ完全性評価"""

@@ -257,8 +257,10 @@ class MainSystemController:
             stock_data = data_feed.get_stock_data(ticker, days_back=days_back)
             self.logger.info(f"Stock data retrieved: {len(stock_data)} rows")
             
-            # インデックスデータ取得（S&P 500）
-            index_data = data_feed.get_index_data("^GSPC", days_back=days_back)
+            # インデックスデータ取得（.Tで終わる場合は日経225、それ以外はS&P 500）
+            index_ticker = "^N225" if ticker.endswith(".T") else "^GSPC"
+            self.logger.info(f"Index ticker selected: {index_ticker} for {ticker}")
+            index_data = data_feed.get_index_data(index_ticker, days_back=days_back)
             self.logger.info(f"Index data retrieved: {len(index_data)} rows")
             
             return stock_data, index_data

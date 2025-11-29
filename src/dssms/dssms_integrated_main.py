@@ -73,6 +73,13 @@ try:
 except ImportError:
     dss_available = False
 
+# データ取得モジュール利用可能性チェック
+try:
+    import yfinance
+    DATA_FETCHER_AVAILABLE = True
+except ImportError:
+    DATA_FETCHER_AVAILABLE = False
+
 
 class DSSMSIntegrationError(Exception):
     """DSSMS統合システム関連エラー"""
@@ -174,8 +181,8 @@ class DSSMSIntegratedBacktester:
         if not self._ranking_initialized:
             try:
                 from src.dssms.advanced_ranking_system.advanced_ranking_engine import AdvancedRankingEngine
-                ranking_config = self.config.get('ranking_config', {})
-                self.advanced_ranking_engine = AdvancedRankingEngine(ranking_config)
+                # Option C: 常にデフォルト設定を使用（実績あり、設定ファイル不在、実需なし）
+                self.advanced_ranking_engine = AdvancedRankingEngine(None)
                 self.logger.info("AdvancedRankingEngine 直接初期化完了")
             except (ImportError, Exception) as e:
                 self.advanced_ranking_engine = None
@@ -457,7 +464,13 @@ class DSSMSIntegratedBacktester:
                 # レガシー分析にフォールバック
                 return self._legacy_advanced_ranking_selection(filtered_symbols, target_date)
         
-        return self._legacy_random_selection(filtered_symbols)
+        # copilot-instructions.md準拠: ランダム選択フォールバック禁止
+        raise RuntimeError(
+            f"Failed to select optimal symbol from {len(filtered_symbols)} candidates. "
+            f"All ranking methods failed. "
+            f"Random selection fallback is prohibited by copilot-instructions.md. "
+            f"Cannot proceed with symbol selection."
+        )
     
     def _integrated_ranking_selection_optimized(self, filtered_symbols: List[str], target_date: datetime) -> Optional[str]:
         """
@@ -1173,38 +1186,19 @@ class DSSMSIntegratedBacktester:
         except Exception as e:
             self.logger.error(f"レガシーAdvancedRankingEngine分析失敗: {e}")
         
-        # SystemFallbackPolicy統合フォールバック
-        try:
-            from src.config.system_modes import get_fallback_policy, ComponentType
-            fallback_policy = get_fallback_policy()
-            return fallback_policy.handle_component_failure(
-                component_type=ComponentType.DSSMS_CORE,
-                component_name="DSSMSIntegratedBacktester._legacy_advanced_ranking_selection",
-                error=RuntimeError("AdvancedRankingEngine analysis failed"),
-                fallback_func=lambda: self._legacy_random_selection(filtered_symbols),
-                context={
-                    "target_date": target_date.isoformat(),
-                    "available_symbols": len(filtered_symbols),
-                    "advanced_ranking_available": self.advanced_ranking_engine is not None
-                }
-            )
-        except ImportError:
-            # SystemFallbackPolicy使用不可時のレガシーフォールバック
-            self.logger.warning(f"FALLBACK: ランダム選択使用 (AdvancedRanking失敗/使用不可)")
-            return self._legacy_random_selection(filtered_symbols)
-    
-    def _legacy_random_selection(self, filtered_symbols: List[str]) -> str:
-        """
-        レガシーランダム選択（段階的除去予定）
-        
-        TODO(tag:phase2, rationale:eliminate completely after ranking stability confirmed)
-        """
-        import random
-        selected = random.choice(filtered_symbols)
-        self.logger.warning(
-            f"LEGACY FALLBACK: ランダム銘柄選択 ({len(filtered_symbols)}銘柄から選択: {selected})"
+        # copilot-instructions.md準拠: SystemFallbackPolicyのランダム選択フォールバック禁止
+        # AdvancedRankingEngine失敗時はエラーとして処理
+        raise RuntimeError(
+            f"AdvancedRankingEngine analysis failed for {len(filtered_symbols)} symbols. "
+            f"Random selection fallback is prohibited by copilot-instructions.md. "
+            f"Cannot proceed with symbol selection. "
+            f"Advanced ranking available: {self.advanced_ranking_engine is not None}"
         )
-        return selected
+    
+    # _legacy_random_selection() メソッドを削除
+    # 理由: copilot-instructions.md違反
+    # 「モック/ダミー/テストデータを使用するフォールバック禁止」
+    # ランダム選択は実データと乖離する結果を生成するため削除
 
     def _get_optimal_symbol(self, target_date: datetime, 
                           target_symbols: Optional[List[str]] = None) -> Optional[str]:
@@ -1221,6 +1215,7 @@ class DSSMSIntegratedBacktester:
         try:
             # コンポーネント初期化確保
             self.ensure_components()
+            self.ensure_advanced_ranking()  # AdvancedRankingEngine初期化
             if self.dss_core and dss_available:
                 # DSS Core V3による動的選択
                 dss_result = self.dss_core.run_daily_selection(target_date)
@@ -1344,7 +1339,7 @@ class DSSMSIntegratedBacktester:
     
     def _execute_multi_strategies(self, symbol: str, target_date: datetime) -> Dict[str, Any]:
         """
-        マルチ戦略実行（main.pyロジック統合）
+        マルチ戦略実行（main_new.py統合版）
         
         Args:
             symbol: 対象銘柄
@@ -1354,7 +1349,7 @@ class DSSMSIntegratedBacktester:
             Dict[str, Any]: 戦略実行結果
         """
         try:
-            # 銘柄データ取得
+            # 1. データ取得（既存処理を維持）
             stock_data, index_data = self._get_symbol_data(symbol, target_date)
             
             if stock_data is None or stock_data.empty:
@@ -1364,62 +1359,122 @@ class DSSMSIntegratedBacktester:
                     'date': target_date.strftime('%Y-%m-%d')
                 }
             
-            # 戦略リスト（main.pyから）
-            strategies = [
-                'VWAPBreakoutStrategy',
-                'MomentumInvestingStrategy', 
-                'BreakoutStrategy',
-                'VWAPBounceStrategy',
-                'OpeningGapStrategy',
-                'ContrarianStrategy',
-                'GCStrategy'
-            ]
+            # 2. MainSystemController初期化
+            from main_new import MainSystemController
             
-            # 戦略実行結果
-            strategy_results = {}
-            total_signals = 0
-            successful_strategies = 0
-            
-            # 各戦略実行（簡略実装）
-            for strategy_name in strategies:
-                try:
-                    strategy_result = self._execute_single_strategy(
-                        strategy_name, symbol, stock_data, index_data, target_date
-                    )
-                    
-                    strategy_results[strategy_name] = strategy_result
-                    
-                    if strategy_result.get('signal') != 'HOLD':
-                        total_signals += 1
-                    
-                    if strategy_result.get('success', False):
-                        successful_strategies += 1
-                        
-                except Exception as e:
-                    self.logger.warning(f"戦略実行エラー ({strategy_name}): {e}")
-                    strategy_results[strategy_name] = {'error': str(e)}
-            
-            # ポジション更新計算
-            position_update = self._calculate_position_update(strategy_results, symbol, target_date)
-            
-            return {
-                'status': 'executed',
-                'symbol': symbol,
-                'date': target_date.strftime('%Y-%m-%d'),
-                'strategy_results': strategy_results,
-                'summary': {
-                    'total_strategies': len(strategies),
-                    'successful_strategies': successful_strategies,
-                    'total_signals': total_signals,
-                    'success_rate': successful_strategies / len(strategies)
+            config = {
+                'execution': {
+                    'execution_mode': 'simple',
+                    'broker': {
+                        'initial_cash': self.config.get('initial_capital', 1000000),
+                        'commission_per_trade': 1.0
+                    }
                 },
-                'position_update': position_update
+                'risk_management': {
+                    'use_enhanced_risk': False,
+                    'max_drawdown_threshold': 0.15
+                },
+                'performance': {
+                    'use_aggregator': False
+                }
             }
             
+            controller = MainSystemController(config)
+            
+            # 3. バックテスト実行
+            self.logger.info(f"[DSSMS->main_new] バックテスト開始: {symbol}, {target_date}")
+            result = controller.execute_comprehensive_backtest(
+                ticker=symbol,
+                stock_data=stock_data,
+                index_data=index_data
+            )
+            
+            # 4. 結果変換
+            return self._convert_main_new_result(result, symbol, target_date)
+            
         except Exception as e:
-            self.logger.error(f"マルチ戦略実行エラー: {e}")
+            self.logger.error(f"マルチ戦略実行エラー: {e}", exc_info=True)
             return {
                 'status': 'error',
+                'error': str(e),
+                'symbol': symbol,
+                'date': target_date.strftime('%Y-%m-%d')
+            }
+    
+    def _convert_main_new_result(self, main_new_result: Dict, symbol: str, target_date: datetime) -> Dict[str, Any]:
+        """
+        main_new.pyの結果をDSSMS形式に変換
+        
+        Args:
+            main_new_result: MainSystemControllerの実行結果
+            symbol: 銘柄コード
+            target_date: 対象日付
+        
+        Returns:
+            Dict[str, Any]: DSSMS形式の戦略実行結果
+        """
+        try:
+            # エラーチェック
+            if main_new_result.get('status') != 'SUCCESS':
+                return {
+                    'status': 'error',
+                    'error': main_new_result.get('error', 'Unknown error'),
+                    'symbol': symbol,
+                    'date': target_date.strftime('%Y-%m-%d')
+                }
+            
+            # パフォーマンス結果から主要メトリクスを抽出
+            performance_results = main_new_result.get('performance_results', {})
+            execution_results = main_new_result.get('execution_results', {})
+            
+            # summary_statisticsから取得（main_new.pyの実際の構造に合わせる）
+            summary_stats = performance_results.get('summary_statistics', {})
+            
+            # リターン計算（summary_statisticsから優先取得）
+            total_return = summary_stats.get('total_return', 0.0)
+            if total_return == 0.0:
+                # フォールバック: basic_performanceまたはbalanceから計算
+                basic_perf = performance_results.get('basic_performance', {})
+                total_return = basic_perf.get('total_return', 0.0)
+                
+                if total_return == 0.0 and 'total_portfolio_value' in execution_results:
+                    portfolio_value = execution_results.get('total_portfolio_value', 1000000.0)
+                    total_return = portfolio_value - 1000000.0
+            
+            # DSSMS形式に変換
+            dssms_result = {
+                'status': 'success',
+                'symbol': symbol,
+                'date': target_date.strftime('%Y-%m-%d'),
+                'strategy_results': {
+                    'main_strategy': {
+                        'total_return': total_return,
+                        'sharpe_ratio': summary_stats.get('sharpe_ratio', 0.0),
+                        'max_drawdown': summary_stats.get('max_drawdown', 0.0),
+                        'total_trades': summary_stats.get('total_trades', 0),
+                        'winning_trades': execution_results.get('winning_trades', 0),
+                        'win_rate': summary_stats.get('win_rate', 0.0)
+                    }
+                },
+                'summary': {
+                    'execution_timestamp': main_new_result.get('execution_timestamp'),
+                    'market_analysis': main_new_result.get('market_analysis', {}),
+                    'strategy_selection': main_new_result.get('strategy_selection', {}),
+                    'risk_assessment': main_new_result.get('risk_assessment', {})
+                },
+                'position_update': {
+                    'return': total_return,
+                    'balance': execution_results.get('total_portfolio_value', 1000000.0),
+                    'total_trades': summary_stats.get('total_trades', 0)
+                }
+            }
+            
+            return dssms_result
+            
+        except Exception as e:
+            self.logger.error(f"結果変換エラー: {e}", exc_info=True)
+            return {
+                'status': 'conversion_error',
                 'error': str(e),
                 'symbol': symbol,
                 'date': target_date.strftime('%Y-%m-%d')
@@ -1543,8 +1598,9 @@ class DSSMSIntegratedBacktester:
                     # Phase 3最適化: yfinance遅延インポート
                     from src.utils.lazy_import_manager import get_yfinance
                     yf = get_yfinance()
-                    # 株価データ
-                    ticker = yf.Ticker(f"{symbol}.T")
+                    # 株価データ (.Tサフィックス確認)
+                    symbol_with_suffix = symbol if symbol.endswith('.T') else f"{symbol}.T"
+                    ticker = yf.Ticker(symbol_with_suffix)
                     stock_data = ticker.history(start=start_date, end=end_date + timedelta(days=1))
                     
                     # インデックスデータ（日経225）
@@ -1556,70 +1612,31 @@ class DSSMSIntegratedBacktester:
                         self.data_cache.store_cached_data(symbol, start_date, end_date, stock_data, index_data)
                     
                     return stock_data, index_data
-                except ImportError:
-                    return self._generate_mock_data(symbol, start_date, end_date)
+                except ImportError as import_error:
+                    # copilot-instructions.md準拠: モックデータフォールバック禁止
+                    raise RuntimeError(
+                        f"Failed to retrieve real market data for {symbol}. "
+                        f"yfinance is not available: {import_error}. "
+                        f"Mock data generation is prohibited by copilot-instructions.md. "
+                        f"Cannot proceed with backtest."
+                    ) from import_error
             else:
-                # モックデータ生成
-                return self._generate_mock_data(symbol, start_date, end_date)
+                # copilot-instructions.md準拠: モックデータ生成禁止
+                raise RuntimeError(
+                    f"Failed to retrieve real market data for {symbol}. "
+                    f"DATA_FETCHER_AVAILABLE is False. "
+                    f"Mock data generation is prohibited by copilot-instructions.md. "
+                    f"Cannot proceed with backtest."
+                )
                 
         except Exception as e:
             self.logger.error(f"銘柄データ取得エラー ({symbol}): {e}")
             return None, None
     
-    def _generate_mock_data(self, symbol: str, start_date: datetime, end_date: datetime):
-        """モックデータ生成（yfinance使用不可時、直接pandas使用）"""
-        try:
-            import pandas as pd
-            dates = pd.date_range(start=start_date, end=end_date, freq='D')
-            dates = dates[dates.dayofweek < 5]  # 平日のみ
-        except ImportError:
-            return None, None
-        
-        # 基準価格
-        base_price = hash(symbol) % 1000 + 1000  # 銘柄に応じた基準価格
-        
-        # 株価データ
-        prices = []
-        current_price = base_price
-        
-        for i, date in enumerate(dates):
-            # ランダムウォーク
-            change = 0.01 if i % 3 == 0 else -0.005  # 簡単な価格変動
-            current_price *= (1 + change)
-            
-            high = current_price * 1.01
-            low = current_price * 0.99
-            volume = 500000  # 固定ボリューム
-            
-            prices.append({
-                'Open': current_price,
-                'High': high,
-                'Low': low,
-                'Close': current_price,
-                'Volume': volume
-            })
-        
-        stock_data = pd.DataFrame(prices, index=dates)
-        
-        # インデックスデータ（日経225のモック）
-        index_prices = []
-        index_price = 30000
-        
-        for i, date in enumerate(dates):
-            change = np.random.normal(0, 0.015)
-            index_price *= (1 + change)
-            
-            index_prices.append({
-                'Open': index_price,
-                'High': index_price * 1.01,
-                'Low': index_price * 0.99,
-                'Close': index_price,
-                'Volume': np.random.randint(1000000, 5000000)
-            })
-        
-        index_data = pd.DataFrame(index_prices, index=dates)
-        
-        return stock_data, index_data
+    # _generate_mock_data() メソッドを削除
+    # 理由: copilot-instructions.md違反
+    # 「モック/ダミー/テストデータを使用するフォールバック禁止」
+    # ランダムウォーク価格生成は実データと完全に乖離するため削除
     
     def _calculate_position_update(self, strategy_results: Dict[str, Any], 
                                  symbol: str, target_date: datetime) -> Dict[str, Any]:
@@ -1683,11 +1700,22 @@ class DSSMSIntegratedBacktester:
                         prev_price = stock_data['Close'].iloc[-2]
                         price_change_rate = (current_price - prev_price) / prev_price
                     else:
-                        # フォールバック：モック価格変動（正規分布）
-                        price_change_rate = np.random.normal(0.003, 0.02)  # 平均0.3%の上昇
-                except Exception:
-                    # エラー時のフォールバック
-                    price_change_rate = np.random.normal(0.003, 0.02)
+                        # copilot-instructions.md準拠: モック価格変動フォールバック禁止
+                        raise RuntimeError(
+                            f"Failed to calculate position update for {symbol} on {target_date}. "
+                            f"Insufficient price data (need at least 2 data points). "
+                            f"Mock price generation is prohibited by copilot-instructions.md. "
+                            f"Cannot proceed with position evaluation without real price data."
+                        )
+                except RuntimeError:
+                    # RuntimeErrorはそのまま再送出
+                    raise
+                except Exception as e:
+                    # 予期せぬエラーもRuntimeErrorとして処理
+                    raise RuntimeError(
+                        f"Failed to retrieve price data for {symbol}: {e}. "
+                        f"Mock price generation is prohibited by copilot-instructions.md."
+                    ) from e
                 
                 # ポジション価値の更新
                 position_return = self.position_size * price_change_rate
@@ -1740,11 +1768,21 @@ class DSSMSIntegratedBacktester:
                     price_change_rate = (current_price - entry_price) / entry_price
                     close_return = self.position_size * price_change_rate
                 else:
-                    # フォールバック：モック収益（固定値版）
-                    close_return = self.position_size * 0.01  # 1%の固定収益
+                    # copilot-instructions.md準拠: モック収益フォールバック禁止
+                    raise RuntimeError(
+                        f"Failed to retrieve closing price for {symbol} on {target_date}. "
+                        f"Mock return calculation is prohibited by copilot-instructions.md. "
+                        f"Cannot close position without real price data."
+                    )
+            except RuntimeError:
+                # RuntimeErrorはそのまま再送出
+                raise
             except Exception as e:
-                self.logger.warning(f"価格データ取得エラー、モック収益使用: {e}")
-                close_return = self.position_size * 0.01  # 1%の固定収益
+                # 予期せぬエラーもRuntimeErrorとして処理
+                raise RuntimeError(
+                    f"Failed to close position for {symbol}: {e}. "
+                    f"Mock return calculation is prohibited by copilot-instructions.md."
+                ) from e
             
             # ポートフォリオ価値更新
             self.portfolio_value += close_return
@@ -1783,11 +1821,21 @@ class DSSMSIntegratedBacktester:
                 if stock_data is not None and len(stock_data) >= 1:
                     entry_price = stock_data['Close'].iloc[-1]
                 else:
-                    # フォールバック：適当な価格（但し一貫性のあるもの）
-                    entry_price = hash(symbol) % 1000 + 1000  # 銘柄に応じた基準価格
+                    # copilot-instructions.md準拠: モック価格フォールバック禁止
+                    raise RuntimeError(
+                        f"Failed to retrieve entry price for {symbol} on {target_date}. "
+                        f"Mock price generation is prohibited by copilot-instructions.md. "
+                        f"Cannot open position without real price data."
+                    )
+            except RuntimeError:
+                # RuntimeErrorはそのまま再送出
+                raise
             except Exception as e:
-                self.logger.warning(f"価格データ取得エラー、モック価格使用: {e}")
-                entry_price = hash(symbol) % 1000 + 1000
+                # 予期せぬエラーもRuntimeErrorとして処理
+                raise RuntimeError(
+                    f"Failed to retrieve entry price for {symbol}: {e}. "
+                    f"Mock price generation is prohibited by copilot-instructions.md."
+                ) from e
             
             result = {
                 'status': 'opened',
@@ -1882,6 +1930,7 @@ class DSSMSIntegratedBacktester:
             strategy_stats = self._calculate_strategy_statistics()
             
             return {
+                'status': 'SUCCESS',  # E2Eテスト用ステータスキー追加
                 'execution_metadata': {
                     'start_date': self.daily_results[0]['date'] if self.daily_results else None,
                     'end_date': self.daily_results[-1]['date'] if self.daily_results else None,
@@ -1915,6 +1964,7 @@ class DSSMSIntegratedBacktester:
             self.logger.error(f"最終結果生成エラー: {e}")
             # エラー時でも基本情報は提供
             return {
+                'status': 'ERROR',  # E2Eテスト用エラーステータス
                 'error': str(e),
                 'execution_metadata': {
                     'start_date': self.daily_results[0]['date'] if self.daily_results else None,

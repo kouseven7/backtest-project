@@ -85,3 +85,26 @@ kabu STATION API を通じて継続的なリスク調整後利益を獲得する
 - 強化学習導入「現時点なし」(設計余白のみ確保)
 - kabu 実行タイミング固定せず（寄前/引後/イベントトリガ両対応）
 
+## 🧪 テスト管理
+
+### テストフォルダ構造
+```
+tests/
+├── core/          # 継続的なテスト（回帰テスト、CI/CD）
+├── integration/   # 統合テスト（将来使用）
+└── temp/          # 一時テスト（成功後削除）
+```
+
+### 一時テスト (tests/temp/)
+- **用途**: 新機能の動作確認、一度のみの検証
+- **命名**: `test_YYYYMMDD_<feature>.py`
+- **削除方法**: `python tests/cleanup_temp_tests.py`
+- **詳細**: [一時テスト管理ガイド](docs/TEMP_TEST_MANAGEMENT.md)
+
+### 継続テスト (tests/core/)
+- **用途**: 回帰テスト、CI/CD自動テスト
+- **実行**: `pytest tests/core/` または個別実行
+
+### テスト作成ガイドライン
+詳細は `.github/copilot-instructions.md` の「テストファイル配置ルール」を参照
+
