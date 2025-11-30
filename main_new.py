@@ -150,6 +150,13 @@ class MainSystemController:
                 # データをウォームアップ開始日以降にフィルタリング
                 if isinstance(stock_data.index, pd.DatetimeIndex):
                     available_start = stock_data.index.min()
+                    
+                    # タイムゾーン統一: available_startがtz-awareならwarmup_start_tsもtz-awareに変換
+                    if available_start.tz is not None and warmup_start_ts.tz is None:
+                        warmup_start_ts = warmup_start_ts.tz_localize(available_start.tz)
+                    elif available_start.tz is None and warmup_start_ts.tz is not None:
+                        warmup_start_ts = warmup_start_ts.tz_localize(None)
+                    
                     if warmup_start_ts < available_start:
                         raise RuntimeError(
                             f"Insufficient data for warmup period. "
@@ -205,9 +212,25 @@ class MainSystemController:
             # 5. 戦略実行（動的選択・重み付け）
             self.logger.info(f"[STEP 5/7] 戦略実行開始")
             
-            # trading_start_date, trading_end_dateをTimestamp化
+            # trading_start_date, trading_end_dateをTimestamp化（タイムゾーン統一処理追加）
             trading_start_ts = pd.Timestamp(backtest_start_date) if backtest_start_date else None
             trading_end_ts = pd.Timestamp(backtest_end_date) if backtest_end_date else None
+            
+            # タイムゾーン統一: stock_dataのインデックスがtz-awareならtrading_start_ts/trading_end_tsもtz-awareに変換
+            if isinstance(stock_data.index, pd.DatetimeIndex) and len(stock_data) > 0:
+                data_tz = stock_data.index[0].tz
+                if data_tz is not None:
+                    # データがtz-awareの場合、trading_start_ts/trading_end_tsもtz-awareに変換
+                    if trading_start_ts is not None and trading_start_ts.tz is None:
+                        trading_start_ts = trading_start_ts.tz_localize(data_tz)
+                    if trading_end_ts is not None and trading_end_ts.tz is None:
+                        trading_end_ts = trading_end_ts.tz_localize(data_tz)
+                else:
+                    # データがtz-naiveの場合、trading_start_ts/trading_end_tsもtz-naiveに変換
+                    if trading_start_ts is not None and trading_start_ts.tz is not None:
+                        trading_start_ts = trading_start_ts.tz_localize(None)
+                    if trading_end_ts is not None and trading_end_ts.tz is not None:
+                        trading_end_ts = trading_end_ts.tz_localize(None)
             
             execution_results = self.execution_manager.execute_dynamic_strategies(
                 stock_data=stock_data,

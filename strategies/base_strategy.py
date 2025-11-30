@@ -155,6 +155,14 @@ class BaseStrategy:
         Returns:
             pd.DataFrame: エントリー/イグジットシグナルが追加されたデータフレーム
         """
+        # [WARMUP_DEBUG] ウォームアップ期間パラメータ確認
+        self.logger.info(
+            f"[WARMUP_DEBUG] backtest() called: "
+            f"trading_start_date={trading_start_date}, "
+            f"trading_end_date={trading_end_date}, "
+            f"strategy={self.__class__.__name__}"
+        )
+        
         # シグナル列の初期化
         result = self.data.copy()  # データのコピーを作成して元のデータに影響を与えない
         result['Entry_Signal'] = 0
@@ -163,6 +171,15 @@ class BaseStrategy:
         
         # 戦略名を追加
         result['Strategy'] = self.__class__.__name__
+        
+        # [WARMUP_DEBUG] データ範囲確認
+        if len(result) > 0:
+            self.logger.info(
+                f"[WARMUP_DEBUG] Data range: "
+                f"start={result.index[0]}, "
+                f"end={result.index[-1]}, "
+                f"rows={len(result)}"
+            )
         
         # インデックスが日時型になっていることを確認
         if not isinstance(result.index, pd.DatetimeIndex):
@@ -180,21 +197,69 @@ class BaseStrategy:
         if price_column not in result.columns:
             price_column = 'Close'
         
+        # タイムゾーン統一処理（trading_start_date/trading_end_date指定時）
+        # current_date (result.index[idx]) がtz-awareの場合、trading_start_date/trading_end_dateもtz-awareに変換
+        trading_start_date_unified = trading_start_date
+        trading_end_date_unified = trading_end_date
+        
+        if len(result) > 0:
+            first_date = result.index[0]
+            if first_date.tz is not None:
+                # データインデックスがtz-awareの場合
+                if trading_start_date is not None and trading_start_date.tz is None:
+                    trading_start_date_unified = trading_start_date.tz_localize(first_date.tz)
+                    self.logger.info(
+                        f"[WARMUP_DEBUG] Timezone conversion: "
+                        f"trading_start_date {trading_start_date} -> {trading_start_date_unified}"
+                    )
+                if trading_end_date is not None and trading_end_date.tz is None:
+                    trading_end_date_unified = trading_end_date.tz_localize(first_date.tz)
+                    self.logger.info(
+                        f"[WARMUP_DEBUG] Timezone conversion: "
+                        f"trading_end_date {trading_end_date} -> {trading_end_date_unified}"
+                    )
+            else:
+                # データインデックスがtz-naiveの場合
+                if trading_start_date is not None and trading_start_date.tz is not None:
+                    trading_start_date_unified = trading_start_date.tz_localize(None)
+                    self.logger.info(
+                        f"[WARMUP_DEBUG] Timezone removal: "
+                        f"trading_start_date {trading_start_date} -> {trading_start_date_unified}"
+                    )
+                if trading_end_date is not None and trading_end_date.tz is not None:
+                    trading_end_date_unified = trading_end_date.tz_localize(None)
+                    self.logger.info(
+                        f"[WARMUP_DEBUG] Timezone removal: "
+                        f"trading_end_date {trading_end_date} -> {trading_end_date_unified}"
+                    )
+        
         # 各日にちについてシグナルを計算
         entry_count = 0
         exit_count = 0
+        warmup_filtered_count = 0  # ウォームアップ期間でフィルタされた日数
         
         for idx in range(len(result)):
             current_date = result.index[idx]
             
             # ウォームアップ期間チェック（trading_start_date指定時）
             in_trading_period = True
-            if trading_start_date is not None:
-                if current_date < trading_start_date:
+            if trading_start_date_unified is not None:
+                if current_date < trading_start_date_unified:
                     in_trading_period = False
-            if trading_end_date is not None:
-                if current_date > trading_end_date:
+                    warmup_filtered_count += 1
+                    if warmup_filtered_count == 1:  # 最初のフィルタ時のみログ出力
+                        self.logger.info(
+                            f"[WARMUP_FILTER] Warmup period detected: "
+                            f"current_date={current_date} < trading_start={trading_start_date_unified}"
+                        )
+            if trading_end_date_unified is not None:
+                if current_date > trading_end_date_unified:
                     in_trading_period = False
+                    if idx == len(result) - 1 or result.index[idx + 1] <= trading_end_date_unified:
+                        self.logger.info(
+                            f"[WARMUP_FILTER] After trading period: "
+                            f"current_date={current_date} > trading_end={trading_end_date_unified}"
+                        )
             
             # ポジションを持っていない場合のみエントリーシグナルをチェック
             if not in_position and in_trading_period:
@@ -244,6 +309,17 @@ class BaseStrategy:
         # エントリーとエグジットの回数を検証
         entry_count = (result['Entry_Signal'] == 1).sum()
         exit_count = (result['Exit_Signal'] == -1).sum()
+        
+        # [WARMUP_DEBUG] バックテスト結果サマリー
+        self.logger.info(
+            f"[WARMUP_SUMMARY] Backtest completed: "
+            f"strategy={self.__class__.__name__}, "
+            f"total_rows={len(result)}, "
+            f"warmup_filtered={warmup_filtered_count}, "
+            f"trading_rows={len(result) - warmup_filtered_count}, "
+            f"entry_signals={entry_count}, "
+            f"exit_signals={exit_count}"
+        )
         
         if entry_count != exit_count:
             self.logger.warning(f"エントリー ({entry_count}) とエグジット ({exit_count}) の回数が一致しません！")

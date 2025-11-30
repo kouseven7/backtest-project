@@ -1609,11 +1609,20 @@ class DSSMSIntegratedBacktester:
                     # 株価データ (.Tサフィックス確認)
                     symbol_with_suffix = symbol if symbol.endswith('.T') else f"{symbol}.T"
                     ticker = yf.Ticker(symbol_with_suffix)
-                    stock_data = ticker.history(start=start_date, end=end_date + timedelta(days=1))
+                    # auto_adjust=False指定でAdj Closeカラムを保証（VWAPBreakoutStrategy対応）
+                    stock_data = ticker.history(start=start_date, end=end_date + timedelta(days=1), auto_adjust=False)
+                    
+                    # Adj Close保証処理（YFinanceDataFeedと同様のロジック）
+                    if 'Adj Close' not in stock_data.columns and 'Close' in stock_data.columns:
+                        stock_data['Adj Close'] = stock_data['Close']
                     
                     # インデックスデータ（日経225）
                     nikkei_ticker = yf.Ticker("^N225")
-                    index_data = nikkei_ticker.history(start=start_date, end=end_date + timedelta(days=1))
+                    index_data = nikkei_ticker.history(start=start_date, end=end_date + timedelta(days=1), auto_adjust=False)
+                    
+                    # Adj Close保証処理（インデックスデータ）
+                    if 'Adj Close' not in index_data.columns and 'Close' in index_data.columns:
+                        index_data['Adj Close'] = index_data['Close']
                     
                     # キャッシュに保存
                     if self.data_cache and not stock_data.empty and not index_data.empty:

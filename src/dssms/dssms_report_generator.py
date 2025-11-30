@@ -1888,6 +1888,10 @@ class DSSMSReportGenerator:
             
         Returns:
             高度パフォーマンス指標
+            
+        Note:
+            copilot-instructions.md準拠: データ不足時はダミーデータ生成せず、
+            フォールバック値（全指標0.0）を返却
         """
         try:
             # ポートフォリオ価値とリターンの抽出
@@ -1899,16 +1903,14 @@ class DSSMSReportGenerator:
                     if 'portfolio_value' in update:
                         portfolio_values.append(float(update['portfolio_value']))
             
+            # データ不足チェック（copilot-instructions.md準拠: ダミーデータ生成禁止）
             if len(portfolio_values) < 2:
-                # フォールバック: 統計データから推定
-                stats = backtest_results.get('statistics', {})
-                if 'total_return' in stats:
-                    # 仮想的なポートフォリオ価値系列を生成
-                    initial_value = 1000000.0  # 100万円と仮定
-                    total_return = float(stats['total_return'])
-                    final_value = initial_value * (1 + total_return)
-                    # 30日間の線形増加と仮定
-                    portfolio_values = [initial_value + (final_value - initial_value) * i / 29 for i in range(30)]
+                self.logger.warning(
+                    "[DATA_INSUFFICIENT] ポートフォリオ価値データが不足しています "
+                    f"(取得数: {len(portfolio_values)}, 必要数: 2以上). "
+                    "copilot-instructions.md準拠: ダミーデータは生成せず、フォールバック値を返却します。"
+                )
+                return self._get_fallback_performance_metrics(backtest_results)
             
             # Performance Metrics Calculatorを使用して計算
             comprehensive_metrics = self.performance_calculator.generate_comprehensive_metrics(
