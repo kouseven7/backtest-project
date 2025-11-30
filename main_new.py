@@ -17,9 +17,10 @@ Modified: 2025-10-18
 
 import sys
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, Any, Optional
+import pandas as pd
 
 # プロジェクトパス設定
 project_root = Path(__file__).parent
@@ -105,22 +106,31 @@ class MainSystemController:
         ticker: str,
         stock_data: Optional[pd.DataFrame] = None,
         index_data: Optional[pd.DataFrame] = None,
-        days_back: int = 365
+        days_back: int = 365,
+        backtest_start_date: Optional[datetime] = None,
+        backtest_end_date: Optional[datetime] = None,
+        warmup_days: int = 30
     ) -> Dict[str, Any]:
         """
-        包括的バックテスト実行（Phase 4.2: リアルデータ対応版）
+        包括的バックテスト実行（Phase 4.2: リアルデータ対応版 + ウォームアップ期間対応）
         
         Args:
             ticker: ティッカーシンボル
             stock_data: 株価データ（Noneの場合はyfinanceから取得）
             index_data: インデックスデータ（Noneの場合はyfinanceから取得）
             days_back: 取得日数
+            backtest_start_date: バックテスト開始日（取引開始日）
+            backtest_end_date: バックテスト終了日
+            warmup_days: ウォームアップ期間日数（デフォルト30日）
         
         Returns:
             包括的バックテスト結果
         """
         self.logger.info("=" * 80)
         self.logger.info(f"Starting comprehensive backtest for {ticker}")
+        if backtest_start_date:
+            self.logger.info(f"Trading period: {backtest_start_date} to {backtest_end_date}")
+            self.logger.info(f"Warmup period: {warmup_days} days")
         self.logger.info("=" * 80)
         
         try:
@@ -128,6 +138,38 @@ class MainSystemController:
             self.logger.info(f"[STEP 1/7] データ取得開始: {ticker}")
             if stock_data is None:
                 stock_data, index_data = self._get_real_data(ticker, days_back)
+            
+            # 1.5 ウォームアップ期間対応（backtest_start_date指定時）
+            if backtest_start_date is not None:
+                # ウォームアップ開始日を計算
+                warmup_start = backtest_start_date - timedelta(days=warmup_days)
+                
+                # DatetimeIndexに変換（必要なら）
+                warmup_start_ts = pd.Timestamp(warmup_start)
+                
+                # データをウォームアップ開始日以降にフィルタリング
+                if isinstance(stock_data.index, pd.DatetimeIndex):
+                    available_start = stock_data.index.min()
+                    if warmup_start_ts < available_start:
+                        raise RuntimeError(
+                            f"Insufficient data for warmup period. "
+                            f"Required warmup_start: {warmup_start_ts}, "
+                            f"Available data starts: {available_start}, "
+                            f"Shortage: {(available_start - warmup_start_ts).days} days"
+                        )
+                    
+                    stock_data = stock_data[stock_data.index >= warmup_start_ts]
+                    if index_data is not None:
+                        index_data = index_data[index_data.index >= warmup_start_ts]
+                    
+                    self.logger.info(
+                        f"Data filtered: warmup_start={warmup_start_ts}, "
+                        f"trading_start={backtest_start_date}, "
+                        f"trading_end={backtest_end_date}, "
+                        f"data_length={len(stock_data)} rows"
+                    )
+                else:
+                    self.logger.warning("stock_data index is not DatetimeIndex, skipping warmup filtering")
             
             # 2. 市場分析・トレンド判定
             self.logger.info(f"[STEP 2/7] 市場分析実行")
@@ -162,11 +204,18 @@ class MainSystemController:
             
             # 5. 戦略実行（動的選択・重み付け）
             self.logger.info(f"[STEP 5/7] 戦略実行開始")
+            
+            # trading_start_date, trading_end_dateをTimestamp化
+            trading_start_ts = pd.Timestamp(backtest_start_date) if backtest_start_date else None
+            trading_end_ts = pd.Timestamp(backtest_end_date) if backtest_end_date else None
+            
             execution_results = self.execution_manager.execute_dynamic_strategies(
                 stock_data=stock_data,
                 ticker=ticker,
                 selected_strategies=strategy_selection['selected_strategies'],
-                strategy_weights=strategy_selection.get('strategy_weights', {})
+                strategy_weights=strategy_selection.get('strategy_weights', {}),
+                trading_start_date=trading_start_ts,
+                trading_end_date=trading_end_ts
             )
             
             # Phase 5-B-2: backtest_signalsを取得（Entry_Signal/Exit_Signal列を含む）

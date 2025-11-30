@@ -127,7 +127,9 @@ class StrategyExecutionManager:
     
     def execute_strategy(self, strategy_name: str, symbols: Optional[List[str]] = None, 
                         stock_data: Optional[pd.DataFrame] = None,
-                        index_data: Optional[pd.DataFrame] = None) -> Dict[str, Any]:
+                        index_data: Optional[pd.DataFrame] = None,
+                        trading_start_date: Optional[pd.Timestamp] = None,
+                        trading_end_date: Optional[pd.Timestamp] = None) -> Dict[str, Any]:
         """
         単一戦略実行（シンプルモード）
         
@@ -136,6 +138,8 @@ class StrategyExecutionManager:
             symbols: ティッカーシンボルリスト
             stock_data: 株価データ（Phase 4.2: yfinanceから取得済み）
             index_data: インデックスデータ（Phase 4.2: yfinanceから取得済み）
+            trading_start_date: 取引開始日（ウォームアップ期間後）
+            trading_end_date: 取引終了日
         
         Returns:
             実行結果辞書
@@ -163,8 +167,11 @@ class StrategyExecutionManager:
             if strategy is None:
                 return self._create_error_result(f"strategy_not_found: {strategy_name}")
             
-            # 戦略実行（既存戦略はデータ引数なしで実行）
-            signals = strategy.backtest()
+            # 戦略実行（ウォームアップ期間対応）
+            signals = strategy.backtest(
+                trading_start_date=trading_start_date,
+                trading_end_date=trading_end_date
+            )
             
             # Phase 4.2-5-3: 戦略のbacktest結果を保持（取引統合のため）
             self.current_strategy = strategy

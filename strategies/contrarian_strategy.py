@@ -240,14 +240,31 @@ class ContrarianStrategy(BaseStrategy):
 
         return 0
 
-    def backtest(self):
+    def backtest(self, trading_start_date=None, trading_end_date=None):
         """
         バックテストを実行する。
+        
+        Parameters:
+            trading_start_date (datetime, optional): 取引開始日（この日以降にシグナル生成開始）
+            trading_end_date (datetime, optional): 取引終了日（この日以前までシグナル生成）
         """
         self.data['Entry_Signal'] = 0
         self.data['Exit_Signal'] = 0
 
         for idx in range(len(self.data)):
+            # 取引期間フィルタリング（BaseStrategy.backtest()と同じロジック）
+            if trading_start_date is not None or trading_end_date is not None:
+                current_date = self.data.index[idx]
+                in_trading_period = True
+                
+                if trading_start_date is not None and current_date < trading_start_date:
+                    in_trading_period = False
+                if trading_end_date is not None and current_date > trading_end_date:
+                    in_trading_period = False
+                
+                if not in_trading_period:
+                    # 取引期間外はシグナル生成をスキップ
+                    continue
             # エントリーシグナル
             if not self.data['Entry_Signal'].iloc[max(0, idx - 1):idx + 1].any():
                 entry_signal = self.generate_entry_signal(idx)

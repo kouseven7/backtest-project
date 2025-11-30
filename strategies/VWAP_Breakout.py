@@ -393,9 +393,13 @@ class VWAPBreakoutStrategy(BaseStrategy):
             return -1
         return 0
 
-    def backtest(self):
+    def backtest(self, trading_start_date=None, trading_end_date=None):
         """
         VWAPアウトブレイク戦略のバックテストを実行する。
+        
+        Parameters:
+            trading_start_date (datetime, optional): 取引開始日（この日以降にシグナル生成開始）
+            trading_end_date (datetime, optional): 取引終了日（この日以前までシグナル生成）
         
         Returns:
             pd.DataFrame: エントリー/イグジットシグナルが追加されたデータフレーム
@@ -412,6 +416,24 @@ class VWAPBreakoutStrategy(BaseStrategy):
         # バックテストループ
         for idx in range(len(self.data)):
             current_price = self.data[self.price_column].iloc[idx]
+            
+            # 取引期間フィルタリング（BaseStrategy.backtest()と同じロジック）
+            if trading_start_date is not None or trading_end_date is not None:
+                current_date = self.data.index[idx]
+                in_trading_period = True
+                
+                if trading_start_date is not None and current_date < trading_start_date:
+                    in_trading_period = False
+                if trading_end_date is not None and current_date > trading_end_date:
+                    in_trading_period = False
+                
+                if not in_trading_period:
+                    # 取引期間外はポジション状態のみ伝播
+                    if idx > 0:
+                        self.data.loc[self.data.index[idx], 'Position'] = self.data['Position'].iloc[idx-1]
+                        if self.data['Position'].iloc[idx-1] == 1:
+                            self.data.loc[self.data.index[idx], 'Entry_Idx'] = self.data['Entry_Idx'].iloc[idx-1]
+                    continue
             
             # 前日までのポジション状態を確認
             if idx > 0:

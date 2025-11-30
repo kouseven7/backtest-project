@@ -37,8 +37,13 @@ class OpeningGapFixedStrategy(OpeningGapStrategy):
         """初期化は親クラスと同じ"""
         super().__init__(data, dow_data, params, price_column)
     
-    def backtest(self):
-        """バックテストに一部利確機能を追加（ポジション管理改善版）"""
+    def backtest(self, trading_start_date=None, trading_end_date=None):
+        """バックテストに一部利確機能を追加（ポジション管理改善版 + ウォームアップ期間対応）
+        
+        Parameters:
+            trading_start_date (datetime, optional): 取引開始日（この日以降にシグナル生成開始）
+            trading_end_date (datetime, optional): 取引終了日（この日以前までシグナル生成）
+        """
         self.data['Entry_Signal'] = 0
         self.data['Exit_Signal'] = 0
         self.data['Position_Size'] = 0.0  # ポジションサイズ追跡用
@@ -46,6 +51,21 @@ class OpeningGapFixedStrategy(OpeningGapStrategy):
         
         # バックテストループ
         for idx in range(len(self.data)):
+            # 取引期間フィルタリング（BaseStrategy.backtest()と同じロジック）
+            if trading_start_date is not None or trading_end_date is not None:
+                current_date = self.data.index[idx]
+                in_trading_period = True
+                
+                if trading_start_date is not None and current_date < trading_start_date:
+                    in_trading_period = False
+                if trading_end_date is not None and current_date > trading_end_date:
+                    in_trading_period = False
+                
+                if not in_trading_period:
+                    # 取引期間外はポジション状態のみ伝播
+                    if idx > 0:
+                        self.data.at[self.data.index[idx], 'Position_Size'] = self.data['Position_Size'].iloc[idx-1]
+                    continue
             current_position = self.data['Position_Size'].iloc[idx-1] if idx > 0 else 0.0
             
             # ポジションがない場合のみエントリーシグナルをチェック

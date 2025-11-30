@@ -142,10 +142,15 @@ class BaseStrategy:
         latest_entry_idx = previous_entries[-1]
         return self.data.loc[latest_entry_idx, 'Adj Close']
         
-    def backtest(self) -> pd.DataFrame:
+    def backtest(self, trading_start_date: Optional[pd.Timestamp] = None,
+                 trading_end_date: Optional[pd.Timestamp] = None) -> pd.DataFrame:
         """
         戦略のバックテストを実行する標準メソッド。
         必要に応じて各戦略でオーバーライドできます。
+        
+        Args:
+            trading_start_date: 取引開始日（この日以降のみシグナル生成）
+            trading_end_date: 取引終了日（この日以前のみシグナル生成）
         
         Returns:
             pd.DataFrame: エントリー/イグジットシグナルが追加されたデータフレーム
@@ -180,8 +185,19 @@ class BaseStrategy:
         exit_count = 0
         
         for idx in range(len(result)):
+            current_date = result.index[idx]
+            
+            # ウォームアップ期間チェック（trading_start_date指定時）
+            in_trading_period = True
+            if trading_start_date is not None:
+                if current_date < trading_start_date:
+                    in_trading_period = False
+            if trading_end_date is not None:
+                if current_date > trading_end_date:
+                    in_trading_period = False
+            
             # ポジションを持っていない場合のみエントリーシグナルをチェック
-            if not in_position:
+            if not in_position and in_trading_period:
                 entry_signal = self.generate_entry_signal(idx)
                 if entry_signal == 1:
                     result.at[result.index[idx], 'Entry_Signal'] = 1

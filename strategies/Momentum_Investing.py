@@ -287,8 +287,13 @@ class MomentumInvestingStrategy(BaseStrategy):
 
         return 0
 
-    def backtest(self):
-        """モメンタム戦略のバックテストを実行（部分利確機能付き）"""
+    def backtest(self, trading_start_date=None, trading_end_date=None):
+        """モメンタム戦略のバックテストを実行（部分利確機能付き + ウォームアップ期間対応）
+        
+        Parameters:
+            trading_start_date (datetime, optional): 取引開始日（この日以降にシグナル生成開始）
+            trading_end_date (datetime, optional): 取引終了日（この日以前までシグナル生成）
+        """
         # シグナル列の初期化
         self.data.loc[:, 'Entry_Signal'] = 0
         self.data.loc[:, 'Exit_Signal'] = 0
@@ -302,6 +307,19 @@ class MomentumInvestingStrategy(BaseStrategy):
         entry_idx = -1
 
         for idx in range(len(self.data)):
+            # 取引期間フィルタリング（BaseStrategy.backtest()と同じロジック）
+            if trading_start_date is not None or trading_end_date is not None:
+                current_date = self.data.index[idx]
+                in_trading_period = True
+                
+                if trading_start_date is not None and current_date < trading_start_date:
+                    in_trading_period = False
+                if trading_end_date is not None and current_date > trading_end_date:
+                    in_trading_period = False
+                
+                if not in_trading_period:
+                    # 取引期間外はシグナル生成をスキップ
+                    continue
             # ポジションを持っていない場合のみエントリーシグナルを検討
             if not in_position:
                 entry_signal = self.generate_entry_signal(idx)

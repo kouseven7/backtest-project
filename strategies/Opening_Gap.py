@@ -316,7 +316,7 @@ class OpeningGapStrategy(BaseStrategy):
 
         return 0
 
-    def backtest(self):
+    def backtest(self, trading_start_date=None, trading_end_date=None):
         """バックテストに一部利確機能を追加"""
         self.data['Entry_Signal'] = 0
         self.data['Exit_Signal'] = 0
@@ -325,6 +325,20 @@ class OpeningGapStrategy(BaseStrategy):
         
         # バックテストループ
         for idx in range(len(self.data)):
+            # 取引期間フィルタリング
+            if trading_start_date is not None or trading_end_date is not None:
+                current_date = self.data.index[idx]
+                in_trading_period = True
+                if trading_start_date is not None and current_date < trading_start_date:
+                    in_trading_period = False
+                if trading_end_date is not None and current_date > trading_end_date:
+                    in_trading_period = False
+                if not in_trading_period:
+                    # 取引期間外でもPosition_Sizeを維持
+                    if idx > 0:
+                        self.data.at[self.data.index[idx], 'Position_Size'] = self.data['Position_Size'].iloc[idx-1]
+                    continue
+            
             # Entry_Signalがまだ立っていない場合のみエントリーシグナルをチェック
             entry_signal_window = self.data['Entry_Signal'].iloc[max(0, idx-1):idx+1]
             if not bool(entry_signal_window.values.any()):

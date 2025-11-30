@@ -247,7 +247,7 @@ class PairsTradingStrategy(BaseStrategy):
                 
         return 0
         
-    def backtest(self) -> pd.DataFrame:
+    def backtest(self, trading_start_date=None, trading_end_date=None) -> pd.DataFrame:
         """バックテスト実行"""
         result_data = self.data.copy()
         result_data['Entry_Signal'] = 0
@@ -257,6 +257,17 @@ class PairsTradingStrategy(BaseStrategy):
         position_size = 0
         
         for i in range(len(result_data)):
+            # 取引期間フィルタリング
+            if trading_start_date is not None or trading_end_date is not None:
+                current_date = result_data.index[i]
+                in_trading_period = True
+                if trading_start_date is not None and current_date < trading_start_date:
+                    in_trading_period = False
+                if trading_end_date is not None and current_date > trading_end_date:
+                    in_trading_period = False
+                if not in_trading_period:
+                    continue
+            
             if position_size == 0:
                 # エントリーチェック
                 entry_signal = self.generate_entry_signal(i)

@@ -238,7 +238,7 @@ class VWAPBounceStrategy(BaseStrategy):
 
         return 0
 
-    def backtest(self):
+    def backtest(self, trading_start_date=None, trading_end_date=None):
         """
         VWAP反発戦略のバックテストを実行する。
         
@@ -255,6 +255,17 @@ class VWAPBounceStrategy(BaseStrategy):
 
         # 各日についてシグナルを計算
         for idx in range(len(self.data)):
+            # 取引期間フィルタリング
+            if trading_start_date is not None or trading_end_date is not None:
+                current_date = self.data.index[idx]
+                in_trading_period = True
+                if trading_start_date is not None and current_date < trading_start_date:
+                    in_trading_period = False
+                if trading_end_date is not None and current_date > trading_end_date:
+                    in_trading_period = False
+                if not in_trading_period:
+                    continue
+            
             # エントリーシグナルをチェック（ポジションを持っていない場合のみ）
             if not in_position:
                 entry_signal = self.generate_entry_signal(idx)

@@ -37,7 +37,7 @@ class EnhancedBaseStrategy(BaseStrategy):
         # ポジション管理用の追加属性
         self.entry_prices = {}  # エントリー価格を記録する辞書（キー: インデックス、値: エントリー価格）
         self.high_prices = {}   # トレーリングストップ用の最高値を記録する辞書
-        self.price_column = params.get("price_column", "Adj Close")
+        self.price_column = (params or {}).get("price_column", "Adj Close")
         
         # 現在のポジションサイズ
         self.current_position = 0.0
@@ -56,7 +56,7 @@ class EnhancedBaseStrategy(BaseStrategy):
         # 拡張されたバックテストメソッドを呼び出す
         return self.backtest_with_position_tracking()
     
-    def backtest_with_position_tracking(self) -> pd.DataFrame:
+    def backtest_with_position_tracking(self, trading_start_date=None, trading_end_date=None) -> pd.DataFrame:
         """
         ポジション追跡機能を備えた戦略バックテストを実行する拡張メソッド。
         同日Entry/Exit問題を回避するために、ポジション状態を明示的に追跡します。
@@ -83,6 +83,20 @@ class EnhancedBaseStrategy(BaseStrategy):
         
         # バックテストループ
         for idx in range(len(result)):
+            # 取引期間フィルタリング
+            if trading_start_date is not None or trading_end_date is not None:
+                current_date = result.index[idx]
+                in_trading_period = True
+                if trading_start_date is not None and current_date < trading_start_date:
+                    in_trading_period = False
+                if trading_end_date is not None and current_date > trading_end_date:
+                    in_trading_period = False
+                if not in_trading_period:
+                    # 取引期間外でもPosition_Sizeを維持
+                    if idx > 0:
+                        result.at[result.index[idx], 'Position_Size'] = float(result['Position_Size'].iloc[idx-1])
+                    continue
+            
             try:
                 # 現在のポジションサイズを取得（前日のポジションサイズ）
                 current_position = float(result['Position_Size'].iloc[idx-1]) if idx > 0 else 0.0
@@ -180,7 +194,7 @@ class EnhancedBaseStrategy(BaseStrategy):
         self.high_prices[idx] = max(current_high, price)
     
     # デフォルトのbacktestメソッドを拡張版で上書き
-    def backtest(self) -> pd.DataFrame:
+    def backtest(self, trading_start_date=None, trading_end_date=None) -> pd.DataFrame:
         """
         戦略のバックテストを実行する拡張メソッド。
         ポジション追跡機能を使用してバックテストを行います。
@@ -188,4 +202,4 @@ class EnhancedBaseStrategy(BaseStrategy):
         Returns:
             pd.DataFrame: エントリー/イグジットシグナルとポジション状態が追加されたデータフレーム
         """
-        return self.backtest_with_position_tracking()
+        return self.backtest_with_position_tracking(trading_start_date, trading_end_date)

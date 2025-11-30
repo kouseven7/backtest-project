@@ -91,7 +91,9 @@ class IntegratedExecutionManager:
         stock_data: pd.DataFrame,
         ticker: str,
         selected_strategies: Optional[List[str]] = None,
-        strategy_weights: Optional[Dict[str, float]] = None
+        strategy_weights: Optional[Dict[str, float]] = None,
+        trading_start_date: Optional[pd.Timestamp] = None,
+        trading_end_date: Optional[pd.Timestamp] = None
     ) -> Dict[str, Any]:
         """
         動的戦略選択結果をもとに戦略実行
@@ -101,6 +103,8 @@ class IntegratedExecutionManager:
             ticker: ティッカーシンボル
             selected_strategies: 選択済み戦略リスト（Noneの場合は自動選択）
             strategy_weights: 戦略重み（Noneの場合は自動計算）
+            trading_start_date: 取引開始日（ウォームアップ期間後）
+            trading_end_date: 取引終了日
         
         Returns:
             実行結果辞書
@@ -161,7 +165,9 @@ class IntegratedExecutionManager:
                     strategy_name=strategy_name,
                     stock_data=stock_data,
                     ticker=ticker,
-                    weight=weight
+                    weight=weight,
+                    trading_start_date=trading_start_date,
+                    trading_end_date=trading_end_date
                 )
                 
                 execution_results.append(result)
@@ -381,7 +387,9 @@ class IntegratedExecutionManager:
         strategy_name: str,
         stock_data: pd.DataFrame,
         ticker: str,
-        weight: float
+        weight: float,
+        trading_start_date: Optional[pd.Timestamp] = None,
+        trading_end_date: Optional[pd.Timestamp] = None
     ) -> Dict[str, Any]:
         """
         単一戦略実行（Phase 4.2: データ渡し対応）
@@ -391,6 +399,8 @@ class IntegratedExecutionManager:
             stock_data: 株価データ
             ticker: ティッカーシンボル
             weight: 戦略重み
+            trading_start_date: 取引開始日（ウォームアップ期間後）
+            trading_end_date: 取引終了日
         
         Returns:
             実行結果辞書
@@ -407,7 +417,9 @@ class IntegratedExecutionManager:
                 strategy_name=strategy_name,
                 symbols=[ticker],
                 stock_data=stock_data,
-                index_data=index_data
+                index_data=index_data,
+                trading_start_date=trading_start_date,
+                trading_end_date=trading_end_date
             )
             
             # 重み情報を追加

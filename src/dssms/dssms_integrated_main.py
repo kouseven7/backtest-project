@@ -1381,12 +1381,20 @@ class DSSMSIntegratedBacktester:
             
             controller = MainSystemController(config)
             
-            # 3. バックテスト実行
+            # 3. バックテスト実行（ウォームアップ期間対応）
+            # target_dateのみで取引、それより前はウォームアップ期間として扱う
+            backtest_start_date = target_date
+            backtest_end_date = target_date
+            warmup_days = 30  # 各戦略の最大要求日数
+            
             self.logger.info(f"[DSSMS->main_new] バックテスト開始: {symbol}, {target_date}")
             result = controller.execute_comprehensive_backtest(
                 ticker=symbol,
                 stock_data=stock_data,
-                index_data=index_data
+                index_data=index_data,
+                backtest_start_date=backtest_start_date,
+                backtest_end_date=backtest_end_date,
+                warmup_days=warmup_days
             )
             
             # 4. 結果変換

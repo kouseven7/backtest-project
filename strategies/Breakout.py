@@ -162,9 +162,13 @@ class BreakoutStrategy(BaseStrategy):
 
         return 0
 
-    def backtest(self):
+    def backtest(self, trading_start_date=None, trading_end_date=None):
         """
         ブレイクアウト戦略のバックテストを実行する。
+        
+        Parameters:
+            trading_start_date (datetime, optional): 取引開始日（この日以降にシグナル生成開始）
+            trading_end_date (datetime, optional): 取引終了日（この日以前までシグナル生成）
         
         Returns:
             pd.DataFrame: エントリー/イグジットシグナルが追加されたデータフレーム
@@ -179,6 +183,20 @@ class BreakoutStrategy(BaseStrategy):
 
         # 各日にちについてシグナルを計算
         for idx in range(len(self.data)):
+            # 取引期間フィルタリング（BaseStrategy.backtest()と同じロジック）
+            if trading_start_date is not None or trading_end_date is not None:
+                current_date = self.data.index[idx]
+                in_trading_period = True
+                
+                if trading_start_date is not None and current_date < trading_start_date:
+                    in_trading_period = False
+                if trading_end_date is not None and current_date > trading_end_date:
+                    in_trading_period = False
+                
+                if not in_trading_period:
+                    # 取引期間外はシグナル生成をスキップ
+                    continue
+            
             # ポジションを持っていない場合のみエントリーシグナルをチェック
             if not in_position:
                 entry_signal = self.generate_entry_signal(idx)
