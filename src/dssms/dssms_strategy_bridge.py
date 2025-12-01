@@ -537,62 +537,7 @@ class DSSMSStrategyBridge:
             'available_strategies': list(self.strategy_configs.keys())
         }
 
-# 使用例とテスト関数
-def test_strategy_bridge():
-    """戦略ブリッジのテスト"""
-    print("=== DSSMS Strategy Bridge Test ===")
-    
-    # ブリッジ初期化
-    bridge = DSSMSStrategyBridge()
-    
-    # 設定確認
-    print(f"Available strategies: {list(bridge.strategy_configs.keys())}")
-    
-    # テストデータ生成
-    dates = pd.date_range('2024-01-01', '2024-06-30', freq='D')
-    test_data = pd.DataFrame({
-        'Open': np.random.uniform(100, 110, len(dates)),
-        'High': np.random.uniform(110, 120, len(dates)),
-        'Low': np.random.uniform(90, 100, len(dates)),
-        'Close': np.random.uniform(95, 115, len(dates)),
-        'Adj Close': np.random.uniform(95, 115, len(dates)),
-        'Volume': np.random.uniform(1000000, 5000000, len(dates))
-    }, index=dates)
-    
-    index_data = test_data.copy()
-    
-    try:
-        # 戦略実行テスト
-        if 'VWAP_Breakout' in bridge.strategy_configs:
-            result = bridge.execute_strategy(
-                strategy_name='VWAP_Breakout',
-                data=test_data,
-                index_data=index_data
-            )
-            
-            print(f"VWAP_Breakout result: {result.signal} (confidence: {result.confidence:.3f})")
-            print(f"Execution time: {result.execution_time:.3f}s")
-            
-        # 全戦略分析テスト
-        all_results = bridge.analyze_all_strategies(
-            symbol="TEST",
-            date=datetime.now(),
-            data=test_data,
-            index_data=index_data
-        )
-        
-        print(f"\nAll strategies analysis:")
-        print(f"Successful strategies: {all_results['statistics']['successful_strategies']}")
-        print(f"Average score: {all_results['statistics']['average_score']:.3f}")
-        
-        # 実行統計
-        stats = bridge.get_execution_statistics()
-        print(f"\nExecution statistics:")
-        print(f"Total executions: {stats.get('total_executions', 0)}")
-        print(f"Success rate: {stats.get('success_rate', 0):.2%}")
-        
-    except Exception as e:
-        print(f"Test failed: {e}")
-
-if __name__ == "__main__":
-    test_strategy_bridge()
+# test_strategy_bridge() メソッドを削除
+# 理由: copilot-instructions.md準拠
+# 「モック/ダミー/テストデータを使用するフォールバック禁止」
+# テスト関数内のランダムデータ生成（np.random.uniform）は実データと乖離するため削除

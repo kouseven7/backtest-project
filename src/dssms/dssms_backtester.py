@@ -2021,36 +2021,12 @@ class DSSMSBacktester:
                 'profit_loss': 0.0
             }
 
-    def _update_portfolio_value(self, date: datetime, position: Optional[str], 
-                              current_value: float) -> float:
-        """修正版: ポートフォリオ価値更新"""
-        try:
-            if not position or position == "CASH":
-                # [修正4] 記録は_record_daily_stateで実施
-                return current_value
-            
-            # 現実的な日次リターン生成（年率10-15%程度を想定）
-            daily_return = np.random.normal(0.0003, 0.015)  # 平均0.03%、標準偏差1.5%
-            
-            # 価値更新
-            new_value = current_value * (1 + daily_return)
-            
-            # 最小値チェック（完全に0にならないようにする）
-            new_value = max(new_value, current_value * 0.8)  # 最大でも20%の日次下落まで
-            
-            # [修正4] 記録は_record_daily_stateで実施
-            
-            self.logger.debug(f"価値更新: {position} {daily_return:+.4f} "
-                            f"{current_value:,.0f} -> {new_value:,.0f}")
-            
-            return new_value
-            
-        except Exception as e:
-            self.logger.warning(f"価値更新エラー {date}: {e}")
-            # エラー時は小幅な変動のみ
-            fallback_value = current_value * (1 + np.random.uniform(-0.01, 0.01))
-            # [修正4] 記録は_record_daily_stateで実施
-            return fallback_value
+    # _update_portfolio_value() メソッドを削除
+    # 理由: copilot-instructions.md違反
+    # 「モック/ダミー/テストデータを使用するフォールバック禁止」
+    # L2033: np.random.normal()によるランダムリターン生成は実データと完全に乖離
+    # L2051: エラー時のnp.random.uniform()フォールバックも同様
+    # 代替策: 実データベースの価値更新を使用（dssms_data_bridge経由）
 
     def _record_daily_state(self, date: datetime, position: Optional[str], 
                           portfolio_value: float, market_condition: Dict[str, Any]):

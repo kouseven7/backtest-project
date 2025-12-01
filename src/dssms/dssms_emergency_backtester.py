@@ -54,17 +54,19 @@ class DSSMSEmergencyBacktester:
             if symbol_universe is None:
                 symbol_universe = ['AAPL', 'MSFT', 'GOOGL']
             
-            # 簡易シミュレーション実行
-            initial_capital = self.config['initial_capital']
+            # copilot-instructions.md準拠: ダミーデータシミュレーション禁止
+            # 実データなしではシミュレーション不可
+            self.logger.error("緊急バックテスター廃止: 実データ使用のdssms_backtester.pyを使用してください")
+            return {
+                'success': False,
+                'error': 'Emergency backtester deprecated - use dssms_backtester.py with real data',
+                'execution_time': datetime.now().isoformat()
+            }
             
-            # ダミーデータでシミュレーション
-            simulation_days = (end_date - start_date).days
-            daily_returns = np.random.normal(0.001, 0.02, simulation_days)  # 平均0.1%、標準偏差2%
-            
-            portfolio_values = [initial_capital]
-            for daily_return in daily_returns:
-                new_value = portfolio_values[-1] * (1 + daily_return)
-                portfolio_values.append(new_value)
+            # 以下の変数は削除されたコードの参照用（使用不可）
+            initial_capital = None
+            simulation_days = None
+            portfolio_values = None
             
             final_value = portfolio_values[-1]
             total_return = (final_value - initial_capital) / initial_capital

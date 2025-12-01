@@ -162,15 +162,10 @@ class AdaptiveScoreCalculator:
                 'low_volatility': 1.1
             }
             
-            # 基本モメンタム（簡易計算）
-            base_momentum = np.random.uniform(0.3, 0.8)  # 実際の実装では価格データから計算
-            
-            # 市場状況調整
-            condition_name = market_condition.value if hasattr(market_condition, 'value') else str(market_condition)
-            weight = condition_weights.get(condition_name, 1.0)
-            
-            momentum_score = base_momentum * weight
-            return min(max(momentum_score, 0.0), 1.0)
+            # copilot-instructions.md準拠: ランダムモメンタム生成禁止
+            # 実データなしではモメンタム計算不可
+            self.logger.error(f"モメンタムスコア計算失敗 ({symbol}): 実データ未実装")
+            return 0.0  # エラー時は0.0返却
             
         except Exception as e:
             self.logger.warning(f"モメンタムスコア計算エラー ({symbol}): {e}")
@@ -204,9 +199,9 @@ class AdaptiveScoreCalculator:
     async def _calculate_relative_strength(self, symbol: str) -> float:
         """相対強度計算"""
         try:
-            # 簡易相対強度計算（実際の実装では市場インデックスとの比較）
-            relative_strength = np.random.uniform(0.2, 0.9)
-            return relative_strength
+            # copilot-instructions.md準拠: ランダム相対強度生成禁止
+            self.logger.error(f"相対強度計算失敗 ({symbol}): 実データ未実装")
+            return 0.0  # エラー時は0.0返却
             
         except Exception as e:
             self.logger.warning(f"相対強度計算エラー ({symbol}): {e}")
@@ -265,9 +260,9 @@ class AdaptiveScoreCalculator:
     async def _calculate_sector_position(self, symbol: str) -> float:
         """セクター内ポジション計算"""
         try:
-            # セクター内での相対的なパフォーマンス位置（簡易計算）
-            position_score = np.random.uniform(0.3, 0.8)
-            return position_score
+            # copilot-instructions.md準拠: ランダムセクターポジション生成禁止
+            self.logger.error(f"セクターポジション計算失敗 ({symbol}): 実データ未実装")
+            return 0.0  # エラー時は0.0返却
             
         except Exception as e:
             self.logger.warning(f"セクター内ポジション計算エラー ({symbol}): {e}")
@@ -295,10 +290,9 @@ class AdaptiveScoreCalculator:
     async def _calculate_timeframe_convergence(self, symbol: str) -> float:
         """時間軸収束スコア計算"""
         try:
-            # 複数時間軸でのシグナル一致度（簡易計算）
-            # 実際の実装では日足、週足、月足のシグナル方向を比較
-            convergence_score = np.random.uniform(0.4, 0.9)
-            return convergence_score
+            # copilot-instructions.md準拠: ランダム時間軸収束生成禁止
+            self.logger.error(f"時間軸収束計算失敗 ({symbol}): 実データ未実装")
+            return 0.0  # エラー時は0.0返却
             
         except Exception as e:
             self.logger.warning(f"時間軸収束スコア計算エラー ({symbol}): {e}")
@@ -307,9 +301,9 @@ class AdaptiveScoreCalculator:
     async def _calculate_signal_strength(self, symbol: str) -> float:
         """シグナル強度計算"""
         try:
-            # テクニカル指標のシグナル強度（簡易計算）
-            signal_strength = np.random.uniform(0.3, 0.8)
-            return signal_strength
+            # copilot-instructions.md準拠: ランダムシグナル強度生成禁止
+            self.logger.error(f"シグナル強度計算失敗 ({symbol}): 実データ未実装")
+            return 0.0  # エラー時は0.0返却
             
         except Exception as e:
             self.logger.warning(f"シグナル強度計算エラー ({symbol}): {e}")
@@ -337,9 +331,9 @@ class AdaptiveScoreCalculator:
     async def _calculate_risk_sentiment_score(self, symbol: str) -> float:
         """リスクセンチメントスコア計算"""
         try:
-            # 市場全体のリスク選好度（簡易計算）
-            risk_sentiment = np.random.uniform(0.2, 0.8)
-            return risk_sentiment
+            # copilot-instructions.md準拠: ランダムリスクセンチメント生成禁止
+            self.logger.error(f"リスクセンチメント計算失敗 ({symbol}): 実データ未実装")
+            return 0.0  # エラー時は0.0返却
             
         except Exception as e:
             self.logger.warning(f"リスクセンチメントスコア計算エラー ({symbol}): {e}")
@@ -348,9 +342,9 @@ class AdaptiveScoreCalculator:
     async def _calculate_liquidity_score(self, symbol: str) -> float:
         """流動性スコア計算"""
         try:
-            # 出来高や売買代金からの流動性評価（簡易計算）
-            liquidity_score = np.random.uniform(0.4, 0.9)
-            return liquidity_score
+            # copilot-instructions.md準拠: ランダム流動性スコア生成禁止
+            self.logger.error(f"流動性スコア計算失敗 ({symbol}): 実データ未実装")
+            return 0.0  # エラー時は0.0返却
             
         except Exception as e:
             self.logger.warning(f"流動性スコア計算エラー ({symbol}): {e}")
@@ -440,15 +434,9 @@ class AdaptiveScoreCalculator:
     def _analyze_factor_performance(self) -> Dict[str, float]:
         """ファクターパフォーマンス分析"""
         try:
-            # 各ファクターの予測精度を分析（簡易版）
-            factor_performance = {}
-            
-            for factor_name in self.adaptive_weights.keys():
-                # 簡易パフォーマンススコア計算
-                performance_score = np.random.uniform(0.3, 0.8)
-                factor_performance[factor_name] = performance_score
-            
-            return factor_performance
+            # copilot-instructions.md準拠: ランダムパフォーマンススコア生成禁止
+            self.logger.error("ファクターパフォーマンス分析失敗: 実データ未実装")
+            return {}  # エラー時は空辞書返却
             
         except Exception as e:
             self.logger.warning(f"ファクターパフォーマンス分析エラー: {e}")

@@ -391,36 +391,22 @@ class DSSMSAnalyzer:
                             except Exception as e:
                                 self.logger.warning(f"ファイル解析エラー {file}: {e}")
             
-            # データが不足している場合はダミーデータ生成
+            # copilot-instructions.md準拠: サンプルデータフォールバック禁止
             if len(selection_data) < 10:
-                self.logger.info("実データ不足のためサンプルデータを生成")
-                selection_data = self._generate_sample_selection_data()
+                self.logger.error(f"実データ不足: {len(selection_data)}件のみ取得（最低10件必要）")
+                return []  # 空リスト返却
             
             return selection_data
             
         except Exception as e:
             self.logger.error(f"選択データ収集エラー: {e}")
-            return self._generate_sample_selection_data()
+            return []  # エラー時は空リスト返却
 
-    def _generate_sample_selection_data(self) -> List[Dict[str, Any]]:
-        """サンプル銘柄選択データ生成（テスト用）"""
-        sample_data = []
-        symbols = ['7203', '9984', '6758', '4063', '8306']
-        
-        for i in range(50):
-            data_point = {
-                "timestamp": datetime.now() - timedelta(days=i),
-                "symbol": symbols[i % len(symbols)],
-                "priority_level": f"level_{np.random.randint(1, 4)}",
-                "selection_reason": np.random.choice(['perfect_order', 'high_score', 'trend_reversal']),
-                "success": np.random.random() > 0.4,  # 60%成功率
-                "holding_period": np.random.uniform(1, 10),  # 1-10日
-                "return": np.random.normal(0.02, 0.05),  # 平均2%、標準偏差5%
-                "switch_trigger": np.random.choice(['daily_evaluation', 'performance_decline', 'risk_threshold'])
-            }
-            sample_data.append(data_point)
-        
-        return sample_data
+    # _generate_sample_selection_data() メソッドを削除
+    # 理由: copilot-instructions.md違反
+    # 「モック/ダミー/テストデータを使用するフォールバック禁止」
+    # L414-419: np.random使用による完全なランダムデータ生成
+    # 実データ不足時は空リスト返却に変更済み（L397, L403）
 
     def _parse_backtest_file(self, file_path: str) -> List[Dict[str, Any]]:
         """バックテストファイル解析"""

@@ -483,59 +483,59 @@ def _normalize_results_data(results: Union[Dict[str, Any], Any]) -> Dict[str, An
 
 # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
 # ORIGINAL: def _create_excel_output(data: Dict[str, Any], filepath: str) -> None:
-    """
-    正規化されたデータからExcelファイルを作成
-    
-    Args:
-        data: 正規化されたデータ
-        filepath: 出力ファイルパス
-    """
-    
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
-# ORIGINAL: with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
-        
-        # 1. サマリーシート作成
-        summary_data = _create_summary_data(data)
-        summary_df = pd.DataFrame(summary_data)
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
-# ORIGINAL: summary_df.to_excel(writer, sheet_name='サマリー', index=False)
-        
-        # 2. 取引履歴シート作成（データがある場合）
-        if data.get('trades') and len(data['trades']) > 0:
-            trades_df = _create_trades_dataframe(data['trades'])
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
-# ORIGINAL: trades_df.to_excel(writer, sheet_name='取引履歴', index=False)
-        
-        # 3. 日次損益シート作成（データがある場合）
-        if data.get('daily_pnl') and len(data['daily_pnl']) > 0:
-            pnl_df = _create_pnl_dataframe(data['daily_pnl'])
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
-# ORIGINAL: pnl_df.to_excel(writer, sheet_name='日次損益', index=False)
-        
-        # 4. メタデータシート作成（Phase 4-B-2-2: N/A完全除去版）
-        from datetime import datetime
-        
-        metadata = data.get('metadata', {})
-        
-        # N/A値の完全除去
-        timestamp = metadata.get('timestamp')
-        if not timestamp or timestamp == 'N/A':
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        version = metadata.get('version')
-        if not version or version == 'N/A':
-            version = 'v2.0.0'  # デフォルトバージョン
-        
-        metadata_data = [
-            ['項目', '値'],
-            ['出力日時', timestamp],  # 確実に値が設定される
-            ['バージョン', version],   # 確実に値が設定される
-            ['データソース', 'DSSMS Backtester'],
-            ['処理ステータス', '正常']
-        ]
-        metadata_df = pd.DataFrame(metadata_data[1:], columns=metadata_data[0])
-# TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
-# ORIGINAL: metadata_df.to_excel(writer, sheet_name='メタデータ', index=False)
+#     """
+#     正規化されたデータからExcelファイルを作成
+#     
+#     Args:
+#         data: 正規化されたデータ
+#         filepath: 出力ファイルパス
+#     """
+#     
+# # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# # ORIGINAL: with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
+#         
+#         # 1. サマリーシート作成
+#         summary_data = _create_summary_data(data)
+#         summary_df = pd.DataFrame(summary_data)
+# # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# # ORIGINAL: summary_df.to_excel(writer, sheet_name='サマリー', index=False)
+#         
+#         # 2. 取引履歴シート作成（データがある場合）
+#         if data.get('trades') and len(data['trades']) > 0:
+#             trades_df = _create_trades_dataframe(data['trades'])
+# # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Entry_Signal/Exit_Signal output affected
+# # ORIGINAL: trades_df.to_excel(writer, sheet_name='取引履歴', index=False)
+#         
+#         # 3. 日次損益シート作成（データがある場合）
+#         if data.get('daily_pnl') and len(data['daily_pnl']) > 0:
+#             pnl_df = _create_pnl_dataframe(data['daily_pnl'])
+# # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# # ORIGINAL: pnl_df.to_excel(writer, sheet_name='日次損益', index=False)
+#         
+#         # 4. メタデータシート作成（Phase 4-B-2-2: N/A完全除去版）
+#         from datetime import datetime
+#         
+#         metadata = data.get('metadata', {})
+#         
+#         # N/A値の完全除去
+#         timestamp = metadata.get('timestamp')
+#         if not timestamp or timestamp == 'N/A':
+#             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+#         
+#         version = metadata.get('version')
+#         if not version or version == 'N/A':
+#             version = 'v2.0.0'  # デフォルトバージョン
+#         
+#         metadata_data = [
+#             ['項目', '値'],
+#             ['出力日時', timestamp],  # 確実に値が設定される
+#             ['バージョン', version],   # 確実に値が設定される
+#             ['データソース', 'DSSMS Backtester'],
+#             ['処理ステータス', '正常']
+#         ]
+#         metadata_df = pd.DataFrame(metadata_data[1:], columns=metadata_data[0])
+# # TODO(tag:excel_deprecated, rationale:Excel output eliminated 2025-10-08) # BACKTEST_IMPACT: Trading data output affected
+# # ORIGINAL: metadata_df.to_excel(writer, sheet_name='メタデータ', index=False)
 
 
 def _create_summary_data(data: Dict[str, Any]) -> List[List[Any]]:

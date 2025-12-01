@@ -170,10 +170,10 @@ class DSSMSDataBridge:
                 self.logger.debug(f"キャッシュ成功: {symbol}")
                 continue
             
-            # サンプルデータ生成（最終手段）
-            self.logger.warning(f"サンプルデータ使用: {symbol}")
-            data = self.diagnostics._generate_sample_data(symbol)
-            results[symbol] = data
+            # copilot-instructions.md準拠: サンプルデータフォールバック禁止
+            # データ取得失敗時はエラーとして扱う
+            self.logger.error(f"データ取得失敗: {symbol} (yfinance, cache共に失敗)")
+            results[symbol] = pd.DataFrame()  # 空データフレーム返却
         
         return results
     
@@ -221,10 +221,9 @@ class DSSMSDataBridge:
                 else:
                     daily_return = 0.0
             else:
-                # フォールバック: 小さなランダム変動
-                import numpy as np
-                daily_return = np.random.normal(0.0001, 0.01)
-                self.logger.warning(f"フォールバック価格更新 {position}: {daily_return:.4f}")
+                # copilot-instructions.md準拠: ランダム変動フォールバック禁止
+                self.logger.error(f"データ不足のため価値更新不可: {position}")
+                return current_value  # 変更なしで返却
                 
             new_value = current_value * (1 + daily_return)
             

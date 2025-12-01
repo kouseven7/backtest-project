@@ -131,7 +131,9 @@ class DSSMSDataDiagnostics:
                 elif source == 'cache':
                     data = self._fetch_cache_data(symbol)
                 elif source == 'sample':
-                    data = self._generate_sample_data(symbol)
+                    # copilot-instructions.md準拠: サンプルデータ生成禁止
+                    self.logger.warning(f"サンプルデータソース廃止: {symbol}")
+                    data = None
                 else:
                     continue
                 
@@ -197,38 +199,11 @@ class DSSMSDataDiagnostics:
             self.logger.debug(f"キャッシュ命中: {symbol}")
         return data
     
-    def _generate_sample_data(self, symbol: str) -> pd.DataFrame:
-        """サンプルデータ生成（最終フォールバック）"""
-        import numpy as np
-        
-        dates = pd.date_range(
-            start=datetime.now() - timedelta(days=self.config['test_period_days']),
-            end=datetime.now(),
-            freq='D'
-        )
-        
-        # 基本価格（銘柄に応じて調整）
-        base_price = 1000 if symbol.endswith('.T') else 100
-        
-        # ランダムウォークで価格生成
-        np.random.seed(hash(symbol) % 2**32)
-        returns = np.random.normal(0.001, 0.02, len(dates))
-        prices = [base_price]
-        
-        for ret in returns[1:]:
-            prices.append(prices[-1] * (1 + ret))
-        
-        # OHLCV データ作成
-        data = pd.DataFrame({
-            'Open': prices,
-            'High': [p * (1 + abs(np.random.normal(0, 0.01))) for p in prices],
-            'Low': [p * (1 - abs(np.random.normal(0, 0.01))) for p in prices],
-            'Close': prices,
-            'Volume': [int(np.random.lognormal(12, 0.5)) for _ in prices]
-        }, index=dates)
-        
-        self.logger.debug(f"サンプルデータ生成: {symbol}")
-        return data
+    # _generate_sample_data() メソッドを削除
+    # 理由: copilot-instructions.md違反
+    # 「モック/ダミー/テストデータを使用するフォールバック禁止」
+    # L200-232: np.random使用による完全なランダムデータ生成
+    # 実データ取得失敗時は空DataFrameまたはNone返却に変更済み
     
     def _assess_data_quality(self, data: pd.DataFrame) -> Dict[str, Any]:
         """データ品質評価"""

@@ -509,62 +509,19 @@ class DSSMSExcelExporter:
             self.logger.warning(f"保有期間計算エラー: {e}")
             return "24.0時間"
     
-    def _generate_sample_switch_history(self, result: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """サンプル切替履歴生成（V2版から移植）"""
-        try:
-            switch_count = result.get("switch_count", 10)
-            switches = []
-            
-            symbols = ["7203.T", "9984.T", "6758.T", "8031.T", "8306.T"]
-            
-            for i in range(switch_count):
-                switch = {
-                    "date": datetime.now() - timedelta(days=i*3),
-                    "from_symbol": symbols[i % len(symbols)],
-                    "to_symbol": symbols[(i+1) % len(symbols)],
-                    "reason": "パフォーマンス向上のため",
-                    "confidence": np.random.uniform(0.3, 0.9),
-                    "profit_loss": np.random.normal(1000, 3000),
-                    "holding_period_hours": np.random.uniform(24, 168),
-                    "entry_price": np.random.uniform(800, 1200),
-                    "exit_price": np.random.uniform(850, 1250),
-                    "quantity": 100,
-                    "switch_cost": np.random.uniform(1000, 3000)
-                }
-                switches.append(switch)
-            
-            self.logger.info(f"サンプル切替履歴生成完了: {len(switches)}件")
-            return switches
-            
-        except Exception as e:
-            self.logger.error(f"サンプル切替履歴生成エラー: {e}")
-            return []  # フォールバック（0%生成回避）
+    # _generate_sample_switch_history() メソッドを削除
+    # 理由: copilot-instructions.md違反
+    # 「モック/ダミー/テストデータを使用するフォールバック禁止」
+    # L513-540: np.random使用による完全なランダム切替履歴生成
+    # 実データなし時は空リスト返却に変更済み
     
     # _map_switch_to_strategy削除 - ランダム戦略選択は不要
     
-    def _generate_sample_portfolio_values(self, result: Dict[str, Any]) -> List[float]:
-        """サンプルポートフォリオ価値生成（V2版から移植）"""
-        try:
-            final_value = result.get("final_portfolio_value", self.initial_capital * 1.15)
-            days = 100  # デフォルト期間
-            
-            # 最終価値に向かって変動するポートフォリオ価値を生成
-            values = []
-            current_value = self.initial_capital
-            
-            daily_drift = ((final_value / self.initial_capital) ** (1/days)) - 1
-            
-            for i in range(days):
-                daily_change = np.random.normal(daily_drift, 0.02)
-                current_value *= (1 + daily_change)
-                values.append(current_value)
-            
-            self.logger.info(f"サンプルポートフォリオ価値生成完了: {len(values)}日分")
-            return values
-            
-        except Exception as e:
-            self.logger.error(f"サンプルポートフォリオ価値生成エラー: {e}")
-            return [self.initial_capital]  # フォールバック（0%生成回避）
+    # _generate_sample_portfolio_values() メソッドを削除
+    # 理由: copilot-instructions.md違反
+    # 「モック/ダミー/テストデータを使用するフォールバック禁止」
+    # L544-565: np.random使用による完全なランダムポートフォリオ価値生成
+    # 実データなし時は初期資本のみのリスト返却に変更済み
     
     def _calculate_returns_from_values(self, portfolio_values: List[float]) -> List[float]:
         """ポートフォリオ価値から日次リターン計算（V2版から移植）"""
@@ -643,9 +600,9 @@ class DSSMSExcelExporter:
             daily_returns = result.get("daily_returns", [])
             
             if not portfolio_values:
-                # サンプルデータ生成（フォールバック処理）
-                portfolio_values = self._generate_sample_portfolio_values(result)
-                daily_returns = self._calculate_returns_from_values(portfolio_values)
+                # copilot-instructions.md準拠: サンプルポートフォリオ価値生成禁止
+                self.logger.error("ポートフォリオ価値データなし: 日次PnL生成不可")
+                return []  # 空リスト返却
             
             # 日付範囲生成（文字列対応）
             start_date_raw = result.get("start_date", datetime.now() - timedelta(days=len(portfolio_values)))
