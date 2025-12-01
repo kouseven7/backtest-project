@@ -52,6 +52,9 @@ def fetch_stock_data(ticker: str, start_date: str, end_date: str, max_retries=3,
     """
     yfinanceを用いて株価データを取得する（リトライ付き）。
     データが空の場合やその他のエラー発生時にはログ出力を行い、例外を再スローする。
+    
+    yfinanceのend日付はexclusive（含まれない）仕様のため、+1日して取得後にフィルタリング。
+    これにより指定期間の末尾が休日・祝日でも正確な期間のデータを取得。
     """
     # 日本株の場合は.Tサフィックスを追加
     yahoo_ticker = ticker
@@ -60,14 +63,30 @@ def fetch_stock_data(ticker: str, start_date: str, end_date: str, max_retries=3,
     elif ticker.isdigit() and len(ticker) >= 4 and not ticker.endswith('.T'):
         yahoo_ticker = f"{ticker}.T"
     
+    # yfinanceのexclusive仕様対策: end_dateに+1日
+    end_date_adjusted = (pd.Timestamp(end_date) + pd.Timedelta(days=1)).strftime('%Y-%m-%d')
+    
     for attempt in range(max_retries):
         try:
             logger.info(f"{ticker} のデータ取得を開始します: {start_date} から {end_date}")
             logger.info(f"Yahoo Finance ticker: {yahoo_ticker}")
-            data = yf.download(yahoo_ticker, start=start_date, end=end_date)
+            logger.info(f"yfinance調整: end_date {end_date} -> {end_date_adjusted} (exclusive仕様対策)")
+            
+            data = yf.download(yahoo_ticker, start=start_date, end=end_date_adjusted)
+            
             if data.empty:
                 raise ValueError(f"{ticker} の取得データが空です。")
-            logger.info(f"{ticker} のデータ取得に成功しました。")
+            
+            # ユーザー指定期間でフィルタリング（安全策）
+            user_end = pd.Timestamp(end_date)
+            original_rows = len(data)
+            data = data[data.index <= user_end]
+            filtered_rows = len(data)
+            
+            if filtered_rows < original_rows:
+                logger.info(f"期間フィルタリング: {original_rows}行 -> {filtered_rows}行 (指定期間外を除外)")
+            
+            logger.info(f"{ticker} のデータ取得に成功しました。(最終: {data.index[-1].strftime('%Y-%m-%d')}, {len(data)}行)")
             return data
         except Exception as e:
             logger.warning(f"{ticker} のデータ取得失敗（{attempt+1}/{max_retries}回目）: {e}")

@@ -169,12 +169,56 @@ class MainSystemController:
                     if index_data is not None:
                         index_data = index_data[index_data.index >= warmup_start_ts]
                     
+                    # Priority 1-2: データ不足警告ログ (copilot-instructions.md準拠)
+                    # 取引0件問題の早期検出: trading_start_date > データ最終日
                     self.logger.info(
                         f"Data filtered: warmup_start={warmup_start_ts}, "
                         f"trading_start={backtest_start_date}, "
                         f"trading_end={backtest_end_date}, "
                         f"data_length={len(stock_data)} rows"
                     )
+                    
+                    # データ範囲チェック: trading_start_date > データ最終日の場合は警告
+                    if len(stock_data) > 0:
+                        data_last_date = pd.Timestamp(stock_data.index[-1])
+                        trading_start_ts = pd.Timestamp(backtest_start_date)
+                        
+                        # タイムゾーン統一: data_last_dateがtz-awareならtrading_start_tsもtz-awareに変換
+                        if data_last_date.tzinfo is not None and trading_start_ts.tzinfo is None:
+                            trading_start_ts = trading_start_ts.tz_localize(data_last_date.tzinfo)
+                        elif data_last_date.tzinfo is None and trading_start_ts.tzinfo is not None:
+                            trading_start_ts = trading_start_ts.tz_localize(None)
+                        
+                        self.logger.info(f"[DATA_RANGE_CHECK] データ最終日: {data_last_date.strftime('%Y-%m-%d')}")
+                        self.logger.info(f"[DATA_RANGE_CHECK] 取引開始日: {trading_start_ts.strftime('%Y-%m-%d')}")
+                        
+                        if data_last_date < trading_start_ts:
+                            error_msg = (
+                                f"[DATA_INSUFFICIENT] trading_start_date({backtest_start_date})がデータ範囲外です。"
+                                f"データ最終日: {data_last_date.strftime('%Y-%m-%d')}, "
+                                f"取引開始日: {trading_start_ts.strftime('%Y-%m-%d')}。"
+                                f"取引0件の可能性があります。バックテストを中断します。"
+                            )
+                            self.logger.error(error_msg)
+                            # copilot-instructions.md準拠: データ不足時はエラーとして中断
+                            return {
+                                'status': 'DATA_INSUFFICIENT',
+                                'ticker': ticker,
+                                'error': error_msg,
+                                'data_last_date': data_last_date.strftime('%Y-%m-%d'),
+                                'trading_start_date': trading_start_ts.strftime('%Y-%m-%d'),
+                                'execution_timestamp': datetime.now()
+                            }
+                    else:
+                        error_msg = "[DATA_INSUFFICIENT] stock_dataが空です。取引0件の可能性があります。バックテストを中断します。"
+                        self.logger.error(error_msg)
+                        # copilot-instructions.md準拠: データ不足時はエラーとして中断
+                        return {
+                            'status': 'DATA_INSUFFICIENT',
+                            'ticker': ticker,
+                            'error': error_msg,
+                            'execution_timestamp': datetime.now()
+                        }
                 else:
                     self.logger.warning("stock_data index is not DatetimeIndex, skipping warmup filtering")
             

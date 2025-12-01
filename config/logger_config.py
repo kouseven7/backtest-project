@@ -42,7 +42,8 @@ def setup_logger(name: str, level=logging.INFO, log_file: str = None) -> logging
         log_dir = os.path.dirname(log_file)
         if log_dir and not os.path.exists(log_dir):
             os.makedirs(log_dir)
-        file_handler = logging.FileHandler(log_file)
+        # UTF-8エンコーディング指定（Windows環境でのShift_JIS問題対策）
+        file_handler = logging.FileHandler(log_file, encoding='utf-8')
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 

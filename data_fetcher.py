@@ -164,10 +164,23 @@ def flatten_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 def fetch_yahoo_data(ticker: str, start_date: str, end_date: str, interval: str = '1d') -> pd.DataFrame:
     logger.info(f"Fetching data for {ticker} from {start_date} to {end_date}")
-    data = yf_download(ticker, start=start_date, end=end_date, interval=interval)
+    
+    # yfinanceのexclusive仕様対策: end_dateに+1日
+    end_date_adjusted = (pd.Timestamp(end_date) + pd.Timedelta(days=1)).strftime('%Y-%m-%d')
+    logger.info(f"yfinance調整: end_date {end_date} -> {end_date_adjusted} (exclusive仕様対策)")
+    
+    data = yf_download(ticker, start=start_date, end=end_date_adjusted, interval=interval)
     if data.empty:
         logger.error(f"{ticker} のデータが空です。")
         raise ValueError(f"{ticker} のデータが空です。")
+    
+    # ユーザー指定期間でフィルタリング（安全策）
+    user_end = pd.Timestamp(end_date)
+    original_rows = len(data)
+    data = data[data.index <= user_end]
+    if len(data) < original_rows:
+        logger.info(f"期間フィルタリング: {original_rows}行 -> {len(data)}行 (指定期間外を除外)")
+    
     data = flatten_columns(data)
     data.columns = data.columns.str.strip().str.title()
     if data.index.tz is None:
@@ -199,7 +212,20 @@ def fetch_yahoo_index_data(ticker: str, start_date: str = None, end_date: str = 
     """
     if start_date and end_date:
         logger.info(f"Fetching index data for {ticker} from {start_date} to {end_date}")
-        data = yf_download(ticker, start=start_date, end=end_date, interval=interval)
+        
+        # yfinanceのexclusive仕様対策: end_dateに+1日
+        end_date_adjusted = (pd.Timestamp(end_date) + pd.Timedelta(days=1)).strftime('%Y-%m-%d')
+        logger.info(f"yfinance調整: end_date {end_date} -> {end_date_adjusted} (exclusive仕様対策)")
+        
+        data = yf_download(ticker, start=start_date, end=end_date_adjusted, interval=interval)
+        
+        # ユーザー指定期間でフィルタリング（安全策）
+        if not data.empty:
+            user_end = pd.Timestamp(end_date)
+            original_rows = len(data)
+            data = data[data.index <= user_end]
+            if len(data) < original_rows:
+                logger.info(f"期間フィルタリング: {original_rows}行 -> {len(data)}行 (指定期間外を除外)")
     else:
         logger.info(f"Fetching index data for {ticker} with period={period}")
         data = yf_download(ticker, period=period, interval=interval)

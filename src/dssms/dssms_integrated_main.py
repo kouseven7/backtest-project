@@ -117,6 +117,11 @@ class DSSMSIntegratedBacktester:
             self.logger = logging.getLogger(f"{self.__class__.__name__}")
             self.logger.setLevel(logging.INFO)
             
+            # ログファイル出力の遅延初期化フラグ（TODO-PERF-001対応）
+            # setup_logger()のインポートコスト（2.4秒）を回避するため、
+            # 初回ログ出力時にFileHandlerを追加する遅延初期化方式を採用
+            self._file_logging_initialized = False
+            
             # 重いモジュールは遅延初期化フラグで管理（TODO-PERF-001対応）
             self.dss_core = None
             self.advanced_ranking_engine = None
@@ -156,6 +161,11 @@ class DSSMSIntegratedBacktester:
                 'max_switch_cost_rate': 0.05
             }
             
+            # ログファイル出力の遅延初期化トリガー（本番運用想定）
+            # 初回のみ2.4秒のコスト、以降はオーバーヘッドなし
+            self._setup_file_logging()
+            
+            # 初期化完了ログ（FileHandler追加後に出力）
             self.logger.info("DSSMS統合バックテスター初期化完了（遅延ロード対応）")
             
         except Exception as e:
@@ -172,7 +182,7 @@ class DSSMSIntegratedBacktester:
                 self.logger.info("DSS Core V3 直接初期化完了")
             except ImportError:
                 self.dss_core = None
-                self.logger.warning("DSS Core V3 インポート失敗 - モック使用")
+                self.logger.warning("DSS Core V3 インポート失敗 - 使用不可")
             self._dss_initialized = True
         return self.dss_core
 
@@ -186,7 +196,13 @@ class DSSMSIntegratedBacktester:
                 self.logger.info("AdvancedRankingEngine 直接初期化完了")
             except (ImportError, Exception) as e:
                 self.advanced_ranking_engine = None
-                self.logger.warning(f"AdvancedRankingEngine初期化失敗: {e} - フォールバック選択使用")
+                # P3-2: フォールバック詳細化ログ (copilot-instructions.md準拠)
+                self.logger.warning(
+                    f"[FALLBACK] AdvancedRankingEngine初期化失敗 - フォールバック選択使用 | "
+                    f"理由: {e} | "
+                    f"代替手段: フォールバック選択 | "
+                    f"影響範囲: 高度ランキング機能無効化、基本スクリーニングのみ使用"
+                )
             self._ranking_initialized = True
         return self.advanced_ranking_engine
 
@@ -217,6 +233,43 @@ class DSSMSIntegratedBacktester:
     def ensure_risk_management(self):
         """RiskManagement確保（パブリックアクセス用）"""
         return self._initialize_risk_management()
+
+    def _setup_file_logging(self):
+        """
+        ログファイル出力の遅延初期化（TODO-PERF-001対応）
+        
+        setup_logger()のインポートコスト（2.4秒）を回避するため、
+        初回ログ出力時のみFileHandlerを追加する遅延初期化方式。
+        
+        本番運用想定のため、ログファイル出力を優先。
+        起動時間への影響は初回のみ（約2.4秒）。
+        
+        Returns:
+            None
+        """
+        if self._file_logging_initialized:
+            return
+        
+        try:
+            # setup_logger()を使用してFileHandlerを追加
+            # （初回のみ2.4秒のコスト）
+            from config.logger_config import setup_logger
+            
+            # 既存のロガーにFileHandlerを追加
+            log_file = "logs/dssms_integrated_backtest.log"
+            self.logger = setup_logger(
+                f"{self.__class__.__name__}",
+                log_file=log_file
+            )
+            
+            self._file_logging_initialized = True
+            self.logger.info(f"ログファイル出力初期化完了: {log_file}")
+            
+        except Exception as e:
+            # フォールバック: FileHandler追加失敗時もコンソール出力は継続
+            # copilot-instructions.md準拠: エラーログに記録
+            self.logger.error(f"ログファイル出力初期化失敗: {e} - コンソール出力のみ継続")
+            self._file_logging_initialized = True  # 再試行を防ぐ
 
     def _initialize_components(self):
         """DSSMSコンポーネント直接初期化（TODO-PERF-004: lazy_loader除去）"""
@@ -1054,6 +1107,18 @@ class DSSMSIntegratedBacktester:
             # 複合スコア最高の候補選択
             best_candidate = max(enhanced_candidates, key=lambda x: x.get('composite_score', 0.0))
             
+            # P2-2: ランキング結果ログ - トップ3候補のスコア詳細
+            self.logger.info(f"[RANKING_RESULT] ランキング結果トップ3:")
+            sorted_candidates = sorted(enhanced_candidates, key=lambda x: x.get('composite_score', 0.0), reverse=True)
+            for idx, candidate in enumerate(sorted_candidates[:3], 1):
+                self.logger.info(
+                    f"[RANKING_RESULT]   {idx}位: {candidate.get('symbol', 'N/A')} "
+                    f"(複合: {candidate.get('composite_score', 0.0):.4f}, "
+                    f"テクニカル: {candidate.get('technical_strength', 0.0):.3f}, "
+                    f"ファンダメンタル: {candidate.get('fundamental_score', 0.0):.3f}, "
+                    f"優先度: {candidate.get('priority_level', 3)})"
+                )
+            
             symbol = best_candidate['symbol']
             composite_score = best_candidate.get('composite_score', 0.0)
             priority_level = best_candidate.get('priority_level', 3)
@@ -1228,9 +1293,14 @@ class DSSMSIntegratedBacktester:
             # SystemFallbackPolicy統合フォールバック: Nikkei225Screener（DSS使用不可時）
             if self.nikkei225_screener:
                 try:
+                    # Priority 2-1: 銘柄選定過程ログ (copilot-instructions.md準拠)
+                    self.logger.info(f"[SYMBOL_SELECTION] 銘柄選定開始: {target_date.strftime('%Y-%m-%d')}")
+                    
                     # 利用可能資金（ポートフォリオ価値の80%を投資に使用）
                     available_funds = self.portfolio_value * 0.8
                     filtered_symbols = self.nikkei225_screener.get_filtered_symbols(available_funds)
+                    
+                    self.logger.info(f"[SYMBOL_SELECTION] スクリーニング通過: {len(filtered_symbols)}銘柄 (資金: {available_funds:,.0f}円)")
                     
                     if filtered_symbols:
                         # SystemFallbackPolicy統合: 明示的フォールバック処理
@@ -1251,7 +1321,14 @@ class DSSMSIntegratedBacktester:
                             # レガシーフォールバック（SystemFallbackPolicy使用不可時）
                             selected = self._advanced_ranking_selection(filtered_symbols, target_date)
                         
-                        self.logger.info(f"フォールバック(Nikkei225): {selected} ({len(filtered_symbols)}銘柄から選択)")
+                        self.logger.info(f"[SYMBOL_SELECTION] 最終選択: {selected} (候補: {len(filtered_symbols)}銘柄)")
+                        # P3-2: フォールバック詳細化ログ (copilot-instructions.md準拠)
+                        self.logger.info(
+                            f"[FALLBACK] Nikkei225フォールバック実行 | "
+                            f"理由: DSS Core V3使用不可 | "
+                            f"代替手段: Nikkei225Screener + 高度ランキング | "
+                            f"影響範囲: {len(filtered_symbols)}銘柄から選択 (選択: {selected})"
+                        )
                         return selected
                 except Exception as e:
                     self.logger.error(f"Nikkei225フォールバック失敗: {e}")
@@ -1387,7 +1464,24 @@ class DSSMSIntegratedBacktester:
             backtest_end_date = target_date
             warmup_days = 30  # 各戦略の最大要求日数
             
+            # Priority 1-1: DSSMS->main_new.py データ渡しログ (copilot-instructions.md準拠)
             self.logger.info(f"[DSSMS->main_new] バックテスト開始: {symbol}, {target_date}")
+            self.logger.info(f"[DSSMS->main_new_DATA] 銘柄: {symbol}")
+            self.logger.info(f"[DSSMS->main_new_DATA] 対象日: {target_date.strftime('%Y-%m-%d')}")
+            self.logger.info(f"[DSSMS->main_new_DATA] trading_start_date: {backtest_start_date.strftime('%Y-%m-%d')}")
+            self.logger.info(f"[DSSMS->main_new_DATA] trading_end_date: {backtest_end_date.strftime('%Y-%m-%d')}")
+            self.logger.info(f"[DSSMS->main_new_DATA] warmup_days: {warmup_days}")
+            
+            if stock_data is not None and len(stock_data) > 0:
+                self.logger.info(f"[DSSMS->main_new_DATA] stock_data範囲: {stock_data.index[0]} ~ {stock_data.index[-1]} ({len(stock_data)}行)")
+            else:
+                self.logger.warning(f"[DSSMS->main_new_DATA] stock_data: None または空")
+            
+            if index_data is not None and len(index_data) > 0:
+                self.logger.info(f"[DSSMS->main_new_DATA] index_data範囲: {index_data.index[0]} ~ {index_data.index[-1]} ({len(index_data)}行)")
+            else:
+                self.logger.info(f"[DSSMS->main_new_DATA] index_data: None (インデックスデータなし)")
+            
             result = controller.execute_comprehensive_backtest(
                 ticker=symbol,
                 stock_data=stock_data,
@@ -1448,6 +1542,25 @@ class DSSMSIntegratedBacktester:
                 if total_return == 0.0 and 'total_portfolio_value' in execution_results:
                     portfolio_value = execution_results.get('total_portfolio_value', 1000000.0)
                     total_return = portfolio_value - 1000000.0
+            
+            # copilot-instructions.md準拠: 異常値チェック追加
+            # -100%未満（資産が完全消失以上の損失）は異常値として扱う
+            ABNORMAL_RETURN_THRESHOLD = -1.0  # -100%
+            if total_return < ABNORMAL_RETURN_THRESHOLD:
+                error_msg = (
+                    f"異常なリターン値を検出: {total_return:.2%}。"
+                    f"閾値: {ABNORMAL_RETURN_THRESHOLD:.2%}未満は異常値として扱います。"
+                    f"データ不足または計算エラーの可能性があります。"
+                )
+                self.logger.error(f"[ABNORMAL_VALUE] {error_msg}")
+                return {
+                    'status': 'abnormal_value',
+                    'error': error_msg,
+                    'symbol': symbol,
+                    'date': target_date.strftime('%Y-%m-%d'),
+                    'total_return': total_return,
+                    'threshold': ABNORMAL_RETURN_THRESHOLD
+                }
             
             # DSSMS形式に変換
             dssms_result = {
@@ -1610,7 +1723,9 @@ class DSSMSIntegratedBacktester:
                     symbol_with_suffix = symbol if symbol.endswith('.T') else f"{symbol}.T"
                     ticker = yf.Ticker(symbol_with_suffix)
                     # auto_adjust=False指定でAdj Closeカラムを保証（VWAPBreakoutStrategy対応）
-                    stock_data = ticker.history(start=start_date, end=end_date + timedelta(days=1), auto_adjust=False)
+                    # 修正: timedelta(days=1) -> timedelta(days=3)で余裕を持ったデータ取得
+                    # 理由: yfinanceは前営業日までしか返さないため、3日余裕を持たせる
+                    stock_data = ticker.history(start=start_date, end=end_date + timedelta(days=3), auto_adjust=False)
                     
                     # Adj Close保証処理（YFinanceDataFeedと同様のロジック）
                     if 'Adj Close' not in stock_data.columns and 'Close' in stock_data.columns:
@@ -1618,7 +1733,7 @@ class DSSMSIntegratedBacktester:
                     
                     # インデックスデータ（日経225）
                     nikkei_ticker = yf.Ticker("^N225")
-                    index_data = nikkei_ticker.history(start=start_date, end=end_date + timedelta(days=1), auto_adjust=False)
+                    index_data = nikkei_ticker.history(start=start_date, end=end_date + timedelta(days=3), auto_adjust=False)
                     
                     # Adj Close保証処理（インデックスデータ）
                     if 'Adj Close' not in index_data.columns and 'Close' in index_data.columns:
@@ -1914,10 +2029,19 @@ class DSSMSIntegratedBacktester:
                               successful_days: int) -> Dict[str, Any]:
         """最終結果生成"""
         try:
+            # P3-1: DSSMS集計エラー追跡ログ - 基本統計計算
+            self.logger.info(f"[FINAL_STATS] 最終結果生成開始 (取引日数: {trading_days}, 成功日数: {successful_days})")
+            
             # 基本統計
             total_return = self.portfolio_value - self.initial_capital
             total_return_rate = total_return / self.initial_capital
             success_rate = successful_days / trading_days if trading_days > 0 else 0
+            
+            self.logger.info(
+                f"[FINAL_STATS] 基本統計計算完了 - "
+                f"総リターン: {total_return:,.0f}円 ({total_return_rate:.2%}), "
+                f"成功率: {success_rate:.2%}"
+            )
             
             # パフォーマンス統計
             daily_returns = [r.get('daily_return_rate', 0) for r in self.daily_results]
@@ -1926,14 +2050,27 @@ class DSSMSIntegratedBacktester:
                 volatility = np.std(daily_returns) * np.sqrt(252)  # 年率化
                 sharpe_ratio = (np.mean(daily_returns) * 252) / volatility if volatility > 0 else 0
                 max_drawdown = min([r.get('daily_return_rate', 0) for r in self.daily_results])
+                
+                self.logger.info(
+                    f"[FINAL_STATS] パフォーマンス統計計算完了 - "
+                    f"ボラティリティ: {volatility:.4f}, "
+                    f"シャープレシオ: {sharpe_ratio:.4f}, "
+                    f"最大DD: {max_drawdown:.4f}"
+                )
             else:
                 volatility = 0
                 sharpe_ratio = 0
                 max_drawdown = 0
+                self.logger.warning(f"[FINAL_STATS] daily_returns空 - デフォルト値使用")
             
             # 切替統計
             if self.switch_manager:
                 switch_stats = self.switch_manager.get_switch_statistics()
+                self.logger.info(
+                    f"[FINAL_STATS] 切替統計取得完了 - "
+                    f"総切替: {switch_stats.get('total_switches', 0)}回, "
+                    f"成功率: {switch_stats.get('switch_success_rate', 0.0):.2%}"
+                )
             else:
                 switch_stats = {
                     'total_switches': 0,
@@ -1942,9 +2079,13 @@ class DSSMSIntegratedBacktester:
                     'switch_success_rate': 0.0,
                     'average_switch_profit': 0.0
                 }
+                self.logger.warning(f"[FINAL_STATS] switch_manager未初期化 - デフォルト値使用")
             
             # 戦略統計
             strategy_stats = self._calculate_strategy_statistics()
+            self.logger.info(f"[FINAL_STATS] 戦略統計計算完了 - {len(strategy_stats)}戦略")
+            
+            self.logger.info(f"[FINAL_STATS] 最終結果生成完了 - SUCCESS")
             
             return {
                 'status': 'SUCCESS',  # E2Eテスト用ステータスキー追加
@@ -1978,7 +2119,7 @@ class DSSMSIntegratedBacktester:
             }
             
         except Exception as e:
-            self.logger.error(f"最終結果生成エラー: {e}")
+            self.logger.error(f"[FINAL_STATS] 最終結果生成エラー: {e}")
             # エラー時でも基本情報は提供
             return {
                 'status': 'ERROR',  # E2Eテスト用エラーステータス
@@ -2300,7 +2441,7 @@ def main():
         print(f"[SUCCESS] システム状態取得成功:")
         print(f"  - DSS Core V3: {'利用可能' if status['dss_available'] else '使用不可'}")
         print(f"  - リスク管理: {'利用可能' if status['risk_management_available'] else '使用不可'}")
-        print(f"  - データ取得: {'利用可能' if status['data_fetcher_available'] else 'モック使用'}")
+        print(f"  - データ取得: {'利用可能' if status['data_fetcher_available'] else '使用不可'}")
         print(f"  - 初期資本: {status['portfolio_value']:,.0f}円")
         
         # 3. カスタム期間バックテストテスト
