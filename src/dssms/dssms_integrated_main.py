@@ -1462,15 +1462,18 @@ class DSSMSIntegratedBacktester:
             
             # 3. バックテスト実行（ウォームアップ期間対応）
             # target_dateのみで取引、それより前はウォームアップ期間として扱う
-            backtest_start_date = target_date
+            # 重要: _get_symbol_data()で既に120日分のデータを取得済みのため、
+            # main_new.pyでのウォームアップフィルタリングを無効化（backtest_start_date=None）
+            # これにより、L1713で取得した120日分の全データがbase_strategy.pyに渡される
+            backtest_start_date = None  # main_new.pyのフィルタリングをスキップ
             backtest_end_date = target_date
-            warmup_days = 30  # 各戦略の最大要求日数
+            warmup_days = 30  # base_strategy.pyのウォームアップ計算に必要
             
             # Priority 1-1: DSSMS->main_new.py データ渡しログ (copilot-instructions.md準拠)
             self.logger.info(f"[DSSMS->main_new] バックテスト開始: {symbol}, {target_date}")
             self.logger.info(f"[DSSMS->main_new_DATA] 銘柄: {symbol}")
             self.logger.info(f"[DSSMS->main_new_DATA] 対象日: {target_date.strftime('%Y-%m-%d')}")
-            self.logger.info(f"[DSSMS->main_new_DATA] trading_start_date: {backtest_start_date.strftime('%Y-%m-%d')}")
+            self.logger.info(f"[DSSMS->main_new_DATA] trading_start_date: None (main_new.pyフィルタリング無効)")
             self.logger.info(f"[DSSMS->main_new_DATA] trading_end_date: {backtest_end_date.strftime('%Y-%m-%d')}")
             self.logger.info(f"[DSSMS->main_new_DATA] warmup_days: {warmup_days}")
             
@@ -1706,8 +1709,12 @@ class DSSMSIntegratedBacktester:
         """
         try:
             # データ期間設定
-            end_date = target_date
-            start_date = target_date - timedelta(days=60)  # 60日分のデータ
+            # yfinanceのhistory()はend_dateをexclusiveとして扱うため、
+            # target_date当日のデータを取得するには+1日が必要
+            end_date = target_date + timedelta(days=1)
+            # ウォームアップ期間(30日) + インジケーター計算期間(long_window=25営業日≒35カレンダー日) + 余裕
+            # を考慮して120カレンダー日分のデータを取得
+            start_date = target_date - timedelta(days=120)  # 120日分のデータ
             
             # キャッシュから取得試行
             cached_data = self.data_cache.get_cached_data(symbol, start_date, end_date)

@@ -84,7 +84,11 @@ class IntegratedExecutionManager:
         
         # 実行履歴
         self.execution_history: List[Dict[str, Any]] = []
-        self.current_portfolio_value = self.config.get('initial_portfolio_value', 100000.0)
+        
+        # Phase 2025-12-02: initial_portfolio_value廃止、broker.initial_cashから取得
+        # 根本原因修正: config key mismatch解消
+        broker_config = self.config.get('broker', {})
+        self.current_portfolio_value = broker_config.get('initial_cash', 1000000.0)
         
     def execute_dynamic_strategies(
         self,

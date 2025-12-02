@@ -1,30 +1,57 @@
 
 
 # TODO-PERF-001: Phase 2 Stage 2 - SystemFallbackPolicy Integration
+# Phase 2025-12-02: copilot-instructions.md準拠 - ダミーフォールバック削除
 try:
     from src.config.system_modes import SystemFallbackPolicy, ComponentType
     _fallback_policy = SystemFallbackPolicy()
-except ImportError:
-    # フォールバック用のダミークラス
-    class _DummyFallbackPolicy:
-        def handle_component_failure(self, **kwargs):
-            return None
-    _fallback_policy = _DummyFallbackPolicy()
+except ImportError as e:
+    # copilot-instructions.md準拠: モック/ダミーフォールバック禁止
+    # エラーを明示し、問題を隠蔽しない
+    import logging
+    logging.warning(
+        f"SystemFallbackPolicy import failed: {e}. "
+        f"Component failure handling is disabled. "
+        f"This may cause unexpected errors."
+    )
+    _fallback_policy = None  # Noneを返す（ダミーを返さない）
 
 def _handle_lazy_import_failure(component_name: str, error: Exception, fallback_func=None):
-    """遅延インポート失敗時のフォールバック処理"""
-    try:
-        return _fallback_policy.handle_component_failure(
-            component_type="STRATEGY_ENGINE",
-            component_name=component_name,
-            error=error,
-            fallback_func=fallback_func
+    """遅延インポート失敗時のフォールバック処理（Phase 2025-12-02修正）"""
+    # copilot-instructions.md準拠: フォールバック実行時のログ必須
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    if _fallback_policy is not None:
+        try:
+            logger.warning(
+                f"[FALLBACK_DETECTED] Component '{component_name}' failed to load. "
+                f"Error: {error}. Attempting fallback..."
+            )
+            return _fallback_policy.handle_component_failure(
+                component_type="STRATEGY_ENGINE",
+                component_name=component_name,
+                error=error,
+                fallback_func=fallback_func
+            )
+        except Exception as fallback_error:
+            logger.error(
+                f"[FALLBACK_FAILED] Fallback for '{component_name}' also failed: {fallback_error}"
+            )
+    else:
+        logger.error(
+            f"[NO_FALLBACK] Component '{component_name}' failed to load, and no fallback available. "
+            f"Error: {error}"
         )
-    except:
-        # 最終フォールバック
-        if fallback_func:
-            return fallback_func()
-        return None
+    
+    # copilot-instructions.md準拠: フォールバック関数が実データと乖離する場合は使用しない
+    # fallback_funcが提供されていても、実データ乖離の可能性があるため慎重に判断
+    if fallback_func:
+        logger.warning(
+            f"[FALLBACK_FUNC_PROVIDED] fallback_func provided for '{component_name}', "
+            f"but execution is risky. Returning None instead."
+        )
+    return None
 
 
 # TODO-PERF-001: Phase 2 Stage 2 - Config Lazy Import System
