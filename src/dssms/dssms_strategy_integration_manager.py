@@ -345,10 +345,13 @@ class DSSMSStrategyIntegrationManager:
                         if stock_data_single is not None and not stock_data_single.empty:
                             stock_data[symbol] = stock_data_single
                             logger.debug(f"Data loaded for {symbol}: {len(stock_data_single)} records")
+                        else:
+                            # copilot-instructions.md違反: モックデータフォールバック削除
+                            logger.error(f"Failed to load data for {symbol}: empty data")
+                            raise ValueError(f"{symbol}のデータ取得に失敗しました")
                     except Exception as e:
-                        logger.warning(f"Failed to load data for {symbol}: {e}")
-                        # モックデータ生成
-                        stock_data[symbol] = self._generate_mock_single_data(symbol, start_date, end_date)
+                        logger.error(f"Failed to load data for {symbol}: {e}")
+                        raise  # モックデータを生成せずエラーを伝播
                 
                 # インデックスデータ
                 try:
@@ -358,15 +361,17 @@ class DSSMSStrategyIntegrationManager:
                         end_date=end_date
                     )
                     if index_data is None or index_data.empty:
-                        index_data = self._generate_mock_index_data(start_date, end_date)
+                        # copilot-instructions.md違反: モックデータフォールバック削除
+                        logger.error("Failed to load index data: empty data")
+                        raise ValueError("インデックスデータ取得に失敗しました")
                 except Exception as e:
-                    logger.warning(f"Failed to load index data: {e}")
-                    index_data = self._generate_mock_index_data(start_date, end_date)
+                    logger.error(f"Failed to load index data: {e}")
+                    raise  # モックデータを生成せずエラーを伝播
                     
-            except ImportError:
-                logger.warning("get_parameters_and_data not available, using mock data")
-                stock_data = {symbol: self._generate_mock_single_data(symbol, start_date, end_date) for symbol in symbols}
-                index_data = self._generate_mock_index_data(start_date, end_date)
+            except ImportError as e:
+                # copilot-instructions.md違反: モックデータフォールバック削除
+                logger.error(f"get_parameters_and_data not available: {e}")
+                raise ImportError("data_fetcherモジュールが利用できません") from e
             
             # システム初期化
             if not self.initialize_systems(stock_data, index_data):
@@ -593,79 +598,9 @@ def test_integration_manager():
     except Exception as e:
         print(f"Test failed: {e}")
 
-class DSSMSStrategyIntegrationManagerExtensions:
-    """統合マネージャーの追加メソッド"""
-    
-    @staticmethod
-    def _generate_mock_single_data(symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
-        """単一銘柄のモックデータ生成"""
-        import pandas as pd
-        import numpy as np
-        from datetime import datetime
-        
-        start = datetime.strptime(start_date, "%Y-%m-%d")
-        end = datetime.strptime(end_date, "%Y-%m-%d")
-        date_range = pd.date_range(start, end, freq='D')
-        
-        # 基準価格を銘柄ごとに調整
-        base_prices = {"7203": 1500, "6501": 800, "9984": 3000}
-        base_price = base_prices.get(symbol, 1000)
-        
-        # ランダムウォークベースの価格生成
-        np.random.seed(hash(symbol) % 1000)  # 銘柄ごとに異なるシード
-        returns = np.random.normal(0.001, 0.02, len(date_range))
-        prices = [base_price]
-        
-        for ret in returns[1:]:
-            prices.append(prices[-1] * (1 + ret))
-        
-        # OHLCV データ生成
-        data = pd.DataFrame({
-            'Date': date_range,
-            'Open': [p * np.random.uniform(0.99, 1.01) for p in prices],
-            'High': [p * np.random.uniform(1.005, 1.03) for p in prices],
-            'Low': [p * np.random.uniform(0.97, 0.995) for p in prices],
-            'Close': prices,
-            'Volume': [np.random.randint(100000, 1000000) for _ in prices]
-        })
-        
-        data.set_index('Date', inplace=True)
-        return data
-    
-    @staticmethod
-    def _generate_mock_index_data(start_date: str, end_date: str) -> pd.DataFrame:
-        """インデックスのモックデータ生成"""
-        import pandas as pd
-        import numpy as np
-        from datetime import datetime
-        
-        start = datetime.strptime(start_date, "%Y-%m-%d")
-        end = datetime.strptime(end_date, "%Y-%m-%d")
-        date_range = pd.date_range(start, end, freq='D')
-        
-        base_price = 28000  # 日経平均ベース
-        np.random.seed(42)  # 固定シード
-        returns = np.random.normal(0.0005, 0.015, len(date_range))
-        prices = [base_price]
-        
-        for ret in returns[1:]:
-            prices.append(prices[-1] * (1 + ret))
-        
-        data = pd.DataFrame({
-            'Date': date_range,
-            'Open': [p * np.random.uniform(0.998, 1.002) for p in prices],
-            'High': [p * np.random.uniform(1.002, 1.015) for p in prices],
-            'Low': [p * np.random.uniform(0.985, 0.998) for p in prices],
-            'Close': prices,
-            'Volume': [np.random.randint(500000, 2000000) for _ in prices]
-        })
-        
-        data.set_index('Date', inplace=True)
-        return data
-
-# DSSMSStrategyIntegrationManagerにモックデータ生成メソッドを追加
-DSSMSStrategyIntegrationManager._generate_mock_single_data = DSSMSStrategyIntegrationManagerExtensions._generate_mock_single_data
-DSSMSStrategyIntegrationManager._generate_mock_index_data = DSSMSStrategyIntegrationManagerExtensions._generate_mock_index_data
+# DSSMSStrategyIntegrationManagerExtensionsクラスを削除
+# 理由: copilot-instructions.md違反（_generate_mock_single_data, _generate_mock_index_dataがランダムデータ生成）
+# 削除日: 2025-12-02
 
 if __name__ == "__main__":
     test_integration_manager()

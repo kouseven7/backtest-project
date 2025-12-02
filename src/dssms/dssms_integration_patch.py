@@ -54,12 +54,12 @@ def update_symbol_ranking_with_real_data(symbols: List[str], date: datetime) -> 
                 scores[symbol] = float(total_score)
                 
             else:
-                # データが不十分な場合はランダムスコア（低め）
-                scores[symbol] = np.random.uniform(0.1, 0.4)
+                # データが不十分な場合はエラー（フォールバック禁止）
+                raise ValueError(f"Insufficient data for {symbol}: need at least 2 days")
                 
         except Exception as e:
-            # エラー時は低スコア
-            scores[symbol] = np.random.uniform(0.05, 0.2)
-            print(f"スコア計算エラー {symbol}: {e}")
+            # エラー時はスキップ（ランダムスコア生成禁止）
+            print(f"スコア計算エラー {symbol}: {e} - スキップします")
+            # scores[symbol] を設定しない = このシンボルをスキップ
     
     return scores

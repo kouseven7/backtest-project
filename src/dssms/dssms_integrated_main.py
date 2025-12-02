@@ -465,6 +465,7 @@ class DSSMSIntegratedBacktester:
             
             # 最終結果設定
             daily_result['portfolio_value_end'] = self.portfolio_value
+            daily_result['portfolio_value'] = self.portfolio_value  # 互換性向上: レポート生成との整合性確保
             daily_result['success'] = len(daily_result['errors']) == 0
             
             return daily_result
@@ -478,6 +479,7 @@ class DSSMSIntegratedBacktester:
                 'errors': [f"処理エラー: {str(e)}"],
                 'portfolio_value_start': self.portfolio_value,
                 'portfolio_value_end': self.portfolio_value,
+                'portfolio_value': self.portfolio_value,  # 互換性向上: レポート生成との整合性確保
                 'daily_return': 0,
                 'daily_return_rate': 0
             }

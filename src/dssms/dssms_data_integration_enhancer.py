@@ -24,9 +24,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 try:
     from src.dssms.dssms_integration_patch import (
         update_symbol_ranking_with_real_data,
-        update_portfolio_value_with_real_data,
-        fetch_real_data,
-        generate_realistic_sample_data
+        # DEPRECATED: 以下の関数は存在しないため削除 (2025-12-01)
+        # update_portfolio_value_with_real_data,
+        # fetch_real_data,
+        # generate_realistic_sample_data
     )
     from config.logger_config import setup_logger
 except ImportError as e:
@@ -127,22 +128,9 @@ class DSSMSDataIntegrationEnhancer:
     def _apply_volatility_adjustment(self, ranking: Dict[str, float], 
                                    symbols: List[str]) -> Dict[str, float]:
         """ボラティリティ調整"""
-        adjusted = ranking.copy()
-        
-        for symbol in symbols:
-            if symbol in adjusted:
-                # 実データから直近ボラティリティ取得
-                recent_data = fetch_real_data(symbol, days=20)
-                if recent_data is not None and len(recent_data) > 5:
-                    returns = recent_data['Close'].pct_change().dropna()
-                    volatility = returns.std()
-                    
-                    # ボラティリティが高すぎる場合は減点
-                    if volatility > 0.03:  # 3%以上
-                        penalty = min(0.2, (volatility - 0.03) * 5)
-                        adjusted[symbol] = max(0.0, adjusted[symbol] - penalty)
-                        
-        return adjusted
+        # DEPRECATED: fetch_real_dataが存在しないため無効化 (2025-12-01)
+        # ボラティリティ調整なしで返却
+        return ranking.copy()
     
     def _apply_trend_strength_correction(self, ranking: Dict[str, float], 
                                        symbols: List[str], date: datetime) -> Dict[str, float]:
@@ -162,32 +150,9 @@ class DSSMSDataIntegrationEnhancer:
     
     def _calculate_trend_strength(self, symbol: str) -> float:
         """トレンド強度計算"""
-        try:
-            data = fetch_real_data(symbol, days=30)
-            if data is None or len(data) < 20:
-                return 0.5
-                
-            close = data['Close']
-            
-            # 移動平均との位置関係
-            ma5 = close.rolling(5).mean()
-            ma20 = close.rolling(20).mean()
-            
-            # 現在価格と移動平均の関係
-            current_price = close.iloc[-1]
-            ma5_current = ma5.iloc[-1]
-            ma20_current = ma20.iloc[-1]
-            
-            # トレンド強度計算
-            if current_price > ma5_current > ma20_current:
-                return 0.8  # 強い上昇トレンド
-            elif current_price < ma5_current < ma20_current:
-                return 0.3  # 強い下降トレンド
-            else:
-                return 0.5  # 横ばいまたは混合
-                
-        except Exception:
-            return 0.5
+        # DEPRECATED: fetch_real_dataが存在しないため無効化 (2025-12-01)
+        # デフォルト値を返却
+        return 0.5
     
     def _apply_diversification_bonus(self, ranking: Dict[str, float], 
                                    symbols: List[str]) -> Dict[str, float]:
@@ -224,50 +189,16 @@ class DSSMSDataIntegrationEnhancer:
     def enhance_portfolio_valuation(self, position: Optional[str], 
                                   current_value: float, date: datetime) -> Dict[str, Any]:
         """実データベースポートフォリオ評価の精度向上"""
-        try:
-            if not position:
-                return {
-                    'new_value': current_value,
-                    'daily_return': 0.0,
-                    'data_source': 'no_position',
-                    'quality_score': 1.0
-                }
-            
-            # 基本価値更新（Task 1.1統合パッチ使用）
-            base_value = update_portfolio_value_with_real_data(position, current_value, date)
-            
-            # 精度向上処理
-            enhanced_value = self._apply_valuation_enhancements(
-                position, current_value, base_value, date
-            )
-            
-            # 品質評価
-            quality_score = self._evaluate_valuation_quality(position, enhanced_value, current_value)
-            
-            daily_return = (enhanced_value / current_value) - 1 if current_value > 0 else 0.0
-            
-            result = {
-                'new_value': enhanced_value,
-                'daily_return': daily_return,
-                'data_source': 'enhanced_real_data',
-                'quality_score': quality_score,
-                'base_value': base_value,
-                'enhancement_applied': True,
-                'timestamp': date.isoformat()
-            }
-            
-            self.logger.debug(f"強化評価完了: {position} {daily_return:+.4f} (品質: {quality_score:.3f})")
-            return result
-            
-        except Exception as e:
-            self.logger.error(f"強化評価エラー: {e}")
-            return {
-                'new_value': current_value,
-                'daily_return': 0.0,
-                'data_source': 'error_fallback',
-                'quality_score': 0.0,
-                'error': str(e)
-            }
+        # DEPRECATED: update_portfolio_value_with_real_dataが存在しないため無効化 (2025-12-01)
+        # 現在値をそのまま返却
+        return {
+            'new_value': current_value,
+            'daily_return': 0.0,
+            'data_source': 'deprecated_fallback',
+            'quality_score': 0.5,
+            'enhancement_applied': False,
+            'timestamp': date.isoformat()
+        }
     
     def _apply_valuation_enhancements(self, position: str, current_value: float, 
                                     base_value: float, date: datetime) -> float:

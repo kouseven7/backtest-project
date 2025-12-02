@@ -1,0 +1,48 @@
+{
+  "execution_mode": {
+    "deterministic": true,
+    "random_seed": 42,
+    "enable_reproducible_results": true
+  },
+  "randomness_control": {
+    "scoring": {
+      "enable_noise": false,
+      "noise_level": 0.0
+    },
+    "ranking": {
+      "enable_shuffling": false,
+      "tie_breaking": "deterministic"
+    },
+    "switching": {
+      "enable_probabilistic": false,
+      "strict_threshold_mode": true
+    },
+    "comparison": {
+      "enable_random_baseline": true,
+      "random_seed": 42
+    }
+  },
+  "performance_calculation": {
+    "use_fixed_execution_price": true,
+    "execution_delay_simulation": false,
+    "slippage_simulation": false,
+    "fixed_commission_rate": 0.001
+  },
+  "switch_criteria": {
+    "perfect_order_breakdown_threshold": 0.7,
+    "score_difference_threshold": 0.15,
+    "minimum_holding_period_hours": 4,
+    "confidence_threshold": 0.6
+  },
+  "risk_control": {
+    "max_daily_switches": 3,
+    "max_weekly_switches": 10,
+    "drawdown_restriction_threshold": 0.05
+  },
+  "logging": {
+    "detailed_switch_log": true,
+    "score_calculation_log": true,
+    "performance_breakdown_log": true,
+    "log_level": "INFO"
+  }
+}

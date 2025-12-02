@@ -134,7 +134,9 @@ class Task21IntegrationTestSuite:
         self.logger.info("=== バックテスター統合テスト開始 ===")
         
         try:
-            from src.dssms.dssms_backtester_v2 import DSSMSBacktesterV2, BacktestConfig
+            # DEPRECATED: dssms_backtester_v2.py は動作不可のため無効化 (2025-12-01)
+            # from src.dssms.dssms_backtester_v2 import DSSMSBacktesterV2, BacktestConfig
+            raise ImportError("dssms_backtester_v2 is deprecated and non-functional")
             
             # テスト設定
             config = BacktestConfig(

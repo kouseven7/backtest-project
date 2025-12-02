@@ -40,7 +40,8 @@ from config.logger_config import setup_logger
 
 # 既存DSSMSコンポーネント統合
 try:
-    from src.dssms.dssms_backtester_v2 import DSSMSBacktesterV2
+    # DEPRECATED: dssms_backtester_v2.py は動作不可のため無効化 (2025-12-01)
+    # from src.dssms.dssms_backtester_v2 import DSSMSBacktesterV2
     from src.dssms.trade_result_analyzer import TradeResultAnalyzer
     from config.realtime_update_engine import RealtimeUpdateEngine
 except ImportError as e:
@@ -192,49 +193,25 @@ class RealtimeExecutionEngine:
         try:
             self.logger.info("リアルタイム実行エンジン非同期初期化開始")
             
-            # マーケット時間管理初期化（モック）
-            self.market_time_manager = self._create_mock_market_time_manager()
-            
-            # 緊急事態検出器初期化（モック）
-            self.emergency_detector = self._create_mock_emergency_detector()
-            
-            # ポートフォリオ状態初期化
-            await self._initialize_portfolio_state()
-            
-            # イベント処理ワーカー起動
-            await self._start_event_workers()
-            
-            # ポーリングタスク起動
-            await self._start_polling_tasks()
-            
-            self.logger.info("リアルタイム実行エンジン非同期初期化完了")
-            return True
+            # マーケット時間管理初期化（未実装: copilot-instructions.md違反のモックコンポーネント削除）
+            # TODO: 実際のMarketTimeManagerコンポーネントの実装が必要
+            self.logger.error("MarketTimeManagerが未実装です")
+            raise NotImplementedError("MarketTimeManagerの実装が必要です")
             
         except Exception as e:
             self.logger.error(f"初期化エラー: {e}")
             self.logger.error(f"トレースバック: {traceback.format_exc()}")
             return False
     
-    def _create_mock_market_time_manager(self):
-        """モック市場時間管理作成"""
-        class MockMarketTimeManager:
-            async def initialize(self):
-                return True
-            async def is_market_open(self):
-                return True  # テスト用に常時オープン
-        return MockMarketTimeManager()
+    # _create_mock_market_time_manager() メソッドを削除
+    # 理由: copilot-instructions.md違反（モックコンポーネント常時使用）
+    # 削除日: 2025-12-02
+    # 代替策: 実際のMarketTimeManagerコンポーネントの実装が必要
     
-    def _create_mock_emergency_detector(self):
-        """モック緊急事態検出器作成"""
-        class MockEmergencyDetector:
-            async def initialize(self):
-                return True
-            async def check_emergency(self):
-                class MockEmergencyStatus:
-                    is_emergency = False
-                    message = "正常状態"
-                return MockEmergencyStatus()
-        return MockEmergencyDetector()
+    # _create_mock_emergency_detector() メソッドを削除
+    # 理由: copilot-instructions.md違反（モックコンポーネント常時使用）
+    # 削除日: 2025-12-02
+    # 代替策: 実際のEmergencyDetectorコンポーネントの実装が必要
     
     async def start_execution(self, mode: ExecutionMode = ExecutionMode.SIMULATION) -> bool:
         """

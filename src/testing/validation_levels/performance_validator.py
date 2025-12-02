@@ -151,9 +151,11 @@ class PerformanceValidator:
     def _run_dssms_backtest(self) -> Dict[str, Any]:
         """DSSMSバックテストの実行"""
         try:
-            from src.dssms.dssms_backtester_v2 import DSSMSBacktesterV2
+            # DEPRECATED: dssms_backtester_v2.py は動作不可のため無効化 (2025-12-01)
+            # from src.dssms.dssms_backtester_v2 import DSSMSBacktesterV2
+            raise ImportError("dssms_backtester_v2 is deprecated and non-functional")
             
-            backtester = DSSMSBacktesterV2()
+            # backtester = DSSMSBacktesterV2()
             
             # テスト期間の設定（直近3ヶ月）
             end_date = datetime.now()

@@ -32,7 +32,9 @@ def test_integrated_backtest_execution():
     logger = setup_logger(__name__)
     
     try:
-        from src.dssms.dssms_backtester_v2 import DSSMSBacktesterV2, BacktestConfig
+        # DEPRECATED: dssms_backtester_v2.py は動作不可のため無効化 (2025-12-01)
+        # from src.dssms.dssms_backtester_v2 import DSSMSBacktesterV2, BacktestConfig
+        raise ImportError("dssms_backtester_v2 is deprecated and non-functional")
         
         # バックテスト設定
         config = BacktestConfig(

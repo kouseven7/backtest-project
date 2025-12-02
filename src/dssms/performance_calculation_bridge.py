@@ -465,9 +465,8 @@ class PerformanceCalculationBridge:
         try:
             # ポートフォリオ価値の時系列を作成
             if 'value' not in portfolio_data.columns:
-                # 価値列が存在しない場合は初期資本からの仮想価値を生成
-                portfolio_data = portfolio_data.copy()
-                portfolio_data['value'] = initial_capital * (1 + np.random.normal(0, 0.01, len(portfolio_data)).cumsum())
+                self.logger.error("ポートフォリオデータに価値列が存在しません")
+                raise ValueError("ポートフォリオデータに'value'列が必要です")
             
             final_value = portfolio_data['value'].iloc[-1]
             total_return = (final_value / initial_capital) - 1

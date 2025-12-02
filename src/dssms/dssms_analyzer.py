@@ -326,8 +326,11 @@ class DSSMSAnalyzer:
         self.logger.info("DSSMS総合パフォーマンスレポート生成開始")
         
         try:
-            # 1. 基本データ収集
-            performance_data = self._collect_comprehensive_performance_data()
+            # 1. 基本データ収集（削除: copilot-instructions.md違反）
+            # 理由: _collect_comprehensive_performance_data()がランダムデータ生成を使用
+            # 代替策: 実データベースの実装が必要（TODO）
+            self.logger.error("レポート生成は未実装（ランダムデータ生成削除のため）")
+            raise NotImplementedError("実データベースのパフォーマンスデータ収集が未実装")
             
             # 2. レポート構造定義
             report_structure = {
@@ -753,35 +756,9 @@ class DSSMSAnalyzer:
         
         return recommendations
 
-    def _collect_comprehensive_performance_data(self) -> Dict[str, Any]:
-        """包括的パフォーマンスデータ収集"""
-        performance_data = {
-            "timestamp": datetime.now().isoformat(),
-            "data_period": {
-                "start_date": (datetime.now() - timedelta(days=365)).isoformat(),
-                "end_date": datetime.now().isoformat()
-            },
-            "basic_metrics": {
-                "total_return": np.random.normal(0.08, 0.15),  # 8%±15%
-                "volatility": np.random.uniform(0.15, 0.30),
-                "max_drawdown": np.random.uniform(0.05, 0.20),
-                "sharpe_ratio": np.random.uniform(0.5, 2.0),
-                "total_trades": np.random.randint(100, 500)
-            },
-            "dssms_specific": {
-                "symbol_switches": np.random.randint(50, 200),
-                "selection_accuracy": np.random.uniform(0.55, 0.75),
-                "average_holding_period": np.random.uniform(3, 10),
-                "switch_success_rate": np.random.uniform(0.6, 0.8)
-            },
-            "comparison_data": {
-                "vs_buy_and_hold": np.random.normal(0.03, 0.08),
-                "vs_index": np.random.normal(0.02, 0.06),
-                "vs_random_selection": np.random.normal(0.05, 0.10)
-            }
-        }
-        
-        return performance_data
+    # _collect_comprehensive_performance_data() メソッドを削除
+    # 理由: copilot-instructions.md違反（L765-780のnp.randomによるランダムデータ生成）
+    # 代替策: 実データベースの実装が必要（TODO）
 
     def _generate_report_metadata(self) -> Dict[str, Any]:
         """レポートメタデータ生成"""

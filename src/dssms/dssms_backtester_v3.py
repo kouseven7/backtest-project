@@ -194,20 +194,8 @@ class DSSBacktesterV3:
             
             # エラー種別に応じた適切な処理
             if "市場データ取得に失敗しました" in str(e):
-                self.logger.warning(f"⚠ データ取得エラー [{target_date}]: フォールバック処理を実行")
-                
-                # フォールバック: デフォルト銘柄を返す
-                fallback_symbol = self.symbol_universe[0] if self.symbol_universe else "N/A"
-                
-                return {
-                    'date': target_date,
-                    'selected_symbol': fallback_symbol,
-                    'ranking': [{'symbol': fallback_symbol, 'score': 0.0, 'rank': 1}],
-                    'execution_time_ms': execution_time,
-                    'error': 'データ取得失敗 - フォールバック実行',
-                    'error_type': 'data_fetch_failure',
-                    'phase': 'Phase 4 エラーハンドリング'
-                }
+                self.logger.error(f"データ取得エラー [{target_date}]: {e}")
+                raise  # エラーを再スロー、フォールバックなし
             else:
                 self.logger.error(f"💥 日次選択処理エラー [{target_date}]: {e}")
                 

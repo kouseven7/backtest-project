@@ -45,7 +45,7 @@ class PerformanceMetricsCalculator:
             risk_free_rate: リスクフリーレート（年率、デフォルト0.1%）
             config: 設定オプション
         """
-        self.logger = setup_logger(__name__)
+        self.logger = setup_logger(__name__, level=logging.DEBUG)
         self.risk_free_rate = risk_free_rate
         self.config = config or {}
         
@@ -328,8 +328,18 @@ class PerformanceMetricsCalculator:
             tracking_error = np.std(excess_returns, ddof=1) if len(excess_returns) > 1 else 0.0
             annualized_tracking_error = tracking_error * np.sqrt(self.calculation_settings['days_per_year'])
             
+            # [DEBUG] Information Ratio計算の詳細ログ
+            self.logger.debug(f"[IR_DEBUG] excess_return_mean: {excess_return_mean}")
+            self.logger.debug(f"[IR_DEBUG] tracking_error (daily): {tracking_error}")
+            self.logger.debug(f"[IR_DEBUG] annualized_tracking_error: {annualized_tracking_error}")
+            self.logger.debug(f"[IR_DEBUG] excess_returns count: {len(excess_returns)}")
+            self.logger.debug(f"[IR_DEBUG] excess_returns sample: {excess_returns[:5] if len(excess_returns) >= 5 else excess_returns}")
+            
             # 情報比率 (Information Ratio)
-            information_ratio = excess_return_mean / tracking_error if tracking_error > 0 else 0.0
+            # 極小値チェックを1e-10に変更（浮動小数点誤差対策）
+            information_ratio = excess_return_mean / tracking_error if tracking_error > 1e-10 else 0.0
+            
+            self.logger.debug(f"[IR_DEBUG] information_ratio (BEFORE rounding): {information_ratio}")
             
             # ベータとアルファの計算
             correlation = np.corrcoef(returns_array, benchmark_array)[0, 1] if len(returns) > 1 else 0.0

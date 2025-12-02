@@ -1898,19 +1898,30 @@ class DSSMSReportGenerator:
             portfolio_values = []
             returns = []
             
-            if 'position_updates' in backtest_results:
-                for update in backtest_results['position_updates']:
-                    if 'portfolio_value' in update:
-                        portfolio_values.append(float(update['portfolio_value']))
+            # データ構造の正規化（ネスト対応）
+            self.logger.debug(f"[DEBUG] backtest_results keys: {list(backtest_results.keys())}")
+            actual_results = backtest_results.get('backtest_results', backtest_results)
+            self.logger.debug(f"[DEBUG] actual_results keys: {list(actual_results.keys()) if isinstance(actual_results, dict) else 'NOT A DICT'}")
             
-            # データ不足チェック（copilot-instructions.md準拠: ダミーデータ生成禁止）
+            if 'daily_results' in actual_results:
+                daily_results_data = actual_results['daily_results']
+                self.logger.info(f"[DEBUG] daily_results count: {len(daily_results_data)}")
+                for daily in daily_results_data:
+                    if 'portfolio_value' in daily:
+                        portfolio_values.append(float(daily['portfolio_value']))
+                self.logger.info(f"[DEBUG] portfolio_values extracted: {len(portfolio_values)} values")
+            else:
+                self.logger.warning(f"[DEBUG] 'daily_results' not found in actual_results. Available keys: {list(actual_results.keys()) if isinstance(actual_results, dict) else 'N/A'}")
+            
+            # データ不足チェック（copilot-instructions.md準拠: フォールバック禁止）
             if len(portfolio_values) < 2:
-                self.logger.warning(
-                    "[DATA_INSUFFICIENT] ポートフォリオ価値データが不足しています "
+                error_msg = (
+                    f"[DATA_INSUFFICIENT] ポートフォリオ価値データが不足しています "
                     f"(取得数: {len(portfolio_values)}, 必要数: 2以上). "
-                    "copilot-instructions.md準拠: ダミーデータは生成せず、フォールバック値を返却します。"
+                    "高度パフォーマンス指標の計算には最低2日分のデータが必要です。"
                 )
-                return self._get_fallback_performance_metrics(backtest_results)
+                self.logger.error(error_msg)
+                raise NotImplementedError(error_msg)
             
             # Performance Metrics Calculatorを使用して計算
             comprehensive_metrics = self.performance_calculator.generate_comprehensive_metrics(
@@ -1934,44 +1945,15 @@ class DSSMSReportGenerator:
                     'full_metrics': comprehensive_metrics['metrics']
                 }
             else:
-                return self._get_fallback_performance_metrics(backtest_results)
+                error_msg = f"高度パフォーマンス指標計算失敗: status={comprehensive_metrics.get('status')}"
+                self.logger.error(error_msg)
+                raise RuntimeError(error_msg)
             
         except Exception as e:
             self.logger.error(f"高度パフォーマンス指標計算エラー: {e}")
-            return self._get_fallback_performance_metrics(backtest_results)
+            raise  # 例外を再発生（フォールバック削除）
     
-    def _get_fallback_performance_metrics(self, backtest_results: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        フォールバック用の基本パフォーマンス指標
-        
-        Args:
-            backtest_results: バックテスト結果
-            
-        Returns:
-            基本指標
-        """
-        # フォールバック実行をログに記録（copilot-instructions.md準拠）
-        self.logger.warning(
-            "[FALLBACK] 高度パフォーマンス指標計算に失敗。フォールバック値（全指標0.0）を使用します。"
-            "データ不足または計算エラーの可能性があります。"
-        )
-        
-        stats = backtest_results.get('statistics', {})
-        return {
-            'advanced_metrics_status': 'fallback',
-            'sharpe_ratio': 0.0,
-            'max_drawdown': 0.0,
-            'sortino_ratio': 0.0,
-            'calmar_ratio': 0.0,
-            'information_ratio': 0.0,
-            'treynor_ratio': 0.0,
-            'beta': 0.0,
-            'alpha': 0.0,
-            'var_95': 0.0,
-            'performance_score': 50.0,
-            'total_return_percent': float(stats.get('total_return', 0.0)) * 100,
-            'full_metrics': {}
-        }
+
 
 
 def main():

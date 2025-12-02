@@ -227,12 +227,12 @@ class DSSMSBacktesterV2Updated:
                 market_data = self.data_manager.fetch_historical_data(
                     symbols, start_date, end_date
                 )
-            except:
-                # モックデータ生成
-                market_data = self._generate_mock_data(symbols, start_date, end_date)
+            except Exception as e:
+                self.logger.error(f"データ取得失敗: {e}")
+                raise RuntimeError(f"市場データ取得に失敗しました: {e}")
         else:
-            # モックデータ生成
-            market_data = self._generate_mock_data(symbols, start_date, end_date)
+            self.logger.error("データマネージャーが利用できません")
+            raise RuntimeError("データマネージャーが初期化されていません")
         
         # データ品質チェック
         if market_data.empty:
@@ -242,38 +242,6 @@ class DSSMSBacktesterV2Updated:
         market_data = self._calculate_technical_indicators(market_data)
         
         return market_data
-    
-    def _generate_mock_data(self, symbols: List[str], start_date: str, end_date: str) -> pd.DataFrame:
-        """モックデータ生成"""
-        try:
-            date_range = pd.date_range(start_date, end_date, freq='D')
-            data_list = []
-            
-            for symbol in symbols[:5]:  # 最大5銘柄
-                for date in date_range:
-                    if date.weekday() < 5:  # 平日のみ
-                        base_price = 1000 + hash(symbol) % 1000
-                        price = base_price + np.random.normal(0, 50)
-                        
-                        data_list.append({
-                            'symbol': symbol,
-                            'date': date.strftime('%Y-%m-%d'),
-                            'open': price * 0.99,
-                            'high': price * 1.02,
-                            'low': price * 0.98,
-                            'close': price,
-                            'volume': np.random.randint(10000, 100000)
-                        })
-            
-            df = pd.DataFrame(data_list)
-            df['timestamp'] = pd.to_datetime(df['date'])
-            df.set_index('timestamp', inplace=True)
-            
-            return df
-            
-        except Exception as e:
-            self.logger.error(f"モックデータ生成失敗: {e}")
-            return pd.DataFrame()
     
     def _calculate_technical_indicators(self, data: pd.DataFrame) -> pd.DataFrame:
         """テクニカル指標計算"""
@@ -335,8 +303,8 @@ class DSSMSBacktesterV2Updated:
                     daily_data, current_positions
                 )
             else:
-                # モック切替結果
-                switch_result = self._create_mock_switch_result(current_positions)
+                self.logger.error("スイッチコーディネーターが利用できません")
+                raise RuntimeError("スイッチコーディネーターが初期化されていません")
             
             # 診断記録
             if self.diagnostics and hasattr(self.diagnostics, 'record_switch_decision'):
@@ -395,18 +363,6 @@ class DSSMSBacktesterV2Updated:
                 "switch_result": {"success": False},
                 "new_positions": current_positions
             }
-    
-    def _create_mock_switch_result(self, current_positions: List[str]) -> Any:
-        """モック切替結果作成"""
-        class MockSwitchResult:
-            def __init__(self, positions: List[str]):
-                self.success = True
-                self.engine_used = "mock"
-                self.switches_count = 1 if positions else 0
-                self.execution_time_ms = 100.0
-                self.symbols_after = positions.copy() if positions else ["MOCK_001"]
-        
-        return MockSwitchResult(current_positions)
     
     def _analyze_market_conditions(self, data: pd.DataFrame) -> Dict[str, Any]:
         """市場状況分析"""

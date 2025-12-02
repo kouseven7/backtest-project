@@ -34,7 +34,8 @@ from config.logger_config import setup_logger
 
 # Task 1.1統合パッチとの連携
 try:
-    from src.dssms.dssms_integration_patch import fetch_real_data, generate_realistic_sample_data
+    # DEPRECATED: 以下の関数は存在しないため削除 (2025-12-01)
+    # from src.dssms.dssms_integration_patch import fetch_real_data, generate_realistic_sample_data
     from src.dssms.dssms_data_bridge import DSSMSDataBridge
     from src.dssms.data_quality_validator import DataQualityValidator
     from src.dssms.data_cleaning_engine import DataCleaningEngine
@@ -307,25 +308,25 @@ class DSSMSPortfolioCalculatorV2:
                 quality_info['quality_score'] = 0.0
                 return quality_info
             
-            # 実データとの比較（統合機能が利用可能な場合）
-            if self.integration_enabled:
-                try:
-                    real_data = fetch_real_data(symbol, days=5)
-                    if real_data is not None and len(real_data) > 0:
-                        recent_prices = real_data['Close'].values
-                        recent_avg = np.mean(recent_prices)
-                        
-                        # 価格妥当性チェック
-                        price_deviation = abs(price - recent_avg) / recent_avg
-                        if price_deviation > 0.1:  # 10%以上の乖離
-                            quality_info['issues'].append(f'価格乖離: {price_deviation*100:.1f}%')
-                            quality_info['quality_score'] *= 0.8
-                        
-                        quality_info['data_source'] = PriceDataSource.REAL_DATA
-                        quality_info['reference_price'] = recent_avg
-                        
-                except Exception as e:
-                    quality_info['issues'].append(f'実データ取得失敗: {e}')
+            # DEPRECATED: 実データとの比較機能は削除（fetch_real_dataが存在しないため） (2025-12-01)
+            # if self.integration_enabled:
+            #     try:
+            #         real_data = fetch_real_data(symbol, days=5)
+            #         if real_data is not None and len(real_data) > 0:
+            #             recent_prices = real_data['Close'].values
+            #             recent_avg = np.mean(recent_prices)
+            #             
+            #             # 価格妥当性チェック
+            #             price_deviation = abs(price - recent_avg) / recent_avg
+            #             if price_deviation > 0.1:  # 10%以上の乖離
+            #                 quality_info['issues'].append(f'価格乖離: {price_deviation*100:.1f}%')
+            #                 quality_info['quality_score'] *= 0.8
+            #             
+            #             quality_info['data_source'] = PriceDataSource.REAL_DATA
+            #             quality_info['reference_price'] = recent_avg
+            #             
+            #     except Exception as e:
+            #         quality_info['issues'].append(f'実データ取得失敗: {e}')
             
             # その他の品質チェック
             if price > 1000000:  # 100万円超の異常高値

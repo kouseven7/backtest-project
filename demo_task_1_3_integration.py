@@ -18,7 +18,8 @@ project_root = Path(__file__).parent
 sys.path.append(str(project_root))
 
 try:
-    from src.dssms.dssms_backtester_v2 import (
+    # DEPRECATED: dssms_backtester_v2.py は動作不可のため無効化 (2025-12-01)
+    # from src.dssms.dssms_backtester_v2 import (
         DSSMSBacktesterV2, 
         BacktestConfig, 
         BacktestStatus,

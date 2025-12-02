@@ -584,11 +584,26 @@ class DSSMSBacktester:
                         )
                         current_position = switch_result['new_position']
                         portfolio_value = switch_result['portfolio_value']
-                    
-                    # 5. ポートフォリオ価値更新
-                    portfolio_value = self._update_portfolio_value(
-                        current_date, current_position, portfolio_value
-                    )
+                    else:
+                        # 切替なし時のポートフォリオ価値更新（実データベース）
+                        if current_position and self.dssms_data_manager:
+                            try:
+                                # 実データから価格変動を取得
+                                position_data = self.dssms_data_manager.get_symbol_data(
+                                    current_position, current_date, current_date
+                                )
+                                if position_data is not None and len(position_data) > 0:
+                                    # 前日比を計算
+                                    if len(position_data) >= 2:
+                                        today_close = position_data.iloc[-1]['Close']
+                                        yesterday_close = position_data.iloc[-2]['Close']
+                                        daily_return = (today_close - yesterday_close) / yesterday_close
+                                        portfolio_value = portfolio_value * (1 + daily_return)
+                                    self.logger.debug(f"{current_date}: {current_position} 実データで価値更新 {portfolio_value:.2f}")
+                                else:
+                                    self.logger.warning(f"{current_date}: {current_position} 実データ取得失敗、価値維持")
+                            except Exception as e:
+                                self.logger.warning(f"{current_date}: ポートフォリオ価値更新エラー: {e}")
                     
                     # 6. 履歴記録
                     self._record_daily_state(current_date, current_position, portfolio_value, market_condition)
@@ -900,39 +915,24 @@ class DSSMSBacktester:
                 self.logger.error("比較分析に必要な日付情報がありません")
                 return comparison_result
             
-            # 1. 固定銘柄戦略との比較
-            comparison_symbols = comparison_symbols or ['7203', '9984', '6758']  # トヨタ、ソフトバンクG、ソニーG
-            for symbol in comparison_symbols:
-                try:
-                    static_performance = self._simulate_static_strategy(symbol, start_date, end_date)
-                    comparison_result['static_strategies'][symbol] = static_performance
-                    
-                    # 相対パフォーマンス計算
-                    relative_return = performance_metrics.total_return - static_performance.get('total_return', 0)
-                    comparison_result['relative_performance'][f'vs_{symbol}'] = relative_return
-                    
-                except Exception as e:
-                    self.logger.warning(f"静的戦略シミュレーション失敗 {symbol}: {e}")
+            # 1. 固定銘柄戦略との比較（削除: copilot-instructions.md違反）
+            # 理由: _simulate_static_strategy()がランダムデータ生成を使用
+            # 代替策: 実データベースの実装が必要（TODO）
+            comparison_symbols = comparison_symbols or ['7203', '9984', '6758']
+            self.logger.warning("静的戦略シミュレーションは未実装（ランダムデータ生成削除のため）")
+            comparison_result['static_strategies'] = {}
+            comparison_result['relative_performance'] = {}
             
-            # 2. ベンチマーク比較
-            benchmarks = ['^N225', 'TOPIX']
-            for benchmark in benchmarks:
-                try:
-                    benchmark_performance = self._simulate_benchmark_strategy(benchmark, start_date, end_date)
-                    comparison_result['benchmark_comparison'][benchmark] = benchmark_performance
-                    
-                    relative_return = performance_metrics.total_return - benchmark_performance.get('total_return', 0)
-                    comparison_result['relative_performance'][f'vs_{benchmark}'] = relative_return
-                    
-                except Exception as e:
-                    self.logger.warning(f"ベンチマーク比較失敗 {benchmark}: {e}")
+            # 2. ベンチマーク比較（削除: copilot-instructions.md違反）
+            # 理由: _simulate_benchmark_strategy()がランダムデータ生成を使用
+            # 代替策: 実データベースの実装が必要（TODO）
+            self.logger.warning("ベンチマーク比較は未実装（ランダムデータ生成削除のため）")
+            comparison_result['benchmark_comparison'] = {}
             
-            # 3. ランダム選択戦略との比較
-            try:
-                random_performance = self._simulate_random_selection_strategy(
-                    list(comparison_symbols), start_date, end_date
-                )
-                comparison_result['static_strategies']['random_selection'] = random_performance
+            # 3. ランダム選択戦略との比較（削除: copilot-instructions.md違反）
+            # 理由: _simulate_random_selection_strategy()がランダムデータ生成を使用
+            # 代替策: 実データベースの実装が必要（TODO）
+            self.logger.warning("ランダム選択戦略シミュレーションは未実装（ランダムデータ生成削除のため）")
                 
                 relative_return = performance_metrics.total_return - random_performance.get('total_return', 0)
                 comparison_result['relative_performance']['vs_random'] = relative_return
@@ -2406,84 +2406,17 @@ class DSSMSBacktester:
             dynamic_selection_efficiency=0.0
         )
 
-    def _simulate_static_strategy(self, symbol: str, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
-        """静的戦略シミュレーション"""
-        try:
-            # 簡易的な固定銘柄戦略シミュレーション
-            trading_days = (end_date - start_date).days
-            
-            # ダミーリターン（実際は実データを使用）
-            daily_returns = [np.random.normal(0.0005, 0.015) for _ in range(trading_days)]
-            total_return = sum(daily_returns)
-            volatility = np.std(daily_returns) * np.sqrt(252)
-            
-            return {
-                'symbol': symbol,
-                'total_return': total_return,
-                'volatility': volatility,
-                'max_drawdown': max(0, -min(np.cumsum(daily_returns))),
-                'trading_days': trading_days
-            }
-            
-        except Exception as e:
-            self.logger.warning(f"静的戦略シミュレーションエラー {symbol}: {e}")
-            return {'symbol': symbol, 'total_return': 0.0, 'error': str(e)}
+    # _simulate_static_strategy() メソッドを削除
+    # 理由: copilot-instructions.md違反（L2416のnp.random.normal()によるランダムデータ生成）
+    # 代替策: 実データベースの実装が必要（TODO）
 
-    def _simulate_benchmark_strategy(self, benchmark: str, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
-        """ベンチマーク戦略シミュレーション"""
-        try:
-            # ベンチマークインデックスのシミュレーション
-            trading_days = (end_date - start_date).days
-            
-            # ダミーリターン（実際は実データを使用）
-            if benchmark == '^N225':
-                daily_returns = [np.random.normal(0.0003, 0.012) for _ in range(trading_days)]
-            else:  # TOPIX
-                daily_returns = [np.random.normal(0.0002, 0.011) for _ in range(trading_days)]
-            
-            total_return = sum(daily_returns)
-            volatility = np.std(daily_returns) * np.sqrt(252)
-            
-            return {
-                'benchmark': benchmark,
-                'total_return': total_return,
-                'volatility': volatility,
-                'max_drawdown': max(0, -min(np.cumsum(daily_returns))),
-                'trading_days': trading_days
-            }
-            
-        except Exception as e:
-            self.logger.warning(f"ベンチマークシミュレーションエラー {benchmark}: {e}")
-            return {'benchmark': benchmark, 'total_return': 0.0, 'error': str(e)}
+    # _simulate_benchmark_strategy() メソッドを削除
+    # 理由: copilot-instructions.md違反（L2440-2442のnp.random.normal()によるランダムデータ生成）
+    # 代替策: 実データベースの実装が必要（TODO）
 
-    def _simulate_random_selection_strategy(self, symbols: List[str], start_date: datetime, end_date: datetime) -> Dict[str, Any]:
-        """ランダム選択戦略シミュレーション"""
-        try:
-            # ランダム銘柄選択戦略のシミュレーション
-            trading_days = (end_date - start_date).days
-            
-            # 日次でランダム銘柄を選択（簡易版）
-            daily_returns = []
-            for _ in range(trading_days):
-                # 切替コストを考慮
-                daily_return = np.random.normal(0.0001, 0.018) - self.switch_cost_rate
-                daily_returns.append(daily_return)
-            
-            total_return = sum(daily_returns)
-            volatility = np.std(daily_returns) * np.sqrt(252)
-            
-            return {
-                'strategy': 'random_selection',
-                'total_return': total_return,
-                'volatility': volatility,
-                'max_drawdown': max(0, -min(np.cumsum(daily_returns))),
-                'trading_days': trading_days,
-                'expected_switches': trading_days  # 毎日切替と仮定
-            }
-            
-        except Exception as e:
-            self.logger.warning(f"ランダム選択シミュレーションエラー: {e}")
-            return {'strategy': 'random_selection', 'total_return': 0.0, 'error': str(e)}
+    # _simulate_random_selection_strategy() メソッドを削除
+    # 理由: copilot-instructions.md違反（L2469のnp.random.normal()によるランダムデータ生成）
+    # 代替策: 実データベースの実装が必要（TODO）
 
     def _test_statistical_significance(self, dssms_performance: DSSMSPerformanceMetrics, 
                                      static_performances: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
