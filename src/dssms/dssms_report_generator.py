@@ -304,9 +304,24 @@ class DSSMSReportGenerator:
                 'analysis_period_days': execution_metadata.get('trading_days', 0)
             }
             
+            # [LOG#9] メトリクス抽出可視化
+            self.logger.info(
+                f"[METRICS_EXTRACTION] DSSMSReportGenerator extracting key metrics: "
+                f"total_return_rate={key_metrics['total_return_rate']:.4f}, "
+                f"success_rate={key_metrics['success_rate']:.4f}, "
+                f"avg_exec_time={key_metrics['average_execution_time_ms']:.2f}ms, "
+                f"switch_count={key_metrics['switch_count']}, "
+                f"period_days={key_metrics['analysis_period_days']}"
+            )
+            
             # 総合評価計算
             overall_score = self._calculate_overall_score(key_metrics)
             overall_grade = self._score_to_grade(overall_score)
+            
+            # [LOG#10] 総合評価ログ
+            self.logger.info(
+                f"[EXECUTIVE_SUMMARY_SCORE] Overall score: {overall_score:.2f}, Grade: {overall_grade}"
+            )
             
             # 主要成果
             key_achievements = []

@@ -226,6 +226,13 @@ class ComprehensivePerformanceAnalyzer:
                 self.logger.info(f"[DEBUG_PHASE2_BASIC] CALCULATED total_profit: {total_profit}, total_trades: {total_trades}")
                 final_value = initial_capital + total_profit
             
+            # [LOG#4] main_new.py収益計算トラッキング
+            self.logger.info(
+                f"[MAIN_REVENUE_CALC] main_new.py revenue calculation: "
+                f"initial_capital({initial_capital:,.0f}) + total_profit({total_profit:,.0f}) = "
+                f"final_value({initial_capital + total_profit:,.0f}), total_trades={total_trades}"
+            )
+            
             # リターン計算
             total_return = (final_value - initial_capital) / initial_capital
             
@@ -275,6 +282,11 @@ class ComprehensivePerformanceAnalyzer:
         """
         try:
             trades = []
+            
+            # [LOG#5] トレード抽出データ範囲トラッキング
+            self.logger.info(
+                f"[TRADE_EXTRACT_DATA_RANGE] Extracting trades from {len(execution_details)} execution_details"
+            )
             
             # Phase 5-B-12: 共通ユーティリティでBUY/SELL抽出
             self.logger.info(
@@ -448,6 +460,7 @@ class ComprehensivePerformanceAnalyzer:
         
         result = {
             'total_return': basic_performance.get('total_return', 0.0),
+            'total_profit': basic_performance.get('total_profit', 0.0),  # 2025-12-03追加: DSSMS集計エラー修正
             'total_trades': basic_performance.get('total_trades', 0),
             'sharpe_ratio': enhanced_metrics.get('sharpe_ratio', 0.0),
             'max_drawdown': enhanced_metrics.get('max_drawdown', 0.0),

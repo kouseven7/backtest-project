@@ -109,7 +109,7 @@ class MainSystemController:
         days_back: int = 365,
         backtest_start_date: Optional[datetime] = None,
         backtest_end_date: Optional[datetime] = None,
-        warmup_days: int = 30
+        warmup_days: int = 90
     ) -> Dict[str, Any]:
         """
         包括的バックテスト実行（Phase 4.2: リアルデータ対応版 + ウォームアップ期間対応）
@@ -167,7 +167,22 @@ class MainSystemController:
                     
                     stock_data = stock_data[stock_data.index >= warmup_start_ts]
                     if index_data is not None:
-                        index_data = index_data[index_data.index >= warmup_start_ts]
+                        # index_dataのインデックスをDatetimeIndexに変換(キャッシュからの読み込み時に文字列の場合がある)
+                        if not isinstance(index_data.index, pd.DatetimeIndex):
+                            try:
+                                index_data.index = pd.to_datetime(index_data.index)
+                            except Exception as e:
+                                self.logger.warning(f"index_data index conversion failed: {e}, skipping index_data filtering")
+                                index_data = None
+                        
+                        if index_data is not None:
+                            index_data = index_data[index_data.index >= warmup_start_ts]
+                    
+                    # [LOG#3] ウォームアップ期間データ範囲トラッキング
+                    self.logger.info(
+                        f"[WARMUP_DATA_RANGE] Warmup start: {warmup_start_ts}, "
+                        f"Filtered data range: {stock_data.index[0]} ~ {stock_data.index[-1]} ({len(stock_data)} rows)"
+                    )
                     
                     # Priority 1-2: データ不足警告ログ (copilot-instructions.md準拠)
                     # 取引0件問題の早期検出: trading_start_date > データ最終日
@@ -276,6 +291,12 @@ class MainSystemController:
                     if trading_end_ts is not None and trading_end_ts.tz is not None:
                         trading_end_ts = trading_end_ts.tz_localize(None)
             
+            # [LOG#8] データ範囲トラッキング
+            self.logger.info(
+                f"[DATA_RANGE_TRACKING] Stock data range: {stock_data.index[0]} ~ {stock_data.index[-1]} ({len(stock_data)} rows), "
+                f"Trading period: {trading_start_ts} ~ {trading_end_ts}"
+            )
+            
             execution_results = self.execution_manager.execute_dynamic_strategies(
                 stock_data=stock_data,
                 ticker=ticker,
@@ -348,7 +369,7 @@ class MainSystemController:
         """
         実データ取得（Phase 4.2: yfinance統合版）
         
-        ⚠️ copilot-instructions.md準拠:
+        [CRITICAL] copilot-instructions.md準拠:
         - モック/ダミーデータのフォールバック禁止
         - 実データ取得失敗時はエラーとして処理
         
@@ -432,7 +453,8 @@ def main():
     try:
         # get_parameters_and_data()で銘柄・期間・データを取得
         # 引数なしで呼び出すと、Excelから自動取得
-        ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data()
+        # warmup_days=90を明示的に渡す（2025-12-03変更）
+        ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data(warmup_days=90)
         
         print(f"[SUCCESS] Excel設定読み込み完了")
         print(f"        銘柄: {ticker}")
@@ -464,10 +486,16 @@ def main():
     
     # stock_dataが取得済みの場合はそれを使用、なければyfinanceから取得
     if stock_data is not None:
+        # start_date/end_dateをdatetimeに変換して渡す
+        backtest_start = datetime.strptime(start_date, '%Y-%m-%d') if start_date else None
+        backtest_end = datetime.strptime(end_date, '%Y-%m-%d') if end_date else None
+        
         results = system.execute_comprehensive_backtest(
             ticker,
             stock_data=stock_data,
-            index_data=index_data
+            index_data=index_data,
+            backtest_start_date=backtest_start,
+            backtest_end_date=backtest_end
         )
     else:
         results = system.execute_comprehensive_backtest(ticker, days_back=90)

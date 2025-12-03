@@ -31,10 +31,12 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-def get_parameters_and_data(ticker: Optional[str] = None, start_date: Optional[str] = None, end_date: Optional[str] = None):
+def get_parameters_and_data(ticker: Optional[str] = None, start_date: Optional[str] = None, end_date: Optional[str] = None, warmup_days: int = 90):
     """
     Excel設定ファイルからパラメータ取得と市場データ取得（キャッシュ利用）を行います。
     引数が指定されていればそれを優先し、なければ設定ファイルから取得します。
+    Args:
+        warmup_days: ウォームアップ期間日数（デフォルト90日、2025-12-03変更）
     Returns:
         ticker (str), start_date (str), end_date (str), stock_data (pd.DataFrame), index_data (pd.DataFrame)
     """
@@ -104,8 +106,16 @@ def get_parameters_and_data(ticker: Optional[str] = None, start_date: Optional[s
     end_date = str(end_date)
 
     try:
+        # ウォームアップ期間を考慮してデータ取得開始日を前倒し
+        # main_new.pyのデフォルトwarmup_days=90と整合（2025-12-03変更）
+        # warmup_daysパラメータを使用（引数で指定された値またはデフォルト90日）
+        start_date_dt = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+        adjusted_start = (start_date_dt - datetime.timedelta(days=warmup_days)).strftime('%Y-%m-%d')
+        
+        logger.info(f"Warmup period adjustment: Original start={start_date}, Adjusted start={adjusted_start} (data_fetch_days={warmup_days}, trading_warmup_days=30)")
+        
         cache_filepath = get_cache_filepath(ticker, start_date, end_date)
-        stock_data = fetch_stock_data(ticker, start_date, end_date)
+        stock_data = fetch_stock_data(ticker, adjusted_start, end_date)  # adjusted_startを使用
         save_cache(stock_data, cache_filepath)
 
         if 'Adj Close' not in stock_data.columns:
@@ -169,7 +179,8 @@ def fetch_yahoo_data(ticker: str, start_date: str, end_date: str, interval: str 
     end_date_adjusted = (pd.Timestamp(end_date) + pd.Timedelta(days=1)).strftime('%Y-%m-%d')
     logger.info(f"yfinance調整: end_date {end_date} -> {end_date_adjusted} (exclusive仕様対策)")
     
-    data = yf_download(ticker, start=start_date, end=end_date_adjusted, interval=interval)
+    # auto_adjust=False: Adj Closeカラムを取得するために必須
+    data = yf_download(ticker, start=start_date, end=end_date_adjusted, interval=interval, auto_adjust=False)
     if data.empty:
         logger.error(f"{ticker} のデータが空です。")
         raise ValueError(f"{ticker} のデータが空です。")
@@ -217,7 +228,8 @@ def fetch_yahoo_index_data(ticker: str, start_date: str = None, end_date: str = 
         end_date_adjusted = (pd.Timestamp(end_date) + pd.Timedelta(days=1)).strftime('%Y-%m-%d')
         logger.info(f"yfinance調整: end_date {end_date} -> {end_date_adjusted} (exclusive仕様対策)")
         
-        data = yf_download(ticker, start=start_date, end=end_date_adjusted, interval=interval)
+        # auto_adjust=False: Adj Closeカラムを取得するために必須
+        data = yf_download(ticker, start=start_date, end=end_date_adjusted, interval=interval, auto_adjust=False)
         
         # ユーザー指定期間でフィルタリング（安全策）
         if not data.empty:
@@ -228,7 +240,8 @@ def fetch_yahoo_index_data(ticker: str, start_date: str = None, end_date: str = 
                 logger.info(f"期間フィルタリング: {original_rows}行 -> {len(data)}行 (指定期間外を除外)")
     else:
         logger.info(f"Fetching index data for {ticker} with period={period}")
-        data = yf_download(ticker, period=period, interval=interval)
+        # auto_adjust=False: Adj Closeカラムを取得するために必須
+        data = yf_download(ticker, period=period, interval=interval, auto_adjust=False)
     
     if data.empty:
         logger.error(f"{ticker} のデータが空です。")

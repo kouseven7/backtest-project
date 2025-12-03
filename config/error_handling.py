@@ -72,7 +72,8 @@ def fetch_stock_data(ticker: str, start_date: str, end_date: str, max_retries=3,
             logger.info(f"Yahoo Finance ticker: {yahoo_ticker}")
             logger.info(f"yfinance調整: end_date {end_date} -> {end_date_adjusted} (exclusive仕様対策)")
             
-            data = yf.download(yahoo_ticker, start=start_date, end=end_date_adjusted)
+            # auto_adjust=False: Adj Closeカラムを取得するために必須
+            data = yf.download(yahoo_ticker, start=start_date, end=end_date_adjusted, auto_adjust=False)
             
             if data.empty:
                 raise ValueError(f"{ticker} の取得データが空です。")

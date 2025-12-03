@@ -76,6 +76,47 @@ Last Modified: YYYY-MM-DD
 
 **重要**:このプロジェクトの目的はバックテストの実行とリアルトレードの実行であり、実際のバックテストを妨げる、またはスキップする変更は目的に反します。
 
+## 📊 **データ取得ルール（2025-12-03以降必須）**
+
+### **yfinance auto_adjust=False必須**
+
+すべてのyfinance呼び出しには`auto_adjust=False`を**必ず**指定すること:
+
+**必須理由:**
+- yfinanceのデフォルト（`auto_adjust=True`）では`Adj Close`カラムが取得されない（7カラムのみ）
+- `auto_adjust=False`指定で8カラム取得され、`Adj Close`が含まれる
+- DSSMS等の戦略は`Adj Close`を使用するため、未指定は致命的エラーの原因となる
+
+**対象箇所:**
+以下の6箇所は特に重要（2025-12-03修正完了済み）:
+1. `data_fetcher.py` Line 181, 229, 242: `yf_download(..., auto_adjust=False)`
+2. `data_cache_manager.py` Line 489, 498: `ticker.history(..., auto_adjust=False)`
+3. `config/error_handling.py` Line 78: `yf.download(..., auto_adjust=False)`
+
+**コード例:**
+```python
+# 正しい例
+data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False)
+stock_data = ticker.history(start=start_date, end=end_date, auto_adjust=False)
+
+# 誤った例（禁止）
+data = yf.download(ticker, start=start_date, end=end_date)  # auto_adjust未指定
+stock_data = ticker.history(start=start_date, end=end_date)  # auto_adjust未指定
+```
+
+**違反時の影響:**
+- CSVキャッシュに`Adj Close`が保存されない
+- 補完ロジック（`data['Adj Close'] = data['Close']`）に依存する設計となり、調整後価格の精度が失われる
+- 既存キャッシュ（数千ファイル）のクリアと再取得が必要になる
+
+**チェックリスト:**
+- [ ] yf.download()呼び出しに`auto_adjust=False`を指定
+- [ ] ticker.history()呼び出しに`auto_adjust=False`を指定
+- [ ] 取得データに`Adj Close`カラムが含まれることを確認
+- [ ] CSVキャッシュ保存時に`Adj Close`が保存されることを確認
+
+**重要**: 新規にyfinanceを使用するコードを作成する際は、必ずこのルールを遵守すること。
+
 ## 📁 **テストファイル配置ルール**
 
 ### **配置場所の判断**

@@ -348,10 +348,19 @@ class DSSMSIntegratedBacktester:
         try:
             self.logger.info(f"DSSMS動的バックテスト開始: {start_date} → {end_date}")
             
+            # 修正案A: バックテスト開始日を保存（累積期間方式用）
+            self.dssms_backtest_start_date = start_date
+            
             # 実行統計
             execution_start = time.time()
             total_trading_days = 0
             successful_days = 0
+            
+            # [LOG#7] 期間スコープの明示
+            self.logger.info(
+                f"[PERIOD_SCOPE] DSSMS期間: {start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')} "
+                f"(平日のみ処理, 土日スキップ)"
+            )
             
             # 日次処理ループ
             current_date = start_date
@@ -448,14 +457,21 @@ class DSSMSIntegratedBacktester:
                 strategy_result = self._execute_multi_strategies(self.current_symbol, target_date)
                 daily_result['strategy_results'] = strategy_result
                 
-                # ポートフォリオ価値更新
-                if strategy_result.get('position_update'):
-                    position_return = strategy_result['position_update']['return']
-                    self.portfolio_value += position_return
-                    daily_result['daily_return'] = position_return
-                    daily_result['daily_return_rate'] = position_return / daily_result['portfolio_value_start']
-            
-            # 4. リスク管理チェック
+            # ポートフォリオ価値更新
+            if strategy_result.get('position_update'):
+                position_return = strategy_result['position_update']['return']
+                portfolio_value_before = self.portfolio_value
+                self.portfolio_value += position_return
+                daily_result['daily_return'] = position_return
+                daily_result['daily_return_rate'] = position_return / daily_result['portfolio_value_start']
+                
+                # [LOG#6] 日次ポートフォリオ更新トラッキング
+                self.logger.info(
+                    f"[PORTFOLIO_UPDATE] {target_date.strftime('%Y-%m-%d')} - "
+                    f"Before: {portfolio_value_before:,.0f}円, "
+                    f"Return: {position_return:+,.0f}円 ({daily_result['daily_return_rate']:+.2%}), "
+                    f"After: {self.portfolio_value:,.0f}円"
+                )            # 4. リスク管理チェック
             risk_result = self._check_risk_limits(daily_result)
             
             if risk_result.get('risk_violation'):
@@ -1461,19 +1477,18 @@ class DSSMSIntegratedBacktester:
             controller = MainSystemController(config)
             
             # 3. バックテスト実行（ウォームアップ期間対応）
-            # target_dateのみで取引、それより前はウォームアップ期間として扱う
-            # 重要: _get_symbol_data()で既に120日分のデータを取得済みのため、
-            # main_new.pyでのウォームアップフィルタリングを無効化（backtest_start_date=None）
-            # これにより、L1713で取得した120日分の全データがbase_strategy.pyに渡される
-            backtest_start_date = None  # main_new.pyのフィルタリングをスキップ
+            # 修正案A: 累積期間方式 - DSSMS開始日からtarget_dateまでの累積期間でバックテスト
+            # メリット: DSSMSとmain_new.pyで同じ期間のテストが可能、期間比較が可能
+            # デメリット: 日次処理時間が累積的に増加（1日目: 30+1日分、12日目: 30+12日分）
+            backtest_start_date = self.dssms_backtest_start_date  # Noneから変更（累積期間開始）
             backtest_end_date = target_date
-            warmup_days = 30  # base_strategy.pyのウォームアップ計算に必要
+            warmup_days = 90  # 2025-12-03変更: main_new.pyと統一（最大戦略要件50日+余裕40日=90日）
             
             # Priority 1-1: DSSMS->main_new.py データ渡しログ (copilot-instructions.md準拠)
             self.logger.info(f"[DSSMS->main_new] バックテスト開始: {symbol}, {target_date}")
             self.logger.info(f"[DSSMS->main_new_DATA] 銘柄: {symbol}")
             self.logger.info(f"[DSSMS->main_new_DATA] 対象日: {target_date.strftime('%Y-%m-%d')}")
-            self.logger.info(f"[DSSMS->main_new_DATA] trading_start_date: None (main_new.pyフィルタリング無効)")
+            self.logger.info(f"[DSSMS->main_new_DATA] trading_start_date: {backtest_start_date.strftime('%Y-%m-%d')} (修正案A: 累積期間方式)")
             self.logger.info(f"[DSSMS->main_new_DATA] trading_end_date: {backtest_end_date.strftime('%Y-%m-%d')}")
             self.logger.info(f"[DSSMS->main_new_DATA] warmup_days: {warmup_days}")
             
@@ -1538,11 +1553,12 @@ class DSSMSIntegratedBacktester:
             summary_stats = performance_results.get('summary_statistics', {})
             
             # リターン計算（summary_statisticsから優先取得）
-            total_return = summary_stats.get('total_return', 0.0)
+            # 2025-12-03修正: 'total_return'(比率)ではなく'total_profit'(金額)を取得
+            total_return = summary_stats.get('total_profit', 0.0)
             if total_return == 0.0:
                 # フォールバック: basic_performanceまたはbalanceから計算
                 basic_perf = performance_results.get('basic_performance', {})
-                total_return = basic_perf.get('total_return', 0.0)
+                total_return = basic_perf.get('total_profit', 0.0)
                 
                 if total_return == 0.0 and 'total_portfolio_value' in execution_results:
                     portfolio_value = execution_results.get('total_portfolio_value', 1000000.0)
@@ -2046,6 +2062,13 @@ class DSSMSIntegratedBacktester:
             total_return_rate = total_return / self.initial_capital
             success_rate = successful_days / trading_days if trading_days > 0 else 0
             
+            # [LOG#1] DSSMS収益計算詳細
+            self.logger.info(
+                f"[REVENUE_CALC_DETAIL] DSSMS収益計算: "
+                f"portfolio_value({self.portfolio_value:,.0f}円) - initial_capital({self.initial_capital:,.0f}円) = "
+                f"total_return({total_return:,.0f}円, {total_return_rate:+.4%})"
+            )
+            
             self.logger.info(
                 f"[FINAL_STATS] 基本統計計算完了 - "
                 f"総リターン: {total_return:,.0f}円 ({total_return_rate:.2%}), "
@@ -2126,6 +2149,15 @@ class DSSMSIntegratedBacktester:
                     'reliability': {'success_rate': 0.0}
                 }
             }
+            
+            # [LOG#2] 最終収益計算の内訳ログ
+            self.logger.info(
+                f"[FINAL_REVENUE_BREAKDOWN] DSSMS最終結果 - "
+                f"取引日数: {trading_days}, 成功日数: {successful_days}, "
+                f"最終資産: {self.portfolio_value:,.0f}円, "
+                f"総リターン: {total_return:,.0f}円 ({total_return_rate:+.4%}), "
+                f"シャープレシオ: {sharpe_ratio:.3f}, 最大DD: {max_drawdown:.4f}"
+            )
             
         except Exception as e:
             self.logger.error(f"[FINAL_STATS] 最終結果生成エラー: {e}")

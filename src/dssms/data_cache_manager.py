@@ -485,7 +485,8 @@ class DataCacheManager:
             
             # yfinanceでデータ取得
             ticker = yf.Ticker(f"{symbol}.T")  # 東証銘柄
-            stock_data = ticker.history(start=start_date, end=end_date)
+            # auto_adjust=False: Adj Closeカラムを取得するために必須
+            stock_data = ticker.history(start=start_date, end=end_date, auto_adjust=False)
             
             if stock_data.empty:
                 self.logger.warning(f"株価データが空です: {symbol}")
@@ -493,7 +494,8 @@ class DataCacheManager:
             
             # 日経平均データ取得
             nikkei_ticker = yf.Ticker("^N225")
-            index_data = nikkei_ticker.history(start=start_date, end=end_date)
+            # auto_adjust=False: Adj Closeカラムを取得するために必須
+            index_data = nikkei_ticker.history(start=start_date, end=end_date, auto_adjust=False)
             
             if index_data.empty:
                 self.logger.warning("日経平均データが空です")
