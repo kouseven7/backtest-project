@@ -168,10 +168,10 @@ class DSSMSDataManager:
         try:
             # 最新の日足データを取得（1日分で十分）
             yf = get_yfinance()  # Phase 3最適化: 遅延インポート
-            ticker = yf.Ticker(symbol + ".T")  # 東証サフィックス
+            ticker = yf.Ticker(symbol)  # symbolはすでに.T含む
             
-            # 直近2日分取得（市場休場を考慮）
-            hist = ticker.history(period="2d", interval="1d")
+            # 直近2日分取得（市場休場を考慮、copilot-instructions.md: auto_adjust=False必須）
+            hist = ticker.history(period="2d", interval="1d", auto_adjust=False)
             
             if hist.empty:
                 self.logger.warning(f"No recent data available for {symbol}")
@@ -238,17 +238,18 @@ class DSSMSDataManager:
         try:
             # Yahoo Finance から直接取得
             yf = get_yfinance()  # Phase 3最適化: 遅延インポート
-            ticker = yf.Ticker(symbol + ".T")  # 東証サフィックス
+            ticker = yf.Ticker(symbol)  # symbolはすでに.T含む
             
             # 期間設定
             end_date = datetime.now()
             start_date = end_date - timedelta(days=days_back)
             
-            # データ取得
+            # データ取得（copilot-instructions.md: auto_adjust=False必須）
             hist = ticker.history(
                 start=start_date.strftime('%Y-%m-%d'),
                 end=end_date.strftime('%Y-%m-%d'),
-                interval='1d'
+                interval='1d',
+                auto_adjust=False
             )
             
             if hist.empty:

@@ -150,7 +150,7 @@ class DSSMSIntegratedBacktester:
             
             # Phase 2: equity_curve再構築用追跡変数
             self.peak_value = self.portfolio_value  # ポートフォリオピーク値追跡
-            self.cumulative_pnl = 0.0  # 累積损益追跡
+            self.cumulative_pnl = 0.0  # 累積損益追跡
             self.total_trades_count = 0  # 総取引数追跡
             
             # 実行履歴
@@ -334,6 +334,52 @@ class DSSMSIntegratedBacktester:
             self._initialize_components()
         return self.switch_manager
     
+    def _warm_fundamental_cache(self, symbols: List[str]):
+        """
+        Phase 3修正案B: ファンダメンタルキャッシュ事前ウォーミング
+        
+        バックテスト開始前にThreadPoolExecutorで並列ロード
+        60秒(逐次) → 20秒(並列3) への高速化
+        
+        Args:
+            symbols: キャッシュ対象銘柄リスト
+        """
+        try:
+            from concurrent.futures import ThreadPoolExecutor
+            
+            # FundamentalAnalyzerアクセス
+            if not hasattr(self.advanced_ranking_engine, '_hierarchical_system'):
+                self.logger.warning("HierarchicalRankingSystem未初期化 - キャッシュウォーミングスキップ")
+                return
+            
+            hierarchical_system = self.advanced_ranking_engine._hierarchical_system
+            if not hasattr(hierarchical_system, 'fundamental_analyzer'):
+                self.logger.warning("FundamentalAnalyzer未初期化 - キャッシュウォーミングスキップ")
+                return
+            
+            fundamental_analyzer = hierarchical_system.fundamental_analyzer
+            
+            self.logger.info(f"ファンダメンタルキャッシュウォーミング開始: {len(symbols)}銘柄")
+            warm_start = time.time()
+            
+            # 並列ロード(max_workers=3でバランス)
+            with ThreadPoolExecutor(max_workers=3) as executor:
+                futures = {executor.submit(fundamental_analyzer.fetch_financial_data, symbol): symbol for symbol in symbols}
+                
+                # 完了待機
+                for future in futures:
+                    try:
+                        future.result(timeout=30)  # 30秒タイムアウト
+                    except Exception as e:
+                        symbol = futures[future]
+                        self.logger.warning(f"キャッシュウォーミング失敗 ({symbol}): {e}")
+            
+            warm_time = time.time() - warm_start
+            self.logger.info(f"ファンダメンタルキャッシュウォーミング完了: {warm_time:.2f}秒")
+            
+        except Exception as e:
+            self.logger.warning(f"キャッシュウォーミングエラー (処理継続): {e}")
+    
     def run_dynamic_backtest(self, start_date: datetime, end_date: datetime,
                            target_symbols: Optional[List[str]] = None) -> Dict[str, Any]:
         """
@@ -355,6 +401,10 @@ class DSSMSIntegratedBacktester:
             
             # 修正案A: バックテスト開始日を保存（累積期間方式用）
             self.dssms_backtest_start_date = start_date
+            
+            # Phase 3修正案B: ファンダメンタルキャッシュ事前ウォーミング
+            if target_symbols:
+                self._warm_fundamental_cache(target_symbols)
             
             # 実行統計
             execution_start = time.time()

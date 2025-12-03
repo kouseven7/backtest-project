@@ -134,23 +134,46 @@ class HierarchicalRankingSystem:
         
     def categorize_by_perfect_order_priority(self, symbols: List[str]) -> Dict[int, List[str]]:
         """
-        パーフェクトオーダー状況による優先度分類
+        パーフェクトオーダー状況による優先度分類 (並列処理最適化版)
         
         Args:
             symbols: 分析対象銘柄リスト
             
         Returns:
             優先度レベル別の銘柄分類辞書
+        
+        Performance:
+            - 並列データ取得: ThreadPoolExecutor (max_workers=3)
+            - API制限対策: 300回/分 (yfinance制限)
+            - 想定高速化: 11秒 → 2-3秒 (4-5倍)
         """
         priority_groups = {1: [], 2: [], 3: []}
         
         self.logger.info(f"優先度分類開始: {len(symbols)}銘柄")
         
-        # TODO-PERF-001: バッチ処理最適化
+        # PERF-001実装: 並列データ取得
+        start_time = time.time()
+        
+        # API制限対策: max_workers=3 (300回/分 ÷ 60秒 = 5回/秒)
+        # 50銘柄 ÷ 3並列 = 約17秒 (余裕を持たせた設定)
+        data_cache = self.data_manager.batch_get_multi_timeframe_data(
+            symbols, 
+            max_workers=3  # yfinance API制限対策 (5回/秒以下)
+        )
+        
+        fetch_time = time.time() - start_time
+        self.logger.info(f"データ取得完了: {len(data_cache)}/{len(symbols)}銘柄 ({fetch_time:.2f}秒)")
+        
+        # 優先度判定 (データ取得済み、並列不要)
         for symbol in symbols:
             try:
-                # マルチタイムフレームデータ取得
-                data_dict = self.data_manager.get_multi_timeframe_data(symbol)
+                # キャッシュからデータ取得
+                data_dict = data_cache.get(symbol)
+                
+                if data_dict is None:
+                    self.logger.warning(f"銘柄 {symbol} のデータ取得失敗")
+                    priority_groups[3].append(symbol)
+                    continue
                 
                 # パーフェクトオーダー検出
                 po_result = self.perfect_order_detector.check_multi_timeframe_perfect_order(symbol, data_dict)
@@ -168,17 +191,21 @@ class HierarchicalRankingSystem:
                 priority_groups[3].append(symbol)
         
         # 結果ログ
+        total_time = time.time() - start_time
         for level, group in priority_groups.items():
             self.logger.info(f"優先度レベル{level}: {len(group)}銘柄")
         
+        self.logger.info(f"優先度分類完了: {total_time:.2f}秒 (データ取得: {fetch_time:.2f}秒)")
+        
         return priority_groups
     
-    def rank_within_priority_group(self, symbols: List[str]) -> List[Tuple[str, float]]:
+    def rank_within_priority_group(self, symbols: List[str], data_cache: Optional[Dict[str, Dict[str, pd.DataFrame]]] = None) -> List[Tuple[str, float]]:
         """
-        同一優先度グループ内での詳細ランキング
+        同一優先度グループ内での詳細ランキング（Phase 2: 重複排除対応）
         
         Args:
             symbols: 同一優先度グループの銘柄リスト
+            data_cache: マルチタイムフレームデータキャッシュ（Noneの場合は各銘柄で取得）
             
         Returns:
             (銘柄コード, 総合スコア)のタプルリスト（降順ソート）
@@ -187,11 +214,13 @@ class HierarchicalRankingSystem:
         
         self.logger.info(f"グループ内ランキング開始: {len(symbols)}銘柄")
         
-        # TODO-PERF-001: バッチ処理最適化
         for symbol in symbols:
             try:
-                # 各スコア計算
-                score_data = self._calculate_comprehensive_score(symbol)
+                # Phase 2最適化: データキャッシュから取得（重複排除）
+                symbol_data = data_cache.get(symbol) if data_cache else None
+                
+                # 各スコア計算（データを渡す）
+                score_data = self._calculate_comprehensive_score(symbol, symbol_data)
                 
                 if score_data:
                     ranking_scores.append((symbol, score_data.total_score))
@@ -333,15 +362,21 @@ class HierarchicalRankingSystem:
         else:
             return 3  # その他
     
-    def _calculate_comprehensive_score(self, symbol: str) -> Optional[RankingScore]:
-        """総合スコア計算"""
+    def _calculate_comprehensive_score(self, symbol: str, data_dict: Optional[Dict[str, pd.DataFrame]] = None) -> Optional[RankingScore]:
+        """総合スコア計算（Phase 2: 重複排除対応）
+        
+        Args:
+            symbol: 銘柄コード
+            data_dict: マルチタイムフレームデータ（Noneの場合は各メソッドで取得）
+        """
         try:
             # 各種スコア取得
             fundamental_score = self.fundamental_analyzer.calculate_fundamental_score(symbol)
             technical_score = self._calculate_technical_score(symbol)
             volume_score = self._calculate_volume_score(symbol)
             volatility_score = self._calculate_volatility_score(symbol)
-            perfect_order_score = self._calculate_perfect_order_score(symbol)
+            # Phase 2最適化: データを渡して重複取得を回避
+            perfect_order_score = self._calculate_perfect_order_score(symbol, data_dict)
             
             # 加重平均による総合スコア
             total_score = (
@@ -444,11 +479,17 @@ class HierarchicalRankingSystem:
             self.logger.warning(f"ボラティリティスコア計算エラー {symbol}: {e}")
             return 0.5
     
-    def _calculate_perfect_order_score(self, symbol: str) -> float:
-        """パーフェクトオーダー強度スコア"""
+    def _calculate_perfect_order_score(self, symbol: str, data_dict: Optional[Dict[str, pd.DataFrame]] = None) -> float:
+        """パーフェクトオーダー強度スコア（Phase 2: 重複排除対応）
+        
+        Args:
+            symbol: 銘柄コード
+            data_dict: マルチタイムフレームデータ（Noneの場合は取得）
+        """
         try:
-            # マルチタイムフレームデータ取得
-            data_dict = self.data_manager.get_multi_timeframe_data(symbol)
+            # Phase 2最適化: データが渡されていない場合のみ取得
+            if data_dict is None:
+                data_dict = self.data_manager.get_multi_timeframe_data(symbol)
             
             po_result = self.perfect_order_detector.check_multi_timeframe_perfect_order(symbol, data_dict)
             if not po_result:

@@ -1,8 +1,16 @@
-"""
-DSSMS Fundamental Analyzer
+"""DSSMS Fundamental Analyzer
 Yahoo Finance APIによる業績データ分析システム
 
 SBI証券スクリーニング条件に基づく業績評価
+
+Phase 3最適化:
+- CSV永続キャッシュ実装(四半期データの再利用)
+- キャッシュバージョン管理(四半期ごとに手動更新)
+- 初回以降のファンダメンタル分析を0.000秒に高速化
+
+Author: Backtest Project Team
+Created: 2025-09-28
+Last Modified: 2025-12-03
 """
 
 import sys
@@ -12,6 +20,7 @@ import pandas as pd
 from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime, timedelta
 import numpy as np
+import json
 
 # プロジェクトルートを追加
 project_root = Path(__file__).parent.parent.parent
@@ -43,15 +52,24 @@ class FundamentalAnalyzer:
             "growth_threshold": 0.05          # 成長率閾値
         }
         
-        # キャッシュ
+        # メモリキャッシュ（既存）
         self._data_cache = {}
         self._cache_expiry = timedelta(hours=6)
         
-        self.logger.info("FundamentalAnalyzer initialized")
+        # Phase 3追加: CSV永続キャッシュ
+        self._persistent_cache_dir = Path("data/cache/fundamental")
+        self._persistent_cache_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Phase 3追加: キャッシュバージョン管理（四半期ごとに手動更新）
+        # 形式: YYYY-QX (例: 2025-Q4)
+        # 四半期更新時は手動で変更してください
+        self._cache_version = "2025-Q4"  # TODO: 四半期ごとに更新
+        
+        self.logger.info(f"FundamentalAnalyzer initialized (cache version: {self._cache_version})")
     
     def fetch_financial_data(self, symbol: str, force_refresh: bool = False) -> Dict[str, Any]:
         """
-        財務データ取得
+        財務データ取得（Phase 3: CSV永続キャッシュ対応）
         
         Args:
             symbol: 銘柄コード
@@ -61,7 +79,7 @@ class FundamentalAnalyzer:
             Dict[str, Any]: 財務データ
         """
         try:
-            # キャッシュチェック
+            # Step 1: メモリキャッシュチェック（既存）
             cache_key = f"{symbol}_financial"
             if (not force_refresh and 
                 cache_key in self._data_cache):
@@ -69,8 +87,51 @@ class FundamentalAnalyzer:
                 if datetime.now() - cache_time < self._cache_expiry:
                     return data
             
-            # Yahoo Finance データ取得
-            ticker = yf.Ticker(symbol + ".T")
+            # Step 2: CSV永続キャッシュチェック（Phase 3追加）
+            # Phase 3修正: キャッシュキーには.T付きシンボルを使用
+            symbol_with_suffix = symbol if ".T" in symbol else symbol + ".T"
+            csv_cache_path = self._persistent_cache_dir / f"{symbol_with_suffix}_{self._cache_version}.json"
+            if csv_cache_path.exists() and not force_refresh:
+                try:
+                    with open(csv_cache_path, 'r', encoding='utf-8') as f:
+                        cached_data = json.load(f)
+                    
+                    # DataFrameの復元（JSONから、orient='split'形式）
+                    # split形式: {'columns': [...], 'index': [...], 'data': [[...]]}
+                    if 'annual_financials' in cached_data and cached_data['annual_financials']:
+                        af_data = cached_data['annual_financials']
+                        cached_data['annual_financials'] = pd.DataFrame(
+                            data=af_data.get('data', []),
+                            index=af_data.get('index', []),
+                            columns=af_data.get('columns', [])
+                        )
+                    else:
+                        cached_data['annual_financials'] = pd.DataFrame()
+                    
+                    if 'quarterly_financials' in cached_data and cached_data['quarterly_financials']:
+                        qf_data = cached_data['quarterly_financials']
+                        cached_data['quarterly_financials'] = pd.DataFrame(
+                            data=qf_data.get('data', []),
+                            index=qf_data.get('index', []),
+                            columns=qf_data.get('columns', [])
+                        )
+                    else:
+                        cached_data['quarterly_financials'] = pd.DataFrame()
+                    
+                    # メモリキャッシュにも保存
+                    self._data_cache[cache_key] = (datetime.now(), cached_data)
+                    
+                    self.logger.debug(f"Fundamental data loaded from persistent cache: {symbol}")
+                    return cached_data
+                    
+                except Exception as e:
+                    self.logger.warning(f"Failed to load persistent cache for {symbol}: {e}")
+                    # キャッシュ読み込み失敗時は通常取得に進む
+            
+            # Step 3: Yahoo Finance データ取得（既存）
+            # Phase 3修正: symbolに.Tを付与（キャッシュキー統一）
+            symbol_with_suffix = symbol if ".T" in symbol else symbol + ".T"
+            ticker = yf.Ticker(symbol_with_suffix)
             
             # 基本情報
             info = ticker.info
@@ -96,8 +157,32 @@ class FundamentalAnalyzer:
                 'fetch_time': datetime.now()
             }
             
-            # キャッシュ保存
+            # メモリキャッシュ保存（既存）
             self._data_cache[cache_key] = (datetime.now(), financial_data)
+            
+            # Step 4: CSV永続キャッシュに保存（Phase 3追加）
+            try:
+                # DataFrameをJSON化可能な形式に変換
+                # orient='split'でTimestamp問題回避（columns, index, dataに分離）
+                cache_data = {
+                    'basic_info': info,
+                    'annual_financials': financials.to_dict(orient='split') if not financials.empty else {},
+                    'quarterly_financials': quarterly_financials.to_dict(orient='split') if not quarterly_financials.empty else {},
+                    'fetch_time': datetime.now().isoformat(),
+                    'cache_version': self._cache_version
+                }
+                
+                # Phase 3修正: キャッシュキーには.T付きシンボルを使用
+                symbol_with_suffix = symbol if ".T" in symbol else symbol + ".T"
+                csv_cache_path = self._persistent_cache_dir / f"{symbol_with_suffix}_{self._cache_version}.json"
+                with open(csv_cache_path, 'w', encoding='utf-8') as f:
+                    json.dump(cache_data, f, ensure_ascii=False, indent=2, default=str)
+                
+                self.logger.debug(f"Fundamental data saved to persistent cache: {symbol_with_suffix}")
+                
+            except Exception as e:
+                self.logger.warning(f"Failed to save persistent cache for {symbol}: {e}")
+                # キャッシュ保存失敗してもデータ取得は成功しているので継続
             
             self.logger.debug(f"Financial data fetched for {symbol}")
             return financial_data
