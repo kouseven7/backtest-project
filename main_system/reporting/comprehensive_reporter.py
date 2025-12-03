@@ -182,7 +182,7 @@ class ComprehensiveReporter:
             self.logger.info("Step 5: CSV outputs generation")
             csv_outputs = self._generate_csv_outputs(
                 extracted_data, performance_metrics, report_dir, ticker, 
-                execution_results, stock_data
+                execution_results, stock_data, config
             )
             
             # 6. JSON出力生成
@@ -714,20 +714,43 @@ class ComprehensiveReporter:
         report_dir: Path,
         ticker: str,
         execution_results: Dict[str, Any],
-        stock_data: pd.DataFrame
+        stock_data: pd.DataFrame,
+        config: Optional[Dict[str, Any]] = None
     ) -> Dict[str, str]:
         """
         CSV出力生成（方針A: equity_curve再構築対応版）
         
+        Phase 2優先度4: config['equity_curve']優先使用対応（DSSMS統合）
+        
         copilot-instructions.md準拠:
         - 実データのみ使用
         - Excel出力禁止（CSV使用）
+        
+        Args:
+            config: 追加設定（equity_curve: 再構築済みDataFrameを含む場合あり）
         """
         csv_outputs = {}
         
         try:
-            # 方針A: portfolio_equity_curve.csv生成（日次スナップショット再構築）
-            self.logger.info("[CSV_GEN] Starting portfolio equity curve reconstruction")
+            # Phase 2優先度4: config['equity_curve']が存在する場合は優先使用（DSSMS統合対応）
+            if config and 'equity_curve' in config:
+                equity_curve_df = config['equity_curve']
+                if isinstance(equity_curve_df, pd.DataFrame) and isinstance(equity_curve_df.index, pd.DatetimeIndex):
+                    equity_curve_path = report_dir / 'portfolio_equity_curve.csv'
+                    equity_curve_df.to_csv(equity_curve_path, encoding='utf-8')
+                    csv_outputs['portfolio_equity_curve'] = str(equity_curve_path)
+                    self.logger.info(
+                        f"[CSV_GEN] Equity curve exported from config: {len(equity_curve_df)} rows, "
+                        f"{len(equity_curve_df.columns)} columns"
+                    )
+                else:
+                    self.logger.warning(
+                        f"[CSV_GEN] config['equity_curve'] exists but invalid type or index: "
+                        f"type={type(equity_curve_df)}, index_type={type(equity_curve_df.index) if isinstance(equity_curve_df, pd.DataFrame) else 'N/A'}"
+                    )
+            else:
+                # 既存ロジック: backtest_signalsから再構築
+                self.logger.info("[CSV_GEN] Starting portfolio equity curve reconstruction from backtest_signals")
             
             # execution_resultsからbacktest_signalsを取得
             signals_df = None

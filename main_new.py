@@ -56,6 +56,7 @@ class MainSystemController:
             config: システム設定
         """
         self.config = config or {}
+        self.suppress_report_generation = self.config.get('suppress_report_generation', False)
         self.logger = setup_logger(
             "MainSystemController",
             log_file="logs/main_system_controller.log"
@@ -326,11 +327,18 @@ class MainSystemController:
                 execution_results, data_for_analysis, market_analysis
             )
             
-            # 7. 包括的レポート生成
-            self.logger.info(f"[STEP 7/7] 包括的レポート生成")
-            report_results = self.reporter.generate_full_backtest_report(
-                execution_results, data_for_analysis, ticker, config=None
-            )
+            # 7. 包括的レポート生成（Phase 2: 出力制御対応）
+            if not self.suppress_report_generation:
+                self.logger.info(f"[STEP 7/7] 包括的レポート生成")
+                report_results = self.reporter.generate_full_backtest_report(
+                    execution_results, data_for_analysis, ticker, config=None
+                )
+            else:
+                self.logger.info(f"[STEP 7/7] レポート生成スキップ（suppress_report_generation=True）")
+                report_results = {
+                    'status': 'SUPPRESSED',
+                    'message': 'Report generation suppressed by DSSMS caller'
+                }
             
             # 8. 実行結果統合
             final_results = {

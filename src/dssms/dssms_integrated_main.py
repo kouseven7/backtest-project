@@ -148,6 +148,11 @@ class DSSMSIntegratedBacktester:
             self.position_size = 0
             self.position_entry_price = 0
             
+            # Phase 2: equity_curve再構築用追跡変数
+            self.peak_value = self.portfolio_value  # ポートフォリオピーク値追跡
+            self.cumulative_pnl = 0.0  # 累積损益追跡
+            self.total_trades_count = 0  # 総取引数追跡
+            
             # 実行履歴
             self.daily_results = []
             self.switch_history = []
@@ -435,7 +440,20 @@ class DSSMSIntegratedBacktester:
                 'daily_return_rate': 0,
                 'strategy_results': {},
                 'switch_executed': False,
-                'errors': []
+                'errors': [],
+                
+                # Phase 2: equity_curve再構築用カラム
+                'cash_balance': self.portfolio_value - self.position_size,
+                'position_value': self.position_size,
+                'peak_value': self.peak_value,
+                'drawdown_pct': 0,  # 後程計算
+                'cumulative_pnl': self.cumulative_pnl,
+                'total_trades': self.total_trades_count,
+                'active_positions': 1 if self.position_size > 0 else 0,
+                'risk_status': 'Normal',
+                'blocked_trades': 0,
+                'risk_action': '',
+                'execution_details': []  # _convert_main_new_result()で設定
             }
             
             # 1. DSS Core V3による銘柄選択
@@ -457,6 +475,10 @@ class DSSMSIntegratedBacktester:
                 strategy_result = self._execute_multi_strategies(self.current_symbol, target_date)
                 daily_result['strategy_results'] = strategy_result
                 
+                # Phase 2優先度3: execution_details設定（詳細設計書3.1.3準拠）
+                if 'execution_details' in strategy_result:
+                    daily_result['execution_details'] = strategy_result['execution_details']
+            
             # ポートフォリオ価値更新
             if strategy_result.get('position_update'):
                 position_return = strategy_result['position_update']['return']
@@ -465,12 +487,27 @@ class DSSMSIntegratedBacktester:
                 daily_result['daily_return'] = position_return
                 daily_result['daily_return_rate'] = position_return / daily_result['portfolio_value_start']
                 
+                # Phase 2: peak_value/drawdown/cumulative_pnl計算
+                if self.portfolio_value > self.peak_value:
+                    self.peak_value = self.portfolio_value
+                
+                daily_result['peak_value'] = self.peak_value
+                daily_result['drawdown_pct'] = (self.peak_value - self.portfolio_value) / self.peak_value if self.peak_value > 0 else 0
+                
+                self.cumulative_pnl += position_return
+                daily_result['cumulative_pnl'] = self.cumulative_pnl
+                
+                # cash_balance/position_value再計算（ポジション変更後）
+                daily_result['cash_balance'] = self.portfolio_value - self.position_size
+                daily_result['position_value'] = self.position_size
+                
                 # [LOG#6] 日次ポートフォリオ更新トラッキング
                 self.logger.info(
                     f"[PORTFOLIO_UPDATE] {target_date.strftime('%Y-%m-%d')} - "
                     f"Before: {portfolio_value_before:,.0f}円, "
                     f"Return: {position_return:+,.0f}円 ({daily_result['daily_return_rate']:+.2%}), "
-                    f"After: {self.portfolio_value:,.0f}円"
+                    f"After: {self.portfolio_value:,.0f}円, "
+                    f"Drawdown: {daily_result['drawdown_pct']:.2%}"
                 )            # 4. リスク管理チェック
             risk_result = self._check_risk_limits(daily_result)
             
@@ -1471,7 +1508,8 @@ class DSSMSIntegratedBacktester:
                 },
                 'performance': {
                     'use_aggregator': False
-                }
+                },
+                'suppress_report_generation': True  # Phase 2: DSSMS経由の呼び出し時はレポート生成抑制
             }
             
             controller = MainSystemController(config)
@@ -1583,6 +1621,14 @@ class DSSMSIntegratedBacktester:
                     'threshold': ABNORMAL_RETURN_THRESHOLD
                 }
             
+            # Phase 2優先度3: execution_details抽出（詳細設計書3.1.3準拠）
+            execution_details = execution_results.get('execution_details', [])
+            if not execution_details:
+                self.logger.warning(
+                    f"[EXECUTION_DETAILS_MISSING] {symbol} {target_date.strftime('%Y-%m-%d')}: "
+                    f"execution_detailsが空です。ComprehensiveReporter生成時に取引履歴が不足する可能性があります。"
+                )
+            
             # DSSMS形式に変換
             dssms_result = {
                 'status': 'success',
@@ -1608,7 +1654,9 @@ class DSSMSIntegratedBacktester:
                     'return': total_return,
                     'balance': execution_results.get('total_portfolio_value', 1000000.0),
                     'total_trades': summary_stats.get('total_trades', 0)
-                }
+                },
+                # Phase 2優先度3: execution_details追加（詳細設計書3.1.3準拠）
+                'execution_details': execution_details
             }
             
             return dssms_result
@@ -2227,24 +2275,308 @@ class DSSMSIntegratedBacktester:
             self.logger.error(f"戦略統計計算エラー: {e}")
             return {}
     
+    def _rebuild_equity_curve(self, daily_results: List[Dict[str, Any]]) -> 'pd.DataFrame':
+        """
+        daily_resultsからequity_curve DataFrameを再構築（Phase 2優先度2: 詳細設計書3.1.4準拠）
+        
+        ComprehensiveReporter用に13カラムのequity_curve DataFrameを生成。
+        
+        Args:
+            daily_results: DSSMS日次結果リスト
+        
+        Returns:
+            pd.DataFrame: equity_curve（13カラム、dateインデックス）
+        
+        Columns:
+            - date: 日付（index）
+            - portfolio_value: ポートフォリオ総額
+            - cash_balance: 現金残高
+            - position_value: ポジション評価額
+            - peak_value: ピーク値
+            - drawdown_pct: ドローダウン率
+            - cumulative_pnl: 累積损益
+            - daily_pnl: 日次損益
+            - total_trades: 総取引数
+            - active_positions: アクティブポジション数
+            - risk_status: リスクステータス
+            - blocked_trades: ブロックされた取引数
+            - risk_action: リスクアクション
+        """
+        try:
+            import pandas as pd
+            
+            if not daily_results:
+                self.logger.warning("[REBUILD_EQUITY_CURVE] daily_results空 - 空のDataFrame返却")
+                return pd.DataFrame()
+            
+            equity_data = []
+            for daily_result in daily_results:
+                equity_data.append({
+                    'date': daily_result.get('date'),
+                    'portfolio_value': daily_result.get('portfolio_value_end', 0),
+                    'cash_balance': daily_result.get('cash_balance', 0),
+                    'position_value': daily_result.get('position_value', 0),
+                    'peak_value': daily_result.get('peak_value', 0),
+                    'drawdown_pct': daily_result.get('drawdown_pct', 0),
+                    'cumulative_pnl': daily_result.get('cumulative_pnl', 0),
+                    'daily_pnl': daily_result.get('daily_return', 0),
+                    'total_trades': daily_result.get('total_trades', 0),
+                    'active_positions': daily_result.get('active_positions', 0),
+                    'risk_status': daily_result.get('risk_status', ''),
+                    'blocked_trades': daily_result.get('blocked_trades', 0),
+                    'risk_action': daily_result.get('risk_action', '')
+                })
+            
+            df = pd.DataFrame(equity_data)
+            
+            # dateをdatetimeに変換してインデックス化
+            if 'date' in df.columns:
+                df['date'] = pd.to_datetime(df['date'])
+                df.set_index('date', inplace=True)
+            
+            self.logger.info(f"[REBUILD_EQUITY_CURVE] equity_curve再構築完了: {len(df)}行、13カラム")
+            return df
+            
+        except Exception as e:
+            self.logger.error(f"[REBUILD_EQUITY_CURVE] equity_curve再構築エラー: {e}", exc_info=True)
+            import pandas as pd
+            return pd.DataFrame()
+    
+    def _generate_switch_history_csv(self, output_dir: Path) -> None:
+        """
+        銘柄切替履歴CSV生成（Phase 2優先度5: 詳細設計書4.2.1準拠）
+        
+        ユーザー確定カラム（5カラム）:
+        - switch_date: 切替日
+        - from_symbol: 前の銘柄
+        - to_symbol: 新銘柄
+        - reason: 切替理由
+        - switch_cost: コスト（金額）
+        
+        追加推奨カラム（3カラム）:
+        - ranking_score: DSS選択スコア
+        - portfolio_value_before: 切替前ポートフォリオ価値
+        - portfolio_value_after: 切替後ポートフォリオ価値
+        
+        Args:
+            output_dir: 出力ディレクトリ
+        """
+        try:
+            import pandas as pd
+            
+            if not self.switch_history:
+                self.logger.warning("[SWITCH_HISTORY_CSV] switch_history空 - CSV生成スキップ")
+                return
+            
+            # switch_historyから8カラムCSV生成
+            csv_data = []
+            for switch in self.switch_history:
+                csv_data.append({
+                    'switch_date': switch.get('date'),
+                    'from_symbol': switch.get('from_symbol', ''),
+                    'to_symbol': switch.get('to_symbol', ''),
+                    'reason': switch.get('reason', ''),
+                    'switch_cost': switch.get('switch_cost', 0.0),
+                    'ranking_score': switch.get('ranking_score', 0.0),  # 推奨カラム
+                    'portfolio_value_before': switch.get('portfolio_value_before', 0.0),  # 推奨カラム
+                    'portfolio_value_after': switch.get('portfolio_value_after', 0.0)  # 推奨カラム
+                })
+            
+            df = pd.DataFrame(csv_data)
+            csv_path = output_dir / "dssms_switch_history.csv"
+            df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+            
+            self.logger.info(
+                f"[SWITCH_HISTORY_CSV] switch_history.csv生成完了: "
+                f"{csv_path}, {len(df)}行、8カラム"
+            )
+            
+        except Exception as e:
+            self.logger.error(f"[SWITCH_HISTORY_CSV] switch_history.csv生成エラー: {e}", exc_info=True)
+    
+    def _convert_to_execution_format(self, final_results: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        DSSMS結果をmain_new.py形式に変換（Phase 2優先度3: 詳細設計書3.1準拠）
+        
+        ComprehensiveReporter.generate_full_backtest_report()の入力形式に変換。
+        
+        Args:
+            final_results: DSSMS最終結果
+        
+        Returns:
+            Dict[str, Any]: main_new.py形式の実行結果（execution_results互換）
+        
+        変換マッピング:
+            - status: 'success' → 'SUCCESS'
+            - daily_results: execution_details統合
+            - total_return: total_portfolio_value計算
+            - strategy_weights: 固定値（DSSMS_MultiStrategy: 1.0）
+        """
+        try:
+            # ステータス変換
+            status = final_results.get('status', 'error')
+            if status == 'success':
+                status = 'SUCCESS'
+            elif status == 'error':
+                status = 'ERROR'
+            else:
+                status = 'UNKNOWN'
+            
+            # パフォーマンス統計
+            portfolio_perf = final_results.get('portfolio_performance', {})
+            initial_capital = portfolio_perf.get('initial_capital', 1000000)
+            final_capital = portfolio_perf.get('final_capital', 1000000)
+            total_return = final_capital - initial_capital
+            
+            # execution_details統合（全日次の execution_detailsを統合）
+            all_execution_details = []
+            for daily_result in final_results.get('daily_results', []):
+                details = daily_result.get('execution_details', [])
+                all_execution_details.extend(details)
+            
+            # main_new.py形式に変換
+            execution_format = {
+                'status': status,
+                'total_portfolio_value': final_capital,
+                'initial_capital': initial_capital,
+                'total_return': total_return,
+                'execution_details': all_execution_details,
+                'strategy_weights': {
+                    'DSSMS_MultiStrategy': 1.0  # DSSMS単一戦略として扱う
+                },
+                'execution_results': [{  # ComprehensiveReporter互換形式（リスト化）
+                    'status': status,
+                    'total_portfolio_value': final_capital,
+                    'winning_trades': 0,  # 後でexecution_detailsから計算
+                    'losing_trades': 0,
+                    'execution_details': all_execution_details,  # Phase 2: 追加
+                    'backtest_signals': None  # equity_curve再構築に不要（configで渡す）
+                }],
+                # equity_recorderモック（ComprehensiveReporterが使用）
+                'equity_recorder': None  # _rebuild_equity_curve()で代替
+            }
+            
+            self.logger.info(
+                f"[CONVERT_TO_EXECUTION_FORMAT] DSSMS→main_new.py変換完了: "
+                f"status={status}, execution_details={len(all_execution_details)}件"
+            )
+            
+            return execution_format
+            
+        except Exception as e:
+            self.logger.error(f"[CONVERT_TO_EXECUTION_FORMAT] 変換エラー: {e}", exc_info=True)
+            return {
+                'status': 'ERROR',
+                'error': str(e),
+                'execution_details': []
+            }
+    
     def _generate_outputs(self, final_results: Dict[str, Any]) -> None:
-        """出力・レポート生成 (CSV+JSON+TXT形式、Excel出力は2025-10-08に廃止)"""
+        """
+        出力・レポート生成（Phase 2優先度4: ComprehensiveReporter統合版）
+        
+        出力先: output/dssms_integration/dssms_{timestamp}/
+        フォーマット: CSV+JSON+TXT（copilot-instructions.md準拠、Excel出力禁止）
+        
+        生成ファイル:
+        - dssms_portfolio_equity_curve.csv（13カラム）
+        - dssms_trades.csv（13カラム、DSSMS拡張版）
+        - dssms_performance_summary.csv
+        - dssms_switch_history.csv（5+3カラム）
+        - JSON/TXTレポート
+        
+        Phase 3タスク1: 出力フォルダ統合対応（2025-12-03）
+        - ticker_symbolにタイムスタンプを含めることで単一フォルダに統合
+        """
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             
-            # 1. 包括レポート生成 (JSON+TXT形式)
+            # Phase 2: 出力先ディレクトリ設定（詳細設計書5.2準拠）
+            output_dir = Path(f"output/dssms_integration/dssms_{timestamp}")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            self.logger.info(f"[GENERATE_OUTPUTS] DSSMS統合レポート生成開始: {output_dir}")
+            
+            # Phase 2優先度4-1: ComprehensiveReporter使用準備
+            # 1. DSSMS結果をmain_new.py形式に変換
+            execution_format = self._convert_to_execution_format(final_results)
+            
+            # 2. equity_curve再構築
+            daily_results = final_results.get('daily_results', [])
+            equity_curve_df = self._rebuild_equity_curve(daily_results)
+            
+            # 3. ComprehensiveReporter初期化（出力先をDSSMS専用ディレクトリに設定）
+            from main_system.reporting.comprehensive_reporter import ComprehensiveReporter
+            reporter = ComprehensiveReporter(output_base_dir=str(output_dir.parent))
+            
+            # 4. 株価データ取得（最後の銘柄のデータを使用）
+            # NOTE: DSSMSは複数銘柄を切り替えるため、統合的な株価データは存在しない
+            # ComprehensiveReporterの要求に応えるため、実際のバックテスト期間でダミーDataFrameを生成
+            import pandas as pd
+            
+            # daily_resultsから実際のバックテスト期間を取得
+            if self.daily_results and len(self.daily_results) > 0:
+                start_date = pd.to_datetime(self.daily_results[0]['date'])
+                end_date = pd.to_datetime(self.daily_results[-1]['date'])
+                date_range = pd.date_range(start=start_date, end=end_date, freq='D')
+                stock_data_dummy = pd.DataFrame({
+                    'Close': [0] * len(date_range),
+                    'Volume': [0] * len(date_range)
+                }, index=date_range)
+                self.logger.info(
+                    f"[STOCK_DATA_DUMMY] 実期間データ生成: {start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}, {len(date_range)}日"
+                )
+            else:
+                # copilot-instructions.md準拠: フォールバック禁止、RuntimeError送出
+                raise RuntimeError(
+                    f"Failed to generate stock_data for ComprehensiveReporter: daily_results is empty. "
+                    f"Cannot proceed without actual backtest data. "
+                    f"Fallback with mock data is prohibited by copilot-instructions.md."
+                )
+            
+            # 5. ComprehensiveReporter呼び出し
+            # Phase 3タスク1修正: タイムスタンプを含むticker_symbolで単一フォルダに統合
+            ticker_symbol = 'dssms'  # Phase 3タスク1修正: タイムスタンプ除去（ComprehensiveReporterが{ticker}_{timestamp}形式で生成するため）
+            
+            report_result = reporter.generate_full_backtest_report(
+                execution_results=execution_format,
+                stock_data=stock_data_dummy,
+                ticker=ticker_symbol,
+                config={
+                    'output_dir': str(output_dir),
+                    'equity_curve': equity_curve_df  # 再構築したequity_curveを渡す
+                }
+            )
+            
+            self.logger.info(
+                f"[GENERATE_OUTPUTS] ComprehensiveReporter生成完了: "
+                f"status={report_result.get('status')}, output_dir={output_dir}"
+            )
+            
+            # Phase 2優先度5: switch_history.csv生成
+            self._generate_switch_history_csv(output_dir)
+            
+            # 既存のDSSMS独自レポート生成（JSON形式）
             report_data = {
                 'backtest_results': final_results,
                 'performance_data': final_results.get('performance_summary', {}),
                 'switch_data': final_results.get('switch_statistics', {})
             }
             
-            report_path = f"output/dssms_integration/comprehensive_report_{timestamp}.json"
-            comprehensive_report = self.report_generator.generate_comprehensive_report(report_data, report_path)
-            self.logger.info(f"包括レポート生成完了: {report_path}")
+            report_path = output_dir / "dssms_comprehensive_report.json"
+            
+            # report_generatorがNoneの場合は直接JSON出力
+            if self.report_generator:
+                comprehensive_report = self.report_generator.generate_comprehensive_report(report_data, str(report_path))
+            else:
+                import json
+                with open(report_path, 'w', encoding='utf-8') as f:
+                    json.dump(report_data, f, indent=2, ensure_ascii=False, default=str)
+            
+            self.logger.info(f"[GENERATE_OUTPUTS] DSSMS独自レポート生成完了: {report_path}")
             
         except Exception as e:
-            self.logger.error(f"出力生成エラー: {e}")
+            self.logger.error(f"[GENERATE_OUTPUTS] 出力生成エラー: {e}", exc_info=True)
     
     def _load_default_config(self) -> Dict[str, Any]:
         """デフォルト設定読み込み"""

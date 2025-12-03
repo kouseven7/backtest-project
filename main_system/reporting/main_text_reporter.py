@@ -158,7 +158,7 @@ class MainTextReporter:
         
         if isinstance(execution_results, dict) and 'execution_results' in execution_results:
             for result in execution_results['execution_results']:
-                if result.get('success') and 'execution_details' in result:
+                if isinstance(result, dict) and 'execution_details' in result:
                     strategy_name = result.get('strategy_name', 'Unknown')
                     
                     # execution_detailsから取引データを変換（ComprehensiveReporterと同様のロジック）
