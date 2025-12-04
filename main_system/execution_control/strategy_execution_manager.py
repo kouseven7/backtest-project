@@ -803,6 +803,12 @@ class StrategyExecutionManager:
                                     except Exception as pt_error:
                                         self.logger.warning(f"[FORCE_CLOSE] PortfolioTracker記録エラー ({symbol}): {pt_error}")
                                 
+                                # Phase 4.2-23修正: timestampをバックテスト期間の最終日に変更
+                                # 根拠: 通常のBUY/SELL注文（Line 940, 997）との一貫性
+                                # 修正前: pd.Timestamp.now()（実行時刻）
+                                # 修正後: signals.index[-1]（バックテスト最終日）
+                                backtest_end_timestamp = signals.index[-1].isoformat() if hasattr(signals.index[-1], 'isoformat') else str(signals.index[-1])
+                                
                                 execution_results.append({
                                     "success": True,
                                     "status": "force_closed",  # 強制決済フラグ
@@ -810,7 +816,7 @@ class StrategyExecutionManager:
                                     "symbol": symbol,
                                     "action": "SELL",
                                     "quantity": quantity,
-                                    "timestamp": pd.Timestamp.now(),
+                                    "timestamp": backtest_end_timestamp,
                                     "executed_price": executed_price,
                                     "strategy_name": "ForceClose",
                                     "profit_pct": profit_pct
