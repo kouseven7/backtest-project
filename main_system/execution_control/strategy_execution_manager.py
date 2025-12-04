@@ -878,6 +878,26 @@ class StrategyExecutionManager:
             exit_count = (signals['Exit_Signal'] == -1).sum()  # Exit_Signal は -1 が正しい
             self.logger.info(f"_generate_trade_orders: Entry_Signal==1: {entry_count} 件, Exit_Signal==-1: {exit_count} 件")
             
+            # [DEBUG_E2] Entry_Signal=1の日付と詳細を出力（調査用）
+            if entry_count > 0:
+                entry_dates = signals[signals['Entry_Signal'] == 1].index.tolist()
+                self.logger.info(f"[DEBUG_E2] Entry_Signal=1の日付: {entry_dates}")
+                for entry_date in entry_dates:
+                    entry_row = signals.loc[entry_date]
+                    self.logger.info(
+                        f"[DEBUG_E2] Entry_Signal詳細: date={entry_date}, "
+                        f"Close={entry_row.get('Close', 'N/A')}, "
+                        f"Entry_Price={entry_row.get('Entry_Price', 'N/A')}, "
+                        f"Position={entry_row.get('Position', 'N/A')}"
+                    )
+            
+            # [DEBUG_E3] signals DataFrameの日付範囲と件数を出力
+            if len(signals) > 0:
+                self.logger.info(
+                    f"[DEBUG_E3] signals DataFrame範囲: {signals.index[0]} ~ {signals.index[-1]}, "
+                    f"総件数={len(signals)}行, strategy_name={strategy_name}"
+                )
+            
             # Phase 4.2-9-2: ポジション追跡用辞書（銘柄ごとに最新のBUY数量を記録）
             # 理由: _get_current_position() はオーダー生成時点ではまだ0を返すため
             # SELLオーダーは直前のBUYオーダーと同じ数量を使用する必要がある

@@ -263,20 +263,29 @@ class BaseStrategy:
             
             # ポジションを持っていない場合のみエントリーシグナルをチェック
             if not in_position and in_trading_period:
-                entry_signal = self.generate_entry_signal(idx)
-                if entry_signal == 1:
-                    result.at[result.index[idx], 'Entry_Signal'] = 1
-                    result.at[result.index[idx], 'Position'] = 1
-                    in_position = True
-                    entry_idx = idx
-                    entry_count += 1
-                    
-                    # エントリー価格を記録
-                    entry_price = result[price_column].iloc[idx]
-                    self.entry_prices[idx] = entry_price
-                    
-                    # デバッグログ: エントリー記録
-                    self.logger.debug(f"[ENTRY #{entry_count}] idx={idx}, date={result.index[idx]}, price={entry_price:.2f}, in_position={in_position}")
+                # 【選択肢D】最終日（trading_end_date）のみシグナル生成
+                # 理由: DSSMS累積期間バックテスト方式でのentry_date重複を解消
+                # trading_end_date未指定の場合は全期間でシグナル生成（従来通り）
+                is_last_trading_day = (
+                    trading_end_date_unified is not None and 
+                    current_date == trading_end_date_unified
+                )
+                
+                if is_last_trading_day or trading_end_date_unified is None:
+                    entry_signal = self.generate_entry_signal(idx)
+                    if entry_signal == 1:
+                        result.at[result.index[idx], 'Entry_Signal'] = 1
+                        result.at[result.index[idx], 'Position'] = 1
+                        in_position = True
+                        entry_idx = idx
+                        entry_count += 1
+                        
+                        # エントリー価格を記録
+                        entry_price = result[price_column].iloc[idx]
+                        self.entry_prices[idx] = entry_price
+                        
+                        # デバッグログ: エントリー記録
+                        self.logger.debug(f"[ENTRY #{entry_count}] idx={idx}, date={result.index[idx]}, price={entry_price:.2f}, in_position={in_position}")
             
             # ポジションを持っている場合のみイグジットシグナルをチェック
             elif in_position:

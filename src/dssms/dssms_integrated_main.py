@@ -2480,8 +2480,30 @@ class DSSMSIntegratedBacktester:
             
             # execution_details統合（全日次の execution_detailsを統合）
             all_execution_details = []
-            for daily_result in final_results.get('daily_results', []):
+            for idx, daily_result in enumerate(final_results.get('daily_results', [])):
                 details = daily_result.get('execution_details', [])
+                target_date = daily_result.get('target_date', 'UNKNOWN')
+                
+                # [DEBUG_EXEC_DETAILS] 各daily_resultのexecution_details件数と内容を出力
+                self.logger.info(
+                    f"[DEBUG_EXEC_DETAILS] daily_result[{idx}]: target_date={target_date}, "
+                    f"execution_details件数={len(details)}"
+                )
+                
+                # 各execution_detailsの詳細を出力
+                for detail_idx, detail in enumerate(details):
+                    action = detail.get('action', 'UNKNOWN')
+                    timestamp = detail.get('timestamp', 'UNKNOWN')
+                    price = detail.get('price', 0.0)
+                    quantity = detail.get('quantity', 0)
+                    symbol = detail.get('symbol', 'UNKNOWN')
+                    
+                    self.logger.info(
+                        f"[DEBUG_EXEC_DETAILS]   detail[{detail_idx}]: "
+                        f"action={action}, timestamp={timestamp}, "
+                        f"price={price:.2f}, quantity={quantity}, symbol={symbol}"
+                    )
+                
                 all_execution_details.extend(details)
             
             # main_new.py形式に変換
