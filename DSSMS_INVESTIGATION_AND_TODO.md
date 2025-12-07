@@ -18,6 +18,11 @@
    - dssms_backtester_v3.py Line 247: `auto_adjust=False`
    - copilot-instructions.md準拠（2025-12-03以降必須）
 
+3. **ファイル出力2フォルダ分散問題修正（修正案C - 2025-12-07完了）**
+   - comprehensive_reporter.py: timestampパラメータ追加（Line 125）
+   - dssms_integrated_main.py: timestamp引数を明示的に渡す（Line 2759）
+   - **結果:** モジュール実行でも1フォルダに統一（9ファイル）
+
 ### 🔍 調査完了事項
 
 #### 修正前（ユーザー報告）
@@ -65,8 +70,18 @@
 **残存する疑問:**
 - 直接実行は4件、モジュール実行は5件と微妙に異なる理由（要調査）
 
-#### 2. ファイル出力が2フォルダに分散（修正前・修正後とも継続）
-**証拠:**
+#### 2. ~~ファイル出力が2フォルダに分散（修正前・修正後とも継続）~~ ✅ 解決済み（修正案C）
+**修正内容（2025-12-07）:**
+- comprehensive_reporter.py Line 125: `timestamp: Optional[str] = None`パラメータ追加
+- comprehensive_reporter.py Line 151-163: タイムスタンプ生成ロジック修正（外部指定優先）
+- dssms_integrated_main.py Line 2759: `timestamp=timestamp`引数追加
+
+**検証結果:**
+- ✅ モジュール実行: `dssms_20251207_110153/` (1フォルダのみ、9ファイル)
+- ✅ タイムスタンプ統一: 全ファイルが同一タイムスタンプで生成
+- ✅ ログ確認: `[TIMESTAMP] Using external timestamp: 20251207_110153`
+
+**修正前の証拠:**
 - 修正前: dssms_20251207_004818 + dssms_20251207_004819
 - 修正後: dssms_20251207_100629 + dssms_20251207_100630
 - 直接実行は1フォルダのみ（dssms_20251207_003645）
@@ -144,25 +159,24 @@
 
 ---
 
-#### Task 2: モジュール実行時のファイル出力2フォルダ分散問題修正
-**工数見積:** 1-2時間
+#### Task 2: ~~モジュール実行時のファイル出力2フォルダ分散問題修正~~ ✅ 完了（修正案C）
+**完了日:** 2025-12-07
+**実施内容:** 修正案C（タイムスタンプのパラメータ化）
 
-**調査項目:**
-1. タイムスタンプ生成箇所の特定
-   - `_generate_outputs()` の呼び出し回数
-   - ComprehensiveReporter vs DSSMSReportGenerator
-2. 出力ディレクトリ指定の統一
-   - `output_dir` パラメータの追跡
-   - レポート生成タイミングの同期
+**修正箇所:**
+1. comprehensive_reporter.py Line 119-125: メソッドシグネチャに`timestamp`パラメータ追加
+2. comprehensive_reporter.py Line 151-163: タイムスタンプ生成ロジック修正（外部指定優先）
+3. dssms_integrated_main.py Line 2759: `timestamp=timestamp`引数追加
 
-**必要なファイル:**
-- src/dssms/dssms_integrated_main.py (Line 2690-2794: `_generate_outputs()`)
-- main_system/reporting/comprehensive_reporter.py
-- src/dssms/report_generator.py
+**テスト結果:**
+- ✅ モジュール実行: 1フォルダのみ（`dssms_20251207_110153/`）
+- ✅ ファイル数: 9ファイル（全ファイル統合）
+- ✅ タイムスタンプ統一: ログで確認（`[TIMESTAMP] Using external timestamp: 20251207_110153`）
+- ✅ 直接実行: 影響なし（後方互換性維持）
 
-**成功基準:**
-- すべてのファイルが1つのフォルダに出力される
-- タイムスタンプが統一される
+**成功基準達成:**
+- ✅ すべてのファイルが1つのフォルダに出力される
+- ✅ タイムスタンプが統一される
 
 ---
 
@@ -291,6 +305,52 @@ from src.dssms.dssms_backtester_v3 import DSSBacktesterV3
 
 ---
 
+### 修正案C: タイムスタンプのパラメータ化（完了）
+**日時:** 2025-12-07  
+**修正箇所:**
+1. `comprehensive_reporter.py` Line 119-125: メソッドシグネチャ変更
+2. `comprehensive_reporter.py` Line 151-163: タイムスタンプ生成ロジック
+3. `dssms_integrated_main.py` Line 2759: timestamp引数追加
+
+**修正内容:**
+```python
+# comprehensive_reporter.py Line 119-125
+def generate_full_backtest_report(
+    self,
+    execution_results: Dict[str, Any],
+    stock_data: pd.DataFrame,
+    ticker: str,
+    config: Optional[Dict[str, Any]] = None,
+    timestamp: Optional[str] = None  # 新規パラメータ
+) -> Dict[str, Any]:
+
+# comprehensive_reporter.py Line 151-163
+if timestamp:
+    # 外部から渡されたタイムスタンプを使用
+    report_dir = self.output_base_dir / f"{ticker}_{timestamp}"
+else:
+    # 独自生成（既存動作、後方互換性維持）
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    report_dir = self.output_base_dir / f"{ticker}_{timestamp}"
+
+# dssms_integrated_main.py Line 2759
+report_result = reporter.generate_full_backtest_report(
+    execution_results=execution_format,
+    stock_data=stock_data_dummy,
+    ticker=ticker_symbol,
+    timestamp=timestamp,  # 修正案C: 既存のタイムスタンプを渡す
+    config={...}
+)
+```
+
+**検証結果:**
+- ✅ モジュール実行: 1フォルダのみ（`dssms_20251207_110153/`）、9ファイル
+- ✅ タイムスタンプ統一: ログで確認（`[TIMESTAMP] Using external timestamp`）
+- ✅ 後方互換性: timestampパラメータがNoneの場合は既存動作（自動生成）
+- ✅ **修正案C完全成功: ファイル出力2フォルダ分散問題を解消**
+
+---
+
 ## 📈 パフォーマンス比較表
 
 | 実行方法 | 取引件数 | 総収益率 | 勝率 | 最終資本 | 銘柄切替回数 | DSS V3 |
@@ -306,10 +366,10 @@ from src.dssms.dssms_backtester_v3 import DSSBacktesterV3
 
 ## 🎯 次回作業の推奨順序
 
-### Phase 1: 緊急対応（即日～2日以内）
-1. ~~**Task 1:** モジュール実行時の動的銘柄選択停止原因調査~~ ✅ 解決済み
-2. **Task 2:** ファイル出力2フォルダ分散問題修正（最優先）
-3. **Task 5:** Unicode emoji修正（簡単なので早めに完了）
+### Phase 1: 緊急対応（即日～2日以内）✅ 完了
+1. ~~**Task 1:** モジュール実行時の動的銘柄選択停止原因調査~~ ✅ 解決済み（修正案A）
+2. ~~**Task 2:** ファイル出力2フォルダ分散問題修正~~ ✅ 完了（修正案C、2025-12-07）
+3. **Task 5:** Unicode emoji修正（簡単なので早めに完了） ✅終了
 
 ### Phase 2: パフォーマンス改善（3-5日以内）
 4. **Task 3:** パフォーマンス指標不一致の修正
@@ -380,5 +440,5 @@ from src.dssms.dssms_backtester_v3 import DSSBacktesterV3
 
 ---
 
-**最終更新:** 2025-12-07  
-**次回更新予定:** Task 1完了時
+**最終更新:** 2025-12-07 11:05  
+**次回更新予定:** Task 5完了時

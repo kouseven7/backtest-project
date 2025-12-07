@@ -2753,10 +2753,12 @@ class DSSMSIntegratedBacktester:
             # Phase 3タスク1修正: タイムスタンプを含むticker_symbolで単一フォルダに統合
             ticker_symbol = 'dssms'  # Phase 3タスク1修正: タイムスタンプ除去（ComprehensiveReporterが{ticker}_{timestamp}形式で生成するため）
             
+            # Task 2修正案C: タイムスタンプを明示的に渡して単一フォルダに統合
             report_result = reporter.generate_full_backtest_report(
                 execution_results=execution_format,
                 stock_data=stock_data_dummy,
                 ticker=ticker_symbol,
+                timestamp=timestamp,  # 修正案C: 既存のタイムスタンプを渡す
                 config={
                     'output_dir': str(output_dir),
                     'equity_curve': equity_curve_df  # 再構築したequity_curveを渡す

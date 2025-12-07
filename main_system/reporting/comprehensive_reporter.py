@@ -121,7 +121,8 @@ class ComprehensiveReporter:
         execution_results: Dict[str, Any],
         stock_data: pd.DataFrame,
         ticker: str,
-        config: Optional[Dict[str, Any]] = None
+        config: Optional[Dict[str, Any]] = None,
+        timestamp: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         バックテスト結果の包括的レポート生成
@@ -131,6 +132,7 @@ class ComprehensiveReporter:
             stock_data: 株価データ
             ticker: ティッカーシンボル
             config: 追加設定
+            timestamp: タイムスタンプ（外部指定、Noneの場合は自動生成）
         
         Returns:
             Dict[str, Any]: 生成されたレポートの情報
@@ -147,9 +149,16 @@ class ComprehensiveReporter:
             self.logger.info(f"[DATA_FLOW_REPORTER] stock_data shape: {stock_data.shape}")
             self.logger.info(f"[DATA_FLOW_REPORTER] stock_data columns: {list(stock_data.columns)}")
             
-            # タイムスタンプ付きディレクトリ作成
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            report_dir = self.output_base_dir / f"{ticker}_{timestamp}"
+            # タイムスタンプ付きディレクトリ作成（修正案C: 外部指定優先）
+            if timestamp:
+                # 外部から渡されたタイムスタンプを使用
+                self.logger.info(f"[TIMESTAMP] Using external timestamp: {timestamp}")
+                report_dir = self.output_base_dir / f"{ticker}_{timestamp}"
+            else:
+                # 独自生成（既存動作、後方互換性維持）
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                self.logger.info(f"[TIMESTAMP] Generated new timestamp: {timestamp}")
+                report_dir = self.output_base_dir / f"{ticker}_{timestamp}"
             report_dir.mkdir(parents=True, exist_ok=True)
             
             # 1. データ抽出と分析
