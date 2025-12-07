@@ -384,15 +384,31 @@ class EquityCurveRecorder:
                         position_entry_price = price
                         total_trades += 1
                         
+                        # デバッグログ: BUY取引記録
+                        self.logger.info(
+                            f"[EQUITY_CURVE_DEBUG] Adding trade: BUY=True, "
+                            f"Price={price:.2f}, Qty={qty}, Cost={cost:,.0f}, "
+                            f"Cumulative={cumulative_pnl:,.2f}, Date={date_str}"
+                        )
+                        
                     elif action == 'SELL':
                         proceeds = qty * price
                         cash_balance += proceeds
                         
                         # 損益計算（実現損益）
+                        pnl_realized = 0.0
                         if position_entry_price > 0:
-                            pnl = (price - position_entry_price) * qty
-                            daily_pnl += pnl
-                            cumulative_pnl += pnl
+                            pnl_realized = (price - position_entry_price) * qty
+                            daily_pnl += pnl_realized
+                            cumulative_pnl += pnl_realized
+                        
+                        # デバッグログ: SELL取引記録
+                        self.logger.info(
+                            f"[EQUITY_CURVE_DEBUG] Adding trade: BUY=False, "
+                            f"Price={price:.2f}, Qty={qty}, PnL={pnl_realized:,.2f}, "
+                            f"Cumulative={cumulative_pnl:,.2f}, Date={date_str}, "
+                            f"PositionQtyBefore={position_qty}"
+                        )
                         
                         position_qty -= qty
                         if position_qty <= 0:

@@ -68,8 +68,9 @@ except ImportError:
     fallback_policy_available = False
 
 # DSS Core V3利用可能性チェック（TODO-INTEGRATE-001対応）
+# Note: インポートは _initialize_dss_core() で実行 (Line 190)
 try:
-    import dssms_backtester_v3
+    from src.dssms.dssms_backtester_v3 import DSSBacktesterV3
     dss_available = True
 except ImportError:
     dss_available = False
@@ -149,6 +150,9 @@ class DSSMSIntegratedBacktester:
             self.position_size = 0
             self.position_entry_price = 0
             
+            # 累積期間方式用設定（2025-12-06追加）
+            self.warmup_days = 90  # デフォルト値（main_new.pyと統一）
+            
             # Phase 2: equity_curve再構築用追跡変数
             self.peak_value = self.portfolio_value  # ポートフォリオピーク値追跡
             self.cumulative_pnl = 0.0  # 累積損益追跡
@@ -184,7 +188,7 @@ class DSSMSIntegratedBacktester:
         """DSS Core V3直接初期化"""
         if not self._dss_initialized:
             try:
-                from dssms_backtester_v3 import DSSBacktesterV3
+                from src.dssms.dssms_backtester_v3 import DSSBacktesterV3
                 self.dss_core = DSSBacktesterV3()
                 self.logger.info("DSS Core V3 直接初期化完了")
             except ImportError:
@@ -1417,6 +1421,12 @@ class DSSMSIntegratedBacktester:
                     
                     self.logger.info(f"[SYMBOL_SELECTION] スクリーニング通過: {len(filtered_symbols)}銘柄 (資金: {available_funds:,.0f}円)")
                     
+                    # Priority 2-1: デバッグログ追加 (filtered_symbols詳細)
+                    self.logger.debug(
+                        f"[DEBUG] _get_optimal_symbol | filtered_symbols: {filtered_symbols[:10] if len(filtered_symbols) > 10 else filtered_symbols} "
+                        f"(total: {len(filtered_symbols)})"
+                    )
+                    
                     if filtered_symbols:
                         # SystemFallbackPolicy統合: 明示的フォールバック処理
                         if fallback_policy_available:
@@ -1437,6 +1447,8 @@ class DSSMSIntegratedBacktester:
                             selected = self._advanced_ranking_selection(filtered_symbols, target_date)
                         
                         self.logger.info(f"[SYMBOL_SELECTION] 最終選択: {selected} (候補: {len(filtered_symbols)}銘柄)")
+                        # Priority 2-1: デバッグログ追加 (selected_symbol詳細)
+                        self.logger.debug(f"[DEBUG] _get_optimal_symbol | selected_symbol: {selected}")
                         # P3-2: フォールバック詳細化ログ (copilot-instructions.md準拠)
                         self.logger.info(
                             f"[FALLBACK] Nikkei225フォールバック実行 | "
@@ -1486,8 +1498,15 @@ class DSSMSIntegratedBacktester:
                 'reason': 'no_switch_needed'
             }
             
+            # Priority 2-2: デバッグログ追加 (should_switch判定)
+            should_switch = switch_evaluation.get('should_switch', False)
+            self.logger.debug(
+                f"[DEBUG] _evaluate_and_execute_switch | should_switch: {should_switch} | "
+                f"switch_evaluation: {switch_evaluation}"
+            )
+            
             # 切替実行判定
-            if switch_evaluation.get('should_switch', False):
+            if should_switch:
                 # ポジション解除（既存銘柄）
                 if self.current_symbol and self.position_size > 0:
                     close_result = self._close_position(self.current_symbol, target_date)
@@ -1500,6 +1519,12 @@ class DSSMSIntegratedBacktester:
                 # 切替コスト
                 switch_cost = self.portfolio_value * self.config.get('switch_cost_rate', 0.001)
                 self.portfolio_value -= switch_cost
+                
+                # Priority 2-2: デバッグログ追加 (switch_cost)
+                self.logger.debug(
+                    f"[DEBUG] _evaluate_and_execute_switch | switch_cost: {switch_cost:.2f}円 "
+                    f"(rate: {self.config.get('switch_cost_rate', 0.001):.4f})"
+                )
                 
                 switch_result.update({
                     'switch_executed': True,
@@ -1580,7 +1605,8 @@ class DSSMSIntegratedBacktester:
             # デメリット: 日次処理時間が累積的に増加（1日目: 30+1日分、12日目: 30+12日分）
             backtest_start_date = self.dssms_backtest_start_date  # Noneから変更（累積期間開始）
             backtest_end_date = target_date
-            warmup_days = 90  # 2025-12-03変更: main_new.pyと統一（最大戦略要件50日+余裕40日=90日）
+            self.warmup_days = 90  # 2025-12-06変更: インスタンス変数化（_get_symbol_dataから参照）
+            warmup_days = self.warmup_days  # ローカル変数も維持（後方互換性）
             
             # 優先度B対応: stock_dataとbacktest_start_dateを記録（_convert_main_new_resultで使用）
             self._last_stock_data = stock_data
@@ -1873,12 +1899,34 @@ class DSSMSIntegratedBacktester:
             # yfinanceのhistory()はend_dateをexclusiveとして扱うため、
             # target_date当日のデータを取得するには+1日が必要
             end_date = target_date + timedelta(days=1)
-            # ウォームアップ期間(30日) + インジケーター計算期間(long_window=25営業日≒35カレンダー日) + 余裕
-            # を考慮して120カレンダー日分のデータを取得
-            start_date = target_date - timedelta(days=120)  # 120日分のデータ
+            
+            # 累積期間方式: DSSMS開始日 - warmup期間からデータ取得（2025-12-06修正）
+            # main_new.pyの期待（backtest_start_date - warmup_days）と整合
+            warmup_days = getattr(self, 'warmup_days', 90)  # デフォルト90日
+            if hasattr(self, 'dssms_backtest_start_date') and self.dssms_backtest_start_date is not None:
+                start_date = self.dssms_backtest_start_date - timedelta(days=warmup_days)
+                self.logger.info(
+                    f"[DATA_PERIOD] 累積期間方式: DSSMS開始日({self.dssms_backtest_start_date.strftime('%Y-%m-%d')}) "
+                    f"- warmup({warmup_days}日) = 取得開始日({start_date.strftime('%Y-%m-%d')}), "
+                    f"target_date={target_date.strftime('%Y-%m-%d')}"
+                )
+            else:
+                # フォールバック: 固定120日方式（DSSMS開始前の呼び出し対応）
+                start_date = target_date - timedelta(days=120)
+                self.logger.warning(
+                    f"[DATA_PERIOD_FALLBACK] DSSMS開始日未設定のため固定120日方式使用: "
+                    f"target_date({target_date.strftime('%Y-%m-%d')}) - 120日 = {start_date.strftime('%Y-%m-%d')}"
+                )
             
             # キャッシュから取得試行
             cached_data = self.data_cache.get_cached_data(symbol, start_date, end_date)
+            
+            # Priority 2-3: デバッグログ追加 (データソース)
+            data_source = "cache" if cached_data[0] is not None else "yfinance_api"
+            self.logger.debug(
+                f"[DEBUG] _get_symbol_data | symbol: {symbol} | source: {data_source} | "
+                f"period: {start_date.strftime('%Y-%m-%d')} - {end_date.strftime('%Y-%m-%d')}"
+            )
             
             if cached_data[0] is not None:
                 return cached_data

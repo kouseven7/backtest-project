@@ -151,73 +151,75 @@ class MainTextReporter:
         Returns:
             分析結果辞書
         """
+        from main_system.execution_control.execution_detail_utils import extract_buy_sell_orders
+        
         logger.info("[PHASE_5_B_2] Extracting data from execution_results")
         
-        # execution_results['execution_results']から取引データを抽出
-        executed_trades = []
+        # execution_results['execution_results']から取引データを抽出（FIFO方式）
+        completed_trades = []
         
         if isinstance(execution_results, dict) and 'execution_results' in execution_results:
             for result in execution_results['execution_results']:
                 if isinstance(result, dict) and 'execution_details' in result:
-                    strategy_name = result.get('strategy_name', 'Unknown')
+                    execution_details = result['execution_details']
                     
-                    # execution_detailsから取引データを変換（ComprehensiveReporterと同様のロジック）
-                    for detail in result['execution_details']:
-                        if not isinstance(detail, dict):
+                    # ComprehensiveReporterと同じ共通ユーティリティでBUY/SELL抽出
+                    buy_orders, sell_orders = extract_buy_sell_orders(execution_details, logger)
+                    
+                    # FIFO方式でペアリング（ComprehensiveReporterと同じロジック）
+                    paired_count = min(len(buy_orders), len(sell_orders))
+                    logger.info(f"[PHASE_5_B_2_FIFO] Pairing {paired_count} trades (BUY={len(buy_orders)}, SELL={len(sell_orders)})")
+                    
+                    for i in range(paired_count):
+                        buy_order = buy_orders[i]
+                        sell_order = sell_orders[i]
+                        
+                        # 取引レコード作成（ComprehensiveReporterと同じ形式）
+                        entry_price = buy_order.get('executed_price', 0.0)
+                        exit_price = sell_order.get('executed_price', 0.0)
+                        shares = buy_order.get('quantity', 0)
+                        
+                        # データ検証
+                        if not all([entry_price > 0, exit_price > 0, shares > 0]):
+                            logger.warning(
+                                f"[DATA_VALIDATION_FAILED] Invalid trade data (pair {i+1}): "
+                                f"entry_price={entry_price}, exit_price={exit_price}, shares={shares}"
+                            )
                             continue
                         
-                        action = detail.get('action')
-                        timestamp = detail.get('timestamp')
-                        # Phase 5-B-2 Step 4-2-2: executed_priceキーを使用（ComprehensiveReporterと同様）
-                        price = detail.get('executed_price', 0)
-                        quantity = detail.get('quantity', 0)
+                        # PnLとリターン計算
+                        pnl = (exit_price - entry_price) * shares
+                        return_pct = (exit_price - entry_price) / entry_price if entry_price > 0 else 0.0
                         
-                        if action == 'BUY':
-                            # BUY注文を記録
-                            trade_record = {
-                                'strategy': strategy_name,
-                                'entry_date': timestamp,
-                                'entry_price': price,
-                                'shares': quantity,
-                                'entry_idx': None
-                            }
-                            executed_trades.append(trade_record)
-                        
-                        elif action == 'SELL' and executed_trades:
-                            # 未決済の最後のBUY注文を探す
-                            for trade in reversed(executed_trades):
-                                if isinstance(trade, dict) and 'exit_date' not in trade:
-                                    # このBUY注文とペアリング
-                                    trade['exit_date'] = timestamp
-                                    trade['exit_price'] = price
-                                    trade['exit_idx'] = None
-                                    
-                                    # PnLとリターン計算
-                                    entry_price = trade['entry_price']
-                                    exit_price = trade['exit_price']
-                                    shares = trade['shares']
-                                    
-                                    trade['pnl'] = (exit_price - entry_price) * shares
-                                    trade['return_pct'] = (exit_price - entry_price) / entry_price if entry_price > 0 else 0
-                                    break
+                        trade_record = {
+                            'strategy': buy_order.get('strategy_name', 'Unknown'),
+                            'entry_date': buy_order.get('timestamp'),
+                            'exit_date': sell_order.get('timestamp'),
+                            'entry_price': entry_price,
+                            'exit_price': exit_price,
+                            'shares': shares,
+                            'pnl': pnl,
+                            'return_pct': return_pct,
+                            'entry_idx': None,
+                            'exit_idx': None
+                        }
+                        completed_trades.append(trade_record)
         
-        logger.info(f"[PHASE_5_B_2] Extracted {len(executed_trades)} trades from execution_results")
+        logger.info(f"[PHASE_5_B_2] Extracted {len(completed_trades)} completed trades from execution_results")
         
         # Phase 5-B-2 Step 4-2-2: executed_tradesの内容を詳細ログ出力
-        logger.info(f"[PHASE_5_B_2_DEBUG] executed_trades type: {type(executed_trades)}")
-        if executed_trades:
-            logger.info(f"[PHASE_5_B_2_DEBUG] First trade type: {type(executed_trades[0])}")
-            logger.info(f"[PHASE_5_B_2_DEBUG] First trade content: {executed_trades[0]}")
+        logger.info(f"[PHASE_5_B_2_DEBUG] completed_trades type: {type(completed_trades)}")
+        if completed_trades:
+            logger.info(f"[PHASE_5_B_2_DEBUG] First trade type: {type(completed_trades[0])}")
+            logger.info(f"[PHASE_5_B_2_DEBUG] First trade content: {completed_trades[0]}")
             # すべての取引の型をチェック
-            non_dict_items = [i for i, t in enumerate(executed_trades) if not isinstance(t, dict)]
+            non_dict_items = [i for i, t in enumerate(completed_trades) if not isinstance(t, dict)]
             if non_dict_items:
                 logger.error(f"[PHASE_5_B_2_DEBUG] Non-dict items found at indices: {non_dict_items}")
                 for idx in non_dict_items[:3]:  # 最初の3件のみログ出力
-                    logger.error(f"[PHASE_5_B_2_DEBUG] Item {idx} type: {type(executed_trades[idx])}, value: {executed_trades[idx]}")
+                    logger.error(f"[PHASE_5_B_2_DEBUG] Item {idx} type: {type(completed_trades[idx])}, value: {completed_trades[idx]}")
         
-        # 完了した取引のみフィルタリング（exit_dateがあるもの）
-        completed_trades = [t for t in executed_trades if isinstance(t, dict) and 'exit_date' in t]
-        logger.info(f"[PHASE_5_B_2] Completed trades: {len(completed_trades)}")
+        logger.info(f"[PHASE_5_B_2] Completed trades after filtering: {len(completed_trades)}")
         
         # パフォーマンス統計を計算
         performance = self._calculate_performance_from_trades(completed_trades)

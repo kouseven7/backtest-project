@@ -502,6 +502,27 @@ class ComprehensiveReporter:
                     f"[UNPAIRED_ORDERS] 対応BUYのないSELL注文: {unpaired_sells}件 "
                     f"（強制決済SELLの可能性）"
                 )
+                
+                # デバッグログ: 未ペアリングSELLの詳細
+                for idx in range(paired_count, len(sell_orders)):
+                    sell = sell_orders[idx]
+                    self.logger.info(
+                        f"[UNPAIRED_SELL] Index={idx}, "
+                        f"Price={sell.get('executed_price', 0.0):.2f}, "
+                        f"Quantity={sell.get('quantity', 0)}, "
+                        f"Strategy={sell.get('strategy_name', 'Unknown')}, "
+                        f"Timestamp={sell.get('timestamp')}"
+                    )
+            
+            # デバッグログ: ForceClose件数カウント（強制決済のみ）
+            force_close_count = sum(1 for trade in trades if trade.get('is_forced_exit', False))
+            if force_close_count > 0 and len(trades) > 0:
+                force_close_pct = (force_close_count / len(trades)) * 100
+                self.logger.info(
+                    f"[FORCE_CLOSE_COUNT] Total={force_close_count}, "
+                    f"Percentage={force_close_pct:.2f}% "
+                    f"({force_close_count}/{len(trades)} trades)"
+                )
             
             self.logger.info(
                 f"[REAL_DATA_ONLY] Converted {len(trades)} execution details to trade records "

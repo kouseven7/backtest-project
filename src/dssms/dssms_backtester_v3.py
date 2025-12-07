@@ -70,7 +70,7 @@ class DSSBacktesterV3:
             self.nikkei225_screener = Nikkei225Screener()
             # デフォルト資金で銘柄をフィルタリング（100万円想定）
             self.symbol_universe = self.nikkei225_screener.get_filtered_symbols(1000000)
-            self.logger.info(f"✓ Nikkei225動的選択: {len(self.symbol_universe)}銘柄取得成功")
+            self.logger.info(f"[OK] Nikkei225動的選択: {len(self.symbol_universe)}銘柄取得成功")
         except Exception as e:
             self.logger.error(f"Nikkei225Screener初期化失敗: {e}")
             self.nikkei225_screener = None
@@ -98,7 +98,7 @@ class DSSBacktesterV3:
         try:
             # 1. パーフェクトオーダー検出器
             self.perfect_order_detector = PerfectOrderDetector()
-            self.logger.info("✓ PerfectOrderDetector 初期化成功")
+            self.logger.info("[OK] PerfectOrderDetector 初期化成功")
             
             # 2. 階層的ランキングシステム（設定辞書必須）
             ranking_config = {
@@ -112,24 +112,24 @@ class DSSBacktesterV3:
                 }
             }
             self.ranking_system = HierarchicalRankingSystem(ranking_config)
-            self.logger.info("✓ HierarchicalRankingSystem 初期化成功")
+            self.logger.info("[OK] HierarchicalRankingSystem 初期化成功")
             
             # 3. 総合スコアリングエンジン
             self.scoring_engine = ComprehensiveScoringEngine()
-            self.logger.info("✓ ComprehensiveScoringEngine 初期化成功")
+            self.logger.info("[OK] ComprehensiveScoringEngine 初期化成功")
             
             # 4. インテリジェント切替管理
             self.switch_manager = IntelligentSwitchManager()
-            self.logger.info("✓ IntelligentSwitchManager 初期化成功")
+            self.logger.info("[OK] IntelligentSwitchManager 初期化成功")
             
             # 5. 市場状況監視
             self.market_monitor = MarketConditionMonitor()
-            self.logger.info("✓ MarketConditionMonitor 初期化成功")
+            self.logger.info("[OK] MarketConditionMonitor 初期化成功")
             
             self.logger.info("[SUCCESS] 全DSSMSコンポーネント初期化完了 (5/5)")
             
         except Exception as e:
-            self.logger.error(f"💥 コンポーネント初期化失敗: {e}")
+            self.logger.error(f"[ERROR] コンポーネント初期化失敗: {e}")
             self.logger.error("Phase 1 テスト結果を確認してください")
             raise RuntimeError(f"DSS V3 初期化失敗: {e}")
     
@@ -167,11 +167,11 @@ class DSSBacktesterV3:
             scores = self.calculate_perfect_order_scores(market_data)
             
             # 3. ランキング
-            self.logger.info("🏆 Step 3: 銘柄ランキング")
+            self.logger.info("[TOP] Step 3: 銘柄ランキング")
             ranking = self.rank_symbols(scores)
             
             # 4. 1位選択
-            self.logger.info("✨ Step 4: 最上位銘柄選択")
+            self.logger.info("[SUCCESS] Step 4: 最上位銘柄選択")
             selected_symbol = self.select_top_symbol(ranking)
             
             execution_time = (time.time() - start_time) * 1000
@@ -186,7 +186,7 @@ class DSSBacktesterV3:
                 'phase': 'Phase 2 - 基本構造'
             }
             
-            self.logger.info(f"✓ DSS 日次選択完了: {selected_symbol} (実行時間: {execution_time:.1f}ms)")
+            self.logger.info(f"[OK] DSS 日次選択完了: {selected_symbol} (実行時間: {execution_time:.1f}ms)")
             return result
             
         except Exception as e:
@@ -197,7 +197,7 @@ class DSSBacktesterV3:
                 self.logger.error(f"データ取得エラー [{target_date}]: {e}")
                 raise  # エラーを再スロー、フォールバックなし
             else:
-                self.logger.error(f"💥 日次選択処理エラー [{target_date}]: {e}")
+                self.logger.error(f"[ERROR] 日次選択処理エラー [{target_date}]: {e}")
                 
                 # 予期しないエラーの場合
                 return {
@@ -243,7 +243,8 @@ class DSSBacktesterV3:
                 data = ticker.history(
                     start=start_date.strftime('%Y-%m-%d'),
                     end=(end_date + timedelta(days=1)).strftime('%Y-%m-%d'),  # 終了日も含める
-                    interval='1d'
+                    interval='1d',
+                    auto_adjust=False  # copilot-instructions.md準拠 (2025-12-03以降必須)
                 )
                 
                 if not data.empty:
@@ -251,12 +252,12 @@ class DSSBacktesterV3:
                     # 必要に応じてカラム名を確認
                     self.logger.debug(f"{symbol} カラム: {list(data.columns)}")
                     market_data[symbol] = data
-                    self.logger.info(f"✓ {symbol}: {len(data)}日分のデータ取得成功")
+                    self.logger.info(f"[OK] {symbol}: {len(data)}日分のデータ取得成功")
                 else:
-                    self.logger.warning(f"⚠ {symbol}: データが取得できませんでした")
+                    self.logger.warning(f"[WARNING] {symbol}: データが取得できませんでした")
                     
             except Exception as e:
-                self.logger.error(f"💥 {symbol} データ取得エラー: {e}")
+                self.logger.error(f"[ERROR] {symbol} データ取得エラー: {e}")
                 
         self.logger.info(f"市場データ取得完了: {len(market_data)}/{len(symbols)}銘柄成功")
         return market_data
@@ -281,7 +282,7 @@ class DSSBacktesterV3:
                 
                 # データ長チェック（75日移動平均に必要）
                 if len(data) < 75:
-                    self.logger.warning(f"⚠ {symbol}: データ不足 ({len(data)}日 < 75日)")
+                    self.logger.warning(f"[WARNING] {symbol}: データ不足 ({len(data)}日 < 75日)")
                     scores[symbol] = 0.0
                     continue
                 
@@ -312,10 +313,10 @@ class DSSBacktesterV3:
                 
                 scores[symbol] = score
                 
-                self.logger.info(f"✓ {symbol}: スコア={score:.2f} (価格:{current_price:.0f}, MA5:{ma5:.0f}, MA25:{ma25:.0f}, MA75:{ma75:.0f})")
+                self.logger.info(f"[OK] {symbol}: スコア={score:.2f} (価格:{current_price:.0f}, MA5:{ma5:.0f}, MA25:{ma25:.0f}, MA75:{ma75:.0f})")
                 
             except Exception as e:
-                self.logger.error(f"💥 {symbol} パーフェクトオーダー計算エラー: {e}")
+                self.logger.error(f"[ERROR] {symbol} パーフェクトオーダー計算エラー: {e}")
                 scores[symbol] = 0.0
         
         # 結果サマリー
@@ -355,7 +356,7 @@ class DSSBacktesterV3:
             elif score >= 0.5:
                 status = "[OK] MID"
             elif score > 0.0:
-                status = "⚠ LOW"
+                status = "[WARNING] LOW"
             else:
                 status = "[ERROR] ZERO"
             
@@ -364,7 +365,7 @@ class DSSBacktesterV3:
         # サマリー
         top_symbol = ranking[0] if ranking else None
         if top_symbol:
-            self.logger.info(f"🏆 1位: {top_symbol['symbol']} (スコア: {top_symbol['score']:.2f})")
+            self.logger.info(f"[TOP] 1位: {top_symbol['symbol']} (スコア: {top_symbol['score']:.2f})")
         
         self.logger.info(f"銘柄ランキング完了: {len(ranking)}銘柄")
         return ranking
@@ -382,7 +383,7 @@ class DSSBacktesterV3:
         self.logger.info("=== 最上位銘柄選択 ===")
         
         if not ranking:
-            self.logger.warning("⚠ ランキングが空です")
+            self.logger.warning("[WARNING] ランキングが空です")
             return self.symbol_universe[0]  # フォールバック
         
         # 1位銘柄選択
@@ -396,9 +397,9 @@ class DSSBacktesterV3:
         if selected_score >= 0.75:
             self.logger.info("[OK] 高品質選択: パーフェクトオーダー強度 HIGH")
         elif selected_score >= 0.5:
-            self.logger.info("⚠ 中品質選択: パーフェクトオーダー強度 MID")
+            self.logger.info("[WARNING] 中品質選択: パーフェクトオーダー強度 MID")
         elif selected_score > 0.0:
-            self.logger.info("⚠ 低品質選択: パーフェクトオーダー強度 LOW")
+            self.logger.info("[WARNING] 低品質選択: パーフェクトオーダー強度 LOW")
         else:
             self.logger.warning("[ERROR] 注意: パーフェクトオーダー条件未達成")
         
