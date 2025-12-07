@@ -20,6 +20,7 @@ import argparse
 # 重いライブラリは遅延インポートに変更（TODO-PERF-001 Phase 2）
 # pandas, numpy は必要時に lazy_import で読み込み
 import numpy as np
+import pandas as pd
 
 # プロジェクトルートをパスに追加
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -152,6 +153,7 @@ class DSSMSIntegratedBacktester:
             self.peak_value = self.portfolio_value  # ポートフォリオピーク値追跡
             self.cumulative_pnl = 0.0  # 累積損益追跡
             self.total_trades_count = 0  # 総取引数追跡
+            self.previous_total_profit = 0.0  # 累積期間バックテスト重複計上対策（Phase 13）
             
             # 実行履歴
             self.daily_results = []
@@ -434,6 +436,14 @@ class DSSMSIntegratedBacktester:
                     
                     # 日次結果記録
                     self.daily_results.append(daily_result)
+                    
+                    # [DAILY_SUMMARY] 日次サマリーログ
+                    self.logger.info(
+                        f"[DAILY_SUMMARY] {current_date.strftime('%Y-%m-%d')}: "
+                        f"symbol={daily_result.get('symbol')}, "
+                        f"execution_details={len(daily_result.get('execution_details', []))}, "
+                        f"success={daily_result.get('success')}"
+                    )
                     
                     # パフォーマンス追跡
                     if self.performance_tracker:
@@ -1572,6 +1582,10 @@ class DSSMSIntegratedBacktester:
             backtest_end_date = target_date
             warmup_days = 90  # 2025-12-03変更: main_new.pyと統一（最大戦略要件50日+余裕40日=90日）
             
+            # 優先度B対応: stock_dataとbacktest_start_dateを記録（_convert_main_new_resultで使用）
+            self._last_stock_data = stock_data
+            self._last_backtest_start_date = backtest_start_date
+            
             # Priority 1-1: DSSMS->main_new.py データ渡しログ (copilot-instructions.md準拠)
             self.logger.info(f"[DSSMS->main_new] バックテスト開始: {symbol}, {target_date}")
             self.logger.info(f"[DSSMS->main_new_DATA] 銘柄: {symbol}")
@@ -1582,6 +1596,17 @@ class DSSMSIntegratedBacktester:
             
             if stock_data is not None and len(stock_data) > 0:
                 self.logger.info(f"[DSSMS->main_new_DATA] stock_data範囲: {stock_data.index[0]} ~ {stock_data.index[-1]} ({len(stock_data)}行)")
+                
+                # [CRITICAL_CHECK] trading_start_dateとstock_data範囲のギャップ検証
+                # タイムゾーン対応: offset-naive datetime と offset-aware Timestamp の比較エラー回避
+                stock_data_start_naive = pd.Timestamp(stock_data.index[0]).tz_localize(None)
+                if backtest_start_date < stock_data_start_naive:
+                    gap_days = (stock_data_start_naive - backtest_start_date).days
+                    self.logger.warning(
+                        f"[DATA_RANGE_MISMATCH] trading_start_date({backtest_start_date})がstock_data範囲外です。"
+                        f"stock_data開始日: {stock_data.index[0]}, ギャップ: {gap_days}日。"
+                        f"取引可能期間が{gap_days}日短縮されます。"
+                    )
             else:
                 self.logger.warning(f"[DSSMS->main_new_DATA] stock_data: None または空")
             
@@ -1640,17 +1665,24 @@ class DSSMSIntegratedBacktester:
             # summary_statisticsから取得（main_new.pyの実際の構造に合わせる）
             summary_stats = performance_results.get('summary_statistics', {})
             
-            # リターン計算（summary_statisticsから優先取得）
+            # Phase 13修正: 累積期間バックテスト重複計上対策（増分計算）
             # 2025-12-03修正: 'total_return'(比率)ではなく'total_profit'(金額)を取得
-            total_return = summary_stats.get('total_profit', 0.0)
-            if total_return == 0.0:
+            current_total_profit = summary_stats.get('total_profit', 0.0)
+            if current_total_profit == 0.0:
                 # フォールバック: basic_performanceまたはbalanceから計算
                 basic_perf = performance_results.get('basic_performance', {})
-                total_return = basic_perf.get('total_profit', 0.0)
+                current_total_profit = basic_perf.get('total_profit', 0.0)
                 
-                if total_return == 0.0 and 'total_portfolio_value' in execution_results:
+                if current_total_profit == 0.0 and 'total_portfolio_value' in execution_results:
                     portfolio_value = execution_results.get('total_portfolio_value', 1000000.0)
-                    total_return = portfolio_value - 1000000.0
+                    current_total_profit = portfolio_value - 1000000.0
+            
+            # 増分計算: 前回のtotal_profitとの差分を算出
+            incremental_profit = current_total_profit - self.previous_total_profit
+            self.previous_total_profit = current_total_profit
+            
+            # 互換性のため、total_returnにはincremental_profitを代入
+            total_return = incremental_profit
             
             # copilot-instructions.md準拠: 異常値チェック追加
             # -100%未満（資産が完全消失以上の損失）は異常値として扱う
@@ -1673,6 +1705,21 @@ class DSSMSIntegratedBacktester:
             
             # Phase 2優先度3: execution_details抽出（詳細設計書3.1.3準拠）
             execution_details = execution_results.get('execution_details', [])
+            
+            # [EXEC_DETAILS_COUNT] execution_details件数トラッキング
+            # stock_dataとbacktest_start_dateの取得（_execute_multi_strategiesから引き継ぎ）
+            stock_data_info = "N/A"
+            if hasattr(self, '_last_stock_data') and self._last_stock_data is not None and len(self._last_stock_data) > 0:
+                stock_data_info = f"{self._last_stock_data.index[0]} ~ {self._last_stock_data.index[-1]}"
+            backtest_start_info = getattr(self, '_last_backtest_start_date', 'N/A')
+            
+            self.logger.info(
+                f"[EXEC_DETAILS_COUNT] {symbol} {target_date.strftime('%Y-%m-%d')}: "
+                f"execution_details件数={len(execution_details)}, "
+                f"stock_data範囲={stock_data_info}, "
+                f"trading_start_date={backtest_start_info}"
+            )
+            
             if not execution_details:
                 self.logger.warning(
                     f"[EXECUTION_DETAILS_MISSING] {symbol} {target_date.strftime('%Y-%m-%d')}: "
@@ -1701,7 +1748,7 @@ class DSSMSIntegratedBacktester:
                     'risk_assessment': main_new_result.get('risk_assessment', {})
                 },
                 'position_update': {
-                    'return': total_return,
+                    'return': total_return,  # Phase 13: 増分のみを返す（重複計上対策）
                     'balance': execution_results.get('total_portfolio_value', 1000000.0),
                     'total_trades': summary_stats.get('total_trades', 0)
                 },
@@ -2447,6 +2494,7 @@ class DSSMSIntegratedBacktester:
     def _convert_to_execution_format(self, final_results: Dict[str, Any]) -> Dict[str, Any]:
         """
         DSSMS結果をmain_new.py形式に変換（Phase 2優先度3: 詳細設計書3.1準拠）
+        修正案C: executed_price除外による重複除去実装（2025-12-05）
         
         ComprehensiveReporter.generate_full_backtest_report()の入力形式に変換。
         
@@ -2458,9 +2506,15 @@ class DSSMSIntegratedBacktester:
         
         変換マッピング:
             - status: 'success' → 'SUCCESS'
-            - daily_results: execution_details統合
+            - daily_results: execution_details統合 + 重複除去
             - total_return: total_portfolio_value計算
             - strategy_weights: 固定値（DSSMS_MultiStrategy: 1.0）
+        
+        重複除去ロジック（修正案C）:
+            - ユニークキー: timestamp + action + symbol + strategy_name
+            - executed_price除外理由: スリッページにより価格が微妙に異なるため
+            - 必須フィールド検証: timestamp, action, symbol, executed_price > 0
+            - copilot-instructions.md準拠: フォールバック禁止、実データのみ
         """
         try:
             # ステータス変換
@@ -2478,33 +2532,74 @@ class DSSMSIntegratedBacktester:
             final_capital = portfolio_perf.get('final_capital', 1000000)
             total_return = final_capital - initial_capital
             
-            # execution_details統合（全日次の execution_detailsを統合）
+            # execution_details統合 + 重複除去（修正案B: 2025-12-05）
             all_execution_details = []
+            seen_keys = set()  # ユニークキー管理
+            duplicate_count = 0  # 重複カウント（ログ用）
+            skipped_invalid_count = 0  # 無効データカウント（ログ用）
+            
             for idx, daily_result in enumerate(final_results.get('daily_results', [])):
                 details = daily_result.get('execution_details', [])
                 target_date = daily_result.get('target_date', 'UNKNOWN')
                 
-                # [DEBUG_EXEC_DETAILS] 各daily_resultのexecution_details件数と内容を出力
+                # [DEBUG_EXEC_DETAILS] 各daily_resultのexecution_details件数を出力（既存ログ保持）
                 self.logger.info(
                     f"[DEBUG_EXEC_DETAILS] daily_result[{idx}]: target_date={target_date}, "
                     f"execution_details件数={len(details)}"
                 )
                 
-                # 各execution_detailsの詳細を出力
+                # 各execution_detailsを重複チェックして追加
                 for detail_idx, detail in enumerate(details):
-                    action = detail.get('action', 'UNKNOWN')
-                    timestamp = detail.get('timestamp', 'UNKNOWN')
-                    price = detail.get('price', 0.0)
+                    # 必須フィールド取得（防御的プログラミング）
+                    timestamp = detail.get('timestamp', '')
+                    action = detail.get('action', '')
+                    symbol = detail.get('symbol', '')
+                    # Note: detailは'executed_price'を使用（'price'ではない）
+                    price = detail.get('executed_price', 0.0)
                     quantity = detail.get('quantity', 0)
-                    symbol = detail.get('symbol', 'UNKNOWN')
+                    strategy_name = detail.get('strategy_name', '')
                     
+                    # [DEBUG_EXEC_DETAILS] 詳細ログ（既存ログ保持）
                     self.logger.info(
                         f"[DEBUG_EXEC_DETAILS]   detail[{detail_idx}]: "
                         f"action={action}, timestamp={timestamp}, "
-                        f"price={price:.2f}, quantity={quantity}, symbol={symbol}"
+                        f"price={price:.2f}, quantity={quantity}, symbol={symbol}, strategy={strategy_name}"
                     )
-                
-                all_execution_details.extend(details)
+                    
+                    # 必須フィールド検証（copilot-instructions.md: 実データのみ）
+                    if not all([timestamp, action, symbol, price > 0]):
+                        skipped_invalid_count += 1
+                        self.logger.warning(
+                            f"[DEDUP_SKIP] daily_result[{idx}], detail[{detail_idx}]: "
+                            f"必須フィールド欠損のためスキップ "
+                            f"(timestamp={timestamp}, action={action}, symbol={symbol}, price={price})"
+                        )
+                        continue
+                    
+                    # ユニークキー生成（修正案C: timestamp + action + symbol + strategy_name）
+                    # executed_price除外理由: スリッページにより価格が微妙に異なるため
+                    unique_key = f"{timestamp}_{action}_{symbol}_{strategy_name}"
+                    
+                    # 重複チェック
+                    if unique_key in seen_keys:
+                        duplicate_count += 1
+                        self.logger.debug(
+                            f"[DEDUP_SKIP] Duplicate execution_detail: "
+                            f"timestamp={timestamp}, action={action}, symbol={symbol}, "
+                            f"price={price:.2f}, strategy={strategy_name}"
+                        )
+                        continue
+                    
+                    # ユニークな取引を追加
+                    seen_keys.add(unique_key)
+                    all_execution_details.append(detail)
+            
+            # 重複除去結果のログ（copilot-instructions.md: 実際の数値を報告）
+            self.logger.info(
+                f"[DEDUP_RESULT] execution_details重複除去完了: "
+                f"総件数={len(all_execution_details)}件, 重複除去={duplicate_count}件, "
+                f"無効データスキップ={skipped_invalid_count}件"
+            )
             
             # main_new.py形式に変換
             execution_format = {

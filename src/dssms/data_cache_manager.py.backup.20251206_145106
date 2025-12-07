@@ -486,10 +486,7 @@ class DataCacheManager:
             # yfinanceでデータ取得
             ticker = yf.Ticker(f"{symbol}.T")  # 東証銘柄
             # auto_adjust=False: Adj Closeカラムを取得するために必須
-            # yfinanceのhistory()はend_dateをexclusiveとして扱うため、
-            # target_date当日のデータを確実に取得するには+3日の余裕を持たせる
-            # 理由: 営業日カレンダーの関係で+1日では不十分なケースがある
-            stock_data = ticker.history(start=start_date, end=end_date + timedelta(days=3), auto_adjust=False)
+            stock_data = ticker.history(start=start_date, end=end_date, auto_adjust=False)
             
             if stock_data.empty:
                 self.logger.warning(f"株価データが空です: {symbol}")
@@ -498,9 +495,7 @@ class DataCacheManager:
             # 日経平均データ取得
             nikkei_ticker = yf.Ticker("^N225")
             # auto_adjust=False: Adj Closeカラムを取得するために必須
-            # yfinanceのhistory()はend_dateをexclusiveとして扱うため、
-            # target_date当日のデータを確実に取得するには+3日の余裕を持たせる
-            index_data = nikkei_ticker.history(start=start_date, end=end_date + timedelta(days=3), auto_adjust=False)
+            index_data = nikkei_ticker.history(start=start_date, end=end_date, auto_adjust=False)
             
             if index_data.empty:
                 self.logger.warning("日経平均データが空です")
