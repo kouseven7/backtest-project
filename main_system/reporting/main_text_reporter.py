@@ -16,6 +16,7 @@ from typing import Dict, List, Tuple, Optional, Any
 from datetime import datetime
 import json
 from pathlib import Path
+from collections import defaultdict
 
 from config.logger_config import setup_logger
 from output.data_extraction_enhancer import MainDataExtractor, extract_and_analyze_main_data
@@ -166,44 +167,78 @@ class MainTextReporter:
                     # ComprehensiveReporterと同じ共通ユーティリティでBUY/SELL抽出
                     buy_orders, sell_orders = extract_buy_sell_orders(execution_details, logger)
                     
-                    # FIFO方式でペアリング（ComprehensiveReporterと同じロジック）
-                    paired_count = min(len(buy_orders), len(sell_orders))
-                    logger.info(f"[PHASE_5_B_2_FIFO] Pairing {paired_count} trades (BUY={len(buy_orders)}, SELL={len(sell_orders)})")
+                    # Fix 1: 銘柄別にグループ化（Task 8対応: 異銘柄ペアリング防止）
+                    buy_by_symbol = defaultdict(list)
+                    sell_by_symbol = defaultdict(list)
                     
-                    for i in range(paired_count):
-                        buy_order = buy_orders[i]
-                        sell_order = sell_orders[i]
+                    for buy in buy_orders:
+                        symbol = buy.get('symbol')
+                        if symbol:  # symbolが存在する場合のみ追加
+                            buy_by_symbol[symbol].append(buy)
+                        else:
+                            logger.warning(f"[MISSING_SYMBOL] BUY注文にsymbolがありません: {buy}")
+                    
+                    for sell in sell_orders:
+                        symbol = sell.get('symbol')
+                        if symbol:  # symbolが存在する場合のみ追加
+                            sell_by_symbol[symbol].append(sell)
+                        else:
+                            logger.warning(f"[MISSING_SYMBOL] SELL注文にsymbolがありません: {sell}")
+                    
+                    # すべての銘柄について銘柄別FIFOペアリング
+                    all_symbols = set(buy_by_symbol.keys()) | set(sell_by_symbol.keys())
+                    logger.info(
+                        f"[SYMBOL_BASED_PAIRING] 処理対象銘柄数: {len(all_symbols)}, "
+                        f"BUY銘柄: {len(buy_by_symbol)}, SELL銘柄: {len(sell_by_symbol)}"
+                    )
+                    
+                    for symbol in sorted(all_symbols):  # ログの可読性のためソート
+                        buys = buy_by_symbol.get(symbol, [])
+                        sells = sell_by_symbol.get(symbol, [])
+                        paired_count = min(len(buys), len(sells))
                         
-                        # 取引レコード作成（ComprehensiveReporterと同じ形式）
-                        entry_price = buy_order.get('executed_price', 0.0)
-                        exit_price = sell_order.get('executed_price', 0.0)
-                        shares = buy_order.get('quantity', 0)
-                        
-                        # データ検証
-                        if not all([entry_price > 0, exit_price > 0, shares > 0]):
-                            logger.warning(
-                                f"[DATA_VALIDATION_FAILED] Invalid trade data (pair {i+1}): "
-                                f"entry_price={entry_price}, exit_price={exit_price}, shares={shares}"
+                        # 銘柄別ペアリング状況ログ
+                        if paired_count > 0:
+                            logger.info(
+                                f"[SYMBOL_PAIRING] 銘柄={symbol}, BUY={len(buys)}, SELL={len(sells)}, "
+                                f"ペア数={paired_count}"
                             )
-                            continue
                         
-                        # PnLとリターン計算
-                        pnl = (exit_price - entry_price) * shares
-                        return_pct = (exit_price - entry_price) / entry_price if entry_price > 0 else 0.0
-                        
-                        trade_record = {
-                            'strategy': buy_order.get('strategy_name', 'Unknown'),
-                            'entry_date': buy_order.get('timestamp'),
-                            'exit_date': sell_order.get('timestamp'),
-                            'entry_price': entry_price,
-                            'exit_price': exit_price,
-                            'shares': shares,
-                            'pnl': pnl,
-                            'return_pct': return_pct,
-                            'entry_idx': None,
-                            'exit_idx': None
-                        }
-                        completed_trades.append(trade_record)
+                        # 銘柄内でのFIFOペアリング
+                        for i in range(paired_count):
+                            buy_order = buys[i]
+                            sell_order = sells[i]
+                            
+                            # 取引レコード作成（既存ロジック維持）
+                            entry_price = buy_order.get('executed_price', 0.0)
+                            exit_price = sell_order.get('executed_price', 0.0)
+                            shares = buy_order.get('quantity', 0)
+                            
+                            # データ検証
+                            if not all([entry_price > 0, exit_price > 0, shares > 0]):
+                                logger.warning(
+                                    f"[DATA_VALIDATION_FAILED] Invalid trade data (symbol={symbol}, pair {i+1}): "
+                                    f"entry_price={entry_price}, exit_price={exit_price}, shares={shares}"
+                                )
+                                continue
+                            
+                            # PnLとリターン計算
+                            pnl = (exit_price - entry_price) * shares
+                            return_pct = (exit_price - entry_price) / entry_price if entry_price > 0 else 0.0
+                            
+                            trade_record = {
+                                'strategy': buy_order.get('strategy_name', 'Unknown'),
+                                'entry_date': buy_order.get('timestamp'),
+                                'exit_date': sell_order.get('timestamp'),
+                                'entry_price': entry_price,
+                                'exit_price': exit_price,
+                                'shares': shares,
+                                'pnl': pnl,
+                                'return_pct': return_pct,
+                                'entry_idx': None,
+                                'exit_idx': None
+                            }
+                            completed_trades.append(trade_record)
         
         logger.info(f"[PHASE_5_B_2] Extracted {len(completed_trades)} completed trades from execution_results")
         

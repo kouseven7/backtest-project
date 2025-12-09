@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from datetime import datetime
+from collections import defaultdict  # Fix 1: 銘柄別FIFOペアリング用
 import pandas as pd
 import numpy as np
 
@@ -314,11 +315,46 @@ class ComprehensivePerformanceAnalyzer:
                 )
                 return []
             
-            # ペアリング実行（FIFO方式）
-            paired_count = pairing_result['paired_count']
-            for i in range(paired_count):
-                buy_order = buy_orders[i]
-                sell_order = sell_orders[i]
+            # Fix 1: 銘柄別にグループ化（Task 8対応: 異銘柄ペアリング防止）
+            buy_by_symbol = defaultdict(list)
+            sell_by_symbol = defaultdict(list)
+            
+            for buy in buy_orders:
+                symbol = buy.get('symbol')
+                if symbol:
+                    buy_by_symbol[symbol].append(buy)
+                else:
+                    self.logger.warning(f"[MISSING_SYMBOL] BUY注文にsymbolがありません: {buy}")
+            
+            for sell in sell_orders:
+                symbol = sell.get('symbol')
+                if symbol:
+                    sell_by_symbol[symbol].append(sell)
+                else:
+                    self.logger.warning(f"[MISSING_SYMBOL] SELL注文にsymbolがありません: {sell}")
+            
+            # 銘柄別FIFOペアリング
+            all_symbols = set(buy_by_symbol.keys()) | set(sell_by_symbol.keys())
+            self.logger.info(
+                f"[SYMBOL_BASED_PAIRING] 処理対象銘柄数: {len(all_symbols)}, "
+                f"BUY銘柄: {len(buy_by_symbol)}, SELL銘柄: {len(sell_by_symbol)}"
+            )
+            
+            for symbol in sorted(all_symbols):
+                buys = buy_by_symbol.get(symbol, [])
+                sells = sell_by_symbol.get(symbol, [])
+                paired_count = min(len(buys), len(sells))
+                
+                if paired_count > 0:
+                    self.logger.info(
+                        f"[SYMBOL_PAIRING] 銘柄={symbol}, BUY={len(buys)}, SELL={len(sells)}, "
+                        f"ペア数={paired_count}"
+                    )
+                
+                # 銘柄内FIFOペアリング
+                for i in range(paired_count):
+                    buy_order = buys[i]
+                    sell_order = sells[i]
                 
                 try:
                     # 実データから取引レコード作成
@@ -350,12 +386,26 @@ class ComprehensivePerformanceAnalyzer:
                     trades.append(trade)
                     
                 except Exception as trade_error:
-                    self.logger.error(f"[TRADE_EXTRACTION_ERROR] ペア{i+1}: {trade_error}")
+                    self.logger.error(f"[TRADE_EXTRACTION_ERROR] 銘柄={symbol}, ペア{i+1}: {trade_error}")
                     continue
+                
+                # 銘柄別未ペアリング検出
+                if len(buys) > paired_count:
+                    unpaired_buys = len(buys) - paired_count
+                    self.logger.warning(
+                        f"[UNPAIRED_ORDERS] 銘柄={symbol}, 未決済BUY: {unpaired_buys}件"
+                    )
+                
+                if len(sells) > paired_count:
+                    unpaired_sells = len(sells) - paired_count
+                    self.logger.warning(
+                        f"[UNPAIRED_ORDERS] 銘柄={symbol}, 未ペアSELL: {unpaired_sells}件"
+                    )
             
+            # 銘柄別FIFOペアリング後の最終サマリー
             self.logger.info(
-                f"[PHASE_5_B_12] Converted {len(execution_details)} execution details "
-                f"to {len(trades)} trade records (BUY={len(buy_orders)}, SELL={len(sell_orders)}, Paired={paired_count})"
+                f"[SYMBOL_BASED_FIFO] 変換完了: {len(trades)}取引レコード "
+                f"(BUY総数={len(buy_orders)}, SELL総数={len(sell_orders)}, 銘柄数={len(all_symbols)})"
             )
             
             return trades

@@ -17,6 +17,7 @@ import os
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any, Optional
+from collections import defaultdict  # Fix 1: 銘柄別FIFOペアリング用
 import pandas as pd
 import json
 import numpy as np
@@ -420,15 +421,50 @@ class ComprehensiveReporter:
             # Phase 5-B-12: 共通ユーティリティでBUY/SELL抽出（status='force_closed'も含む）
             buy_orders, sell_orders = extract_buy_sell_orders(execution_details, self.logger)
             
-            # Phase 5-B-12: 共通ユーティリティでペアリング検証
+            # Phase 5-B-12: 共通ユーティリティでペアリング検証（全体の数）
             validate_buy_sell_pairing(buy_orders, sell_orders, self.logger)
             
-            # Phase 5-B-6: ペアリング可能な分のみ処理（FIFO方式）
-            paired_count = min(len(buy_orders), len(sell_orders))
+            # Fix 1: 銘柄別にグループ化（Task 8対応: 異銘柄ペアリング防止）
+            buy_by_symbol = defaultdict(list)
+            sell_by_symbol = defaultdict(list)
             
-            for i in range(paired_count):
-                buy_order = buy_orders[i]
-                sell_order = sell_orders[i]
+            for buy in buy_orders:
+                symbol = buy.get('symbol')
+                if symbol:  # symbolが存在する場合のみ追加
+                    buy_by_symbol[symbol].append(buy)
+                else:
+                    self.logger.warning(f"[MISSING_SYMBOL] BUY注文にsymbolがありません: {buy}")
+            
+            for sell in sell_orders:
+                symbol = sell.get('symbol')
+                if symbol:  # symbolが存在する場合のみ追加
+                    sell_by_symbol[symbol].append(sell)
+                else:
+                    self.logger.warning(f"[MISSING_SYMBOL] SELL注文にsymbolがありません: {sell}")
+            
+            # すべての銘柄について銘柄別FIFOペアリング
+            all_symbols = set(buy_by_symbol.keys()) | set(sell_by_symbol.keys())
+            self.logger.info(
+                f"[SYMBOL_BASED_PAIRING] 処理対象銘柄数: {len(all_symbols)}, "
+                f"BUY銘柄: {len(buy_by_symbol)}, SELL銘柄: {len(sell_by_symbol)}"
+            )
+            
+            for symbol in sorted(all_symbols):  # ログの可読性のためソート
+                buys = buy_by_symbol.get(symbol, [])
+                sells = sell_by_symbol.get(symbol, [])
+                paired_count = min(len(buys), len(sells))
+                
+                # 銘柄別ペアリング状況ログ
+                if paired_count > 0:
+                    self.logger.info(
+                        f"[SYMBOL_PAIRING] 銘柄={symbol}, BUY={len(buys)}, SELL={len(sells)}, "
+                        f"ペア数={paired_count}"
+                    )
+                
+                # 銘柄内でのFIFOペアリング
+                for i in range(paired_count):
+                    buy_order = buys[i]
+                    sell_order = sells[i]
                 
                 try:
                     # 実データから取引レコード作成
@@ -494,34 +530,30 @@ class ComprehensiveReporter:
                     trades.append(trade_record)
                     
                 except Exception as e:
-                    self.logger.error(f"取引レコード作成エラー（ペア{i+1}）: {e}")
+                    self.logger.error(f"取引レコード作成エラー（銘柄={symbol}, ペア{i+1}）: {e}")
                     continue
-            
-            # Phase 5-B-6: 未ペアリング注文のログ出力
-            if len(buy_orders) > paired_count:
-                unpaired_buys = len(buy_orders) - paired_count
-                self.logger.warning(
-                    f"[UNPAIRED_ORDERS] 未決済BUY注文: {unpaired_buys}件 "
-                    f"（強制決済SELLが不足している可能性）"
-                )
-            
-            if len(sell_orders) > paired_count:
-                unpaired_sells = len(sell_orders) - paired_count
-                self.logger.warning(
-                    f"[UNPAIRED_ORDERS] 対応BUYのないSELL注文: {unpaired_sells}件 "
-                    f"（強制決済SELLの可能性）"
-                )
                 
-                # デバッグログ: 未ペアリングSELLの詳細
-                for idx in range(paired_count, len(sell_orders)):
-                    sell = sell_orders[idx]
-                    self.logger.info(
-                        f"[UNPAIRED_SELL] Index={idx}, "
-                        f"Price={sell.get('executed_price', 0.0):.2f}, "
-                        f"Quantity={sell.get('quantity', 0)}, "
-                        f"Strategy={sell.get('strategy_name', 'Unknown')}, "
-                        f"Timestamp={sell.get('timestamp')}"
+                # 銘柄別未ペアリング検出（銘柄内ループ内に配置）
+                if len(buys) > paired_count:
+                    unpaired_buys = len(buys) - paired_count
+                    self.logger.warning(
+                        f"[UNPAIRED_ORDERS] 銘柄={symbol}, 未決済BUY注文: {unpaired_buys}件 "
+                        f"（SELL不足、強制決済未実行の可能性）"
                     )
+                
+                if len(sells) > paired_count:
+                    unpaired_sells = len(sells) - paired_count
+                    # 未ペアリングSELLの詳細ログ（ForceClose重複検出用）
+                    for idx in range(paired_count, len(sells)):
+                        sell = sells[idx]
+                        self.logger.warning(
+                            f"[UNPAIRED_SELL] 銘柄={symbol}, Index={idx}, "
+                            f"Price={sell.get('executed_price', 0.0):.2f}, "
+                            f"Quantity={sell.get('quantity', 0)}, "
+                            f"Strategy={sell.get('strategy_name', 'Unknown')}, "
+                            f"Status={sell.get('status', 'Unknown')}, "
+                            f"Timestamp={sell.get('timestamp')}"
+                        )
             
             # デバッグログ: ForceClose件数カウント（強制決済のみ）
             force_close_count = sum(1 for trade in trades if trade.get('is_forced_exit', False))
@@ -533,9 +565,12 @@ class ComprehensiveReporter:
                     f"({force_close_count}/{len(trades)} trades)"
                 )
             
+            # 銘柄別FIFOペアリング後の最終サマリー
+            total_paired = len(trades)
             self.logger.info(
-                f"[REAL_DATA_ONLY] Converted {len(trades)} execution details to trade records "
-                f"(BUY={len(buy_orders)}, SELL={len(sell_orders)}, Paired={paired_count})"
+                f"[SYMBOL_BASED_FIFO] 変換完了: {total_paired}取引レコード作成 "
+                f"(BUY総数={len(buy_orders)}, SELL総数={len(sell_orders)}, "
+                f"対象銘柄数={len(all_symbols)})"
             )
             return trades
             

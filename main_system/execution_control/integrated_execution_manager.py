@@ -115,6 +115,7 @@ class IntegratedExecutionManager:
         """
         try:
             self.logger.info(f"Starting dynamic strategy execution for {ticker}")
+            self.logger.info(f"[MAIN_NEW_EXECUTION_START] PaperBroker positions before strategy execution: {self.execution_manager.paper_broker.positions}")
             
             # Step 1: 戦略選択（未指定の場合）
             if selected_strategies is None or strategy_weights is None:
@@ -411,6 +412,7 @@ class IntegratedExecutionManager:
         """
         try:
             self.logger.info(f"Executing single strategy: {strategy_name}")
+            self.logger.info(f"[STRATEGY_EXECUTION_START] Before StrategyExecutionManager call, PaperBroker positions: {self.execution_manager.paper_broker.positions}")
             
             # インデックスデータ取得（簡易実装：stock_dataを流用）
             # TODO: Phase 5で適切なインデックスデータ取得実装

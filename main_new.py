@@ -437,7 +437,7 @@ def main():
         'execution': {
             'execution_mode': 'simple',
             'broker': {
-                'initial_cash': 1000000,
+                'initial_cash': 1000000, # 100万円（デフォルト設定、Task 8検証完了により復元 2025-12-08）
                 'commission_per_trade': 1.0
             }
         },

@@ -149,6 +149,7 @@ class DSSMSIntegratedBacktester:
             self.initial_capital = self.portfolio_value
             self.position_size = 0
             self.position_entry_price = 0
+            self.force_close_in_progress = False  # [Task11] DSSMS側ForceCloseフラグ
             
             # 累積期間方式用設定（2025-12-06追加）
             self.warmup_days = 90  # デフォルト値（main_new.pyと統一）
@@ -509,6 +510,9 @@ class DSSMSIntegratedBacktester:
                 # Phase 2: equity_curve再構築用カラム
                 'cash_balance': self.portfolio_value - self.position_size,
                 'position_value': self.position_size,
+                
+                # デバッグログ: 初期cash/position計算（提案4）
+                # Note: この時点ではまだ取引実行前なので、後続のログと比較するための参照点
                 'peak_value': self.peak_value,
                 'drawdown_pct': 0,  # 後程計算
                 'cumulative_pnl': self.cumulative_pnl,
@@ -533,8 +537,17 @@ class DSSMSIntegratedBacktester:
             if switch_result.get('switch_executed', False):
                 daily_result['switch_executed'] = True
                 self.switch_history.append(switch_result)
+                
+                # [案2実装] 銘柄切替時のexecution_detail収集（2025-12-08追加）
+                if 'execution_detail' in switch_result:
+                    # daily_resultのexecution_detailsに追加
+                    if 'execution_details' not in daily_result:
+                        daily_result['execution_details'] = []
+                    daily_result['execution_details'].append(switch_result['execution_detail'])
+                    self.logger.info(f"[DSSMS_SWITCH_COLLECT] 銘柄切替SELL記録をdaily_resultに追加: {switch_result['execution_detail']['timestamp']}")
             
             # 3. 現在銘柄でのマルチ戦略実行
+            strategy_result = {}  # デフォルト値（エラー回避）
             if self.current_symbol:
                 strategy_result = self._execute_multi_strategies(self.current_symbol, target_date)
                 daily_result['strategy_results'] = strategy_result
@@ -551,28 +564,47 @@ class DSSMSIntegratedBacktester:
                 daily_result['daily_return'] = position_return
                 daily_result['daily_return_rate'] = position_return / daily_result['portfolio_value_start']
                 
-                # Phase 2: peak_value/drawdown/cumulative_pnl計算
-                if self.portfolio_value > self.peak_value:
-                    self.peak_value = self.portfolio_value
-                
-                daily_result['peak_value'] = self.peak_value
-                daily_result['drawdown_pct'] = (self.peak_value - self.portfolio_value) / self.peak_value if self.peak_value > 0 else 0
-                
                 self.cumulative_pnl += position_return
                 daily_result['cumulative_pnl'] = self.cumulative_pnl
-                
-                # cash_balance/position_value再計算（ポジション変更後）
-                daily_result['cash_balance'] = self.portfolio_value - self.position_size
-                daily_result['position_value'] = self.position_size
-                
-                # [LOG#6] 日次ポートフォリオ更新トラッキング
+            
+            # peak_value/drawdown_pct再計算（switch処理含む全ケースで更新）
+            # 修正理由: switch実行日に取引がない場合でも、switch後のportfolio_valueを反映するため
+            # switch処理でself.portfolio_valueが変更される可能性があるため、if position_update外で実行
+            # Task 6調査で発見された問題の修正（2025-12-08）
+            if self.portfolio_value > self.peak_value:
+                self.peak_value = self.portfolio_value
+            
+            daily_result['peak_value'] = self.peak_value
+            daily_result['drawdown_pct'] = (self.peak_value - self.portfolio_value) / self.peak_value if self.peak_value > 0 else 0
+            
+            # [LOG#6] 日次ポートフォリオ更新トラッキング（peak_value/drawdown_pct計算後に移動）
+            if strategy_result.get('position_update'):
                 self.logger.info(
                     f"[PORTFOLIO_UPDATE] {target_date.strftime('%Y-%m-%d')} - "
                     f"Before: {portfolio_value_before:,.0f}円, "
                     f"Return: {position_return:+,.0f}円 ({daily_result['daily_return_rate']:+.2%}), "
                     f"After: {self.portfolio_value:,.0f}円, "
+                    f"position_size={self.position_size:.2f}, "
+                    f"cash={self.portfolio_value - self.position_size:.2f}, "
                     f"Drawdown: {daily_result['drawdown_pct']:.2%}"
-                )            # 4. リスク管理チェック
+                )
+            
+            # cash_balance/position_value再計算（switch処理含む全ケースで更新）
+            # 修正理由: switch実行日に取引がない場合でも、switch後のportfolio_valueとposition_sizeを反映するため
+            # switch処理でself.portfolio_valueとself.position_sizeが変更される可能性があるため、if position_update外で実行
+            daily_result['cash_balance'] = self.portfolio_value - self.position_size
+            daily_result['position_value'] = self.position_size
+            
+            # 提案4: cash_balance/position_value計算検証ログ
+            self.logger.debug(
+                f"[CASH_POSITION_CALC] {target_date.strftime('%Y-%m-%d')}: "
+                f"portfolio={self.portfolio_value:.2f}, "
+                f"position_size={self.position_size:.2f}, "
+                f"cash={self.portfolio_value - self.position_size:.2f}, "
+                f"sum={self.portfolio_value:.2f}"
+            )
+            
+            # 4. リスク管理チェック
             risk_result = self._check_risk_limits(daily_result)
             
             if risk_result.get('risk_violation'):
@@ -583,6 +615,19 @@ class DSSMSIntegratedBacktester:
             # 最終結果設定
             daily_result['portfolio_value_end'] = self.portfolio_value
             daily_result['portfolio_value'] = self.portfolio_value  # 互換性向上: レポート生成との整合性確保
+            
+            # デバッグログ: portfolio_value整合性チェック（提案1）
+            expected_portfolio = daily_result.get('cash_balance', 0) + daily_result.get('position_value', 0)
+            actual_portfolio = self.portfolio_value
+            if abs(expected_portfolio - actual_portfolio) > 0.01:
+                self.logger.warning(
+                    f"[PORTFOLIO_MISMATCH] {target_date.strftime('%Y-%m-%d')}: "
+                    f"expected={expected_portfolio:.2f}, actual={actual_portfolio:.2f}, "
+                    f"diff={expected_portfolio - actual_portfolio:.2f}, "
+                    f"cash={daily_result.get('cash_balance', 0):.2f}, "
+                    f"position={daily_result.get('position_value', 0):.2f}"
+                )
+            
             daily_result['success'] = len(daily_result['errors']) == 0
             
             return daily_result
@@ -1509,28 +1554,55 @@ class DSSMSIntegratedBacktester:
             if should_switch:
                 # ポジション解除（既存銘柄）
                 if self.current_symbol and self.position_size > 0:
+                    # [Task11] ForceCloseフラグ設定
+                    self.force_close_in_progress = True
+                    self.logger.info(f"[DSSMS_FORCE_CLOSE_START] ForceClose開始、戦略SELL処理を抑制")
+                    
+                    self.logger.warning(f"[SYMBOL_SWITCH_START] date={target_date}, from_symbol={self.current_symbol}, to_symbol={selected_symbol}, position_size={self.position_size}")
+                    self.logger.warning(f"[BEFORE_DSSMS_FORCE_CLOSE] calling _close_position for symbol_switch, current_symbol={self.current_symbol}")
                     close_result = self._close_position(self.current_symbol, target_date)
+                    self.logger.warning(f"[AFTER_DSSMS_FORCE_CLOSE] _close_position completed, close_result={close_result}")
                     switch_result['close_result'] = close_result
+                    
+                    # [案2実装] execution_detail収集（2025-12-08追加）
+                    if 'execution_detail' in close_result:
+                        switch_result['execution_detail'] = close_result['execution_detail']
+                        self.logger.info(f"[DSSMS_SWITCH_DETAIL] 銘柄切替時のSELL記録収集完了: {close_result['execution_detail']}")
+                    
+                    # [Task11] ForceCloseフラグリセット
+                    self.force_close_in_progress = False
+                    self.logger.info(f"[DSSMS_FORCE_CLOSE_END] ForceClose完了、戦略SELL処理を再開")
                 
                 # 新銘柄ポジション開始
                 open_result = self._open_position(selected_symbol, target_date)
                 switch_result['open_result'] = open_result
                 
+                # BUY側execution_detail収集（SELL側と同様）
+                if 'execution_detail' in open_result:
+                    switch_result['execution_detail'] = open_result['execution_detail']
+                
                 # 切替コスト
                 switch_cost = self.portfolio_value * self.config.get('switch_cost_rate', 0.001)
+                portfolio_before_switch = self.portfolio_value
                 self.portfolio_value -= switch_cost
+                portfolio_after_switch = self.portfolio_value
                 
-                # Priority 2-2: デバッグログ追加 (switch_cost)
-                self.logger.debug(
-                    f"[DEBUG] _evaluate_and_execute_switch | switch_cost: {switch_cost:.2f}円 "
-                    f"(rate: {self.config.get('switch_cost_rate', 0.001):.4f})"
+                # 提案2拡張: switch処理時の詳細追跡ログ
+                self.logger.info(
+                    f"[SWITCH_COST_DETAIL] {target_date.strftime('%Y-%m-%d')}: "
+                    f"from={switch_result['from_symbol']} to={selected_symbol}, "
+                    f"cost={switch_cost:.2f}, "
+                    f"portfolio_before={portfolio_before_switch:.2f}, "
+                    f"portfolio_after={portfolio_after_switch:.2f}, "
+                    f"rate={self.config.get('switch_cost_rate', 0.001)}"
                 )
                 
                 switch_result.update({
                     'switch_executed': True,
                     'switch_cost': switch_cost,
                     'reason': switch_evaluation.get('reason', 'dss_optimization'),
-                    'portfolio_value_after_switch': self.portfolio_value,
+                    'portfolio_value_before': portfolio_before_switch,
+                    'portfolio_value_after': portfolio_after_switch,
                     'executed_date': target_date
                 })
                 
@@ -1566,6 +1638,16 @@ class DSSMSIntegratedBacktester:
             Dict[str, Any]: 戦略実行結果
         """
         try:
+            # [Task11] ForceClose実行中はスキップ
+            if self.force_close_in_progress:
+                self.logger.warning(f"[DSSMS_FORCE_CLOSE_SUPPRESS] ForceClose実行中のため戦略評価をスキップ: symbol={symbol}, date={target_date.strftime('%Y-%m-%d')}")
+                return {
+                    'status': 'skipped',
+                    'reason': 'force_close_in_progress',
+                    'symbol': symbol,
+                    'date': target_date.strftime('%Y-%m-%d')
+                }
+            
             # 1. データ取得（既存処理を維持）
             stock_data, index_data = self._get_symbol_data(symbol, target_date)
             
@@ -2071,13 +2153,15 @@ class DSSMSIntegratedBacktester:
                 position_return = self.position_size * price_change_rate
                 
                 # 売りシグナル時はポジション決済
+                close_result = None  # [案2実装] 初期化（2025-12-08追加）
                 if position_action == 'SELL':
                     close_result = self._close_position(symbol, target_date)
                     if close_result.get('status') == 'closed':
                         position_return += close_result.get('close_return', 0)
                         self.logger.info(f"ポジション決済: {symbol}, 収益: {position_return:,.0f}")
             
-            return {
+            # [案2実装] execution_detail返却準備（2025-12-08追加）
+            result = {
                 'action': position_action,
                 'buy_signals': buy_signals,
                 'sell_signals': sell_signals,
@@ -2087,6 +2171,13 @@ class DSSMSIntegratedBacktester:
                 'position_size_after': self.position_size,
                 'price_data_available': True  # デバッグ用
             }
+            
+            # [案2実装] SELL時のexecution_detail追加（2025-12-08追加）
+            if position_action == 'SELL' and close_result and 'execution_detail' in close_result:
+                result['execution_detail'] = close_result['execution_detail']
+                self.logger.info(f"[DSSMS_POSITION_DETAIL] 通常SELL記録収集完了: {close_result['execution_detail']}")
+            
+            return result
             
         except Exception as e:
             self.logger.error(f"ポジション更新計算エラー: {e}")
@@ -2098,6 +2189,7 @@ class DSSMSIntegratedBacktester:
     
     def _close_position(self, symbol: str, target_date: datetime) -> Dict[str, Any]:
         """ポジション解除（実際の価格データ使用版）"""
+        self.logger.warning(f"[DSSMS_FORCE_CLOSE_START] date={target_date}, symbol={symbol}, position_size={self.position_size}")
         try:
             if self.position_size == 0:
                 return {'status': 'no_position'}
@@ -2117,6 +2209,8 @@ class DSSMSIntegratedBacktester:
                     # 実際のリターン計算
                     price_change_rate = (current_price - entry_price) / entry_price
                     close_return = self.position_size * price_change_rate
+                    self.logger.warning(f"[DSSMS_FORCE_CLOSE_END] date={target_date}, symbol={symbol}, position_size_before={self.position_size}, close_return={close_return}")
+                    self.logger.info(f"[POSITION_SYNC_WARNING] DSSMS position closed but PaperBroker may still hold position. Check main_new.py ForceClose.")
                 else:
                     # copilot-instructions.md準拠: モック収益フォールバック禁止
                     raise RuntimeError(
@@ -2137,21 +2231,43 @@ class DSSMSIntegratedBacktester:
             # ポートフォリオ価値更新
             self.portfolio_value += close_return
             
+            # [案2実装] execution_details生成（2025-12-08追加）
+            # 目的: DSSMS側の決済をexecution_detailsに記録し、ForceCloseと区別可能にする
+            execution_detail = {
+                'symbol': symbol,
+                'action': 'SELL',
+                'quantity': self.position_size,  # 決済前のposition_sizeを記録
+                'timestamp': target_date.isoformat(),
+                'executed_price': current_price,
+                'strategy_name': 'DSSMS_SymbolSwitch',  # ForceCloseと区別するための戦略名
+                'status': 'executed',
+                'entry_price': entry_price,
+                'profit_pct': price_change_rate * 100,
+                'close_return': close_return
+            }
+            
             result = {
                 'status': 'closed',
                 'symbol': symbol,
                 'position_size': self.position_size,
                 'close_return': close_return,
                 'portfolio_value_after': self.portfolio_value,
-                'close_price_available': True  # デバッグ用
+                'close_price_available': True,  # デバッグ用
+                'execution_detail': execution_detail  # [案2実装] execution_detailsを返り値に追加
             }
             
             self.logger.info(f"ポジション決済完了: {symbol}, 収益: {close_return:,.0f}円")
+            self.logger.info(f"[DSSMS_EXECUTION_DETAIL] 決済記録生成: strategy_name={execution_detail['strategy_name']}, timestamp={execution_detail['timestamp']}")
             
             # ポジションリセット
             self.position_size = 0
             self.position_entry_price = 0
             self.current_symbol = None
+            
+            # [Task11] ForceCloseフラグリセット（念のため）
+            if self.force_close_in_progress:
+                self.force_close_in_progress = False
+                self.logger.info(f"[DSSMS_FORCE_CLOSE_END] ForceClose完了（_close_position内）")
             
             return result
             
@@ -2187,19 +2303,35 @@ class DSSMSIntegratedBacktester:
                     f"Mock price generation is prohibited by copilot-instructions.md."
                 ) from e
             
+            # execution_detail生成（_close_position()と同じパターン）
+            execution_detail = {
+                'symbol': symbol,
+                'action': 'BUY',
+                'quantity': position_value,  # 円単位（ポートフォリオの80%）
+                'timestamp': target_date.isoformat(),
+                'executed_price': entry_price,
+                'strategy_name': 'DSSMS_SymbolSwitch',
+                'status': 'executed',
+                'entry_price': entry_price,  # BUY時はentry_price = executed_price
+                'profit_pct': 0.0,  # BUY時は0
+                'close_return': None  # BUY時はNone
+            }
+            
             result = {
                 'status': 'opened',
                 'symbol': symbol,
                 'position_value': position_value,
                 'entry_price': entry_price,
                 'portfolio_value_after': self.portfolio_value,
-                'entry_price_available': True  # デバッグ用
+                'entry_price_available': True,  # デバッグ用
+                'execution_detail': execution_detail  # execution_detailを返り値に追加
             }
             
             self.position_size = position_value
             self.position_entry_price = entry_price
             
             self.logger.info(f"新ポジション開始: {symbol}, サイズ: {position_value:,.0f}円, エントリー価格: {entry_price:,.0f}")
+            self.logger.info(f"[DSSMS_EXECUTION_DETAIL] BUY記録生成: strategy_name={execution_detail['strategy_name']}, timestamp={execution_detail['timestamp']}")
             
             return result
             
@@ -2426,6 +2558,11 @@ class DSSMSIntegratedBacktester:
         
         ComprehensiveReporter用に13カラムのequity_curve DataFrameを生成。
         
+        修正内容（2025-12-08）:
+        - daily_pnl計算を前日比（portfolio_value差分）に変更
+        - 修正理由: daily_returnは取引損益のみで、switch_costやポジション評価額変動を含まない
+        - Task 6調査で発見された問題の修正
+        
         Args:
             daily_results: DSSMS日次結果リスト
         
@@ -2440,7 +2577,7 @@ class DSSMSIntegratedBacktester:
             - peak_value: ピーク値
             - drawdown_pct: ドローダウン率
             - cumulative_pnl: 累積损益
-            - daily_pnl: 日次損益
+            - daily_pnl: 日次損益（前日比計算）
             - total_trades: 総取引数
             - active_positions: アクティブポジション数
             - risk_status: リスクステータス
@@ -2455,22 +2592,34 @@ class DSSMSIntegratedBacktester:
                 return pd.DataFrame()
             
             equity_data = []
+            previous_portfolio_value = self.config.get('initial_capital', 1000000)  # 初期資本
+            
             for daily_result in daily_results:
+                current_portfolio_value = daily_result.get('portfolio_value_end', 0)
+                
+                # daily_pnl計算: 前日からのportfolio_value変化（全要素を含む）
+                # - 取引損益（daily_return）
+                # - switch_cost
+                # - ポジション評価額変動
+                daily_pnl = current_portfolio_value - previous_portfolio_value
+                
                 equity_data.append({
                     'date': daily_result.get('date'),
-                    'portfolio_value': daily_result.get('portfolio_value_end', 0),
+                    'portfolio_value': current_portfolio_value,
                     'cash_balance': daily_result.get('cash_balance', 0),
                     'position_value': daily_result.get('position_value', 0),
                     'peak_value': daily_result.get('peak_value', 0),
                     'drawdown_pct': daily_result.get('drawdown_pct', 0),
                     'cumulative_pnl': daily_result.get('cumulative_pnl', 0),
-                    'daily_pnl': daily_result.get('daily_return', 0),
+                    'daily_pnl': daily_pnl,  # 修正箇所: 前日比計算
                     'total_trades': daily_result.get('total_trades', 0),
                     'active_positions': daily_result.get('active_positions', 0),
                     'risk_status': daily_result.get('risk_status', ''),
                     'blocked_trades': daily_result.get('blocked_trades', 0),
                     'risk_action': daily_result.get('risk_action', '')
                 })
+                
+                previous_portfolio_value = current_portfolio_value
             
             df = pd.DataFrame(equity_data)
             

@@ -44,6 +44,10 @@ class StrategyExecutionManager:
         # [Phase 5-B-5] 損益推移記録
         self.equity_recorder: Optional[EquityCurveRecorder] = None
         
+        # [修正案2] ForceClose実行フラグ（2025-12-08追加）
+        # 目的: ForceClose実行中の通常SELL処理を抑制し、同日2件SELL問題を解消
+        self.force_close_in_progress = False
+        
         # 実行履歴
         self.execution_history: List[Dict[str, Any]] = []
         
@@ -434,6 +438,14 @@ class StrategyExecutionManager:
                     # copilot-instructions.md準拠: BUY/SELLペア不一致を防ぐ（実データのみ）
                     # 仮定: BUY注文の直後にSELL注文が生成される（order_index順）
                     if order_dict['action'] == 'SELL':
+                        # [修正案2] ForceClose実行中は通常SELL処理をスキップ（2025-12-08追加）
+                        if self.force_close_in_progress:
+                            self.logger.warning(
+                                f"[FORCE_CLOSE_SUPPRESS] ForceClose実行中のため通常SELL処理をスキップ: "
+                                f"{symbol}, order_index={order_index}, strategy={order_dict.get('strategy_name', 'Unknown')}"
+                            )
+                            continue  # 通常SELL処理をスキップ
+                        
                         # 対応するBUY注文のインデックスを特定（SELL注文の直前）
                         corresponding_buy_index = order_index - 1
                         
@@ -753,7 +765,10 @@ class StrategyExecutionManager:
             if self.paper_broker:
                 open_positions = self.paper_broker.get_positions()
                 if open_positions:
+                    # [修正案2] ForceClose開始フラグを設定（2025-12-08追加）
+                    self.force_close_in_progress = True
                     self.logger.warning(f"[PHASE_4_2_23] 未決済ポジション検出: {len(open_positions)}件")
+                    self.logger.info("[FORCE_CLOSE_START] ForceClose開始、通常SELL処理を抑制")
                     
                     for symbol, position in open_positions.items():
                         try:
@@ -832,6 +847,10 @@ class StrategyExecutionManager:
                                 
                         except Exception as e:
                             self.logger.error(f"[PHASE_4_2_23] 強制決済エラー ({symbol}): {e}", exc_info=True)
+                
+                # [修正案2] ForceClose終了フラグをリセット（2025-12-08追加）
+                self.force_close_in_progress = False
+                self.logger.info("[FORCE_CLOSE_END] ForceClose完了、通常SELL処理を再開")
             
             self.logger.info(f"Trade execution completed: {len(execution_results)} orders processed")
             return execution_results
@@ -1092,6 +1111,7 @@ class StrategyExecutionManager:
             total_equity = available_cash + position_value
             
             # Phase 4.2-16: 90%を使用（余剰資金運用）
+            # Task 8検証完了により本番設定に復元（2025-12-08）
             available_funds = total_equity * 0.90
             
             self.logger.debug(
