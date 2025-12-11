@@ -2251,7 +2251,6 @@ class DSSMSIntegratedBacktester:
                 'timestamp': target_date.isoformat(),
                 'executed_price': current_price,
                 'strategy_name': 'DSSMS_SymbolSwitch',  # ForceCloseと区別するための戦略名
-                'success': True,  # 2025-12-11追加（Task 2）: ComprehensiveReporter互換性確保
                 'status': 'executed',
                 'entry_price': entry_price,
                 'profit_pct': price_change_rate * 100,
@@ -2324,7 +2323,6 @@ class DSSMSIntegratedBacktester:
                 'executed_price': entry_price,
                 'strategy_name': 'DSSMS_SymbolSwitch',
                 'order_id': str(uuid.uuid4()),  # 2025-12-11追加: 重複除去ロジック対応
-                'success': True,  # 2025-12-11追加（Task 2）: ComprehensiveReporter互換性確保
                 'status': 'executed',
                 'entry_price': entry_price,  # BUY時はentry_price = executed_price
                 'profit_pct': 0.0,  # BUY時は0

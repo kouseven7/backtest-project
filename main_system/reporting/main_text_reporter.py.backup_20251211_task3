@@ -256,11 +256,8 @@ class MainTextReporter:
         
         logger.info(f"[PHASE_5_B_2] Completed trades after filtering: {len(completed_trades)}")
         
-        # パフォーマンス統計を計算（2025-12-11修正: execution_results渡し、Task 3）
-        performance = self._calculate_performance_from_trades(
-            completed_trades,
-            execution_results=execution_results
-        )
+        # パフォーマンス統計を計算
+        performance = self._calculate_performance_from_trades(completed_trades)
         
         # 期間情報を計算
         period = {
@@ -278,100 +275,16 @@ class MainTextReporter:
             'period': period
         }
     
-    def _calculate_performance_from_trades(
-        self,
-        trades: List[Dict[str, Any]],
-        execution_results: Dict[str, Any] = None  # 2025-12-11追加（Task 3）
-    ) -> Dict[str, Any]:
+    def _calculate_performance_from_trades(self, trades: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         取引データからパフォーマンス統計を計算（Phase 5-B-2）
         
-        copilot-instructions.md準拠:
-        - execution_resultsのtotal_portfolio_valueを優先使用（DSSMS本体の値）
-        - 取引データからの計算はフォールバック
-        
         Args:
             trades: 取引データリスト
-            execution_results: 実行結果（Task 3追加、DSSMSの実際の最終資本値を含む）
             
         Returns:
             パフォーマンス統計辞書
         """
-        # 優先: execution_resultsから実際の値を取得（DSSMS本体の正しい値）
-        # 2025-12-11追加（Task 3: 修正案3のmain_text_reporterへの適用）
-        if execution_results:
-            actual_initial = execution_results.get('initial_capital')
-            actual_final = execution_results.get('total_portfolio_value')
-            
-            if actual_initial is not None and actual_final is not None:
-                logger.info(
-                    f"[PERFORMANCE_CALC_TXT] execution_resultsから実際の値を使用: "
-                    f"initial={actual_initial:,.0f}, final={actual_final:,.0f}"
-                )
-                
-                # DSSMS本体の値を使用（根本的解決）
-                initial_capital = actual_initial
-                final_value = actual_final
-                net_profit = final_value - initial_capital
-                total_return = (final_value / initial_capital - 1) if initial_capital > 0 else 0
-                
-                # 勝敗統計はtradesから計算（tradesがある場合のみ）
-                if trades and isinstance(trades, list):
-                    valid_trades = [t for t in trades if isinstance(t, dict)]
-                    pnls = [t.get('pnl', 0) for t in valid_trades]
-                    winning_trades_list = [pnl for pnl in pnls if pnl > 0]
-                    losing_trades_list = [pnl for pnl in pnls if pnl < 0]
-                    
-                    winning_count = len(winning_trades_list)
-                    losing_count = len(losing_trades_list)
-                    total_trades = winning_count + losing_count
-                    win_rate = winning_count / total_trades if total_trades > 0 else 0
-                    
-                    total_profit = sum(winning_trades_list) if winning_trades_list else 0
-                    total_loss = abs(sum(losing_trades_list)) if losing_trades_list else 0
-                    
-                    avg_win = total_profit / winning_count if winning_count > 0 else 0
-                    avg_loss = total_loss / losing_count if losing_count > 0 else 0
-                    profit_factor = total_profit / total_loss if total_loss > 0 else 0
-                    
-                    max_profit = max(winning_trades_list) if winning_trades_list else 0
-                    max_loss = abs(min(losing_trades_list)) if losing_trades_list else 0
-                else:
-                    # tradesがない場合（BUY保有中など）
-                    winning_count = 0
-                    losing_count = 0
-                    win_rate = 0
-                    total_profit = 0
-                    total_loss = 0
-                    avg_win = 0
-                    avg_loss = 0
-                    profit_factor = 0
-                    max_profit = 0
-                    max_loss = 0
-                
-                # execution_resultsからの値で返却
-                return {
-                    'initial_capital': initial_capital,
-                    'final_portfolio_value': final_value,  # <- DSSMS本体の正しい値
-                    'total_return': total_return,
-                    'win_rate': win_rate,
-                    'winning_trades': winning_count,
-                    'losing_trades': losing_count,
-                    'total_profit': total_profit,
-                    'total_loss': total_loss,
-                    'avg_profit': avg_win,
-                    'avg_loss': avg_loss,
-                    'max_profit': max_profit,
-                    'max_loss': max_loss,
-                    'net_profit': net_profit,
-                    'profit_factor': profit_factor
-                }
-        
-        # フォールバック: tradesから計算（既存ロジック、他戦略用）
-        logger.warning(
-            "[PERFORMANCE_CALC_TXT] execution_resultsなし、取引データから計算（フォールバック）"
-        )
-        
         if not trades:
             return {
                 'initial_capital': 1000000,

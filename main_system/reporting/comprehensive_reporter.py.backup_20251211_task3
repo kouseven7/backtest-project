@@ -317,10 +317,7 @@ class ComprehensiveReporter:
                     'end_date': stock_data.index[-1].strftime("%Y-%m-%d") if len(stock_data) > 0 else 'N/A',
                     'trading_days': len(stock_data)
                 },
-                'performance': self._calculate_basic_performance(
-                    extracted_trades,
-                    execution_results=execution_results  # 2025-12-11追加（Task 3）: DSSMS本体値の直接使用
-                )
+                'performance': self._calculate_basic_performance(extracted_trades)
             }
             
             return analysis_result
@@ -584,68 +581,9 @@ class ComprehensiveReporter:
     
     def _calculate_basic_performance(
         self,
-        trades: List[Dict[str, Any]],
-        execution_results: Dict[str, Any] = None
+        trades: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """
-        基本パフォーマンス計算
-        
-        Args:
-            trades: 取引リスト
-            execution_results: 実行結果（total_portfolio_value等を含む）
-        
-        Returns:
-            パフォーマンス指標
-        
-        copilot-instructions.md準拠:
-        - execution_resultsのtotal_portfolio_valueを優先使用（DSSMS本体の値）
-        - 取引データからの計算はフォールバック
-        """
-        # 優先: execution_resultsから実際の値を取得（DSSMS本体の正しい値）
-        if execution_results:
-            actual_initial = execution_results.get('initial_capital')
-            actual_final = execution_results.get('total_portfolio_value')
-            
-            if actual_initial and actual_final:
-                self.logger.info(
-                    f"[PERFORMANCE_CALC] execution_resultsから実際の値を使用: "
-                    f"initial={actual_initial:,.0f}, final={actual_final:,.0f}"
-                )
-                
-                # DSSMS本体の値を使用（根本的解決）
-                initial_capital = actual_initial
-                final_value = actual_final
-                net_profit = final_value - initial_capital
-                
-                # tradesからの勝敗統計は計算
-                pnls = [trade.get('pnl', 0) for trade in trades]
-                winning_trades = [pnl for pnl in pnls if pnl > 0]
-                losing_trades = [pnl for pnl in pnls if pnl < 0]
-                total_profit = sum(winning_trades) if winning_trades else 0
-                total_loss = abs(sum(losing_trades)) if losing_trades else 0
-                
-                return {
-                    'initial_capital': initial_capital,
-                    'final_portfolio_value': final_value,
-                    'total_return': (final_value / initial_capital - 1) if initial_capital > 0 else 0,
-                    'win_rate': len(winning_trades) / len(trades) if trades else 0,
-                    'winning_trades': len(winning_trades),
-                    'losing_trades': len(losing_trades),
-                    'avg_profit': np.mean(winning_trades) if winning_trades else 0,
-                    'avg_loss': np.mean([abs(l) for l in losing_trades]) if losing_trades else 0,
-                    'max_profit': max(winning_trades) if winning_trades else 0,
-                    'max_loss': abs(min(losing_trades)) if losing_trades else 0,
-                    'total_profit': total_profit,
-                    'total_loss': total_loss,
-                    'net_profit': net_profit,
-                    'profit_factor': (total_profit / total_loss) if total_loss > 0 else 0
-                }
-        
-        # フォールバック: tradesから計算（既存ロジック、他戦略用）
-        self.logger.warning(
-            "[PERFORMANCE_CALC] execution_resultsなし、取引データから計算（フォールバック）"
-        )
-        
+        """基本パフォーマンス計算"""
         if not trades:
             return {
                 'initial_capital': 1000000,
@@ -664,7 +602,7 @@ class ComprehensiveReporter:
                 'profit_factor': 0.0
             }
         
-        # 既存の取引ベース計算ロジック
+        # 損益計算
         pnls = [trade.get('pnl', 0) for trade in trades]
         winning_trades = [pnl for pnl in pnls if pnl > 0]
         losing_trades = [pnl for pnl in pnls if pnl < 0]
