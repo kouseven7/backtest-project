@@ -16,7 +16,7 @@ import sys
 import os
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Tuple
 from collections import defaultdict  # Fix 1: 銘柄別FIFOペアリング用
 import pandas as pd
 import json
@@ -296,8 +296,11 @@ class ComprehensiveReporter:
             extracted_trades = self.data_extractor.extract_accurate_trades(stock_data)
             
             # Phase 4.2-5-3: execution_resultsから実行された取引を追加
+            # 優先度C: 決済済み取引と保有中ポジションを分離
             # copilot-instructions.md: 実際の取引件数 > 0 を検証
-            executed_trades = self._extract_executed_trades(execution_results)
+            executed_data = self._extract_executed_trades(execution_results)
+            executed_trades = executed_data.get('executed_trades', [])
+            open_positions = executed_data.get('open_positions', [])
             
             if executed_trades:
                 self.logger.info(f"[OK] Adding {len(executed_trades)} executed trades to report")
@@ -307,11 +310,17 @@ class ComprehensiveReporter:
             else:
                 self.logger.warning("No executed trades found in execution_results")
             
-            # 基本統計
+            if open_positions:
+                self.logger.info(f"[OK] Found {len(open_positions)} open positions")
+            else:
+                self.logger.info("[INFO] No open positions found")
+            
+            # 基本統計（優先度C: open_positions追加）
             analysis_result = {
                 'trades': extracted_trades,
                 'total_trades': len(extracted_trades),
                 'executed_trades_count': len(executed_trades),  # Phase 4.2-5-3: 実行取引数を記録
+                'open_positions': open_positions,  # 優先度C: 保有中ポジション
                 'period': {
                     'start_date': stock_data.index[0].strftime("%Y-%m-%d") if len(stock_data) > 0 else 'N/A',
                     'end_date': stock_data.index[-1].strftime("%Y-%m-%d") if len(stock_data) > 0 else 'N/A',
@@ -338,9 +347,10 @@ class ComprehensiveReporter:
     def _extract_executed_trades(
         self,
         execution_results: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+    ) -> Dict[str, List[Dict[str, Any]]]:
         """
         execution_resultsから実行された取引を抽出（Phase 5-B-1 Step 3-2: フォールバック削除版）
+        優先度C: 決済済み取引と保有中ポジションを分離
         
         copilot-instructions.md準拠:
         - 実データのみ抽出
@@ -350,7 +360,9 @@ class ComprehensiveReporter:
             execution_results: 戦略実行結果
         
         Returns:
-            実行された取引のリスト（MainDataExtractorと同じ形式）
+            Dict containing:
+                - executed_trades: 決済済み取引リスト
+                - open_positions: 保有中ポジションリスト
         """
         try:
             executed_trades = []
@@ -360,21 +372,24 @@ class ComprehensiveReporter:
             # StrategyExecutionManagerからの結果: {'execution_details': [...]}
             
             # パターン1: execution_results['execution_results']（統合実行結果）
+            all_open_positions = []  # 優先度C: 保有中ポジション収集
             if 'execution_results' in execution_results and isinstance(execution_results['execution_results'], list):
                 for result in execution_results['execution_results']:
                     if isinstance(result, dict) and 'execution_details' in result:
-                        trades = self._convert_execution_details_to_trades(result['execution_details'])
+                        trades, open_positions = self._convert_execution_details_to_trades(result['execution_details'])
                         executed_trades.extend(trades)
+                        all_open_positions.extend(open_positions)
                         self.logger.info(
-                            f"[REAL_DATA] Extracted {len(trades)} trades from "
+                            f"[REAL_DATA] Extracted {len(trades)} trades, {len(open_positions)} open positions from "
                             f"strategy: {result.get('strategy_name', 'Unknown')}"
                         )
             
             # パターン2: execution_results['execution_details']（単一戦略結果）
             elif 'execution_details' in execution_results:
-                trades = self._convert_execution_details_to_trades(execution_results['execution_details'])
+                trades, open_positions = self._convert_execution_details_to_trades(execution_results['execution_details'])
                 executed_trades.extend(trades)
-                self.logger.info(f"[REAL_DATA] Extracted {len(trades)} trades from execution_details")
+                all_open_positions.extend(open_positions)
+                self.logger.info(f"[REAL_DATA] Extracted {len(trades)} trades, {len(open_positions)} open positions from execution_details")
             
             # データ検証（copilot-instructions.md: 実際の取引件数 > 0 を検証）
             if not executed_trades:
@@ -387,19 +402,24 @@ class ComprehensiveReporter:
                     f"[SUCCESS] Extracted {len(executed_trades)} real trades from execution_results"
                 )
             
-            return executed_trades
+            # 優先度C: 保有中ポジションを含むデータを返却
+            return {
+                'executed_trades': executed_trades,
+                'open_positions': all_open_positions
+            }
             
         except Exception as e:
             self.logger.error(f"Error extracting executed trades: {e}", exc_info=True)
             # copilot-instructions.md: フォールバック禁止
-            return []
+            return {'executed_trades': [], 'open_positions': []}
     
     def _convert_execution_details_to_trades(
         self,
         execution_details: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         """
         execution_detailsを取引レコード形式に変換（Phase 5-B-12: 共通ユーティリティ統一版）
+        優先度C: 決済済み取引と保有中ポジションを分離
         
         copilot-instructions.md準拠:
         - ダミーデータ生成フォールバック禁止
@@ -411,7 +431,9 @@ class ComprehensiveReporter:
             execution_details: 実行詳細リスト
         
         Returns:
-            取引レコードリスト（MainDataExtractor形式）
+            Tuple[completed_trades, open_positions]:
+                - completed_trades: 決済済み取引リスト
+                - open_positions: 保有中ポジションリスト（未決済BUY）
         """
         try:
             trades = []
@@ -575,12 +597,166 @@ class ComprehensiveReporter:
                 f"(BUY総数={len(buy_orders)}, SELL総数={len(sell_orders)}, "
                 f"対象銘柄数={len(all_symbols)})"
             )
-            return trades
+            
+            # 優先度C: 保有中ポジション抽出
+            open_positions = self._extract_open_positions(
+                execution_details=execution_details,
+                completed_trades=trades,
+                buy_orders=buy_orders,
+                sell_orders=sell_orders
+            )
+            
+            self.logger.info(
+                f"[OPEN_POSITIONS] 保有中ポジション: {len(open_positions)}件"
+            )
+            
+            return trades, open_positions
             
         except Exception as e:
             self.logger.error(f"Error converting execution details: {e}", exc_info=True)
             # copilot-instructions.md: フォールバック禁止、エラー時は空リスト返却
+            return [], []
+    
+    def _extract_open_positions(
+        self,
+        execution_details: List[Dict[str, Any]],
+        completed_trades: List[Dict[str, Any]],
+        buy_orders: List[Dict[str, Any]],
+        sell_orders: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """
+        保有中ポジション（未決済BUY注文）を抽出
+        
+        copilot-instructions.md準拠:
+        - ダミーデータ生成禁止
+        - 実データのみ使用
+        
+        Args:
+            execution_details: 全実行詳細リスト
+            completed_trades: 決済済み取引リスト
+            buy_orders: BUY注文リスト
+            sell_orders: SELL注文リスト
+        
+        Returns:
+            保有中ポジションリスト
+        """
+        try:
+            # completed_tradesで使用されたorder_idを収集
+            used_buy_order_ids = set()
+            for trade in completed_trades:
+                # 取引レコードからBUY/SELLのorder_idを抽出
+                # （実装上、buy_ordersからペアリングされたものを追跡）
+                pass
+            
+            # 簡易実装: buy_orders と sell_orders の数から未決済分を計算
+            # より正確には、FIFO順でペアリング後の残りを特定
+            open_positions = []
+            
+            # 銘柄別にグループ化
+            buy_by_symbol = defaultdict(list)
+            for buy in buy_orders:
+                symbol = buy.get('symbol')
+                if symbol:
+                    buy_by_symbol[symbol].append(buy)
+            
+            sell_by_symbol = defaultdict(list)
+            for sell in sell_orders:
+                symbol = sell.get('symbol')
+                if symbol:
+                    sell_by_symbol[symbol].append(sell)
+            
+            # 各銘柄について、BUY数 > SELL数の場合に未決済ポジションあり
+            for symbol, buys in buy_by_symbol.items():
+                sells = sell_by_symbol.get(symbol, [])
+                unpaired_count = len(buys) - len(sells)
+                
+                if unpaired_count > 0:
+                    # 未決済BUY = FIFOでSELLとペアリング後の残り
+                    # つまり、buys[len(sells):]が未決済
+                    for i in range(len(sells), len(buys)):
+                        buy_order = buys[i]
+                        
+                        # 現在価格取得
+                        current_price = self._get_latest_price(symbol, execution_details)
+                        
+                        entry_price = buy_order.get('executed_price', 0.0)
+                        quantity = buy_order.get('quantity', 0)
+                        
+                        if entry_price > 0 and quantity > 0:
+                            unrealized_pnl = (current_price - entry_price) * quantity
+                            unrealized_pnl_pct = ((current_price - entry_price) / entry_price * 100) if entry_price > 0 else 0
+                            
+                            open_positions.append({
+                                'symbol': symbol,
+                                'action': 'BUY',
+                                'quantity': quantity,
+                                'entry_price': entry_price,
+                                'entry_date': buy_order.get('timestamp'),
+                                'current_price': current_price,
+                                'unrealized_pnl': unrealized_pnl,
+                                'unrealized_pnl_pct': unrealized_pnl_pct,
+                                'strategy_name': buy_order.get('strategy_name', 'Unknown')
+                            })
+            
+            return open_positions
+            
+        except Exception as e:
+            self.logger.error(f"Error extracting open positions: {e}")
             return []
+    
+    def _get_latest_price(
+        self,
+        symbol: str,
+        execution_details: List[Dict[str, Any]]
+    ) -> float:
+        """
+        銘柄の最新価格を取得
+        
+        execution_detailsから該当銘柄の最後のSELL価格を取得。
+        SELLがない場合は最後のBUY価格を使用。
+        
+        Args:
+            symbol: 銘柄コード
+            execution_details: 実行詳細リスト
+        
+        Returns:
+            最新価格（取得できない場合は0.0）
+        """
+        try:
+            # 該当銘柄のSELL注文を時系列順に取得
+            symbol_details = [
+                d for d in execution_details
+                if d.get('symbol') == symbol
+            ]
+            
+            if not symbol_details:
+                return 0.0
+            
+            # 最後のSELL価格を優先
+            sell_prices = [
+                d.get('executed_price', 0.0)
+                for d in symbol_details
+                if d.get('action') == 'SELL'
+            ]
+            
+            if sell_prices:
+                return sell_prices[-1]
+            
+            # SELLがない場合は最後のBUY価格
+            buy_prices = [
+                d.get('executed_price', 0.0)
+                for d in symbol_details
+                if d.get('action') == 'BUY'
+            ]
+            
+            if buy_prices:
+                return buy_prices[-1]
+            
+            return 0.0
+            
+        except Exception as e:
+            self.logger.error(f"Error getting latest price for {symbol}: {e}")
+            return 0.0
     
     def _calculate_basic_performance(
         self,
@@ -621,6 +797,7 @@ class ComprehensiveReporter:
                 pnls = [trade.get('pnl', 0) for trade in trades]
                 winning_trades = [pnl for pnl in pnls if pnl > 0]
                 losing_trades = [pnl for pnl in pnls if pnl < 0]
+                draw_trades = [pnl for pnl in pnls if pnl == 0]  # PnL=0の取引（引き分け）
                 total_profit = sum(winning_trades) if winning_trades else 0
                 total_loss = abs(sum(losing_trades)) if losing_trades else 0
                 
@@ -631,6 +808,8 @@ class ComprehensiveReporter:
                     'win_rate': len(winning_trades) / len(trades) if trades else 0,
                     'winning_trades': len(winning_trades),
                     'losing_trades': len(losing_trades),
+                    'draw_trades': len(draw_trades),  # 引き分け取引数
+                    'draw_rate': len(draw_trades) / len(trades) if trades else 0,  # 引き分け率
                     'avg_profit': np.mean(winning_trades) if winning_trades else 0,
                     'avg_loss': np.mean([abs(l) for l in losing_trades]) if losing_trades else 0,
                     'max_profit': max(winning_trades) if winning_trades else 0,
@@ -668,6 +847,7 @@ class ComprehensiveReporter:
         pnls = [trade.get('pnl', 0) for trade in trades]
         winning_trades = [pnl for pnl in pnls if pnl > 0]
         losing_trades = [pnl for pnl in pnls if pnl < 0]
+        draw_trades = [pnl for pnl in pnls if pnl == 0]  # PnL=0の取引（引き分け）
         
         total_profit = sum(winning_trades) if winning_trades else 0
         total_loss = abs(sum(losing_trades)) if losing_trades else 0
@@ -683,6 +863,8 @@ class ComprehensiveReporter:
             'win_rate': len(winning_trades) / len(trades) if trades else 0,
             'winning_trades': len(winning_trades),
             'losing_trades': len(losing_trades),
+            'draw_trades': len(draw_trades),  # 引き分け取引数
+            'draw_rate': len(draw_trades) / len(trades) if trades else 0,  # 引き分け率
             'avg_profit': np.mean(winning_trades) if winning_trades else 0,
             'avg_loss': np.mean([abs(l) for l in losing_trades]) if losing_trades else 0,
             'max_profit': max(winning_trades) if winning_trades else 0,
@@ -771,7 +953,8 @@ class ComprehensiveReporter:
                         'trades': [],
                         'total_pnl': 0,
                         'win_count': 0,
-                        'loss_count': 0
+                        'loss_count': 0,
+                        'draw_count': 0  # PnL=0の取引カウント
                     }
                 
                 pnl = trade.get('pnl', 0)
@@ -781,6 +964,8 @@ class ComprehensiveReporter:
                     strategy_breakdown[strategy]['win_count'] += 1
                 elif pnl < 0:
                     strategy_breakdown[strategy]['loss_count'] += 1
+                elif pnl == 0:
+                    strategy_breakdown[strategy]['draw_count'] += 1  # 引き分けカウント
             
             # 戦略別統計計算
             for strategy, data in strategy_breakdown.items():
@@ -944,6 +1129,17 @@ class ComprehensiveReporter:
                 trades_df.to_csv(trades_csv_path, index=False, encoding='utf-8')
                 csv_outputs['trades'] = str(trades_csv_path)
                 self.logger.info(f"Trades CSV saved: {trades_csv_path}")
+            
+            # 優先度C: 保有中ポジションCSV
+            open_positions = extracted_data.get('open_positions', [])
+            if open_positions:
+                open_positions_df = pd.DataFrame(open_positions)
+                open_positions_csv_path = report_dir / f"{ticker}_open_positions.csv"
+                open_positions_df.to_csv(open_positions_csv_path, index=False, encoding='utf-8')
+                csv_outputs['open_positions'] = str(open_positions_csv_path)
+                self.logger.info(f"Open positions CSV saved: {open_positions_csv_path} ({len(open_positions)} positions)")
+            else:
+                self.logger.info("No open positions to export")
             
             # パフォーマンスサマリーCSV
             performance_summary = []

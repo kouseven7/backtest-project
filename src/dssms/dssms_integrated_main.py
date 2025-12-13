@@ -470,7 +470,75 @@ class DSSMSIntegratedBacktester:
                 
                 current_date += timedelta(days=1)
             
+            # ==========================================
+            # 期間終了時の強制決済（2025-12-11実装）
+            # ==========================================
+            # 目的: バックテスト期間終了時にポジションが残っている場合、強制決済する
+            # 理由: 未決済ポジションがあると統計情報が0になり、レポートが不完全になる
+            # 参考実装: 銘柄切替ForceClose（Line 1567-1583）
+            
+            if self.position_size > 0 and self.current_symbol:
+                self.logger.info(
+                    f"[BACKTEST_END_FORCE_CLOSE_START] バックテスト期間終了時の強制決済開始: "
+                    f"symbol={self.current_symbol}, position_size={self.position_size}, "
+                    f"portfolio_value_before={self.portfolio_value}"
+                )
+                
+                # ForceCloseフラグ設定（銘柄切替ForceCloseと同様）
+                self.force_close_in_progress = True
+                
+                # 強制決済実行（最終営業日の終値で決済）
+                # Note: end_dateではなく、最終営業日（current_date - timedelta(days=1)）を使用
+                final_trading_date = current_date - timedelta(days=1)
+                while final_trading_date.weekday() >= 5:  # 土日をスキップ
+                    final_trading_date -= timedelta(days=1)
+                
+                self.logger.info(f"[BACKTEST_END_FORCE_CLOSE] 決済日: {final_trading_date.strftime('%Y-%m-%d')}")
+                
+                # _close_position呼び出し
+                close_result = self._close_position(self.current_symbol, final_trading_date)
+                
+                self.logger.info(
+                    f"[BACKTEST_END_FORCE_CLOSE_END] 強制決済完了: "
+                    f"close_result={close_result}, "
+                    f"portfolio_value_after={self.portfolio_value}"
+                )
+                
+                # [重要] execution_detailをdaily_resultsの最終日に追加
+                # 理由: ComprehensiveReporterがdaily_resultsからexecution_detailsを収集するため
+                if 'execution_detail' in close_result and len(self.daily_results) > 0:
+                    # strategy_nameを変更して、銘柄切替ForceCloseと区別
+                    close_result['execution_detail']['strategy_name'] = 'DSSMS_BacktestEndForceClose'
+                    
+                    # 最終日のdaily_resultに追加
+                    last_daily_result = self.daily_results[-1]
+                    if 'execution_details' not in last_daily_result:
+                        last_daily_result['execution_details'] = []
+                    last_daily_result['execution_details'].append(close_result['execution_detail'])
+                    
+                    self.logger.info(
+                        f"[BACKTEST_END_FORCE_CLOSE_COLLECT] 最終日のdaily_resultにSELL記録追加: "
+                        f"timestamp={close_result['execution_detail']['timestamp']}, "
+                        f"strategy_name={close_result['execution_detail']['strategy_name']}"
+                    )
+                else:
+                    self.logger.warning(
+                        f"[BACKTEST_END_FORCE_CLOSE_WARNING] execution_detailの収集に失敗: "
+                        f"close_result={close_result}, "
+                        f"daily_results_count={len(self.daily_results)}"
+                    )
+                
+                # ForceCloseフラグリセット
+                self.force_close_in_progress = False
+            else:
+                self.logger.info(
+                    f"[BACKTEST_END_NO_POSITION] バックテスト期間終了時にポジションなし: "
+                    f"position_size={self.position_size}, current_symbol={self.current_symbol}"
+                )
+            
+            # ==========================================
             # 最終結果生成
+            # ==========================================
             total_execution_time = time.time() - execution_start
             final_results = self._generate_final_results(total_execution_time, total_trading_days, successful_days)
             
@@ -2251,6 +2319,7 @@ class DSSMSIntegratedBacktester:
                 'timestamp': target_date.isoformat(),
                 'executed_price': current_price,
                 'strategy_name': 'DSSMS_SymbolSwitch',  # ForceCloseと区別するための戦略名
+                'order_id': str(uuid.uuid4()),  # 2025-12-12追加: 重複除去ロジック対応
                 'success': True,  # 2025-12-11追加（Task 2）: ComprehensiveReporter互換性確保
                 'status': 'executed',
                 'entry_price': entry_price,
@@ -2730,11 +2799,9 @@ class DSSMSIntegratedBacktester:
         try:
             # ステータス変換
             status = final_results.get('status', 'error')
-            if status == 'success':
+            if status.lower() == 'success':
                 status = 'SUCCESS'
-            elif status == 'error':
-                status = 'ERROR'
-            else:
+            elif status.lower() == 'error':
                 status = 'UNKNOWN'
             
             # パフォーマンス統計

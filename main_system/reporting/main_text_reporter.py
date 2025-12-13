@@ -122,6 +122,9 @@ class MainTextReporter:
         # 取引詳細
         report_lines.extend(self._build_trade_details_section(analysis_result))
         
+        # 優先度C: 保有中ポジション
+        report_lines.extend(self._build_open_positions_section(analysis_result))
+        
         # パラメータ情報
         if optimized_params:
             report_lines.extend(self._build_parameters_section(optimized_params))
@@ -321,10 +324,12 @@ class MainTextReporter:
                     pnls = [t.get('pnl', 0) for t in valid_trades]
                     winning_trades_list = [pnl for pnl in pnls if pnl > 0]
                     losing_trades_list = [pnl for pnl in pnls if pnl < 0]
+                    draw_trades_list = [pnl for pnl in pnls if pnl == 0]
                     
                     winning_count = len(winning_trades_list)
                     losing_count = len(losing_trades_list)
-                    total_trades = winning_count + losing_count
+                    draw_count = len(draw_trades_list)
+                    total_trades = winning_count + losing_count + draw_count
                     win_rate = winning_count / total_trades if total_trades > 0 else 0
                     
                     total_profit = sum(winning_trades_list) if winning_trades_list else 0
@@ -414,9 +419,10 @@ class MainTextReporter:
                 'profit_factor': 0
             }
         
-        # 勝ちトレード・負けトレード分類
+        # 勝ちトレード・負けトレード・引き分けトレード分類
         winning_trades = [t for t in valid_trades if t.get('pnl', 0) > 0]
         losing_trades = [t for t in valid_trades if t.get('pnl', 0) < 0]
+        draw_trades = [t for t in valid_trades if t.get('pnl', 0) == 0]
         
         # 利益・損失計算
         total_profit = sum(t.get('pnl', 0) for t in winning_trades)
@@ -788,6 +794,37 @@ class MainTextReporter:
                 
         else:
             lines.append("取引詳細なし")
+        
+        lines.append("")
+        return lines
+    
+    def _build_open_positions_section(self, analysis: Dict[str, Any]) -> List[str]:
+        """保有中ポジションセクションを構築（優先度C）"""
+        lines: List[str] = []
+        lines.append("6. 保有中ポジション")
+        lines.append("-" * 40)
+        
+        open_positions = analysis.get('open_positions', [])
+        
+        if open_positions:
+            for i, pos in enumerate(open_positions, 1):
+                lines.append(f"\n[ポジション {i}]")
+                lines.append(f"  銘柄: {pos.get('symbol', 'N/A')}")
+                lines.append(f"  数量: {pos.get('quantity', 0):,.0f}")
+                lines.append(f"  取得単価: ¥{pos.get('entry_price', 0):,.2f}")
+                lines.append(f"  取得日: {pos.get('entry_date', 'N/A')}")
+                lines.append(f"  現在価格: ¥{pos.get('current_price', 0):,.2f}")
+                
+                unrealized_pnl = pos.get('unrealized_pnl', 0)
+                unrealized_pnl_pct = pos.get('unrealized_pnl_pct', 0)
+                lines.append(f"  未実現損益: ¥{unrealized_pnl:,.2f} ({unrealized_pnl_pct:+.2f}%)")
+                lines.append(f"  戦略: {pos.get('strategy_name', 'Unknown')}")
+            
+            # サマリー
+            total_unrealized_pnl = sum(pos.get('unrealized_pnl', 0) for pos in open_positions)
+            lines.append(f"\n保有中ポジション合計未実現損益: ¥{total_unrealized_pnl:,.2f}")
+        else:
+            lines.append("保有中ポジションはありません")
         
         lines.append("")
         return lines
