@@ -148,6 +148,12 @@ class DSSMSIntegratedBacktester:
             self.current_symbol = None
             self.portfolio_value = self.config.get('initial_capital', 1000000)
             self.initial_capital = self.portfolio_value
+            
+            # 修正案2: 最後に実行した戦略名を記録（2025-12-14追加）
+            # 目的: execution_detailsに実際の戦略名を記録する
+            # フォーマット: 'GCStrategy', 'ContrarianStrategy', 'VWAPBreakoutStrategy'等
+            # フォールバック: 戦略名不明時は'DSSMS_SymbolSwitch'を使用
+            self.last_executed_strategy = None
             self.position_size = 0
             self.position_entry_price = 0
             self.force_close_in_progress = False  # [Task11] DSSMS側ForceCloseフラグ
@@ -607,13 +613,15 @@ class DSSMSIntegratedBacktester:
                 daily_result['switch_executed'] = True
                 self.switch_history.append(switch_result)
                 
-                # [案2実装] 銘柄切替時のexecution_detail収集（2025-12-08追加）
-                if 'execution_detail' in switch_result:
+                # [修正案1実装] 銘柄切替時のexecution_details収集（2025-12-14修正）
+                # 修正: 単数形'execution_detail'から複数形'execution_details'に変更
+                # 理由: SELL+BUY両方のexecution_detailsを記録するため
+                if 'execution_details' in switch_result:
                     # daily_resultのexecution_detailsに追加
                     if 'execution_details' not in daily_result:
                         daily_result['execution_details'] = []
-                    daily_result['execution_details'].append(switch_result['execution_detail'])
-                    self.logger.info(f"[DSSMS_SWITCH_COLLECT] 銘柄切替SELL記録をdaily_resultに追加: {switch_result['execution_detail']['timestamp']}")
+                    daily_result['execution_details'].extend(switch_result['execution_details'])
+                    self.logger.info(f"[DSSMS_SWITCH_COLLECT] 銘柄切替SELL+BUY記録をdaily_resultに追加: {len(switch_result['execution_details'])}件")
             
             # 3. 現在銘柄でのマルチ戦略実行
             strategy_result = {}  # デフォルト値（エラー回避）
@@ -1631,6 +1639,9 @@ class DSSMSIntegratedBacktester:
             
             # 切替実行判定
             if should_switch:
+                # [修正案1実装] 銘柄切替時のexecution_details収集用リスト（2025-12-14追加）
+                switch_execution_details = []
+                
                 # ポジション解除（既存銘柄）
                 if self.current_symbol and self.position_size > 0:
                     # [Task11] ForceCloseフラグ設定
@@ -1643,9 +1654,9 @@ class DSSMSIntegratedBacktester:
                     self.logger.warning(f"[AFTER_DSSMS_FORCE_CLOSE] _close_position completed, close_result={close_result}")
                     switch_result['close_result'] = close_result
                     
-                    # [案2実装] execution_detail収集（2025-12-08追加）
+                    # [修正案1実装] SELL側execution_detail収集（2025-12-14修正）
                     if 'execution_detail' in close_result:
-                        switch_result['execution_detail'] = close_result['execution_detail']
+                        switch_execution_details.append(close_result['execution_detail'])
                         self.logger.info(f"[DSSMS_SWITCH_DETAIL] 銘柄切替時のSELL記録収集完了: {close_result['execution_detail']}")
                     
                     # [Task11] ForceCloseフラグリセット
@@ -1656,9 +1667,15 @@ class DSSMSIntegratedBacktester:
                 open_result = self._open_position(selected_symbol, target_date)
                 switch_result['open_result'] = open_result
                 
-                # BUY側execution_detail収集（SELL側と同様）
+                # [修正案1実装] BUY側execution_detail収集（2025-12-14修正）
                 if 'execution_detail' in open_result:
-                    switch_result['execution_detail'] = open_result['execution_detail']
+                    switch_execution_details.append(open_result['execution_detail'])
+                    self.logger.info(f"[DSSMS_SWITCH_DETAIL] 銘柄切替時のBUY記録収集完了: {open_result['execution_detail']}")
+                
+                # [修正案1実装] 両方をswitch_resultに格納（2025-12-14追加）
+                if switch_execution_details:
+                    switch_result['execution_details'] = switch_execution_details
+                    self.logger.info(f"[DSSMS_SWITCH_COLLECT] 銘柄切替時の全execution_details収集完了: {len(switch_execution_details)}件")
                 
                 # 切替コスト
                 switch_cost = self.portfolio_value * self.config.get('switch_cost_rate', 0.001)
@@ -1984,6 +2001,10 @@ class DSSMSIntegratedBacktester:
             current_price = close_prices.iloc[-1]
             volume = stock_data['Volume'].iloc[-1]
             
+            # 修正案2: 実行された戦略名を記録（2025-12-14追加）
+            # _get_active_strategy_name()がこの値を使用して実際の戦略名を返す
+            self.last_executed_strategy = strategy_name
+            
             # 戦略別ロジック（簡略版）
             signal = 'HOLD'
             confidence = 0.5
@@ -2043,6 +2064,34 @@ class DSSMSIntegratedBacktester:
                 'error': str(e),
                 'signal': 'HOLD'
             }
+    
+    def _get_active_strategy_name(self, symbol: str) -> str:
+        """
+        修正案2: アクティブな基本戦略名を取得（2025-12-14追加）
+        
+        目的:
+        - execution_detailsに実際の戦略名（GCStrategy等）を記録する
+        - 'DSSMS_SymbolSwitch'のハードコードを回避
+        
+        Args:
+            symbol: 銘柄コード（将来の拡張用）
+        
+        Returns:
+            str: 戦略名（例: 'GCStrategy', 'ContrarianStrategy'）
+                 戦略名不明時は'DSSMS_SymbolSwitch'を返す
+        
+        Examples:
+            >>> self._get_active_strategy_name('8001')
+            'GCStrategy'  # self.last_executed_strategy = 'GCStrategy'の場合
+            >>> self._get_active_strategy_name('9101')
+            'DSSMS_SymbolSwitch'  # self.last_executed_strategy = Noneの場合
+        """
+        # 最後に実行された戦略名を返す（記録済みの場合）
+        if self.last_executed_strategy:
+            return self.last_executed_strategy
+        
+        # 戦略名不明時はDSSMS全体の名前を返す（フォールバック）
+        return 'DSSMS_SymbolSwitch'
     
     def _get_symbol_data(self, symbol: str, target_date: datetime):
         """
@@ -2318,7 +2367,7 @@ class DSSMSIntegratedBacktester:
                 'quantity': self.position_size,  # 決済前のposition_sizeを記録
                 'timestamp': target_date.isoformat(),
                 'executed_price': current_price,
-                'strategy_name': 'DSSMS_SymbolSwitch',  # ForceCloseと区別するための戦略名
+                'strategy_name': self._get_active_strategy_name(symbol),  # 修正案2: 実際の戦略名を記録
                 'order_id': str(uuid.uuid4()),  # 2025-12-12追加: 重複除去ロジック対応
                 'success': True,  # 2025-12-11追加（Task 2）: ComprehensiveReporter互換性確保
                 'status': 'executed',
@@ -2391,7 +2440,7 @@ class DSSMSIntegratedBacktester:
                 'quantity': position_value,  # 円単位（ポートフォリオの80%）
                 'timestamp': target_date.isoformat(),
                 'executed_price': entry_price,
-                'strategy_name': 'DSSMS_SymbolSwitch',
+                'strategy_name': self._get_active_strategy_name(symbol),  # 修正案2: 実際の戦略名を記録
                 'order_id': str(uuid.uuid4()),  # 2025-12-11追加: 重複除去ロジック対応
                 'success': True,  # 2025-12-11追加（Task 2）: ComprehensiveReporter互換性確保
                 'status': 'executed',
@@ -2832,61 +2881,18 @@ class DSSMSIntegratedBacktester:
                     'equity_recorder': None
                 }
             
-            # 最終日のみ処理（修正: 全日ループ → 最終日のみ）
-            daily_result = final_results['daily_results'][-1]
-            details = daily_result.get('execution_details', [])
+            # 全日処理（修正案1完全実装: 2025-12-14 - すべての日のexecution_detailsを収集）
+            details = []
+            for daily_result in final_results['daily_results']:
+                daily_execution_details = daily_result.get('execution_details', [])
+                details.extend(daily_execution_details)
             
-            # Step 1: target_date取得（修正: 'target_date'キーは存在しないため'date'を使用）
-            target_date_str = daily_result.get('date')
-            if not target_date_str:
-                self.logger.error("[DATE_FILTER] daily_result['date']が存在しません。execution_detailsをそのまま返します")
-                return {
-                    'execution_details': details,
-                    'removed_duplicates': [],
-                    'stats': {'total': len(details), 'unique': len(details), 'duplicates': 0}
-                }
-            
-            # [DEBUG_EXEC_DETAILS] 最終日のexecution_details件数を出力
+            # [DEBUG_EXEC_DETAILS] 全期間のexecution_details件数を出力
             self.logger.info(
-                f"[DEBUG_EXEC_DETAILS] 最終日execution_details: target_date={target_date_str}, "
-                f"件数={len(details)}"
+                f"[DEBUG_EXEC_DETAILS] 全期間execution_details収集完了: "
+                f"取引日数={len(final_results['daily_results'])}, "
+                f"execution_details総数={len(details)}"
             )
-            
-            # Step 2: 日付フィルタリング（当日の取引のみ抽出）
-            try:
-                target_date_obj = pd.Timestamp(target_date_str).date()
-                self.logger.info(f"[DATE_FILTER] 日付フィルタリング開始: target_date={target_date_obj}, 元の件数={len(details)}")
-                
-                filtered_details = []
-                excluded_details = []
-                
-                for detail in details:
-                    try:
-                        timestamp_str = detail.get('timestamp', '')
-                        if not timestamp_str:
-                            self.logger.warning(f"[DATE_FILTER] timestampフィールドが空のdetailをスキップ: {detail}")
-                            excluded_details.append(detail)
-                            continue
-                        
-                        # タイムゾーン情報を削除して日付のみ比較
-                        detail_date = pd.Timestamp(timestamp_str).tz_localize(None).date()
-                        
-                        if detail_date == target_date_obj:
-                            filtered_details.append(detail)
-                        else:
-                            excluded_details.append(detail)
-                            self.logger.debug(f"[DATE_FILTER] 除外: detail_date={detail_date} != target_date={target_date_obj}, symbol={detail.get('symbol')}, action={detail.get('action')}")
-                    
-                    except Exception as e:
-                        self.logger.error(f"[DATE_FILTER] 日付解析エラー（detail={detail}）: {e}")
-                        excluded_details.append(detail)
-                
-                self.logger.info(f"[DATE_FILTER] 日付フィルタリング完了: 通過={len(filtered_details)}件, 除外={len(excluded_details)}件")
-                details = filtered_details
-            
-            except Exception as e:
-                self.logger.error(f"[DATE_FILTER] 日付フィルタリング処理全体でエラー: {e}")
-                # エラー時は元のdetailsをそのまま使用
             
             # 各execution_detailsを重複チェックして追加（既存ロジック保持）
             all_execution_details = []
