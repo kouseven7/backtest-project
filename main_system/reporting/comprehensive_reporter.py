@@ -491,72 +491,72 @@ class ComprehensiveReporter:
                     buy_order = buys[i]
                     sell_order = sells[i]
                 
-                try:
-                    # 実データから取引レコード作成
-                    entry_date = buy_order.get('timestamp')
-                    exit_date = sell_order.get('timestamp')
-                    entry_price = buy_order.get('executed_price', 0.0)
-                    exit_price = sell_order.get('executed_price', 0.0)
-                    shares = buy_order.get('quantity', 0)
-                    
-                    # データ検証（copilot-instructions.md: 推測ではなく正確な数値）
-                    if not all([entry_date, exit_date, entry_price > 0, exit_price > 0, shares > 0]):
-                        self.logger.error(
-                            f"[DATA_VALIDATION_FAILED] 不正な取引データ（ペア{i+1}）: "
-                            f"entry_date={entry_date}, exit_date={exit_date}, "
-                            f"entry_price={entry_price}, exit_price={exit_price}, shares={shares}. "
-                            f"スキップします。"
-                        )
-                        continue
-                    
-                    # 損益計算（実データに基づく）
-                    pnl = (exit_price - entry_price) * shares
-                    return_pct = (exit_price - entry_price) / entry_price if entry_price > 0 else 0.0
-                    
-                    # 保有期間計算
-                    holding_period_days = 0
                     try:
-                        if isinstance(entry_date, (pd.Timestamp, datetime)):
-                            entry_dt = entry_date
-                        else:
-                            entry_dt = pd.to_datetime(entry_date)
+                        # 実データから取引レコード作成
+                        entry_date = buy_order.get('timestamp')
+                        exit_date = sell_order.get('timestamp')
+                        entry_price = buy_order.get('executed_price', 0.0)
+                        exit_price = sell_order.get('executed_price', 0.0)
+                        shares = buy_order.get('quantity', 0)
                         
-                        if isinstance(exit_date, (pd.Timestamp, datetime)):
-                            exit_dt = exit_date
-                        else:
-                            exit_dt = pd.to_datetime(exit_date)
+                        # データ検証（copilot-instructions.md: 推測ではなく正確な数値）
+                        if not all([entry_date, exit_date, entry_price > 0, exit_price > 0, shares > 0]):
+                            self.logger.error(
+                                f"[DATA_VALIDATION_FAILED] 不正な取引データ（ペア{i+1}）: "
+                                f"entry_date={entry_date}, exit_date={exit_date}, "
+                                f"entry_price={entry_price}, exit_price={exit_price}, shares={shares}. "
+                                f"スキップします。"
+                            )
+                            continue
                         
-                        holding_period_days = (exit_dt - entry_dt).days
+                        # 損益計算（実データに基づく）
+                        pnl = (exit_price - entry_price) * shares
+                        return_pct = (exit_price - entry_price) / entry_price if entry_price > 0 else 0.0
+                        
+                        # 保有期間計算
+                        holding_period_days = 0
+                        try:
+                            if isinstance(entry_date, (pd.Timestamp, datetime)):
+                                entry_dt = entry_date
+                            else:
+                                entry_dt = pd.to_datetime(entry_date)
+                            
+                            if isinstance(exit_date, (pd.Timestamp, datetime)):
+                                exit_dt = exit_date
+                            else:
+                                exit_dt = pd.to_datetime(exit_date)
+                            
+                            holding_period_days = (exit_dt - entry_dt).days
+                        except Exception as e:
+                            self.logger.warning(f"保有期間計算エラー（ペア{i+1}）: {e}")
+                        
+                        # Phase 5-B-6: 強制決済フラグ検出
+                        is_forced_exit = (
+                            sell_order.get('status') == 'force_closed' or
+                            sell_order.get('strategy_name') == 'ForceClose'
+                        )
+                        
+                        # 取引レコード作成（実データのみ）
+                        trade_record = {
+                            'entry_date': entry_date,
+                            'exit_date': exit_date,
+                            'entry_price': entry_price,
+                            'exit_price': exit_price,
+                            'shares': shares,
+                            'pnl': pnl,
+                            'return_pct': return_pct,
+                            'holding_period_days': holding_period_days,
+                            'strategy': buy_order.get('strategy_name', 'Unknown'),
+                            'position_value': entry_price * shares,
+                            'is_forced_exit': is_forced_exit,  # Phase 5-B-6追加
+                            'is_executed_trade': True
+                        }
+                        
+                        trades.append(trade_record)
+                        
                     except Exception as e:
-                        self.logger.warning(f"保有期間計算エラー（ペア{i+1}）: {e}")
-                    
-                    # Phase 5-B-6: 強制決済フラグ検出
-                    is_forced_exit = (
-                        sell_order.get('status') == 'force_closed' or
-                        sell_order.get('strategy_name') == 'ForceClose'
-                    )
-                    
-                    # 取引レコード作成（実データのみ）
-                    trade_record = {
-                        'entry_date': entry_date,
-                        'exit_date': exit_date,
-                        'entry_price': entry_price,
-                        'exit_price': exit_price,
-                        'shares': shares,
-                        'pnl': pnl,
-                        'return_pct': return_pct,
-                        'holding_period_days': holding_period_days,
-                        'strategy': buy_order.get('strategy_name', 'Unknown'),
-                        'position_value': entry_price * shares,
-                        'is_forced_exit': is_forced_exit,  # Phase 5-B-6追加
-                        'is_executed_trade': True
-                    }
-                    
-                    trades.append(trade_record)
-                    
-                except Exception as e:
-                    self.logger.error(f"取引レコード作成エラー（銘柄={symbol}, ペア{i+1}）: {e}")
-                    continue
+                        self.logger.error(f"取引レコード作成エラー（銘柄={symbol}, ペア{i+1}）: {e}")
+                        continue
                 
                 # 銘柄別未ペアリング検出（銘柄内ループ内に配置）
                 if len(buys) > paired_count:
