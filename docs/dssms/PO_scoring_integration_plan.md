@@ -193,8 +193,8 @@ Copy-Item "src/dssms/nikkei225_screener.py" "backups/20251215_po_integration/"
 ```
 
 **成功基準**:
-- [ ] 4ファイル全てバックアップ済み
-- [ ] バックアップファイルが読み取り可能
+- [×] 4ファイル全てバックアップ済み
+- [×] バックアップファイルが読み取り可能
 
 ---
 
@@ -545,18 +545,29 @@ print(system.scoring_weights)
 
 ---
 
-#### **7.2 統合テスト（オプション）**
+#### **7.2 統合テスト（オプション）** ✓ 完了
 **注意**: 時間がかかる場合はスキップ可
 
 ```powershell
 # 短期バックテスト（1ヶ月）
-python src/dssms/dssms_backtester.py --start 2025-11-01 --end 2025-12-01
+# 旧コマンド（引数処理なし）: python src/dssms/dssms_backtester.py --start 2025-11-01 --end 2025-12-01
+# 新コマンド（引数処理あり）: 
+python -m src.dssms.dssms_integrated_main --start-date 2023-01-15 --end-date 2023-01-31
 ```
 
 **成功基準**:
-- [ ] 実行エラーなし
-- [ ] 取引件数 > 0
-- [ ] パフォーマンス指標算出成功
+- [x] 実行エラーなし → Exit Code: 0、実行時間3.6秒
+- [x] 取引件数 > 0 → 10件（BUY=10, SELL=10）、copilot-instructions.md準拠
+- [x] パフォーマンス指標算出成功 → 総リターン+30.70%、勝率90%
+
+**実行結果（2025-12-15実施）**:
+- 期間: 2023-01-16 to 2023-01-31（12取引日）
+- 取引件数: 10件（BUY=10, SELL=10）
+- 総リターン: +30.70%（初期100万円 → 最終130.7万円）
+- 勝率: 90.00%（9勝1敗）
+- 銘柄切替: 2回（6506安川電機 → 6954ファナック）
+- 出力: 10種類のファイル（CSV+JSON+TXT、Excel出力なし）
+- 判定: **SUCCESS** ✓
 
 ---
 
@@ -620,4 +631,4 @@ Copy-Item "backups/20251215_po_integration/dssms_config.json" "config/dssms/" -F
 
 ---
 
-**準備完了 - Task 1から順次実行してください**
+**完了 - Task 1から7.2まで順次実行した**

@@ -933,12 +933,6 @@ class DSSMSBacktester:
             # 理由: _simulate_random_selection_strategy()がランダムデータ生成を使用
             # 代替策: 実データベースの実装が必要（TODO）
             self.logger.warning("ランダム選択戦略シミュレーションは未実装（ランダムデータ生成削除のため）")
-                
-                relative_return = performance_metrics.total_return - random_performance.get('total_return', 0)
-                comparison_result['relative_performance']['vs_random'] = relative_return
-                
-            except Exception as e:
-                self.logger.warning(f"ランダム選択比較失敗: {e}")
             
             # 4. 統計的有意性テスト
             comparison_result['statistical_significance'] = self._test_statistical_significance(

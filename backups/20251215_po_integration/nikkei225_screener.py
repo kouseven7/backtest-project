@@ -418,13 +418,10 @@ class Nikkei225Screener:
             self.logger.info(f"[DEBUG] max_symbols設定値: {max_symbols}, 候補銘柄数: {len(symbols)}")
             if len(symbols) > max_symbols:
                 # 最適化された最終選択アルゴリズム使用
-                scoring_weights = self.config.get("algorithm_optimization", {}).get("scoring_weights")
-                
                 symbols = self.algorithm_optimizer.optimized_final_selection(
                     symbols=symbols,
                     max_symbols=max_symbols,
-                    market_data_fetcher=self.cached_fetcher,
-                    scoring_weights=scoring_weights
+                    market_data_fetcher=self.cached_fetcher
                 )
             
             self.logger.info(f"Screening completed: {len(symbols)} symbols selected")

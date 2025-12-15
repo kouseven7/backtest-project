@@ -10,8 +10,6 @@ from typing import List, Tuple, Dict, Any, Optional
 from datetime import datetime, timedelta
 import concurrent.futures
 import time
-from .perfect_order_detector import PerfectOrderDetector
-from .dssms_data_manager import DSSMSDataManager
 
 class OptimizedAlgorithmEngine:
     """最適化アルゴリズムエンジン - Stage 3-2統合"""
@@ -24,10 +22,6 @@ class OptimizedAlgorithmEngine:
             'early_terminations': 0,
             'processing_time_saved': 0.0
         }
-        
-        # PO検出器の初期化
-        self.po_detector = PerfectOrderDetector()
-        self.data_manager = DSSMSDataManager()
 
     def optimized_final_selection(
         self, 
@@ -53,11 +47,10 @@ class OptimizedAlgorithmEngine:
         try:
             # デフォルト重み設定
             weights = scoring_weights or {
-                'perfect_order': 0.65,
-                'market_cap': 0.15,
-                'price_momentum': 0.10,
-                'volume_score': 0.05,
-                'volatility_penalty': 0.05
+                'market_cap': 0.4,
+                'price_momentum': 0.3,
+                'volume_score': 0.2,
+                'volatility_penalty': 0.1
             }
             
             # 並列データ取得
@@ -105,25 +98,6 @@ class OptimizedAlgorithmEngine:
                 
                 if any(data is None for data in [market_cap, price, volume]):
                     return None
-                
-                # POスコア取得
-                try:
-                    data_dict = self.data_manager.get_multi_timeframe_data(symbol, days_back=400)
-                    po_result = self.po_detector.check_multi_timeframe_perfect_order(symbol, data_dict)
-                    
-                    # 3軸のPO強度を統合
-                    if po_result:
-                        daily_strength = po_result.daily_result.strength_score if po_result.daily_result else 0.0
-                        weekly_strength = po_result.weekly_result.strength_score if po_result.weekly_result else 0.0
-                        monthly_strength = po_result.monthly_result.strength_score if po_result.monthly_result else 0.0
-                        
-                        # 加重平均（長期重視）
-                        po_score = (daily_strength * 0.3 + weekly_strength * 0.4 + monthly_strength * 0.3)
-                    else:
-                        po_score = 0.0
-                except Exception as e:
-                    self.logger.debug(f"PO score calculation failed for {symbol}: {e}")
-                    po_score = 0.0
                     
                 return {
                     'symbol': symbol,
@@ -131,8 +105,7 @@ class OptimizedAlgorithmEngine:
                     'price': price,
                     'volume': volume,
                     'price_momentum': self._calculate_momentum(symbol, market_data_fetcher),
-                    'volatility': self._calculate_volatility(symbol, market_data_fetcher),
-                    'perfect_order_score': po_score
+                    'volatility': self._calculate_volatility(symbol, market_data_fetcher)
                 }
                 
             except Exception as e:
@@ -167,22 +140,19 @@ class OptimizedAlgorithmEngine:
         volumes = np.array([data['volume'] for data in symbol_data])
         momentums = np.array([data.get('price_momentum', 0.0) for data in symbol_data])
         volatilities = np.array([data.get('volatility', 0.0) for data in symbol_data])
-        po_scores = np.array([data.get('perfect_order_score', 0.0) for data in symbol_data])
         
         # 正規化（0-1スケール）
         market_cap_scores = self._normalize_array(market_caps)
         price_momentum_scores = self._normalize_array(momentums)
         volume_scores = self._normalize_array(volumes)
         volatility_penalties = self._normalize_array(volatilities, reverse=True)  # 低ボラティリティが高スコア
-        # POスコアは既に0-1範囲なので正規化不要
         
         # 重み付きスコア計算
         scores = (
-            po_scores * weights.get('perfect_order', 0.0) +
-            market_cap_scores * weights.get('market_cap', 0.0) +
-            price_momentum_scores * weights.get('price_momentum', 0.0) +
-            volume_scores * weights.get('volume_score', 0.0) -
-            volatility_penalties * weights.get('volatility_penalty', 0.0)
+            market_cap_scores * weights['market_cap'] +
+            price_momentum_scores * weights['price_momentum'] +
+            volume_scores * weights['volume_score'] -
+            volatility_penalties * weights['volatility_penalty']
         )
         
         self.optimization_stats['vectorized_calculations'] += n_symbols

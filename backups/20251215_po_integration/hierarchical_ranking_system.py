@@ -109,10 +109,9 @@ class HierarchicalRankingSystem:
         
         # スコア重み設定
         self.scoring_weights = config.get('ranking_system', {}).get('scoring_weights', {
-            "perfect_order": 0.30,
-            "fundamental": 0.30,
-            "technical": 0.20,
-            "volume": 0.10,
+            "fundamental": 0.40,
+            "technical": 0.30,
+            "volume": 0.20,
             "volatility": 0.10
         })
         
@@ -381,11 +380,10 @@ class HierarchicalRankingSystem:
             
             # 加重平均による総合スコア
             total_score = (
-                perfect_order_score * self.scoring_weights.get('perfect_order', 0.0) +
-                fundamental_score * self.scoring_weights.get('fundamental', 0.0) +
-                technical_score * self.scoring_weights.get('technical', 0.0) +
-                volume_score * self.scoring_weights.get('volume', 0.0) +
-                volatility_score * self.scoring_weights.get('volatility', 0.0)
+                fundamental_score * self.scoring_weights['fundamental'] +
+                technical_score * self.scoring_weights['technical'] +
+                volume_score * self.scoring_weights['volume'] +
+                volatility_score * self.scoring_weights['volatility']
             )
             
             # 信頼度計算
