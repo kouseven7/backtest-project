@@ -60,7 +60,7 @@ class Nikkei225Screener:
                     "min_market_cap": 10_000_000_000,
                     "min_shares_affordable": 100,
                     "min_trading_volume": 100_000,
-                    "max_symbols": 50
+                    "max_symbols": 20
                 }
             },
             "data_sources": {
@@ -415,6 +415,7 @@ class Nikkei225Screener:
             
             # 6. Stage 3-2: OptimizedAlgorithmEngine最終選択
             max_symbols = self.config["screening"]["nikkei225_filters"]["max_symbols"]
+            self.logger.info(f"[DEBUG] max_symbols設定値: {max_symbols}, 候補銘柄数: {len(symbols)}")
             if len(symbols) > max_symbols:
                 # 最適化された最終選択アルゴリズム使用
                 symbols = self.algorithm_optimizer.optimized_final_selection(
@@ -493,7 +494,7 @@ class Nikkei225Screener:
         return self.default_config
     
     def _fetch_from_primary_source(self) -> List[str]:
-        """プライマリソースから銘柄取得（動的実装）"""
+        """プライマリソースから銘柄取得（JSON設定ファイル + ハードコードリスト）"""
         try:
             # 1. 設定ファイルからの読み込みを試行
             config_file = self.config["data_sources"]["nikkei225_list"]
@@ -507,7 +508,10 @@ class Nikkei225Screener:
                         self.logger.info(f"Loaded {len(symbols)} symbols from config file")
                         return symbols
             
-            # 2. 主要な日経225銘柄を動的に生成
+            # JSON設定ファイルが無効の場合、Layer 2フォールバックへ
+            self.logger.info("JSON config file not found or invalid, using Layer 2 hardcoded list")
+            
+            # 2. ハードコードされた主要日経225銘柄リスト（Layer 2フォールバック）
             try:
                 major_sectors: List[List[str]] = [
                     # 自動車・輸送機器
@@ -540,11 +544,11 @@ class Nikkei225Screener:
                 # 重複除去とソート
                 dynamic_symbols = sorted(list(set(dynamic_symbols)))
                 
-                self.logger.info(f"Generated {len(dynamic_symbols)} dynamic Nikkei225 symbols")
+                self.logger.info(f"Using Layer 2 hardcoded list: {len(dynamic_symbols)} symbols from major sectors")
                 return dynamic_symbols
                 
-            except Exception as api_error:
-                self.logger.warning(f"Dynamic API fetch failed: {api_error}")
+            except Exception as list_processing_error:
+                self.logger.warning(f"Layer 2 list processing failed: {list_processing_error}, using Layer 3 extended fallback")
                 
             # 3. 最終フォールバック: 拡張された代表銘柄リスト
             extended_fallback = [
@@ -556,7 +560,7 @@ class Nikkei225Screener:
                 "4021", "5201", "3436", "4661", "6503", "9843", "6752", "6645", "4004", "8601"
             ]
             
-            self.logger.info(f"Using extended fallback list with {len(extended_fallback)} symbols")
+            self.logger.info(f"Using Layer 3 extended fallback list: {len(extended_fallback)} symbols")
             return extended_fallback
             
         except Exception as e:

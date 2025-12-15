@@ -168,7 +168,10 @@ class DSSMSDataManager:
         try:
             # 最新の日足データを取得（1日分で十分）
             yf = get_yfinance()  # Phase 3最適化: 遅延インポート
-            ticker = yf.Ticker(symbol)  # symbolはすでに.T含む
+            
+            # .Tサフィックス追加（nikkei225_screener.pyからは.Tなしで渡される）
+            symbol_with_suffix = symbol if ".T" in symbol else symbol + ".T"
+            ticker = yf.Ticker(symbol_with_suffix)
             
             # 直近2日分取得（市場休場を考慮、copilot-instructions.md: auto_adjust=False必須）
             hist = ticker.history(period="2d", interval="1d", auto_adjust=False)
@@ -238,7 +241,10 @@ class DSSMSDataManager:
         try:
             # Yahoo Finance から直接取得
             yf = get_yfinance()  # Phase 3最適化: 遅延インポート
-            ticker = yf.Ticker(symbol)  # symbolはすでに.T含む
+            
+            # .Tサフィックス追加（nikkei225_screener.pyからは.Tなしで渡される）
+            symbol_with_suffix = symbol if ".T" in symbol else symbol + ".T"
+            ticker = yf.Ticker(symbol_with_suffix)
             
             # 期間設定
             end_date = datetime.now()

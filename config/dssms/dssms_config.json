@@ -4,7 +4,7 @@
       "min_price": 500,
       "min_market_cap": 10000000000,
       "min_trading_volume": 100000,
-      "max_symbols": 50,
+      "max_symbols": 20,
       "min_shares_affordable": 100
     },
     "perfect_order": {
