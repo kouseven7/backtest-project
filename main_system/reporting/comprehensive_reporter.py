@@ -475,8 +475,32 @@ class ComprehensiveReporter:
             )
             
             for symbol in sorted(all_symbols):  # ログの可読性のためソート
-                buys = buy_by_symbol.get(symbol, [])
-                sells = sell_by_symbol.get(symbol, [])
+                # タイムスタンプでソート（FIFO順序保証のため、2025-12-17修正）
+                # 理由: execution_detailsが戦略実行順で追加されるため、時系列順になっていない
+                # 不正データ対策: timestampが空の場合は最後尾に配置
+                buys = sorted(
+                    buy_by_symbol.get(symbol, []),
+                    key=lambda x: x.get('timestamp', '9999-12-31T23:59:59+09:00')
+                )
+                sells = sorted(
+                    sell_by_symbol.get(symbol, []),
+                    key=lambda x: x.get('timestamp', '9999-12-31T23:59:59+09:00')
+                )
+                
+                # デバッグログ: ソート結果の検証（2025-12-17追加）
+                if len(buys) > 0:
+                    self.logger.debug(
+                        f"[TIMESTAMP_SORT] 銘柄={symbol}, "
+                        f"BUY最古={buys[0].get('timestamp')}, "
+                        f"BUY最新={buys[-1].get('timestamp')}"
+                    )
+                if len(sells) > 0:
+                    self.logger.debug(
+                        f"[TIMESTAMP_SORT] 銘柄={symbol}, "
+                        f"SELL最古={sells[0].get('timestamp')}, "
+                        f"SELL最新={sells[-1].get('timestamp')}"
+                    )
+                
                 paired_count = min(len(buys), len(sells))
                 
                 # 銘柄別ペアリング状況ログ

@@ -609,7 +609,8 @@ class StrategyExecutionManager:
                             "quantity": order_dict['quantity'],
                             "timestamp": order_dict['timestamp'],
                             "executed_price": order.filled_price,  # Phase 4.2-5-3: 約定価格追加
-                            "strategy_name": order_dict.get('strategy_name', 'Unknown')  # Phase 5.3: 戦略名追加
+                            "strategy_name": order_dict.get('strategy_name', 'Unknown'),  # Phase 5.3: 戦略名追加
+                            "execution_type": "trade"  # Phase 2025-12-15: execution_typeフィールド追加（通常取引）
                         })
                         self.logger.info(f"Trade executed successfully: {order_dict['symbol']} {order_dict['action']} {order_dict['quantity']} strategy={order_dict.get('strategy_name', 'Unknown')}")
                         
@@ -834,7 +835,8 @@ class StrategyExecutionManager:
                                     "timestamp": backtest_end_timestamp,
                                     "executed_price": executed_price,
                                     "strategy_name": "ForceClose",
-                                    "profit_pct": profit_pct
+                                    "profit_pct": profit_pct,
+                                    "execution_type": "force_close"  # Phase 2025-12-15: execution_typeフィールド追加（強制決済）
                                 })
                                 
                                 self.logger.info(

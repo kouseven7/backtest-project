@@ -515,6 +515,7 @@ class DSSMSIntegratedBacktester:
                 if 'execution_detail' in close_result and len(self.daily_results) > 0:
                     # strategy_nameを変更して、銘柄切替ForceCloseと区別
                     close_result['execution_detail']['strategy_name'] = 'DSSMS_BacktestEndForceClose'
+                    close_result['execution_detail']['execution_type'] = 'force_close'  # 2025-12-15追加: 強制決済として明示
                     
                     # 最終日のdaily_resultに追加
                     last_daily_result = self.daily_results[-1]
@@ -1656,6 +1657,7 @@ class DSSMSIntegratedBacktester:
                     
                     # [修正案1実装] SELL側execution_detail収集（2025-12-14修正）
                     if 'execution_detail' in close_result:
+                        close_result['execution_detail']['execution_type'] = 'switch'  # 2025-12-15追加: 切替として上書き
                         switch_execution_details.append(close_result['execution_detail'])
                         self.logger.info(f"[DSSMS_SWITCH_DETAIL] 銘柄切替時のSELL記録収集完了: {close_result['execution_detail']}")
                     
@@ -1669,6 +1671,7 @@ class DSSMSIntegratedBacktester:
                 
                 # [修正案1実装] BUY側execution_detail収集（2025-12-14修正）
                 if 'execution_detail' in open_result:
+                    open_result['execution_detail']['execution_type'] = 'switch'  # 2025-12-15追加: 切替として上書き
                     switch_execution_details.append(open_result['execution_detail'])
                     self.logger.info(f"[DSSMS_SWITCH_DETAIL] 銘柄切替時のBUY記録収集完了: {open_result['execution_detail']}")
                 
@@ -2361,10 +2364,12 @@ class DSSMSIntegratedBacktester:
             
             # [案2実装] execution_details生成（2025-12-08追加）
             # 目的: DSSMS側の決済をexecution_detailsに記録し、ForceCloseと区別可能にする
+            # quantityを株数に変換（修正: 2025-12-15）
+            shares = self.position_size / entry_price if entry_price > 0 else 0
             execution_detail = {
                 'symbol': symbol,
                 'action': 'SELL',
-                'quantity': self.position_size,  # 決済前のposition_sizeを記録
+                'quantity': shares,  # 株数（修正: 円単位から変換）
                 'timestamp': target_date.isoformat(),
                 'executed_price': current_price,
                 'strategy_name': self._get_active_strategy_name(symbol),  # 修正案2: 実際の戦略名を記録
@@ -2373,7 +2378,8 @@ class DSSMSIntegratedBacktester:
                 'status': 'executed',
                 'entry_price': entry_price,
                 'profit_pct': price_change_rate * 100,
-                'close_return': close_return
+                'close_return': close_return,
+                'execution_type': 'trade'  # 2025-12-15追加: 通常取引として明示
             }
             
             result = {
@@ -2434,10 +2440,12 @@ class DSSMSIntegratedBacktester:
                 ) from e
             
             # execution_detail生成（_close_position()と同じパターン）
+            # quantityを株数に変換（修正: 2025-12-15）
+            shares = position_value / entry_price if entry_price > 0 else 0
             execution_detail = {
                 'symbol': symbol,
                 'action': 'BUY',
-                'quantity': position_value,  # 円単位（ポートフォリオの80%）
+                'quantity': shares,  # 株数（修正: 円単位から変換）
                 'timestamp': target_date.isoformat(),
                 'executed_price': entry_price,
                 'strategy_name': self._get_active_strategy_name(symbol),  # 修正案2: 実際の戦略名を記録
@@ -2446,7 +2454,8 @@ class DSSMSIntegratedBacktester:
                 'status': 'executed',
                 'entry_price': entry_price,  # BUY時はentry_price = executed_price
                 'profit_pct': 0.0,  # BUY時は0
-                'close_return': None  # BUY時はNone
+                'close_return': None,  # BUY時はNone
+                'execution_type': 'trade'  # 2025-12-15追加: 通常取引として明示
             }
             
             result = {

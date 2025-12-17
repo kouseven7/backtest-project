@@ -154,6 +154,16 @@ def is_valid_trade(
         )
         return False
     
+    # 2025-12-15追加: execution_typeチェック（通常取引のみ抽出）
+    # 後方互換性対応: execution_typeなしの場合はデフォルトで'trade'とみなす
+    execution_type = detail.get('execution_type', 'trade')
+    if execution_type != 'trade':
+        log.debug(
+            f"[SKIPPED_NON_TRADE] execution_type={execution_type}, "
+            f"symbol={detail.get('symbol')}, action={action}"
+        )
+        return False
+    
     # Phase 5-B-12: statusチェックは行わない
     # 理由: status='executed'と'force_closed'の両方を許可するため
     # actionとsuccessのみで判定
