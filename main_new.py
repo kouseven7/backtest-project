@@ -110,7 +110,8 @@ class MainSystemController:
         days_back: int = 365,
         backtest_start_date: Optional[datetime] = None,
         backtest_end_date: Optional[datetime] = None,
-        warmup_days: int = 90
+        warmup_days: int = 90,
+        force_close_on_entry: bool = False
     ) -> Dict[str, Any]:
         """
         包括的バックテスト実行（Phase 4.2: リアルデータ対応版 + ウォームアップ期間対応）
@@ -123,6 +124,7 @@ class MainSystemController:
             backtest_start_date: バックテスト開始日（取引開始日）
             backtest_end_date: バックテスト終了日
             warmup_days: ウォームアップ期間日数（デフォルト30日）
+            force_close_on_entry: 既存ポジション強制決済フラグ（銘柄切替時にTrue）
         
         Returns:
             包括的バックテスト結果
@@ -135,6 +137,12 @@ class MainSystemController:
         self.logger.info("=" * 80)
         
         try:
+            # 0. 既存ポジション強制決済（銘柄切替時）
+            if force_close_on_entry:
+                self.logger.info(f"[FORCE_CLOSE] Closing all positions before entry for {ticker}")
+                close_date = backtest_start_date if backtest_start_date else datetime.now()
+                self._force_close_all_positions(close_date)
+            
             # 1. データ取得（Phase 4.2: yfinanceから実データ取得）
             self.logger.info(f"[STEP 1/7] データ取得開始: {ticker}")
             if stock_data is None:
@@ -366,8 +374,55 @@ class MainSystemController:
                 'status': 'ERROR',
                 'ticker': ticker,
                 'error': str(e),
-                'execution_timestamp': datetime.now()
+                'execution_timestamp': datetime.now().isoformat()
             }
+    
+    def _force_close_all_positions(self, current_date: datetime) -> None:
+        """
+        既存ポジション強制決済（銘柄切替時）
+        
+        Args:
+            current_date: 決済日時
+        
+        Note:
+            IntegratedExecutionManager.execute_force_close()を呼び出し、
+            ForceCloseStrategy経由でPaperBroker.close_all_positions()を実行。
+        
+        copilot-instructions.md準拠:
+            - 実データのみ使用（モック/ダミー禁止）
+            - エラー隠蔽禁止
+            - フォールバック禁止
+        
+        Author: Backtest Project Team
+        Created: 2025-12-19
+        """
+        try:
+            self.logger.info(
+                f"[FORCE_CLOSE] _force_close_all_positions called: "
+                f"date={current_date.strftime('%Y-%m-%d %H:%M:%S')}"
+            )
+            
+            # IntegratedExecutionManager.execute_force_close()呼び出し
+            result = self.execution_manager.execute_force_close(
+                current_date=current_date,
+                reason="symbol_switch"
+            )
+            
+            if result['status'] == 'SUCCESS':
+                self.logger.info(
+                    f"[FORCE_CLOSE] Successfully closed {result['positions_closed']} positions"
+                )
+            else:
+                self.logger.error(
+                    f"[FORCE_CLOSE] Force close failed: {result.get('error', 'Unknown error')}"
+                )
+        
+        except Exception as e:
+            self.logger.error(
+                f"[FORCE_CLOSE] _force_close_all_positions error: {e}",
+                exc_info=True
+            )
+            raise
     
     def _get_real_data(
         self,

@@ -582,10 +582,26 @@ class DSSMSIntegratedBacktester:
                     daily_result['execution_details'].extend(switch_result['execution_details'])
                     self.logger.info(f"[DSSMS_SWITCH_COLLECT] 銘柄切替SELL+BUY記録をdaily_resultに追加: {len(switch_result['execution_details'])}件")
             
-            # 3. 現在銘柄でのマルチ戦略実行
+            # 3. 現在銘柄でのマルチ戦略実行（銘柄切替時はForceClose実行）
             strategy_result = {}  # デフォルト値（エラー回避）
             if self.current_symbol:
-                strategy_result = self._execute_multi_strategies(self.current_symbol, target_date)
+                # 銘柄切替実行フラグ取得
+                switch_executed = switch_result.get('switch_executed', False)
+                
+                # 銘柄切替時のログ出力
+                if switch_executed:
+                    self.logger.info(
+                        f"[SYMBOL_SWITCH_FORCE_CLOSE] 銘柄切替実行、既存ポジション決済開始: "
+                        f"from={switch_result.get('from_symbol')} → to={self.current_symbol}, "
+                        f"date={target_date.strftime('%Y-%m-%d')}"
+                    )
+                
+                # マルチ戦略実行（銘柄切替時はforce_close_on_entry=True）
+                strategy_result = self._execute_multi_strategies(
+                    self.current_symbol, 
+                    target_date,
+                    force_close_on_entry=switch_executed
+                )
                 daily_result['strategy_results'] = strategy_result
                 
                 # Phase 2優先度3: execution_details設定（詳細設計書3.1.3準拠）
@@ -1633,13 +1649,14 @@ class DSSMSIntegratedBacktester:
                 'error': str(e)
             }
     
-    def _execute_multi_strategies(self, symbol: str, target_date: datetime) -> Dict[str, Any]:
+    def _execute_multi_strategies(self, symbol: str, target_date: datetime, force_close_on_entry: bool = False) -> Dict[str, Any]:
         """
         マルチ戦略実行（main_new.py統合版）
         
         Args:
             symbol: 対象銘柄
             target_date: 対象日付
+            force_close_on_entry: 銘柄切替時に既存ポジション強制決済（デフォルト: False）
         
         Returns:
             Dict[str, Any]: 戦略実行結果
@@ -1654,6 +1671,13 @@ class DSSMSIntegratedBacktester:
                     'symbol': symbol,
                     'date': target_date.strftime('%Y-%m-%d')
                 }
+            
+            # ForceClose要求ログ追加（Priority 3）
+            if force_close_on_entry:
+                self.logger.info(
+                    f"[DSSMS_FORCE_CLOSE_REQUEST] 銘柄切替によるForceClose要求: "
+                    f"symbol={symbol}, date={target_date.strftime('%Y-%m-%d')}"
+                )
             
             # 1. データ取得（既存処理を維持）
             stock_data, index_data = self._get_symbol_data(symbol, target_date)
@@ -1736,7 +1760,8 @@ class DSSMSIntegratedBacktester:
                 index_data=index_data,
                 backtest_start_date=backtest_start_date,
                 backtest_end_date=backtest_end_date,
-                warmup_days=warmup_days
+                warmup_days=warmup_days,
+                force_close_on_entry=force_close_on_entry
             )
             
             # 4. 結果変換

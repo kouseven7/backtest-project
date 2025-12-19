@@ -600,45 +600,42 @@ class IntegratedExecutionManager:
                 reason=reason
             )
             
-            # ForceCloseStrategy.backtest()実行（signals生成）
-            signals = force_close_strategy.backtest(
+            # ForceCloseStrategy.backtest()実行（signals + close_results生成）
+            # Option B: タプル返却 (signals, close_results)
+            signals, close_results = force_close_strategy.backtest(
                 trading_start_date=None,
                 trading_end_date=None,
                 current_date=current_date
             )
             
             self.logger.info(
-                f"[FORCE_CLOSE] ForceCloseStrategy generated {len(signals)} signals"
+                f"[FORCE_CLOSE] ForceCloseStrategy generated {len(signals)} signals, "
+                f"{len(close_results)} close_results"
             )
             
-            # signals空チェック（ポジション未保有）
-            if signals.empty:
+            # close_results空チェック（ポジション未保有）
+            if not close_results:
                 self.logger.info("[FORCE_CLOSE] No positions to close")
                 return {
                     'status': 'SUCCESS',
-                    'execution_details': [],
+                    'close_results': [],
                     'positions_closed': 0,
                     'reason': reason
                 }
             
-            # StrategyExecutionManager経由でexecution_details生成
-            # NOTE: _execute_trades()はsignalsとsymbolsを受け取る
-            # symbolsをsignalsから抽出
-            symbols = signals['symbol'].unique().tolist() if 'symbol' in signals.columns else []
-            
-            execution_details = self.execution_manager._execute_trades(
-                signals=signals,
-                symbols=symbols
-            )
+            # Option B設計変更: execution_details生成をスキップ
+            # PaperBroker.close_all_positions()の返却値（close_results）をそのまま使用
+            # 理由: position_tracker同期問題回避、最小影響、責務分離、実データ原則
             
             self.logger.info(
-                f"[FORCE_CLOSE] Generated {len(execution_details)} execution details"
+                f"[FORCE_CLOSE] Returning {len(close_results)} close_results "
+                f"(execution_details generation skipped per Option B design)"
             )
             
             return {
                 'status': 'SUCCESS',
-                'execution_details': execution_details,
-                'positions_closed': len(signals),
+                'close_results': close_results,  # PaperBrokerの返却値（12フィールド含む）
+                'positions_closed': len(close_results),
                 'reason': reason
             }
             

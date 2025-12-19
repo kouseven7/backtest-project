@@ -84,7 +84,7 @@ class ForceCloseStrategy(BaseStrategy):
     
     def backtest(self, trading_start_date: Optional[pd.Timestamp] = None,
                  trading_end_date: Optional[pd.Timestamp] = None,
-                 current_date: Optional[datetime] = None) -> pd.DataFrame:
+                 current_date: Optional[datetime] = None) -> tuple[pd.DataFrame, list[Dict[str, Any]]]:
         """
         強制決済実行
         
@@ -94,12 +94,14 @@ class ForceCloseStrategy(BaseStrategy):
             current_date: 決済日時（PaperBroker.close_all_positions()に渡す）
         
         Returns:
-            pd.DataFrame: 決済シグナル（strategy="ForceClose"設定済み）
+            tuple[pd.DataFrame, list[Dict]]: (signals, close_results)
+                - signals: 決済シグナル（strategy="ForceClose"設定済み）
+                - close_results: PaperBrokerの決済結果（実データ）
         
         Note:
             - PaperBroker.close_all_positions()呼び出し
-            - 決済結果をsignals DataFrame形式に変換
-            - StrategyExecutionManagerが後続処理で実行
+            - 決済結果を直接返却（Option B実装）
+            - execution_details生成はIntegratedExecutionManagerでスキップ
         
         copilot-instructions.md準拠:
             - 実データのみ使用（モック/ダミー禁止）
@@ -130,8 +132,8 @@ class ForceCloseStrategy(BaseStrategy):
             # 決済結果が空の場合（ポジション未保有）
             if not close_results:
                 self.logger.info("[FORCE_CLOSE] No positions to close")
-                # 空のsignals DataFrame返却
-                return self._create_empty_signals(current_date)
+                # 空のsignals DataFrame返却（close_resultsも空リスト）
+                return self._create_empty_signals(current_date), []
             
             # 決済結果をsignals DataFrame形式に変換
             signals = self._convert_to_signals(close_results, current_date)
@@ -140,7 +142,8 @@ class ForceCloseStrategy(BaseStrategy):
                 f"[FORCE_CLOSE] Generated {len(signals)} SELL signals for force close"
             )
             
-            return signals
+            # Option B: signalsとclose_resultsの両方を返却
+            return signals, close_results
             
         except Exception as e:
             # エラー時は警告ログ出力（エラー隠蔽禁止）
@@ -149,7 +152,7 @@ class ForceCloseStrategy(BaseStrategy):
                 exc_info=True
             )
             # 空のsignals返却（フォールバック禁止）
-            return self._create_empty_signals(current_date)
+            return self._create_empty_signals(current_date), []
     
     def _convert_to_signals(self, close_results: List[Dict[str, Any]], 
                           current_date: datetime) -> pd.DataFrame:
