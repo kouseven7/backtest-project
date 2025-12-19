@@ -154,8 +154,12 @@ class DSSMSIntegratedBacktester:
             # フォーマット: 'GCStrategy', 'ContrarianStrategy', 'VWAPBreakoutStrategy'等
             # フォールバック: 戦略名不明時は'DSSMS_SymbolSwitch'を使用
             self.last_executed_strategy = None
-            self.position_size = 0
-            self.position_entry_price = 0
+            # Phase 1: DSSMS設計違反コード削除 - Stage 4-2（2025-12-19）
+            # 削除: self.position_size, self.position_entry_price初期化
+            # 削除理由: DSSMSはポジション管理しない設計に準拠
+            #   - ポジション管理はmain_new.py（PaperBroker経由）が担当
+            #   - portfolio_valueのみを追跡（main_new.pyのreturnを累積）
+            # 影響: position_value/cash_balance計算を全額キャッシュ扱いに変更
             self.force_close_in_progress = False  # [Task11] DSSMS側ForceCloseフラグ
             
             # 累積期間方式用設定（2025-12-06追加）
@@ -483,65 +487,16 @@ class DSSMSIntegratedBacktester:
             # 理由: 未決済ポジションがあると統計情報が0になり、レポートが不完全になる
             # 参考実装: 銘柄切替ForceClose（Line 1567-1583）
             
-            if self.position_size > 0 and self.current_symbol:
-                self.logger.info(
-                    f"[BACKTEST_END_FORCE_CLOSE_START] バックテスト期間終了時の強制決済開始: "
-                    f"symbol={self.current_symbol}, position_size={self.position_size}, "
-                    f"portfolio_value_before={self.portfolio_value}"
-                )
-                
-                # ForceCloseフラグ設定（銘柄切替ForceCloseと同様）
-                self.force_close_in_progress = True
-                
-                # 強制決済実行（最終営業日の終値で決済）
-                # Note: end_dateではなく、最終営業日（current_date - timedelta(days=1)）を使用
-                final_trading_date = current_date - timedelta(days=1)
-                while final_trading_date.weekday() >= 5:  # 土日をスキップ
-                    final_trading_date -= timedelta(days=1)
-                
-                self.logger.info(f"[BACKTEST_END_FORCE_CLOSE] 決済日: {final_trading_date.strftime('%Y-%m-%d')}")
-                
-                # _close_position呼び出し
-                close_result = self._close_position(self.current_symbol, final_trading_date)
-                
-                self.logger.info(
-                    f"[BACKTEST_END_FORCE_CLOSE_END] 強制決済完了: "
-                    f"close_result={close_result}, "
-                    f"portfolio_value_after={self.portfolio_value}"
-                )
-                
-                # [重要] execution_detailをdaily_resultsの最終日に追加
-                # 理由: ComprehensiveReporterがdaily_resultsからexecution_detailsを収集するため
-                if 'execution_detail' in close_result and len(self.daily_results) > 0:
-                    # strategy_nameを変更して、銘柄切替ForceCloseと区別
-                    close_result['execution_detail']['strategy_name'] = 'DSSMS_BacktestEndForceClose'
-                    close_result['execution_detail']['execution_type'] = 'force_close'  # 2025-12-15追加: 強制決済として明示
-                    
-                    # 最終日のdaily_resultに追加
-                    last_daily_result = self.daily_results[-1]
-                    if 'execution_details' not in last_daily_result:
-                        last_daily_result['execution_details'] = []
-                    last_daily_result['execution_details'].append(close_result['execution_detail'])
-                    
-                    self.logger.info(
-                        f"[BACKTEST_END_FORCE_CLOSE_COLLECT] 最終日のdaily_resultにSELL記録追加: "
-                        f"timestamp={close_result['execution_detail']['timestamp']}, "
-                        f"strategy_name={close_result['execution_detail']['strategy_name']}"
-                    )
-                else:
-                    self.logger.warning(
-                        f"[BACKTEST_END_FORCE_CLOSE_WARNING] execution_detailの収集に失敗: "
-                        f"close_result={close_result}, "
-                        f"daily_results_count={len(self.daily_results)}"
-                    )
-                
-                # ForceCloseフラグリセット
-                self.force_close_in_progress = False
-            else:
-                self.logger.info(
-                    f"[BACKTEST_END_NO_POSITION] バックテスト期間終了時にポジションなし: "
-                    f"position_size={self.position_size}, current_symbol={self.current_symbol}"
-                )
+            # Phase 1: DSSMS設計違反コード削除 - Stage 3-2（2025-12-19）
+            # 削除: バックテスト終了時のForceClose処理（Line 486-542, 57行）
+            # 削除理由: DSSMSが取引実行しないため、期末強制決済も不要
+            # 代替: main_new.pyのForceCloseStrategyが担当
+            # 影響: バックテスト終了時のexecution_detailsが生成されない（意図通り）
+            
+            self.logger.info(
+                f"[BACKTEST_END_NO_POSITION] バックテスト期間終了時にポジションなし: "
+                f"current_symbol={self.current_symbol}"
+            )
             
             # ==========================================
             # 最終結果生成
@@ -584,8 +539,11 @@ class DSSMSIntegratedBacktester:
                 'errors': [],
                 
                 # Phase 2: equity_curve再構築用カラム
-                'cash_balance': self.portfolio_value - self.position_size,
-                'position_value': self.position_size,
+                # Phase 1 Stage 4-2変更（2025-12-19）:
+                #   - cash_balance: 全額キャッシュ扱い（DSSMSはポジション管理しない）
+                #   - position_value: 0固定（main_new.pyが実際のポジション管理）
+                'cash_balance': self.portfolio_value,
+                'position_value': 0,
                 
                 # デバッグログ: 初期cash/position計算（提案4）
                 # Note: この時点ではまだ取引実行前なので、後続のログと比較するための参照点
@@ -593,7 +551,7 @@ class DSSMSIntegratedBacktester:
                 'drawdown_pct': 0,  # 後程計算
                 'cumulative_pnl': self.cumulative_pnl,
                 'total_trades': self.total_trades_count,
-                'active_positions': 1 if self.position_size > 0 else 0,
+                'active_positions': 0,  # Phase 1 Stage 4-2: 0固定（main_new.pyが管理）
                 'risk_status': 'Normal',
                 'blocked_trades': 0,
                 'risk_action': '',
@@ -672,24 +630,21 @@ class DSSMSIntegratedBacktester:
                     f"Before: {portfolio_value_before:,.0f}円, "
                     f"Return: {position_return:+,.0f}円 ({daily_result['daily_return_rate']:+.2%}), "
                     f"After: {self.portfolio_value:,.0f}円, "
-                    f"position_size={self.position_size:.2f}, "
-                    f"cash={self.portfolio_value - self.position_size:.2f}, "
                     f"Drawdown: {daily_result['drawdown_pct']:.2%}"
                 )
             
             # cash_balance/position_value再計算（switch処理含む全ケースで更新）
-            # 修正理由: switch実行日に取引がない場合でも、switch後のportfolio_valueとposition_sizeを反映するため
-            # switch処理でself.portfolio_valueとself.position_sizeが変更される可能性があるため、if position_update外で実行
-            daily_result['cash_balance'] = self.portfolio_value - self.position_size
-            daily_result['position_value'] = self.position_size
+            # Phase 1 Stage 4-2変更（2025-12-19）:
+            #   - 修正理由: DSSMSはポジション管理しない設計に準拠
+            #   - cash_balance: portfolio_value全額（キャッシュ扱い）
+            #   - position_value: 0固定（main_new.pyが実際のポジション管理）
+            daily_result['cash_balance'] = self.portfolio_value
+            daily_result['position_value'] = 0
             
             # 提案4: cash_balance/position_value計算検証ログ
             self.logger.debug(
                 f"[CASH_POSITION_CALC] {target_date.strftime('%Y-%m-%d')}: "
-                f"portfolio={self.portfolio_value:.2f}, "
-                f"position_size={self.position_size:.2f}, "
-                f"cash={self.portfolio_value - self.position_size:.2f}, "
-                f"sum={self.portfolio_value:.2f}"
+                f"portfolio={self.portfolio_value:.2f}"
             )
             
             # 4. リスク管理チェック
@@ -1640,68 +1595,21 @@ class DSSMSIntegratedBacktester:
             
             # 切替実行判定
             if should_switch:
-                # [修正案1実装] 銘柄切替時のexecution_details収集用リスト（2025-12-14追加）
-                switch_execution_details = []
+                # Phase 1: DSSMS設計違反コード削除 - Stage 2（2025-12-19）
+                # 削除: 銘柄切替時の取引実行処理（_close_position, _open_position呼び出し）
+                # 削除: switch_execution_details収集ロジック
+                # 削除: execution_type='switch'設定
+                # 理由: DSSMSは銘柄選択のみ担当、取引実行はmain_new.py（PaperBroker）が担当
+                # 影響: switch関連のexecution_detailsが0件になる（意図通り）
                 
-                # ポジション解除（既存銘柄）
-                if self.current_symbol and self.position_size > 0:
-                    # [Task11] ForceCloseフラグ設定
-                    self.force_close_in_progress = True
-                    self.logger.info(f"[DSSMS_FORCE_CLOSE_START] ForceClose開始、戦略SELL処理を抑制")
-                    
-                    self.logger.warning(f"[SYMBOL_SWITCH_START] date={target_date}, from_symbol={self.current_symbol}, to_symbol={selected_symbol}, position_size={self.position_size}")
-                    self.logger.warning(f"[BEFORE_DSSMS_FORCE_CLOSE] calling _close_position for symbol_switch, current_symbol={self.current_symbol}")
-                    close_result = self._close_position(self.current_symbol, target_date)
-                    self.logger.warning(f"[AFTER_DSSMS_FORCE_CLOSE] _close_position completed, close_result={close_result}")
-                    switch_result['close_result'] = close_result
-                    
-                    # [修正案1実装] SELL側execution_detail収集（2025-12-14修正）
-                    if 'execution_detail' in close_result:
-                        close_result['execution_detail']['execution_type'] = 'switch'  # 2025-12-15追加: 切替として上書き
-                        switch_execution_details.append(close_result['execution_detail'])
-                        self.logger.info(f"[DSSMS_SWITCH_DETAIL] 銘柄切替時のSELL記録収集完了: {close_result['execution_detail']}")
-                    
-                    # [Task11] ForceCloseフラグリセット
-                    self.force_close_in_progress = False
-                    self.logger.info(f"[DSSMS_FORCE_CLOSE_END] ForceClose完了、戦略SELL処理を再開")
-                
-                # 新銘柄ポジション開始
-                open_result = self._open_position(selected_symbol, target_date)
-                switch_result['open_result'] = open_result
-                
-                # [修正案1実装] BUY側execution_detail収集（2025-12-14修正）
-                if 'execution_detail' in open_result:
-                    open_result['execution_detail']['execution_type'] = 'switch'  # 2025-12-15追加: 切替として上書き
-                    switch_execution_details.append(open_result['execution_detail'])
-                    self.logger.info(f"[DSSMS_SWITCH_DETAIL] 銘柄切替時のBUY記録収集完了: {open_result['execution_detail']}")
-                
-                # [修正案1実装] 両方をswitch_resultに格納（2025-12-14追加）
-                if switch_execution_details:
-                    switch_result['execution_details'] = switch_execution_details
-                    self.logger.info(f"[DSSMS_SWITCH_COLLECT] 銘柄切替時の全execution_details収集完了: {len(switch_execution_details)}件")
-                
-                # 切替コスト
-                switch_cost = self.portfolio_value * self.config.get('switch_cost_rate', 0.001)
-                portfolio_before_switch = self.portfolio_value
-                self.portfolio_value -= switch_cost
-                portfolio_after_switch = self.portfolio_value
-                
-                # 提案2拡張: switch処理時の詳細追跡ログ
-                self.logger.info(
-                    f"[SWITCH_COST_DETAIL] {target_date.strftime('%Y-%m-%d')}: "
-                    f"from={switch_result['from_symbol']} to={selected_symbol}, "
-                    f"cost={switch_cost:.2f}, "
-                    f"portfolio_before={portfolio_before_switch:.2f}, "
-                    f"portfolio_after={portfolio_after_switch:.2f}, "
-                    f"rate={self.config.get('switch_cost_rate', 0.001)}"
-                )
+                # Phase 1: DSSMS設計違反コード削除 - Stage 3-1（2025-12-19）
+                # 削除: switch_costロジック（Line 1651-1677, 27行）
+                # 削除理由: DSSMSが取引実行しないため、コスト計算は無意味
+                # 影響: portfolio_value更新なし、switch_result簡略化
                 
                 switch_result.update({
                     'switch_executed': True,
-                    'switch_cost': switch_cost,
                     'reason': switch_evaluation.get('reason', 'dss_optimization'),
-                    'portfolio_value_before': portfolio_before_switch,
-                    'portfolio_value_after': portfolio_after_switch,
                     'executed_date': target_date
                 })
                 
@@ -2201,284 +2109,25 @@ class DSSMSIntegratedBacktester:
     # 「モック/ダミー/テストデータを使用するフォールバック禁止」
     # ランダムウォーク価格生成は実データと完全に乖離するため削除
     
-    def _calculate_position_update(self, strategy_results: Dict[str, Any], 
-                                 symbol: str, target_date: datetime) -> Dict[str, Any]:
-        """
-        ポジション更新計算（収益計算システム修正版）
-        
-        Args:
-            strategy_results: 戦略実行結果
-            symbol: 銘柄コード
-            target_date: 対象日付
-        
-        Returns:
-            Dict[str, Any]: ポジション更新結果
-        """
-        try:
-            # シグナル集計
-            buy_signals = 0
-            sell_signals = 0
-            total_confidence = 0
-            valid_strategies = 0
-            
-            for strategy_name, result in strategy_results.items():
-                if result.get('success', False):
-                    signal = result.get('signal', 'HOLD')
-                    confidence = result.get('confidence', 0)
-                    
-                    if signal == 'BUY':
-                        buy_signals += 1
-                        total_confidence += confidence
-                    elif signal == 'SELL':
-                        sell_signals += 1
-                        total_confidence += confidence
-                    
-                    valid_strategies += 1
-            
-            # ポジション判定（修正版：より実践的な条件）
-            position_action = 'HOLD'
-            if buy_signals > sell_signals and buy_signals >= 2:  # 2戦略以上のBUYシグナル
-                position_action = 'BUY'
-            elif sell_signals > buy_signals and sell_signals >= 2:
-                position_action = 'SELL'
-            
-            # 実際の株価データを使用した収益計算（修正版）
-            position_return = 0
-            
-            # ポジション開始処理
-            if self.position_size == 0 and position_action == 'BUY':
-                position_result = self._open_position(symbol, target_date)
-                if position_result.get('status') == 'opened':
-                    self.current_symbol = symbol
-                    self.logger.info(f"新ポジション開始: {symbol}, サイズ: {self.position_size:,.0f}")
-            
-            # 既存ポジションの評価（実際の価格変動を使用）
-            if self.position_size > 0:
-                # 実際の株価データから価格変動を取得
-                try:
-                    stock_data, _ = self._get_symbol_data(symbol, target_date)
-                    if stock_data is not None and len(stock_data) >= 2:
-                        # 前日比変動率を計算
-                        current_price = stock_data['Close'].iloc[-1]
-                        prev_price = stock_data['Close'].iloc[-2]
-                        price_change_rate = (current_price - prev_price) / prev_price
-                    else:
-                        # copilot-instructions.md準拠: モック価格変動フォールバック禁止
-                        raise RuntimeError(
-                            f"Failed to calculate position update for {symbol} on {target_date}. "
-                            f"Insufficient price data (need at least 2 data points). "
-                            f"Mock price generation is prohibited by copilot-instructions.md. "
-                            f"Cannot proceed with position evaluation without real price data."
-                        )
-                except RuntimeError:
-                    # RuntimeErrorはそのまま再送出
-                    raise
-                except Exception as e:
-                    # 予期せぬエラーもRuntimeErrorとして処理
-                    raise RuntimeError(
-                        f"Failed to retrieve price data for {symbol}: {e}. "
-                        f"Mock price generation is prohibited by copilot-instructions.md."
-                    ) from e
-                
-                # ポジション価値の更新
-                position_return = self.position_size * price_change_rate
-                
-                # 売りシグナル時はポジション決済
-                close_result = None  # [案2実装] 初期化（2025-12-08追加）
-                if position_action == 'SELL':
-                    close_result = self._close_position(symbol, target_date)
-                    if close_result.get('status') == 'closed':
-                        position_return += close_result.get('close_return', 0)
-                        self.logger.info(f"ポジション決済: {symbol}, 収益: {position_return:,.0f}")
-            
-            # [案2実装] execution_detail返却準備（2025-12-08追加）
-            result = {
-                'action': position_action,
-                'buy_signals': buy_signals,
-                'sell_signals': sell_signals,
-                'total_confidence': total_confidence,
-                'valid_strategies': valid_strategies,
-                'return': position_return,
-                'position_size_after': self.position_size,
-                'price_data_available': True  # デバッグ用
-            }
-            
-            # [案2実装] SELL時のexecution_detail追加（2025-12-08追加）
-            if position_action == 'SELL' and close_result and 'execution_detail' in close_result:
-                result['execution_detail'] = close_result['execution_detail']
-                self.logger.info(f"[DSSMS_POSITION_DETAIL] 通常SELL記録収集完了: {close_result['execution_detail']}")
-            
-            return result
-            
-        except Exception as e:
-            self.logger.error(f"ポジション更新計算エラー: {e}")
-            return {
-                'action': 'HOLD',
-                'return': 0,
-                'error': str(e)
-            }
+    # _calculate_position_update() メソッドを削除（2025-12-19）
+    # 理由: 未使用メソッド（呼び出し箇所なし）
+    # Phase 1: DSSMS設計違反コード削除 - Stage 1
+    # 影響: なし（完全に未使用）
     
-    def _close_position(self, symbol: str, target_date: datetime) -> Dict[str, Any]:
-        """ポジション解除（実際の価格データ使用版）"""
-        self.logger.warning(f"[DSSMS_FORCE_CLOSE_START] date={target_date}, symbol={symbol}, position_size={self.position_size}")
-        try:
-            if self.position_size == 0:
-                return {'status': 'no_position'}
-            
-            # 実際の価格データを使用した決済計算
-            try:
-                stock_data, _ = self._get_symbol_data(symbol, target_date)
-                if stock_data is not None and len(stock_data) >= 1:
-                    current_price = stock_data['Close'].iloc[-1]
-                    # エントリー価格が設定されていない場合は、少し前の価格を使用
-                    if hasattr(self, 'position_entry_price') and self.position_entry_price > 0:
-                        entry_price = self.position_entry_price
-                    else:
-                        # エントリー価格が不明な場合、現在価格の98%として計算（2%の収益）
-                        entry_price = current_price * 0.98
-                    
-                    # 実際のリターン計算
-                    price_change_rate = (current_price - entry_price) / entry_price
-                    close_return = self.position_size * price_change_rate
-                    self.logger.warning(f"[DSSMS_FORCE_CLOSE_END] date={target_date}, symbol={symbol}, position_size_before={self.position_size}, close_return={close_return}")
-                    self.logger.info(f"[POSITION_SYNC_WARNING] DSSMS position closed but PaperBroker may still hold position. Check main_new.py ForceClose.")
-                else:
-                    # copilot-instructions.md準拠: モック収益フォールバック禁止
-                    raise RuntimeError(
-                        f"Failed to retrieve closing price for {symbol} on {target_date}. "
-                        f"Mock return calculation is prohibited by copilot-instructions.md. "
-                        f"Cannot close position without real price data."
-                    )
-            except RuntimeError:
-                # RuntimeErrorはそのまま再送出
-                raise
-            except Exception as e:
-                # 予期せぬエラーもRuntimeErrorとして処理
-                raise RuntimeError(
-                    f"Failed to close position for {symbol}: {e}. "
-                    f"Mock return calculation is prohibited by copilot-instructions.md."
-                ) from e
-            
-            # ポートフォリオ価値更新
-            self.portfolio_value += close_return
-            
-            # [案2実装] execution_details生成（2025-12-08追加）
-            # 目的: DSSMS側の決済をexecution_detailsに記録し、ForceCloseと区別可能にする
-            # quantityを株数に変換（修正: 2025-12-15）
-            shares = self.position_size / entry_price if entry_price > 0 else 0
-            execution_detail = {
-                'symbol': symbol,
-                'action': 'SELL',
-                'quantity': shares,  # 株数（修正: 円単位から変換）
-                'timestamp': target_date.isoformat(),
-                'executed_price': current_price,
-                'strategy_name': self._get_active_strategy_name(symbol),  # 修正案2: 実際の戦略名を記録
-                'order_id': str(uuid.uuid4()),  # 2025-12-12追加: 重複除去ロジック対応
-                'success': True,  # 2025-12-11追加（Task 2）: ComprehensiveReporter互換性確保
-                'status': 'executed',
-                'entry_price': entry_price,
-                'profit_pct': price_change_rate * 100,
-                'close_return': close_return,
-                'execution_type': 'trade'  # 2025-12-15追加: 通常取引として明示
-            }
-            
-            result = {
-                'status': 'closed',
-                'symbol': symbol,
-                'position_size': self.position_size,
-                'close_return': close_return,
-                'portfolio_value_after': self.portfolio_value,
-                'close_price_available': True,  # デバッグ用
-                'execution_detail': execution_detail  # [案2実装] execution_detailsを返り値に追加
-            }
-            
-            self.logger.info(f"ポジション決済完了: {symbol}, 収益: {close_return:,.0f}円")
-            self.logger.info(f"[DSSMS_EXECUTION_DETAIL] 決済記録生成: strategy_name={execution_detail['strategy_name']}, timestamp={execution_detail['timestamp']}")
-            
-            # ポジションリセット
-            self.position_size = 0
-            self.position_entry_price = 0
-            self.current_symbol = None
-            
-            # [Task11] ForceCloseフラグリセット（念のため）
-            if self.force_close_in_progress:
-                self.force_close_in_progress = False
-                self.logger.info(f"[DSSMS_FORCE_CLOSE_END] ForceClose完了（_close_position内）")
-            
-            return result
-            
-        except Exception as e:
-            self.logger.error(f"ポジション決済エラー: {e}")
-            return {'status': 'error', 'error': str(e)}
-    
-    def _open_position(self, symbol: str, target_date: datetime) -> Dict[str, Any]:
-        """新ポジション開始（実際の価格データ使用版）"""
-        try:
-            # ポジションサイズ決定（ポートフォリオの80%）
-            position_value = self.portfolio_value * 0.8
-            
-            # 実際の株価データからエントリー価格を取得
-            try:
-                stock_data, _ = self._get_symbol_data(symbol, target_date)
-                if stock_data is not None and len(stock_data) >= 1:
-                    entry_price = stock_data['Close'].iloc[-1]
-                else:
-                    # copilot-instructions.md準拠: モック価格フォールバック禁止
-                    raise RuntimeError(
-                        f"Failed to retrieve entry price for {symbol} on {target_date}. "
-                        f"Mock price generation is prohibited by copilot-instructions.md. "
-                        f"Cannot open position without real price data."
-                    )
-            except RuntimeError:
-                # RuntimeErrorはそのまま再送出
-                raise
-            except Exception as e:
-                # 予期せぬエラーもRuntimeErrorとして処理
-                raise RuntimeError(
-                    f"Failed to retrieve entry price for {symbol}: {e}. "
-                    f"Mock price generation is prohibited by copilot-instructions.md."
-                ) from e
-            
-            # execution_detail生成（_close_position()と同じパターン）
-            # quantityを株数に変換（修正: 2025-12-15）
-            shares = position_value / entry_price if entry_price > 0 else 0
-            execution_detail = {
-                'symbol': symbol,
-                'action': 'BUY',
-                'quantity': shares,  # 株数（修正: 円単位から変換）
-                'timestamp': target_date.isoformat(),
-                'executed_price': entry_price,
-                'strategy_name': self._get_active_strategy_name(symbol),  # 修正案2: 実際の戦略名を記録
-                'order_id': str(uuid.uuid4()),  # 2025-12-11追加: 重複除去ロジック対応
-                'success': True,  # 2025-12-11追加（Task 2）: ComprehensiveReporter互換性確保
-                'status': 'executed',
-                'entry_price': entry_price,  # BUY時はentry_price = executed_price
-                'profit_pct': 0.0,  # BUY時は0
-                'close_return': None,  # BUY時はNone
-                'execution_type': 'trade'  # 2025-12-15追加: 通常取引として明示
-            }
-            
-            result = {
-                'status': 'opened',
-                'symbol': symbol,
-                'position_value': position_value,
-                'entry_price': entry_price,
-                'portfolio_value_after': self.portfolio_value,
-                'entry_price_available': True,  # デバッグ用
-                'execution_detail': execution_detail  # execution_detailを返り値に追加
-            }
-            
-            self.position_size = position_value
-            self.position_entry_price = entry_price
-            
-            self.logger.info(f"新ポジション開始: {symbol}, サイズ: {position_value:,.0f}円, エントリー価格: {entry_price:,.0f}")
-            self.logger.info(f"[DSSMS_EXECUTION_DETAIL] BUY記録生成: strategy_name={execution_detail['strategy_name']}, timestamp={execution_detail['timestamp']}")
-            
-            return result
-            
-        except Exception as e:
-            self.logger.error(f"ポジション開始エラー: {e}")
-            return {'status': 'error', 'error': str(e)}
+    # Phase 1: DSSMS設計違反コード削除 - Stage 3-3（2025-12-19）
+    # 削除: _close_position()と_open_position()メソッド本体（Line 2113-2273, 160行）
+    # 削除理由: DSSMSが取引実行しない設計に準拠
+    #   - ポジション管理はPaperBrokerが担当
+    #   - 決済・新規ポジション開始はmain_new.pyの各戦略が実行
+    #   - execution_details生成もmain_new.py側で実施
+    # 代替:
+    #   - 決済: main_new.pyのForceCloseStrategy
+    #   - 新規ポジション: 各戦略のエントリー判断
+    # 影響: 呼び出し箇所はStage 3-2で全削除済みのため影響なし
+    # 備考:
+    #   - Stage 3-1: _calculate_position_update()削除（116行、未使用）
+    #   - Stage 3-2: 銘柄切替時取引実行削除（39行）+ ForceClose呼び出し削除（57行）
+    #   - Stage 3-3: メソッド本体削除（160行、本削除）
     
     def _check_risk_limits(self, daily_result: Dict[str, Any]) -> Dict[str, Any]:
         """リスク制限チェック"""
@@ -2504,14 +2153,16 @@ class DSSMSIntegratedBacktester:
     
     def _handle_risk_violation(self, risk_result: Dict[str, Any]) -> None:
         """リスク制限違反時の処理"""
+        # Phase 1: DSSMS設計違反コード削除 - Stage 4-3（2025-12-19）
+        # 削除: position_size半減処理（Line 2157-2158）
+        # 削除理由: DSSMSはポジション管理しない設計（PaperBrokerが担当）
+        # 代替: main_new.pyのリスク管理に移管
         try:
             violation_type = risk_result.get('violation_type')
             
             if violation_type == 'max_drawdown':
-                # ドローダウン制限違反時：ポジション50%削減
-                if self.position_size > 0:
-                    self.position_size *= 0.5
-                    self.logger.warning(f"ドローダウン制限違反 - ポジション50%削減")
+                # ドローダウン制限違反時の警告のみ（ポジション管理はPaperBrokerが担当）
+                self.logger.warning(f"ドローダウン制限違反 - リスク管理はmain_new.pyが担当")
                     
         except Exception as e:
             self.logger.error(f"リスク制限違反処理エラー: {e}")
@@ -3154,7 +2805,7 @@ class DSSMSIntegratedBacktester:
             return {
                 'current_symbol': self.current_symbol,
                 'portfolio_value': self.portfolio_value,
-                'position_size': self.position_size,
+                # Phase 1 Stage 4-2: position_size削除（2025-12-19）
                 'daily_results_count': len(self.daily_results),
                 'switch_history_count': len(self.switch_history),
                 'dss_available': dss_available,

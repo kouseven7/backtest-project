@@ -25,7 +25,7 @@ BUY/SELL注文の抽出ロジックを一元化します。
 
 Author: Backtest Project Team
 Created: 2025-11-12
-Last Modified: 2025-11-12
+Last Modified: 2025-12-19
 """
 
 import sys
@@ -154,10 +154,12 @@ def is_valid_trade(
         )
         return False
     
-    # 2025-12-15追加: execution_typeチェック（通常取引のみ抽出）
+    # 2025-12-19修正: execution_typeチェック（通常取引と強制決済のみ抽出）
     # 後方互換性対応: execution_typeなしの場合はデフォルトで'trade'とみなす
+    # 修正理由: force_close（強制決済）は実際の損益を伴う取引のためCSVに含める必要がある
+    # 除外対象: switch（銘柄切替の記録用）のみ
     execution_type = detail.get('execution_type', 'trade')
-    if execution_type != 'trade':
+    if execution_type not in ['trade', 'force_close']:
         log.debug(
             f"[SKIPPED_NON_TRADE] execution_type={execution_type}, "
             f"symbol={detail.get('symbol')}, action={action}"

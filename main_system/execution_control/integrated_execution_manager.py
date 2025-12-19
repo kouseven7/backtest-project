@@ -557,6 +557,104 @@ class IntegratedExecutionManager:
         except Exception as e:
             self.logger.error(f"Risk tracking update error: {e}")
     
+    def execute_force_close(
+        self, 
+        current_date: datetime,
+        reason: str = "symbol_switch"
+    ) -> Dict[str, Any]:
+        """
+        ForceCloseStrategy実行（銘柄切替時/バックテスト終了時）
+        
+        Args:
+            current_date: 決済日時
+            reason: 決済理由（"symbol_switch", "backtest_end"等）
+        
+        Returns:
+            Dict[str, Any]: 実行結果
+                - status: 'SUCCESS' / 'ERROR'
+                - execution_details: 決済詳細リスト
+                - positions_closed: 決済ポジション数
+        
+        copilot-instructions.md準拠:
+            - 実データのみ使用（モック/ダミー禁止）
+            - エラー隠蔽禁止（exc_info=True）
+            - フォールバック禁止
+        
+        Author: Backtest Project Team
+        Created: 2025-12-19
+        """
+        try:
+            self.logger.info(
+                f"[FORCE_CLOSE] Executing force close: "
+                f"date={current_date.strftime('%Y-%m-%d %H:%M:%S')}, "
+                f"reason={reason}"
+            )
+            
+            # ForceCloseStrategy作成（strategies/force_close_strategy.pyから）
+            from strategies.force_close_strategy import ForceCloseStrategy
+            
+            force_close_strategy = ForceCloseStrategy(
+                broker=self.execution_manager.paper_broker,
+                data=None,  # ダミーDataFrame内部生成
+                params=None,
+                reason=reason
+            )
+            
+            # ForceCloseStrategy.backtest()実行（signals生成）
+            signals = force_close_strategy.backtest(
+                trading_start_date=None,
+                trading_end_date=None,
+                current_date=current_date
+            )
+            
+            self.logger.info(
+                f"[FORCE_CLOSE] ForceCloseStrategy generated {len(signals)} signals"
+            )
+            
+            # signals空チェック（ポジション未保有）
+            if signals.empty:
+                self.logger.info("[FORCE_CLOSE] No positions to close")
+                return {
+                    'status': 'SUCCESS',
+                    'execution_details': [],
+                    'positions_closed': 0,
+                    'reason': reason
+                }
+            
+            # StrategyExecutionManager経由でexecution_details生成
+            # NOTE: _execute_trades()はsignalsとsymbolsを受け取る
+            # symbolsをsignalsから抽出
+            symbols = signals['symbol'].unique().tolist() if 'symbol' in signals.columns else []
+            
+            execution_details = self.execution_manager._execute_trades(
+                signals=signals,
+                symbols=symbols
+            )
+            
+            self.logger.info(
+                f"[FORCE_CLOSE] Generated {len(execution_details)} execution details"
+            )
+            
+            return {
+                'status': 'SUCCESS',
+                'execution_details': execution_details,
+                'positions_closed': len(signals),
+                'reason': reason
+            }
+            
+        except Exception as e:
+            self.logger.error(
+                f"[FORCE_CLOSE] Force close execution error: {e}",
+                exc_info=True
+            )
+            return {
+                'status': 'ERROR',
+                'error': str(e),
+                'execution_details': [],
+                'positions_closed': 0,
+                'reason': reason
+            }
+    
     def get_execution_summary(self) -> Dict[str, Any]:
         """実行サマリー取得"""
         return {

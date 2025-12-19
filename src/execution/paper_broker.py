@@ -5,6 +5,7 @@ import random
 import threading
 from enum import Enum
 import time as time_module
+import uuid
 
 from .order_manager import Order, OrderType, OrderSide, OrderStatus, BrokerInterface
 
@@ -608,3 +609,130 @@ class PaperBroker(BrokerInterface):
         thread.start()
         self.logger.info(f"市場データシミュレーション開始: {symbols} ({duration_seconds}秒)")
         return thread
+    
+    def close_all_positions(
+        self, 
+        current_date: datetime,
+        reason: str = "symbol_switch"
+    ) -> List[Dict[str, Any]]:
+        """
+        全ポジション強制決済
+        
+        Args:
+            current_date: 決済日時
+            reason: 決済理由（"symbol_switch", "backtest_end"等）
+        
+        Returns:
+            List[Dict]: 決済結果のリスト
+        
+        copilot-instructions.md準拠:
+            - 実データのみ使用（モック/ダミー禁止）
+            - エラー隠蔽禁止（警告ログ出力）
+            - フォールバック禁止
+        """
+        results = []
+        
+        # ポジション未保有チェック
+        if not self.positions:
+            self.logger.info(f"[FORCE_CLOSE] No positions to close. Reason: {reason}")
+            return results
+        
+        # ポジションコピー（ループ中変更回避）
+        positions_to_close = list(self.positions.items())
+        
+        self.logger.info(
+            f"[FORCE_CLOSE] Closing all positions: {len(positions_to_close)} positions | "
+            f"Reason: {reason} | Date: {current_date.strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        
+        # 個別決済実行
+        success_count = 0
+        failed_symbols = []
+        
+        for symbol, position_data in positions_to_close:
+            try:
+                # エントリー情報取得
+                entry_price = position_data['entry_price']
+                entry_time = position_data['entry_time']
+                quantity = position_data['quantity']
+                
+                # イグジット価格取得
+                exit_price = self.get_current_price(symbol)
+                
+                # SELL注文作成
+                sell_order = Order(
+                    id=str(uuid.uuid4()),
+                    symbol=symbol,
+                    side=OrderSide.SELL,
+                    order_type=OrderType.MARKET,
+                    quantity=quantity,
+                    status=OrderStatus.PENDING,
+                    created_at=current_date,
+                    strategy_name="ForceClose"  # 明示的に設定
+                )
+                
+                # 注文実行
+                success = self.submit_order(sell_order)
+                
+                if success and sell_order.status == OrderStatus.FILLED:
+                    # PnL計算
+                    pnl = (sell_order.filled_price - entry_price) * quantity
+                    
+                    # 決済結果記録
+                    result = {
+                        'symbol': symbol,
+                        'action': 'SELL',
+                        'quantity': quantity,
+                        'entry_price': entry_price,
+                        'exit_price': sell_order.filled_price,
+                        'entry_time': entry_time,
+                        'exit_time': current_date,
+                        'pnl': pnl,
+                        'commission': sell_order.commission,
+                        'slippage': sell_order.slippage,
+                        'order_id': sell_order.id,
+                        'reason': reason
+                    }
+                    results.append(result)
+                    success_count += 1
+                    
+                    self.logger.info(
+                        f"[FORCE_CLOSE] Success: {symbol} | "
+                        f"Qty: {quantity} | "
+                        f"Entry: {entry_price:.2f} | "
+                        f"Exit: {sell_order.filled_price:.2f} | "
+                        f"PnL: {pnl:+.2f}"
+                    )
+                else:
+                    # 決済失敗
+                    failed_symbols.append(symbol)
+                    self.logger.warning(
+                        f"[FORCE_CLOSE] Failed to close position: {symbol} | "
+                        f"Order status: {sell_order.status.value} | "
+                        f"Quantity: {quantity}"
+                    )
+                    
+            except Exception as e:
+                # 個別エラー処理（処理継続）
+                failed_symbols.append(symbol)
+                self.logger.error(
+                    f"[FORCE_CLOSE] Error closing position: {symbol} | "
+                    f"Error: {e} | "
+                    f"Continuing with other positions..."
+                )
+                continue
+        
+        # 最終サマリーログ
+        self.logger.info(
+            f"[FORCE_CLOSE] Completed: "
+            f"Success: {success_count}/{len(positions_to_close)} | "
+            f"Failed: {len(failed_symbols)} | "
+            f"Reason: {reason}"
+        )
+        
+        if failed_symbols:
+            self.logger.warning(
+                f"[FORCE_CLOSE] Failed symbols: {', '.join(failed_symbols)}"
+            )
+        
+        return results
