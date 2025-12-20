@@ -413,8 +413,8 @@ class VWAPBreakoutStrategy(BaseStrategy):
         # エントリーインデックスを整数型として初期化（NaNではなく-1を使用）
         self.data['Entry_Idx'] = pd.Series(-1, index=self.data.index, dtype='int64')  # 明示的に整数型を指定
 
-        # バックテストループ
-        for idx in range(len(self.data)):
+        # バックテストループ（Phase 1修正: 最終日を除外してidx+1アクセスを安全に）
+        for idx in range(len(self.data) - 1):
             current_price = self.data[self.price_column].iloc[idx]
             
             # 取引期間フィルタリング（BaseStrategy.backtest()と同じロジック）
@@ -449,7 +449,11 @@ class VWAPBreakoutStrategy(BaseStrategy):
                     # エントリーシグナルあり
                     self.data.loc[self.data.index[idx], 'Entry_Signal'] = 1
                     self.data.loc[self.data.index[idx], 'Position'] = 1
-                    self.data.loc[self.data.index[idx], 'Entry_Price'] = current_price
+                    
+                    # Phase 1修正: Entry_Priceを翌日始値に変更（ルックアヘッドバイアス修正）
+                    next_day_open = self.data['Open'].iloc[idx + 1]
+                    self.data.loc[self.data.index[idx], 'Entry_Price'] = next_day_open
+                    
                     self.data.loc[self.data.index[idx], 'Entry_Idx'] = idx
             
             # ポジションがある場合、イグジットシグナルをチェック

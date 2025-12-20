@@ -238,8 +238,7 @@ class BaseStrategy:
         exit_count = 0
         warmup_filtered_count = 0  # ウォームアップ期間でフィルタされた日数
         
-        # ルックアヘッドバイアス対策: 翌日始値参照のため最終行を除外
-        for idx in range(len(result) - 1):
+        for idx in range(len(result)):
             current_date = result.index[idx]
             
             # ウォームアップ期間チェック（trading_start_date指定時）
@@ -281,12 +280,12 @@ class BaseStrategy:
                         entry_idx = idx
                         entry_count += 1
                         
-                        # エントリー価格を記録（ルックアヘッドバイアス対策: 翌日始値を使用）
-                        entry_price = result['Open'].iloc[idx + 1]
+                        # エントリー価格を記録
+                        entry_price = result[price_column].iloc[idx]
                         self.entry_prices[idx] = entry_price
                         
                         # デバッグログ: エントリー記録
-                        self.logger.debug(f"[ENTRY #{entry_count}] idx={idx}, date={result.index[idx]}, next_day_open={entry_price:.2f}, in_position={in_position}")
+                        self.logger.debug(f"[ENTRY #{entry_count}] idx={idx}, date={result.index[idx]}, price={entry_price:.2f}, in_position={in_position}")
             
             # ポジションを持っている場合のみイグジットシグナルをチェック
             elif in_position:
