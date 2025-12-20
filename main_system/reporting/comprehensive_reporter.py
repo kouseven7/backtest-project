@@ -561,19 +561,21 @@ class ComprehensiveReporter:
                         )
                         
                         # 取引レコード作成（実データのみ）
+                        # Phase: dssms_all_transactions統合対応（2025-12-19）
                         trade_record = {
+                            'symbol': symbol,  # 追加（DSSMS複数銘柄対応）
                             'entry_date': entry_date,
-                            'exit_date': exit_date,
                             'entry_price': entry_price,
+                            'exit_date': exit_date,
                             'exit_price': exit_price,
                             'shares': shares,
                             'pnl': pnl,
                             'return_pct': return_pct,
                             'holding_period_days': holding_period_days,
-                            'strategy': buy_order.get('strategy_name', 'Unknown'),
+                            'strategy_name': buy_order.get('strategy_name', 'Unknown'),  # 名称変更: strategy → strategy_name
                             'position_value': entry_price * shares,
-                            'is_forced_exit': is_forced_exit,  # Phase 5-B-6追加
-                            'is_executed_trade': True
+                            'is_forced_exit': is_forced_exit  # Phase 5-B-6追加
+                            # is_executed_trade削除（常にTrue、不要）
                         }
                         
                         trades.append(trade_record)
@@ -710,16 +712,21 @@ class ComprehensiveReporter:
                             unrealized_pnl = (current_price - entry_price) * quantity
                             unrealized_pnl_pct = ((current_price - entry_price) / entry_price * 100) if entry_price > 0 else 0
                             
+                            # Phase 4.3-1 Step 2: open_positions構造を統合スキーマに統一
                             open_positions.append({
                                 'symbol': symbol,
-                                'action': 'BUY',
-                                'quantity': quantity,
-                                'entry_price': entry_price,
                                 'entry_date': buy_order.get('timestamp'),
-                                'current_price': current_price,
-                                'unrealized_pnl': unrealized_pnl,
-                                'unrealized_pnl_pct': unrealized_pnl_pct,
-                                'strategy_name': buy_order.get('strategy_name', 'Unknown')
+                                'entry_price': entry_price,
+                                'exit_date': None,  # 保有中ポジションは未決済
+                                'exit_price': current_price,  # 名称変更: current_price → exit_price（統合スキーマ準拠）
+                                'shares': quantity,  # 名称変更: quantity → shares（統合スキーマ準拠）
+                                'pnl': unrealized_pnl,  # 名称変更: unrealized_pnl → pnl（統合スキーマ準拠）
+                                'return_pct': unrealized_pnl_pct,  # 名称変更: unrealized_pnl_pct → return_pct（統合スキーマ準拠）
+                                'holding_period_days': None,  # 保有中ポジションは未確定
+                                'strategy_name': buy_order.get('strategy_name', 'Unknown'),
+                                'position_value': entry_price * quantity,  # 追加: 統合スキーマ準拠
+                                'is_forced_exit': False  # 追加: 保有中は強制決済されていない
+                                # 削除: 'action': 'BUY'（常にBUY、冗長）
                             })
             
             return open_positions
@@ -1145,25 +1152,30 @@ class ComprehensiveReporter:
             else:
                 self.logger.warning("[CSV_GEN] Cannot reconstruct equity curve: signals_df unavailable or missing DatetimeIndex")
             
-            # 取引履歴CSV
+            # Phase 4.3-1 Step 3: 全取引統合CSV生成（決済済み + 保有中）
             trades = extracted_data.get('trades', [])
-            if trades:
-                trades_df = pd.DataFrame(trades)
-                trades_csv_path = report_dir / f"{ticker}_trades.csv"
-                trades_df.to_csv(trades_csv_path, index=False, encoding='utf-8')
-                csv_outputs['trades'] = str(trades_csv_path)
-                self.logger.info(f"Trades CSV saved: {trades_csv_path}")
-            
-            # 優先度C: 保有中ポジションCSV
             open_positions = extracted_data.get('open_positions', [])
-            if open_positions:
-                open_positions_df = pd.DataFrame(open_positions)
-                open_positions_csv_path = report_dir / f"{ticker}_open_positions.csv"
-                open_positions_df.to_csv(open_positions_csv_path, index=False, encoding='utf-8')
-                csv_outputs['open_positions'] = str(open_positions_csv_path)
-                self.logger.info(f"Open positions CSV saved: {open_positions_csv_path} ({len(open_positions)} positions)")
+            
+            if trades or open_positions:
+                # 統合
+                all_transactions = trades + open_positions
+                
+                # 時系列ソート（entry_date昇順）
+                all_transactions_df = pd.DataFrame(all_transactions)
+                all_transactions_df['entry_date'] = pd.to_datetime(all_transactions_df['entry_date'])
+                all_transactions_df = all_transactions_df.sort_values('entry_date')
+                
+                # CSV出力
+                all_transactions_csv_path = report_dir / f"{ticker}_all_transactions.csv"
+                all_transactions_df.to_csv(all_transactions_csv_path, index=False, encoding='utf-8')
+                csv_outputs['all_transactions'] = str(all_transactions_csv_path)
+                
+                self.logger.info(
+                    f"[ALL_TRANSACTIONS_CSV] All transactions CSV saved: {all_transactions_csv_path} "
+                    f"({len(trades)} completed + {len(open_positions)} open = {len(all_transactions)} total)"
+                )
             else:
-                self.logger.info("No open positions to export")
+                self.logger.warning("[ALL_TRANSACTIONS_CSV] No transactions to export (trades=0, open_positions=0)")
             
             # パフォーマンスサマリーCSV
             performance_summary = []
