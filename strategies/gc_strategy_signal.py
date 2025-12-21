@@ -83,11 +83,14 @@ class GCStrategy(BaseStrategy):
         self.short_window = int(self.params.get("short_window", 5))
         self.long_window = int(self.params.get("long_window", 25))
         
+        # Phase 1c修正: 移動平均線にshift(1)を適用（ルックアヘッドバイアス修正）
+        # 理由: idx日目の移動平均がidx日目の価格を含むのはルックアヘッドバイアス
+        # リアルトレードでは前日までのデータで当日の判断を行う
         # 移動平均線の計算（存在しない場合のみ）
         if f"SMA_{self.short_window}" not in self.data.columns:
-            self.data[f"SMA_{self.short_window}"] = self.data[self.price_column].rolling(window=self.short_window).mean()
+            self.data[f"SMA_{self.short_window}"] = self.data[self.price_column].rolling(window=self.short_window).mean().shift(1)
         if f"SMA_{self.long_window}" not in self.data.columns:
-            self.data[f"SMA_{self.long_window}"] = self.data[self.price_column].rolling(window=self.long_window).mean()
+            self.data[f"SMA_{self.long_window}"] = self.data[self.price_column].rolling(window=self.long_window).mean().shift(1)
         
         # 統一トレンド検出器の初期化
         # 最新時点でのトレンド判定をコンソールに出力
@@ -185,10 +188,14 @@ class GCStrategy(BaseStrategy):
         
         # エントリー価格を取得
         entry_price = self.entry_prices.get(entry_idx)
-        current_price = self.data[self.price_column].iloc[idx]
+        
+        # Phase 1b修正: イグジット価格を翌日始値に変更（ルックアヘッドバイアス修正）
+        # 理由: idx日目の終値を見てからidx日目の終値で売ることは不可能
+        # リアルトレードでは翌日（idx+1日目）の始値でイグジット
+        current_price = self.data['Open'].iloc[idx + 1]
         
         # デバッグログ: 価格情報
-        self.logger.debug(f"[EXIT CHECK] idx={idx}, entry_idx={entry_idx}, entry_price={entry_price}, current_price={current_price:.2f}")
+        self.logger.debug(f"[EXIT CHECK] idx={idx}, entry_idx={entry_idx}, entry_price={entry_price}, current_price={current_price:.2f} (next_day_open)")
         
         # entry_priceがNoneの場合はエラー（フォールバック禁止）
         if entry_price is None:
@@ -218,25 +225,25 @@ class GCStrategy(BaseStrategy):
             self.high_prices[entry_idx] = max(self.high_prices[entry_idx], current_price)
     
         trailing_stop = self.high_prices[entry_idx] * (1 - self.params.get("trailing_stop_pct", 0.03))
-        self.logger.debug(f"[TRAILING] high_price={self.high_prices[entry_idx]:.2f}, trailing_stop={trailing_stop:.2f}, current_price={current_price:.2f}")
+        self.logger.debug(f"[TRAILING] high_price={self.high_prices[entry_idx]:.2f}, trailing_stop={trailing_stop:.2f}, current_price={current_price:.2f} (next_day_open)")
         
         if current_price < trailing_stop:
             self.logger.info(f"トレーリングストップによるイグジット: 日付={self.data.index[idx]}")
-            self.logger.debug(f"[EXIT REASON] Trailing Stop: {current_price:.2f} < {trailing_stop:.2f}")
+            self.logger.debug(f"[EXIT REASON] Trailing Stop: {current_price:.2f} (next_day_open) < {trailing_stop:.2f}")
             return -1
     
         # 3. 利益確定
         take_profit_price = entry_price * (1 + self.params.get("take_profit", 0.05))
         if current_price >= take_profit_price:
             self.logger.info(f"利益確定によるイグジット: 日付={self.data.index[idx]}")
-            self.logger.debug(f"[EXIT REASON] Take Profit: {current_price:.2f} >= {take_profit_price:.2f}")
+            self.logger.debug(f"[EXIT REASON] Take Profit: {current_price:.2f} (next_day_open) >= {take_profit_price:.2f}")
             return -1
     
         # 4. 損切り
         stop_loss_price = entry_price * (1 - self.params.get("stop_loss", 0.03))
         if current_price <= stop_loss_price:
             self.logger.info(f"損切りによるイグジット: 日付={self.data.index[idx]}")
-            self.logger.debug(f"[EXIT REASON] Stop Loss: {current_price:.2f} <= {stop_loss_price:.2f}")
+            self.logger.debug(f"[EXIT REASON] Stop Loss: {current_price:.2f} (next_day_open) <= {stop_loss_price:.2f}")
             return -1
     
         # 5. 最大保有期間
