@@ -181,8 +181,9 @@ class MomentumInvestingStrategy(BaseStrategy):
 
         # エントリー条件 - 必須条件＋2つ以上（合計3つ以上）でエントリー
         if condition_count >= 3:
-            self.entry_prices[idx] = current_price
-            self.log_trade(f"Momentum Investing エントリーシグナル: 日付={self.data.index[idx]}, 価格={current_price}, 条件数={condition_count}/7")
+            # Phase 1修正: エントリー価格記録を削除（backtest()で翌日始値を記録するため）
+            # self.entry_prices[idx] = current_price  # ← 削除
+            self.log_trade(f"Momentum Investing エントリーシグナル: 日付={self.data.index[idx]}, 判断価格={current_price:.2f}, 条件数={condition_count}/7")
             return 1
 
         return 0
@@ -206,20 +207,30 @@ class MomentumInvestingStrategy(BaseStrategy):
             return 0
             
         # 最新のエントリー価格を取得
-        latest_entry_idx = self.data.index.get_loc(entry_indices[-1])
-        if latest_entry_idx not in self.entry_prices:
-            # 記録されていない場合は価格を取得して記録
-            self.entry_prices[latest_entry_idx] = self.data[self.price_column].iloc[latest_entry_idx]
+        latest_entry_idx_raw = self.data.index.get_loc(entry_indices[-1])
+        # 型エラー対策: latest_entry_idxをintに変換（sliceやndarrayの場合は例外）
+        if not isinstance(latest_entry_idx_raw, int):
+            raise TypeError(f"latest_entry_idx is not int: {type(latest_entry_idx_raw)}")
+        latest_entry_idx_int = latest_entry_idx_raw
+        
+        if latest_entry_idx_int not in self.entry_prices:
+            # Phase 1修正: フォールバック処理も翌日始値を使用（ルックアヘッドバイアス修正）
+            next_day_pos = latest_entry_idx_int + 1
+            if next_day_pos < len(self.data):
+                self.entry_prices[latest_entry_idx_int] = self.data['Open'].iloc[next_day_pos]
+            else:
+                # 最終日の場合は当日始値を使用（境界条件の妥協案）
+                self.entry_prices[latest_entry_idx_int] = self.data['Open'].iloc[latest_entry_idx_int]
             
-        entry_price = self.entry_prices[latest_entry_idx]
+        entry_price = self.entry_prices[latest_entry_idx_int]
         current_price = self.data[self.price_column].iloc[idx]
-        atr = self.data['ATR'].iloc[latest_entry_idx]  # エントリー時点のATR
+        atr = self.data['ATR'].iloc[latest_entry_idx_int]  # エントリー時点のATR
         sma_short_key = 'MA_' + str(self.params["sma_short"])
             
         # 最大保有期間によるイグジット
         max_hold_days = self.params.get("max_hold_days")
         if max_hold_days is not None:
-            days_held = idx - latest_entry_idx
+            days_held = idx - latest_entry_idx_int
             if days_held >= max_hold_days:
                 self.log_trade(f"保有期間超過イグジット: {days_held}日/{max_hold_days}日 日付={self.data.index[idx]}")
                 return -1
@@ -256,7 +267,7 @@ class MomentumInvestingStrategy(BaseStrategy):
             return -1
 
         # トレーリングストップ条件
-        high_since_entry = self.data['High'].iloc[latest_entry_idx:idx+1].max()
+        high_since_entry = self.data['High'].iloc[latest_entry_idx_int:idx+1].max()
         trailing_stop = high_since_entry * (1 - self.params["trailing_stop"])
         if current_price <= trailing_stop:
             self.log_trade(f"Momentum Investing イグジットシグナル: トレーリングストップ 日付={self.data.index[idx]}, 価格={current_price}")
@@ -306,7 +317,9 @@ class MomentumInvestingStrategy(BaseStrategy):
         in_position = False
         entry_idx = -1
 
-        for idx in range(len(self.data)):
+        # Phase 1修正: 最終日を除外してidx+1アクセスを安全に（ルックアヘッドバイアス修正）
+        # 理由: エントリー価格を翌日始値（idx+1）に変更するため、最終日でのIndexError回避
+        for idx in range(len(self.data) - 1):
             # 取引期間フィルタリング（BaseStrategy.backtest()と同じロジック）
             if trading_start_date is not None or trading_end_date is not None:
                 current_date = self.data.index[idx]
@@ -328,10 +341,13 @@ class MomentumInvestingStrategy(BaseStrategy):
                     self.data.at[self.data.index[idx], 'Position'] = 1
                     in_position = True
                     entry_idx = idx
-                    # エントリー価格を記録
-                    entry_price = self.data[self.price_column].iloc[idx]
+                    # Phase 1修正: エントリー価格を翌日始値に変更（ルックアヘッドバイアス修正）
+                    # 理由: idx日の終値を見てからidx日の終値で買うことは不可能
+                    # リアルトレードでは翌日（idx+1日目）の始値でエントリー
+                    next_day_open = self.data['Open'].iloc[idx + 1]
+                    entry_price = next_day_open
                     self.entry_prices[idx] = entry_price
-                    self.log_trade(f"モメンタム エントリー: 日付={self.data.index[idx]}, 価格={entry_price}")
+                    self.log_trade(f"モメンタム エントリー: 日付={self.data.index[idx]}, 翌日始値={entry_price:.2f}")
             
             # ポジションを持っている場合のみイグジットシグナルを検討
             elif in_position:

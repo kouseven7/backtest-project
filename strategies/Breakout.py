@@ -94,14 +94,20 @@ class BreakoutStrategy(BaseStrategy):
         price_breakout = current_price > previous_high * (1 + self.params["breakout_buffer"])
 
         if price_breakout and volume_increase:
-            # エントリー価格と高値を記録
-            self.entry_prices[idx] = current_price
+            # Phase 1a修正: エントリー価格を翌日始値に変更（ルックアヘッドバイアス修正）
+            # 理由: idx日の終値を見てからidx日の終値で買うことは不可能
+            # リアルトレードでは翌日（idx+1日目）の始値でエントリー
+            next_day_open = self.data['Open'].iloc[idx + 1]
+            self.entry_prices[idx] = next_day_open  # 翌日始値を記録
+            
+            # 高値の初期値も翌日始値を使用（トレーリングストップの起点）
             if 'High' in self.data.columns:
-                self.high_prices[idx] = self.data['High'].iloc[idx]
+                # 翌日の高値を使用
+                self.high_prices[idx] = self.data['High'].iloc[idx + 1]
             else:
-                self.high_prices[idx] = current_price
+                self.high_prices[idx] = next_day_open
                 
-            self.log_trade(f"Breakout エントリーシグナル: 日付={self.data.index[idx]}, 価格={current_price}, 前日高値={previous_high}")
+            self.log_trade(f"Breakout エントリーシグナル: 日付={self.data.index[idx]}, 価格={next_day_open}, 前日高値={previous_high}")
             return 1
 
         return 0
@@ -132,13 +138,28 @@ class BreakoutStrategy(BaseStrategy):
         # インデックス位置（整数）を取得
         latest_entry_pos = self.data.index.get_loc(latest_entry_date)
 
+        # Phase 1a修正: フォールバック処理も翌日始値を使用（ルックアヘッドバイアス修正）
         if latest_entry_date not in self.entry_prices:
-            self.entry_prices[latest_entry_date] = self.data[self.price_column].iloc[latest_entry_pos]
+            next_day_pos = latest_entry_pos + 1
+            if next_day_pos < len(self.data):
+                self.entry_prices[latest_entry_date] = self.data['Open'].iloc[next_day_pos]
+            else:
+                # 最終日の場合は当日始値を使用（境界条件の妥協案）
+                self.entry_prices[latest_entry_date] = self.data['Open'].iloc[latest_entry_pos]
             
-        if latest_entry_date not in self.high_prices and 'High' in self.data.columns:
-            self.high_prices[latest_entry_date] = self.data['High'].iloc[latest_entry_pos]
-        elif latest_entry_date not in self.high_prices:
-            self.high_prices[latest_entry_date] = self.data[self.price_column].iloc[latest_entry_pos]
+        if latest_entry_date not in self.high_prices:
+            next_day_pos = latest_entry_pos + 1
+            if next_day_pos < len(self.data):
+                if 'High' in self.data.columns:
+                    self.high_prices[latest_entry_date] = self.data['High'].iloc[next_day_pos]
+                else:
+                    self.high_prices[latest_entry_date] = self.data['Open'].iloc[next_day_pos]
+            else:
+                # 最終日の場合
+                if 'High' in self.data.columns:
+                    self.high_prices[latest_entry_date] = self.data['High'].iloc[latest_entry_pos]
+                else:
+                    self.high_prices[latest_entry_date] = self.data['Open'].iloc[latest_entry_pos]
             
         entry_price = self.entry_prices[latest_entry_date]
         high_price = self.high_prices[latest_entry_date]
@@ -182,7 +203,9 @@ class BreakoutStrategy(BaseStrategy):
         last_entry_idx = None
 
         # 各日にちについてシグナルを計算
-        for idx in range(len(self.data)):
+        # Phase 1修正: 最終日を除外してidx+1アクセスを安全に（ルックアヘッドバイアス修正）
+        # 理由: エントリー価格を翌日始値（idx+1）に変更するため、最終日でのIndexError回避
+        for idx in range(len(self.data) - 1):
             # 取引期間フィルタリング（BaseStrategy.backtest()と同じロジック）
             if trading_start_date is not None or trading_end_date is not None:
                 current_date = self.data.index[idx]
