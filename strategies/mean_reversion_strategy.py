@@ -57,6 +57,10 @@ class MeanReversionStrategy(BaseStrategy):
             "atr_filter": True,              # ATRボラティリティフィルター
             "atr_period": 14,                # ATR期間
             "atr_multiplier": 1.5,           # ATRストップ倍率
+            
+            # Phase 2: スリッページ・取引コスト（2025-12-23追加）
+            "slippage": 0.001,               # スリッページ（0.1%、買い注文は不利な方向）
+            "transaction_cost": 0.0          # 取引コスト（0%、オプション）
         }
         merged_params = {**default_params, **(params or {})}
         super().__init__(data, merged_params)
@@ -137,15 +141,24 @@ class MeanReversionStrategy(BaseStrategy):
         if idx < max(self.params["zscore_period"], self.params["bb_period"]):
             return False
             
-        z_score = self.data['Z_Score'].iloc[idx]
-        current_price = self.data[self.price_column].iloc[idx]
-        bb_lower = self.data['BB_Lower'].iloc[idx]
+        # スカラー値として取得（.iloc[idx]がSeries返すケース対策）
+        z_score_val = self.data['Z_Score'].iloc[idx]
+        if isinstance(z_score_val, pd.Series):
+            z_score_val = z_score_val.values[0]
+            
+        current_price_val = self.data[self.price_column].iloc[idx]
+        if isinstance(current_price_val, pd.Series):
+            current_price_val = current_price_val.values[0]
+            
+        bb_lower_val = self.data['BB_Lower'].iloc[idx]
+        if isinstance(bb_lower_val, pd.Series):
+            bb_lower_val = bb_lower_val.values[0]
         
         # Z-scoreベースの判定
-        z_score_condition = z_score <= self.params["zscore_entry_threshold"]
+        z_score_condition = z_score_val <= self.params["zscore_entry_threshold"]
         
         # ボリンジャーバンドベースの判定
-        bb_condition = current_price <= bb_lower
+        bb_condition = current_price_val <= bb_lower_val
         
         return z_score_condition and bb_condition
         
@@ -157,13 +170,19 @@ class MeanReversionStrategy(BaseStrategy):
         if 'Volume_MA' not in self.data.columns:
             return True
             
-        current_volume = self.data['Volume'].iloc[idx]
-        avg_volume = self.data['Volume_MA'].iloc[idx]
+        # スカラー値として取得
+        current_volume_val = self.data['Volume'].iloc[idx]
+        if isinstance(current_volume_val, pd.Series):
+            current_volume_val = current_volume_val.values[0]
+            
+        avg_volume_val = self.data['Volume_MA'].iloc[idx]
+        if isinstance(avg_volume_val, pd.Series):
+            avg_volume_val = avg_volume_val.values[0]
         
-        if pd.isna(avg_volume):
+        if pd.isna(avg_volume_val):
             return True
             
-        return current_volume >= (avg_volume * self.params["volume_threshold"])
+        return current_volume_val >= (avg_volume_val * self.params["volume_threshold"])
         
     def generate_entry_signal(self, idx: int) -> int:
         """エントリーシグナル生成"""
@@ -191,7 +210,10 @@ class MeanReversionStrategy(BaseStrategy):
         if position_size <= 0:
             return 0
             
-        current_price = self.data[self.price_column].iloc[idx]
+        # スカラー値として取得
+        current_price_val = self.data[self.price_column].iloc[idx]
+        if isinstance(current_price_val, pd.Series):
+            current_price_val = current_price_val.values[0]
         
         # エントリー価格とエントリー日を特定
         entry_price = None
@@ -212,7 +234,7 @@ class MeanReversionStrategy(BaseStrategy):
             return 1  # 最大保有日数到達
             
         # 損益計算
-        pnl_pct = (current_price - entry_price) / entry_price
+        pnl_pct = (current_price_val - entry_price) / entry_price
         
         # ストップロス
         if pnl_pct <= -self.params["stop_loss_pct"]:
@@ -224,23 +246,29 @@ class MeanReversionStrategy(BaseStrategy):
             
         # ATRベースのストップロス（オプション）
         if self.params["atr_filter"] and 'ATR' in self.data.columns:
-            atr = self.data['ATR'].iloc[idx]
-            if pd.notna(atr):
-                atr_stop_loss = self.params["atr_multiplier"] * atr / entry_price
+            atr_val = self.data['ATR'].iloc[idx]
+            if isinstance(atr_val, pd.Series):
+                atr_val = atr_val.values[0]
+            if pd.notna(atr_val):
+                atr_stop_loss = self.params["atr_multiplier"] * atr_val / entry_price
                 if pnl_pct <= -atr_stop_loss:
                     return 1
                     
         # 平均回帰完了チェック（Z-scoreベース）
         if 'Z_Score' in self.data.columns:
-            z_score = self.data['Z_Score'].iloc[idx]
-            if pd.notna(z_score) and z_score >= self.params["zscore_exit_threshold"]:
+            z_score_val = self.data['Z_Score'].iloc[idx]
+            if isinstance(z_score_val, pd.Series):
+                z_score_val = z_score_val.values[0]
+            if pd.notna(z_score_val) and z_score_val >= self.params["zscore_exit_threshold"]:
                 if pnl_pct > 0:  # 利益が出ている場合のみ
                     return 1
                     
         # 移動平均回帰チェック
         if 'SMA' in self.data.columns:
-            sma = self.data['SMA'].iloc[idx]
-            if pd.notna(sma) and current_price >= sma * 0.995:  # 移動平均の99.5%まで戻った
+            sma_val = self.data['SMA'].iloc[idx]
+            if isinstance(sma_val, pd.Series):
+                sma_val = sma_val.values[0]
+            if pd.notna(sma_val) and current_price_val >= sma_val * 0.995:  # 移動平均の99.5%まで戻った
                 if pnl_pct > 0:  # 利益が出ている場合のみ
                     return 1
                     
@@ -255,7 +283,9 @@ class MeanReversionStrategy(BaseStrategy):
         
         position_size = 0
         
-        for i in range(len(result_data)):
+        # Phase 1修正: 最終日を除外してi+1アクセスを安全に（ルックアヘッドバイアス修正）
+        # 理由: エントリー価格を翌日始値（i+1）に変更するため、最終日でのIndexError回避
+        for i in range(len(result_data) - 1):
             # 取引期間フィルタリング
             if trading_start_date is not None or trading_end_date is not None:
                 current_date = result_data.index[i]
@@ -273,7 +303,20 @@ class MeanReversionStrategy(BaseStrategy):
                 if entry_signal == 1:
                     result_data['Entry_Signal'].iloc[i] = 1
                     position_size = 1.0
-                    self.entry_prices[i] = result_data[self.price_column].iloc[i]
+                    # Phase 1修正: エントリー価格を翌日始値に変更（ルックアヘッドバイアス修正）
+                    # Phase 2修正: スリッページ・取引コスト対応（2025-12-23追加）
+                    # 理由: i日の終値を見てからi日の終値で買うことは不可能
+                    # リアルトレードでは翌日（i+1日目）の始値でエントリー
+                    next_day_open_val = result_data['Open'].iloc[i + 1]
+                    if isinstance(next_day_open_val, pd.Series):
+                        next_day_open_val = next_day_open_val.values[0]
+                    
+                    # Phase 2: スリッページ・取引コスト適用（買い注文は不利な方向）
+                    # デフォルト: slippage=0.001（0.1%）、transaction_cost=0.0（0%）
+                    slippage = self.params.get("slippage", 0.001)
+                    transaction_cost = self.params.get("transaction_cost", 0.0)
+                    entry_price = next_day_open_val * (1 + slippage + transaction_cost)
+                    self.entry_prices[i] = entry_price
                     self.position_days[i] = 0
                     
             else:

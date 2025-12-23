@@ -67,7 +67,11 @@ class MomentumInvestingStrategy(BaseStrategy):
             "partial_exit_threshold": 0.08, # 一部利確の発動閾値
             "momentum_exit_threshold": -0.03, # モメンタム失速閾値
             "volume_exit_threshold": 0.7,   # 出来高減少イグジット閾値
-            "trend_filter": True            # トレンドフィルターの使用
+            "trend_filter": True,           # トレンドフィルターの使用
+            
+            # Phase 2: スリッページ・取引コスト（2025-12-23追加）
+            "slippage": 0.001,              # スリッページ0.1%
+            "transaction_cost": 0.0,        # 取引コスト0.1%（デフォルト0、オプション）
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -217,10 +221,15 @@ class MomentumInvestingStrategy(BaseStrategy):
             # Phase 1修正: フォールバック処理も翌日始値を使用（ルックアヘッドバイアス修正）
             next_day_pos = latest_entry_idx_int + 1
             if next_day_pos < len(self.data):
-                self.entry_prices[latest_entry_idx_int] = self.data['Open'].iloc[next_day_pos]
+                next_day_open = self.data['Open'].iloc[next_day_pos]
             else:
                 # 最終日の場合は当日始値を使用（境界条件の妥協案）
-                self.entry_prices[latest_entry_idx_int] = self.data['Open'].iloc[latest_entry_idx_int]
+                next_day_open = self.data['Open'].iloc[latest_entry_idx_int]
+            
+            # Phase 2修正: スリッページ・取引コスト考慮（2025-12-23追加）
+            slippage = self.params.get("slippage", 0.001)
+            transaction_cost = self.params.get("transaction_cost", 0.0)
+            self.entry_prices[latest_entry_idx_int] = next_day_open * (1 + slippage + transaction_cost)
             
         entry_price = self.entry_prices[latest_entry_idx_int]
         current_price = self.data[self.price_column].iloc[idx]
@@ -345,9 +354,14 @@ class MomentumInvestingStrategy(BaseStrategy):
                     # 理由: idx日の終値を見てからidx日の終値で買うことは不可能
                     # リアルトレードでは翌日（idx+1日目）の始値でエントリー
                     next_day_open = self.data['Open'].iloc[idx + 1]
-                    entry_price = next_day_open
+                    
+                    # Phase 2修正: スリッページ・取引コスト考慮（2025-12-23追加）
+                    slippage = self.params.get("slippage", 0.001)
+                    transaction_cost = self.params.get("transaction_cost", 0.0)
+                    entry_price = next_day_open * (1 + slippage + transaction_cost)
+                    
                     self.entry_prices[idx] = entry_price
-                    self.log_trade(f"モメンタム エントリー: 日付={self.data.index[idx]}, 翌日始値={entry_price:.2f}")
+                    self.log_trade(f"モメンタム エントリー: 日付={self.data.index[idx]}, 翌日始値={next_day_open:.2f}, エントリー価格={entry_price:.2f} (スリッページ+コスト={slippage+transaction_cost:.4f})")
             
             # ポジションを持っている場合のみイグジットシグナルを検討
             elif in_position:

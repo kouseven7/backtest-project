@@ -55,6 +55,10 @@ class PairsTradingStrategy(BaseStrategy):
             "correlation_min": 0.7,          # 最小相関閾値
             "volatility_filter": True,       # ボラティリティフィルター
             "volatility_period": 10,         # ボラティリティ計算期間
+            
+            # Phase 2: スリッページ・取引コスト（2025-12-23追加）
+            "slippage": 0.001,               # スリッページ（0.1%、買い注文は不利な方向）
+            "transaction_cost": 0.0          # 取引コスト（0%、オプション）
         }
         merged_params = {**default_params, **(params or {})}
         super().__init__(data, merged_params)
@@ -205,8 +209,14 @@ class PairsTradingStrategy(BaseStrategy):
         if position_size <= 0:
             return 0
             
-        current_price = self.data[self.price_column].iloc[idx]
-        spread_zscore = self.data['Spread_ZScore'].iloc[idx]
+        # スカラー値として取得
+        current_price_val = self.data[self.price_column].iloc[idx]
+        if isinstance(current_price_val, pd.Series):
+            current_price_val = current_price_val.values[0]
+            
+        spread_zscore_val = self.data['Spread_ZScore'].iloc[idx]
+        if isinstance(spread_zscore_val, pd.Series):
+            spread_zscore_val = spread_zscore_val.values[0]
         
         # エントリー価格を取得
         entry_price = None
@@ -214,7 +224,14 @@ class PairsTradingStrategy(BaseStrategy):
         
         for i in range(max(0, idx - self.params["max_hold_days"]), idx):
             if i in self.entry_prices:
-                entry_price = self.entry_prices[i]
+                entry_price_raw = self.entry_prices[i]
+                # スカラー値として取得
+                if isinstance(entry_price_raw, pd.Series):
+                    entry_price = entry_price_raw.values[0]
+                elif isinstance(entry_price_raw, (np.ndarray, np.generic)):
+                    entry_price = float(entry_price_raw)
+                else:
+                    entry_price = entry_price_raw
                 entry_idx = i
                 break
                 
@@ -227,7 +244,7 @@ class PairsTradingStrategy(BaseStrategy):
             return 1  # 最大保有日数到達
             
         # 損益計算
-        pnl_pct = (current_price - entry_price) / entry_price
+        pnl_pct = (current_price_val - entry_price) / entry_price
         
         # ストップロス
         if pnl_pct <= -self.params["stop_loss_pct"]:
@@ -238,11 +255,11 @@ class PairsTradingStrategy(BaseStrategy):
             return 1
             
         # スプレッド回帰チェック（メイン エグジット条件）
-        if not pd.isna(spread_zscore):
+        if not pd.isna(spread_zscore_val):
             exit_threshold = self.params["exit_threshold"]
             
             # スプレッドが正常範囲に戻った場合
-            if abs(spread_zscore) <= exit_threshold:
+            if abs(spread_zscore_val) <= exit_threshold:
                 return 1  # 回帰完了でエグジット
                 
         return 0
@@ -256,7 +273,9 @@ class PairsTradingStrategy(BaseStrategy):
         
         position_size = 0
         
-        for i in range(len(result_data)):
+        # Phase 1修正: 最終日を除外してi+1アクセスを安全に（ルックアヘッドバイアス修正）
+        # 理由: エントリー価格を翌日始値（i+1）に変更するため、最終日でのIndexError回避
+        for i in range(len(result_data) - 1):
             # 取引期間フィルタリング
             if trading_start_date is not None or trading_end_date is not None:
                 current_date = result_data.index[i]
@@ -274,7 +293,20 @@ class PairsTradingStrategy(BaseStrategy):
                 if entry_signal == 1:
                     result_data['Entry_Signal'].iloc[i] = 1
                     position_size = 1.0
-                    self.entry_prices[i] = result_data[self.price_column].iloc[i]
+                    # Phase 1修正: エントリー価格を翌日始値に変更（ルックアヘッドバイアス修正）
+                    # Phase 2修正: スリッページ・取引コスト対応（2025-12-23追加）
+                    # 理由: i日の終値を見てからi日の終値で買うことは不可能
+                    # リアルトレードでは翌日（i+1日目）の始値でエントリー
+                    next_day_open_val = result_data['Open'].iloc[i + 1]
+                    if isinstance(next_day_open_val, pd.Series):
+                        next_day_open_val = next_day_open_val.values[0]
+                    
+                    # Phase 2: スリッページ・取引コスト適用（買い注文は不利な方向）
+                    # デフォルト: slippage=0.001（0.1%）、transaction_cost=0.0（0%）
+                    slippage = self.params.get("slippage", 0.001)
+                    transaction_cost = self.params.get("transaction_cost", 0.0)
+                    entry_price = next_day_open_val * (1 + slippage + transaction_cost)
+                    self.entry_prices[i] = entry_price
                     self.position_days[i] = 0
                     
             else:

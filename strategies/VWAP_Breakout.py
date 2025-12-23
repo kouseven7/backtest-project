@@ -92,6 +92,10 @@ class VWAPBreakoutStrategy(BaseStrategy):
             # --- その他（将来拡張用・固定値） ---
             "rsi_period": 14,                   # RSI計算期間
             "volume_increase_mode": "simple", # 出来高増加判定方式 (simple/average/exponential)
+
+            # --- Phase 2: スリッページ・取引コスト（2025-12-23追加） ---
+            "slippage": 0.001,               # スリッページ（0.1%、買い注文は不利な方向）
+            "transaction_cost": 0.0          # 取引コスト（0%、オプション）
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -250,6 +254,22 @@ class VWAPBreakoutStrategy(BaseStrategy):
             previous_vwap = self.data['VWAP'].iloc[idx - 1]
             current_volume = self.data[self.volume_column].iloc[idx]
             previous_volume = self.data[self.volume_column].iloc[idx - 1]
+            
+            # Series型のままの場合はスカラー化（Phase 2修正：2025-12-23）
+            if isinstance(current_price, pd.Series):
+                current_price = current_price.values[0]
+            if isinstance(sma_short, pd.Series):
+                sma_short = sma_short.values[0]
+            if isinstance(sma_long, pd.Series):
+                sma_long = sma_long.values[0]
+            if isinstance(vwap, pd.Series):
+                vwap = vwap.values[0]
+            if isinstance(previous_vwap, pd.Series):
+                previous_vwap = previous_vwap.values[0]
+            if isinstance(current_volume, pd.Series):
+                current_volume = current_volume.values[0]
+            if isinstance(previous_volume, pd.Series):
+                previous_volume = previous_volume.values[0]
             
             # RSIフィルターが有効な場合
             if self.params.get("rsi_filter_enabled", False):
@@ -451,9 +471,19 @@ class VWAPBreakoutStrategy(BaseStrategy):
                     self.data.loc[self.data.index[idx], 'Position'] = 1
                     
                     # Phase 1修正: Entry_Priceを翌日始値に変更（ルックアヘッドバイアス修正）
+                    # Phase 2修正: スリッページ適用（2025-12-23追加）
                     next_day_open = self.data['Open'].iloc[idx + 1]
-                    self.data.loc[self.data.index[idx], 'Entry_Price'] = next_day_open
                     
+                    # Series型のままの場合はスカラー化
+                    if isinstance(next_day_open, pd.Series):
+                        next_day_open = next_day_open.values[0]
+                    
+                    # スリッページ・取引コスト適用
+                    slippage = self.params.get("slippage", 0.001)
+                    transaction_cost = self.params.get("transaction_cost", 0.0)
+                    entry_price = next_day_open * (1 + slippage + transaction_cost)
+                    
+                    self.data.loc[self.data.index[idx], 'Entry_Price'] = entry_price
                     self.data.loc[self.data.index[idx], 'Entry_Idx'] = idx
             
             # ポジションがある場合、イグジットシグナルをチェック

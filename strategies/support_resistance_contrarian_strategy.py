@@ -58,6 +58,10 @@ class SupportResistanceContrarianStrategy(BaseStrategy):
             "rsi_period": 14,                # RSI期間
             "rsi_oversold": 25,              # RSI過売り閾値
             "rsi_overbought": 75,            # RSI過買い閾値
+            
+            # Phase 2: スリッページ・取引コスト（2025-12-23追加）
+            "slippage": 0.001,               # スリッページ（0.1%、買い注文は不利な方向）
+            "transaction_cost": 0.0          # 取引コスト（0%、オプション）
         }
         merged_params = {**default_params, **(params or {})}
         super().__init__(data, merged_params)
@@ -267,6 +271,13 @@ class SupportResistanceContrarianStrategy(BaseStrategy):
                 if i in self.entry_prices:
                     entry_price = self.entry_prices[i]
                     break
+        
+        # Phase 2追加: entry_priceスカラー化処理（Series型エラー防止）
+        if entry_price is not None:
+            if isinstance(entry_price, pd.Series):
+                entry_price = entry_price.values[0]
+            elif isinstance(entry_price, (np.ndarray, np.generic)):
+                entry_price = float(entry_price)
                     
         if entry_price is None:
             return 0
@@ -302,7 +313,7 @@ class SupportResistanceContrarianStrategy(BaseStrategy):
         
         position_size = 0
         
-        for i in range(len(result_data)):
+        for i in range(len(result_data) - 1):
             # 取引期間フィルタリング
             if trading_start_date is not None or trading_end_date is not None:
                 current_date = result_data.index[i]
@@ -318,9 +329,26 @@ class SupportResistanceContrarianStrategy(BaseStrategy):
                 # エントリーチェック
                 entry_signal = self.generate_entry_signal(i)
                 if entry_signal == 1:
+                    # IndexError対策（念のため）
+                    if i + 1 >= len(result_data):
+                        continue
+                    
                     result_data['Entry_Signal'].iloc[i] = 1
                     position_size = 1.0
-                    self.entry_prices[i] = result_data[self.price_column].iloc[i]
+                    # Phase 1修正: 翌日始値でエントリー（ルックアヘッドバイアス解消）
+                    # Phase 2修正: スリッページ・取引コスト対応（2025-12-23追加）
+                    # 理由: i日の終値を見てからi日の終値で買うことは不可能
+                    # リアルトレードでは翌日（i+1日目）の始値でエントリー
+                    next_day_open_val = result_data['Open'].iloc[i + 1]
+                    if isinstance(next_day_open_val, pd.Series):
+                        next_day_open_val = next_day_open_val.values[0]
+                    
+                    # Phase 2: スリッページ・取引コスト適用（買い注文は不利な方向）
+                    # デフォルト: slippage=0.001（0.1%）、transaction_cost=0.0（0%）
+                    slippage = self.params.get("slippage", 0.001)
+                    transaction_cost = self.params.get("transaction_cost", 0.0)
+                    entry_price = next_day_open_val * (1 + slippage + transaction_cost)
+                    self.entry_prices[i] = entry_price
                     
             else:
                 # エグジットチェック
@@ -339,7 +367,7 @@ class SupportResistanceContrarianStrategy(BaseStrategy):
         
     def get_required_columns(self) -> List[str]:
         """必要なデータ列を返す"""
-        return [self.price_column, 'High', 'Low', 'Volume']
+        return [self.price_column, 'Open', 'High', 'Low', 'Volume']
         
     def get_parameters_info(self) -> Dict[str, Any]:
         """パラメータ情報を返す"""

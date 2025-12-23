@@ -50,7 +50,9 @@ class BreakoutStrategy(BaseStrategy):
             "take_profit": 0.03,       # 利益確定（3%）
             "look_back": 1,            # 前日からのブレイクアウトを見る日数
             "trailing_stop": 0.02,     # トレーリングストップ（高値から2%下落）
-            "breakout_buffer": 0.01     # ブレイクアウト判定の閾値（1%）
+            "breakout_buffer": 0.01,   # ブレイクアウト判定の閾値（1%）
+            "slippage": 0.001,         # Phase 2: スリッページ（0.1%、買い注文は不利な方向）
+            "transaction_cost": 0.0    # Phase 2: 取引コスト（0%、オプション）
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -95,10 +97,17 @@ class BreakoutStrategy(BaseStrategy):
 
         if price_breakout and volume_increase:
             # Phase 1a修正: エントリー価格を翌日始値に変更（ルックアヘッドバイアス修正）
+            # Phase 2修正: スリッページ・取引コスト対応（2025-12-23追加）
             # 理由: idx日の終値を見てからidx日の終値で買うことは不可能
             # リアルトレードでは翌日（idx+1日目）の始値でエントリー
             next_day_open = self.data['Open'].iloc[idx + 1]
-            self.entry_prices[idx] = next_day_open  # 翌日始値を記録
+            
+            # Phase 2: スリッページ・取引コスト適用（買い注文は不利な方向）
+            # デフォルト: slippage=0.001（0.1%）、transaction_cost=0.0（0%）
+            slippage = self.params.get("slippage", 0.001)
+            transaction_cost = self.params.get("transaction_cost", 0.0)
+            entry_price = next_day_open * (1 + slippage + transaction_cost)
+            self.entry_prices[idx] = entry_price  # スリッページ適用後の価格を記録
             
             # 高値の初期値も翌日始値を使用（トレーリングストップの起点）
             if 'High' in self.data.columns:
@@ -139,13 +148,24 @@ class BreakoutStrategy(BaseStrategy):
         latest_entry_pos = self.data.index.get_loc(latest_entry_date)
 
         # Phase 1a修正: フォールバック処理も翌日始値を使用（ルックアヘッドバイアス修正）
+        # Phase 2修正: スリッページ・取引コスト対応（2025-12-23追加）
         if latest_entry_date not in self.entry_prices:
             next_day_pos = latest_entry_pos + 1
             if next_day_pos < len(self.data):
-                self.entry_prices[latest_entry_date] = self.data['Open'].iloc[next_day_pos]
+                next_day_open = self.data['Open'].iloc[next_day_pos]
+                # Phase 2: スリッページ・取引コスト適用
+                slippage = self.params.get("slippage", 0.001)
+                transaction_cost = self.params.get("transaction_cost", 0.0)
+                entry_price = next_day_open * (1 + slippage + transaction_cost)
+                self.entry_prices[latest_entry_date] = entry_price
             else:
                 # 最終日の場合は当日始値を使用（境界条件の妥協案）
-                self.entry_prices[latest_entry_date] = self.data['Open'].iloc[latest_entry_pos]
+                # Phase 2: この場合もスリッページ適用
+                current_open = self.data['Open'].iloc[latest_entry_pos]
+                slippage = self.params.get("slippage", 0.001)
+                transaction_cost = self.params.get("transaction_cost", 0.0)
+                entry_price = current_open * (1 + slippage + transaction_cost)
+                self.entry_prices[latest_entry_date] = entry_price
             
         if latest_entry_date not in self.high_prices:
             next_day_pos = latest_entry_pos + 1

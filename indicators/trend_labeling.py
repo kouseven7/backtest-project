@@ -31,7 +31,7 @@ import sys
 sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")
 
 # 既存モジュールのインポート
-from indicators.unified_trend_detector import UnifiedTrendDetector, detect_unified_trend
+# 注: UnifiedTrendDetectorは循環インポート回避のため、使用時に遅延インポート
 from indicators.trend_accuracy_validator import TrendAccuracyValidator
 from config.logger_config import setup_logger
 
@@ -106,8 +106,10 @@ class TrendLabeler:
         trends: List[Optional[str]] = []
         confidences: List[float] = []
         
-        # UnifiedTrendDetectorを使用してラベリング
+        # UnifiedTrendDetectorを使用してラベリング（遅延インポート: 循環インポート回避）
         try:
+            from indicators.unified_trend_detector import UnifiedTrendDetector
+            
             detector = UnifiedTrendDetector(
                 self.data, 
                 price_column=self.price_column, 
@@ -150,6 +152,10 @@ class TrendLabeler:
                     trends.append(None)
                     confidences.append(0.0)
             
+        except ImportError as e:
+            logger.error(f"UnifiedTrendDetectorのインポートに失敗しました（循環インポート回避のための遅延インポート）: {e}")
+            # フォールバック: シンプルなトレンド判定
+            trends, confidences = self._fallback_trend_labeling(window_size)
         except Exception as e:
             logger.error(f"UnifiedTrendDetectorの初期化に失敗しました: {e}")
             # フォールバック: シンプルなトレンド判定

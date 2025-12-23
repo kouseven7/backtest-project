@@ -192,7 +192,7 @@ class GCStrategy(BaseStrategy):
         # Phase 1b修正: イグジット価格を翌日始値に変更（ルックアヘッドバイアス修正）
         # 理由: idx日目の終値を見てからidx日目の終値で売ることは不可能
         # リアルトレードでは翌日（idx+1日目）の始値でイグジット
-        current_price = self.data['Open'].iloc[idx + 1]
+        current_price = float(self.data['Open'].iloc[idx + 1])
         
         # デバッグログ: 価格情報
         self.logger.debug(f"[EXIT CHECK] idx={idx}, entry_idx={entry_idx}, entry_price={entry_price}, current_price={current_price:.2f} (next_day_open)")

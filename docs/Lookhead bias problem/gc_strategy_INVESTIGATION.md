@@ -4,7 +4,21 @@
 **調査期間**: 2025-12-21  
 **調査者**: GitHub Copilot  
 **調査対象**: strategies/gc_strategy_signal.py  
-**調査ステータス**: ✅ 調査完了（修正提案準備中）
+**調査ステータス**: ✅ **調査完了・修正完了（Phase 1, Phase 2実装済み）**  
+**修正完了日**: 2025-12-23
+
+### 修正完了サマリー
+
+**Phase 1: ルックアヘッドバイアス修正** ✅ 完了
+- エントリー価格を当日終値から**翌日始値**に変更（BaseStrategy.backtest() Line 285で修正）
+- インジケーター（移動平均線）に`.shift(1)`を適用
+- initialize_strategy()でSMA計算後にshift適用
+
+**Phase 2: スリッページ追加** ✅ 完了
+- デフォルトスリッページ0.1%を追加
+- パラメータ`slippage`（デフォルト: 0.001）
+- パラメータ`transaction_cost`（デフォルト: 0.0）
+- エントリー価格計算: `next_day_open * (1 + slippage + transaction_cost)`
 
 ---
 

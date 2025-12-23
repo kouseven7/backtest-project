@@ -1,9 +1,23 @@
 # Momentum_Investing.py ルックアヘッドバイアス問題 調査報告書
 
 **作成日**: 2025-12-22  
-**最終更新**: 2025-12-22  
+**最終更新**: 2025-12-23  
 **調査者**: GitHub Copilot  
 **調査範囲**: strategies/Momentum_Investing.py  
+**修正ステータス**: ✅ **Phase 1, Phase 2実装完了**
+
+### 修正完了サマリー
+
+**Phase 1: ルックアヘッドバイアス修正** ✅ 完了
+- エントリー価格を当日終値から**翌日始値**に変更（BaseStrategy.backtest() Line 285で修正）
+- MomentumStrategyはBaseStrategy.backtest()を使用（独自実装なし）
+- 自動的にルックアヘッドバイアスが修正される
+
+**Phase 2: スリッページ追加** ✅ 完了
+- デフォルトスリッページ0.1%を追加
+- パラメータ`slippage`（デフォルト: 0.001）
+- パラメータ`transaction_cost`（デフォルト: 0.0）
+- エントリー価格計算: `next_day_open * (1 + slippage + transaction_cost)`  
 
 ---
 

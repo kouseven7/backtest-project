@@ -51,7 +51,11 @@ class ContrarianStrategy(BaseStrategy):
             
             # トレンドフィルター設定（Option 4: レンジ相場のみに戻す）
             "trend_filter_enabled": True,  # トレンドフィルター有効化
-            "allowed_trends": ["range-bound"]  # レンジ相場のみ許可
+            "allowed_trends": ["range-bound"],  # レンジ相場のみ許可
+            
+            # Phase 2: スリッページ・取引コスト（2025-12-23追加）
+            "slippage": 0.001,         # スリッページ（0.1%、買い注文は不利な方向）
+            "transaction_cost": 0.0    # 取引コスト（0%、オプション）
         }
         merged_params = {**default_params, **(params or {})}
         super().__init__(data, merged_params)
@@ -175,11 +179,13 @@ class ContrarianStrategy(BaseStrategy):
         # エントリー条件（B: RSI条件を両方に適用）
         # 条件1: RSI過売り + ギャップダウン
         if rsi <= self.params["rsi_oversold"] and gap_down:
-            self.entry_prices[idx] = current_price
+            # Phase 1修正: エントリー価格記録を削除（backtest()で翌日始値を記録するため）
+            # self.entry_prices[idx] = current_price  # ← 削除
             return 1
         # 条件2: RSI過売り + ピンバー（RSI条件追加）
         if rsi <= self.params["rsi_oversold"] and pin_bar:
-            self.entry_prices[idx] = current_price
+            # Phase 1修正: エントリー価格記録を削除（backtest()で翌日始値を記録するため）
+            # self.entry_prices[idx] = current_price  # ← 削除
             return 1
 
         return 0
@@ -251,7 +257,9 @@ class ContrarianStrategy(BaseStrategy):
         self.data['Entry_Signal'] = 0
         self.data['Exit_Signal'] = 0
 
-        for idx in range(len(self.data)):
+        # Phase 1修正: 最終日を除外してidx+1アクセスを安全に（ルックアヘッドバイアス修正）
+        # 理由: エントリー価格を翌日始値（idx+1）に変更するため、最終日でのIndexError回避
+        for idx in range(len(self.data) - 1):
             # 取引期間フィルタリング（BaseStrategy.backtest()と同じロジック）
             if trading_start_date is not None or trading_end_date is not None:
                 current_date = self.data.index[idx]
@@ -270,6 +278,18 @@ class ContrarianStrategy(BaseStrategy):
                 entry_signal = self.generate_entry_signal(idx)
                 if entry_signal == 1:
                     self.data.at[self.data.index[idx], 'Entry_Signal'] = 1
+                    # Phase 1修正: エントリー価格を翌日始値に変更（ルックアヘッドバイアス修正）
+                    # Phase 2修正: スリッページ・取引コスト対応（2025-12-23追加）
+                    # 理由: idx日の終値を見てからidx日の終値で買うことは不可能
+                    # リアルトレードでは翌日（idx+1日目）の始値でエントリー
+                    next_day_open = self.data['Open'].iloc[idx + 1]
+                    
+                    # Phase 2: スリッページ・取引コスト適用（買い注文は不利な方向）
+                    # デフォルト: slippage=0.001（0.1%）、transaction_cost=0.0（0%）
+                    slippage = self.params.get("slippage", 0.001)
+                    transaction_cost = self.params.get("transaction_cost", 0.0)
+                    entry_price = next_day_open * (1 + slippage + transaction_cost)
+                    self.entry_prices[idx] = entry_price
 
             # イグジットシグナル
             exit_signal = self.generate_exit_signal(idx)

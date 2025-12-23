@@ -281,12 +281,22 @@ class BaseStrategy:
                         entry_idx = idx
                         entry_count += 1
                         
-                        # エントリー価格を記録（ルックアヘッドバイアス対策: 翌日始値を使用）
-                        entry_price = result['Open'].iloc[idx + 1]
+                        # Phase 1修正: エントリー価格を翌日始値に変更（ルックアヘッドバイアス対策）
+                        # Phase 2統合: スリッページ・取引コスト対応（2025-12-23追加）
+                        # デフォルト: slippage=0.001（0.1%）、transaction_cost=0.0（0%）
+                        # 各戦略でパラメータ設定により上書き可能
+                        next_day_open = float(result['Open'].iloc[idx + 1])
+                        slippage = self.params.get("slippage", 0.001)
+                        transaction_cost = self.params.get("transaction_cost", 0.0)
+                        entry_price = next_day_open * (1 + slippage + transaction_cost)
                         self.entry_prices[idx] = entry_price
                         
-                        # デバッグログ: エントリー記録
-                        self.logger.debug(f"[ENTRY #{entry_count}] idx={idx}, date={result.index[idx]}, next_day_open={entry_price:.2f}, in_position={in_position}")
+                        # デバッグログ: エントリー記録（Phase 2対応）
+                        self.logger.debug(
+                            f"[ENTRY #{entry_count}] idx={idx}, date={result.index[idx]}, "
+                            f"next_day_open={next_day_open:.2f}, entry_price={entry_price:.2f}, "
+                            f"slippage+cost={slippage+transaction_cost:.4f}, in_position={in_position}"
+                        )
             
             # ポジションを持っている場合のみイグジットシグナルをチェック
             elif in_position:

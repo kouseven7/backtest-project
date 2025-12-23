@@ -52,7 +52,14 @@ def calculate_sma(data: pd.DataFrame, column: str, window: int) -> pd.Series:
         
         # カラムが数値型かチェック
         if not pd.api.types.is_numeric_dtype(data[actual_column]):
-            logger.warning(f"カラム '{actual_column}' が数値型ではありません。型変換を試みます。現在の型: {data[actual_column].dtype}")
+            # DataFrame型とSeries型の両方に対応（安全な型情報取得）
+            if hasattr(data[actual_column], 'dtype'):
+                current_dtype = data[actual_column].dtype
+            elif hasattr(data[actual_column], 'dtypes'):
+                current_dtype = data[actual_column].dtypes
+            else:
+                current_dtype = "unknown"
+            logger.warning(f"カラム '{actual_column}' が数値型ではありません。型変換を試みます。現在の型: {current_dtype}")
             try:
                 # 数値型に変換を試みる
                 data[actual_column] = pd.to_numeric(data[actual_column], errors='coerce')
