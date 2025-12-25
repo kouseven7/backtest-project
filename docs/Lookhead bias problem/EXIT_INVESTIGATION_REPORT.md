@@ -613,7 +613,10 @@ docs/Lookhead bias problem/
 **修正の優先順位**:
 1. **VWAP_Breakout.py**（最優先、参考実装）
 2. **Breakout.py**（類似戦略）
-3. **contrarian_strategy.py**（別タイプ）
+3. ✅ **contrarian_strategy.py**（Phase 1b修正完了 - 2025-12-23）
+   - 詳細調査報告書: [contrarian_strategy_EXIT_INVESTIGATION.md](contrarian_strategy_EXIT_INVESTIGATION.md)
+   - 修正内容: Line 224（current_price=翌日始値）、Line 238（高値更新=当日高値）
+   - 検証完了: test_20251223_contrarian_exit_price_verification.py（全10項目成功）
 4. **Momentum_Investing.py**
 5. **Opening_Gap.py**
 6. **mean_reversion_strategy.py**

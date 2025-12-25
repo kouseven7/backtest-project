@@ -269,7 +269,7 @@ if f"SMA_{self.long_window}" not in self.data.columns:
 - ゴールデンクロス判定（generate_entry_signal()）
 - デッドクロス判定（generate_exit_signal()）
 
-**対応**: 別途Phase 1cとして修正予定
+**対応**: 別途Phase 1cとして修正完了
 
 ---
 
@@ -309,5 +309,110 @@ if f"SMA_{self.long_window}" not in self.data.columns:
 
 **修正完了日**: 2025-12-21  
 **修正者**: GitHub Copilot  
-**ステータス**: Phase 1b完了、Phase 1c準備中  
+**ステータス**: Phase 1b完了、Phase 1c修正完了  
 **関連Issue**: ルックアヘッドバイアス問題（イグジット編）
+
+---
+
+## 調査完了報告（2025-12-23追記）
+
+### 調査目的
+
+mean_reversion_strategy.py Phase 1b修正完了後、gc_strategy_signal.pyについても同様のルックアヘッドバイアス問題（イグジット編）が存在するか再調査し、修正が必要な箇所を特定する。
+
+### 調査実施日
+
+2025-12-23
+
+### 調査結果
+
+**最重要発見**: ✅ **gc_strategy_signal.pyは全Phase修正済み（Phase 0/Phase 1/Phase 1b/Phase 1c）**
+
+| Phase | 内容 | 修正箇所 | 状態 | 根拠 |
+|-------|------|---------|------|------|
+| **Phase 0** | インジケーターshift(1) | Lines 91-93 | ✅ **修正済み** | SMA.shift(1)適用、修正コメントあり（Phase 1c） |
+| **Phase 1** | エントリー価格翌日始値 | BaseStrategy.backtest() | ✅ **修正済み** | 独自backtest未実装、BaseStrategy使用 |
+| **Phase 1b** | イグジット価格翌日始値 | Line 195 | ✅ **修正済み** | 翌日始値使用、修正コメントあり（2025-12-21） |
+| **Phase 1c** | インジケーターshift(1) | Lines 91-93 | ✅ **修正済み** | SMA.shift(1)適用、修正コメントあり |
+
+### 詳細確認結果
+
+#### Phase 0/Phase 1c修正の確認
+
+**実際のコード（Lines 86-93）**:
+```python
+# Phase 1c修正: 移動平均線にshift(1)を適用（ルックアヘッドバイアス修正）
+# 理由: idx日目の移動平均がidx日目の価格を含むのはルックアヘッドバイアス
+# リアルトレードでは前日までのデータで当日の判断を行う
+
+# 短期移動平均線
+self.data[f"SMA_{self.short_window}"] = self.data[self.price_column].rolling(window=self.short_window).mean().shift(1)
+# 長期移動平均線
+self.data[f"SMA_{self.long_window}"] = self.data[self.price_column].rolling(window=self.long_window).mean().shift(1)
+```
+
+**インジケーター一覧**:
+
+| インジケーター | shift(1)適用 | 実装箇所 | 状態 |
+|---------------|-------------|---------|------|
+| SMA_short | ✅ | Line 91 | shift(1)適用済み、修正コメントあり |
+| SMA_long | ✅ | Line 93 | shift(1)適用済み、修正コメントあり |
+
+**結論**: ✅ **Phase 0/Phase 1c修正済み**（全インジケーターにshift(1)適用、修正理由明記）
+
+#### Phase 1b修正の再確認
+
+**実際のコード（Lines 193-195）**:
+```python
+# Phase 1b修正: イグジット価格を翌日始値に変更（ルックアヘッドバイアス修正）
+# 理由: idx日目の終値を見てからidx日目の終値で売ることは不可能
+# リアルトレードでは翌日（idx+1日目）の始値でイグジット
+current_price = float(self.data['Open'].iloc[idx + 1])
+```
+
+**イグジット条件一覧**:
+
+| No | イグジット条件 | 実装箇所 | 使用価格 | ルックアヘッドバイアス |
+|----|---------------|---------|---------|----------------------|
+| 1 | デッドクロス | Lines 209-219 | デッドクロス判定のみ | ✅ 問題なし |
+| 2 | トレーリングストップ | Lines 222-231 | current_price（翌日始値） | ✅ **Phase 1b修正済み** |
+| 3 | 利益確定 | Lines 234-237 | current_price（翌日始値） | ✅ **Phase 1b修正済み** |
+| 4 | 損切り | Lines 240-243 | current_price（翌日始値） | ✅ **Phase 1b修正済み** |
+| 5 | 最大保有期間 | Lines 246-248 | 日数のみ | ✅ 問題なし |
+
+**結論**: ✅ **Phase 1b修正済み再確認**（全5イグジット条件で翌日始値使用）
+
+### 総合ステータス
+
+| Phase | 内容 | 状態 | 確認日 | 備考 |
+|-------|------|------|--------|------|
+| Phase 0 | インジケーターshift(1) | ✅ **完了** | 2025-12-23 | SMA.shift(1)適用、修正コメントあり |
+| Phase 1 | エントリー価格翌日始値 | ✅ **完了** | 2025-12-23 | BaseStrategy使用、他戦略で確認済み |
+| Phase 1b | イグジット価格翌日始値 | ✅ **完了** | 2025-12-21 | 翌日始値使用、修正コメントあり |
+| Phase 1c | インジケーターshift(1) | ✅ **完了** | 2025-12-23 | Phase 0と同一（SMA.shift(1)適用） |
+
+**総合結論**: ✅ **gc_strategy_signal.pyは全Phase修正済み（修正不要）**
+
+### 次のアクション
+
+1. **EXIT_INVESTIGATION_REPORT.md更新**（最優先）
+   - gc_strategy_signal.py追加
+   - ステータス: ✅ 完了（Phase 0/Phase 1/Phase 1b/Phase 1c修正済み）
+   - 確認日: 2025-12-23
+   - 詳細調査報告書: [gc_strategy_EXIT_INVESTIGATION.md](gc_strategy_EXIT_INVESTIGATION.md)
+
+2. **検証テスト作成**（不要）
+   - 理由: 既に全Phase修正済み（Phase 0/Phase 1/Phase 1b/Phase 1c）
+   - 修正不要のため検証テスト作成不要
+
+3. **他戦略の調査継続**（推奨）
+   - EXIT_INVESTIGATION_REPORT.mdに記載の他戦略を順次調査
+   - 優先順位: mean_reversion_strategy.py（Phase 1b修正完了済み、2025-12-23）→ VWAP_Breakout.py等
+
+### 調査完了ステータス
+
+**調査完了日**: 2025-12-23  
+**調査者**: GitHub Copilot  
+**調査結果**: ✅ gc_strategy_signal.pyは全Phase修正済み（Phase 0/Phase 1/Phase 1b/Phase 1c）  
+**次のアクション**: EXIT_INVESTIGATION_REPORT.md更新のみ（修正不要）  
+**修正不要の理由**: Phase 0/Phase 1/Phase 1b/Phase 1c全て修正済み確認

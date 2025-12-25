@@ -232,7 +232,15 @@ class MomentumInvestingStrategy(BaseStrategy):
             self.entry_prices[latest_entry_idx_int] = next_day_open * (1 + slippage + transaction_cost)
             
         entry_price = self.entry_prices[latest_entry_idx_int]
-        current_price = self.data[self.price_column].iloc[idx]
+        
+        # Phase 1b修正: イグジット価格を翌日始値に変更（ルックアヘッドバイアス修正）
+        # 理由: idx日目の終値を見てからidx日目の終値で売ることは不可能
+        # リアルトレードでは翌日（idx+1日目）の始値でイグジット
+        current_price_val = self.data['Open'].iloc[idx + 1]
+        if isinstance(current_price_val, pd.Series):
+            current_price_val = current_price_val.values[0]
+        current_price = current_price_val
+        
         atr = self.data['ATR'].iloc[latest_entry_idx_int]  # エントリー時点のATR
         sma_short_key = 'MA_' + str(self.params["sma_short"])
             
@@ -374,7 +382,8 @@ class MomentumInvestingStrategy(BaseStrategy):
                     self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
                     self.data.at[self.data.index[idx], 'Position'] = 0
                     in_position = False
-                    exit_price = self.data[self.price_column].iloc[idx]
+                    # Phase 1b修正: イグジット価格を翌日始値に変更（ルックアヘッドバイアス修正）
+                    exit_price = self.data['Open'].iloc[idx + 1]
                     self.log_trade(f"モメンタム イグジット: 日付={self.data.index[idx]}, 価格={exit_price}, エントリー日={self.data.index[entry_idx]}")
                     entry_idx = -1
                 else:

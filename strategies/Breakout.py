@@ -183,7 +183,12 @@ class BreakoutStrategy(BaseStrategy):
             
         entry_price = self.entry_prices[latest_entry_date]
         high_price = self.high_prices[latest_entry_date]
-        current_price = self.data[self.price_column].iloc[idx]
+        
+        # Phase 1b修正: イグジット価格を翌日始値に変更（ルックアヘッドバイアス修正）
+        # 理由: idx日の終値を見てからidx日の終値でイグジットすることは不可能
+        # リアルトレードでは翌日（idx+1日目）の始値でイグジット
+        # 注意: idx+1アクセスの安全性はbacktest()の`for idx in range(len(self.data) - 1)`で確保済み
+        current_price = self.data['Open'].iloc[idx + 1]
         
         # 現在の高値を更新（トレーリングストップのために）
         if 'High' in self.data.columns and self.data['High'].iloc[idx] > high_price:

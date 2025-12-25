@@ -361,7 +361,12 @@ class VWAPBreakoutStrategy(BaseStrategy):
         """
         if idx < 1 or entry_idx is None:
             return 0
-        current_price = self.data[self.price_column].iloc[idx]
+        
+        # Phase 1b修正: イグジット価格を翌日始値に変更（ルックアヘッドバイアス修正）
+        # 理由: idx日目の終値を見てからidx日目の終値で売ることは不可能
+        # リアルトレードでは翌日（idx+1日目）の始値でイグジット
+        current_price = self.data['Open'].iloc[idx + 1]
+        
         vwap = self.data['VWAP'].iloc[idx]
         entry_price = self.data[self.price_column].iloc[entry_idx]
         # ATR（代用としてVWAPの2%）
@@ -381,7 +386,8 @@ class VWAPBreakoutStrategy(BaseStrategy):
         # 高度なトレーリングストップ
         profit_pct = (current_price - entry_price) / entry_price
         if profit_pct >= self.params.get("trailing_start_threshold", 0):
-            high_since_entry = self.data['High'].iloc[entry_idx:idx+1].max()
+            # Phase 1b修正: idx日目の高値を除外（idx-1日目までの高値を使用）
+            high_since_entry = self.data['High'].iloc[entry_idx:idx].max()
             trailing_stop = high_since_entry * (1 - self.params["trailing_stop"])
             if current_price <= trailing_stop:
                 self.log_trade(f"VWAP Breakout イグジットシグナル: トレーリングストップ 日付={self.data.index[idx]}, 価格={current_price}")

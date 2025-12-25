@@ -216,7 +216,11 @@ class ContrarianStrategy(BaseStrategy):
         if entry_price is None:
             return 0
 
-        current_price = self.data[self.price_column].iloc[idx]
+        # Phase 1b修正: イグジット価格を翌日始値に変更（ルックアヘッドバイアス修正）
+        # 理由: idx日の終値を見てからidx日の終値でイグジットすることは不可能
+        # リアルトレードでは翌日（idx+1日目）の始値でイグジット
+        # 注意: idx+1アクセスの安全性はbacktest()の`for idx in range(len(self.data) - 1)`で確保済み
+        current_price = self.data['Open'].iloc[idx + 1]
 
         # RSIによるイグジット
         current_rsi = self.data['RSI'].iloc[idx]
@@ -226,7 +230,10 @@ class ContrarianStrategy(BaseStrategy):
         # トレーリングストップ
         if latest_entry_idx not in self.high_prices:
             self.high_prices[latest_entry_idx] = entry_price
-        self.high_prices[latest_entry_idx] = max(self.high_prices[latest_entry_idx], current_price)
+        # Phase 1b修正: 当日高値で更新（当日終値ではなく）
+        # 理由: トレーリングストップは当日高値を基準とするのが一般的
+        # 注意: idx日の高値は既に確定済みの情報なので使用可能
+        self.high_prices[latest_entry_idx] = max(self.high_prices[latest_entry_idx], self.data['High'].iloc[idx])
         trailing_stop_price = self.high_prices[latest_entry_idx] * (1.0 - self.params["trailing_stop_pct"])
         if current_price <= trailing_stop_price:
             return -1

@@ -1,11 +1,11 @@
 # ルックアヘッドバイアス問題 調査報告書 - ForceCloseStrategy
 
 **作成日**: 2025-12-22  
-**最終更新**: 2025-12-22  
-**調査期間**: 2025-12-22  
+**最終更新**: 2025-12-23  
+**調査期間**: 2025-12-22, 2025-12-23（イグジット編追加）  
 **調査者**: GitHub Copilot  
-**調査範囲**: strategies/force_close_strategy.py  
-**修正ステータス**: ✅ **修正不要（他戦略の修正により自動解決）**  
+**調査範囲**: strategies/force_close_strategy.py, PaperBroker, IntegratedExecutionManager  
+**修正ステータス**: ✅ **エントリー編: 修正不要** / 🔄 **イグジット編: 要確認**（他戦略のPhase 1b修正状況次第）  
 **確認完了日**: 2025-12-23
 
 ### 修正状況サマリー
@@ -532,9 +532,295 @@ signals DataFrame
 
 ### 次の作業
 
-**ForceCloseStrategyに関しては作業なし**（修正不要）
+**ForceCloseStrategyに関しては作業なし**（エントリー編: 修正不要、イグジット編: 他戦略の修正に依存）
 
 **他の作業:**
-1. **他戦略のPhase 1修正状況確認** - 全BaseStrategy派生クラス
-2. **統合テスト実行** - ForceCloseStrategyのentry_price確認
-3. **イグジット問題の調査** - EXIT_INVESTIGATION_REPORT.md作成
+1. **他戦略のPhase 1b修正状況確認** - 全BaseStrategy派生クラス
+2. **統合テスト実行** - ForceCloseStrategyのentry_price/exit_price確認
+3. **イグジット問題の詳細調査** - 以下セクション参照
+
+---
+
+## イグジット価格問題 詳細調査（2025-12-23追加）
+
+### 調査目的
+
+ForceCloseStrategy実行時の**exit_price（イグジット価格）**がルックアヘッドバイアスを持つか調査する。
+
+### 調査チェックリスト（イグジット編）
+
+| No | チェック項目 | 優先度 | 状態 |
+|----|------------|--------|------|
+| [E1] | IntegratedExecutionManagerのupdate_price()呼び出し箇所確認 | 最高 | ✅ 完了 |
+| [E2] | execute_force_close()の実装確認 | 最高 | ✅ 完了 |
+| [E3] | current_date引数の渡し方確認 | 高 | ✅ 完了 |
+| [E4] | 決済時の価格更新タイミング確認 | 最高 | ✅ 完了 |
+| [E5] | 当日終値 vs 翌日始値の使用状況確認 | 最高 | ✅ 完了 |
+| [E6] | ルックアヘッドバイアスの有無確認 | 最高 | 🔄 要確認 |
+
+### 調査結果（イグジット編）
+
+#### [E1-E2] IntegratedExecutionManagerの実装 ✅
+
+**証拠**: [integrated_execution_manager.py Lines 560-650](../main_system/execution_control/integrated_execution_manager.py#L560-L650)
+
+**確定事項**:
+1. ✅ IntegratedExecutionManagerは`update_price()`を呼ばない
+2. ✅ ForceCloseStrategy.backtest()に`current_date`を渡すのみ
+3. ✅ current_date = backtest_start_date or datetime.now()
+
+#### [E3-E4] 価格更新タイミング ✅
+
+**証拠**: [strategy_execution_manager.py Lines 478, 963, 1020](../main_system/execution_control/strategy_execution_manager.py#L478)
+
+**確定事項**:
+1. ✅ **StrategyExecutionManagerがupdate_price()を呼び出す**
+2. ✅ **entry_price = row['Entry_Price'] or row['Close']**（Line 956）
+3. ✅ **exit_price = row['Close']**（Line 1015）
+4. ✅ **execution_price = entry_price/exit_price**（Lines 989, 1046）
+5. ✅ **update_price(symbol, execution_price)**（Lines 478, 963, 1020）
+
+**データの流れ**:
+```
+通常戦略実行（銘柄A）
+  → signals生成（'Entry_Price', 'Close'カラム含む）
+  → _generate_trade_orders()
+    → entry_price = row['Entry_Price'] or row['Close']
+    → exit_price = row['Close']
+    → update_price(A, entry_price)  # エントリー時
+    → update_price(A, exit_price)   # イグジット時
+  → PaperBroker.self.current_prices[A] = exit_price（最後の登録価格）
+```
+
+#### [E5] ForceCloseStrategy実行時の価格 ✅
+
+**証拠**: [paper_broker.py Lines 660-661](../src/execution/paper_broker.py#L660-L661)
+
+**確定事項**:
+1. ✅ **ForceCloseStrategy実行時、update_price()は呼ばれない**
+2. ✅ **PaperBroker.get_current_price() → self.current_prices辞書から取得**
+3. ✅ **辞書に登録されている場合、最後に登録された価格を使用**
+4. ✅ **最後に登録された価格 = 通常戦略のexit_price**
+
+**問題の構造**:
+```
+通常戦略実行（銘柄A） → exit_price = row['Close'] → update_price(A, exit_price)
+                       ↓
+                 self.current_prices[A] = exit_price
+銘柄切替（A→B）      → ForceCloseStrategy実行
+                       ↓
+                 get_current_price(A) → self.current_prices[A]
+                       ↓
+                 **最後に登録されたexit_priceを使用**
+```
+
+#### [E6] ルックアヘッドバイアスの判定 🔄
+
+**判定**: 🔄 **要確認**（他戦略のPhase 1b修正状況次第）
+
+**理由**:
+- **exit_price = row['Close']**（strategy_execution_manager.py Line 1015）
+- **'Close'カラムの値が当日終値 or 翌日始値かは戦略次第**
+- Phase 1b修正済み戦略: 翌日始値 → **バイアスなし**
+- Phase 1b未修正戦略: 当日終値 → **バイアスあり**
+
+**3つのシナリオ**:
+
+##### シナリオ1: Phase 1b修正済み戦略の場合 ✅
+
+```python
+# 戦略側（Phase 1b修正済み）
+current_price = self.data['Open'].iloc[idx + 1]  # 翌日始値
+self.data.loc[self.data.index[idx], 'Close'] = current_price  # signals['Close']に翌日始値を設定
+
+# StrategyExecutionManager
+exit_price = row['Close']  # → 翌日始値
+update_price(symbol, exit_price)  # 翌日始値を登録
+
+# ForceCloseStrategy実行時
+get_current_price(symbol)  # → 翌日始値
+# ✅ ルックアヘッドバイアスなし
+```
+
+##### シナリオ2: Phase 1b未修正戦略の場合 ❌
+
+```python
+# 戦略側（Phase 1b未修正）
+current_price = self.data['Adj Close'].iloc[idx]  # 当日終値
+self.data.loc[self.data.index[idx], 'Close'] = current_price  # signals['Close']に当日終値を設定
+
+# StrategyExecutionManager
+exit_price = row['Close']  # → 当日終値
+update_price(symbol, exit_price)  # 当日終値を登録
+
+# ForceCloseStrategy実行時
+get_current_price(symbol)  # → 当日終値
+# ❌ ルックアヘッドバイアスあり（当日終値を見てから当日終値で決済）
+```
+
+##### シナリオ3: Entry_Priceカラム使用の場合 ⏳
+
+```python
+# 戦略側
+self.data.loc[self.data.index[idx], 'Entry_Price'] = next_day_open  # 翌日始値を明示的に設定
+
+# StrategyExecutionManager（エントリー時）
+entry_price = row['Entry_Price']  # → 翌日始値
+update_price(symbol, entry_price)  # 翌日始値を登録
+
+# ForceCloseStrategy実行時
+get_current_price(symbol)  # → 翌日始値
+# ✅ ルックアヘッドバイアスなし（エントリー価格ベース）
+```
+
+### 原因分析（イグジット編）
+
+#### 根本原因
+
+**ForceCloseStrategyのexit_priceは他戦略のPhase 1b修正状況に依存**
+
+**問題の所在**:
+1. ForceCloseStrategy自身は**exit_priceを決定しない**
+2. PaperBroker.get_current_price()は**最後に登録された価格を使用**
+3. 登録価格は**通常戦略のexit_price**（strategy_execution_manager.py Line 1015）
+4. exit_price = row['Close'] → **戦略がsignals['Close']に設定した値次第**
+
+**依存関係**:
+```
+他戦略のPhase 1b修正状況
+  ↓
+signals['Close']の値（当日終値 or 翌日始値）
+  ↓
+StrategyExecutionManager.update_price()
+  ↓
+PaperBroker.self.current_prices[symbol]
+  ↓
+ForceCloseStrategy.exit_price
+```
+
+### 影響範囲（イグジット編）
+
+#### 確定（本調査で確認済み）
+
+1. **`strategy_execution_manager.py`** Line 1015
+   - **exit_price = row['Close']**
+   - 影響度: **高**（全戦略に影響）
+   - 修正方法: 戦略側でsignals['Close']に翌日始値を設定
+
+2. **`paper_broker.py`** Line 661
+   - **exit_price = get_current_price(symbol)**
+   - 影響度: **高**（ForceCloseStrategy専用）
+   - 修正方法: 登録価格の品質に依存（他戦略の修正が必要）
+
+#### 間接的な影響
+
+**他戦略のPhase 1b修正状況**:
+
+**修正済み**（EXIT_INVESTIGATION_REPORT.md参照）:
+- ✅ VWAP_Breakout.py: Phase 1b修正完了（翌日始値使用）
+- ✅ support_resistance_contrarian_strategy.py: Phase 1b修正完了
+- ✅ Momentum_Investing.py: Phase 1b修正完了
+- ✅ mean_reversion_strategy.py: Phase 1b修正完了
+- ✅ pairs_trading_strategy.py: Phase 1b修正完了
+- ✅ gc_strategy_signal.py: Phase 1b修正完了
+
+**未確認**:
+- ⏳ breakout.py: 修正状況未確認
+- ⏳ contrarian_strategy.py: 修正状況未確認
+- ⏳ Opening_Gap.py: 修正状況未確認
+
+### 改善提案（イグジット編）
+
+#### 結論: 他戦略のPhase 1b修正完了により自動解決
+
+**理由**:
+1. ForceCloseStrategy自身は**exit_priceを決定しない**（仕様）
+2. exit_priceは**他戦略のsignals['Close']に依存**
+3. 他戦略のPhase 1b修正により、signals['Close']に翌日始値が設定される
+4. **ForceCloseStrategy自身の修正は不要**
+
+#### 確認推奨事項
+
+**未確認戦略のPhase 1b修正状況確認**:
+1. breakout.py
+2. contrarian_strategy.py
+3. Opening_Gap.py
+
+**推奨アクション**:
+1. 全BaseStrategy派生クラスのPhase 1b修正完了を確認
+2. ForceCloseStrategyのexit_priceが自動的に修正されることを検証
+3. 実データでの統合テスト（DSSMS等）
+
+### セルフチェック（イグジット編）
+
+#### a) 見落としチェック ✅
+
+**確認したファイル**:
+- ✅ integrated_execution_manager.py（execute_force_close()確認）
+- ✅ main_new.py（_force_close_all_positions()確認）
+- ✅ paper_broker.py（get_current_price()確認）
+- ✅ strategy_execution_manager.py（update_price()呼び出し確認）
+
+**確認した変数・カラム名**:
+- ✅ `exit_price` - row['Close']
+- ✅ `execution_price` - exit_price
+- ✅ `update_price()` - StrategyExecutionManagerが呼び出し
+- ✅ `get_current_price()` - self.current_prices辞書から取得
+
+**データの流れ**:
+- ✅ 通常戦略 → signals生成 → exit_price設定 → update_price() → self.current_prices登録
+- ✅ ForceCloseStrategy → update_price()未呼び出し → get_current_price() → 登録済み価格使用
+
+#### b) 思い込みチェック ✅
+
+**前提の検証**:
+- ❌ 「IntegratedExecutionManagerがupdate_price()を呼ぶはず」 → ✅ 呼んでいない
+- ❌ 「ForceCloseStrategy実行時に価格更新されるはず」 → ✅ 更新されない
+- ❌ 「signals['Close']は常に当日終値のはず」 → ⏳ 戦略次第
+
+**実際に確認した事実**:
+- ✅ Line 478: update_price()呼び出し確認
+- ✅ Line 1015: exit_price = row['Close']
+- ✅ Line 661: exit_price = get_current_price(symbol)
+- ✅ 他戦略のPhase 1b修正状況（EXIT_INVESTIGATION_REPORT.md参照）
+
+#### c) 矛盾チェック ✅
+
+**調査結果の整合性**:
+- ✅ update_price()はStrategyExecutionManagerが呼び出す → ForceCloseStrategyは未呼び出し → 整合
+- ✅ get_current_price()は辞書から取得 → 最後に登録された価格使用 → 整合
+- ✅ exit_price = row['Close'] → 戦略次第で当日終値 or 翌日始値 → 整合
+- ✅ 他戦略のPhase 1b修正により自動解決 → エントリー編と同様 → 整合
+
+### 調査結論（イグジット編）
+
+#### 確定事項
+
+1. ✅ **ForceCloseStrategy自身はexit_priceを決定しない**
+   - PaperBroker.get_current_price()に依存
+   - 最後に登録された価格を使用
+
+2. ✅ **登録価格は通常戦略のexit_price**
+   - exit_price = row['Close']（strategy_execution_manager.py Line 1015）
+   - 戦略がsignals['Close']に設定した値次第
+
+3. 🔄 **ルックアヘッドバイアスの有無は他戦略のPhase 1b修正状況次第**
+   - Phase 1b修正済み: 翌日始値 → バイアスなし
+   - Phase 1b未修正: 当日終値 → バイアスあり
+
+4. ✅ **ForceCloseStrategy自身の修正は不要**
+   - 他戦略のPhase 1b修正により自動解決
+   - エントリー編と同様の構造
+
+#### 不明な点
+
+1. ⏳ **未確認戦略のPhase 1b修正状況**
+   - breakout.py: 修正状況未確認
+   - contrarian_strategy.py: 修正状況未確認
+   - Opening_Gap.py: 修正状況未確認
+
+2. ⏳ **signals['Close']カラムの実際の値**
+   - 各戦略のsignals生成ロジック確認が必要
+   - 実データでの検証が必要
+
+### 次の作業（イグジット編）

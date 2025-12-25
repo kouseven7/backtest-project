@@ -85,6 +85,25 @@ class SupportResistanceContrarianStrategy(BaseStrategy):
         print(f"Support/Resistance Contrarian Strategy Initialized")
         print(f"Detected {len(self.support_levels)} support levels")
         print(f"Detected {len(self.resistance_levels)} resistance levels")
+    
+    def _get_scalar_value(self, series: pd.Series, idx: int) -> float:
+        """
+        Series型を安全にスカラー値に変換するヘルパー関数
+        
+        pandas 3.0対応: float(Series)はTypeErrorを発生させるため、
+        Series型判定を行い、.iloc[0]でスカラー化してからfloat()変換を行う。
+        
+        Args:
+            series: pandas Series
+            idx: インデックス
+            
+        Returns:
+            float: スカラー値
+        """
+        val = series.iloc[idx]
+        if isinstance(val, pd.Series):
+            return float(val.iloc[0])
+        return float(val)
         
     def _calculate_rsi(self) -> pd.Series:
         """RSI計算"""
@@ -128,32 +147,34 @@ class SupportResistanceContrarianStrategy(BaseStrategy):
         for i in range(period, len(self.data) - period):
             # ピボット高値チェック
             is_pivot_high = True
+            current_high = self._get_scalar_value(self.data[high_col], i)
             for j in range(-period, period + 1):
                 if j == 0:
                     continue
-                if self.data[high_col].iloc[i] <= self.data[high_col].iloc[i + j]:
+                if current_high <= self._get_scalar_value(self.data[high_col], i + j):
                     is_pivot_high = False
                     break
                     
             if is_pivot_high:
                 pivot_highs.append({
-                    'price': self.data[high_col].iloc[i],
+                    'price': self._get_scalar_value(self.data[high_col], i),
                     'index': i,
                     'date': self.data.index[i]
                 })
                 
             # ピボット安値チェック
             is_pivot_low = True
+            current_low = self._get_scalar_value(self.data[low_col], i)
             for j in range(-period, period + 1):
                 if j == 0:
                     continue
-                if self.data[low_col].iloc[i] >= self.data[low_col].iloc[i + j]:
+                if current_low >= self._get_scalar_value(self.data[low_col], i + j):
                     is_pivot_low = False
                     break
                     
             if is_pivot_low:
                 pivot_lows.append({
-                    'price': self.data[low_col].iloc[i],
+                    'price': self._get_scalar_value(self.data[low_col], i),
                     'index': i,
                     'date': self.data.index[i]
                 })
@@ -199,8 +220,8 @@ class SupportResistanceContrarianStrategy(BaseStrategy):
             
         # 直近の高値・安値を取得
         recent_data = self.data.tail(lookback)
-        high = recent_data['High'].max()
-        low = recent_data['Low'].min()
+        high = self._get_scalar_value(recent_data['High'], -1) if isinstance(recent_data['High'].max(), pd.Series) else float(recent_data['High'].max())
+        low = self._get_scalar_value(recent_data['Low'], -1) if isinstance(recent_data['Low'].min(), pd.Series) else float(recent_data['Low'].min())
         
         # フィボナッチレベル
         fib_ratios = [0.236, 0.382, 0.618, 0.786]
@@ -212,7 +233,7 @@ class SupportResistanceContrarianStrategy(BaseStrategy):
             level = low + (high - low) * ratio
             
             # 現在価格との関係で支持線・抵抗線を判定
-            current_price = self.data[self.price_column].iloc[-1]
+            current_price = self._get_scalar_value(self.data[self.price_column], -1)
             
             if level < current_price:
                 support_levels.append(level)
@@ -226,9 +247,9 @@ class SupportResistanceContrarianStrategy(BaseStrategy):
         if idx < self.params["lookback_period"]:
             return 0
             
-        current_price = self.data[self.price_column].iloc[idx]
-        current_volume = self.data['Volume'].iloc[idx]
-        avg_volume = self.data['Volume_MA'].iloc[idx]
+        current_price = self._get_scalar_value(self.data[self.price_column], idx)
+        current_volume = self._get_scalar_value(self.data['Volume'], idx)
+        avg_volume = self._get_scalar_value(self.data['Volume_MA'], idx)
         
         # ボリューム確認
         if current_volume < avg_volume * self.params["volume_threshold"]:
@@ -236,7 +257,7 @@ class SupportResistanceContrarianStrategy(BaseStrategy):
             
         # RSI確認（有効な場合）
         if self.params["rsi_confirmation"] and 'RSI' in self.data.columns:
-            rsi = self.data['RSI'].iloc[idx]
+            rsi = self._get_scalar_value(self.data['RSI'], idx)
             rsi_oversold = self.params["rsi_oversold"]
             
             # 支持線付近でのロングエントリー
@@ -260,8 +281,16 @@ class SupportResistanceContrarianStrategy(BaseStrategy):
         """エグジットシグナル生成"""
         if position_size <= 0:
             return 0
-            
-        current_price = self.data[self.price_column].iloc[idx]
+        
+        # Phase 1b修正: イグジット価格を翌日始値に変更（ルックアヘッドバイアス修正）
+        # 理由: idx日目の終値を見てからidx日目の終値で売ることは不可能
+        # リアルトレードでは翌日（idx+1日目）の始値でイグジット
+        current_price_val = self.data['Open'].iloc[idx + 1]
+        # Series型エラー防止: スカラー化処理
+        if isinstance(current_price_val, pd.Series):
+            current_price = float(current_price_val.iloc[0])
+        else:
+            current_price = float(current_price_val)
         
         # エントリー価格取得
         entry_price = self.entry_prices.get(idx, None)
@@ -333,7 +362,7 @@ class SupportResistanceContrarianStrategy(BaseStrategy):
                     if i + 1 >= len(result_data):
                         continue
                     
-                    result_data['Entry_Signal'].iloc[i] = 1
+                    result_data.loc[result_data.index[i], 'Entry_Signal'] = 1
                     position_size = 1.0
                     # Phase 1修正: 翌日始値でエントリー（ルックアヘッドバイアス解消）
                     # Phase 2修正: スリッページ・取引コスト対応（2025-12-23追加）
@@ -354,10 +383,10 @@ class SupportResistanceContrarianStrategy(BaseStrategy):
                 # エグジットチェック
                 exit_signal = self.generate_exit_signal(i, position_size)
                 if exit_signal == 1:
-                    result_data['Exit_Signal'].iloc[i] = 1
+                    result_data.loc[result_data.index[i], 'Exit_Signal'] = 1
                     position_size = 0
                     
-            result_data['Position'].iloc[i] = position_size
+            result_data.loc[result_data.index[i], 'Position'] = position_size
             
         return result_data
         

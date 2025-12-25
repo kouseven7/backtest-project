@@ -67,51 +67,55 @@ class PairsTradingStrategy(BaseStrategy):
         """戦略初期化処理"""
         super().initialize_strategy()
         
-        # 短期・長期移動平均の計算
+        # ルックアヘッドバイアス修正: 短期・長期移動平均の計算（shift(1)適用）
+        # 理由: i日の終値を見てからi日の取引を決定することは不可能
+        # リアルトレードでは前日（i-1日目）までのデータで判断
         self.data['SMA_Short'] = self.data[self.price_column].rolling(
             window=self.params["short_ma_period"]
-        ).mean()
+        ).mean().shift(1)
         
         self.data['SMA_Long'] = self.data[self.price_column].rolling(
             window=self.params["long_ma_period"]
-        ).mean()
+        ).mean().shift(1)
         
         # スプレッド（短期MA - 長期MA）の計算
         self.data['Spread'] = self.data['SMA_Short'] - self.data['SMA_Long']
         
-        # スプレッドの移動平均と標準偏差
+        # ルックアヘッドバイアス修正: スプレッドの移動平均と標準偏差（shift(1)適用）
         self.data['Spread_MA'] = self.data['Spread'].rolling(
             window=self.params["spread_period"]
-        ).mean()
+        ).mean().shift(1)
         
         self.data['Spread_Std'] = self.data['Spread'].rolling(
             window=self.params["spread_period"]
-        ).std()
+        ).std().shift(1)
         
         # Z-Scoreの計算（標準化されたスプレッド）
+        # 注意: Spreadは既にshift(1)適用済みのSMA_Short/Longから計算されるため、
+        #       Spread自体はshift(1)不要。Spread_MA/Spread_Stdにshift(1)適用済み
         self.data['Spread_ZScore'] = (
             (self.data['Spread'] - self.data['Spread_MA']) / self.data['Spread_Std']
         )
         
-        # ボリュームフィルター
+        # ルックアヘッドバイアス修正: ボリュームフィルター（shift(1)適用）
         if self.params["volume_filter"]:
             self.data['Volume_MA'] = self.data['Volume'].rolling(
                 window=self.params["spread_period"]
-            ).mean()
+            ).mean().shift(1)
         
-        # ボラティリティフィルター
+        # ルックアヘッドバイアス修正: ボラティリティフィルター（shift(1)適用）
         if self.params["volatility_filter"]:
             returns = self.data[self.price_column].pct_change()
             self.data['Volatility'] = returns.rolling(
                 window=self.params["volatility_period"]
-            ).std()
+            ).std().shift(1)
             
-        # 移動平均間の相関（ローリング相関）
+        # ルックアヘッドバイアス修正: 移動平均間の相関（shift(1)適用）
         if len(self.data) >= self.params["cointegration_lookback"]:
             correlation_window = min(self.params["cointegration_lookback"], len(self.data))
             self.data['MA_Correlation'] = self.data['SMA_Short'].rolling(
                 window=correlation_window
-            ).corr(self.data['SMA_Long'])
+            ).corr(self.data['SMA_Long']).shift(1)
         
         print(f"Pairs Trading Strategy Initialized")
         print(f"Parameters: Short_MA={self.params['short_ma_period']}, Long_MA={self.params['long_ma_period']}")
@@ -139,6 +143,12 @@ class PairsTradingStrategy(BaseStrategy):
         current_volume = self.data['Volume'].iloc[idx]
         avg_volume = self.data['Volume_MA'].iloc[idx]
         
+        # Series型エラー防止: スカラー化処理
+        if isinstance(current_volume, pd.Series):
+            current_volume = current_volume.values[0]
+        if isinstance(avg_volume, pd.Series):
+            avg_volume = avg_volume.values[0]
+        
         if pd.isna(avg_volume):
             return True
             
@@ -153,6 +163,11 @@ class PairsTradingStrategy(BaseStrategy):
             return True
             
         current_vol = self.data['Volatility'].iloc[idx]
+        
+        # Series型エラー防止: スカラー化処理
+        if isinstance(current_vol, pd.Series):
+            current_vol = current_vol.values[0]
+        
         if pd.isna(current_vol):
             return True
             
@@ -160,6 +175,10 @@ class PairsTradingStrategy(BaseStrategy):
         vol_ma = self.data['Volatility'].rolling(
             window=self.params["volatility_period"]
         ).mean().iloc[idx]
+        
+        # Series型エラー防止: スカラー化処理
+        if isinstance(vol_ma, pd.Series):
+            vol_ma = vol_ma.values[0]
         
         if pd.isna(vol_ma):
             return True
@@ -208,9 +227,11 @@ class PairsTradingStrategy(BaseStrategy):
         """エグジットシグナル生成"""
         if position_size <= 0:
             return 0
-            
-        # スカラー値として取得
-        current_price_val = self.data[self.price_column].iloc[idx]
+        
+        # Phase 1b修正: イグジット価格を翌日始値に変更（ルックアヘッドバイアス修正）
+        # 理由: idx日目の終値を見てからidx日目の終値で売ることは不可能
+        # リアルトレードでは翌日（idx+1日目）の始値でイグジット
+        current_price_val = self.data['Open'].iloc[idx + 1]
         if isinstance(current_price_val, pd.Series):
             current_price_val = current_price_val.values[0]
             
@@ -291,7 +312,7 @@ class PairsTradingStrategy(BaseStrategy):
                 # エントリーチェック
                 entry_signal = self.generate_entry_signal(i)
                 if entry_signal == 1:
-                    result_data['Entry_Signal'].iloc[i] = 1
+                    result_data.loc[result_data.index[i], 'Entry_Signal'] = 1
                     position_size = 1.0
                     # Phase 1修正: エントリー価格を翌日始値に変更（ルックアヘッドバイアス修正）
                     # Phase 2修正: スリッページ・取引コスト対応（2025-12-23追加）
@@ -318,10 +339,10 @@ class PairsTradingStrategy(BaseStrategy):
                 # エグジットチェック
                 exit_signal = self.generate_exit_signal(i, position_size)
                 if exit_signal == 1:
-                    result_data['Exit_Signal'].iloc[i] = 1
+                    result_data.loc[result_data.index[i], 'Exit_Signal'] = 1
                     position_size = 0
                     
-            result_data['Position'].iloc[i] = position_size
+            result_data.loc[result_data.index[i], 'Position'] = position_size
             
         return result_data
         

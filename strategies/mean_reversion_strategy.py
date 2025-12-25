@@ -210,8 +210,10 @@ class MeanReversionStrategy(BaseStrategy):
         if position_size <= 0:
             return 0
             
-        # スカラー値として取得
-        current_price_val = self.data[self.price_column].iloc[idx]
+        # Phase 1b修正: イグジット価格を翌日始値に変更（ルックアヘッドバイアス修正）
+        # 理由: idx日目の終値を見てからidx日目の終値で売ることは不可能
+        # リアルトレードでは翌日（idx+1日目）の始値でイグジット
+        current_price_val = self.data['Open'].iloc[idx + 1]
         if isinstance(current_price_val, pd.Series):
             current_price_val = current_price_val.values[0]
         
