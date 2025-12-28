@@ -230,7 +230,7 @@ class MainTextReporter:
                             return_pct = (exit_price - entry_price) / entry_price if entry_price > 0 else 0.0
                             
                             trade_record = {
-                                'strategy_name': buy_order.get('strategy_name', 'UnknownStrategy'),
+                                'strategy': buy_order.get('strategy_name', 'Unknown'),
                                 'entry_date': buy_order.get('timestamp'),
                                 'exit_date': sell_order.get('timestamp'),
                                 'entry_price': entry_price,
@@ -241,15 +241,6 @@ class MainTextReporter:
                                 'entry_idx': None,
                                 'exit_idx': None
                             }
-                            
-                            # Phase B-2追加修正: フォールバック検出ログ
-                            if trade_record['strategy_name'] == 'UnknownStrategy':
-                                logger.warning(
-                                    f"[FALLBACK] 戦略名が取得できませんでした（取引レコード生成）: "
-                                    f"symbol={symbol}, buy_order={buy_order.keys()}, "
-                                    f"デフォルト値='UnknownStrategy'"
-                                )
-                            
                             completed_trades.append(trade_record)
         
         logger.info(f"[PHASE_5_B_2] Extracted {len(completed_trades)} completed trades from execution_results")
