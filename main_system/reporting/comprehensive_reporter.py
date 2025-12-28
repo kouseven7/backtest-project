@@ -379,9 +379,15 @@ class ComprehensiveReporter:
                         trades, open_positions = self._convert_execution_details_to_trades(result['execution_details'])
                         executed_trades.extend(trades)
                         all_open_positions.extend(open_positions)
+                        strategy_name = result.get('strategy_name', 'UnknownStrategy')
+                        if strategy_name == 'UnknownStrategy':
+                            self.logger.warning(
+                                f"[FALLBACK] 戦略名が取得できませんでした（execution_results処理）: result={result.keys()}, "
+                                f"デフォルト値='{strategy_name}'"
+                            )
                         self.logger.info(
                             f"[REAL_DATA] Extracted {len(trades)} trades, {len(open_positions)} open positions from "
-                            f"strategy: {result.get('strategy_name', 'Unknown')}"
+                            f"strategy: {strategy_name}"
                         )
             
             # パターン2: execution_results['execution_details']（単一戦略結果）
@@ -572,11 +578,17 @@ class ComprehensiveReporter:
                             'pnl': pnl,
                             'return_pct': return_pct,
                             'holding_period_days': holding_period_days,
-                            'strategy_name': buy_order.get('strategy_name', 'Unknown'),  # 名称変更: strategy → strategy_name
+                            'strategy_name': buy_order.get('strategy_name', 'UnknownStrategy'),  # 名称変更: strategy → strategy_name
                             'position_value': entry_price * shares,
                             'is_forced_exit': is_forced_exit  # Phase 5-B-6追加
                             # is_executed_trade削除（常にTrue、不要）
                         }
+                        
+                        if trade_record['strategy_name'] == 'UnknownStrategy':
+                            self.logger.warning(
+                                f"[FALLBACK] 戦略名が取得できませんでした（取引記録生成）: symbol={symbol}, "
+                                f"buy_order={buy_order.keys()}, デフォルト値='UnknownStrategy'"
+                            )
                         
                         trades.append(trade_record)
                         
@@ -597,11 +609,17 @@ class ComprehensiveReporter:
                     # 未ペアリングSELLの詳細ログ（ForceClose重複検出用）
                     for idx in range(paired_count, len(sells)):
                         sell = sells[idx]
+                        strategy_name = sell.get('strategy_name', 'UnknownStrategy')
+                        if strategy_name == 'UnknownStrategy':
+                            self.logger.warning(
+                                f"[FALLBACK] 戦略名が取得できませんでした（UNPAIRED_SELL）: symbol={symbol}, "
+                                f"sell={sell.keys()}, デフォルト値='UnknownStrategy'"
+                            )
                         self.logger.warning(
                             f"[UNPAIRED_SELL] 銘柄={symbol}, Index={idx}, "
                             f"Price={sell.get('executed_price', 0.0):.2f}, "
                             f"Quantity={sell.get('quantity', 0)}, "
-                            f"Strategy={sell.get('strategy_name', 'Unknown')}, "
+                            f"Strategy={strategy_name}, "
                             f"Status={sell.get('status', 'Unknown')}, "
                             f"Timestamp={sell.get('timestamp')}"
                         )
@@ -723,11 +741,17 @@ class ComprehensiveReporter:
                                 'pnl': unrealized_pnl,  # 名称変更: unrealized_pnl → pnl（統合スキーマ準拠）
                                 'return_pct': unrealized_pnl_pct,  # 名称変更: unrealized_pnl_pct → return_pct（統合スキーマ準拠）
                                 'holding_period_days': None,  # 保有中ポジションは未確定
-                                'strategy_name': buy_order.get('strategy_name', 'Unknown'),
+                                'strategy_name': buy_order.get('strategy_name', 'UnknownStrategy'),
                                 'position_value': entry_price * quantity,  # 追加: 統合スキーマ準拠
                                 'is_forced_exit': False  # 追加: 保有中は強制決済されていない
                                 # 削除: 'action': 'BUY'（常にBUY、冗長）
                             })
+                            
+                            if open_positions[-1]['strategy_name'] == 'UnknownStrategy':
+                                self.logger.warning(
+                                    f"[FALLBACK] 戦略名が取得できませんでした（保有ポジション生成）: symbol={symbol}, "
+                                    f"buy_order={buy_order.keys()}, デフォルト値='UnknownStrategy'"
+                                )
             
             return open_positions
             
@@ -978,7 +1002,7 @@ class ComprehensiveReporter:
             # 戦略別分析
             strategy_breakdown = {}
             for trade in trades:
-                strategy = trade.get('strategy', 'Unknown')
+                strategy = trade.get('strategy_name', 'Unknown')  # Fix: 'strategy' -> 'strategy_name' (Phase A修正: 2025-12-26)
                 if strategy not in strategy_breakdown:
                     strategy_breakdown[strategy] = {
                         'trades': [],

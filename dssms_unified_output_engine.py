@@ -133,13 +133,19 @@ class DSSMSUnifiedOutputEngine:
                     trades_data.append({
                         'date': pd.to_datetime(trade.get('date', datetime.now())),
                         'symbol': trade.get('symbol', 'N/A'),
-                        'strategy': trade.get('strategy', 'Unknown'),
+                        'strategy': trade.get('strategy_name', 'UnknownStrategy'),
                         'action': trade.get('action', 'Unknown'),
                         'quantity': trade.get('quantity', 0),
                         'price': trade.get('price', 0.0),
                         'value': trade.get('value', 0.0),
                         'pnl': trade.get('pnl', 0.0)
                     })
+                    # WARNINGログ追加
+                    if trade.get('strategy_name') is None:
+                        logger.warning(
+                            f"[FALLBACK] 戦略名が取得できませんでした: trade={trade.get('symbol', 'N/A')}, "
+                            f"date={trade.get('date', 'N/A')}, デフォルト値='UnknownStrategy'"
+                        )
                 
                 if trades_data:
                     converted_data['trades'] = pd.DataFrame(trades_data)
@@ -657,9 +663,16 @@ class DSSMSUnifiedOutputEngine:
         for _, trade in trades_df.iterrows():
             cumulative_pnl += trade.get('pnl', 0)
             
+            strategy_name = trade.get('strategy_name', 'UnknownStrategy')
+            if strategy_name == 'UnknownStrategy':
+                logger.warning(
+                    f"[FALLBACK] 戦略名が取得できませんでした: trade={trade.get('symbol', 'N/A')}, "
+                    f"date={trade.get('date', 'N/A')}, デフォルト値='UnknownStrategy'"
+                )
+            
             formatted_trades.append({
                 '日付': trade.get('date', datetime.now()).strftime('%Y-%m-%d'),
-                '戦略名': trade.get('strategy', 'Unknown'),
+                '戦略名': strategy_name,
                 '銘柄': trade.get('symbol', 'N/A'),
                 '売買区分': '買い' if trade.get('action', 'buy') == 'buy' else '売り',
                 '数量': int(trade.get('quantity', 0)),

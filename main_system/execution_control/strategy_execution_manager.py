@@ -440,9 +440,15 @@ class StrategyExecutionManager:
                     if order_dict['action'] == 'SELL':
                         # [修正案2] ForceClose実行中は通常SELL処理をスキップ（2025-12-08追加）
                         if self.force_close_in_progress:
+                            strategy_name = order_dict.get('strategy_name', 'UnknownStrategy')
+                            if strategy_name == 'UnknownStrategy':
+                                self.logger.warning(
+                                    f"[FALLBACK] 戦略名が取得できませんでした（ForceClose抑制ログ）: order_dict={order_dict.keys()}, "
+                                    f"デフォルト値='UnknownStrategy'"
+                                )
                             self.logger.warning(
                                 f"[FORCE_CLOSE_SUPPRESS] ForceClose実行中のため通常SELL処理をスキップ: "
-                                f"{symbol}, order_index={order_index}, strategy={order_dict.get('strategy_name', 'Unknown')}"
+                                f"{symbol}, order_index={order_index}, strategy={strategy_name}"
                             )
                             continue  # 通常SELL処理をスキップ
                         
@@ -609,10 +615,17 @@ class StrategyExecutionManager:
                             "quantity": order_dict['quantity'],
                             "timestamp": order_dict['timestamp'],
                             "executed_price": order.filled_price,  # Phase 4.2-5-3: 約定価格追加
-                            "strategy_name": order_dict.get('strategy_name', 'Unknown'),  # Phase 5.3: 戦略名追加
+                            "strategy_name": order_dict.get('strategy_name', 'UnknownStrategy'),  # Phase 5.3: 戦略名追加
                             "execution_type": "trade"  # Phase 2025-12-15: execution_typeフィールド追加（通常取引）
                         })
-                        self.logger.info(f"Trade executed successfully: {order_dict['symbol']} {order_dict['action']} {order_dict['quantity']} strategy={order_dict.get('strategy_name', 'Unknown')}")
+                        
+                        strategy_name = order_dict.get('strategy_name', 'UnknownStrategy')
+                        if strategy_name == 'UnknownStrategy':
+                            self.logger.warning(
+                                f"[FALLBACK] 戦略名が取得できませんでした（execution_details保存）: order_dict={order_dict.keys()}, "
+                                f"デフォルト値='UnknownStrategy'"
+                            )
+                        self.logger.info(f"Trade executed successfully: {order_dict['symbol']} {order_dict['action']} {order_dict['quantity']} strategy={strategy_name}")
                         
                         # [Phase 5-B-5] 取引実行後のスナップショット記録（Q1: C案 - 取引時）
                         if self.equity_recorder and self.paper_broker:

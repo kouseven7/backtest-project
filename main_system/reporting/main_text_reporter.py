@@ -619,7 +619,12 @@ class MainTextReporter:
         strategy_data: Dict[str, Dict[str, Any]] = {}
         
         for trade in trades:
-            strategy = trade.get('strategy', 'Unknown')
+            strategy = trade.get('strategy_name', 'UnknownStrategy')
+            if strategy == 'UnknownStrategy':
+                logger.warning(
+                    f"[FALLBACK] 戦略名が取得できませんでした（期待値計算）: trade={trade.get('symbol', 'N/A')}, "
+                    f"デフォルト値='{strategy}'"
+                )
             pnl = float(trade.get('pnl', 0))
             
             if strategy not in strategy_data:
@@ -709,7 +714,12 @@ class MainTextReporter:
         strategy_stats = {}
         
         for trade in trades:
-            strategy = trade.get('strategy', 'Unknown')
+            strategy = trade.get('strategy_name', 'UnknownStrategy')
+            if strategy == 'UnknownStrategy':
+                logger.warning(
+                    f"[FALLBACK] 戦略名が取得できませんでした（パフォーマンス分析）: trade={trade.get('symbol', 'N/A')}, "
+                    f"デフォルト値='{strategy}'"
+                )
             pnl = trade.get('pnl', 0)
             
             if strategy not in strategy_stats:
@@ -781,7 +791,13 @@ class MainTextReporter:
             for i, trade in enumerate(trades[:10], 1):
                 entry_date = str(trade.get('entry_date', ''))[:10]
                 exit_date = str(trade.get('exit_date', ''))[:10]
-                strategy = trade.get('strategy', 'Unknown')[:18]
+                strategy_name = trade.get('strategy_name', 'UnknownStrategy')
+                if strategy_name == 'UnknownStrategy':
+                    logger.warning(
+                        f"[FALLBACK] 戦略名が取得できませんでした（取引履歴セクション）: trade={trade.get('symbol', 'N/A')}, "
+                        f"デフォルト値='{strategy_name}'"
+                    )
+                strategy = strategy_name[:18]
                 entry_price = trade.get('entry_price', 0)
                 exit_price = trade.get('exit_price', 0)
                 pnl = trade.get('pnl', 0)

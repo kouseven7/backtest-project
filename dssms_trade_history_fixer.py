@@ -283,8 +283,13 @@ class DSSMSTradeHistoryFixer:
             enhanced_trade = trade.copy()
             
             # 戦略名の詳細化
-            strategy = trade.get('strategy', 'DSSMSStrategy')
-            if strategy == 'DSSMSStrategy':
+            strategy = trade.get('strategy_name', 'UnknownStrategy')
+            if strategy == 'UnknownStrategy':
+                self.logger.warning(
+                    f"[FALLBACK] 戦略名が取得できませんでした: trade={trade.get('symbol', 'N/A')}, "
+                    f"date={trade.get('entry_date', 'N/A')}, デフォルト値='{strategy}'"
+                )
+            if strategy == 'UnknownStrategy':
                 # デフォルトの場合はランダムに戦略を割り当て
                 strategies = [
                     'VWAPBreakoutStrategy',

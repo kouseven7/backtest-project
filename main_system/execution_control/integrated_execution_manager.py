@@ -484,7 +484,12 @@ class IntegratedExecutionManager:
             weighted_performance = 0.0
             
             for result in successful_strategies:
-                strategy_name = result.get('strategy_name', 'Unknown')
+                strategy_name = result.get('strategy_name', 'UnknownStrategy')
+                if strategy_name == 'UnknownStrategy':
+                    self.logger.warning(
+                        f"[FALLBACK] 戦略名が取得できませんでした（重み付き集約）: result={result.keys()}, "
+                        f"デフォルト値='UnknownStrategy'"
+                    )
                 weight = strategy_weights.get(strategy_name, 0.0)
                 
                 # パフォーマンス指標（暫定）
@@ -542,7 +547,12 @@ class IntegratedExecutionManager:
             # 戦略別価値計算（暫定）
             strategy_values = {}
             for result in execution_results:
-                strategy_name = result.get('strategy_name', 'Unknown')
+                strategy_name = result.get('strategy_name', 'UnknownStrategy')
+                if strategy_name == 'UnknownStrategy':
+                    self.logger.warning(
+                        f"[FALLBACK] 戦略名が取得できませんでした（DrawdownController更新）: result={result.keys()}, "
+                        f"デフォルト値='UnknownStrategy'"
+                    )
                 weight = result.get('weight', 0.0)
                 strategy_values[strategy_name] = portfolio_value * weight
             

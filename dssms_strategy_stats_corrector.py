@@ -64,7 +64,12 @@ class DSSMSStrategyStatsCorrector:
             # 戦略別に取引をグループ化
             strategy_trades = {}
             for trade in trades:
-                strategy = trade.get('strategy', 'UnknownStrategy')
+                strategy = trade.get('strategy_name', 'UnknownStrategy')
+                if strategy == 'UnknownStrategy':
+                    self.logger.warning(
+                        f"[FALLBACK] 戦略名が取得できませんでした: trade={trade.get('symbol', 'N/A')}, "
+                        f"date={trade.get('entry_date', 'N/A')}, デフォルト値='{strategy}'"
+                    )
                 if strategy not in strategy_trades:
                     strategy_trades[strategy] = []
                 strategy_trades[strategy].append(trade)
@@ -322,7 +327,12 @@ class DSSMSStrategyStatsCorrector:
             # 戦略別に取引をグループ化
             strategy_trades = {}
             for trade in trades:
-                strategy = trade.get('strategy', 'UnknownStrategy')
+                strategy = trade.get('strategy_name', 'UnknownStrategy')
+                if strategy == 'UnknownStrategy':
+                    self.logger.warning(
+                        f"[FALLBACK] 戦略名が取得できませんでした: trade={trade.get('symbol', 'N/A')}, "
+                        f"date={trade.get('entry_date', 'N/A')}, デフォルト値='{strategy}'"
+                    )
                 if strategy not in strategy_trades:
                     strategy_trades[strategy] = []
                 strategy_trades[strategy].append(trade)
@@ -436,7 +446,12 @@ class DSSMSStrategyStatsCorrector:
         # 戦略別にグループ化
         strategy_trades = {}
         for trade in trades:
-            strategy = trade.get('strategy', 'UnknownStrategy')
+            strategy = trade.get('strategy_name', 'UnknownStrategy')
+            if strategy == 'UnknownStrategy':
+                self.logger.warning(
+                    f"[FALLBACK] 戦略名が取得できませんでした: trade={trade.get('symbol', 'N/A')}, "
+                    f"date={trade.get('entry_date', 'N/A')}, デフォルト値='{strategy}'"
+                )
             if strategy not in strategy_trades:
                 strategy_trades[strategy] = []
             strategy_trades[strategy].append(trade)
