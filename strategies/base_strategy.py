@@ -1,20 +1,33 @@
 """
-Module: base_strategy
-File: base_strategy.py
-Description: 
-  全ての投資戦略の基底クラスを提供します。エントリー・イグジットシグナルの生成インターフェース、
-  バックテスト実行、ログ記録などの共通機能を実装しています。
-  各戦略クラスはこのBaseStrategyを継承して実装します。
+BaseStrategy - 全戦略の基底クラス（バックテスト実行・シグナル生成の統一インターフェース）
 
-Author: kouseven7
+全ての投資戦略の基底クラスを提供します。エントリー・イグジットシグナルの生成インターフェース、
+バックテスト実行、ログ記録などの共通機能を実装。各戦略クラスはこのBaseStrategyを継承して実装します。
+
+主な機能:
+- backtest()メソッド: 全期間一括バックテスト実行（現行方式）
+- generate_entry_signal()/generate_exit_signal(): シグナル生成インターフェース
+- ルックアヘッドバイアス防止: 翌日始値エントリー（data['Open'].iloc[idx + 1]）
+- トレーリングストップ・資金管理機能
+- デバッグログ機能（DEBUG_BACKTEST=1環境変数で有効化）
+- ウォームアップ期間対応（150日推奨）
+
+統合コンポーネント:
+- DSSMS統合: dssms_integrated_main.py経由での動的銘柄切替対応
+- data_fetcher: get_parameters_and_data()によるデータ取得
+- ComprehensiveReporter: 統一出力エンジン経由での結果出力
+- MainSystemController: main_new.py経由でのマルチ戦略制御
+
+セーフティ機能/注意事項:
+- ルックアヘッドバイアス禁止（3原則）: 前日データ判断・翌日始値エントリー・取引コスト考慮
+- 【設計問題】現在のbacktest()は全期間一括判定のため、DSSMS日次判断と不一致
+- 【Phase 3実装予定】backtest_daily()メソッド: 日次判定でリアルトレード対応
+- 【重要】新戦略実装時はcopilot-instructions.mdのルックアヘッドバイアス防止ルール必須遵守
+- 【監視】トレード件数0の場合: インジケーター.shift(1)未適用・ウォームアップ期間不足を確認
+
+Author: Backtest Project Team
 Created: 2023-01-01
-Modified: 2025-04-02
-
-Dependencies:
-  - pandas
-  - numpy
-  - logging
-"""
+Last Modified: 2025-12-30
 
 # ファイル: strategies/base_strategy.py
 from typing import Dict, Any, Optional, Union, List

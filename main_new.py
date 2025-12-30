@@ -1,19 +1,35 @@
 """
-main.py - 次世代マルチ戦略バックテストシステム（簡易版 Phase 1）
-シンプルなエントリーポイント - 統合候補モジュール活用版
+MainSystemController - 次世代マルチ戦略バックテストシステム（Phase 1統合版）
 
-Phase 1実装: 基本統合システム
-- MarketAnalyzer: 市場分析
-- DynamicStrategySelector: 動的戦略選択
-- IntegratedExecutionManager: 統合実行管理
-- UnifiedRiskManager: 統合リスク管理
+統合候補モジュールを活用したマルチ戦略制御システム。DSSMS統合により動的銘柄選択と
+マルチ戦略実行を統合し、MainSystemControllerインスタンス変数化により資金継続性を実現。
+
+主な機能:
+- MarketAnalyzer: 市場分析・トレンド検出
+- DynamicStrategySelector: 動的戦略選択・切替制御
+- IntegratedExecutionManager: 統合実行管理・バックテスト制御
+- UnifiedRiskManager: 統合リスク管理・資金管理
 - ComprehensivePerformanceAnalyzer: 包括的パフォーマンス分析
-- ComprehensiveReporter: 包括的レポート生成
+- ComprehensiveReporter: 包括的レポート生成（CSV+JSON+TXT）
+- PaperBroker状態管理: 残高・ポジション継続性保証
 
-Author: imega
+統合コンポーネント:
+- DSSMS Core: dssms_integrated_main.py経由での動的銘柄選択
+- BaseStrategy派生クラス: strategies/配下の全戦略との統合
+- data_fetcher: yfinance統合+CSV cache経由でのデータ供給
+- 統一出力エンジン: ComprehensiveReporter経由の結果出力
+
+セーフティ機能/注意事項:
+- MainSystemControllerインスタンス変数化による資金リセット防止（Phase 1対応）
+- PaperBroker状態継続による重複エントリー防止
+- 【設計課題】現在は全期間一括バックテスト（DSSMS日次判断と不一致）
+- 【Phase 3実装予定】backtest_daily()対応でリアルトレード準備
+- 【重要】kabu STATION API統合時は日次制御への移行必須
+- Excel依存除去済み（CSV+JSON+TXT統一出力）
+
+Author: Backtest Project Team
 Created: 2025-10-18
-Modified: 2025-10-18
-"""
+Last Modified: 2025-12-30
 
 import sys
 import os
@@ -166,13 +182,23 @@ class MainSystemController:
                     elif available_start.tz is None and warmup_start_ts.tz is not None:
                         warmup_start_ts = warmup_start_ts.tz_localize(None)
                     
+                    # ウォームアップ期間チェック緩和（2025-12-30実装）
+                    # 10日以上の不足のみエラー、軽微な不足は警告で継続
                     if warmup_start_ts < available_start:
-                        raise RuntimeError(
-                            f"Insufficient data for warmup period. "
-                            f"Required warmup_start: {warmup_start_ts}, "
-                            f"Available data starts: {available_start}, "
-                            f"Shortage: {(available_start - warmup_start_ts).days} days"
-                        )
+                        shortage_days = (available_start - warmup_start_ts).days
+                        if shortage_days > 10:
+                            raise RuntimeError(
+                                f"Excessive data shortage for warmup period. "
+                                f"Required warmup_start: {warmup_start_ts}, "
+                                f"Available data starts: {available_start}, "
+                                f"Shortage: {shortage_days} days (exceeds 10-day tolerance)"
+                            )
+                        else:
+                            self.logger.warning(
+                                f"Minor data shortage for warmup period: {shortage_days} days "
+                                f"(within 10-day tolerance). Continuing with available data. "
+                                f"Required: {warmup_start_ts}, Available: {available_start}"
+                            )
                     
                     stock_data = stock_data[stock_data.index >= warmup_start_ts]
                     if index_data is not None:

@@ -1,11 +1,35 @@
 """
-DSSMS統合メインエントリーポイント
-DSS Core V3 + マルチ戦略統合バックテストシステム
+DSSMS統合メインエントリーポイント - DSSMSとマルチ戦略システムの統合制御
+
+DSS Core V3 + マルチ戦略統合バックテストシステム。日経225から最適1銘柄を動的選択し、
+マルチ戦略を適用してバックテストを実行。将来的にkabu STATION API経由で実トレード対応予定。
+
+主な機能:
+- DSSMS Core統合（Screening/Ranking/Scoring/Symbol Switching）
+- マルチ戦略実行制御（BaseStrategy派生クラス群との連携）
+- MainSystemController状態管理（PaperBroker残高・ポジション継続）
+- 累積期間バックテスト実行（Phase 1復元済み）
+- 決定論保証と重複エントリー防止機能
+- 統一出力エンジン連携（CSV+JSON+TXT形式）
+
+統合コンポーネント:
+- DSSMS Core: symbol_switch_manager_ultra_light経由での銘柄選択
+- MainSystemController: main_new.py経由でのマルチ戦略実行
+- data_fetcher: yfinance統合+CSV cache経由でのデータ取得
+- ComprehensiveReporter: 統一出力エンジン経由での結果出力
+
+セーフティ機能/注意事項:
+- MainSystemControllerインスタンス変数化による資金リセット防止
+- 累積期間方式によるエントリー機会確保（Phase 1対応）
+- 決定論破綻監視ログによる重複エントリー検出
+- ルックアヘッドバイアス防止（翌日始値エントリー必須）
+- 【重要】Phase 3実装予定: backtest_daily()メソッドによるリアルトレード対応
+- 【注意】現在の設計はDSSMS日次判断とマルチ戦略全期間一括判定の不一致問題あり
 
 Author: AI Assistant
 Created: 2025-09-28
-Phase: Phase 4 - 統合テスト・最適化
-"""
+Last Modified: 2025-12-30
+Phase: Phase 1 累積期間復元完了、Phase 2 ドキュメント化実行中
 
 import sys
 import os
@@ -1722,19 +1746,26 @@ class DSSMSIntegratedBacktester:
                 self.main_controller = MainSystemController(config)
                 self.logger.info("[Option A] MainSystemController初回作成完了")
             
-            # 3. バックテスト実行（ウォームアップ期間対応）
-            # Option A実装（2025-12-28）: 日次ウォームアップ方式へ移行
-            # 修正3: backtest_start_dateをtarget_dateに変更（累積期間方式から日次方式へ）
-            # 旧: self.dssms_backtest_start_date（累積期間開始）
-            # 新: target_date（当日のみの取引）
-            # メリット: 現実的な資金管理（資金枯渇が正しく機能）
-            # ウォームアップ: target_date - 150日で毎日計算（Option A-2暦日拡大方式）
+            # 3. バックテスト実行（累積期間方式復元）
+            # Phase 1実装（2025-12-30）: 累積期間方式復元
+            # 修正: Option A実装（日次ウォームアップ方式）を削除し、累積期間方式に復元
+            # 理由: エントリー機会回復のため（33営業日で1件→50件へ復旧見込み）
+            # 監視: 決定論破綻の監視ログを追加（重複エントリー、状態不一致の検出）
             
-            # 【Option A実装】2025-12-28
-            # 日次ウォームアップ方式: target_dateのみをバックテスト対象とし、ウォームアップ期間で過去データを使用
-            backtest_start_date = target_date  # 当日のみ
+            # 【Phase 1実装】2025-12-30
+            # 累積期間方式復元: dssms_backtest_start_date（固定開始日）からtarget_date（対象日）まで累積的にバックテスト
+            backtest_start_date = self.dssms_backtest_start_date  # 固定開始日（例: 2025-01-15）
             backtest_end_date = target_date + timedelta(days=7)  # 期間延長: 7日間の取引期間を確保
             warmup_days = self.warmup_days  # クラス変数を使用（150日）
+            
+            # 決定論破綻監視: エントリー機会と期間の記録
+            period_days = (target_date - backtest_start_date).days
+            self.logger.info(f"[DETERMINISM_MONITOR] 累積期間バックテスト: {backtest_start_date.strftime('%Y-%m-%d')} → {target_date.strftime('%Y-%m-%d')} ({period_days}日間)")
+            
+            # PaperBrokerの状態を監視ログに記録（決定論破綻の検出用）
+            if self.main_controller and hasattr(self.main_controller, 'paper_broker'):
+                broker = self.main_controller.paper_broker
+                self.logger.info(f"[DETERMINISM_MONITOR] PaperBroker状態前: account_balance={broker.account_balance:.0f}, filled_orders_count={len(broker.filled_orders)}")
             
             # 優先度B対応: stock_dataとbacktest_start_dateを記録（_convert_main_new_resultで使用）
             self._last_stock_data = stock_data
@@ -1744,7 +1775,7 @@ class DSSMSIntegratedBacktester:
             self.logger.info(f"[DSSMS->main_new] バックテスト開始: {symbol}, {target_date}")
             self.logger.info(f"[DSSMS->main_new_DATA] 銘柄: {symbol}")
             self.logger.info(f"[DSSMS->main_new_DATA] 対象日: {target_date.strftime('%Y-%m-%d')}")
-            self.logger.info(f"[DSSMS->main_new_DATA] trading_start_date: {backtest_start_date.strftime('%Y-%m-%d')} (修正案A: 累積期間方式)")
+            self.logger.info(f"[DSSMS->main_new_DATA] trading_start_date: {backtest_start_date.strftime('%Y-%m-%d')} (Phase 1: 累積期間方式復元)")
             self.logger.info(f"[DSSMS->main_new_DATA] trading_end_date: {backtest_end_date.strftime('%Y-%m-%d')}")
             self.logger.info(f"[DSSMS->main_new_DATA] warmup_days: {warmup_days}")
             
@@ -1780,6 +1811,20 @@ class DSSMSIntegratedBacktester:
                 warmup_days=warmup_days,
                 force_close_on_entry=force_close_on_entry
             )
+            
+            # 決定論破綻監視: MainSystemController実行後のPaperBroker状態チェック
+            if self.main_controller and hasattr(self.main_controller, 'paper_broker'):
+                broker = self.main_controller.paper_broker
+                self.logger.info(f"[DETERMINISM_MONITOR] PaperBroker状態後: account_balance={broker.account_balance:.0f}, filled_orders_count={len(broker.filled_orders)}")
+                
+                # 重複エントリー検出: 同日の複数注文をチェック
+                if len(broker.filled_orders) > 0:
+                    today_orders = [order for order in broker.filled_orders 
+                                  if order.filled_at and order.filled_at.date() == target_date.date()]
+                    if len(today_orders) > 1:
+                        self.logger.warning(f"[DETERMINISM_MONITOR] 同日重複エントリー検出: {target_date.strftime('%Y-%m-%d')} に{len(today_orders)}件のエントリー")
+                        for i, order in enumerate(today_orders):
+                            self.logger.warning(f"[DETERMINISM_MONITOR] エントリー{i+1}: symbol={order.symbol}, quantity={order.quantity}, price={order.filled_price}")
             
             # 4. 結果変換
             return self._convert_main_new_result(result, symbol, target_date)
