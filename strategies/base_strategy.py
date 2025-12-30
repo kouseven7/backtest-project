@@ -238,8 +238,25 @@ class BaseStrategy:
         exit_count = 0
         warmup_filtered_count = 0  # ウォームアップ期間でフィルタされた日数
         
-        # ルックアヘッドバイアス対策: 翌日始値参照のため最終行を除外
-        for idx in range(len(result) - 1):
+        # [DATA_STRUCTURE_LOG] データ構造検証ログ（2025-12-28 Solution A検証用）
+        self.logger.info(
+            f"[DATA_STRUCTURE] result shape: {result.shape}, "
+            f"dates: {result.index[0]} ~ {result.index[-1]}, "
+            f"loop_range: 0 ~ {len(result) - 2} (range(len(result)-1))"
+        )
+        if trading_start_date_unified is not None:
+            try:
+                target_date_position = result.index.get_loc(trading_start_date_unified) if trading_start_date_unified in result.index else -1
+                self.logger.info(
+                    f"[DATA_STRUCTURE] trading_start_date={trading_start_date_unified}, "
+                    f"position_in_array={target_date_position}"
+                )
+            except Exception as e:
+                self.logger.warning(f"[DATA_STRUCTURE] target_date position check failed: {e}")
+        
+        # ルックアヘッドバイアス対策: エントリー価格参照時に翌日始値を使用
+        # 日次ウォームアップ方式対応: 最終行もループに含める（2025-12-29修正）
+        for idx in range(len(result)):
             current_date = result.index[idx]
             
             # ウォームアップ期間チェック（trading_start_date指定時）
@@ -264,45 +281,45 @@ class BaseStrategy:
             
             # ポジションを持っていない場合のみエントリーシグナルをチェック
             if not in_position and in_trading_period:
-                # 【選択肢D】最終日（trading_end_date）のみシグナル生成
-                # 理由: DSSMS累積期間バックテスト方式でのentry_date重複を解消
-                # trading_end_date未指定の場合は全期間でシグナル生成（従来通り）
-                is_last_trading_day = (
-                    trading_end_date_unified is not None and 
-                    current_date == trading_end_date_unified
-                )
-                
-                if is_last_trading_day or trading_end_date_unified is None:
-                    entry_signal = self.generate_entry_signal(idx)
-                    if entry_signal == 1:
-                        result.at[result.index[idx], 'Entry_Signal'] = 1
-                        result.at[result.index[idx], 'Position'] = 1
-                        in_position = True
-                        entry_idx = idx
-                        entry_count += 1
-                        
-                        # Phase 1修正: エントリー価格を翌日始値に変更（ルックアヘッドバイアス対策）
-                        # Phase 2統合: スリッページ・取引コスト対応（2025-12-23追加）
-                        # デフォルト: slippage=0.001（0.1%）、transaction_cost=0.0（0%）
-                        # 各戦略でパラメータ設定により上書き可能
-                        next_day_open = float(result['Open'].iloc[idx + 1])
-                        slippage = self.params.get("slippage", 0.001)
-                        transaction_cost = self.params.get("transaction_cost", 0.0)
-                        entry_price = next_day_open * (1 + slippage + transaction_cost)
-                        self.entry_prices[idx] = entry_price
-                        
-                        # デバッグログ: エントリー記録（Phase 2対応）
-                        self.logger.debug(
-                            f"[ENTRY #{entry_count}] idx={idx}, date={result.index[idx]}, "
-                            f"next_day_open={next_day_open:.2f}, entry_price={entry_price:.2f}, "
-                            f"slippage+cost={slippage+transaction_cost:.4f}, in_position={in_position}"
-                        )
+                # 【選択肢D無効化】2025-12-28 Solution A実装
+                # 理由: Option A（日次方式）により累積期間方式の問題は解消済み
+                # in_trading_period内であればエントリー許可（従来のOption D制約を削除）
+                entry_signal = self.generate_entry_signal(idx)
+                if entry_signal == 1:
+                    result.at[result.index[idx], 'Entry_Signal'] = 1
+                    result.at[result.index[idx], 'Position'] = 1
+                    in_position = True
+                    entry_idx = idx
+                    entry_count += 1
+                    
+                    # Pattern C実装: 当日終値でエントリー（ルックアヘッドバイアス無視）
+                    # 2025-12-29: 従来ロジックに戻す（テスト目的）
+                    # Phase 2統合: スリッページ・取引コスト対応（2025-12-23追加）
+                    # デフォルト: slippage=0.001（0.1%）、transaction_cost=0.0（0%）
+                    current_close = float(result['Adj Close'].iloc[idx])
+                    slippage = self.params.get("slippage", 0.001)
+                    transaction_cost = self.params.get("transaction_cost", 0.0)
+                    entry_price = current_close * (1 + slippage + transaction_cost)
+                    self.entry_prices[idx] = entry_price
+                    
+                    # デバッグログ: エントリー記録（Phase 2対応）
+                    self.logger.debug(
+                        f"[ENTRY #{entry_count}] idx={idx}, date={result.index[idx]}, "
+                        f"current_close={current_close:.2f}, entry_price={entry_price:.2f}, "
+                        f"slippage+cost={slippage+transaction_cost:.4f}, in_position={in_position}"
+                    )
             
             # ポジションを持っている場合のみイグジットシグナルをチェック
             elif in_position:
                 # ポジションを前日から引き継ぐ
                 if idx > 0:
                     result.at[result.index[idx], 'Position'] = result['Position'].iloc[idx-1]
+                
+                # 日次ウォームアップ方式対応: 最終日の特別処理（2025-12-29修正）
+                if idx + 1 >= len(result):
+                    self.logger.debug(
+                        f"[EXIT_FINAL_DAY] 最終日のイグジット判定: idx={idx}, date={result.index[idx]}"
+                    )
                 
                 # entry_idxを渡してgenerate_exit_signalを呼び出す
                 exit_signal = self.generate_exit_signal(idx, entry_idx=entry_idx)

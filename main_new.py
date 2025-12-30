@@ -110,7 +110,7 @@ class MainSystemController:
         days_back: int = 365,
         backtest_start_date: Optional[datetime] = None,
         backtest_end_date: Optional[datetime] = None,
-        warmup_days: int = 90,
+        warmup_days: int = 150,
         force_close_on_entry: bool = False
     ) -> Dict[str, Any]:
         """
@@ -123,7 +123,7 @@ class MainSystemController:
             days_back: 取得日数
             backtest_start_date: バックテスト開始日（取引開始日）
             backtest_end_date: バックテスト終了日
-            warmup_days: ウォームアップ期間日数（デフォルト30日）
+            warmup_days: ウォームアップ期間日数（デフォルト150日、Option A-2暦日拡大方式: 2025-12-28変更）
             force_close_on_entry: 既存ポジション強制決済フラグ（銘柄切替時にTrue）
         
         Returns:
@@ -516,8 +516,8 @@ def main():
     try:
         # get_parameters_and_data()で銘柄・期間・データを取得
         # 引数なしで呼び出すと、Excelから自動取得
-        # warmup_days=90を明示的に渡す（2025-12-03変更）
-        ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data(warmup_days=90)
+        # warmup_days=150を明示的に渡す（Option A-2暦日拡大方式: 2025-12-28変更）
+        ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data(warmup_days=150)
         
         print(f"[SUCCESS] Excel設定読み込み完了")
         print(f"        銘柄: {ticker}")

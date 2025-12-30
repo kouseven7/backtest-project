@@ -162,8 +162,13 @@ class DSSMSIntegratedBacktester:
             # 影響: position_value/cash_balance計算を全額キャッシュ扱いに変更
             self.force_close_in_progress = False  # [Task11] DSSMS側ForceCloseフラグ
             
+            # Option A実装（2025-12-28）: MainSystemController instance variable
+            # 資金リセット問題解決のため、日次作成ではなく__init__で一度だけ作成
+            # これにより、PaperBrokerの資金が日次でリセットされなくなる
+            self.main_controller = None  # 遅延初期化（初回_execute_multi_strategies呼び出し時）
+            
             # 累積期間方式用設定（2025-12-06追加）
-            self.warmup_days = 90  # デフォルト値（main_new.pyと統一）
+            self.warmup_days = 150  # Option A-2: 150暦日 × 68.5% ≒ 103営業日
             
             # Phase 2: equity_curve再構築用追跡変数
             self.peak_value = self.portfolio_value  # ポートフォリオピーク値追跡
@@ -1710,16 +1715,26 @@ class DSSMSIntegratedBacktester:
                 'suppress_report_generation': True  # Phase 2: DSSMS経由の呼び出し時はレポート生成抑制
             }
             
-            controller = MainSystemController(config)
+            # Option A実装（2025-12-28）: MainSystemController日次作成削除
+            # 修正2: 日次でのMainSystemController作成を削除（資金リセット防止）
+            # 代わりに、self.main_controllerを初回のみ作成（遅延初期化）
+            if self.main_controller is None:
+                self.main_controller = MainSystemController(config)
+                self.logger.info("[Option A] MainSystemController初回作成完了")
             
             # 3. バックテスト実行（ウォームアップ期間対応）
-            # 修正案A: 累積期間方式 - DSSMS開始日からtarget_dateまでの累積期間でバックテスト
-            # メリット: DSSMSとmain_new.pyで同じ期間のテストが可能、期間比較が可能
-            # デメリット: 日次処理時間が累積的に増加（1日目: 30+1日分、12日目: 30+12日分）
-            backtest_start_date = self.dssms_backtest_start_date  # Noneから変更（累積期間開始）
-            backtest_end_date = target_date
-            self.warmup_days = 90  # 2025-12-06変更: インスタンス変数化（_get_symbol_dataから参照）
-            warmup_days = self.warmup_days  # ローカル変数も維持（後方互換性）
+            # Option A実装（2025-12-28）: 日次ウォームアップ方式へ移行
+            # 修正3: backtest_start_dateをtarget_dateに変更（累積期間方式から日次方式へ）
+            # 旧: self.dssms_backtest_start_date（累積期間開始）
+            # 新: target_date（当日のみの取引）
+            # メリット: 現実的な資金管理（資金枯渇が正しく機能）
+            # ウォームアップ: target_date - 150日で毎日計算（Option A-2暦日拡大方式）
+            
+            # 【Option A実装】2025-12-28
+            # 日次ウォームアップ方式: target_dateのみをバックテスト対象とし、ウォームアップ期間で過去データを使用
+            backtest_start_date = target_date  # 当日のみ
+            backtest_end_date = target_date + timedelta(days=7)  # 期間延長: 7日間の取引期間を確保
+            warmup_days = self.warmup_days  # クラス変数を使用（150日）
             
             # 優先度B対応: stock_dataとbacktest_start_dateを記録（_convert_main_new_resultで使用）
             self._last_stock_data = stock_data
@@ -1754,7 +1769,9 @@ class DSSMSIntegratedBacktester:
             else:
                 self.logger.info(f"[DSSMS->main_new_DATA] index_data: None (インデックスデータなし)")
             
-            result = controller.execute_comprehensive_backtest(
+            # Option A実装（2025-12-28）: 修正4: instance variable使用
+            # controllerローカル変数 → self.main_controller instance variable
+            result = self.main_controller.execute_comprehensive_backtest(
                 ticker=symbol,
                 stock_data=stock_data,
                 index_data=index_data,
@@ -2046,23 +2063,18 @@ class DSSMSIntegratedBacktester:
             # target_date当日のデータを取得するには+1日が必要
             end_date = target_date + timedelta(days=1)
             
-            # 累積期間方式: DSSMS開始日 - warmup期間からデータ取得（2025-12-06修正）
+            # Option A実装（2025-12-28）: 修正5: 日次ウォームアップ方式へ移行
+            # 旧: DSSMS開始日 - warmup期間（累積期間方式）
+            # 新: target_date - warmup期間（日次ウォームアップ方式）
             # main_new.pyの期待（backtest_start_date - warmup_days）と整合
             warmup_days = getattr(self, 'warmup_days', 90)  # デフォルト90日
-            if hasattr(self, 'dssms_backtest_start_date') and self.dssms_backtest_start_date is not None:
-                start_date = self.dssms_backtest_start_date - timedelta(days=warmup_days)
-                self.logger.info(
-                    f"[DATA_PERIOD] 累積期間方式: DSSMS開始日({self.dssms_backtest_start_date.strftime('%Y-%m-%d')}) "
-                    f"- warmup({warmup_days}日) = 取得開始日({start_date.strftime('%Y-%m-%d')}), "
-                    f"target_date={target_date.strftime('%Y-%m-%d')}"
-                )
-            else:
-                # フォールバック: 固定120日方式（DSSMS開始前の呼び出し対応）
-                start_date = target_date - timedelta(days=120)
-                self.logger.warning(
-                    f"[DATA_PERIOD_FALLBACK] DSSMS開始日未設定のため固定120日方式使用: "
-                    f"target_date({target_date.strftime('%Y-%m-%d')}) - 120日 = {start_date.strftime('%Y-%m-%d')}"
-                )
+            start_date = target_date - timedelta(days=warmup_days)  # target_dateから計算
+            self.logger.info(
+                f"[DATA_PERIOD] Option A日次ウォームアップ方式: target_date({target_date.strftime('%Y-%m-%d')}) "
+                f"- warmup({warmup_days}日) = 取得開始日({start_date.strftime('%Y-%m-%d')})"
+            )
+            
+            # Option A実装により、フォールバック不要（常にtarget_date - warmup_days方式）
             
             # キャッシュから取得試行
             cached_data = self.data_cache.get_cached_data(symbol, start_date, end_date)
@@ -2087,17 +2099,43 @@ class DSSMSIntegratedBacktester:
                     symbol_with_suffix = symbol if symbol.endswith('.T') else f"{symbol}.T"
                     ticker = yf.Ticker(symbol_with_suffix)
                     # auto_adjust=False指定でAdj Closeカラムを保証（VWAPBreakoutStrategy対応）
-                    # 修正: timedelta(days=1) -> timedelta(days=3)で余裕を持ったデータ取得
-                    # 理由: yfinanceは前営業日までしか返さないため、3日余裕を持たせる
-                    stock_data = ticker.history(start=start_date, end=end_date + timedelta(days=3), auto_adjust=False)
+                    # 修正: timedelta(days=1) -> timedelta(days=7)で余裕を持ったデータ取得
+                    # 理由: yfinanceは前営業日までしか返さないため、週末・祝日を考慮して7日余裕を持たせる
+                    # Phase 1修正対応: 翌日始値参照のため、翌営業日データが必須（2025-12-29）
+                    stock_data = ticker.history(start=start_date, end=end_date + timedelta(days=7), auto_adjust=False)
                     
                     # Adj Close保証処理（YFinanceDataFeedと同様のロジック）
                     if 'Adj Close' not in stock_data.columns and 'Close' in stock_data.columns:
                         stock_data['Adj Close'] = stock_data['Close']
                     
+                    # データ範囲検証（翌日データの存在確認） - 2025-12-29追加
+                    # Phase 1修正: 翌日始値でエントリーするため、翌日データが必須
+                    if not stock_data.empty:
+                        data_last_date = stock_data.index[-1]
+                        required_date = target_date + timedelta(days=1)  # 翌日データが必要
+                        
+                        # タイムゾーン統一処理
+                        if hasattr(data_last_date, 'tz') and data_last_date.tz is not None:
+                            if not hasattr(required_date, 'tz') or required_date.tz is None:
+                                required_date = pd.Timestamp(required_date).tz_localize(data_last_date.tz)
+                        
+                        if data_last_date < required_date:
+                            self.logger.warning(
+                                f"[DATA_RANGE_WARNING] 翌日データが取得できませんでした。"
+                                f"データ最終日: {data_last_date.strftime('%Y-%m-%d')}, "
+                                f"必要日: {required_date.strftime('%Y-%m-%d')}, "
+                                f"不足: {(required_date - data_last_date).days}日"
+                            )
+                        else:
+                            self.logger.info(
+                                f"[DATA_RANGE_OK] 翌日データ取得成功。"
+                                f"データ最終日: {data_last_date.strftime('%Y-%m-%d')}, "
+                                f"target_date: {target_date.strftime('%Y-%m-%d')}"
+                            )
+                    
                     # インデックスデータ（日経225）
                     nikkei_ticker = yf.Ticker("^N225")
-                    index_data = nikkei_ticker.history(start=start_date, end=end_date + timedelta(days=3), auto_adjust=False)
+                    index_data = nikkei_ticker.history(start=start_date, end=end_date + timedelta(days=7), auto_adjust=False)
                     
                     # Adj Close保証処理（インデックスデータ）
                     if 'Adj Close' not in index_data.columns and 'Close' in index_data.columns:

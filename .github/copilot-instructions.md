@@ -1,5 +1,26 @@
 # Copilot Instructions - 日本語版
 
+## 📐 **プロジェクトアーキテクチャ**
+
+### **システム階層**
+```
+1. DSSMS Core (src/dssms/)
+   └─ Screening/Ranking/Scoring/Symbol Switching
+2. Multi-Strategy Execution (strategies/)
+   └─ BaseStrategy派生クラス群（Breakout, Momentum等）
+3. Data Layer
+   ├─ data_fetcher.py: yfinance統合+CSV cache
+   └─ data_cache_manager.py: キャッシュ管理
+4. Output & Reporting
+   └─ CSV+JSON+TXT統一出力（Excel廃止済み）
+```
+
+### **重要な設計思想**
+- **DSSMS目的**: 日経225から最適1銘柄を動的選択→マルチ戦略適用→kabu STATION API経由で実トレード
+- **バックテスト第一**: すべての戦略は`strategy.backtest()`呼び出しで実際のトレード数・損益を検証
+- **決定論モード**: DSSMS切替は完全再現可能（ランダム性排除）
+- **分散投資なし**: 単一最適銘柄への集中運用（将来拡張余地のみ確保）
+
 ## 🎯 **基本原則**
 1. **バックテスト実行必須**: `strategy.backtest()` の呼び出しをスキップしない
 2. **検証なしの報告禁止**: 実際の実行結果を確認せず「成功」と報告しない
@@ -171,3 +192,80 @@ stock_data = ticker.history(start=start_date, end=end_date)  # auto_adjust未指
 - **用途**: 回帰テスト、CI/CD自動テスト
 
 **重要**: エージェントモードでテストを作成する際は、必ず適切なフォルダに配置すること。
+
+## 🔧 **開発ワークフロー**
+
+### **戦略開発**
+```python
+# 1. strategies/base_strategy.py を継承
+from strategies.base_strategy import BaseStrategy
+
+class MyStrategy(BaseStrategy):
+    def generate_entry_signal(self, idx):
+        # 前日データで判断（.shift(1)必須）
+        return signal
+    
+    def generate_exit_signal(self, idx):
+        # エグジット条件
+        return signal
+    
+    def backtest(self, trading_start_date=None, trading_end_date=None):
+        # 必ず実装・呼び出し
+        return results_df
+```
+
+### **実行コマンド**
+```powershell
+# バックテスト実行
+python main.py
+
+# 一時テスト削除
+python tests/cleanup_temp_tests.py
+
+# Pytest実行
+pytest tests/core/
+```
+
+### **データ取得パターン**
+```python
+# 標準パターン（キャッシュ優先）
+from data_fetcher import get_parameters_and_data
+ticker, start, end, stock_data, index_data = get_parameters_and_data(
+    ticker="9101.T", 
+    start_date="2023-01-01", 
+    end_date="2024-12-31",
+    warmup_days=150  # ウォームアップ期間（Option A-2暦日拡大方式）
+)
+```
+
+## 🐛 **デバッグTips**
+
+### **戦略でトレードが0件の場合**
+1. `generate_entry_signal()`のログを有効化（`DEBUG_BACKTEST=1`環境変数）
+2. インジケーターに`.shift(1)`適用済みか確認
+3. ウォームアップ期間（150日）が十分か確認
+4. トレンドフィルターが厳しすぎないか確認（`detect_unified_trend`）
+
+### **出力ファイルが空の場合**
+1. `backtest()`が実際に呼び出されたか確認
+2. `results_df`に取引履歴が含まれるか確認
+3. 統一出力エンジン呼び出し時のパラメータ確認
+
+## 📊 **重要なファイル**
+
+
+## 🔗 **統合ポイント**
+
+### **DSSMS ⇔ 戦略層**
+- DSSMSは`最適銘柄ticker`を返す → 戦略層は受け取った銘柄でbacktest実行
+- 将来実装: リアルタイム切替判定 → kabu STATION API発注
+
+### **戦略 ⇔ データ**
+- 戦略は`data_fetcher.get_parameters_and_data()`から`stock_data`を受け取る
+- `stock_data`には必ず`Adj Close`列が含まれる（`auto_adjust=False`必須）
+
+### **出力エンジン統合**
+- 全戦略の結果は統一出力エンジン経由でCSV+JSON+TXT形式で保存
+- Excel依存は完全に廃止済み（入力のみ許可）
+
+---

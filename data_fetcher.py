@@ -31,12 +31,12 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-def get_parameters_and_data(ticker: Optional[str] = None, start_date: Optional[str] = None, end_date: Optional[str] = None, warmup_days: int = 90):
+def get_parameters_and_data(ticker: Optional[str] = None, start_date: Optional[str] = None, end_date: Optional[str] = None, warmup_days: int = 150):
     """
     Excel設定ファイルからパラメータ取得と市場データ取得（キャッシュ利用）を行います。
     引数が指定されていればそれを優先し、なければ設定ファイルから取得します。
     Args:
-        warmup_days: ウォームアップ期間日数（デフォルト90日、2025-12-03変更）
+        warmup_days: ウォームアップ期間日数（デフォルト150日、Option A-2暦日拡大方式: 2025-12-28変更）
     Returns:
         ticker (str), start_date (str), end_date (str), stock_data (pd.DataFrame), index_data (pd.DataFrame)
     """
@@ -107,8 +107,8 @@ def get_parameters_and_data(ticker: Optional[str] = None, start_date: Optional[s
 
     try:
         # ウォームアップ期間を考慮してデータ取得開始日を前倒し
-        # main_new.pyのデフォルトwarmup_days=90と整合（2025-12-03変更）
-        # warmup_daysパラメータを使用（引数で指定された値またはデフォルト90日）
+        # main_new.pyのデフォルトwarmup_days=150と整合（Option A-2暦日拡大方式: 2025-12-28変更）
+        # warmup_daysパラメータを使用（引数で指定された値またはデフォルト150日）
         start_date_dt = datetime.datetime.strptime(start_date, '%Y-%m-%d')
         adjusted_start = (start_date_dt - datetime.timedelta(days=warmup_days)).strftime('%Y-%m-%d')
         
