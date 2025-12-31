@@ -305,6 +305,290 @@ class ContrarianStrategy(BaseStrategy):
 
         return self.data
 
+    def backtest_daily(self, current_date, stock_data, existing_position=None):
+        """
+        ContrarianStrategy 日次バックテスト実行
+        
+        Phase 3-C Day 10実装: Contrarian戦略でのbacktest_daily()実装
+        
+        Parameters:
+            current_date (datetime): 判定対象日
+            stock_data (pd.DataFrame): 最新の株価データ
+            existing_position (dict, optional): 既存ポジション情報
+                {
+                    'symbol': str,
+                    'quantity': int,
+                    'entry_price': float,
+                    'entry_date': datetime,
+                    'entry_idx': int
+                }
+                
+        Returns:
+            dict: {
+                'action': 'entry'|'exit'|'hold',
+                'signal': 1|-1|0,
+                'price': float,
+                'shares': int,
+                'reason': str
+            }
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        # Phase 1: current_dateの型変換・検証
+        if isinstance(current_date, str):
+            current_date = pd.Timestamp(current_date)
+        elif not isinstance(current_date, pd.Timestamp):
+            current_date = pd.Timestamp(current_date)
+            
+        # Phase 2: データ整合性チェック
+        if current_date not in stock_data.index:
+            return {
+                'action': 'hold',
+                'signal': 0,
+                'price': 0.0,
+                'shares': 0,
+                'reason': f'Contrarian: No data available for {current_date.strftime("%Y-%m-%d")}'
+            }
+            
+        # Phase 3: ウォームアップ期間考慮
+        current_idx = stock_data.index.get_loc(current_date)
+        warmup_period = 150
+        rsi_period = self.params.get("rsi_period", 14)
+        min_required = max(warmup_period, rsi_period, 5)  # RSI期間と最小過去データ（5日）を考慮
+        
+        if current_idx < min_required:
+            return {
+                'action': 'hold',
+                'signal': 0,
+                'price': 0.0,
+                'shares': 0,
+                'reason': f'Contrarian: Insufficient warmup data. Required: {min_required}, Available: {current_idx}'
+            }
+        
+        # Phase 4: データ更新（Option B方式）
+        original_data = self.data.copy()
+        
+        try:
+            basic_columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+            updated_columns = []
+            
+            for col in basic_columns:
+                if col in stock_data.columns and col in self.data.columns:
+                    common_index = self.data.index.intersection(stock_data.index)
+                    if len(common_index) > 0:
+                        self.data.loc[common_index, col] = stock_data.loc[common_index, col]
+                        updated_columns.append(col)
+            
+            # RSIも更新（initialize_strategy()で計算済み、shift(1)適用済み）
+            if 'RSI' in self.data.columns:
+                # RSIは既にshift(1)適用済みなので再計算は不要
+                pass
+            
+            logger.debug(f"[Contrarian.backtest_daily] Data updated: {updated_columns}")
+            
+            # Phase 5: 既存ポジション処理分岐
+            if existing_position is not None:
+                # エグジット判定（簡易版: Entry_Signal依存を回避）
+                return self._handle_exit_logic_daily(current_idx, existing_position, stock_data, current_date)
+            else:
+                # エントリー判定
+                return self._handle_entry_logic_daily(current_idx, stock_data, current_date)
+        
+        finally:
+            # データ復元
+            self.data = original_data
+    
+    def _handle_exit_logic_daily(self, current_idx, existing_position, stock_data, current_date):
+        """
+        エグジット判定ロジック（backtest_daily用簡易版）
+        
+        generate_exit_signal()がEntry_Signal依存のため、
+        直接エグジット条件を判定する簡易実装
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        try:
+            # existing_positionからエントリー情報取得
+            entry_price = existing_position.get('entry_price', 0)
+            entry_date = existing_position.get('entry_date')
+            entry_idx = existing_position.get('entry_idx', current_idx)
+            
+            if entry_price == 0:
+                return {
+                    'action': 'hold',
+                    'signal': 0,
+                    'price': 0.0,
+                    'shares': existing_position.get('quantity', 0),
+                    'reason': 'Contrarian: Invalid entry price in existing_position'
+                }
+            
+            # 翌日始値でエグジット（ルックアヘッドバイアス防止）
+            if current_idx + 1 < len(stock_data):
+                exit_price = stock_data.iloc[current_idx + 1]['Open']
+            else:
+                # 最終日フォールバック
+                exit_price = stock_data.iloc[current_idx]['Close']
+                logger.warning(f"[Contrarian] Using Close price fallback for final day: {current_date}")
+            
+            # エグジット条件判定
+            # 1. RSIによるイグジット（中立域）
+            current_rsi = self.data['RSI'].iloc[current_idx]
+            if pd.notna(current_rsi) and current_rsi >= self.params["rsi_exit_level"]:
+                return {
+                    'action': 'exit',
+                    'signal': -1,
+                    'price': float(exit_price),
+                    'shares': existing_position.get('quantity', 0),
+                    'reason': f'Contrarian: RSI exit on {current_date.strftime("%Y-%m-%d")}'
+                }
+            
+            # 2. 利益確定
+            if exit_price >= entry_price * (1.0 + self.params["take_profit"]):
+                return {
+                    'action': 'exit',
+                    'signal': -1,
+                    'price': float(exit_price),
+                    'shares': existing_position.get('quantity', 0),
+                    'reason': f'Contrarian: Take profit on {current_date.strftime("%Y-%m-%d")}'
+                }
+            
+            # 3. ストップロス
+            if exit_price <= entry_price * (1.0 - self.params["stop_loss"]):
+                return {
+                    'action': 'exit',
+                    'signal': -1,
+                    'price': float(exit_price),
+                    'shares': existing_position.get('quantity', 0),
+                    'reason': f'Contrarian: Stop loss on {current_date.strftime("%Y-%m-%d")}'
+                }
+            
+            # 4. トレーリングストップ
+            # エントリーから現在までの高値を取得
+            if entry_date is not None:
+                try:
+                    entry_loc = stock_data.index.get_loc(entry_date)
+                    high_since_entry = stock_data.iloc[entry_loc:current_idx+1]['High'].max()
+                except:
+                    high_since_entry = entry_price
+            else:
+                high_since_entry = entry_price
+            
+            trailing_stop_price = high_since_entry * (1.0 - self.params["trailing_stop_pct"])
+            if exit_price <= trailing_stop_price:
+                return {
+                    'action': 'exit',
+                    'signal': -1,
+                    'price': float(exit_price),
+                    'shares': existing_position.get('quantity', 0),
+                    'reason': f'Contrarian: Trailing stop on {current_date.strftime("%Y-%m-%d")}'
+                }
+            
+            # 5. 最大保有日数
+            if entry_date is not None:
+                days_held = (current_date - entry_date).days
+                if days_held >= self.params["max_hold_days"]:
+                    return {
+                        'action': 'exit',
+                        'signal': -1,
+                        'price': float(exit_price),
+                        'shares': existing_position.get('quantity', 0),
+                        'reason': f'Contrarian: Max hold days on {current_date.strftime("%Y-%m-%d")}'
+                    }
+            
+            # エグジット条件に該当せず: ホールド
+            return {
+                'action': 'hold',
+                'signal': 0,
+                'price': 0.0,
+                'shares': existing_position.get('quantity', 0),
+                'reason': f'Contrarian: Holding position from {current_date.strftime("%Y-%m-%d")}'
+            }
+        
+        except Exception as e:
+            logger.error(f"[Contrarian] Exit logic error: {e}")
+            return {
+                'action': 'hold',
+                'signal': 0,
+                'price': 0.0,
+                'shares': 0,
+                'reason': f'Contrarian: Exit logic error: {str(e)}'
+            }
+    
+    def _handle_entry_logic_daily(self, current_idx, stock_data, current_date):
+        """
+        エントリー判定ロジック（backtest_daily用）
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        try:
+            # generate_entry_signal()を使用してエントリー判定
+            entry_signal = self.generate_entry_signal(current_idx)
+            
+            if entry_signal == 1:
+                # 翌日始値でエントリー + スリッページ
+                if current_idx + 1 < len(stock_data):
+                    entry_price = stock_data.iloc[current_idx + 1]['Open']
+                    
+                    # スリッページ・取引コスト適用
+                    slippage = self.params.get("slippage", 0.001)
+                    transaction_cost = self.params.get("transaction_cost", 0.0)
+                    entry_price = entry_price * (1 + slippage + transaction_cost)
+                    
+                    # ポジションサイズ計算
+                    shares = self._calculate_position_size_daily(entry_price)
+                    
+                    return {
+                        'action': 'entry',
+                        'signal': 1,
+                        'price': float(entry_price),
+                        'shares': shares,
+                        'reason': f'Contrarian: Entry signal detected on {current_date.strftime("%Y-%m-%d")}'
+                    }
+                else:
+                    # 最終日の場合エントリー不可
+                    return {
+                        'action': 'hold',
+                        'signal': 0,
+                        'price': 0.0,
+                        'shares': 0,
+                        'reason': f'Contrarian: Cannot enter on final day: {current_date.strftime("%Y-%m-%d")}'
+                    }
+            else:
+                # エントリーシグナルなし
+                return {
+                    'action': 'hold',
+                    'signal': 0,
+                    'price': 0.0,
+                    'shares': 0,
+                    'reason': f'Contrarian: No entry signal on {current_date.strftime("%Y-%m-%d")}'
+                }
+        
+        except Exception as e:
+            logger.error(f"[Contrarian] Entry logic error: {e}")
+            return {
+                'action': 'hold',
+                'signal': 0,
+                'price': 0.0,
+                'shares': 0,
+                'reason': f'Contrarian: Entry logic error: {str(e)}'
+            }
+    
+    def _calculate_position_size_daily(self, entry_price):
+        """
+        ポジションサイズ計算（backtest_daily用）
+        """
+        target_amount = self.params.get("position_amount", 100000)
+        
+        if entry_price > 0:
+            shares = int(target_amount / entry_price)
+            shares = max(100, shares // 100 * 100)
+            return shares
+        else:
+            return 0
+
     def load_optimized_parameters(self, ticker: str = None):
         """
         承認済みの最適化パラメータを自動適用

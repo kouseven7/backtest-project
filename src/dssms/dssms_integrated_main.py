@@ -159,6 +159,32 @@ class DSSMSIntegratedBacktester:
             # 累積期間方式用設定(December 6, 2025追加)
             self.warmup_days = 150  # Option A-2: 150暦日 × 68.5% ≒ 103営業日
             
+            # Phase 3-C Day 12: MarketAnalyzer追加
+            try:
+                from main_system.market_analysis.market_analyzer import MarketAnalyzer
+                self.market_analyzer = MarketAnalyzer()
+                self.logger.info("MarketAnalyzer初期化成功")
+            except ImportError as e:
+                self.logger.warning(f"MarketAnalyzer初期化失敗: {e}, 簡易版を使用")
+                self.market_analyzer = None
+            
+            # Phase 3-C Day 12: DynamicStrategySelector追加
+            try:
+                from main_system.strategy_selection.dynamic_strategy_selector import (
+                    DynamicStrategySelector, StrategySelectionMode
+                )
+                self.strategy_selector = DynamicStrategySelector(
+                    selection_mode=StrategySelectionMode.SINGLE_BEST,  # Phase 3-C: 単一戦略選択
+                    min_confidence_threshold=0.35
+                )
+                self.logger.info("DynamicStrategySelector初期化成功")
+            except ImportError as e:
+                self.logger.warning(f"DynamicStrategySelector初期化失敗: {e}, 固定戦略を使用")
+                self.strategy_selector = None
+            
+            # Phase 3-C Day 12: ポジション状態管理
+            self.current_position = None  # 現在のポジション情報
+            
             # Phase 2: equity_curve再構築用追跡変数
             self.cumulative_pnl = 0.0  # 累積損益追跡
             self.total_trades_count = 0  # 総取引数追跡
@@ -393,14 +419,32 @@ class DSSMSIntegratedBacktester:
         if isinstance(normalized_data.columns, pd.MultiIndex):
             self.logger.info(f"[NORMALIZE] MultiIndex検出 → フラット化実行")
             
-            # タプル形式のカラム名をフラットに変換
-            flat_columns = []
-            for col in normalized_data.columns:
-                if isinstance(col, tuple):
-                    # ('Adj Close', '9101.T') → 'Adj Close'
-                    flat_columns.append(col[0])
+            # MultiIndex構造の判定: (銘柄, カラム名) or (カラム名, 銘柄)
+            first_col = normalized_data.columns[0]
+            if isinstance(first_col, tuple) and len(first_col) >= 2:
+                # サンプルチェック: どちらがカラム名か判定
+                sample_col_0 = str(first_col[0])
+                sample_col_1 = str(first_col[1])
+                
+                # 標準カラム名リスト
+                standard_columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+                
+                # カラム名位置の判定
+                if sample_col_0 in standard_columns:
+                    # ('Open', '9101.T') → 'Open'
+                    flat_columns = [col[0] for col in normalized_data.columns]
+                    self.logger.debug(f"[NORMALIZE] MultiIndex構造: (カラム名, 銘柄)")
+                elif sample_col_1 in standard_columns:
+                    # ('9101.T', 'Open') → 'Open'
+                    flat_columns = [col[1] for col in normalized_data.columns]
+                    self.logger.debug(f"[NORMALIZE] MultiIndex構造: (銘柄, カラム名)")
                 else:
-                    flat_columns.append(col)
+                    # どちらも標準カラム名ではない場合は最後の要素を使用
+                    flat_columns = [col[-1] for col in normalized_data.columns]
+                    self.logger.warning(f"[NORMALIZE] 非標準MultiIndex構造: 最後の要素を使用")
+            else:
+                # タプルではない場合（念のため）
+                flat_columns = list(normalized_data.columns)
             
             normalized_data.columns = flat_columns
             self.logger.info(f"[NORMALIZE] フラット化完了: columns={list(normalized_data.columns)}")
@@ -1790,12 +1834,90 @@ class DSSMSIntegratedBacktester:
                 'date': target_date.strftime('%Y-%m-%d')
             }
 
+    def _create_strategy_instance(self, strategy_name: str, data: pd.DataFrame):
+        """
+        戦略インスタンス動的生成 (Phase 3-C Day 12)
+        
+        Parameters:
+            strategy_name (str): 戦略名（例: 'VWAPBreakoutStrategy'）
+            data (pd.DataFrame): 株価データ
+            
+        Returns:
+            BaseStrategy: 戦略インスタンス
+            
+        Raises:
+            ValueError: 戦略名が不正、またはimport失敗
+            
+        Author: Backtest Project Team
+        Created: 2025-12-31 (Phase 3-C Day 12)
+        """
+        strategy_map = {
+            'VWAPBreakoutStrategy': ('strategies.VWAP_Breakout', 'VWAPBreakoutStrategy'),
+            'MomentumInvestingStrategy': ('strategies.Momentum_Investing', 'MomentumInvestingStrategy'),
+            'BreakoutStrategy': ('strategies.Breakout', 'BreakoutStrategy'),
+            'ContrarianStrategy': ('strategies.contrarian_strategy', 'ContrarianStrategy'),
+            'GCStrategy': ('strategies.gc_strategy_signal', 'GCStrategy'),
+        }
+        
+        if strategy_name not in strategy_map:
+            raise ValueError(f"Unknown strategy: {strategy_name}")
+        
+        module_name, class_name = strategy_map[strategy_name]
+        
+        try:
+            # 動的import
+            import importlib
+            module = importlib.import_module(module_name)
+            strategy_class = getattr(module, class_name)
+            
+            # インスタンス作成
+            strategy = strategy_class(data)
+            self.logger.debug(f"{strategy_name}初期化成功")
+            
+            return strategy
+            
+        except ImportError as e:
+            raise ValueError(f"{strategy_name} import失敗: {e}")
+        except Exception as e:
+            raise ValueError(f"{strategy_name}初期化失敗: {e}")
+    
+    def _simple_market_analysis(self, data: pd.DataFrame) -> Dict[str, Any]:
+        """
+        簡易市場分析 (Phase 3-C Day 12)
+        
+        MarketAnalyzer未利用時のフォールバック。
+        UnifiedTrendDetectorのみを使用した簡易版。
+        
+        copilot-instructions.md準拠:
+        - モック/ダミーデータのフォールバック禁止
+        - 実データのみ使用
+        
+        Parameters:
+            data (pd.DataFrame): 株価データ
+            
+        Returns:
+            Dict[str, Any]: 市場分析結果
+            
+        Author: Backtest Project Team
+        Created: 2025-12-31 (Phase 3-C Day 12)
+        """
+        from indicators.unified_trend_detector import detect_unified_trend
+        
+        trend = detect_unified_trend(data, strategy='DSSMS', method='advanced')
+        
+        return {
+            'market_regime': f"{trend}_trend",
+            'confidence_score': 0.5,
+            'trend': trend,
+            'source': 'simple_fallback'
+        }
+    
     def _execute_multi_strategies_daily(self, target_date: datetime, symbol: str, stock_data) -> Dict[str, Any]:
         """
-        Phase 3-B 改善版統合実行 - データ構造問題修正・休日判定改善
+        Phase 3-C 拡張版統合実行 - 市場分析・戦略選択・ポジション管理統合
         
         DSSMS日次判断とマルチ戦略の統合実行システム。
-        Phase 3-B改善: データ構造変換処理・休日業務日調整を追加。
+        Phase 3-C拡張: MarketAnalyzer・DynamicStrategySelector統合、ポジション状態管理追加。
         
         Args:
             target_date (datetime): 判定対象日
@@ -1814,7 +1936,9 @@ class DSSMSIntegratedBacktester:
                 'execution_timestamp': datetime,
                 'target_date': datetime,
                 'symbol': str,
-                'adjusted_target_date': datetime  # Phase 3-B: 業務日調整後の日付
+                'adjusted_target_date': datetime,
+                'market_analysis': dict,  # Phase 3-C: 市場分析結果
+                'strategy_selection': dict  # Phase 3-C: 戦略選択結果
             }
             
         Raises:
@@ -1827,12 +1951,12 @@ class DSSMSIntegratedBacktester:
         
         Author: Backtest Project Team
         Created: 2025-12-31
-        Modified: 2025-12-31 (Phase 3-B改善)
+        Modified: 2025-12-31 (Phase 3-C拡張)
         """
         execution_start = time.time()
         
         try:
-            self.logger.info(f"[PHASE3-B-B1] _execute_multi_strategies_daily開始: symbol={symbol}, target_date={target_date.strftime('%Y-%m-%d')}")
+            self.logger.info(f"[PHASE3-C-B1] _execute_multi_strategies_daily開始: symbol={symbol}, target_date={target_date.strftime('%Y-%m-%d')}")
             
             # Phase 3-B Step B1: データ構造変換処理
             processed_data = self._normalize_stock_data_structure(stock_data, symbol)
@@ -1841,37 +1965,55 @@ class DSSMSIntegratedBacktester:
             adjusted_target_date = self._adjust_to_business_day(target_date, processed_data)
             
             if adjusted_target_date != target_date:
-                self.logger.info(f"[PHASE3-B-B1] 業務日調整: {target_date.strftime('%Y-%m-%d')} → {adjusted_target_date.strftime('%Y-%m-%d')}")
+                self.logger.info(f"[PHASE3-C-B1] 業務日調整: {target_date.strftime('%Y-%m-%d')} → {adjusted_target_date.strftime('%Y-%m-%d')}")
             
-            # Phase 3-A MVP: VWAPBreakoutStrategy固定（1戦略のみ）
-            try:
-                from strategies.VWAP_Breakout import VWAPBreakoutStrategy
-                self.logger.debug(f"[PHASE3-B-B1] VWAPBreakoutStrategy import成功")
-            except ImportError as e:
-                self.logger.error(f"[PHASE3-B-B1] VWAPBreakoutStrategy import失敗: {e}")
-                return {
-                    'status': 'error',
-                    'strategy_name': 'VWAPBreakout',
-                    'action': 'hold',
-                    'signal': 0,
-                    'price': 0.0,
-                    'shares': 0,
-                    'reason': f'Strategy import failed: {e}',
-                    'execution_timestamp': datetime.now(),
-                    'target_date': target_date,
-                    'adjusted_target_date': adjusted_target_date,
-                    'symbol': symbol
-                }
+            # Phase 3-C Day 12 Task 2-1: 市場分析ロジック追加
+            if self.market_analyzer:
+                try:
+                    self.logger.debug(f"[PHASE3-C-B1] MarketAnalyzer.comprehensive_market_analysis()実行開始")
+                    market_analysis = self.market_analyzer.comprehensive_market_analysis(
+                        processed_data, index_data=None, ticker=symbol
+                    )
+                    self.logger.info(f"[PHASE3-C-B1] 市場分析完了: regime={market_analysis.get('market_regime')}, confidence={market_analysis.get('confidence_score')}")
+                except Exception as e:
+                    self.logger.warning(f"[PHASE3-C-B1] MarketAnalyzer実行エラー、簡易版にフォールバック: {e}")
+                    market_analysis = self._simple_market_analysis(processed_data)
+            else:
+                self.logger.debug(f"[PHASE3-C-B1] MarketAnalyzer未初期化、簡易版使用")
+                market_analysis = self._simple_market_analysis(processed_data)
             
-            # 戦略インスタンス作成（正規化データを使用）
+            # Phase 3-C Day 12 Task 2-2: 戦略選択ロジック追加
+            if self.strategy_selector:
+                try:
+                    self.logger.debug(f"[PHASE3-C-B1] DynamicStrategySelector.select_optimal_strategies()実行開始")
+                    strategy_selection = self.strategy_selector.select_optimal_strategies(
+                        market_analysis, processed_data, ticker=symbol
+                    )
+                    
+                    if strategy_selection['status'] == 'SUCCESS' and strategy_selection['selected_strategies']:
+                        best_strategy_name = strategy_selection['selected_strategies'][0]
+                        self.logger.info(f"[PHASE3-C-B1] 戦略選択完了: best_strategy={best_strategy_name}, confidence={strategy_selection['confidence_level']}")
+                    else:
+                        self.logger.warning(f"[PHASE3-C-B1] 戦略選択失敗、VWAPBreakoutにフォールバック")
+                        best_strategy_name = 'VWAPBreakoutStrategy'
+                except Exception as e:
+                    self.logger.warning(f"[PHASE3-C-B1] DynamicStrategySelector実行エラー、VWAPBreakoutにフォールバック: {e}")
+                    best_strategy_name = 'VWAPBreakoutStrategy'
+                    strategy_selection = {'status': 'FAILED', 'reason': str(e)}
+            else:
+                self.logger.debug(f"[PHASE3-C-B1] DynamicStrategySelector未初期化、VWAPBreakout固定")
+                best_strategy_name = 'VWAPBreakoutStrategy'
+                strategy_selection = {'status': 'FALLBACK', 'reason': 'DynamicStrategySelector not initialized'}
+            
+            # Phase 3-C Day 12 Task 2-2: 動的戦略インスタンス生成
             try:
-                strategy = VWAPBreakoutStrategy(processed_data)
-                self.logger.debug(f"[PHASE3-B-B1] VWAPBreakoutStrategy初期化成功 (データ構造: {processed_data.shape})")
+                strategy = self._create_strategy_instance(best_strategy_name, processed_data)
+                self.logger.debug(f"[PHASE3-C-B1] {best_strategy_name}初期化成功 (データ構造: {processed_data.shape})")
             except Exception as e:
-                self.logger.error(f"[PHASE3-B-B1] VWAPBreakoutStrategy初期化失敗: {e}")
+                self.logger.error(f"[PHASE3-C-B1] {best_strategy_name}初期化失敗: {e}")
                 return {
                     'status': 'error',
-                    'strategy_name': 'VWAPBreakout',
+                    'strategy_name': best_strategy_name,
                     'action': 'hold',
                     'signal': 0,
                     'price': 0.0,
@@ -1880,14 +2022,44 @@ class DSSMSIntegratedBacktester:
                     'execution_timestamp': datetime.now(),
                     'target_date': target_date,
                     'adjusted_target_date': adjusted_target_date,
-                    'symbol': symbol
+                    'symbol': symbol,
+                    'market_analysis': market_analysis,
+                    'strategy_selection': strategy_selection
                 }
+            
+            # Phase 3-C Day 12 Task 2-3: existing_position判定ロジック追加
+            if self.current_position:
+                if self.current_position['symbol'] == symbol:
+                    # 銘柄継続: 既存ポジション情報を伝達
+                    existing_position = {
+                        'entry_idx': self.current_position.get('entry_idx', 0),
+                        'quantity': self.current_position.get('shares', 0),
+                        'entry_price': self.current_position.get('entry_price', 0.0),
+                        'entry_date': self.current_position.get('entry_date', None),
+                        'strategy': self.current_position.get('strategy', best_strategy_name)
+                    }
+                    self.logger.info(f"[PHASE3-C-B1] 銘柄継続: symbol={symbol}, existing_position={existing_position}")
+                else:
+                    # 銘柄切替: 強制決済のため既存ポジション情報を伝達
+                    existing_position = {
+                        'entry_idx': self.current_position.get('entry_idx', 0),
+                        'quantity': self.current_position.get('shares', 0),
+                        'entry_price': self.current_position.get('entry_price', 0.0),
+                        'entry_date': self.current_position.get('entry_date', None),
+                        'strategy': self.current_position.get('strategy', best_strategy_name),
+                        'force_close': True  # 銘柄切替フラグ
+                    }
+                    self.logger.warning(f"[PHASE3-C-B1] 銘柄切替: {self.current_position['symbol']} → {symbol}, force_close=True")
+            else:
+                # 新規: ポジションなし
+                existing_position = None
+                self.logger.debug(f"[PHASE3-C-B1] 新規判定: existing_position=None")
             
             # backtest_daily()実行（copilot-instructions.md: バックテスト実行必須）
             try:
-                self.logger.info(f"[PHASE3-B-B1] backtest_daily()実行開始: adjusted_target_date={adjusted_target_date.strftime('%Y-%m-%d')}")
-                result = strategy.backtest_daily(adjusted_target_date, processed_data, existing_position=None)
-                self.logger.info(f"[PHASE3-B-B1] backtest_daily()実行完了: action={result['action']}, signal={result['signal']}")
+                self.logger.info(f"[PHASE3-C-B1] backtest_daily()実行開始: adjusted_target_date={adjusted_target_date.strftime('%Y-%m-%d')}, existing_position={existing_position}")
+                result = strategy.backtest_daily(adjusted_target_date, processed_data, existing_position=existing_position)
+                self.logger.info(f"[PHASE3-C-B1] backtest_daily()実行完了: action={result['action']}, signal={result['signal']}")
                 
                 # 実際の実行結果を検証（copilot-instructions.md: 検証なしの報告禁止）
                 if not isinstance(result, dict):
@@ -1899,10 +2071,10 @@ class DSSMSIntegratedBacktester:
                     raise ValueError(f"Missing required keys: {missing_keys}")
                     
             except Exception as e:
-                self.logger.error(f"[PHASE3-B-B1] backtest_daily()実行エラー: {e}", exc_info=True)
+                self.logger.error(f"[PHASE3-C-B1] backtest_daily()実行エラー: {e}", exc_info=True)
                 return {
                     'status': 'error',
-                    'strategy_name': 'VWAPBreakout',
+                    'strategy_name': best_strategy_name,
                     'action': 'hold',
                     'signal': 0,
                     'price': 0.0,
@@ -1911,15 +2083,37 @@ class DSSMSIntegratedBacktester:
                     'execution_timestamp': datetime.now(),
                     'target_date': target_date,
                     'adjusted_target_date': adjusted_target_date,
-                    'symbol': symbol
+                    'symbol': symbol,
+                    'market_analysis': market_analysis,
+                    'strategy_selection': strategy_selection
                 }
+            
+            # Phase 3-C Day 12 Task 2-4: ポジション状態更新ロジック追加
+            if result['action'] == 'entry':
+                # エントリー: current_position更新
+                self.current_position = {
+                    'symbol': symbol,
+                    'strategy': best_strategy_name,
+                    'entry_price': result['price'],
+                    'shares': result['shares'],
+                    'entry_date': adjusted_target_date,
+                    'entry_idx': processed_data.index.get_loc(adjusted_target_date) if adjusted_target_date in processed_data.index else 0
+                }
+                self.logger.info(f"[PHASE3-C-B1] ポジション更新（entry）: {self.current_position}")
+            elif result['action'] == 'exit':
+                # エグジット: current_positionクリア
+                self.logger.info(f"[PHASE3-C-B1] ポジション更新（exit）: current_position={self.current_position} → None")
+                self.current_position = None
+            else:
+                # hold: ポジション維持
+                self.logger.debug(f"[PHASE3-C-B1] ポジション維持（hold）: current_position={self.current_position}")
             
             # 結果処理・ログ記録
             execution_time = time.time() - execution_start
             
             unified_result = {
                 'status': 'success',
-                'strategy_name': 'VWAPBreakout',
+                'strategy_name': best_strategy_name,
                 'action': result['action'],
                 'signal': result['signal'],
                 'price': result['price'],
@@ -1929,13 +2123,16 @@ class DSSMSIntegratedBacktester:
                 'target_date': target_date,
                 'adjusted_target_date': adjusted_target_date,
                 'symbol': symbol,
-                'execution_time_ms': round(execution_time * 1000, 2)
+                'execution_time_ms': round(execution_time * 1000, 2),
+                'market_analysis': market_analysis,
+                'strategy_selection': strategy_selection
             }
             
             # 詳細ログ記録
             self.logger.info(
-                f"[PHASE3-B-B1] 統合実行完了 - "
+                f"[PHASE3-C-B1] 統合実行完了 - "
                 f"Status: {unified_result['status']}, "
+                f"Strategy: {unified_result['strategy_name']}, "
                 f"Action: {unified_result['action']}, "
                 f"Signal: {unified_result['signal']}, "
                 f"Price: {unified_result['price']}, "
@@ -2246,14 +2443,21 @@ class DSSMSIntegratedBacktester:
                     if not stock_data.empty:
                         data_last_date = stock_data.index[-1]
                         
+                        # Bug fix (December 31, 2025): required_date未定義エラー修正
+                        # 修正前: required_dateが未定義のまま使用されていた
+                        # 修正後: target_dateを使用（メソッド引数として定義済み）
                         if hasattr(data_last_date, 'tz') and data_last_date.tz is not None:
-                            if not hasattr(required_date, 'tz') or required_date.tz is None:
-                                required_date = pd.Timestamp(required_date).tz_localize(data_last_date.tz)
+                            if not hasattr(target_date, 'tz') or target_date.tz is None:
+                                target_date_normalized = pd.Timestamp(target_date).tz_localize(data_last_date.tz)
+                            else:
+                                target_date_normalized = target_date
+                        else:
+                            target_date_normalized = target_date
                         
-                        if data_last_date < required_date:
+                        if data_last_date < target_date_normalized:
                             self.logger.warning(
-                                f"必要日: {required_date.strftime('%Y-%m-%d')}, "
-                                f"不足: {(required_date - data_last_date).days}日"
+                                f"必要日: {target_date_normalized.strftime('%Y-%m-%d')}, "
+                                f"不足: {(target_date_normalized - data_last_date).days}日"
                             )
                         else:
                             self.logger.info(
@@ -2287,6 +2491,10 @@ class DSSMSIntegratedBacktester:
                 )
                 
         except Exception as e:
+            self.logger.error(
+                f"[ERROR] _get_symbol_data failed for {symbol}: {type(e).__name__}: {str(e)}",
+                exc_info=True
+            )
             return None, None
     
     # _generate_mock_data() メソッドを削除

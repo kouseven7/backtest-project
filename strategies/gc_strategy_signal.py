@@ -316,6 +316,241 @@ class GCStrategy(BaseStrategy):
             info['optimized_params'] = self._approved_params
         return info
 
+    def backtest_daily(self, current_date, stock_data: pd.DataFrame, existing_position=None):
+        """
+        日次バックテスト実行（Phase 3-C Day 11実装）
+        
+        GCStrategy専用のbacktest_daily()実装。templates/backtest_daily_template.pyパターンを活用。
+        
+        Parameters:
+            current_date: 判定対象日（datetime/pd.Timestamp/str）
+            stock_data: current_dateまでのデータ（ウォームアップ含む）
+            existing_position: 既存のポジション情報（銘柄切替時に使用）
+                {
+                    'symbol': str,           # 保有銘柄コード
+                    'quantity': int,         # 保有株数
+                    'entry_price': float,    # エントリー価格
+                    'entry_date': datetime,  # エントリー日
+                    'entry_idx': int         # エントリー時のインデックス（オプション）
+                }
+        
+        Returns:
+            {
+                'action': 'entry'|'exit'|'hold',  # 実行アクション
+                'signal': 1|-1|0,                 # シグナル値（1:買い、-1:売り、0:何もしない）
+                'price': float,                   # 実行価格（翌日始値想定）
+                'shares': int,                    # 取引株数
+                'reason': str                     # 判定理由
+            }
+        
+        Note:
+            - copilot-instructions.md準拠（ルックアヘッドバイアス防止）
+            - 既存generate_entry_signal/exit_signal活用
+            - Entry_Signal依存なし（翌日始値対応済み）
+        """
+        # Phase 1: current_dateの型変換・検証
+        if isinstance(current_date, str):
+            current_date = pd.Timestamp(current_date)
+        elif not isinstance(current_date, pd.Timestamp):
+            current_date = pd.Timestamp(current_date)
+        
+        # Phase 2: データ整合性チェック
+        if current_date not in stock_data.index:
+            return {
+                'action': 'hold',
+                'signal': 0,
+                'price': 0.0,
+                'shares': 0,
+                'reason': f'GCStrategy: No data available for {current_date.strftime("%Y-%m-%d")}'
+            }
+        
+        # Phase 3: ウォームアップ期間考慮
+        current_idx = stock_data.index.get_loc(current_date)
+        warmup_period = max(self.long_window, 150)  # 長期MAまたは150日の大きい方
+        
+        if current_idx < warmup_period:
+            return {
+                'action': 'hold',
+                'signal': 0,
+                'price': 0.0,
+                'shares': 0,
+                'reason': f'GCStrategy: Insufficient warmup data. Required: {warmup_period}, Available: {current_idx}'
+            }
+        
+        # Phase 4: データ更新（Option B方式）
+        original_data = self.data.copy()
+        
+        try:
+            # BaseStrategy.backtest_daily()の Option B ロジックを活用
+            basic_columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+            updated_columns = []
+            
+            for col in basic_columns:
+                if col in stock_data.columns and col in self.data.columns:
+                    common_index = self.data.index.intersection(stock_data.index)
+                    if len(common_index) > 0:
+                        self.data.loc[common_index, col] = stock_data.loc[common_index, col]
+                        updated_columns.append(col)
+            
+            self.logger.debug(f"[GCStrategy.backtest_daily] Data updated: {updated_columns}")
+            
+            # SMAカラムの更新（必要に応じて）
+            if f"SMA_{self.short_window}" not in self.data.columns or f"SMA_{self.long_window}" not in self.data.columns:
+                self.data[f"SMA_{self.short_window}"] = self.data[self.price_column].rolling(window=self.short_window).mean().shift(1)
+                self.data[f"SMA_{self.long_window}"] = self.data[self.price_column].rolling(window=self.long_window).mean().shift(1)
+                self.logger.debug(f"[GCStrategy.backtest_daily] SMA columns recalculated")
+            
+            # Phase 5: 既存ポジション処理分岐
+            if existing_position is not None:
+                # 既存ポジションあり: エグジット判定
+                return self._handle_exit_logic_daily(current_idx, existing_position, stock_data, current_date)
+            else:
+                # 既存ポジションなし: エントリー判定
+                return self._handle_entry_logic_daily(current_idx, stock_data, current_date)
+        
+        finally:
+            # データの復元
+            self.data = original_data
+
+    def _handle_exit_logic_daily(self, current_idx: int, existing_position: dict, 
+                                  stock_data: pd.DataFrame, current_date: pd.Timestamp):
+        """
+        エグジット判定ロジック（GCStrategy専用）
+        
+        既存のgenerate_exit_signal()を活用。Entry_Signal依存なし。
+        
+        Returns:
+            dict: {'action': 'exit'|'hold', 'signal': -1|0, 'price': float, 'shares': int, 'reason': str}
+        """
+        try:
+            # entry_idxを取得（existing_positionから、またはcurrent_idxをフォールバック）
+            entry_idx = existing_position.get('entry_idx', current_idx)
+            
+            # entry_pricesとhigh_pricesを準備（generate_exit_signalが依存）
+            if entry_idx not in self.entry_prices:
+                self.entry_prices[entry_idx] = existing_position.get('entry_price', stock_data.iloc[current_idx]['Close'])
+            
+            # generate_exit_signal呼び出し（既存実装活用）
+            exit_signal = self.generate_exit_signal(current_idx, entry_idx)
+            
+            if exit_signal == -1:
+                # エグジットシグナル発生
+                if current_idx + 1 < len(stock_data):
+                    exit_price = stock_data.iloc[current_idx + 1]['Open']
+                else:
+                    # 最終日の場合
+                    exit_price = stock_data.iloc[current_idx]['Close']
+                    self.logger.warning(f"[GCStrategy] Using Close price fallback for final day: {current_date}")
+                
+                return {
+                    'action': 'exit',
+                    'signal': -1,
+                    'price': float(exit_price),
+                    'shares': existing_position.get('quantity', 0),
+                    'reason': f'GCStrategy: Exit signal detected on {current_date.strftime("%Y-%m-%d")}'
+                }
+            else:
+                # エグジットシグナルなし: ホールド
+                return {
+                    'action': 'hold',
+                    'signal': 0,
+                    'price': 0.0,
+                    'shares': existing_position.get('quantity', 0),
+                    'reason': f'GCStrategy: Holding position from {current_date.strftime("%Y-%m-%d")}'
+                }
+        
+        except Exception as e:
+            self.logger.error(f"[GCStrategy] Exit logic error: {e}")
+            return {
+                'action': 'hold',
+                'signal': 0,
+                'price': 0.0,
+                'shares': 0,
+                'reason': f'GCStrategy: Exit logic error: {str(e)}'
+            }
+
+    def _handle_entry_logic_daily(self, current_idx: int, stock_data: pd.DataFrame, 
+                                   current_date: pd.Timestamp):
+        """
+        エントリー判定ロジック（GCStrategy専用）
+        
+        既存のgenerate_entry_signal()を活用。
+        
+        Returns:
+            dict: {'action': 'entry'|'hold', 'signal': 1|0, 'price': float, 'shares': int, 'reason': str}
+        """
+        try:
+            # generate_entry_signal呼び出し（既存実装活用）
+            entry_signal = self.generate_entry_signal(current_idx)
+            
+            if entry_signal == 1:
+                # エントリーシグナル発生
+                if current_idx + 1 < len(stock_data):
+                    entry_price = stock_data.iloc[current_idx + 1]['Open']
+                    
+                    # スリッページ・取引コスト適用
+                    slippage = self.params.get("slippage", 0.001)
+                    transaction_cost = self.params.get("transaction_cost", 0.0)
+                    entry_price = entry_price * (1 + slippage + transaction_cost)
+                    
+                    # ポジションサイズ計算
+                    shares = self._calculate_position_size_daily(entry_price)
+                    
+                    return {
+                        'action': 'entry',
+                        'signal': 1,
+                        'price': float(entry_price),
+                        'shares': shares,
+                        'reason': f'GCStrategy: Golden Cross entry signal on {current_date.strftime("%Y-%m-%d")}'
+                    }
+                else:
+                    # 最終日の場合（エントリー不可）
+                    return {
+                        'action': 'hold',
+                        'signal': 0,
+                        'price': 0.0,
+                        'shares': 0,
+                        'reason': f'GCStrategy: Cannot enter on final day: {current_date.strftime("%Y-%m-%d")}'
+                    }
+            else:
+                # エントリーシグナルなし: ホールド
+                return {
+                    'action': 'hold',
+                    'signal': 0,
+                    'price': 0.0,
+                    'shares': 0,
+                    'reason': f'GCStrategy: No golden cross signal on {current_date.strftime("%Y-%m-%d")}'
+                }
+        
+        except Exception as e:
+            self.logger.error(f"[GCStrategy] Entry logic error: {e}")
+            return {
+                'action': 'hold',
+                'signal': 0,
+                'price': 0.0,
+                'shares': 0,
+                'reason': f'GCStrategy: Entry logic error: {str(e)}'
+            }
+
+    def _calculate_position_size_daily(self, entry_price: float) -> int:
+        """
+        ポジションサイズ計算（GCStrategy専用）
+        
+        固定金額方式（10万円相当）、100株単位。
+        
+        Returns:
+            int: 取引株数
+        """
+        target_amount = self.params.get("position_amount", 100000)  # 10万円相当
+        
+        if entry_price > 0:
+            shares = int(target_amount / entry_price)
+            # 最小単位調整（100株単位）
+            shares = max(100, shares // 100 * 100)
+            return shares
+        else:
+            return 0
+
 # テストコード
 if __name__ == "__main__":
     import numpy as np
