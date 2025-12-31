@@ -522,6 +522,196 @@ class VWAPBreakoutStrategy(BaseStrategy):
         
         return self.data
 
+    def backtest_daily(self, current_date, stock_data, existing_position=None):
+        """
+        VWAPBreakoutStrategy 日次バックテスト実行
+        
+        Phase 3-A Step A2実装: VWAPBreakout戦略での実証実装
+        
+        Parameters:
+            current_date (datetime): 判定対象日
+            stock_data (pd.DataFrame): 最新の株価データ
+            existing_position (dict, optional): 既存ポジション情報
+            
+        Returns:
+            dict: {
+                'action': 'entry'|'exit'|'hold',
+                'signal': 1|-1|0,
+                'price': float,
+                'shares': int,
+                'reason': str
+            }
+            
+        実装内容:
+        1. current_dateのindexを特定
+        2. ウォームアップ期間考慮（150日）
+        3. 前日データのみでVWAPインジケーター計算（shift(1)適用済み）
+        4. エントリー判定（ルックアヘッドバイアス防止）
+        5. 翌日始値エントリー価格設定
+        """
+        from datetime import timedelta
+        import pandas as pd
+        
+        # Phase 1: current_dateの型変換・検証
+        if isinstance(current_date, str):
+            current_date = pd.Timestamp(current_date)
+        elif not isinstance(current_date, pd.Timestamp):
+            current_date = pd.Timestamp(current_date)
+            
+        # Phase 2: データ整合性チェック
+        if current_date not in stock_data.index:
+            return {
+                'action': 'hold',
+                'signal': 0,
+                'price': 0.0,
+                'shares': 0,
+                'reason': f'VWAPBreakout: No data available for {current_date.strftime("%Y-%m-%d")}'
+            }
+            
+        # Phase 3: ウォームアップ期間考慮（150日）
+        current_idx = stock_data.index.get_loc(current_date)
+        warmup_period = 150
+        
+        if current_idx < warmup_period:
+            return {
+                'action': 'hold',
+                'signal': 0,
+                'price': 0.0,
+                'shares': 0,
+                'reason': f'VWAPBreakout: Insufficient warmup data. Required: {warmup_period}, Available: {current_idx}'
+            }
+        
+        # Phase 4: データ更新（Option B方式を活用）
+        # 既存のself.dataを一時保存
+        original_data = self.data.copy()
+        
+        try:
+            # BaseStrategy.backtest_daily()の Option B ロジックを活用
+            basic_columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+            updated_columns = []
+            
+            for col in basic_columns:
+                if col in stock_data.columns and col in self.data.columns:
+                    # インデックスが一致する部分のみ安全に更新
+                    common_index = self.data.index.intersection(stock_data.index)
+                    if len(common_index) > 0:
+                        self.data.loc[common_index, col] = stock_data.loc[common_index, col]
+                        updated_columns.append(col)
+            
+            logger.debug(f"[VWAPBreakout.backtest_daily] Data updated: {updated_columns}")
+            
+            # Phase 5: 前日データで判定（ルックアヘッドバイアス防止）
+            # 注意: インジケーターは既にinitialize_strategy()でshift(1)適用済み
+            
+            # 現在のポジション状態を確認
+            if existing_position is not None:
+                # 既存ポジションあり: エグジット判定
+                entry_idx = existing_position.get('entry_idx', current_idx)
+                exit_signal = self.generate_exit_signal(current_idx, entry_idx)
+                
+                if exit_signal == -1:
+                    # エグジットシグナル発生
+                    try:
+                        # Phase 6: 翌日始値でエグジット（ルックアヘッドバイアス防止）
+                        if current_idx + 1 < len(stock_data):
+                            exit_price = stock_data.iloc[current_idx + 1]['Open']
+                        else:
+                            # 最終日の場合（フォールバック: copilot-instructions.md制約により限定的使用）
+                            exit_price = stock_data.iloc[current_idx]['Close']
+                            logger.warning(f"[VWAPBreakout.backtest_daily] Using Close price fallback for final day: {current_date}")
+                        
+                        return {
+                            'action': 'exit',
+                            'signal': -1,
+                            'price': float(exit_price),
+                            'shares': existing_position.get('quantity', 0),
+                            'reason': f'VWAPBreakout: Exit signal detected on {current_date.strftime("%Y-%m-%d")}'
+                        }
+                    except Exception as e:
+                        logger.error(f"[VWAPBreakout.backtest_daily] Exit price calculation failed: {e}")
+                        return {
+                            'action': 'hold',
+                            'signal': 0,
+                            'price': 0.0,
+                            'shares': 0,
+                            'reason': f'VWAPBreakout: Exit price calculation error: {str(e)}'
+                        }
+                else:
+                    # エグジットシグナルなし: ホールド
+                    return {
+                        'action': 'hold',
+                        'signal': 0,
+                        'price': 0.0,
+                        'shares': existing_position.get('quantity', 0),
+                        'reason': f'VWAPBreakout: Holding position from {current_date.strftime("%Y-%m-%d")}'
+                    }
+            else:
+                # 既存ポジションなし: エントリー判定
+                entry_signal = self.generate_entry_signal(current_idx)
+                
+                if entry_signal == 1:
+                    # エントリーシグナル発生
+                    try:
+                        # Phase 6: 翌日始値でエントリー + スリッページ（ルックアヘッドバイアス防止）
+                        if current_idx + 1 < len(stock_data):
+                            entry_price = stock_data.iloc[current_idx + 1]['Open']
+                            
+                            # スリッページ・取引コスト適用（copilot-instructions.md推奨0.1%）
+                            slippage = self.params.get("slippage", 0.001)
+                            transaction_cost = self.params.get("transaction_cost", 0.0)
+                            entry_price = entry_price * (1 + slippage + transaction_cost)
+                            
+                            # 標準的な取引株数計算（資金の10%程度を想定）
+                            shares = int(100000 / entry_price) if entry_price > 0 else 0
+                            
+                            return {
+                                'action': 'entry',
+                                'signal': 1,
+                                'price': float(entry_price),
+                                'shares': shares,
+                                'reason': f'VWAPBreakout: Entry signal detected on {current_date.strftime("%Y-%m-%d")}'
+                            }
+                        else:
+                            # 最終日の場合（エントリー不可）
+                            return {
+                                'action': 'hold',
+                                'signal': 0,
+                                'price': 0.0,
+                                'shares': 0,
+                                'reason': f'VWAPBreakout: Cannot enter on final day: {current_date.strftime("%Y-%m-%d")}'
+                            }
+                    except Exception as e:
+                        logger.error(f"[VWAPBreakout.backtest_daily] Entry price calculation failed: {e}")
+                        return {
+                            'action': 'hold',
+                            'signal': 0,
+                            'price': 0.0,
+                            'shares': 0,
+                            'reason': f'VWAPBreakout: Entry price calculation error: {str(e)}'
+                        }
+                else:
+                    # エントリーシグナルなし: ホールド
+                    return {
+                        'action': 'hold',
+                        'signal': 0,
+                        'price': 0.0,
+                        'shares': 0,
+                        'reason': f'VWAPBreakout: No entry signal on {current_date.strftime("%Y-%m-%d")}'
+                    }
+                    
+        finally:
+            # データの復元（元の状態に戻す）
+            self.data = original_data
+            
+        # デフォルト: ホールド
+        return {
+            'action': 'hold',
+            'signal': 0,
+            'price': 0.0,
+            'shares': 0,
+            'reason': f'VWAPBreakout: Default hold action for {current_date.strftime("%Y-%m-%d")}'
+        }
+
 def apply_strategies(stock_data: pd.DataFrame, index_data: pd.DataFrame):
     """
     複数の戦略を適用し、シグナルを生成します。

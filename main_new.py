@@ -30,6 +30,7 @@ MainSystemController - 次世代マルチ戦略バックテストシステム（
 Author: Backtest Project Team
 Created: 2025-10-18
 Last Modified: 2025-12-30
+"""
 
 import sys
 import os

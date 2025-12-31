@@ -1,27 +1,35 @@
 """
+DSSMS統合メインエントリーポイント - DSSMSとマルチ戦略システムの統合制御
 
-DSSMS Integrated Main System - Multi-Strategy Backtest Controller with Dynamic Symbol Selection
+DSS Core V3 + マルチ戦略統合バックテストシステム。日経225から最適1銘柄を動的選択し、
+マルチ戦略を適用してバックテストを実行。将来的にkabu STATION API経由で実トレード対応予定。
 
-This module integrates DSSMS Core with multi-strategy execution for Nikkei 225 optimal symbol selection
-and comprehensive backtesting across multiple trading strategies.
+主な機能:
+- DSSMS Core統合（Screening/Ranking/Scoring/Symbol Switching）
+- マルチ戦略実行制御（BaseStrategy派生クラス群との連携）
+- MainSystemController状態管理（PaperBroker残高・ポジション継続）
+- 累積期間バックテスト実行（Phase 1復元済み）
+- 決定論保証と重複エントリー防止機能
+- 統一出力エンジン連携（CSV+JSON+TXT形式）
 
-Main Functions:
-- DSSMS Core Integration (Screening/Ranking/Scoring/Symbol Switching)
-- Multi-Strategy Execution Control (BaseStrategy-derived classes coordination)
-- Cumulative Period Backtest Execution (Phase 1 restored)
+統合コンポーネント:
+- DSSMS Core: symbol_switch_manager_ultra_light経由での銘柄選択
+- MainSystemController: main_new.py経由でのマルチ戦略実行
+- data_fetcher: yfinance統合+CSV cache経由でのデータ取得
+- ComprehensiveReporter: 統一出力エンジン経由での結果出力
 
-Integration Components:
-- DSSMS Core: Uses symbol_switch_manager_ultra_light for symbol selection
-- MainSystemController: Executes multi-strategy through main_new.py interface
-
-Safety Features/Important Notes:
-- Current design has DSSMS daily judgment vs multi-strategy full-period judgment inconsistency
-- Requires careful handling of symbol switching timing and strategy continuity
+セーフティ機能/注意事項:
+- MainSystemControllerインスタンス変数化による資金リセット防止
+- 累積期間方式によるエントリー機会確保（Phase 1対応）
+- 決定論破綻監視ログによる重複エントリー検出
+- ルックアヘッドバイアス防止（翌日始値エントリー必須）
+- 【重要】Phase 3実装予定: backtest_daily()メソッドによるリアルトレード対応
+- 【注意】現在の設計はDSSMS日次判断とマルチ戦略全期間一括判定の不一致問題あり
 
 Author: AI Assistant
-Created: September 28, 2025
-Last Modified: December 30, 2025
-"""
+Created: 2025-09-28
+Last Modified: 2025-12-30
+Phase: Phase 1 累積期間復元完了、Phase 2 ドキュメント化実行中
 
 import sys
 import os
@@ -34,26 +42,31 @@ import json
 import uuid
 import argparse
 
-# pandas, numpy loaded when needed via lazy_import
+# 重いライブラリは遅延インポートに変更（TODO-PERF-001 Phase 2）
+# pandas, numpy は必要時に lazy_import で読み込み
 import numpy as np
 import pandas as pd
 
-# Add project root to path
+# プロジェクトルートをパスに追加
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-# Direct file import (avoid heavy __init__.py chain)
+# 軽量直接インポート（TODO-PERF-004: lazy_loader除去）
+# lazy_loader(2759.1ms)を除去し、シンプルな直接インポートに変更
+
+# 直接ファイルインポート（__init__.pyチェーン回避）  
 import importlib.util
 import os
 
 def _load_symbol_switch_manager_fast():
     """SymbolSwitchManagerFast direct load (avoid heavy __init__.py)"""
     try:
-        # Get absolute path from relative path
+        # 相対パスから絶対パスを取得
         current_dir = os.path.dirname(os.path.abspath(__file__))
         fast_path = os.path.join(current_dir, "symbol_switch_manager_ultra_light.py")
         
+        # 直接ファイルインポート
         spec = importlib.util.spec_from_file_location("symbol_switch_manager_ultra_light", fast_path)
         if spec and spec.loader:
             module = importlib.util.module_from_spec(spec)
@@ -62,28 +75,32 @@ def _load_symbol_switch_manager_fast():
     except Exception:
         pass
     
+    # フォールバック: 通常版
     try:
         from src.dssms.symbol_switch_manager import SymbolSwitchManager
         return SymbolSwitchManager
     except ImportError:
         return None
 
+# 軽量版ロード
 SymbolSwitchManager = _load_symbol_switch_manager_fast()
 
-# SystemFallbackPolicy利用可能性チェック(TODO-INTEGRATE-001対応)
+# SystemFallbackPolicy利用可能性チェック（TODO-INTEGRATE-001対応）
 try:
     from src.config.system_modes import get_fallback_policy, ComponentType
     fallback_policy_available = True
 except ImportError:
     fallback_policy_available = False
 
-# DSS Core V3利用可能性チェック(TODO-INTEGRATE-001対応)
+# DSS Core V3利用可能性チェック（TODO-INTEGRATE-001対応）
+# Note: インポートは _initialize_dss_core() で実行 (Line 190)
 try:
     from src.dssms.dssms_backtester_v3 import DSSBacktesterV3
     dss_available = True
 except ImportError:
     dss_available = False
 
+# データ取得モジュール利用可能性チェック
 try:
     import yfinance
     DATA_FETCHER_AVAILABLE = True
@@ -92,21 +109,26 @@ except ImportError:
 
 
 class DSSMSIntegrationError(Exception):
+    """DSSMS統合システム関連エラー"""
     pass
 
 
 class DSSMSIntegratedBacktester:
     """
+    DSSMS統合バックテスター
 
     DSS Core V3の動的銘柄選択とマルチ戦略システムを統合し高度なバックテストシステムを提供
 
     Responsibilities:
     - DSS Core V3との連携(動的銘柄選択)
     - マルチ戦略システムとの統合
+    - 銘柄切替管理・リスク制御
+    - パフォーマンス監視・レポート生成
     """
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
+        DSSMS統合バックテスター初期化
         
         Args:
             config: 統合設定辞書
@@ -117,11 +139,16 @@ class DSSMSIntegratedBacktester:
         try:
             # 設定初期化
             self.config = config or self._load_default_config()
+            # 軽量な標準ロガーで初期化（遅延ロード対応）
             self.logger = logging.getLogger(f"{self.__class__.__name__}")
             self.logger.setLevel(logging.INFO)
             
+            # ログファイル出力の遅延初期化フラグ（TODO-PERF-001対応）
+            # setup_logger()のインポートコスト（2.4秒）を回避するため、
+            # 初回ログ出力時にFileHandlerを追加する遅延初期化方式を採用
             self._file_logging_initialized = False
             
+            # 重いモジュールは遅延初期化フラグで管理（TODO-PERF-001対応）
             self.dss_core = None
             self.advanced_ranking_engine = None
             self.risk_manager = None
@@ -129,6 +156,7 @@ class DSSMSIntegratedBacktester:
             self._ranking_initialized = False
             self._risk_initialized = False
             
+            # DSSMS統合コンポーネント初期化（遅延ロード対応）
             self.switch_manager = None
             self.data_cache = None
             self.performance_tracker = None
@@ -136,6 +164,7 @@ class DSSMSIntegratedBacktester:
             self.nikkei225_screener = None
             self._components_initialized = False
             
+            # 重いモジュールは遅延初期化のみ（TODO-PERF-001対応）
             # 実際の初期化は必要時に行う
             
             # システム状態
@@ -143,32 +172,39 @@ class DSSMSIntegratedBacktester:
             self.portfolio_value = self.config.get('initial_capital', 1000000)
             self.initial_capital = self.portfolio_value
             
-            # 修正案2: 最後に実行した戦略名を記録(December 14, 2025追加)
+            # 修正案2: 最後に実行した戦略名を記録（2025-12-14追加）
             # 目的: execution_detailsに実際の戦略名を記録する
+            # フォーマット: 'GCStrategy', 'ContrarianStrategy', 'VWAPBreakoutStrategy'等
+            # フォールバック: 戦略名不明時は'DSSMS_SymbolSwitch'を使用
             self.last_executed_strategy = None
+            # Phase 1: DSSMS設計違反コード削除 - Stage 4-2（2025-12-19）
             # 削除: self.position_size, self.position_entry_price初期化
-            #   - portfolio_valueのみを追跡(main_new.pyのreturnを累積)
+            # 削除理由: DSSMSはポジション管理しない設計に準拠
+            #   - ポジション管理はmain_new.py（PaperBroker経由）が担当
+            #   - portfolio_valueのみを追跡（main_new.pyのreturnを累積）
             # 影響: position_value/cash_balance計算を全額キャッシュ扱いに変更
             self.force_close_in_progress = False  # [Task11] DSSMS側ForceCloseフラグ
             
-            # Option A実装(December 28, 2025): MainSystemController instance variable
-            # 資金リセット問題解決のため,日次作成ではなく__init__で一度だけ作成
-            # これにより,PaperBrokerの資金が日次でリセットされなくなる
-            self.main_controller = None  # 遅延初期化(初回_execute_multi_strategies呼び出し時)
+            # Option A実装（2025-12-28）: MainSystemController instance variable
+            # 資金リセット問題解決のため、日次作成ではなく__init__で一度だけ作成
+            # これにより、PaperBrokerの資金が日次でリセットされなくなる
+            self.main_controller = None  # 遅延初期化（初回_execute_multi_strategies呼び出し時）
             
-            # 累積期間方式用設定(December 6, 2025追加)
+            # 累積期間方式用設定（2025-12-06追加）
             self.warmup_days = 150  # Option A-2: 150暦日 × 68.5% ≒ 103営業日
             
             # Phase 2: equity_curve再構築用追跡変数
+            self.peak_value = self.portfolio_value  # ポートフォリオピーク値追跡
             self.cumulative_pnl = 0.0  # 累積損益追跡
             self.total_trades_count = 0  # 総取引数追跡
-            self.previous_total_profit = 0.0  # 累積期間バックテスト重複計上対策(Phase 13)
+            self.previous_total_profit = 0.0  # 累積期間バックテスト重複計上対策（Phase 13）
             
             # 実行履歴
             self.daily_results = []
             self.switch_history = []
             self.strategy_statistics = {}
             
+            # パフォーマンス設定
             self.performance_targets = {
                 'max_daily_execution_time_ms': 1500,
                 'min_success_rate': 0.95,
@@ -176,13 +212,18 @@ class DSSMSIntegratedBacktester:
                 'max_switch_cost_rate': 0.05
             }
             
+            # ログファイル出力の遅延初期化トリガー（本番運用想定）
+            # 初回のみ2.4秒のコスト、以降はオーバーヘッドなし
             self._setup_file_logging()
             
+            # 初期化完了ログ（FileHandler追加後に出力）
+            self.logger.info("DSSMS統合バックテスター初期化完了（遅延ロード対応）")
             
         except Exception as e:
+            self.logger.error(f"DSSMS統合バックテスター初期化エラー: {e}")
             raise DSSMSIntegrationError(f"初期化失敗: {e}")
 
-    # 直接初期化メソッド群(lazy_loader除去対応)
+    # 直接初期化メソッド群（lazy_loader除去対応）
     def _initialize_dss_core(self):
         """DSS Core V3直接初期化"""
         if not self._dss_initialized:
@@ -192,6 +233,7 @@ class DSSMSIntegratedBacktester:
                 self.logger.info("DSS Core V3 直接初期化完了")
             except ImportError:
                 self.dss_core = None
+                self.logger.warning("DSS Core V3 インポート失敗 - 使用不可")
             self._dss_initialized = True
         return self.dss_core
 
@@ -200,13 +242,17 @@ class DSSMSIntegratedBacktester:
         if not self._ranking_initialized:
             try:
                 from src.dssms.advanced_ranking_system.advanced_ranking_engine import AdvancedRankingEngine
-                # Option C: 常にデフォルト設定を使用(実績あり,設定ファイル不在,実需なし)
+                # Option C: 常にデフォルト設定を使用（実績あり、設定ファイル不在、実需なし）
                 self.advanced_ranking_engine = AdvancedRankingEngine(None)
                 self.logger.info("AdvancedRankingEngine 直接初期化完了")
             except (ImportError, Exception) as e:
                 self.advanced_ranking_engine = None
+                # P3-2: フォールバック詳細化ログ (copilot-instructions.md準拠)
                 self.logger.warning(
+                    f"[FALLBACK] AdvancedRankingEngine初期化失敗 - フォールバック選択使用 | "
                     f"理由: {e} | "
+                    f"代替手段: フォールバック選択 | "
+                    f"影響範囲: 高度ランキング機能無効化、基本スクリーニングのみ使用"
                 )
             self._ranking_initialized = True
         return self.advanced_ranking_engine
@@ -236,12 +282,18 @@ class DSSMSIntegratedBacktester:
         return self._initialize_advanced_ranking()
 
     def ensure_risk_management(self):
-        """RiskManagement確保(パブリックアクセス用)"""
+        """RiskManagement確保（パブリックアクセス用）"""
         return self._initialize_risk_management()
 
     def _setup_file_logging(self):
         """
+        ログファイル出力の遅延初期化（TODO-PERF-001対応）
         
+        setup_logger()のインポートコスト（2.4秒）を回避するため、
+        初回ログ出力時のみFileHandlerを追加する遅延初期化方式。
+        
+        本番運用想定のため、ログファイル出力を優先。
+        起動時間への影響は初回のみ（約2.4秒）。
         
         Returns:
             None
@@ -251,9 +303,10 @@ class DSSMSIntegratedBacktester:
         
         try:
             # setup_logger()を使用してFileHandlerを追加
-            # (初回のみ2.4秒のコスト)
+            # （初回のみ2.4秒のコスト）
             from config.logger_config import setup_logger
             
+            # 既存のロガーにFileHandlerを追加
             log_file = "logs/dssms_integrated_backtest.log"
             self.logger = setup_logger(
                 f"{self.__class__.__name__}",
@@ -261,27 +314,33 @@ class DSSMSIntegratedBacktester:
             )
             
             self._file_logging_initialized = True
+            self.logger.info(f"ログファイル出力初期化完了: {log_file}")
             
         except Exception as e:
+            # フォールバック: FileHandler追加失敗時もコンソール出力は継続
+            # copilot-instructions.md準拠: エラーログに記録
+            self.logger.error(f"ログファイル出力初期化失敗: {e} - コンソール出力のみ継続")
             self._file_logging_initialized = True  # 再試行を防ぐ
 
     def _initialize_components(self):
+        """DSSMSコンポーネント直接初期化（TODO-PERF-004: lazy_loader除去）"""
         if not self._components_initialized:
             try:
-                # SymbolSwitchManager直接初期化(軽量版優先)
+                # SymbolSwitchManager直接初期化（軽量版優先）
                 switch_config = self.config.get('symbol_switch', {})
                 self.switch_manager = SymbolSwitchManager(switch_config)
                 self.logger.info(f"[OK] SymbolSwitchManager初期化完了: {type(self.switch_manager).__name__}")
                 
+                # 他のコンポーネントを個別に初期化
                 self._initialize_data_cache()
                 self._initialize_performance_tracker()
                 self._initialize_report_generator()
                 self._initialize_nikkei225_screener()
                 
                 self._components_initialized = True
+                self.logger.info("DSSMSコンポーネント遅延初期化完了")
             except Exception as e:
-                # Component initialization error handling
-                pass
+                self.logger.warning(f"コンポーネント初期化エラー: {e}")
 
     def _initialize_data_cache(self):
         try:
@@ -316,33 +375,40 @@ class DSSMSIntegratedBacktester:
             self.logger.warning(f"Nikkei225Screener初期化失敗: {e}")
 
     def ensure_components(self):
+        """DSSMSコンポーネント確保"""
         if not self._components_initialized:
             self._initialize_components()
         return self.switch_manager
     
     def _warm_fundamental_cache(self, symbols: List[str]):
         """
-        Fundamental cache warming optimization:
-        Sequential approach (60 seconds) -> Parallel approach (20 seconds with 3 threads)
+        Phase 3修正案B: ファンダメンタルキャッシュ事前ウォーミング
+        
+        バックテスト開始前にThreadPoolExecutorで並列ロード
+        60秒(逐次) → 20秒(並列3) への高速化
         
         Args:
-            symbols: Target symbol list for cache warming
+            symbols: キャッシュ対象銘柄リスト
         """
         try:
             from concurrent.futures import ThreadPoolExecutor
             
             # FundamentalAnalyzerアクセス
             if not hasattr(self.advanced_ranking_engine, '_hierarchical_system'):
+                self.logger.warning("HierarchicalRankingSystem未初期化 - キャッシュウォーミングスキップ")
                 return
             
             hierarchical_system = self.advanced_ranking_engine._hierarchical_system
             if not hasattr(hierarchical_system, 'fundamental_analyzer'):
+                self.logger.warning("FundamentalAnalyzer未初期化 - キャッシュウォーミングスキップ")
                 return
             
             fundamental_analyzer = hierarchical_system.fundamental_analyzer
             
+            self.logger.info(f"ファンダメンタルキャッシュウォーミング開始: {len(symbols)}銘柄")
             warm_start = time.time()
             
+            # 並列ロード(max_workers=3でバランス)
             with ThreadPoolExecutor(max_workers=3) as executor:
                 futures = {executor.submit(fundamental_analyzer.fetch_financial_data, symbol): symbol for symbol in symbols}
                 
@@ -352,12 +418,13 @@ class DSSMSIntegratedBacktester:
                         future.result(timeout=30)  # 30秒タイムアウト
                     except Exception as e:
                         symbol = futures[future]
+                        self.logger.warning(f"キャッシュウォーミング失敗 ({symbol}): {e}")
             
             warm_time = time.time() - warm_start
+            self.logger.info(f"ファンダメンタルキャッシュウォーミング完了: {warm_time:.2f}秒")
             
         except Exception as e:
-            # Cache warming error handling
-            pass
+            self.logger.warning(f"キャッシュウォーミングエラー (処理継続): {e}")
     
     def run_dynamic_backtest(self, start_date: datetime, end_date: datetime,
                            target_symbols: Optional[List[str]] = None) -> Dict[str, Any]:
@@ -367,6 +434,7 @@ class DSSMSIntegratedBacktester:
         Args:
             start_date: バックテスト開始日
             end_date: バックテスト終了日
+            target_symbols: 対象銘柄コードリスト（Noneなら全銘柄）
         
         Returns:
             Dict[str, Any]: 統合バックテスト結果
@@ -375,11 +443,12 @@ class DSSMSIntegratedBacktester:
             DSSMSIntegrationError: バックテスト実行失敗
         """
         try:
-            self.logger.info(f"DSSMS動的バックテスト開始: {start_date} -> {end_date}")
+            self.logger.info(f"DSSMS動的バックテスト開始: {start_date} → {end_date}")
             
-            # 修正案A: バックテスト開始日を保存(累積期間方式用)
+            # 修正案A: バックテスト開始日を保存（累積期間方式用）
             self.dssms_backtest_start_date = start_date
             
+            # Phase 3修正案B: ファンダメンタルキャッシュ事前ウォーミング
             if target_symbols:
                 self._warm_fundamental_cache(target_symbols)
             
@@ -388,15 +457,17 @@ class DSSMSIntegratedBacktester:
             total_trading_days = 0
             successful_days = 0
             
+            # [LOG#7] 期間スコープの明示
             self.logger.info(
                 f"[PERIOD_SCOPE] DSSMS期間: {start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')} "
                 f"(平日のみ処理, 土日スキップ)"
             )
             
+            # 日次処理ループ
             current_date = start_date
             
             while current_date <= end_date:
-                # 平日のみ処理(土日スキップ)
+                # 平日のみ処理（土日スキップ）
                 if current_date.weekday() < 5:  # 月-金
                     daily_start = time.time()
                     
@@ -410,6 +481,7 @@ class DSSMSIntegratedBacktester:
                     # 日次結果記録
                     self.daily_results.append(daily_result)
                     
+                    # [DAILY_SUMMARY] 日次サマリーログ
                     self.logger.info(
                         f"[DAILY_SUMMARY] {current_date.strftime('%Y-%m-%d')}: "
                         f"symbol={daily_result.get('symbol')}, "
@@ -417,9 +489,11 @@ class DSSMSIntegratedBacktester:
                         f"success={daily_result.get('success')}"
                     )
                     
+                    # パフォーマンス追跡
                     if self.performance_tracker:
                         self.performance_tracker.record_daily_performance(daily_result)
                     else:
+                        # パフォーマンストラッカーが無い場合の簡易ログ
                         self.logger.debug(f"日次結果記録: {daily_result.get('date')} - 収益率: {daily_result.get('daily_return', 0):.3f}%")
                     
                     # 成功判定
@@ -428,22 +502,27 @@ class DSSMSIntegratedBacktester:
                     
                     total_trading_days += 1
                     
+                    # パフォーマンス目標チェック
                     if daily_execution_time > self.performance_targets['max_daily_execution_time_ms']:
                         self.logger.warning(f"実行時間超過: {daily_execution_time:.0f}ms (目標: {self.performance_targets['max_daily_execution_time_ms']}ms)")
                 
                 current_date += timedelta(days=1)
             
             # ==========================================
-            # 期間終了時の強制決済(December 11, 2025実装)
+            # 期間終了時の強制決済（2025-12-11実装）
             # ==========================================
-            # 参考実装: 銘柄切替ForceClose(Line 1567-1583)
+            # 目的: バックテスト期間終了時にポジションが残っている場合、強制決済する
+            # 理由: 未決済ポジションがあると統計情報が0になり、レポートが不完全になる
+            # 参考実装: 銘柄切替ForceClose（Line 1567-1583）
             
-            # 削除: バックテスト終了時のForceClose処理(Line 486-542, 57行)
-            # 削除理由: DSSMSが取引実行しないため,期末強制決済も不要
+            # Phase 1: DSSMS設計違反コード削除 - Stage 3-2（2025-12-19）
+            # 削除: バックテスト終了時のForceClose処理（Line 486-542, 57行）
+            # 削除理由: DSSMSが取引実行しないため、期末強制決済も不要
             # 代替: main_new.pyのForceCloseStrategyが担当
-            # 影響: バックテスト終了時のexecution_detailsが生成されない(意図通り)
+            # 影響: バックテスト終了時のexecution_detailsが生成されない（意図通り）
             
             self.logger.info(
+                f"[BACKTEST_END_NO_POSITION] バックテスト期間終了時にポジションなし: "
                 f"current_symbol={self.current_symbol}"
             )
             
@@ -453,12 +532,14 @@ class DSSMSIntegratedBacktester:
             total_execution_time = time.time() - execution_start
             final_results = self._generate_final_results(total_execution_time, total_trading_days, successful_days)
             
+            # エクスポート・レポート生成
             self._generate_outputs(final_results)
             
-            self.logger.info(f"DSSMS動的バックテスト完了: {total_trading_days}日処理,{successful_days}日成功")
+            self.logger.info(f"DSSMS動的バックテスト完了: {total_trading_days}日処理、{successful_days}日成功")
             return final_results
             
         except Exception as e:
+            self.logger.error(f"動的バックテスト実行エラー: {e}")
             raise DSSMSIntegrationError(f"バックテスト実行失敗: {e}")
     
     def _process_daily_trading(self, target_date: datetime, 
@@ -486,15 +567,19 @@ class DSSMSIntegratedBacktester:
                 'errors': [],
                 
                 # Phase 2: equity_curve再構築用カラム
-                # Phase 1 Stage 4-2変更(December 19, 2025):
+                # Phase 1 Stage 4-2変更（2025-12-19）:
+                #   - cash_balance: 全額キャッシュ扱い（DSSMSはポジション管理しない）
+                #   - position_value: 0固定（main_new.pyが実際のポジション管理）
                 'cash_balance': self.portfolio_value,
                 'position_value': 0,
                 
+                # デバッグログ: 初期cash/position計算（提案4）
+                # Note: この時点ではまだ取引実行前なので、後続のログと比較するための参照点
                 'peak_value': self.peak_value,
                 'drawdown_pct': 0,  # 後程計算
                 'cumulative_pnl': self.cumulative_pnl,
                 'total_trades': self.total_trades_count,
-                'active_positions': 0,  # Phase 1 Stage 4-2: 0固定(main_new.pyが管理)
+                'active_positions': 0,  # Phase 1 Stage 4-2: 0固定（main_new.pyが管理）
                 'risk_status': 'Normal',
                 'blocked_trades': 0,
                 'risk_action': '',
@@ -508,13 +593,14 @@ class DSSMSIntegratedBacktester:
                 daily_result['errors'].append('銘柄選択失敗')
                 return daily_result
             
+            # 2. 銘柄切替判定・実行
             switch_result = self._evaluate_and_execute_switch(selected_symbol, target_date)
             
             if switch_result.get('switch_executed', False):
                 daily_result['switch_executed'] = True
                 self.switch_history.append(switch_result)
                 
-                # [修正案1実装] 銘柄切替時のexecution_details収集(December 14, 2025修正)
+                # [修正案1実装] 銘柄切替時のexecution_details収集（2025-12-14修正）
                 # 修正: 単数形'execution_detail'から複数形'execution_details'に変更
                 # 理由: SELL+BUY両方のexecution_detailsを記録するため
                 if 'execution_details' in switch_result:
@@ -524,18 +610,21 @@ class DSSMSIntegratedBacktester:
                     daily_result['execution_details'].extend(switch_result['execution_details'])
                     self.logger.info(f"[DSSMS_SWITCH_COLLECT] 銘柄切替SELL+BUY記録をdaily_resultに追加: {len(switch_result['execution_details'])}件")
             
-            # 3. 現在銘柄でのマルチ戦略実行(銘柄切替時はForceClose実行)
+            # 3. 現在銘柄でのマルチ戦略実行（銘柄切替時はForceClose実行）
+            strategy_result = {}  # デフォルト値（エラー回避）
             if self.current_symbol:
                 # 銘柄切替実行フラグ取得
                 switch_executed = switch_result.get('switch_executed', False)
                 
+                # 銘柄切替時のログ出力
                 if switch_executed:
                     self.logger.info(
-                        f"from={switch_result.get('from_symbol')} -> to={self.current_symbol}, "
+                        f"[SYMBOL_SWITCH_FORCE_CLOSE] 銘柄切替実行、既存ポジション決済開始: "
+                        f"from={switch_result.get('from_symbol')} → to={self.current_symbol}, "
                         f"date={target_date.strftime('%Y-%m-%d')}"
                     )
                 
-                # マルチ戦略実行(銘柄切替時はforce_close_on_entry=True)
+                # マルチ戦略実行（銘柄切替時はforce_close_on_entry=True）
                 strategy_result = self._execute_multi_strategies(
                     self.current_symbol, 
                     target_date,
@@ -543,8 +632,8 @@ class DSSMSIntegratedBacktester:
                 )
                 daily_result['strategy_results'] = strategy_result
                 
-                # Phase 2優先度3: execution_details設定(詳細設計書3.1.3準拠)
-                # December 9, 2025修正: 代入(上書き)からextend(追加)に変更
+                # Phase 2優先度3: execution_details設定（詳細設計書3.1.3準拠）
+                # 2025-12-09修正: 代入（上書き）からextend（追加）に変更
                 # 理由: Line 546で追加した銘柄切替のSELL注文が消失する問題を修正
                 if 'execution_details' in strategy_result:
                     if 'execution_details' not in daily_result:
@@ -557,6 +646,7 @@ class DSSMSIntegratedBacktester:
                             f"type={type(strategy_result['execution_details'])}"
                         )
             
+            # ポートフォリオ価値更新
             if strategy_result.get('position_update'):
                 position_return = strategy_result['position_update']['return']
                 portfolio_value_before = self.portfolio_value
@@ -567,15 +657,17 @@ class DSSMSIntegratedBacktester:
                 self.cumulative_pnl += position_return
                 daily_result['cumulative_pnl'] = self.cumulative_pnl
             
-            # 修正理由: switch実行日に取引がない場合でも,switch後のportfolio_valueを反映するため
-            # switch処理でself.portfolio_valueが変更される可能性があるため,if position_update外で実行
-            # Task 6調査で発見された問題の修正(December 8, 2025)
+            # peak_value/drawdown_pct再計算（switch処理含む全ケースで更新）
+            # 修正理由: switch実行日に取引がない場合でも、switch後のportfolio_valueを反映するため
+            # switch処理でself.portfolio_valueが変更される可能性があるため、if position_update外で実行
+            # Task 6調査で発見された問題の修正（2025-12-08）
             if self.portfolio_value > self.peak_value:
                 self.peak_value = self.portfolio_value
             
             daily_result['peak_value'] = self.peak_value
             daily_result['drawdown_pct'] = (self.peak_value - self.portfolio_value) / self.peak_value if self.peak_value > 0 else 0
             
+            # [LOG#6] 日次ポートフォリオ更新トラッキング（peak_value/drawdown_pct計算後に移動）
             if strategy_result.get('position_update'):
                 self.logger.info(
                     f"[PORTFOLIO_UPDATE] {target_date.strftime('%Y-%m-%d')} - "
@@ -585,11 +677,15 @@ class DSSMSIntegratedBacktester:
                     f"Drawdown: {daily_result['drawdown_pct']:.2%}"
                 )
             
-            # Phase 1 Stage 4-2変更(December 19, 2025):
-            #   - cash_balance: portfolio_value全額(キャッシュ扱い)
+            # cash_balance/position_value再計算（switch処理含む全ケースで更新）
+            # Phase 1 Stage 4-2変更（2025-12-19）:
+            #   - 修正理由: DSSMSはポジション管理しない設計に準拠
+            #   - cash_balance: portfolio_value全額（キャッシュ扱い）
+            #   - position_value: 0固定（main_new.pyが実際のポジション管理）
             daily_result['cash_balance'] = self.portfolio_value
             daily_result['position_value'] = 0
             
+            # 提案4: cash_balance/position_value計算検証ログ
             self.logger.debug(
                 f"[CASH_POSITION_CALC] {target_date.strftime('%Y-%m-%d')}: "
                 f"portfolio={self.portfolio_value:.2f}"
@@ -600,11 +696,14 @@ class DSSMSIntegratedBacktester:
             
             if risk_result.get('risk_violation'):
                 daily_result['errors'].append(f"リスク制限違反: {risk_result['violation_type']}")
+                # リスク制限時の強制ポジション調整
                 self._handle_risk_violation(risk_result)
             
             # 最終結果設定
             daily_result['portfolio_value_end'] = self.portfolio_value
+            daily_result['portfolio_value'] = self.portfolio_value  # 互換性向上: レポート生成との整合性確保
             
+            # デバッグログ: portfolio_value整合性チェック（提案1）
             expected_portfolio = daily_result.get('cash_balance', 0) + daily_result.get('position_value', 0)
             actual_portfolio = self.portfolio_value
             if abs(expected_portfolio - actual_portfolio) > 0.01:
@@ -621,18 +720,22 @@ class DSSMSIntegratedBacktester:
             return daily_result
             
         except Exception as e:
+            self.logger.error(f"日次取引処理エラー ({target_date}): {e}")
             return {
                 'date': target_date.strftime('%Y-%m-%d'),
                 'symbol': self.current_symbol,
                 'success': False,
+                'errors': [f"処理エラー: {str(e)}"],
                 'portfolio_value_start': self.portfolio_value,
                 'portfolio_value_end': self.portfolio_value,
+                'portfolio_value': self.portfolio_value,  # 互換性向上: レポート生成との整合性確保
                 'daily_return': 0,
                 'daily_return_rate': 0
             }
     
     def _advanced_ranking_selection(self, filtered_symbols: List[str], target_date: datetime) -> str:
         """
+        AdvancedRankingEngine使用の真のランキングベース選択 (TODO-DSSMS-004.1)
         TODO-DSSMS-004.2統合最適化適用版
         
         Args:
@@ -640,25 +743,32 @@ class DSSMSIntegratedBacktester:
             target_date: 対象日付
             
         Returns:
+            str: 選択された銘柄コード
         """
         if self.advanced_ranking_engine and len(filtered_symbols) > 0:
             try:
                 # TODO-DSSMS-004.2: 統合最適化実装
+                # HierarchicalRankingSystemとの重複計算除去・効率化統合
                 selected_symbol = self._integrated_ranking_selection_optimized(
                     filtered_symbols, target_date
                 )
                 
                 if selected_symbol:
                     self.logger.info(
+                        f"統合最適化選択: {selected_symbol} (重複排除統合ランキング, "
                         f"{len(filtered_symbols)}銘柄最適選択)"
                     )
                     return selected_symbol
                 
+                # フォールバック: レガシー分析
                 return self._legacy_advanced_ranking_selection(filtered_symbols, target_date)
                 
             except Exception as e:
+                self.logger.error(f"統合最適化ランキング失敗: {e}")
+                # レガシー分析にフォールバック
                 return self._legacy_advanced_ranking_selection(filtered_symbols, target_date)
         
+        # copilot-instructions.md準拠: ランダム選択フォールバック禁止
         raise RuntimeError(
             f"Failed to select optimal symbol from {len(filtered_symbols)} candidates. "
             f"All ranking methods failed. "
@@ -668,30 +778,35 @@ class DSSMSIntegratedBacktester:
     
     def _integrated_ranking_selection_optimized(self, filtered_symbols: List[str], target_date: datetime) -> Optional[str]:
         """
+        TODO-DSSMS-004.2: 統合最適化ランキング選択
         
+        AdvancedRankingEngineとHierarchicalRankingSystemの重複計算除去・効率化統合実装
         
         Args:
             filtered_symbols: フィルタ済み銘柄リスト
             target_date: 対象日付
             
         Returns:
+            Optional[str]: 最適化選択された銘柄コード
         """
         start_time = time.time()
         
         try:
+            self.logger.info(f"[ROCKET] 統合最適化ランキング開始: {len(filtered_symbols)}銘柄")
             
-            # Step 1: HierarchicalRankingSystem基盤計算(重複排除の基準)
+            # Step 1: HierarchicalRankingSystem基盤計算（重複排除の基準）
             hierarchical_results = self._get_hierarchical_ranking_base(filtered_symbols)
             
             if not hierarchical_results:
                 self.logger.warning("HierarchicalRankingSystem基盤計算失敗")
                 return None
             
-            # Step 2: AdvancedRankingEngine高度分析(基盤結果再利用)
+            # Step 2: AdvancedRankingEngine高度分析（基盤結果再利用）
             advanced_results = self._run_advanced_analysis_with_base_results(
                 filtered_symbols, target_date, hierarchical_results
             )
             
+            # Step 3: 統合スコア計算・最適選択
             final_selection = self._calculate_integrated_optimal_selection(
                 hierarchical_results, advanced_results
             )
@@ -702,16 +817,18 @@ class DSSMSIntegratedBacktester:
             return final_selection
             
         except Exception as e:
+            self.logger.error(f"統合最適化ランキングエラー: {e}")
             return None
     
     def _get_hierarchical_ranking_base(self, filtered_symbols: List[str]) -> Optional[Dict[str, Any]]:
         """
-        HierarchicalRankingSystem基盤計算取得(キャッシュ活用)
+        HierarchicalRankingSystem基盤計算取得（キャッシュ活用）
         
         Args:
             filtered_symbols: 対象銘柄リスト
         
         Returns:
+            Optional[Dict[str, Any]]: 基盤ランキング結果
         """
         try:
             # HierarchicalRankingSystemアクセス
@@ -720,9 +837,10 @@ class DSSMSIntegratedBacktester:
                 
                 hierarchical_system = self.advanced_ranking_engine._hierarchical_system
                 
-                # 優先度分類(基盤計算)
+                # 優先度分類（基盤計算）
                 priority_groups = hierarchical_system.categorize_by_perfect_order_priority(filtered_symbols)
                 
+                # グループ内ランキング（基盤計算）
                 ranking_results = {}
                 for priority_level, group_symbols in priority_groups.items():
                     if group_symbols:
@@ -736,18 +854,20 @@ class DSSMSIntegratedBacktester:
                     'symbols_count': len(filtered_symbols)
                 }
                 
+                self.logger.info(f"[CHART] 基盤計算完了: {len(priority_groups)}優先度グループ")
                 return base_results
             
             return None
             
         except Exception as e:
+            self.logger.error(f"HierarchicalRankingSystem基盤計算エラー: {e}")
             return None
     
     def _run_advanced_analysis_with_base_results(self, filtered_symbols: List[str], 
                                                target_date: datetime,
                                                hierarchical_results: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
-        AdvancedRankingEngine高度分析(基盤結果再利用版)
+        AdvancedRankingEngine高度分析（基盤結果再利用版）
         
         Args:
             filtered_symbols: 対象銘柄リスト
@@ -758,11 +878,14 @@ class DSSMSIntegratedBacktester:
             Optional[Dict[str, Any]]: 高度分析結果
         """
         try:
+            # 市場データ準備（基盤結果のタイムスタンプ活用）
             market_data = self._prepare_market_data_for_analysis(filtered_symbols, target_date)
             
             if not market_data:
+                self.logger.warning("市場データ準備失敗 - 基盤結果のみ使用")
                 return {'base_results_only': True, 'hierarchical_results': hierarchical_results}
             
+            # AdvancedRankingEngine分析パラメータ（基盤結果統合）
             analysis_params = {
                 'analysis_depth': 'comprehensive',
                 'enable_parallel': len(filtered_symbols) > 5,
@@ -788,11 +911,13 @@ class DSSMSIntegratedBacktester:
             return None
             
         except Exception as e:
+            self.logger.error(f"高度分析（基盤統合）エラー: {e}")
             return None
     
     def _calculate_integrated_optimal_selection(self, hierarchical_results: Dict[str, Any],
                                               advanced_results: Optional[Dict[str, Any]]) -> Optional[str]:
         """
+        統合スコア計算・最適選択
         TODO-DSSMS-004.2 Stage 3: 高度分析機能統合実装
         
         Args:
@@ -803,6 +928,7 @@ class DSSMSIntegratedBacktester:
             Optional[str]: 統合最適選択銘柄
         """
         try:
+            # 基盤ランキングから候補抽出
             base_candidates = []
             ranking_results = hierarchical_results.get('ranking_results', {})
             
@@ -833,6 +959,7 @@ class DSSMSIntegratedBacktester:
             return final_selection
             
         except Exception as e:
+            self.logger.error(f"統合最適選択計算エラー: {e}")
             return None
     
     def _enhance_candidates_with_advanced_analysis(self, base_candidates: List[Dict[str, Any]],
@@ -852,6 +979,7 @@ class DSSMSIntegratedBacktester:
         for base_candidate in base_candidates:
             symbol = base_candidate['symbol']
             
+            # 基盤情報コピー
             enhanced = base_candidate.copy()
             
             try:
@@ -859,6 +987,7 @@ class DSSMSIntegratedBacktester:
                 technical_analysis = self._get_enhanced_technical_analysis(symbol)
                 enhanced.update(technical_analysis)
                 
+                # Stage 3-2: ファンダメンタル分析統合
                 fundamental_analysis = self._get_enhanced_fundamental_analysis(symbol)
                 enhanced.update(fundamental_analysis)
                 
@@ -873,12 +1002,15 @@ class DSSMSIntegratedBacktester:
                     )
                     enhanced.update(advanced_integration)
                 
+                # Stage 3-5: 複合スコアリング・重み付け最適化
                 composite_score = self._calculate_composite_score_optimized(enhanced)
                 enhanced['composite_score'] = composite_score
                 
                 enhanced_candidates.append(enhanced)
                 
             except Exception as e:
+                self.logger.warning(f"候補強化エラー ({symbol}): {e}")
+                # エラー時は基盤候補のまま追加
                 enhanced['composite_score'] = base_candidate.get('base_score', 0.0)
                 enhanced_candidates.append(enhanced)
         
@@ -890,6 +1022,7 @@ class DSSMSIntegratedBacktester:
         Stage 3-1: テクニカル分析機能のフル活用実装
         
         Args:
+            symbol: 銘柄コード
             
         Returns:
             Dict[str, Any]: 強化テクニカル分析結果
@@ -927,17 +1060,19 @@ class DSSMSIntegratedBacktester:
             )
             
         except Exception as e:
-            # Error handling
-            pass
+            self.logger.warning(f"テクニカル分析強化エラー ({symbol}): {e}")
         
         return technical_data
     
     def _get_enhanced_fundamental_analysis(self, symbol: str) -> Dict[str, Any]:
         """
+        Stage 3-2: ファンダメンタル分析統合（PER・PBR等指標活用）
         
         Args:
+            symbol: 銘柄コード
             
         Returns:
+            Dict[str, Any]: 強化ファンダメンタル分析結果
         """
         fundamental_data = {
             'per_ratio': 0.0,
@@ -967,19 +1102,20 @@ class DSSMSIntegratedBacktester:
                         fundamental_data['revenue_growth'] = data.get('revenue_growth_rate', 0.0)
                         fundamental_data['profit_stability'] = data.get('earnings_stability', 0.0)
                         
+                        # PER・PBR等の指標（利用可能な場合）
                         if 'valuation_metrics' in data:
                             valuation = data['valuation_metrics']
                             fundamental_data['per_ratio'] = valuation.get('pe_ratio', 0.0)
                             fundamental_data['pbr_ratio'] = valuation.get('pb_ratio', 0.0)
                             fundamental_data['roe_percent'] = valuation.get('roe', 0.0)
                         
+                        # ファンダメンタル総合スコア計算
                         fundamental_data['fundamental_score'] = self._calculate_fundamental_composite_score(
                             fundamental_data
                         )
             
         except Exception as e:
-            # Error handling
-            pass
+            self.logger.warning(f"ファンダメンタル分析強化エラー ({symbol}): {e}")
         
         return fundamental_data
     
@@ -988,8 +1124,10 @@ class DSSMSIntegratedBacktester:
         Stage 3-3: MultiTimeframePerfectOrder高度判定統合
         
         Args:
+            symbol: 銘柄コード
             
         Returns:
+            Dict[str, Any]: 強化パーフェクトオーダー分析結果
         """
         perfect_order_data = {
             'perfect_order_daily': False,
@@ -1007,11 +1145,13 @@ class DSSMSIntegratedBacktester:
                 if hasattr(hierarchical_system, 'perfect_order_detector'):
                     perfect_detector = hierarchical_system.perfect_order_detector
                     
+                    # 複数時間軸でのパーフェクトオーダー判定
                     multi_result = perfect_detector.detect_perfect_order_multi_timeframes(symbol, {})
                     
                     if multi_result:
                         perfect_order_data['perfect_order_daily'] = multi_result.daily_result.is_perfect_order
                         
+                        # 週次・月次結果（利用可能な場合）
                         if hasattr(multi_result, 'weekly_result') and multi_result.weekly_result:
                             perfect_order_data['perfect_order_weekly'] = multi_result.weekly_result.is_perfect_order
                         
@@ -1026,6 +1166,7 @@ class DSSMSIntegratedBacktester:
                         if strength_scores:
                             perfect_order_data['multi_timeframe_strength'] = sum(strength_scores) / len(strength_scores)
                         
+                        # トレンド一貫性スコア
                         consistent_timeframes = sum([
                             perfect_order_data['perfect_order_daily'],
                             perfect_order_data['perfect_order_weekly'],
@@ -1033,14 +1174,14 @@ class DSSMSIntegratedBacktester:
                         ])
                         perfect_order_data['trend_consistency'] = consistent_timeframes / 3.0
                         
+                        # パーフェクトオーダー複合スコア
                         perfect_order_data['perfect_order_composite'] = (
                             perfect_order_data['multi_timeframe_strength'] * 0.6 +
                             perfect_order_data['trend_consistency'] * 0.4
                         )
             
         except Exception as e:
-            # Error handling
-            pass
+            self.logger.warning(f"パーフェクトオーダー分析強化エラー ({symbol}): {e}")
         
         return perfect_order_data
     
@@ -1049,6 +1190,7 @@ class DSSMSIntegratedBacktester:
         Stage 3-4: 高度分析結果統合
         
         Args:
+            symbol: 銘柄コード
             advanced_results: AdvancedRankingEngine高度分析結果
             
         Returns:
@@ -1104,20 +1246,22 @@ class DSSMSIntegratedBacktester:
                     integration_data['confidence_level'] = max(0.0, 1.0 - position_ratio)
             
         except Exception as e:
-            # Error handling
-            pass
+            self.logger.warning(f"高度分析結果統合エラー ({symbol}): {e}")
         
         return integration_data
     
     def _calculate_fundamental_composite_score(self, fundamental_data: Dict[str, Any]) -> float:
         """
+        ファンダメンタル複合スコア計算
         
         Args:
+            fundamental_data: ファンダメンタル分析データ
             
         Returns:
             float: 複合スコア
         """
         try:
+            # 各指標の正規化・重み付け
             scores = []
             
             # 営業利益率スコア
@@ -1145,12 +1289,15 @@ class DSSMSIntegratedBacktester:
             return sum(scores) if scores else 0.0
             
         except Exception as e:
+            self.logger.warning(f"ファンダメンタル複合スコア計算エラー: {e}")
             return 0.0
     
     def _calculate_composite_score_optimized(self, enhanced_candidate: Dict[str, Any]) -> float:
         """
+        Stage 3-5: 複合スコアリング・重み付け最適化
         
         Args:
+            enhanced_candidate: 強化済み候補データ
             
         Returns:
             float: 最適化複合スコア
@@ -1164,28 +1311,34 @@ class DSSMSIntegratedBacktester:
             technical_strength = enhanced_candidate.get('technical_strength', 0.0)
             perfect_order_composite = enhanced_candidate.get('perfect_order_composite', 0.0)
             
+            # ファンダメンタル分析スコア
             fundamental_score = enhanced_candidate.get('fundamental_score', 0.0)
             
             # 高度分析統合スコア
             advanced_total_score = enhanced_candidate.get('advanced_total_score', 0.0)
             confidence_level = enhanced_candidate.get('confidence_level', 0.0)
             
+            # 優先度ベース重み調整
             priority_weights = {1: 0.4, 2: 0.3, 3: 0.2}
             priority_weight = priority_weights.get(priority_level, 0.1)
             
-            # 複合スコア計算(最適化重み付け)
+            # 複合スコア計算（最適化重み付け）
             composite_score = (
                 base_score * priority_weight +                    # 基盤優先度
                 technical_strength * 0.25 +                      # テクニカル強度
-                advanced_total_score * 0.2                       # 高度分析
+                perfect_order_composite * 0.15 +                 # パーフェクトオーダー
+                fundamental_score * 0.15 +                       # ファンダメンタル
+                advanced_total_score * 0.2 +                     # 高度分析
+                confidence_level * 0.05                          # 信頼度ボーナス
             )
             
-            # スコア正規化(0-1範囲)
+            # スコア正規化（0-1範囲）
             normalized_score = max(0.0, min(1.0, composite_score))
             
             return normalized_score
             
         except Exception as e:
+            self.logger.warning(f"複合スコア計算エラー: {e}")
             return enhanced_candidate.get('base_score', 0.0)
     
     def _select_optimal_from_enhanced_candidates(self, enhanced_candidates: List[Dict[str, Any]]) -> Optional[str]:
@@ -1205,12 +1358,15 @@ class DSSMSIntegratedBacktester:
             # 複合スコア最高の候補選択
             best_candidate = max(enhanced_candidates, key=lambda x: x.get('composite_score', 0.0))
             
+            # P2-2: ランキング結果ログ - トップ3候補のスコア詳細
+            self.logger.info(f"[RANKING_RESULT] ランキング結果トップ3:")
             sorted_candidates = sorted(enhanced_candidates, key=lambda x: x.get('composite_score', 0.0), reverse=True)
             for idx, candidate in enumerate(sorted_candidates[:3], 1):
                 self.logger.info(
                     f"[RANKING_RESULT]   {idx}位: {candidate.get('symbol', 'N/A')} "
                     f"(複合: {candidate.get('composite_score', 0.0):.4f}, "
                     f"テクニカル: {candidate.get('technical_strength', 0.0):.3f}, "
+                    f"ファンダメンタル: {candidate.get('fundamental_score', 0.0):.3f}, "
                     f"優先度: {candidate.get('priority_level', 3)})"
                 )
             
@@ -1223,10 +1379,12 @@ class DSSMSIntegratedBacktester:
                 f"(複合スコア: {composite_score:.4f}, 優先度: {priority_level})"
             )
             
+            # デバッグ情報ログ出力
             self.logger.info(
                 f"  - テクニカル強度: {best_candidate.get('technical_strength', 0.0):.3f}"
             )
             self.logger.info(
+                f"  - ファンダメンタル: {best_candidate.get('fundamental_score', 0.0):.3f}"
             )
             self.logger.info(
                 f"  - 高度分析スコア: {best_candidate.get('advanced_total_score', 0.0):.3f}"
@@ -1235,6 +1393,8 @@ class DSSMSIntegratedBacktester:
             return symbol
             
         except Exception as e:
+            self.logger.error(f"強化候補最適選択エラー: {e}")
+            # フォールバック: 第1候補選択
             if enhanced_candidates:
                 return enhanced_candidates[0].get('symbol')
             return None
@@ -1242,10 +1402,11 @@ class DSSMSIntegratedBacktester:
     def _calculate_hybrid_scores(self, base_candidates: List[Dict[str, Any]], 
                                advanced_ranking: List[Any]) -> List[Dict[str, Any]]:
         """
-        ハイブリッドスコア計算(基盤+高度分析統合)
+        ハイブリッドスコア計算（基盤+高度分析統合）
         
         Args:
             base_candidates: 基盤候補リスト
+            advanced_ranking: 高度分析ランキング結果
             
         Returns:
             List[Dict[str, Any]]: 統合スコア計算結果
@@ -1253,7 +1414,7 @@ class DSSMSIntegratedBacktester:
         try:
             integrated_scores = []
             
-            # 高度分析結果を辞書化(高速ルックアップ)
+            # 高度分析結果を辞書化（高速ルックアップ）
             advanced_dict = {}
             for result in advanced_ranking:
                 if hasattr(result, 'symbol') and hasattr(result, 'total_score'):
@@ -1273,7 +1434,7 @@ class DSSMSIntegratedBacktester:
                 # 高度分析スコア取得
                 advanced_score = advanced_dict.get(symbol, 0.0)
                 
-                # 統合スコア計算(重み付き)
+                # 統合スコア計算（重み付き）
                 # 優先度が高いほど基盤スコアの重みを増加
                 priority_weight = 0.8 if priority_level == 1 else 0.6 if priority_level == 2 else 0.4
                 advanced_weight = 1.0 - priority_weight
@@ -1294,19 +1455,25 @@ class DSSMSIntegratedBacktester:
             return integrated_scores
             
         except Exception as e:
+            self.logger.error(f"ハイブリッドスコア計算エラー: {e}")
             return []
     
     def _legacy_advanced_ranking_selection(self, filtered_symbols: List[str], target_date: datetime) -> str:
         """
+        レガシーAdvancedRankingEngine選択（統合最適化フォールバック用）
         
         Args:
             filtered_symbols: フィルタ済み銘柄リスト
             target_date: 対象日付
             
         Returns:
+            str: 選択された銘柄コード
         """
         try:
+            # AdvancedRankingEngineによる複数銘柄同時ランキング分析
+            self.logger.info(f"レガシーAdvancedRanking: {len(filtered_symbols)}銘柄を分析中...")
             
+            # 市場データ準備
             market_data = self._prepare_market_data_for_analysis(filtered_symbols, target_date)
             
             if market_data:
@@ -1314,10 +1481,12 @@ class DSSMSIntegratedBacktester:
                 ranking_results = self._run_advanced_analysis_sync(filtered_symbols, market_data)
                 
                 if ranking_results and len(ranking_results) > 0:
+                    # スコアベース最適銘柄選択
                     best_symbol = self._select_best_symbol_from_ranking(ranking_results)
                     
                     if best_symbol:
                         self.logger.info(
+                            f"レガシーAdvancedRanking選択: {best_symbol} (従来ランキング比較)"
                         )
                         return best_symbol
             
@@ -1326,13 +1495,15 @@ class DSSMSIntegratedBacktester:
             if system_status.get('integration_status', {}).get('hierarchical_system', False):
                 selected = filtered_symbols[0]
                 self.logger.warning(
+                    f"レガシー暫定選択: {selected} (高度分析失敗のため第1銘柄選択)"
                 )
                 return selected
                 
         except Exception as e:
-            # Advanced ranking engine error - log and raise with context
-            pass
+            self.logger.error(f"レガシーAdvancedRankingEngine分析失敗: {e}")
         
+        # copilot-instructions.md準拠: SystemFallbackPolicyのランダム選択フォールバック禁止
+        # AdvancedRankingEngine失敗時はエラーとして処理
         raise RuntimeError(
             f"AdvancedRankingEngine analysis failed for {len(filtered_symbols)} symbols. "
             f"Random selection fallback is prohibited by copilot-instructions.md. "
@@ -1342,6 +1513,8 @@ class DSSMSIntegratedBacktester:
     
     # _legacy_random_selection() メソッドを削除
     # 理由: copilot-instructions.md違反
+    # 「モック/ダミー/テストデータを使用するフォールバック禁止」
+    # ランダム選択は実データと乖離する結果を生成するため削除
 
     def _get_optimal_symbol(self, target_date: datetime, 
                           target_symbols: Optional[List[str]] = None) -> Optional[str]:
@@ -1353,8 +1526,10 @@ class DSSMSIntegratedBacktester:
             target_symbols: 対象銘柄リスト
         
         Returns:
+            Optional[str]: 選択された銘柄コード
         """
         try:
+            # コンポーネント初期化確保
             self.ensure_components()
             self.ensure_advanced_ranking()  # AdvancedRankingEngine初期化
             if self.dss_core and dss_available:
@@ -1366,20 +1541,26 @@ class DSSMSIntegratedBacktester:
                     self.logger.debug(f"DSS選択結果: {selected_symbol} @ {target_date}")
                     return selected_symbol
             
+            # SystemFallbackPolicy統合フォールバック: Nikkei225Screener（DSS使用不可時）
             if self.nikkei225_screener:
                 try:
+                    # Priority 2-1: 銘柄選定過程ログ (copilot-instructions.md準拠)
                     self.logger.info(f"[SYMBOL_SELECTION] 銘柄選定開始: {target_date.strftime('%Y-%m-%d')}")
                     
+                    # 利用可能資金（ポートフォリオ価値の80%を投資に使用）
                     available_funds = self.portfolio_value * 0.8
                     filtered_symbols = self.nikkei225_screener.get_filtered_symbols(available_funds)
                     
+                    self.logger.info(f"[SYMBOL_SELECTION] スクリーニング通過: {len(filtered_symbols)}銘柄 (資金: {available_funds:,.0f}円)")
                     
+                    # Priority 2-1: デバッグログ追加 (filtered_symbols詳細)
                     self.logger.debug(
                         f"[DEBUG] _get_optimal_symbol | filtered_symbols: {filtered_symbols[:10] if len(filtered_symbols) > 10 else filtered_symbols} "
                         f"(total: {len(filtered_symbols)})"
                     )
                     
                     if filtered_symbols:
+                        # SystemFallbackPolicy統合: 明示的フォールバック処理
                         if fallback_policy_available:
                             fallback_policy = get_fallback_policy()
                             selected = fallback_policy.handle_component_failure(
@@ -1394,26 +1575,35 @@ class DSSMSIntegratedBacktester:
                                 }
                             )
                         else:
+                            # レガシーフォールバック（SystemFallbackPolicy使用不可時）
                             selected = self._advanced_ranking_selection(filtered_symbols, target_date)
                         
                         self.logger.info(f"[SYMBOL_SELECTION] 最終選択: {selected} (候補: {len(filtered_symbols)}銘柄)")
+                        # Priority 2-1: デバッグログ追加 (selected_symbol詳細)
                         self.logger.debug(f"[DEBUG] _get_optimal_symbol | selected_symbol: {selected}")
+                        # P3-2: フォールバック詳細化ログ (copilot-instructions.md準拠)
                         self.logger.info(
+                            f"[FALLBACK] Nikkei225フォールバック実行 | "
                             f"理由: DSS Core V3使用不可 | "
+                            f"代替手段: Nikkei225Screener + 高度ランキング | "
                             f"影響範囲: {len(filtered_symbols)}銘柄から選択 (選択: {selected})"
                         )
                         return selected
                 except Exception as e:
-                    # Error handling
-                    pass
+                    self.logger.error(f"Nikkei225フォールバック失敗: {e}")
             
+            # TODO(production): Nikkei225Screener必須 - 他フォールバック削除済み
+            self.logger.error("DSS Core V3・Nikkei225Screener共に使用不可")
+            raise RuntimeError("DSS Core V3・Nikkei225Screener共に使用不可 - システム要求不満")
             
         except Exception as e:
+            self.logger.error(f"銘柄選択エラー: {e}")
             return None
     
     def _evaluate_and_execute_switch(self, selected_symbol: str, 
                                    target_date: datetime) -> Dict[str, Any]:
         """
+        銘柄切替評価・実行
         
         Args:
             selected_symbol: 選択された銘柄
@@ -1440,6 +1630,7 @@ class DSSMSIntegratedBacktester:
                 'reason': 'no_switch_needed'
             }
             
+            # Priority 2-2: デバッグログ追加 (should_switch判定)
             should_switch = switch_evaluation.get('should_switch', False)
             self.logger.debug(
                 f"[DEBUG] _evaluate_and_execute_switch | should_switch: {should_switch} | "
@@ -1448,13 +1639,17 @@ class DSSMSIntegratedBacktester:
             
             # 切替実行判定
             if should_switch:
-                # 削除: 銘柄切替時の取引実行処理(_close_position, _open_position呼び出し)
+                # Phase 1: DSSMS設計違反コード削除 - Stage 2（2025-12-19）
+                # 削除: 銘柄切替時の取引実行処理（_close_position, _open_position呼び出し）
+                # 削除: switch_execution_details収集ロジック
                 # 削除: execution_type='switch'設定
-                # 理由: DSSMSは銘柄選択のみ担当,取引実行はmain_new.py(PaperBroker)が担当
-                # 影響: switch関連のexecution_detailsが0件になる(意図通り)
+                # 理由: DSSMSは銘柄選択のみ担当、取引実行はmain_new.py（PaperBroker）が担当
+                # 影響: switch関連のexecution_detailsが0件になる（意図通り）
                 
-                # 削除理由: DSSMSが取引実行しないため,コスト計算は無意味
-                # 影響: portfolio_value更新なし,switch_result簡略化
+                # Phase 1: DSSMS設計違反コード削除 - Stage 3-1（2025-12-19）
+                # 削除: switch_costロジック（Line 1651-1677, 27行）
+                # 削除理由: DSSMSが取引実行しないため、コスト計算は無意味
+                # 影響: portfolio_value更新なし、switch_result簡略化
                 
                 switch_result.update({
                     'switch_executed': True,
@@ -1468,11 +1663,12 @@ class DSSMSIntegratedBacktester:
                 # 切替履歴記録
                 self.switch_manager.record_switch_executed(switch_result)
                 
-                self.logger.info(f"銘柄切替実行: {switch_result['from_symbol']} -> {selected_symbol}")
+                self.logger.info(f"銘柄切替実行: {switch_result['from_symbol']} → {selected_symbol}")
             
             return switch_result
             
         except Exception as e:
+            self.logger.error(f"銘柄切替評価・実行エラー: {e}")
             return {
                 'date': target_date.strftime('%Y-%m-%d'),
                 'from_symbol': self.current_symbol,
@@ -1483,11 +1679,12 @@ class DSSMSIntegratedBacktester:
     
     def _execute_multi_strategies(self, symbol: str, target_date: datetime, force_close_on_entry: bool = False) -> Dict[str, Any]:
         """
-        マルチ戦略実行(main_new.py統合版)
+        マルチ戦略実行（main_new.py統合版）
         
         Args:
             symbol: 対象銘柄
             target_date: 対象日付
+            force_close_on_entry: 銘柄切替時に既存ポジション強制決済（デフォルト: False）
         
         Returns:
             Dict[str, Any]: 戦略実行結果
@@ -1503,12 +1700,14 @@ class DSSMSIntegratedBacktester:
                     'date': target_date.strftime('%Y-%m-%d')
                 }
             
+            # ForceClose要求ログ追加（Priority 3）
             if force_close_on_entry:
                 self.logger.info(
                     f"[DSSMS_FORCE_CLOSE_REQUEST] 銘柄切替によるForceClose要求: "
                     f"symbol={symbol}, date={target_date.strftime('%Y-%m-%d')}"
                 )
             
+            # 1. データ取得（既存処理を維持）
             stock_data, index_data = self._get_symbol_data(symbol, target_date)
             
             if stock_data is None or stock_data.empty:
@@ -1536,35 +1735,42 @@ class DSSMSIntegratedBacktester:
                 'performance': {
                     'use_aggregator': False
                 },
+                'suppress_report_generation': True  # Phase 2: DSSMS経由の呼び出し時はレポート生成抑制
             }
             
-            # Option A実装(December 28, 2025): MainSystemController日次作成削除
-            # 修正2: 日次でのMainSystemController作成を削除(資金リセット防止)
-            # 代わりに,self.main_controllerを初回のみ作成(遅延初期化)
+            # Option A実装（2025-12-28）: MainSystemController日次作成削除
+            # 修正2: 日次でのMainSystemController作成を削除（資金リセット防止）
+            # 代わりに、self.main_controllerを初回のみ作成（遅延初期化）
             if self.main_controller is None:
                 self.main_controller = MainSystemController(config)
                 self.logger.info("[Option A] MainSystemController初回作成完了")
             
-            # 3. バックテスト実行(累積期間方式復元)
-            # Phase 1実装(December 30, 2025): 累積期間方式復元
+            # 3. バックテスト実行（累積期間方式復元）
+            # Phase 1実装（2025-12-30）: 累積期間方式復元
+            # 修正: Option A実装（日次ウォームアップ方式）を削除し、累積期間方式に復元
+            # 理由: エントリー機会回復のため（33営業日で1件→50件へ復旧見込み）
+            # 監視: 決定論破綻の監視ログを追加（重複エントリー、状態不一致の検出）
             
-            # 【Phase 1実装】December 30, 2025
-            # 累積期間方式復元: dssms_backtest_start_date(固定開始日)からtarget_date(対象日)まで累積的にバックテスト
-            backtest_start_date = self.dssms_backtest_start_date  # 固定開始日(例: 2025-01-15)
+            # 【Phase 1実装】2025-12-30
+            # 累積期間方式復元: dssms_backtest_start_date（固定開始日）からtarget_date（対象日）まで累積的にバックテスト
+            backtest_start_date = self.dssms_backtest_start_date  # 固定開始日（例: 2025-01-15）
             backtest_end_date = target_date + timedelta(days=7)  # 期間延長: 7日間の取引期間を確保
-            warmup_days = self.warmup_days  # クラス変数を使用(150日)
+            warmup_days = self.warmup_days  # クラス変数を使用（150日）
             
+            # 決定論破綻監視: エントリー機会と期間の記録
             period_days = (target_date - backtest_start_date).days
-            self.logger.info(f"[DETERMINISM_MONITOR] 累積期間バックテスト: {backtest_start_date.strftime('%Y-%m-%d')} -> {target_date.strftime('%Y-%m-%d')} ({period_days}日間)")
+            self.logger.info(f"[DETERMINISM_MONITOR] 累積期間バックテスト: {backtest_start_date.strftime('%Y-%m-%d')} → {target_date.strftime('%Y-%m-%d')} ({period_days}日間)")
             
+            # PaperBrokerの状態を監視ログに記録（決定論破綻の検出用）
             if self.main_controller and hasattr(self.main_controller, 'paper_broker'):
                 broker = self.main_controller.paper_broker
                 self.logger.info(f"[DETERMINISM_MONITOR] PaperBroker状態前: account_balance={broker.account_balance:.0f}, filled_orders_count={len(broker.filled_orders)}")
             
-            # 優先度B対応: stock_dataとbacktest_start_dateを記録(_convert_main_new_resultで使用)
+            # 優先度B対応: stock_dataとbacktest_start_dateを記録（_convert_main_new_resultで使用）
             self._last_stock_data = stock_data
             self._last_backtest_start_date = backtest_start_date
             
+            # Priority 1-1: DSSMS->main_new.py データ渡しログ (copilot-instructions.md準拠)
             self.logger.info(f"[DSSMS->main_new] バックテスト開始: {symbol}, {target_date}")
             self.logger.info(f"[DSSMS->main_new_DATA] 銘柄: {symbol}")
             self.logger.info(f"[DSSMS->main_new_DATA] 対象日: {target_date.strftime('%Y-%m-%d')}")
@@ -1576,13 +1782,14 @@ class DSSMSIntegratedBacktester:
                 self.logger.info(f"[DSSMS->main_new_DATA] stock_data範囲: {stock_data.index[0]} ~ {stock_data.index[-1]} ({len(stock_data)}行)")
                 
                 # [CRITICAL_CHECK] trading_start_dateとstock_data範囲のギャップ検証
+                # タイムゾーン対応: offset-naive datetime と offset-aware Timestamp の比較エラー回避
                 stock_data_start_naive = pd.Timestamp(stock_data.index[0]).tz_localize(None)
                 if backtest_start_date < stock_data_start_naive:
                     gap_days = (stock_data_start_naive - backtest_start_date).days
                     self.logger.warning(
-                        f"[DATA_RANGE_MISMATCH] trading_start_date({backtest_start_date})がstock_data範囲外です."
-                        f"stock_data開始日: {stock_data.index[0]}, ギャップ: {gap_days}日."
-                        f"取引可能期間が{gap_days}日短縮されます."
+                        f"[DATA_RANGE_MISMATCH] trading_start_date({backtest_start_date})がstock_data範囲外です。"
+                        f"stock_data開始日: {stock_data.index[0]}, ギャップ: {gap_days}日。"
+                        f"取引可能期間が{gap_days}日短縮されます。"
                     )
             else:
                 self.logger.warning(f"[DSSMS->main_new_DATA] stock_data: None または空")
@@ -1590,10 +1797,10 @@ class DSSMSIntegratedBacktester:
             if index_data is not None and len(index_data) > 0:
                 self.logger.info(f"[DSSMS->main_new_DATA] index_data範囲: {index_data.index[0]} ~ {index_data.index[-1]} ({len(index_data)}行)")
             else:
-                # Index data not available
-                pass
+                self.logger.info(f"[DSSMS->main_new_DATA] index_data: None (インデックスデータなし)")
             
-            # Option A実装(December 28, 2025): 修正4: instance variable使用
+            # Option A実装（2025-12-28）: 修正4: instance variable使用
+            # controllerローカル変数 → self.main_controller instance variable
             result = self.main_controller.execute_comprehensive_backtest(
                 ticker=symbol,
                 stock_data=stock_data,
@@ -1609,18 +1816,20 @@ class DSSMSIntegratedBacktester:
                 broker = self.main_controller.paper_broker
                 self.logger.info(f"[DETERMINISM_MONITOR] PaperBroker状態後: account_balance={broker.account_balance:.0f}, filled_orders_count={len(broker.filled_orders)}")
                 
+                # 重複エントリー検出: 同日の複数注文をチェック
                 if len(broker.filled_orders) > 0:
                     today_orders = [order for order in broker.filled_orders 
                                   if order.filled_at and order.filled_at.date() == target_date.date()]
                     if len(today_orders) > 1:
+                        self.logger.warning(f"[DETERMINISM_MONITOR] 同日重複エントリー検出: {target_date.strftime('%Y-%m-%d')} に{len(today_orders)}件のエントリー")
                         for i, order in enumerate(today_orders):
-                            # Process each order
-                            pass
+                            self.logger.warning(f"[DETERMINISM_MONITOR] エントリー{i+1}: symbol={order.symbol}, quantity={order.quantity}, price={order.filled_price}")
             
             # 4. 結果変換
             return self._convert_main_new_result(result, symbol, target_date)
             
         except Exception as e:
+            self.logger.error(f"マルチ戦略実行エラー: {e}", exc_info=True)
             return {
                 'status': 'error',
                 'error': str(e),
@@ -1634,12 +1843,14 @@ class DSSMSIntegratedBacktester:
         
         Args:
             main_new_result: MainSystemControllerの実行結果
+            symbol: 銘柄コード
             target_date: 対象日付
         
         Returns:
             Dict[str, Any]: DSSMS形式の戦略実行結果
         """
         try:
+            # エラーチェック
             if main_new_result.get('status') != 'SUCCESS':
                 return {
                     'status': 'error',
@@ -1648,16 +1859,18 @@ class DSSMSIntegratedBacktester:
                     'date': target_date.strftime('%Y-%m-%d')
                 }
             
+            # パフォーマンス結果から主要メトリクスを抽出
             performance_results = main_new_result.get('performance_results', {})
             execution_results = main_new_result.get('execution_results', {})
             
-            # summary_statisticsから取得(main_new.pyの実際の構造に合わせる)
+            # summary_statisticsから取得（main_new.pyの実際の構造に合わせる）
             summary_stats = performance_results.get('summary_statistics', {})
             
-            # Phase 13修正: 累積期間バックテスト重複計上対策(増分計算)
-            # December 3, 2025修正: 'total_return'(比率)ではなく'total_profit'(金額)を取得
+            # Phase 13修正: 累積期間バックテスト重複計上対策（増分計算）
+            # 2025-12-03修正: 'total_return'(比率)ではなく'total_profit'(金額)を取得
             current_total_profit = summary_stats.get('total_profit', 0.0)
             if current_total_profit == 0.0:
+                # フォールバック: basic_performanceまたはbalanceから計算
                 basic_perf = performance_results.get('basic_performance', {})
                 current_total_profit = basic_perf.get('total_profit', 0.0)
                 
@@ -1669,15 +1882,17 @@ class DSSMSIntegratedBacktester:
             incremental_profit = current_total_profit - self.previous_total_profit
             self.previous_total_profit = current_total_profit
             
-            # 互換性のため,total_returnにはincremental_profitを代入
+            # 互換性のため、total_returnにはincremental_profitを代入
             total_return = incremental_profit
             
             # copilot-instructions.md準拠: 異常値チェック追加
-            # -100%未満(資産が完全消失以上の損失)は異常値として扱う
+            # -100%未満（資産が完全消失以上の損失）は異常値として扱う
             ABNORMAL_RETURN_THRESHOLD = -1.0  # -100%
             if total_return < ABNORMAL_RETURN_THRESHOLD:
                 error_msg = (
-                    f"閾値: {ABNORMAL_RETURN_THRESHOLD:.2%}未満は異常値として扱います."
+                    f"異常なリターン値を検出: {total_return:.2%}。"
+                    f"閾値: {ABNORMAL_RETURN_THRESHOLD:.2%}未満は異常値として扱います。"
+                    f"データ不足または計算エラーの可能性があります。"
                 )
                 self.logger.error(f"[ABNORMAL_VALUE] {error_msg}")
                 return {
@@ -1689,10 +1904,11 @@ class DSSMSIntegratedBacktester:
                     'threshold': ABNORMAL_RETURN_THRESHOLD
                 }
             
-            # Phase 2優先度3: execution_details抽出(詳細設計書3.1.3準拠)
+            # Phase 2優先度3: execution_details抽出（詳細設計書3.1.3準拠）
             execution_details = execution_results.get('execution_details', [])
             
-            # stock_dataとbacktest_start_dateの取得(_execute_multi_strategiesから引き継ぎ)
+            # [EXEC_DETAILS_COUNT] execution_details件数トラッキング
+            # stock_dataとbacktest_start_dateの取得（_execute_multi_strategiesから引き継ぎ）
             stock_data_info = "N/A"
             if hasattr(self, '_last_stock_data') and self._last_stock_data is not None and len(self._last_stock_data) > 0:
                 stock_data_info = f"{self._last_stock_data.index[0]} ~ {self._last_stock_data.index[-1]}"
@@ -1708,7 +1924,7 @@ class DSSMSIntegratedBacktester:
             if not execution_details:
                 self.logger.warning(
                     f"[EXECUTION_DETAILS_MISSING] {symbol} {target_date.strftime('%Y-%m-%d')}: "
-                    f"execution_detailsが空です.ComprehensiveReporter生成時に取引履歴が不足する可能性があります."
+                    f"execution_detailsが空です。ComprehensiveReporter生成時に取引履歴が不足する可能性があります。"
                 )
             
             # DSSMS形式に変換
@@ -1733,17 +1949,18 @@ class DSSMSIntegratedBacktester:
                     'risk_assessment': main_new_result.get('risk_assessment', {})
                 },
                 'position_update': {
-                    'return': total_return,  # Phase 13: 増分のみを返す(重複計上対策)
+                    'return': total_return,  # Phase 13: 増分のみを返す（重複計上対策）
                     'balance': execution_results.get('total_portfolio_value', 1000000.0),
                     'total_trades': summary_stats.get('total_trades', 0)
                 },
-                # Phase 2優先度3: execution_details追加(詳細設計書3.1.3準拠)
+                # Phase 2優先度3: execution_details追加（詳細設計書3.1.3準拠）
                 'execution_details': execution_details
             }
             
             return dssms_result
             
         except Exception as e:
+            self.logger.error(f"結果変換エラー: {e}", exc_info=True)
             return {
                 'status': 'conversion_error',
                 'error': str(e),
@@ -1755,18 +1972,24 @@ class DSSMSIntegratedBacktester:
                                stock_data: Any, index_data: Any,
                                target_date: datetime) -> Dict[str, Any]:
         """
-        単一戦略実行(簡略実装)
+        単一戦略実行（簡略実装）
         
         Args:
             strategy_name: 戦略名
+            symbol: 銘柄コード
+            stock_data: 株価データ
+            index_data: インデックスデータ
             target_date: 対象日付
         
         Returns:
             Dict[str, Any]: 戦略実行結果
         """
         try:
+            # 簡略戦略ロジック（実際はmain.pyの戦略クラスを使用）
             
-            return {'success': False, 'signal': 'HOLD', 'reason': 'insufficient_data'}
+            # データ準備
+            if len(stock_data) < 20:  # 最低限のデータ要件
+                return {'success': False, 'signal': 'HOLD', 'reason': 'insufficient_data'}
             
             # 基本指標計算
             close_prices = stock_data['Close'].tail(20)
@@ -1775,10 +1998,11 @@ class DSSMSIntegratedBacktester:
             current_price = close_prices.iloc[-1]
             volume = stock_data['Volume'].iloc[-1]
             
-            # 修正案2: 実行された戦略名を記録(December 14, 2025追加)
+            # 修正案2: 実行された戦略名を記録（2025-12-14追加）
             # _get_active_strategy_name()がこの値を使用して実際の戦略名を返す
             self.last_executed_strategy = strategy_name
             
+            # 戦略別ロジック（簡略版）
             signal = 'HOLD'
             confidence = 0.5
             
@@ -1809,6 +2033,7 @@ class DSSMSIntegratedBacktester:
                     signal = 'SELL'
                     confidence = 0.7
             
+            # その他の戦略は基本ロジックで代用
             else:
                 price_change = (current_price - close_prices.iloc[-2]) / close_prices.iloc[-2]
                 if price_change > 0.02:
@@ -1839,52 +2064,66 @@ class DSSMSIntegratedBacktester:
     
     def _get_active_strategy_name(self, symbol: str) -> str:
         """
-        修正案2: アクティブな基本戦略名を取得(December 14, 2025追加)
+        修正案2: アクティブな基本戦略名を取得（2025-12-14追加）
         
         目的:
-        - execution_detailsに実際の戦略名(GCStrategy等)を記録する
+        - execution_detailsに実際の戦略名（GCStrategy等）を記録する
+        - 'DSSMS_SymbolSwitch'のハードコードを回避
         
         Args:
+            symbol: 銘柄コード（将来の拡張用）
         
         Returns:
-            str: 戦略名(例: 'GCStrategy', 'ContrarianStrategy')
+            str: 戦略名（例: 'GCStrategy', 'ContrarianStrategy'）
                  戦略名不明時は'DSSMS_SymbolSwitch'を返す
         
         Examples:
+            >>> self._get_active_strategy_name('8001')
             'GCStrategy'  # self.last_executed_strategy = 'GCStrategy'の場合
             >>> self._get_active_strategy_name('9101')
             'DSSMS_SymbolSwitch'  # self.last_executed_strategy = Noneの場合
         """
-        # 最後に実行された戦略名を返す(記録済みの場合)
+        # 最後に実行された戦略名を返す（記録済みの場合）
         if self.last_executed_strategy:
             return self.last_executed_strategy
         
+        # 戦略名不明時はDSSMS全体の名前を返す（フォールバック）
         return 'DSSMS_SymbolSwitch'
     
     def _get_symbol_data(self, symbol: str, target_date: datetime):
         """
+        銘柄データ取得（キャッシュ使用）
         
         Args:
+            symbol: 銘柄コード
             target_date: 対象日付
         
         Returns:
+            Tuple[Optional[Any], Optional[Any]]: (株価データ, インデックスデータ)
         """
         try:
-            # yfinanceのhistory()はend_dateをexclusiveとして扱うため,
+            # データ期間設定
+            # yfinanceのhistory()はend_dateをexclusiveとして扱うため、
+            # target_date当日のデータを取得するには+1日が必要
             end_date = target_date + timedelta(days=1)
             
-            # 旧: DSSMS開始日 - warmup期間(累積期間方式)
-            # main_new.pyの期待(backtest_start_date - warmup_days)と整合
+            # Option A実装（2025-12-28）: 修正5: 日次ウォームアップ方式へ移行
+            # 旧: DSSMS開始日 - warmup期間（累積期間方式）
+            # 新: target_date - warmup期間（日次ウォームアップ方式）
+            # main_new.pyの期待（backtest_start_date - warmup_days）と整合
             warmup_days = getattr(self, 'warmup_days', 90)  # デフォルト90日
             start_date = target_date - timedelta(days=warmup_days)  # target_dateから計算
             self.logger.info(
+                f"[DATA_PERIOD] Option A日次ウォームアップ方式: target_date({target_date.strftime('%Y-%m-%d')}) "
                 f"- warmup({warmup_days}日) = 取得開始日({start_date.strftime('%Y-%m-%d')})"
             )
             
+            # Option A実装により、フォールバック不要（常にtarget_date - warmup_days方式）
             
             # キャッシュから取得試行
             cached_data = self.data_cache.get_cached_data(symbol, start_date, end_date)
             
+            # Priority 2-3: デバッグログ追加 (データソース)
             data_source = "cache" if cached_data[0] is not None else "yfinance_api"
             self.logger.debug(
                 f"[DEBUG] _get_symbol_data | symbol: {symbol} | source: {data_source} | "
@@ -1894,38 +2133,55 @@ class DSSMSIntegratedBacktester:
             if cached_data[0] is not None:
                 return cached_data
             
+            # データ取得
             if DATA_FETCHER_AVAILABLE:
                 try:
+                    # Phase 3最適化: yfinance遅延インポート
                     from src.utils.lazy_import_manager import get_yfinance
                     yf = get_yfinance()
+                    # 株価データ (.Tサフィックス確認)
                     symbol_with_suffix = symbol if symbol.endswith('.T') else f"{symbol}.T"
                     ticker = yf.Ticker(symbol_with_suffix)
-                    # auto_adjust=False指定でAdj Closeカラムを保証(VWAPBreakoutStrategy対応)
+                    # auto_adjust=False指定でAdj Closeカラムを保証（VWAPBreakoutStrategy対応）
+                    # 修正: timedelta(days=1) -> timedelta(days=7)で余裕を持ったデータ取得
+                    # 理由: yfinanceは前営業日までしか返さないため、週末・祝日を考慮して7日余裕を持たせる
+                    # Phase 1修正対応: 翌日始値参照のため、翌営業日データが必須（2025-12-29）
                     stock_data = ticker.history(start=start_date, end=end_date + timedelta(days=7), auto_adjust=False)
                     
+                    # Adj Close保証処理（YFinanceDataFeedと同様のロジック）
                     if 'Adj Close' not in stock_data.columns and 'Close' in stock_data.columns:
                         stock_data['Adj Close'] = stock_data['Close']
                     
+                    # データ範囲検証（翌日データの存在確認） - 2025-12-29追加
+                    # Phase 1修正: 翌日始値でエントリーするため、翌日データが必須
                     if not stock_data.empty:
                         data_last_date = stock_data.index[-1]
+                        required_date = target_date + timedelta(days=1)  # 翌日データが必要
                         
+                        # タイムゾーン統一処理
                         if hasattr(data_last_date, 'tz') and data_last_date.tz is not None:
                             if not hasattr(required_date, 'tz') or required_date.tz is None:
                                 required_date = pd.Timestamp(required_date).tz_localize(data_last_date.tz)
                         
                         if data_last_date < required_date:
                             self.logger.warning(
+                                f"[DATA_RANGE_WARNING] 翌日データが取得できませんでした。"
+                                f"データ最終日: {data_last_date.strftime('%Y-%m-%d')}, "
                                 f"必要日: {required_date.strftime('%Y-%m-%d')}, "
                                 f"不足: {(required_date - data_last_date).days}日"
                             )
                         else:
                             self.logger.info(
+                                f"[DATA_RANGE_OK] 翌日データ取得成功。"
+                                f"データ最終日: {data_last_date.strftime('%Y-%m-%d')}, "
                                 f"target_date: {target_date.strftime('%Y-%m-%d')}"
                             )
                     
+                    # インデックスデータ（日経225）
                     nikkei_ticker = yf.Ticker("^N225")
                     index_data = nikkei_ticker.history(start=start_date, end=end_date + timedelta(days=7), auto_adjust=False)
                     
+                    # Adj Close保証処理（インデックスデータ）
                     if 'Adj Close' not in index_data.columns and 'Close' in index_data.columns:
                         index_data['Adj Close'] = index_data['Close']
                     
@@ -1935,6 +2191,7 @@ class DSSMSIntegratedBacktester:
                     
                     return stock_data, index_data
                 except ImportError as import_error:
+                    # copilot-instructions.md準拠: モックデータフォールバック禁止
                     raise RuntimeError(
                         f"Failed to retrieve real market data for {symbol}. "
                         f"yfinance is not available: {import_error}. "
@@ -1942,6 +2199,7 @@ class DSSMSIntegratedBacktester:
                         f"Cannot proceed with backtest."
                     ) from import_error
             else:
+                # copilot-instructions.md準拠: モックデータ生成禁止
                 raise RuntimeError(
                     f"Failed to retrieve real market data for {symbol}. "
                     f"DATA_FETCHER_AVAILABLE is False. "
@@ -1950,31 +2208,40 @@ class DSSMSIntegratedBacktester:
                 )
                 
         except Exception as e:
+            self.logger.error(f"銘柄データ取得エラー ({symbol}): {e}")
             return None, None
     
     # _generate_mock_data() メソッドを削除
     # 理由: copilot-instructions.md違反
+    # 「モック/ダミー/テストデータを使用するフォールバック禁止」
+    # ランダムウォーク価格生成は実データと完全に乖離するため削除
     
-    # _calculate_position_update() メソッドを削除(December 19, 2025)
-    # 理由: 未使用メソッド(呼び出し箇所なし)
-    # 影響: なし(完全に未使用)
+    # _calculate_position_update() メソッドを削除（2025-12-19）
+    # 理由: 未使用メソッド（呼び出し箇所なし）
+    # Phase 1: DSSMS設計違反コード削除 - Stage 1
+    # 影響: なし（完全に未使用）
     
-    # 削除: _close_position()と_open_position()メソッド本体(Line 2113-2273, 160行)
+    # Phase 1: DSSMS設計違反コード削除 - Stage 3-3（2025-12-19）
+    # 削除: _close_position()と_open_position()メソッド本体（Line 2113-2273, 160行）
     # 削除理由: DSSMSが取引実行しない設計に準拠
+    #   - ポジション管理はPaperBrokerが担当
+    #   - 決済・新規ポジション開始はmain_new.pyの各戦略が実行
     #   - execution_details生成もmain_new.py側で実施
     # 代替:
     #   - 決済: main_new.pyのForceCloseStrategy
+    #   - 新規ポジション: 各戦略のエントリー判断
     # 影響: 呼び出し箇所はStage 3-2で全削除済みのため影響なし
     # 備考:
-    #   - Stage 3-1: _calculate_position_update()削除(116行,未使用)
-    #   - Stage 3-2: 銘柄切替時取引実行削除(39行)+ ForceClose呼び出し削除(57行)
-    #   - Stage 3-3: メソッド本体削除(160行,本削除)
+    #   - Stage 3-1: _calculate_position_update()削除（116行、未使用）
+    #   - Stage 3-2: 銘柄切替時取引実行削除（39行）+ ForceClose呼び出し削除（57行）
+    #   - Stage 3-3: メソッド本体削除（160行、本削除）
     
     def _check_risk_limits(self, daily_result: Dict[str, Any]) -> Dict[str, Any]:
         """リスク制限チェック"""
         try:
             risk_result = {'risk_violation': False}
             
+            # ドローダウンチェック
             current_drawdown = (self.portfolio_value - self.initial_capital) / self.initial_capital
             max_drawdown = self.performance_targets['max_drawdown_limit']
             
@@ -1993,22 +2260,25 @@ class DSSMSIntegratedBacktester:
     
     def _handle_risk_violation(self, risk_result: Dict[str, Any]) -> None:
         """リスク制限違反時の処理"""
-        # 削除: position_size半減処理(Line 2157-2158)
+        # Phase 1: DSSMS設計違反コード削除 - Stage 4-3（2025-12-19）
+        # 削除: position_size半減処理（Line 2157-2158）
+        # 削除理由: DSSMSはポジション管理しない設計（PaperBrokerが担当）
         # 代替: main_new.pyのリスク管理に移管
         try:
             violation_type = risk_result.get('violation_type')
             
             if violation_type == 'max_drawdown':
-                pass
+                # ドローダウン制限違反時の警告のみ（ポジション管理はPaperBrokerが担当）
+                self.logger.warning(f"ドローダウン制限違反 - リスク管理はmain_new.pyが担当")
                     
         except Exception as e:
-            # Error handling
-            pass
+            self.logger.error(f"リスク制限違反処理エラー: {e}")
     
     def _generate_final_results(self, execution_time: float, trading_days: int, 
                               successful_days: int) -> Dict[str, Any]:
         """最終結果生成"""
         try:
+            # P3-1: DSSMS集計エラー追跡ログ - 基本統計計算
             self.logger.info(f"[FINAL_STATS] 最終結果生成開始 (取引日数: {trading_days}, 成功日数: {successful_days})")
             
             # 基本統計
@@ -2025,9 +2295,11 @@ class DSSMSIntegratedBacktester:
             
             self.logger.info(
                 f"[FINAL_STATS] 基本統計計算完了 - "
+                f"総リターン: {total_return:,.0f}円 ({total_return_rate:.2%}), "
                 f"成功率: {success_rate:.2%}"
             )
             
+            # パフォーマンス統計
             daily_returns = [r.get('daily_return_rate', 0) for r in self.daily_results]
             
             if daily_returns:
@@ -2036,7 +2308,9 @@ class DSSMSIntegratedBacktester:
                 max_drawdown = min([r.get('daily_return_rate', 0) for r in self.daily_results])
                 
                 self.logger.info(
+                    f"[FINAL_STATS] パフォーマンス統計計算完了 - "
                     f"ボラティリティ: {volatility:.4f}, "
+                    f"シャープレシオ: {sharpe_ratio:.4f}, "
                     f"最大DD: {max_drawdown:.4f}"
                 )
             else:
@@ -2070,6 +2344,7 @@ class DSSMSIntegratedBacktester:
             self.logger.info(f"[FINAL_STATS] 最終結果生成完了 - SUCCESS")
             
             return {
+                'status': 'SUCCESS',  # E2Eテスト用ステータスキー追加
                 'execution_metadata': {
                     'start_date': self.daily_results[0]['date'] if self.daily_results else None,
                     'end_date': self.daily_results[-1]['date'] if self.daily_results else None,
@@ -2093,19 +2368,26 @@ class DSSMSIntegratedBacktester:
                 'switch_statistics': switch_stats,
                 'strategy_statistics': strategy_stats,
                 'performance_summary': self.performance_tracker.get_performance_summary() if self.performance_tracker else {
+                    'overall': {'status': 'トラッカー未初期化'},
                     'execution': {'average_time_ms': 0},
                     'reliability': {'success_rate': 0.0}
                 }
             }
             
+            # [LOG#2] 最終収益計算の内訳ログ
             self.logger.info(
                 f"[FINAL_REVENUE_BREAKDOWN] DSSMS最終結果 - "
                 f"取引日数: {trading_days}, 成功日数: {successful_days}, "
                 f"最終資産: {self.portfolio_value:,.0f}円, "
+                f"総リターン: {total_return:,.0f}円 ({total_return_rate:+.4%}), "
+                f"シャープレシオ: {sharpe_ratio:.3f}, 最大DD: {max_drawdown:.4f}"
             )
             
         except Exception as e:
+            self.logger.error(f"[FINAL_STATS] 最終結果生成エラー: {e}")
+            # エラー時でも基本情報は提供
             return {
+                'status': 'ERROR',  # E2Eテスト用エラーステータス
                 'error': str(e),
                 'execution_metadata': {
                     'start_date': self.daily_results[0]['date'] if self.daily_results else None,
@@ -2124,6 +2406,7 @@ class DSSMSIntegratedBacktester:
                 'daily_results': self.daily_results,
                 'switch_history': self.switch_history,
                 'performance_summary': {
+                    'overall': {'status': 'エラー'},
                     'execution': {'average_time_ms': 0},
                     'reliability': {'success_rate': 0.0}
                 }
@@ -2165,29 +2448,40 @@ class DSSMSIntegratedBacktester:
             return strategy_stats
             
         except Exception as e:
+            self.logger.error(f"戦略統計計算エラー: {e}")
             return {}
     
     def _rebuild_equity_curve(self, daily_results: List[Dict[str, Any]]) -> 'pd.DataFrame':
         """
-        Rebuild equity_curve DataFrame from daily_results (Phase 2 Priority 2: Design Doc 3.1.4 compliant)
+        daily_resultsからequity_curve DataFrameを再構築（Phase 2優先度2: 詳細設計書3.1.4準拠）
         
-        Generate 13-column equity_curve DataFrame for ComprehensiveReporter.
+        ComprehensiveReporter用に13カラムのequity_curve DataFrameを生成。
         
-        Modifications (December 8, 2025):
-        - Changed daily_pnl calculation to day-over-day difference (portfolio_value delta)
-        - Fixed issues discovered in Task 6 investigation
+        修正内容（2025-12-08）:
+        - daily_pnl計算を前日比（portfolio_value差分）に変更
+        - 修正理由: daily_returnは取引損益のみで、switch_costやポジション評価額変動を含まない
+        - Task 6調査で発見された問題の修正
         
         Args:
             daily_results: DSSMS日次結果リスト
         
         Returns:
+            pd.DataFrame: equity_curve（13カラム、dateインデックス）
         
         Columns:
-            - date: 日付(index)
+            - date: 日付（index）
+            - portfolio_value: ポートフォリオ総額
             - cash_balance: 現金残高
+            - position_value: ポジション評価額
+            - peak_value: ピーク値
+            - drawdown_pct: ドローダウン率
             - cumulative_pnl: 累積损益
-            - daily_pnl: 日次損益(前日比計算)
+            - daily_pnl: 日次損益（前日比計算）
             - total_trades: 総取引数
+            - active_positions: アクティブポジション数
+            - risk_status: リスクステータス
+            - blocked_trades: ブロックされた取引数
+            - risk_action: リスクアクション
         """
         try:
             import pandas as pd
@@ -2202,9 +2496,10 @@ class DSSMSIntegratedBacktester:
             for daily_result in daily_results:
                 current_portfolio_value = daily_result.get('portfolio_value_end', 0)
                 
-                # daily_pnl計算: 前日からのportfolio_value変化(全要素を含む)
-                # - 取引損益(daily_return)
+                # daily_pnl計算: 前日からのportfolio_value変化（全要素を含む）
+                # - 取引損益（daily_return）
                 # - switch_cost
+                # - ポジション評価額変動
                 daily_pnl = current_portfolio_value - previous_portfolio_value
                 
                 equity_data.append({
@@ -2227,29 +2522,34 @@ class DSSMSIntegratedBacktester:
             
             df = pd.DataFrame(equity_data)
             
+            # dateをdatetimeに変換してインデックス化
             if 'date' in df.columns:
                 df['date'] = pd.to_datetime(df['date'])
                 df.set_index('date', inplace=True)
             
-            self.logger.info(f"[REBUILD_EQUITY_CURVE] equity_curve再構築完了: {len(df)}行,13カラム")
+            self.logger.info(f"[REBUILD_EQUITY_CURVE] equity_curve再構築完了: {len(df)}行、13カラム")
             return df
             
         except Exception as e:
+            self.logger.error(f"[REBUILD_EQUITY_CURVE] equity_curve再構築エラー: {e}", exc_info=True)
             import pandas as pd
             return pd.DataFrame()
     
     def _generate_switch_history_csv(self, output_dir: Path) -> None:
         """
-        銘柄切替履歴CSV生成(Phase 2優先度5: 詳細設計書4.2.1準拠)
+        銘柄切替履歴CSV生成（Phase 2優先度5: 詳細設計書4.2.1準拠）
         
+        ユーザー確定カラム（5カラム）:
         - switch_date: 切替日
         - from_symbol: 前の銘柄
         - to_symbol: 新銘柄
         - reason: 切替理由
-        - switch_cost: コスト(金額)
+        - switch_cost: コスト（金額）
         
-        追加推奨カラム(3カラム):
+        追加推奨カラム（3カラム）:
         - ranking_score: DSS選択スコア
+        - portfolio_value_before: 切替前ポートフォリオ価値
+        - portfolio_value_after: 切替後ポートフォリオ価値
         
         Args:
             output_dir: 出力ディレクトリ
@@ -2281,45 +2581,53 @@ class DSSMSIntegratedBacktester:
             
             self.logger.info(
                 f"[SWITCH_HISTORY_CSV] switch_history.csv生成完了: "
-                f"{csv_path}, {len(df)}行,8カラム"
+                f"{csv_path}, {len(df)}行、8カラム"
             )
             
         except Exception as e:
-            # Error handling
-            pass
+            self.logger.error(f"[SWITCH_HISTORY_CSV] switch_history.csv生成エラー: {e}", exc_info=True)
     
     def _convert_to_execution_format(self, final_results: Dict[str, Any]) -> Dict[str, Any]:
         """
-        DSSMS結果をmain_new.py形式に変換(Phase 2優先度3: 詳細設計書3.1準拠)
-        修正案C: executed_price除外による重複除去実装(December 5, 2025)
+        DSSMS結果をmain_new.py形式に変換（Phase 2優先度3: 詳細設計書3.1準拠）
+        修正案C: executed_price除外による重複除去実装（2025-12-05）
         
-        ComprehensiveReporter.generate_full_backtest_report()の入力形式に変換.
+        ComprehensiveReporter.generate_full_backtest_report()の入力形式に変換。
         
         Args:
             final_results: DSSMS最終結果
         
         Returns:
-            Dict[str, Any]: main_new.py形式の実行結果(execution_results互換)
+            Dict[str, Any]: main_new.py形式の実行結果（execution_results互換）
         
-            - status: 'success' -> 'SUCCESS'
+        変換マッピング:
+            - status: 'success' → 'SUCCESS'
             - daily_results: execution_details統合 + 重複除去
             - total_return: total_portfolio_value計算
-            - strategy_weights: 固定値(DSSMS_MultiStrategy: 1.0)
+            - strategy_weights: 固定値（DSSMS_MultiStrategy: 1.0）
         
+        重複除去ロジック（修正案C）:
+            - ユニークキー: timestamp + action + symbol + strategy_name
+            - executed_price除外理由: スリッページにより価格が微妙に異なるため
+            - 必須フィールド検証: timestamp, action, symbol, executed_price > 0
+            - copilot-instructions.md準拠: フォールバック禁止、実データのみ
         """
         try:
+            # ステータス変換
             status = final_results.get('status', 'error')
             if status.lower() == 'success':
                 status = 'SUCCESS'
             elif status.lower() == 'error':
                 status = 'UNKNOWN'
             
+            # パフォーマンス統計
             portfolio_perf = final_results.get('portfolio_performance', {})
             initial_capital = portfolio_perf.get('initial_capital', 1000000)
             final_capital = portfolio_perf.get('final_capital', 1000000)
             total_return = final_capital - initial_capital
             
-            # execution_details統合 + 重複除去(修正案D: December 10, 2025 - 最終日のみ処理)
+            # execution_details統合 + 重複除去（修正案D: 2025-12-10 - 最終日のみ処理）
+            # 空配列ガード（copilot-instructions.md: 実データのみ）
             if not final_results.get('daily_results'):
                 self.logger.warning("[CONVERT_TO_EXECUTION_FORMAT] daily_results is empty")
                 return {
@@ -2340,7 +2648,7 @@ class DSSMSIntegratedBacktester:
                     'equity_recorder': None
                 }
             
-            # 全日処理(修正案1完全実装: December 14, 2025 - すべての日のexecution_detailsを収集)
+            # 全日処理（修正案1完全実装: 2025-12-14 - すべての日のexecution_detailsを収集）
             details = []
             for daily_result in final_results['daily_results']:
                 daily_execution_details = daily_result.get('execution_details', [])
@@ -2353,33 +2661,43 @@ class DSSMSIntegratedBacktester:
                 f"execution_details総数={len(details)}"
             )
             
+            # 各execution_detailsを重複チェックして追加（既存ロジック保持）
             all_execution_details = []
+            seen_keys = set()  # ユニークキー管理
+            duplicate_count = 0  # 重複カウント（ログ用）
+            skipped_invalid_count = 0  # 無効データカウント（ログ用）
             
             for detail_idx, detail in enumerate(details):
+                    # 必須フィールド取得（防御的プログラミング）
                     timestamp = detail.get('timestamp', '')
                     action = detail.get('action', '')
                     symbol = detail.get('symbol', '')
-                    # Note: detailは'executed_price'を使用('price'ではない)
+                    # Note: detailは'executed_price'を使用（'price'ではない）
                     price = detail.get('executed_price', 0.0)
                     quantity = detail.get('quantity', 0)
                     strategy_name = detail.get('strategy_name', '')
                     
+                    # [DEBUG_EXEC_DETAILS] 詳細ログ（既存ログ保持）
                     self.logger.info(
                         f"[DEBUG_EXEC_DETAILS]   detail[{detail_idx}]: "
                         f"action={action}, timestamp={timestamp}, "
                         f"price={price:.2f}, quantity={quantity}, symbol={symbol}, strategy={strategy_name}"
                     )
                     
+                    # 必須フィールド検証（copilot-instructions.md: 実データのみ）
                     if not all([timestamp, action, symbol, price > 0]):
                         skipped_invalid_count += 1
                         self.logger.warning(
                             f"[DEDUP_SKIP] 最終日, detail[{detail_idx}]: "
+                            f"必須フィールド欠損のためスキップ "
                             f"(timestamp={timestamp}, action={action}, symbol={symbol}, price={price})"
                         )
                         continue
                     
-                    # December 9, 2025修正: timestamp+action+symbol+strategyの組み合わせでは
+                    # ユニークキー生成（修正: order_id使用）
+                    # 2025-12-09修正: timestamp+action+symbol+strategyの組み合わせでは
                     # 同じ日付の同じ銘柄の複数取引が重複と誤判定される問題を修正
+                    # order_idはUUIDで確実に一意なため、重複除去キーとして最適
                     order_id = detail.get('order_id')
                     if not order_id:
                         skipped_invalid_count += 1
@@ -2402,12 +2720,15 @@ class DSSMSIntegratedBacktester:
                         )
                         continue
                     
+                    # ユニークな取引を追加
                     seen_keys.add(unique_key)
                     all_execution_details.append(detail)
             
+            # 重複除去結果のログ（copilot-instructions.md: 実際の数値を報告）
             self.logger.info(
                 f"[DEDUP_RESULT] execution_details重複除去完了: "
                 f"総件数={len(all_execution_details)}件, 重複除去={duplicate_count}件, "
+                f"無効データスキップ={skipped_invalid_count}件"
             )
             
             # main_new.py形式に変換
@@ -2420,26 +2741,27 @@ class DSSMSIntegratedBacktester:
                 'strategy_weights': {
                     'DSSMS_MultiStrategy': 1.0  # DSSMS単一戦略として扱う
                 },
-                'execution_results': [{  # ComprehensiveReporter互換形式(リスト化)
+                'execution_results': [{  # ComprehensiveReporter互換形式（リスト化）
                     'status': status,
                     'total_portfolio_value': final_capital,
                     'winning_trades': 0,  # 後でexecution_detailsから計算
                     'losing_trades': 0,
                     'execution_details': all_execution_details,  # Phase 2: 追加
-                    'backtest_signals': None  # equity_curve再構築に不要(configで渡す)
+                    'backtest_signals': None  # equity_curve再構築に不要（configで渡す）
                 }],
-                # equity_recorderモック(ComprehensiveReporterが使用)
+                # equity_recorderモック（ComprehensiveReporterが使用）
                 'equity_recorder': None  # _rebuild_equity_curve()で代替
             }
             
             self.logger.info(
-                f"[CONVERT_TO_EXECUTION_FORMAT] DSSMS->main_new.py変換完了: "
+                f"[CONVERT_TO_EXECUTION_FORMAT] DSSMS→main_new.py変換完了: "
                 f"status={status}, execution_details={len(all_execution_details)}件"
             )
             
             return execution_format
             
         except Exception as e:
+            self.logger.error(f"[CONVERT_TO_EXECUTION_FORMAT] 変換エラー: {e}", exc_info=True)
             return {
                 'status': 'ERROR',
                 'error': str(e),
@@ -2448,24 +2770,29 @@ class DSSMSIntegratedBacktester:
     
     def _generate_outputs(self, final_results: Dict[str, Any]) -> None:
         """
+        出力・レポート生成（Phase 2優先度4: ComprehensiveReporter統合版）
         
         出力先: output/dssms_integration/dssms_{timestamp}/
+        フォーマット: CSV+JSON+TXT（copilot-instructions.md準拠、Excel出力禁止）
         
         生成ファイル:
-        - dssms_portfolio_equity_curve.csv(13カラム)
-        - dssms_trades.csv(13カラム,DSSMS拡張版)
+        - dssms_portfolio_equity_curve.csv（13カラム）
+        - dssms_trades.csv（13カラム、DSSMS拡張版）
         - dssms_performance_summary.csv
-        - dssms_switch_history.csv(5+3カラム)
+        - dssms_switch_history.csv（5+3カラム）
+        - JSON/TXTレポート
         
-        Phase 3タスク1: 出力フォルダ統合対応(December 3, 2025)
+        Phase 3タスク1: 出力フォルダ統合対応（2025-12-03）
+        - ticker_symbolにタイムスタンプを含めることで単一フォルダに統合
         """
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             
-            # Phase 2: 出力先ディレクトリ設定(詳細設計書5.2準拠)
+            # Phase 2: 出力先ディレクトリ設定（詳細設計書5.2準拠）
             output_dir = Path(f"output/dssms_integration/dssms_{timestamp}")
             output_dir.mkdir(parents=True, exist_ok=True)
             
+            self.logger.info(f"[GENERATE_OUTPUTS] DSSMS統合レポート生成開始: {output_dir}")
             
             # Phase 2優先度4-1: ComprehensiveReporter使用準備
             # 1. DSSMS結果をmain_new.py形式に変換
@@ -2475,10 +2802,13 @@ class DSSMSIntegratedBacktester:
             daily_results = final_results.get('daily_results', [])
             equity_curve_df = self._rebuild_equity_curve(daily_results)
             
-            # 3. ComprehensiveReporter初期化(出力先をDSSMS専用ディレクトリに設定)
+            # 3. ComprehensiveReporter初期化（出力先をDSSMS専用ディレクトリに設定）
             from main_system.reporting.comprehensive_reporter import ComprehensiveReporter
             reporter = ComprehensiveReporter(output_base_dir=str(output_dir.parent))
             
+            # 4. 株価データ取得（最後の銘柄のデータを使用）
+            # NOTE: DSSMSは複数銘柄を切り替えるため、統合的な株価データは存在しない
+            # ComprehensiveReporterの要求に応えるため、実際のバックテスト期間でダミーDataFrameを生成
             import pandas as pd
             
             # daily_resultsから実際のバックテスト期間を取得
@@ -2491,8 +2821,10 @@ class DSSMSIntegratedBacktester:
                     'Volume': [0] * len(date_range)
                 }, index=date_range)
                 self.logger.info(
+                    f"[STOCK_DATA_DUMMY] 実期間データ生成: {start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}, {len(date_range)}日"
                 )
             else:
+                # copilot-instructions.md準拠: フォールバック禁止、RuntimeError送出
                 raise RuntimeError(
                     f"Failed to generate stock_data for ComprehensiveReporter: daily_results is empty. "
                     f"Cannot proceed without actual backtest data. "
@@ -2500,11 +2832,15 @@ class DSSMSIntegratedBacktester:
                 )
             
             # 5. ComprehensiveReporter呼び出し
+            # Phase 3タスク1修正: タイムスタンプを含むticker_symbolで単一フォルダに統合
+            ticker_symbol = 'dssms'  # Phase 3タスク1修正: タイムスタンプ除去（ComprehensiveReporterが{ticker}_{timestamp}形式で生成するため）
             
+            # Task 2修正案C: タイムスタンプを明示的に渡して単一フォルダに統合
             report_result = reporter.generate_full_backtest_report(
                 execution_results=execution_format,
                 stock_data=stock_data_dummy,
                 ticker=ticker_symbol,
+                timestamp=timestamp,  # 修正案C: 既存のタイムスタンプを渡す
                 config={
                     'output_dir': str(output_dir),
                     'equity_curve': equity_curve_df  # 再構築したequity_curveを渡す
@@ -2519,6 +2855,7 @@ class DSSMSIntegratedBacktester:
             # Phase 2優先度5: switch_history.csv生成
             self._generate_switch_history_csv(output_dir)
             
+            # 既存のDSSMS独自レポート生成（JSON形式）
             report_data = {
                 'backtest_results': final_results,
                 'performance_data': final_results.get('performance_summary', {}),
@@ -2535,18 +2872,20 @@ class DSSMSIntegratedBacktester:
                 with open(report_path, 'w', encoding='utf-8') as f:
                     json.dump(report_data, f, indent=2, ensure_ascii=False, default=str)
             
+            self.logger.info(f"[GENERATE_OUTPUTS] DSSMS独自レポート生成完了: {report_path}")
             
         except Exception as e:
-            # Error handling
-            pass
+            self.logger.error(f"[GENERATE_OUTPUTS] 出力生成エラー: {e}", exc_info=True)
     
     def _load_default_config(self) -> Dict[str, Any]:
         """デフォルト設定読み込み"""
         return {
             'initial_capital': 1000000,
+            'switch_cost_rate': 0.001,
             'symbol_switch': {
                 'min_holding_days': 1,
                 'max_switches_per_month': 10,
+                'switch_cost_rate': 0.001
             },
             'data_cache': {
                 'cache_size_mb': 100,
@@ -2565,6 +2904,7 @@ class DSSMSIntegratedBacktester:
     def get_system_status(self) -> Dict[str, Any]:
         """システム状態取得"""
         try:
+            # 動的にコンポーネントの可用性をチェック
             dss_available = self._check_dss_availability()
             risk_available = self._check_risk_management_availability()
             data_available = self._check_data_fetcher_availability()
@@ -2572,7 +2912,7 @@ class DSSMSIntegratedBacktester:
             return {
                 'current_symbol': self.current_symbol,
                 'portfolio_value': self.portfolio_value,
-                # Phase 1 Stage 4-2: position_size削除(December 19, 2025)
+                # Phase 1 Stage 4-2: position_size削除（2025-12-19）
                 'daily_results_count': len(self.daily_results),
                 'switch_history_count': len(self.switch_history),
                 'dss_available': dss_available,
@@ -2600,7 +2940,9 @@ class DSSMSIntegratedBacktester:
             return False
     
     def _check_data_fetcher_availability(self) -> bool:
+        """データ取得可用性チェック"""
         try:
+            # yfinanceまたはデータ取得機能のチェック
             import yfinance
             return True
         except ImportError:
@@ -2608,27 +2950,33 @@ class DSSMSIntegratedBacktester:
     
     def _prepare_market_data_for_analysis(self, symbols: List[str], target_date: datetime) -> Optional[Dict[str, Any]]:
         """
+        AdvancedRankingEngine分析用市場データ準備 (TODO-DSSMS-004.1)
         
         Args:
             symbols: 対象銘柄リスト
             target_date: 対象日付
             
         Returns:
+            Optional[Dict[str, Any]]: 銘柄別市場データ辞書
         """
         try:
             market_data = {}
             
             for symbol in symbols:
+                # 既存のデータ取得メソッドを使用
                 stock_data, _ = self._get_symbol_data(symbol, target_date)
                 if stock_data is not None and not stock_data.empty:
                     market_data[symbol] = stock_data
                     
             if len(market_data) > 0:
+                self.logger.info(f"市場データ準備完了: {len(market_data)}/{len(symbols)}銘柄")
                 return market_data
             else:
+                self.logger.warning("市場データ取得失敗: 利用可能なデータがありません")
                 return None
                 
         except Exception as e:
+            self.logger.error(f"市場データ準備エラー: {e}")
             return None
     
     def _run_advanced_analysis_sync(self, symbols: List[str], market_data: Dict[str, Any], 
@@ -2639,18 +2987,23 @@ class DSSMSIntegratedBacktester:
         
         Args:
             symbols: 対象銘柄リスト  
+            market_data: 市場データ辞書
+            analysis_params: 分析パラメータ（統合最適化用）
             
         Returns:
+            Optional[List[Any]]: ランキング分析結果リスト
         """
         try:
             import asyncio
             
+            # 新しいイベントループを作成（必要な場合）
             try:
                 loop = asyncio.get_event_loop()
             except RuntimeError:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
             
+            # 分析パラメータ設定（統合最適化対応）
             if analysis_params is None:
                 analysis_params = {
                     'analysis_depth': 'comprehensive',
@@ -2660,6 +3013,8 @@ class DSSMSIntegratedBacktester:
             
             # TODO-DSSMS-004.2: 基盤結果統合処理
             if analysis_params.get('base_ranking_results') and analysis_params.get('reuse_calculations'):
+                # 基盤結果がある場合は重複計算回避モードで実行
+                self.logger.info(f"[ROCKET] 統合最適化分析実行: 基盤結果再利用モード")
                 analysis_params['optimization_mode'] = 'integrated'
                 analysis_params['base_calculations_reuse'] = True
             
@@ -2674,17 +3029,18 @@ class DSSMSIntegratedBacktester:
             return ranking_results
             
         except Exception as e:
+            self.logger.error(f"高度分析同期実行エラー: {e}")
             return None
     
     def _select_best_symbol_from_ranking(self, ranking_results: List[Any]) -> Optional[str]:
         """
-        Select best symbol from AdvancedRankingEngine results.
+        ランキング結果から最優秀銘柄を選択 (TODO-DSSMS-004.1)
         
         Args:
-            ranking_results: Analysis results from AdvancedRankingEngine
+            ranking_results: AdvancedRankingEngineからの分析結果
             
         Returns:
-            str: Best symbol code or None if no valid results
+            Optional[str]: 最優秀銘柄コード
         """
         try:
             if not ranking_results or len(ranking_results) == 0:
@@ -2709,6 +3065,7 @@ class DSSMSIntegratedBacktester:
                         best_result = symbol
                         
                 except Exception as e:
+                    self.logger.warning(f"結果解析エラー: {e}")
                     continue
             
             if best_result:
@@ -2719,21 +3076,28 @@ class DSSMSIntegratedBacktester:
                 return None
                 
         except Exception as e:
+            self.logger.error(f"最優秀銘柄選択エラー: {e}")
             return None
 
 
 def main():
+    """DSSMS統合バックテスター テスト実行"""
+    # コマンドライン引数パーサー設定
+    parser = argparse.ArgumentParser(description='DSSMS統合バックテスター')
     parser.add_argument('--start-date', type=str, help='開始日 (YYYY-MM-DD形式)', default='2023-01-01')
-    parser.add_argument('--end-date', type=str, help='終了日 (YYYY-MM-DD形式)', default='December 31, 2023')
+    parser.add_argument('--end-date', type=str, help='終了日 (YYYY-MM-DD形式)', default='2023-12-31')
     args = parser.parse_args()
     
+    print("DSSMS統合バックテスター テスト実行")
     print("=" * 60)
     
     try:
         # 1. 初期化テスト
+        print("[START] DSSMS統合バックテスター初期化テスト:")
         
         config = {
             'initial_capital': 1000000,
+            'switch_cost_rate': 0.001,
             'symbol_switch': {
                 'min_holding_days': 2,
                 'max_switches_per_month': 8
@@ -2749,31 +3113,37 @@ def main():
         print(f"[SUCCESS] システム状態取得成功:")
         print(f"  - DSS Core V3: {'利用可能' if status['dss_available'] else '使用不可'}")
         print(f"  - リスク管理: {'利用可能' if status['risk_management_available'] else '使用不可'}")
+        print(f"  - データ取得: {'利用可能' if status['data_fetcher_available'] else '使用不可'}")
         print(f"  - 初期資本: {status['portfolio_value']:,.0f}円")
         
         # 3. カスタム期間バックテストテスト
         print(f"\n[BACKTEST] カスタム期間バックテストテスト:")
         
+        # 期間設定（コマンドライン引数または デフォルト値）
         try:
             start_date = datetime.strptime(args.start_date, '%Y-%m-%d')
             end_date = datetime.strptime(args.end_date, '%Y-%m-%d')
         except ValueError as e:
+            print(f"[ERROR] 日付形式エラー: {e}")
             print("正しい形式: YYYY-MM-DD (例: 2023-01-01)")
             return
-        target_symbols = None  # 全銘柄(日経225自動選択)
+        target_symbols = None  # 全銘柄（日経225自動選択）
         
         results = backtester.run_dynamic_backtest(start_date, end_date, target_symbols)
         
+        # エラー結果チェック
         if 'error' in results:
+            print(f"[ERROR] バックテスト実行エラー: {results['error']}")
             print(f"  - 生成時刻: {results['execution_metadata'].get('generated_at', 'N/A')}")
             return
         
         print(f"[SUCCESS] バックテスト実行成功:")
         
+        # 安全なキーアクセス
         exec_meta = results.get('execution_metadata', {})
         portfolio_perf = results.get('portfolio_performance', {})
         
-        print(f"  - 実行期間: {exec_meta.get('start_date', 'N/A')} -> {exec_meta.get('end_date', 'N/A')}")
+        print(f"  - 実行期間: {exec_meta.get('start_date', 'N/A')} → {exec_meta.get('end_date', 'N/A')}")
         print(f"  - 取引日数: {exec_meta.get('trading_days', 0)}日")
         print(f"  - 成功日数: {exec_meta.get('successful_days', 0)}日")
         
@@ -2785,9 +3155,12 @@ def main():
         switch_history = results.get('switch_history', [])
         print(f"  - 銘柄切替: {len(switch_history)}回")
         
+        # 4. パフォーマンス確認（安全アクセス）
         perf_summary = results.get('performance_summary', {})
+        print(f"\n[PERFORMANCE] パフォーマンス確認:")
         
         if perf_summary:
+            overall_status = perf_summary.get('overall', {}).get('status', 'データなし')
             exec_time = perf_summary.get('execution', {}).get('average_time_ms', 0)
             reliability = perf_summary.get('reliability', {}).get('success_rate', 0)
             
@@ -2795,17 +3168,15 @@ def main():
             print(f"  - 平均実行時間: {exec_time:.0f}ms")
             print(f"  - システム信頼性: {reliability:.1%}")
         else:
-            pass
+            print(f"  - パフォーマンス詳細データなし")
         
+        print(f"\n[COMPLETE] DSSMS統合バックテスター テスト完了！")
+        print(f"[FEATURES] 統合機能: DSS動的選択、マルチ戦略実行、銘柄切替、リスク管理、レポート生成")
         
     except Exception as e:
+        print(f"[ERROR] テスト実行エラー: {e}")
         import traceback
         traceback.print_exc()
-
-
-def main():
-    """Main function placeholder."""
-    pass
 
 
 if __name__ == "__main__":

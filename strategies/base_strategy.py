@@ -420,8 +420,27 @@ class BaseStrategy:
                 current_date = pd.Timestamp(current_date)
             
             # 一時的にself.dataを更新（既存backtest()との互換性のため）
-            original_data = self.data
-            self.data = stock_data.copy()
+            # Option B実装: インジケーター保持しつつ基本データのみ更新
+            original_data = self.data.copy()
+            
+            # 基本データ（価格・ボリューム）のみ更新、インジケーター保持
+            basic_columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+            updated_columns = []
+            
+            for col in basic_columns:
+                if col in stock_data.columns and col in self.data.columns:
+                    # インデックスが一致する部分のみ安全に更新
+                    common_index = self.data.index.intersection(stock_data.index)
+                    if len(common_index) > 0:
+                        self.data.loc[common_index, col] = stock_data.loc[common_index, col]
+                        updated_columns.append(col)
+            
+            # デバッグログ: データ更新状況
+            self.logger.debug(
+                f"[backtest_daily] Option B data update: "
+                f"updated_columns={updated_columns}, "
+                f"common_dates={len(self.data.index.intersection(stock_data.index)) if len(updated_columns) > 0 else 0}"
+            )
             
             # 単日バックテスト実行（current_date のみを対象）
             trading_start_date = current_date
