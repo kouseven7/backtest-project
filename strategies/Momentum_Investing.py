@@ -547,6 +547,237 @@ class MomentumInvestingStrategy(BaseStrategy):
         
         return info
 
+    def backtest_daily(self, current_date, stock_data, existing_position=None):
+        """
+        MomentumInvestingStrategy 日次バックテスト実行
+        
+        Phase 3-B Step B3実装: Momentum戦略での実証実装
+        
+        Parameters:
+            current_date (datetime): 判定対象日
+            stock_data (pd.DataFrame): 最新の株価データ
+            existing_position (dict, optional): 既存ポジション情報
+                {
+                    'symbol': str,           # 保有銘柄コード
+                    'quantity': int,         # 保有株数
+                    'entry_price': float,    # エントリー価格
+                    'entry_date': datetime,  # エントリー日
+                    'entry_idx': int         # エントリー時のインデックス（オプション）
+                }
+                
+        Returns:
+            dict: {
+                'action': 'entry'|'exit'|'hold',
+                'signal': 1|-1|0,
+                'price': float,
+                'shares': int,
+                'reason': str
+            }
+            
+        実装内容:
+        1. current_dateのindexを特定
+        2. ウォームアップ期間考慮（150日）
+        3. 前日データのみでMomentumインジケーター計算（shift(1)適用済み）
+        4. エントリー/エグジット判定（ルックアヘッドバイアス防止）
+        5. 翌日始値エントリー/エグジット価格設定
+        
+        copilot-instructions.md遵守:
+        - バックテスト実行必須
+        - フォールバック禁止（実データのみ使用）
+        - ルックアヘッドバイアス防止3原則
+        """
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
+        # Phase 1: current_dateの型変換・検証
+        if isinstance(current_date, str):
+            current_date = pd.Timestamp(current_date)
+        elif not isinstance(current_date, pd.Timestamp):
+            current_date = pd.Timestamp(current_date)
+            
+        # Phase 2: データ整合性チェック
+        if current_date not in stock_data.index:
+            return {
+                'action': 'hold',
+                'signal': 0,
+                'price': 0.0,
+                'shares': 0,
+                'reason': f'MomentumInvesting: No data available for {current_date.strftime("%Y-%m-%d")}'
+            }
+            
+        # Phase 3: ウォームアップ期間考慮（150日推奨）
+        current_idx = stock_data.index.get_loc(current_date)
+        warmup_period = 150  # copilot-instructions.mdで推奨される値
+        
+        # Momentum戦略の最小要求期間も考慮
+        min_required = max(warmup_period, self.params.get("sma_long", 50))
+        
+        if current_idx < min_required:
+            return {
+                'action': 'hold',
+                'signal': 0,
+                'price': 0.0,
+                'shares': 0,
+                'reason': f'MomentumInvesting: Insufficient warmup data. Required: {min_required}, Available: {current_idx}'
+            }
+        
+        # Phase 4: データ更新（Option B方式を活用）
+        # 既存のself.dataを一時保存
+        original_data = self.data.copy()
+        
+        try:
+            # BaseStrategy.backtest_daily()の Option B ロジックを活用
+            basic_columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+            updated_columns = []
+            
+            for col in basic_columns:
+                if col in stock_data.columns and col in self.data.columns:
+                    # インデックスが一致する部分のみ安全に更新
+                    common_index = self.data.index.intersection(stock_data.index)
+                    if len(common_index) > 0:
+                        self.data.loc[common_index, col] = stock_data.loc[common_index, col]
+                        updated_columns.append(col)
+            
+            logger.debug(f"[MomentumInvesting.backtest_daily] Data updated: {updated_columns}")
+            
+            # Phase 5: 既存ポジション処理分岐
+            if existing_position is not None:
+                # 【既存ポジションあり: エグジット判定】
+                # エントリーインデックスの取得
+                entry_idx = existing_position.get('entry_idx', current_idx)
+                
+                # entry_pricesに記録（エグジット判定で使用）
+                if entry_idx not in self.entry_prices:
+                    self.entry_prices[entry_idx] = existing_position.get('entry_price', 0.0)
+                
+                # 最終日チェック
+                if current_idx + 1 >= len(stock_data):
+                    exit_price = stock_data.iloc[current_idx]['Close']
+                    logger.warning(f"[MomentumInvesting.exit] Final day exit: {current_date}")
+                    
+                    return {
+                        'action': 'exit',
+                        'signal': -1,
+                        'price': float(exit_price),
+                        'shares': existing_position.get('quantity', 0),
+                        'reason': f'MomentumInvesting: Final day exit on {current_date.strftime("%Y-%m-%d")}'
+                    }
+                
+                # エグジット判定（簡易実装: entry_prices辞書を使用）
+                entry_price = self.entry_prices[entry_idx]
+                current_price_idx = stock_data.iloc[current_idx + 1]['Open']
+                if isinstance(current_price_idx, pd.Series):
+                    current_price_idx = current_price_idx.values[0]
+                
+                # 簡易エグジット条件（ATRストップロス・利益確定・トレーリングストップ）
+                # ATRベースのストップロス
+                if 'ATR' in self.data.columns:
+                    atr = self.data['ATR'].iloc[entry_idx]
+                    atr_multiple = self.params.get("atr_multiple", 2.0)
+                    atr_stop_loss = entry_price - (atr * atr_multiple)
+                    if current_price_idx <= atr_stop_loss:
+                        logger.info(f"[MomentumInvesting] ATR stop loss: {current_date}")
+                        exit_price = current_price_idx * (1 - self.params.get("slippage", 0.001) - self.params.get("transaction_cost", 0.0))
+                        return {
+                            'action': 'exit',
+                            'signal': -1,
+                            'price': float(exit_price),
+                            'shares': existing_position.get('quantity', 0),
+                            'reason': f'MomentumInvesting: ATR stop loss on {current_date.strftime("%Y-%m-%d")}'
+                        }
+                
+                # 利益確定
+                if current_price_idx >= entry_price * (1 + self.params["take_profit"]):
+                    logger.info(f"[MomentumInvesting] Take profit: {current_date}")
+                    exit_price = current_price_idx * (1 - self.params.get("slippage", 0.001) - self.params.get("transaction_cost", 0.0))
+                    return {
+                        'action': 'exit',
+                        'signal': -1,
+                        'price': float(exit_price),
+                        'shares': existing_position.get('quantity', 0),
+                        'reason': f'MomentumInvesting: Take profit on {current_date.strftime("%Y-%m-%d")}'
+                    }
+                
+                # 最大保有期間
+                max_hold_days = self.params.get("max_hold_days", 15)
+                days_held = current_idx - entry_idx
+                if days_held >= max_hold_days:
+                    logger.info(f"[MomentumInvesting] Max holding period: {days_held} days")
+                    exit_price = current_price_idx * (1 - self.params.get("slippage", 0.001) - self.params.get("transaction_cost", 0.0))
+                    return {
+                        'action': 'exit',
+                        'signal': -1,
+                        'price': float(exit_price),
+                        'shares': existing_position.get('quantity', 0),
+                        'reason': f'MomentumInvesting: Max holding period ({days_held} days) on {current_date.strftime("%Y-%m-%d")}'
+                    }
+                
+                # ホールド
+                return {
+                    'action': 'hold',
+                    'signal': 0,
+                    'price': 0.0,
+                    'shares': existing_position.get('quantity', 0),
+                    'reason': f'MomentumInvesting: Holding position from {current_date.strftime("%Y-%m-%d")}'
+                }
+            else:
+                # 【既存ポジションなし: エントリー判定】
+                entry_signal = self.generate_entry_signal(current_idx)
+                
+                if entry_signal == 1:
+                    if current_idx + 1 < len(stock_data):
+                        entry_price = stock_data.iloc[current_idx + 1]['Open']
+                        if isinstance(entry_price, pd.Series):
+                            entry_price = entry_price.values[0]
+                        
+                        slippage = self.params.get("slippage", 0.001)
+                        transaction_cost = self.params.get("transaction_cost", 0.0)
+                        entry_price = entry_price * (1 + slippage + transaction_cost)
+                        
+                        # ポジションサイズ計算
+                        target_amount = self.params.get("position_amount", 100000)
+                        shares = int(target_amount / entry_price) if entry_price > 0 else 0
+                        shares = max(100, shares // 100 * 100)
+                        
+                        return {
+                            'action': 'entry',
+                            'signal': 1,
+                            'price': float(entry_price),
+                            'shares': shares,
+                            'reason': f'MomentumInvesting: Entry signal detected on {current_date.strftime("%Y-%m-%d")}'
+                        }
+                    else:
+                        return {
+                            'action': 'hold',
+                            'signal': 0,
+                            'price': 0.0,
+                            'shares': 0,
+                            'reason': f'MomentumInvesting: Cannot enter on final day: {current_date.strftime("%Y-%m-%d")}'
+                        }
+                else:
+                    return {
+                        'action': 'hold',
+                        'signal': 0,
+                        'price': 0.0,
+                        'shares': 0,
+                        'reason': f'MomentumInvesting: No entry signal on {current_date.strftime("%Y-%m-%d")}'
+                    }
+        
+        except Exception as e:
+            logger.error(f"[MomentumInvesting.backtest_daily] Error: {e}", exc_info=True)
+            return {
+                'action': 'hold',
+                'signal': 0,
+                'price': 0.0,
+                'shares': 0,
+                'reason': f'MomentumInvesting: Error: {str(e)}'
+            }
+        
+        finally:
+            # データの復元
+            self.data = original_data
+
 
 # テストコード
 if __name__ == "__main__":

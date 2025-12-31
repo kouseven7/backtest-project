@@ -359,6 +359,166 @@ class DSSMSIntegratedBacktester:
             # Cache warming error handling
             pass
     
+    def _normalize_stock_data_structure(self, stock_data: 'pd.DataFrame', symbol: str) -> 'pd.DataFrame':
+        """
+        株価データ構造の正規化（Phase 3-B Step B1）
+        
+        yfinanceのMultiIndex構造をフラットなDataFrameに変換し、
+        VWAPBreakoutStrategy等の戦略が期待する形式に統一する。
+        
+        Args:
+            stock_data (pd.DataFrame): 元データ（MultiIndex可能性あり）
+            symbol (str): 銘柄コード
+            
+        Returns:
+            pd.DataFrame: 正規化されたデータ
+                - Columns: ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+                - Index: DatetimeIndex
+                
+        copilot-instructions.md遵守:
+        - 実データのみ使用（フォールバック禁止）
+        - データ品質保証
+        
+        Author: Backtest Project Team
+        Created: 2025-12-31
+        """
+        import pandas as pd
+        
+        # データのコピーを作成（元データへの影響防止）
+        normalized_data = stock_data.copy()
+        
+        self.logger.debug(f"[NORMALIZE] 入力データ構造: columns={list(stock_data.columns)}, shape={stock_data.shape}")
+        
+        # MultiIndex構造のフラット化
+        if isinstance(normalized_data.columns, pd.MultiIndex):
+            self.logger.info(f"[NORMALIZE] MultiIndex検出 → フラット化実行")
+            
+            # タプル形式のカラム名をフラットに変換
+            flat_columns = []
+            for col in normalized_data.columns:
+                if isinstance(col, tuple):
+                    # ('Adj Close', '9101.T') → 'Adj Close'
+                    flat_columns.append(col[0])
+                else:
+                    flat_columns.append(col)
+            
+            normalized_data.columns = flat_columns
+            self.logger.info(f"[NORMALIZE] フラット化完了: columns={list(normalized_data.columns)}")
+        
+        # 必須カラムの存在確認
+        required_columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+        missing_columns = [col for col in required_columns if col not in normalized_data.columns]
+        
+        if missing_columns:
+            self.logger.warning(f"[NORMALIZE] 不足カラム検出: {missing_columns}")
+            
+            # 'Adj Close'がなく'Close'がある場合は補完（copilot-instructions.md: 限定的フォールバック）
+            if 'Adj Close' in missing_columns and 'Close' in normalized_data.columns:
+                normalized_data['Adj Close'] = normalized_data['Close']
+                self.logger.info(f"[NORMALIZE] 'Adj Close'を'Close'で補完")
+                missing_columns.remove('Adj Close')
+            
+            # その他のカラムが不足している場合はエラー
+            if missing_columns:
+                raise ValueError(f"Required columns missing: {missing_columns}. Available: {list(normalized_data.columns)}")
+        
+        # データ型の確認・調整
+        for col in ['Open', 'High', 'Low', 'Close', 'Adj Close']:
+            if col in normalized_data.columns:
+                if not pd.api.types.is_numeric_dtype(normalized_data[col]):
+                    self.logger.warning(f"[NORMALIZE] カラム'{col}'の型変換: {normalized_data[col].dtype} → float64")
+                    try:
+                        normalized_data[col] = pd.to_numeric(normalized_data[col], errors='coerce')
+                    except Exception as e:
+                        self.logger.error(f"[NORMALIZE] カラム'{col}'の型変換失敗: {e}")
+                        raise ValueError(f"Failed to convert column '{col}' to numeric")
+        
+        # インデックスがDatetimeIndexか確認
+        if not isinstance(normalized_data.index, pd.DatetimeIndex):
+            self.logger.warning(f"[NORMALIZE] インデックスがDatetimeIndexではない: {type(normalized_data.index)}")
+            try:
+                normalized_data.index = pd.to_datetime(normalized_data.index)
+                self.logger.info(f"[NORMALIZE] インデックスをDatetimeIndexに変換")
+            except Exception as e:
+                self.logger.error(f"[NORMALIZE] インデックス変換失敗: {e}")
+                raise ValueError(f"Failed to convert index to DatetimeIndex: {e}")
+        
+        self.logger.info(f"[NORMALIZE] データ正規化完了: shape={normalized_data.shape}, columns={list(normalized_data.columns)}")
+        return normalized_data
+    
+    def _adjust_to_business_day(self, target_date: 'datetime', stock_data: 'pd.DataFrame') -> 'datetime':
+        """
+        業務日への調整（Phase 3-B Step B1）
+        
+        target_dateが休日・土日・データ範囲外の場合、
+        最寄りの業務日（株式市場営業日）に調整する。
+        
+        Args:
+            target_date (datetime): 対象日
+            stock_data (pd.DataFrame): 株価データ（範囲確認用）
+            
+        Returns:
+            datetime: 調整後の業務日
+            
+        copilot-instructions.md遵守:
+        - 実データ範囲内での調整（フォールバック禁止）
+        - 決定論保証（同じ入力で同じ出力）
+        
+        Author: Backtest Project Team
+        Created: 2025-12-31
+        """
+        import pandas as pd
+        from datetime import timedelta
+        
+        target_timestamp = pd.Timestamp(target_date)
+        
+        # データ範囲内に存在する場合はそのまま返す
+        if target_timestamp in stock_data.index:
+            self.logger.debug(f"[ADJUST_DATE] target_dateがデータ内に存在: {target_timestamp.strftime('%Y-%m-%d')}")
+            return target_timestamp.to_pydatetime()
+        
+        self.logger.info(f"[ADJUST_DATE] target_dateがデータ範囲外: {target_timestamp.strftime('%Y-%m-%d')}")
+        
+        # 過去方向に最大10日間検索（業務日を優先）
+        for days_back in range(10):
+            candidate = target_timestamp - timedelta(days=days_back)
+            
+            # データ範囲内かつ平日（月〜金）の条件を満たす
+            if candidate in stock_data.index and candidate.weekday() < 5:
+                adjusted_date = candidate.to_pydatetime()
+                self.logger.info(f"[ADJUST_DATE] 業務日調整成功 (過去方向): {target_timestamp.strftime('%Y-%m-%d')} → {adjusted_date.strftime('%Y-%m-%d')}")
+                return adjusted_date
+        
+        # 未来方向に最大5日間検索（過去で見つからない場合）
+        for days_forward in range(1, 6):
+            candidate = target_timestamp + timedelta(days=days_forward)
+            
+            if candidate in stock_data.index and candidate.weekday() < 5:
+                adjusted_date = candidate.to_pydatetime()
+                self.logger.info(f"[ADJUST_DATE] 業務日調整成功 (未来方向): {target_timestamp.strftime('%Y-%m-%d')} → {adjusted_date.strftime('%Y-%m-%d')}")
+                return adjusted_date
+        
+        # 最後の手段: データ範囲内の最も近い日を選択（曜日不問）
+        data_dates = stock_data.index
+        if len(data_dates) > 0:
+            # 過去方向で最も近い日
+            past_dates = data_dates[data_dates <= target_timestamp]
+            if len(past_dates) > 0:
+                closest_past = past_dates[-1].to_pydatetime()
+                self.logger.warning(f"[ADJUST_DATE] 最終調整 (過去): {target_timestamp.strftime('%Y-%m-%d')} → {closest_past.strftime('%Y-%m-%d')}")
+                return closest_past
+            
+            # 未来方向で最も近い日
+            future_dates = data_dates[data_dates >= target_timestamp]
+            if len(future_dates) > 0:
+                closest_future = future_dates[0].to_pydatetime()
+                self.logger.warning(f"[ADJUST_DATE] 最終調整 (未来): {target_timestamp.strftime('%Y-%m-%d')} → {closest_future.strftime('%Y-%m-%d')}")
+                return closest_future
+        
+        # 調整不可能な場合は元の日付を返す
+        self.logger.error(f"[ADJUST_DATE] 業務日調整失敗: {target_timestamp.strftime('%Y-%m-%d')}")
+        return target_timestamp.to_pydatetime()
+    
     def run_dynamic_backtest(self, start_date: datetime, end_date: datetime,
                            target_symbols: Optional[List[str]] = None) -> Dict[str, Any]:
         """
@@ -1488,6 +1648,7 @@ class DSSMSIntegratedBacktester:
         Args:
             symbol: 対象銘柄
             target_date: 対象日付
+            force_close_on_entry: 銘柄切替時のForceClose要求フラグ
         
         Returns:
             Dict[str, Any]: 戦略実行結果
@@ -1498,11 +1659,11 @@ class DSSMSIntegratedBacktester:
                 self.logger.warning(f"[DSSMS_FORCE_CLOSE_SUPPRESS] ForceClose実行中のため戦略評価をスキップ: symbol={symbol}, date={target_date.strftime('%Y-%m-%d')}")
                 return {
                     'status': 'skipped',
-                    'reason': 'force_close_in_progress',
                     'symbol': symbol,
-                    'date': target_date.strftime('%Y-%m-%d')
+                    'target_date': target_date
                 }
             
+            # 1. force_close_on_entry処理
             if force_close_on_entry:
                 self.logger.info(
                     f"[DSSMS_FORCE_CLOSE_REQUEST] 銘柄切替によるForceClose要求: "
@@ -1621,11 +1782,187 @@ class DSSMSIntegratedBacktester:
             return self._convert_main_new_result(result, symbol, target_date)
             
         except Exception as e:
+            self.logger.error(f"_execute_multi_strategies error: {e}")
             return {
                 'status': 'error',
                 'error': str(e),
                 'symbol': symbol,
                 'date': target_date.strftime('%Y-%m-%d')
+            }
+
+    def _execute_multi_strategies_daily(self, target_date: datetime, symbol: str, stock_data) -> Dict[str, Any]:
+        """
+        Phase 3-B 改善版統合実行 - データ構造問題修正・休日判定改善
+        
+        DSSMS日次判断とマルチ戦略の統合実行システム。
+        Phase 3-B改善: データ構造変換処理・休日業務日調整を追加。
+        
+        Args:
+            target_date (datetime): 判定対象日
+            symbol (str): 対象銘柄コード
+            stock_data (pd.DataFrame): 株価データ（ウォームアップ期間含む）
+            
+        Returns:
+            Dict[str, Any]: {
+                'status': 'success'|'error'|'hold',
+                'strategy_name': str,
+                'action': 'entry'|'exit'|'hold',
+                'signal': int,
+                'price': float,
+                'shares': int,
+                'reason': str,
+                'execution_timestamp': datetime,
+                'target_date': datetime,
+                'symbol': str,
+                'adjusted_target_date': datetime  # Phase 3-B: 業務日調整後の日付
+            }
+            
+        Raises:
+            None: エラーは内部で処理し、結果に含める
+            
+        copilot-instructions.md遵守:
+        - バックテスト実行必須: strategy.backtest_daily()の実際実行
+        - フォールバック禁止: 実データのみ使用
+        - ルックアヘッドバイアス防止: 戦略内で前日データ判定
+        
+        Author: Backtest Project Team
+        Created: 2025-12-31
+        Modified: 2025-12-31 (Phase 3-B改善)
+        """
+        execution_start = time.time()
+        
+        try:
+            self.logger.info(f"[PHASE3-B-B1] _execute_multi_strategies_daily開始: symbol={symbol}, target_date={target_date.strftime('%Y-%m-%d')}")
+            
+            # Phase 3-B Step B1: データ構造変換処理
+            processed_data = self._normalize_stock_data_structure(stock_data, symbol)
+            
+            # Phase 3-B Step B1: 休日判定・業務日調整
+            adjusted_target_date = self._adjust_to_business_day(target_date, processed_data)
+            
+            if adjusted_target_date != target_date:
+                self.logger.info(f"[PHASE3-B-B1] 業務日調整: {target_date.strftime('%Y-%m-%d')} → {adjusted_target_date.strftime('%Y-%m-%d')}")
+            
+            # Phase 3-A MVP: VWAPBreakoutStrategy固定（1戦略のみ）
+            try:
+                from strategies.VWAP_Breakout import VWAPBreakoutStrategy
+                self.logger.debug(f"[PHASE3-B-B1] VWAPBreakoutStrategy import成功")
+            except ImportError as e:
+                self.logger.error(f"[PHASE3-B-B1] VWAPBreakoutStrategy import失敗: {e}")
+                return {
+                    'status': 'error',
+                    'strategy_name': 'VWAPBreakout',
+                    'action': 'hold',
+                    'signal': 0,
+                    'price': 0.0,
+                    'shares': 0,
+                    'reason': f'Strategy import failed: {e}',
+                    'execution_timestamp': datetime.now(),
+                    'target_date': target_date,
+                    'adjusted_target_date': adjusted_target_date,
+                    'symbol': symbol
+                }
+            
+            # 戦略インスタンス作成（正規化データを使用）
+            try:
+                strategy = VWAPBreakoutStrategy(processed_data)
+                self.logger.debug(f"[PHASE3-B-B1] VWAPBreakoutStrategy初期化成功 (データ構造: {processed_data.shape})")
+            except Exception as e:
+                self.logger.error(f"[PHASE3-B-B1] VWAPBreakoutStrategy初期化失敗: {e}")
+                return {
+                    'status': 'error',
+                    'strategy_name': 'VWAPBreakout',
+                    'action': 'hold',
+                    'signal': 0,
+                    'price': 0.0,
+                    'shares': 0,
+                    'reason': f'Strategy initialization failed: {e}',
+                    'execution_timestamp': datetime.now(),
+                    'target_date': target_date,
+                    'adjusted_target_date': adjusted_target_date,
+                    'symbol': symbol
+                }
+            
+            # backtest_daily()実行（copilot-instructions.md: バックテスト実行必須）
+            try:
+                self.logger.info(f"[PHASE3-B-B1] backtest_daily()実行開始: adjusted_target_date={adjusted_target_date.strftime('%Y-%m-%d')}")
+                result = strategy.backtest_daily(adjusted_target_date, processed_data, existing_position=None)
+                self.logger.info(f"[PHASE3-B-B1] backtest_daily()実行完了: action={result['action']}, signal={result['signal']}")
+                
+                # 実際の実行結果を検証（copilot-instructions.md: 検証なしの報告禁止）
+                if not isinstance(result, dict):
+                    raise ValueError(f"Invalid result type: {type(result)}, expected dict")
+                
+                required_keys = ['action', 'signal', 'price', 'shares', 'reason']
+                missing_keys = [key for key in required_keys if key not in result]
+                if missing_keys:
+                    raise ValueError(f"Missing required keys: {missing_keys}")
+                    
+            except Exception as e:
+                self.logger.error(f"[PHASE3-B-B1] backtest_daily()実行エラー: {e}", exc_info=True)
+                return {
+                    'status': 'error',
+                    'strategy_name': 'VWAPBreakout',
+                    'action': 'hold',
+                    'signal': 0,
+                    'price': 0.0,
+                    'shares': 0,
+                    'reason': f'backtest_daily() execution failed: {e}',
+                    'execution_timestamp': datetime.now(),
+                    'target_date': target_date,
+                    'adjusted_target_date': adjusted_target_date,
+                    'symbol': symbol
+                }
+            
+            # 結果処理・ログ記録
+            execution_time = time.time() - execution_start
+            
+            unified_result = {
+                'status': 'success',
+                'strategy_name': 'VWAPBreakout',
+                'action': result['action'],
+                'signal': result['signal'],
+                'price': result['price'],
+                'shares': result['shares'],
+                'reason': result['reason'],
+                'execution_timestamp': datetime.now(),
+                'target_date': target_date,
+                'adjusted_target_date': adjusted_target_date,
+                'symbol': symbol,
+                'execution_time_ms': round(execution_time * 1000, 2)
+            }
+            
+            # 詳細ログ記録
+            self.logger.info(
+                f"[PHASE3-B-B1] 統合実行完了 - "
+                f"Status: {unified_result['status']}, "
+                f"Action: {unified_result['action']}, "
+                f"Signal: {unified_result['signal']}, "
+                f"Price: {unified_result['price']}, "
+                f"Shares: {unified_result['shares']}, "
+                f"ExecutionTime: {unified_result['execution_time_ms']}ms, "
+                f"DateAdjusted: {target_date.strftime('%Y-%m-%d')} → {adjusted_target_date.strftime('%Y-%m-%d')}"
+            )
+            
+            return unified_result
+            
+        except Exception as e:
+            execution_time = time.time() - execution_start
+            self.logger.error(f"[PHASE3-B-B1] 予期しないエラー: {e}", exc_info=True)
+            
+            return {
+                'status': 'error',
+                'strategy_name': 'VWAPBreakout',
+                'action': 'hold',
+                'signal': 0,
+                'price': 0.0,
+                'shares': 0,
+                'reason': f'Unexpected error: {e}',
+                'execution_timestamp': datetime.now(),
+                'target_date': target_date,
+                'adjusted_target_date': target_date,  # 調整失敗時は元の日付
+                'symbol': symbol,
+                'execution_time_ms': round(execution_time * 1000, 2)
             }
     
     def _convert_main_new_result(self, main_new_result: Dict, symbol: str, target_date: datetime) -> Dict[str, Any]:
@@ -2801,7 +3138,6 @@ def main():
     except Exception as e:
         import traceback
         traceback.print_exc()
-
 
 def main():
     """Main function placeholder."""

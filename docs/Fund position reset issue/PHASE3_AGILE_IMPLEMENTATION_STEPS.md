@@ -177,6 +177,23 @@ backtest_daily()実装テンプレート
 #### Day 8-11: 全戦略展開
 **目標**: 確立されたパターンでの全戦略実装
 
+**重要: 戦略の対象範囲**
+
+Phase 3-Cで`backtest_daily()`を実装する対象戦略は、現在マルチ戦略システムに採用されている戦略のみです。以下の戦略は対象外とします：
+
+**修正対象外（破棄された戦略）**:
+- `strategies/Opening_Gap_Enhanced.py` - Phase B-3検証で使用不可と結論（壊滅的性能）
+- `strategies/Opening_Gap_Fixed.py` - Opening_Gap系統の破棄戦略
+- `strategies/Opening_Gap.py` - 元のOpeningGap戦略（破棄）
+- `strategies/VWAP_Bounce.py` - 使用廃止戦略
+
+**修正するが今回は組み込まない（マルチ戦略システム未採用）**:
+- `strategies/mean_reversion_strategy.py` - 平均回帰戦略
+- `strategies/pairs_trading_strategy.py` - ペアトレード戦略
+- `strategies/support_resistance_contrarian_strategy.py` - サポート/レジスタンス逆張り戦略
+
+これらの未採用戦略については、`backtest_daily()`実装は行いますが、Phase 3-CのDSSMS統合テストやマルチ戦略システムへの組み込みは行いません。将来的にマルチ戦略システムへの採用が検討される際に備えた準備実装として位置づけます。
+
 **戦略実装優先順序**:
 1. **VWAPBreakout** (完了)
 2. **Momentum** (Day 8)
