@@ -43,8 +43,9 @@ from signal_processing import detect_exit_anomalies, check_same_day_entry_exit
 from config.optimized_parameters import OptimizedParameterManager
 from src.config.system_modes import SystemFallbackPolicy, ComponentType
 
-# ロガーの設定
-logger = setup_logger(__name__, log_file=r"C:\Users\imega\Documents\my_backtest_project\logs\backtest.log")
+# ロガーの設定 - Enhanced Logger Manager使用（ログローテーション・圧縮対応）
+from src.utils.logger_setup import get_strategy_logger
+logger = get_strategy_logger("main")
 
 # SystemFallbackPolicy の初期化
 fallback_policy = SystemFallbackPolicy()
