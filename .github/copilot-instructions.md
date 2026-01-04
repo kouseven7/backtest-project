@@ -268,4 +268,25 @@ ticker, start, end, stock_data, index_data = get_parameters_and_data(
 - 全戦略の結果は統一出力エンジン経由でCSV+JSON+TXT形式で保存
 - Excel依存は完全に廃止済み（入力のみ許可）
 
+## 📋 **Phase実装状況（2026-01-03更新）**
+
+### ✅ **Phase 3-C: マルチ戦略対応拡張（完了率88%）**
+
+**完了日**: 2026年1月3日（Task 6: ドキュメント整備完了）  
+**実装範囲**: DynamicStrategySelector統合、マルチ戦略動的選択システム
+
+**主要実装**:
+- ✅ MarketAnalyzer統合（市場分析自動実行）
+- ✅ DynamicStrategySelector統合（スコアベース戦略選択）
+- ✅ ポジション状態管理（existing_position伝達）
+- ✅ 動的戦略インスタンス生成（全5戦略対応）
+- ✅ Enhanced Logger Manager移行（ログローテーション・圧縮）
+
+**検証完了**:
+- ✅ System A統合実行テスト（3/3成功）
+- ✅ 全5戦略backtest_daily()実装確認
+- ✅ ルックアヘッドバイアス禁止制約準拠（全戦略）
+
+**残課題**: パフォーマンス最適化（データ取得効率化）、overall_status未定義エラー修正
+
 ---

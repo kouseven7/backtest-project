@@ -267,7 +267,8 @@ class DSSMSIntegratedBacktester:
 
     def _setup_file_logging(self):
         """
-        
+        Enhanced Logger Managerを使用してファイルロギング設定
+        自動ログローテーション・圧縮機能付き
         
         Returns:
             None
@@ -276,19 +277,18 @@ class DSSMSIntegratedBacktester:
             return
         
         try:
-            # setup_logger()を使用してFileHandlerを追加
-            # (初回のみ2.4秒のコスト)
-            from config.logger_config import setup_logger
+            # Enhanced Logger Managerを使用（ログローテーション・圧縮対応）
+            from src.utils.logger_setup import get_logger_manager
             
-            log_file = "logs/dssms_integrated_backtest.log"
-            self.logger = setup_logger(
-                f"{self.__class__.__name__}",
-                log_file=log_file
-            )
+            logger_manager = get_logger_manager()
+            self.logger = logger_manager.get_strategy_logger("DSSMS_Integrated")
             
             self._file_logging_initialized = True
+            self.logger.info("Enhanced Logger Manager初期化完了（ログローテーション・圧縮機能有効）")
             
         except Exception as e:
+            # フォールバック: 基本ロガー使用
+            self.logger.warning(f"Enhanced Logger Manager初期化失敗: {e}, 基本ロガー使用")
             self._file_logging_initialized = True  # 再試行を防ぐ
 
     def _initialize_components(self):
@@ -306,8 +306,11 @@ class DSSMSIntegratedBacktester:
                 
                 self._components_initialized = True
             except Exception as e:
-                # Component initialization error handling
-                pass
+                # Component initialization error handling - CRITICAL: DO NOT HIDE EXCEPTIONS
+                self.logger.error(f"Component initialization failed: {e}")
+                self.logger.error(f"Traceback: {traceback.format_exc()}")
+                # Partial initialization is acceptable for fallback functionality
+                self._components_initialized = True
 
     def _initialize_data_cache(self):
         try:
@@ -716,6 +719,7 @@ class DSSMSIntegratedBacktester:
             
             if switch_result.get('switch_executed', False):
                 daily_result['switch_executed'] = True
+                daily_result['symbol'] = self.current_symbol  # P3修正: switch後の銘柄を反映
                 self.switch_history.append(switch_result)
                 
                 # [修正案1実装] 銘柄切替時のexecution_details収集(December 14, 2025修正)
@@ -1561,6 +1565,7 @@ class DSSMSIntegratedBacktester:
         try:
             self.ensure_components()
             self.ensure_advanced_ranking()  # AdvancedRankingEngine初期化
+            self.ensure_dss_core()         # DSS Core V3初期化
             if self.dss_core and dss_available:
                 # DSS Core V3による動的選択
                 dss_result = self.dss_core.run_daily_selection(target_date)
@@ -3268,6 +3273,7 @@ class DSSMSIntegratedBacktester:
 
 
 def main():
+    parser = argparse.ArgumentParser(description='DSSMS Integrated Backtest System')
     parser.add_argument('--start-date', type=str, help='開始日 (YYYY-MM-DD形式)', default='2023-01-01')
     parser.add_argument('--end-date', type=str, help='終了日 (YYYY-MM-DD形式)', default='December 31, 2023')
     args = parser.parse_args()
@@ -3333,6 +3339,7 @@ def main():
         perf_summary = results.get('performance_summary', {})
         
         if perf_summary:
+            overall_status = perf_summary.get('overall', {}).get('status', 'データなし')
             exec_time = perf_summary.get('execution', {}).get('average_time_ms', 0)
             reliability = perf_summary.get('reliability', {}).get('success_rate', 0)
             
@@ -3346,10 +3353,6 @@ def main():
     except Exception as e:
         import traceback
         traceback.print_exc()
-
-def main():
-    """Main function placeholder."""
-    pass
 
 
 if __name__ == "__main__":
