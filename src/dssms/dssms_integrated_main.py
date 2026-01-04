@@ -143,6 +143,9 @@ class DSSMSIntegratedBacktester:
             self.portfolio_value = self.config.get('initial_capital', 1000000)
             self.initial_capital = self.portfolio_value
             
+            # [PRIORITY E] peak_value初期化追加（Priority D-2で発見された問題の修正）
+            self.peak_value = self.portfolio_value  # 初期値はportfolio_valueと同じ
+            
             # 修正案2: 最後に実行した戦略名を記録(December 14, 2025追加)
             # 目的: execution_detailsに実際の戦略名を記録する
             self.last_executed_strategy = None
@@ -1566,6 +1569,7 @@ class DSSMSIntegratedBacktester:
             self.ensure_components()
             self.ensure_advanced_ranking()  # AdvancedRankingEngine初期化
             self.ensure_dss_core()         # DSS Core V3初期化
+            
             if self.dss_core and dss_available:
                 # DSS Core V3による動的選択
                 dss_result = self.dss_core.run_daily_selection(target_date)
@@ -3040,8 +3044,7 @@ class DSSMSIntegratedBacktester:
                     'Close': [0] * len(date_range),
                     'Volume': [0] * len(date_range)
                 }, index=date_range)
-                self.logger.info(
-                )
+                self.logger.info(f"[EMERGENCY_STOCK_DATA] ダミーstock_data作成完了: {len(date_range)}行, 期間={start_date.date()}～{end_date.date()}")
             else:
                 raise RuntimeError(
                     f"Failed to generate stock_data for ComprehensiveReporter: daily_results is empty. "
@@ -3054,7 +3057,7 @@ class DSSMSIntegratedBacktester:
             report_result = reporter.generate_full_backtest_report(
                 execution_results=execution_format,
                 stock_data=stock_data_dummy,
-                ticker=ticker_symbol,
+                ticker=self.current_symbol,
                 config={
                     'output_dir': str(output_dir),
                     'equity_curve': equity_curve_df  # 再構築したequity_curveを渡す
@@ -3087,8 +3090,13 @@ class DSSMSIntegratedBacktester:
             
             
         except Exception as e:
-            # Error handling
-            pass
+            # Error handling - CRITICAL: Exception details must be logged for debugging
+            import traceback
+            self.logger.error(f"[GENERATE_OUTPUTS_ERROR] 出力ファイル生成で例外発生: {type(e).__name__}: {e}")
+            self.logger.error(f"[GENERATE_OUTPUTS_STACK] スタックトレース: {traceback.format_exc()}")
+            self.logger.error(f"[GENERATE_OUTPUTS_STATE] final_results keys: {list(final_results.keys()) if final_results else 'None'}")
+            # DO NOT HIDE EXCEPTIONS - Let them be visible for debugging
+            raise e
     
     def _load_default_config(self) -> Dict[str, Any]:
         """デフォルト設定読み込み"""

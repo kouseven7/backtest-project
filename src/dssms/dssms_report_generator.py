@@ -1922,8 +1922,8 @@ class DSSMSReportGenerator:
                 daily_results_data = actual_results['daily_results']
                 self.logger.info(f"[DEBUG] daily_results count: {len(daily_results_data)}")
                 for daily in daily_results_data:
-                    if 'portfolio_value' in daily:
-                        portfolio_values.append(float(daily['portfolio_value']))
+                    if 'portfolio_value_end' in daily:
+                        portfolio_values.append(float(daily['portfolio_value_end']))
                 self.logger.info(f"[DEBUG] portfolio_values extracted: {len(portfolio_values)} values")
             else:
                 self.logger.warning(f"[DEBUG] 'daily_results' not found in actual_results. Available keys: {list(actual_results.keys()) if isinstance(actual_results, dict) else 'N/A'}")
