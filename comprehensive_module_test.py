@@ -23,7 +23,9 @@ class ModuleTester:
         
         try:
             from data_fetcher import get_parameters_and_data
-            stock_data, index_data, params = get_parameters_and_data("9101.T")
+            # Excelファイルから設定を取得（引数なしでExcel自動読み込み）
+            ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data()
+            print(f"    📊 取得データ: {ticker} ({start_date} ~ {end_date})")
             
             # 基本検証
             assert len(stock_data) > 0, "データが空"

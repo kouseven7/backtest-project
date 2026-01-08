@@ -43,8 +43,9 @@ import pandas as pd
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
-# ロガー設定
-from config.logger_config import setup_logger
+# ロガー設定（直接インポートで循環参照回避）
+import config.logger_config
+setup_logger = config.logger_config.setup_logger
 
 # 統合システムインポート
 from main_system.market_analysis.market_analyzer import MarketAnalyzer

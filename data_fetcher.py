@@ -67,18 +67,18 @@ def get_parameters_and_data(ticker: Optional[str] = None, start_date: Optional[s
                 elif "ticker" in config_df.columns:
                     ticker = str(config_df["ticker"].iloc[0])
                 else:
-                    ticker = "9101.T"
+                    ticker = "5803.T"  # Excelファイル優先、見つからない場合のみこの値
                     logger.warning(f"銘柄情報が見つからないため、デフォルト値を使用します: {ticker}")
             # 日付情報の取得
             if start_date is None or end_date is None:
                 if "開始日" in config_df.columns and "終了日" in config_df.columns:
                     s = config_df["開始日"].iloc[0]
                     e = config_df["終了日"].iloc[0]
-                    if isinstance(s, (pd.Timestamp, datetime.datetime)):
+                    if isinstance(s, (pd.Timestamp, datetime)):
                         start_date = s.strftime('%Y-%m-%d')
                     else:
                         start_date = str(s)
-                    if isinstance(e, (pd.Timestamp, datetime.datetime)):
+                    if isinstance(e, (pd.Timestamp, datetime)):
                         end_date = e.strftime('%Y-%m-%d')
                     else:
                         end_date = str(e)
@@ -93,7 +93,7 @@ def get_parameters_and_data(ticker: Optional[str] = None, start_date: Optional[s
         except Exception as e:
             logger.error(f"設定ファイルの読み込みに失敗しました: {str(e)}")
             if ticker is None:
-                ticker = "9101.T"
+                ticker = "5803.T"  # Excelファイル優先、読み込みエラー時のみこの値
             if start_date is None:
                 start_date = "2023-01-01"
             if end_date is None:
