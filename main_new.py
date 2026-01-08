@@ -183,16 +183,16 @@ class MainSystemController:
                     elif available_start.tz is None and warmup_start_ts.tz is not None:
                         warmup_start_ts = warmup_start_ts.tz_localize(None)
                     
-                    # ウォームアップ期間チェック緩和（2025-12-30実装）
-                    # 10日以上の不足のみエラー、軽微な不足は警告で継続
+                    # ウォームアップ期間チェック緩和（2025-12-30実装、2026-01-08修正）
+                    # 30日以上の不足のみエラー、軽微な不足は警告で継続
                     if warmup_start_ts < available_start:
                         shortage_days = (available_start - warmup_start_ts).days
-                        if shortage_days > 10:
+                        if shortage_days > 30:
                             raise RuntimeError(
                                 f"Excessive data shortage for warmup period. "
                                 f"Required warmup_start: {warmup_start_ts}, "
                                 f"Available data starts: {available_start}, "
-                                f"Shortage: {shortage_days} days (exceeds 10-day tolerance)"
+                                f"Shortage: {shortage_days} days (exceeds 30-day tolerance)"
                             )
                         else:
                             self.logger.warning(
