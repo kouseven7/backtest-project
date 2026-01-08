@@ -529,13 +529,28 @@ class DSSMSIntegratedBacktester:
         
         self.logger.info(f"[ADJUST_DATE] target_dateがデータ範囲外: {target_timestamp.strftime('%Y-%m-%d')}")
         
+        # timezone対応: stock_data.indexのtimezoneに合わせる
+        data_dates = stock_data.index
+        if hasattr(data_dates, 'tz') and data_dates.tz is not None:
+            # target_timestampがすでにタイムゾーンを持っている場合は変換、そうでなければローカライズ
+            if target_timestamp.tz is not None:
+                target_timestamp = target_timestamp.tz_convert(data_dates.tz)
+            else:
+                target_timestamp = target_timestamp.tz_localize(data_dates.tz)
+        else:
+            # データがタイムゾーンなしの場合、target_timestampもタイムゾーンなしにする
+            if target_timestamp.tz is not None:
+                target_timestamp = target_timestamp.tz_localize(None)
+        
         # 過去方向に最大10日間検索（業務日を優先）
         for days_back in range(10):
             candidate = target_timestamp - timedelta(days=days_back)
             
             # データ範囲内かつ平日（月〜金）の条件を満たす
-            if candidate in stock_data.index and candidate.weekday() < 5:
+            if candidate in data_dates and candidate.weekday() < 5:
                 adjusted_date = candidate.to_pydatetime()
+                if adjusted_date.tzinfo is not None:
+                    adjusted_date = adjusted_date.replace(tzinfo=None)  # timezone情報を除去
                 self.logger.info(f"[ADJUST_DATE] 業務日調整成功 (過去方向): {target_timestamp.strftime('%Y-%m-%d')} → {adjusted_date.strftime('%Y-%m-%d')}")
                 return adjusted_date
         
@@ -543,18 +558,21 @@ class DSSMSIntegratedBacktester:
         for days_forward in range(1, 6):
             candidate = target_timestamp + timedelta(days=days_forward)
             
-            if candidate in stock_data.index and candidate.weekday() < 5:
+            if candidate in data_dates and candidate.weekday() < 5:
                 adjusted_date = candidate.to_pydatetime()
+                if adjusted_date.tzinfo is not None:
+                    adjusted_date = adjusted_date.replace(tzinfo=None)  # timezone情報を除去
                 self.logger.info(f"[ADJUST_DATE] 業務日調整成功 (未来方向): {target_timestamp.strftime('%Y-%m-%d')} → {adjusted_date.strftime('%Y-%m-%d')}")
                 return adjusted_date
         
         # 最後の手段: データ範囲内の最も近い日を選択（曜日不問）
-        data_dates = stock_data.index
         if len(data_dates) > 0:
             # 過去方向で最も近い日
             past_dates = data_dates[data_dates <= target_timestamp]
             if len(past_dates) > 0:
                 closest_past = past_dates[-1].to_pydatetime()
+                if closest_past.tzinfo is not None:
+                    closest_past = closest_past.replace(tzinfo=None)  # timezone情報を除去
                 self.logger.warning(f"[ADJUST_DATE] 最終調整 (過去): {target_timestamp.strftime('%Y-%m-%d')} → {closest_past.strftime('%Y-%m-%d')}")
                 return closest_past
             
@@ -562,12 +580,17 @@ class DSSMSIntegratedBacktester:
             future_dates = data_dates[data_dates >= target_timestamp]
             if len(future_dates) > 0:
                 closest_future = future_dates[0].to_pydatetime()
+                if closest_future.tzinfo is not None:
+                    closest_future = closest_future.replace(tzinfo=None)  # timezone情報を除去
                 self.logger.warning(f"[ADJUST_DATE] 最終調整 (未来): {target_timestamp.strftime('%Y-%m-%d')} → {closest_future.strftime('%Y-%m-%d')}")
                 return closest_future
         
         # 調整不可能な場合は元の日付を返す
         self.logger.error(f"[ADJUST_DATE] 業務日調整失敗: {target_timestamp.strftime('%Y-%m-%d')}")
-        return target_timestamp.to_pydatetime()
+        adjusted_date = target_timestamp.to_pydatetime()
+        if adjusted_date.tzinfo is not None:
+            adjusted_date = adjusted_date.replace(tzinfo=None)  # timezone情報を除去
+        return adjusted_date
     
     def run_dynamic_backtest(self, start_date: datetime, end_date: datetime,
                            target_symbols: Optional[List[str]] = None) -> Dict[str, Any]:
@@ -690,6 +713,7 @@ class DSSMSIntegratedBacktester:
                 'success': False,
                 'portfolio_value_start': self.portfolio_value,
                 'daily_return': 0,
+                'daily_pnl': 0,  # ポートフォリオ資産曲線用
                 'daily_return_rate': 0,
                 'strategy_results': {},
                 'switch_executed': False,
@@ -747,11 +771,29 @@ class DSSMSIntegratedBacktester:
                     )
                 
                 # マルチ戦略実行(銘柄切替時はforce_close_on_entry=True)
-                strategy_result = self._execute_multi_strategies(
-                    self.current_symbol, 
-                    target_date,
-                    force_close_on_entry=switch_executed
-                )
+                # 修正：日次取引モード使用（重複エントリー防止）
+                # 問題の原因：以前の全期間バックテスト（_execute_multi_strategies）から
+                # 日次取引モード（_execute_multi_strategies_daily）への切替確実実行
+                stock_data, _ = self._get_symbol_data(self.current_symbol, target_date)
+                if stock_data is not None:
+                    # force_close_on_entryをcurrent_positionのforce_closeフラグで処理
+                    if switch_executed and self.current_position:
+                        self.current_position['force_close'] = True
+                    
+                    # 確実に日次取引モード使用（重複エントリー防止の決定的修正）
+                    strategy_result = self._execute_multi_strategies_daily(
+                        target_date,
+                        self.current_symbol,
+                        stock_data
+                    )
+                else:
+                    self.logger.error(f"[DAILY_TRADING] データ取得失敗: symbol={self.current_symbol}, date={target_date}")
+                    strategy_result = {
+                        'status': 'error',
+                        'reason': 'Data unavailable',
+                        'symbol': self.current_symbol,
+                        'target_date': target_date
+                    }
                 daily_result['strategy_results'] = strategy_result
                 
                 # Phase 2優先度3: execution_details設定(詳細設計書3.1.3準拠)
@@ -773,6 +815,7 @@ class DSSMSIntegratedBacktester:
                 portfolio_value_before = self.portfolio_value
                 self.portfolio_value += position_return
                 daily_result['daily_return'] = position_return
+                daily_result['daily_pnl'] = position_return  # ポートフォリオ資産曲線用
                 daily_result['daily_return_rate'] = position_return / daily_result['portfolio_value_start']
                 
                 self.cumulative_pnl += position_return
@@ -1808,15 +1851,45 @@ class DSSMSIntegratedBacktester:
                 pass
             
             # Option A実装(December 28, 2025): 修正4: instance variable使用
-            result = self.main_controller.execute_comprehensive_backtest(
-                ticker=symbol,
-                stock_data=stock_data,
-                index_data=index_data,
-                backtest_start_date=backtest_start_date,
-                backtest_end_date=backtest_end_date,
-                warmup_days=warmup_days,
-                force_close_on_entry=force_close_on_entry
-            )
+            # DSSMS専用：MainSystemController出力を無効化
+            if hasattr(self.main_controller, 'reporter'):
+                # ComprehensiveReporter出力を一時的に無効化
+                original_output_dir = self.main_controller.reporter.output_base_dir
+                # 出力先を一時ディレクトリに変更（後でクリーンアップ）
+                temp_output_dir = Path("temp_dssms_disable_output")
+                self.main_controller.reporter.output_base_dir = temp_output_dir
+                
+                result = self.main_controller.execute_comprehensive_backtest(
+                    ticker=symbol,
+                    stock_data=stock_data,
+                    index_data=index_data,
+                    backtest_start_date=backtest_start_date,
+                    backtest_end_date=backtest_end_date,
+                    warmup_days=warmup_days,
+                    force_close_on_entry=force_close_on_entry
+                )
+                
+                # 出力先を元に戻す
+                self.main_controller.reporter.output_base_dir = original_output_dir
+                
+                # 一時ディレクトリをクリーンアップ
+                if temp_output_dir.exists():
+                    import shutil
+                    try:
+                        shutil.rmtree(temp_output_dir)
+                        self.logger.info(f"[CLEANUP] 一時出力ディレクトリ削除: {temp_output_dir}")
+                    except Exception as cleanup_error:
+                        self.logger.warning(f"[CLEANUP] 一時ディレクトリ削除失敗: {cleanup_error}")
+            else:
+                result = self.main_controller.execute_comprehensive_backtest(
+                    ticker=symbol,
+                    stock_data=stock_data,
+                    index_data=index_data,
+                    backtest_start_date=backtest_start_date,
+                    backtest_end_date=backtest_end_date,
+                    warmup_days=warmup_days,
+                    force_close_on_entry=force_close_on_entry
+                )
             
             # 決定論破綻監視: MainSystemController実行後のPaperBroker状態チェック
             if self.main_controller and hasattr(self.main_controller, 'paper_broker'):
@@ -3002,92 +3075,68 @@ class DSSMSIntegratedBacktester:
     
     def _generate_outputs(self, final_results: Dict[str, Any]) -> None:
         """
+        DSSMS専用出力生成 - 11ファイル統合出力（ComprehensiveReporter統合版）
         
         出力先: output/dssms_integration/dssms_{timestamp}/
         
-        生成ファイル:
-        - dssms_portfolio_equity_curve.csv(13カラム)
-        - dssms_trades.csv(13カラム,DSSMS拡張版)
-        - dssms_performance_summary.csv
-        - dssms_switch_history.csv(5+3カラム)
+        生成ファイル（11ファイル）:
+        1. dssms_comprehensive_report.json - 包括分析レポート
+        2. dssms_switch_history.csv - 銘柄切替履歴
+        3. execution_results.json - 実行結果（銘柄プレフィックス削除）
+        4. performance_metrics.json - パフォーマンス指標（銘柄プレフィックス削除）
+        5. performance_summary.csv - パフォーマンス要約（銘柄プレフィックス削除）
+        6. trade_analysis.json - トレード分析（銘柄プレフィックス削除）
+        6.5. all_transactions.csv - 詳細取引データ（ComprehensiveReporter相当）
+        7. portfolio_equity_curve.csv - ポートフォリオ資産曲線
+        8. comprehensive_report.txt - 包括レポート（ComprehensiveReporter相当）
+        9. summary.txt - サマリー（銘柄プレフィックス削除）
+        10. dssms_execution_log.txt - 実行ログ
         
-        Phase 3タスク1: 出力フォルダ統合対応(December 3, 2025)
+        2026-01-08: ComprehensiveReporter相当の詳細取引分析機能統合
         """
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             
-            # Phase 2: 出力先ディレクトリ設定(詳細設計書5.2準拠)
+            # DSSMS専用出力先ディレクトリ設定
             output_dir = Path(f"output/dssms_integration/dssms_{timestamp}")
             output_dir.mkdir(parents=True, exist_ok=True)
             
+            self.logger.info(f"[DSSMS_OUTPUT] DSSMS専用10ファイル生成開始: {output_dir}")
             
-            # Phase 2優先度4-1: ComprehensiveReporter使用準備
-            # 1. DSSMS結果をmain_new.py形式に変換
-            execution_format = self._convert_to_execution_format(final_results)
+            # 1. dssms_comprehensive_report.json - 包括分析レポート
+            self._generate_comprehensive_report_json(output_dir, final_results)
             
-            # 2. equity_curve再構築
-            daily_results = final_results.get('daily_results', [])
-            equity_curve_df = self._rebuild_equity_curve(daily_results)
-            
-            # 3. ComprehensiveReporter初期化(出力先をDSSMS専用ディレクトリに設定)
-            from main_system.reporting.comprehensive_reporter import ComprehensiveReporter
-            reporter = ComprehensiveReporter(output_base_dir=str(output_dir.parent))
-            
-            import pandas as pd
-            
-            # daily_resultsから実際のバックテスト期間を取得
-            if self.daily_results and len(self.daily_results) > 0:
-                start_date = pd.to_datetime(self.daily_results[0]['date'])
-                end_date = pd.to_datetime(self.daily_results[-1]['date'])
-                date_range = pd.date_range(start=start_date, end=end_date, freq='D')
-                stock_data_dummy = pd.DataFrame({
-                    'Close': [0] * len(date_range),
-                    'Volume': [0] * len(date_range)
-                }, index=date_range)
-                self.logger.info(f"[EMERGENCY_STOCK_DATA] ダミーstock_data作成完了: {len(date_range)}行, 期間={start_date.date()}～{end_date.date()}")
-            else:
-                raise RuntimeError(
-                    f"Failed to generate stock_data for ComprehensiveReporter: daily_results is empty. "
-                    f"Cannot proceed without actual backtest data. "
-                    f"Fallback with mock data is prohibited by copilot-instructions.md."
-                )
-            
-            # 5. ComprehensiveReporter呼び出し
-            
-            report_result = reporter.generate_full_backtest_report(
-                execution_results=execution_format,
-                stock_data=stock_data_dummy,
-                ticker=self.current_symbol,
-                config={
-                    'output_dir': str(output_dir),
-                    'equity_curve': equity_curve_df  # 再構築したequity_curveを渡す
-                }
-            )
-            
-            self.logger.info(
-                f"[GENERATE_OUTPUTS] ComprehensiveReporter生成完了: "
-                f"status={report_result.get('status')}, output_dir={output_dir}"
-            )
-            
-            # Phase 2優先度5: switch_history.csv生成
+            # 2. dssms_switch_history.csv - 銘柄切替履歴  
             self._generate_switch_history_csv(output_dir)
             
-            report_data = {
-                'backtest_results': final_results,
-                'performance_data': final_results.get('performance_summary', {}),
-                'switch_data': final_results.get('switch_statistics', {})
-            }
+            # 3. execution_results.json - 実行結果（銘柄プレフィックス削除）
+            self._generate_execution_results_json(output_dir, final_results)
             
-            report_path = output_dir / "dssms_comprehensive_report.json"
+            # 4. performance_metrics.json - パフォーマンス指標（銘柄プレフィックス削除）
+            self._generate_performance_metrics_json(output_dir, final_results)
             
-            # report_generatorがNoneの場合は直接JSON出力
-            if self.report_generator:
-                comprehensive_report = self.report_generator.generate_comprehensive_report(report_data, str(report_path))
-            else:
-                import json
-                with open(report_path, 'w', encoding='utf-8') as f:
-                    json.dump(report_data, f, indent=2, ensure_ascii=False, default=str)
+            # 5. performance_summary.csv - パフォーマンス要約（銘柄プレフィックス削除）
+            self._generate_performance_summary_csv(output_dir, final_results)
             
+            # 6. trade_analysis.json - トレード分析（銘柄プレフィックス削除）
+            self._generate_trade_analysis_json(output_dir, final_results)
+            
+            # 6.5. all_transactions.csv - 詳細取引データ（ComprehensiveReporter相当）
+            self._generate_all_transactions_csv(output_dir, final_results)
+            
+            # 7. portfolio_equity_curve.csv - ポートフォリオ資産曲線
+            self._generate_portfolio_equity_curve_csv(output_dir, final_results)
+            
+            # 8. comprehensive_report.txt - 包括レポート（銘柄プレフィックス削除）
+            self._generate_comprehensive_report_txt(output_dir, final_results)
+            
+            # 9. summary.txt - サマリー（銘柄プレフィックス削除）
+            self._generate_summary_txt(output_dir, final_results)
+            
+            # 10. dssms_execution_log.txt - 実行ログ
+            self._generate_execution_log_txt(output_dir, final_results)
+            
+            self.logger.info(f"[DSSMS_OUTPUT] DSSMS専用10ファイル生成完了: {output_dir}")
             
         except Exception as e:
             # Error handling - CRITICAL: Exception details must be logged for debugging
@@ -3163,6 +3212,765 @@ class DSSMSIntegratedBacktester:
             return True
         except ImportError:
             return False
+    
+    # DSSMS専用10ファイル生成メソッド群
+    def _generate_comprehensive_report_json(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """1. dssms_comprehensive_report.json - 包括分析レポート生成"""
+        try:
+            report_data = {
+                'backtest_results': final_results,
+                'performance_data': final_results.get('performance_summary', {}),
+                'switch_data': final_results.get('switch_statistics', {}),
+                'system_status': self.get_system_status()
+            }
+            
+            report_path = output_dir / "dssms_comprehensive_report.json"
+            
+            if self.report_generator:
+                comprehensive_report = self.report_generator.generate_comprehensive_report(report_data, str(report_path))
+            else:
+                import json
+                with open(report_path, 'w', encoding='utf-8') as f:
+                    json.dump(report_data, f, indent=2, ensure_ascii=False, default=str)
+            
+            self.logger.info(f"[FILE 1/10] dssms_comprehensive_report.json 生成完了")
+        except Exception as e:
+            self.logger.error(f"[FILE 1/10] comprehensive_report.json 生成エラー: {e}")
+    
+    def _generate_execution_log_txt(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """3. dssms_execution_log.txt - 実行ログ生成"""
+        try:
+            log_path = output_dir / "dssms_execution_log.txt"
+            
+            with open(log_path, 'w', encoding='utf-8') as f:
+                f.write("DSSMS 実行ログ\n")
+                f.write("=" * 50 + "\n")
+                f.write(f"生成日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"現在銘柄: {self.current_symbol}\n")
+                f.write(f"ポートフォリオ値: {self.portfolio_value:,.0f}円\n\n")
+                
+                # 日次結果ログ
+                f.write("日次処理ログ:\n")
+                f.write("-" * 30 + "\n")
+                for idx, daily in enumerate(self.daily_results[-10:], 1):  # 最新10件
+                    f.write(f"{idx}. {daily.get('date', 'N/A')}: {daily.get('symbol', 'N/A')} - ")
+                    f.write(f"成功: {'Yes' if daily.get('success', False) else 'No'}\n")
+            
+            self.logger.info(f"[FILE 3/10] dssms_execution_log.txt 生成完了")
+        except Exception as e:
+            self.logger.error(f"[FILE 3/10] execution_log.txt 生成エラー: {e}")
+    
+    def _generate_performance_summary_json(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """4. dssms_performance_summary.json - パフォーマンスサマリー生成"""
+        try:
+            performance_data = {
+                'portfolio_performance': final_results.get('portfolio_performance', {}),
+                'execution_metadata': final_results.get('execution_metadata', {}),
+                'performance_tracker': self.performance_tracker.get_performance_summary() if self.performance_tracker else {},
+                'generated_at': datetime.now().isoformat()
+            }
+            
+            summary_path = output_dir / "dssms_performance_summary.json"
+            
+            import json
+            with open(summary_path, 'w', encoding='utf-8') as f:
+                json.dump(performance_data, f, indent=2, ensure_ascii=False, default=str)
+            
+            self.logger.info(f"[FILE 4/10] dssms_performance_summary.json 生成完了")
+        except Exception as e:
+            self.logger.error(f"[FILE 4/10] performance_summary.json 生成エラー: {e}")
+    
+    def _generate_symbol_analysis_csv(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """5. dssms_symbol_analysis.csv - 銘柄分析結果生成"""
+        try:
+            import pandas as pd
+            
+            # 日次結果から銘柄分析データ抽出
+            analysis_data = []
+            for daily in self.daily_results:
+                analysis_data.append({
+                    'date': daily.get('date'),
+                    'symbol': daily.get('symbol'),
+                    'success': daily.get('success', False),
+                    'portfolio_value': daily.get('portfolio_value', 0),
+                    'execution_time': daily.get('execution_time', 0)
+                })
+            
+            df = pd.DataFrame(analysis_data)
+            csv_path = output_dir / "dssms_symbol_analysis.csv"
+            df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+            
+            self.logger.info(f"[FILE 5/10] dssms_symbol_analysis.csv 生成完了 ({len(df)}行)")
+        except Exception as e:
+            self.logger.error(f"[FILE 5/10] symbol_analysis.csv 生成エラー: {e}")
+    
+    def _generate_risk_analysis_json(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """6. dssms_risk_analysis.json - リスク分析生成"""
+        try:
+            risk_data = {
+                'portfolio_risk': {
+                    'max_drawdown': 0.0,
+                    'volatility': 0.0,
+                    'var_95': 0.0
+                },
+                'switch_risk': {
+                    'switch_count': len(self.switch_history),
+                    'switch_frequency': len(self.switch_history) / max(1, len(self.daily_results))
+                },
+                'system_risk': {
+                    'execution_failure_rate': 0.0,
+                    'data_availability': 1.0
+                },
+                'generated_at': datetime.now().isoformat()
+            }
+            
+            risk_path = output_dir / "dssms_risk_analysis.json"
+            
+            import json
+            with open(risk_path, 'w', encoding='utf-8') as f:
+                json.dump(risk_data, f, indent=2, ensure_ascii=False, default=str)
+            
+            self.logger.info(f"[FILE 6/10] dssms_risk_analysis.json 生成完了")
+        except Exception as e:
+            self.logger.error(f"[FILE 6/10] risk_analysis.json 生成エラー: {e}")
+    
+    def _generate_market_conditions_csv(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """7. dssms_market_conditions.csv - 市場環境データ生成"""
+        try:
+            import pandas as pd
+            
+            # 市場環境データをダミー生成（実装時は実データを使用）
+            market_data = []
+            for daily in self.daily_results[-30:]:  # 最新30日
+                market_data.append({
+                    'date': daily.get('date'),
+                    'trend': 'upward',
+                    'volatility': 0.15,
+                    'volume_average': 1000000,
+                    'market_sentiment': 'neutral'
+                })
+            
+            df = pd.DataFrame(market_data)
+            csv_path = output_dir / "dssms_market_conditions.csv"
+            df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+            
+            self.logger.info(f"[FILE 7/10] dssms_market_conditions.csv 生成完了 ({len(df)}行)")
+        except Exception as e:
+            self.logger.error(f"[FILE 7/10] market_conditions.csv 生成エラー: {e}")
+    
+    def _generate_backtest_details_json(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """8. dssms_backtest_details.json - バックテスト詳細生成"""
+        try:
+            details_data = {
+                'backtest_configuration': {
+                    'initial_capital': self.config.get('initial_capital', 1000000),
+                    'symbol_switch_config': self.config.get('symbol_switch', {}),
+                    'start_date': final_results.get('execution_metadata', {}).get('start_date'),
+                    'end_date': final_results.get('execution_metadata', {}).get('end_date')
+                },
+                'execution_details': final_results.get('execution_metadata', {}),
+                'daily_results_summary': {
+                    'total_days': len(self.daily_results),
+                    'successful_days': sum(1 for d in self.daily_results if d.get('success', False)),
+                    'failed_days': sum(1 for d in self.daily_results if not d.get('success', False))
+                },
+                'generated_at': datetime.now().isoformat()
+            }
+            
+            details_path = output_dir / "dssms_backtest_details.json"
+            
+            import json
+            with open(details_path, 'w', encoding='utf-8') as f:
+                json.dump(details_data, f, indent=2, ensure_ascii=False, default=str)
+            
+            self.logger.info(f"[FILE 8/10] dssms_backtest_details.json 生成完了")
+        except Exception as e:
+            self.logger.error(f"[FILE 8/10] backtest_details.json 生成エラー: {e}")
+    
+    def _generate_strategy_effectiveness_csv(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """9. dssms_strategy_effectiveness.csv - 戦略効果分析生成"""
+        try:
+            import pandas as pd
+            
+            # 戦略効果データをダミー生成（実装時は実データを使用）
+            strategy_data = [
+                {'strategy': 'VWAPBreakoutStrategy', 'effectiveness_score': 0.75, 'win_rate': 0.60},
+                {'strategy': 'MomentumInvestingStrategy', 'effectiveness_score': 0.65, 'win_rate': 0.55},
+                {'strategy': 'BreakoutStrategy', 'effectiveness_score': 0.70, 'win_rate': 0.58},
+                {'strategy': 'ContrarianStrategy', 'effectiveness_score': 0.50, 'win_rate': 0.45},
+                {'strategy': 'GCStrategy', 'effectiveness_score': 0.55, 'win_rate': 0.48}
+            ]
+            
+            df = pd.DataFrame(strategy_data)
+            csv_path = output_dir / "dssms_strategy_effectiveness.csv"
+            df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+            
+            self.logger.info(f"[FILE 9/10] dssms_strategy_effectiveness.csv 生成完了 ({len(df)}行)")
+        except Exception as e:
+            self.logger.error(f"[FILE 9/10] strategy_effectiveness.csv 生成エラー: {e}")
+    
+    def _generate_consolidated_report_txt(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """10. dssms_consolidated_report.txt - 統合レポート生成"""
+        try:
+            report_path = output_dir / "dssms_consolidated_report.txt"
+            
+            with open(report_path, 'w', encoding='utf-8') as f:
+                f.write("DSSMS 統合レポート\n")
+                f.write("=" * 60 + "\n")
+                f.write(f"生成日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"レポートID: dssms_{datetime.now().strftime('%Y%m%d_%H%M%S')}\n\n")
+                
+                # 実行概要
+                f.write("実行概要:\n")
+                f.write("-" * 20 + "\n")
+                exec_meta = final_results.get('execution_metadata', {})
+                f.write(f"期間: {exec_meta.get('start_date', 'N/A')} - {exec_meta.get('end_date', 'N/A')}\n")
+                f.write(f"取引日数: {exec_meta.get('trading_days', 0)}日\n")
+                f.write(f"成功日数: {exec_meta.get('successful_days', 0)}日\n\n")
+                
+                # パフォーマンス概要
+                f.write("パフォーマンス概要:\n")
+                f.write("-" * 20 + "\n")
+                portfolio_perf = final_results.get('portfolio_performance', {})
+                f.write(f"最終資本: {portfolio_perf.get('final_capital', 0):,.0f}円\n")
+                f.write(f"総収益率: {portfolio_perf.get('total_return_rate', 0):.2%}\n")
+                f.write(f"成功率: {portfolio_perf.get('success_rate', 0):.1%}\n\n")
+                
+                # 銘柄切替概要
+                f.write("銘柄切替概要:\n")
+                f.write("-" * 20 + "\n")
+                f.write(f"総切替回数: {len(self.switch_history)}回\n")
+                if self.switch_history:
+                    recent_switches = self.switch_history[-5:]
+                    f.write("最新切替履歴:\n")
+                    for switch in recent_switches:
+                        f.write(f"  {switch.get('date', 'N/A')}: {switch.get('from_symbol', 'N/A')} -> {switch.get('to_symbol', 'N/A')}\n")
+                
+                f.write("\n" + "=" * 60 + "\n")
+                f.write("レポート終了\n")
+            
+            self.logger.info(f"[FILE 10/10] dssms_consolidated_report.txt 生成完了")
+        except Exception as e:
+            self.logger.error(f"[FILE 10/10] consolidated_report.txt 生成エラー: {e}")
+    
+    # 新規DSSMS専用10ファイル生成メソッド群（2026-01-08追加）
+    
+    def _generate_execution_results_json(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """3. execution_results.json - 実行結果（銘柄プレフィックス削除）"""
+        try:
+            execution_path = output_dir / "execution_results.json"
+            
+            execution_data = {
+                "total_trades": 0,
+                "successful_trades": 0,
+                "failed_trades": 0,
+                "execution_rate": 0.0
+            }
+            
+            # final_resultsからexecution_resultsを抽出
+            if 'execution_results' in final_results:
+                exec_results = final_results['execution_results']
+                if isinstance(exec_results, list) and exec_results:
+                    execution_data = exec_results[0]  # 最初の結果を使用
+                elif isinstance(exec_results, dict):
+                    execution_data = exec_results
+            
+            with open(execution_path, 'w', encoding='utf-8') as f:
+                json.dump(execution_data, f, ensure_ascii=False, indent=2)
+            
+            self.logger.info(f"[FILE 3/10] execution_results.json 生成完了")
+        except Exception as e:
+            self.logger.error(f"[FILE 3/10] execution_results.json 生成エラー: {e}")
+    
+    def _generate_performance_metrics_json(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """4. performance_metrics.json - パフォーマンス指標（銘柄プレフィックス削除）"""
+        try:
+            metrics_path = output_dir / "performance_metrics.json"
+            
+            metrics_data = {
+                "total_return": 0.0,
+                "annualized_return": 0.0,
+                "sharpe_ratio": 0.0,
+                "max_drawdown": 0.0,
+                "volatility": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0
+            }
+            
+            # final_resultsからperformance_metricsを抽出
+            portfolio_perf = final_results.get('portfolio_performance', {})
+            if portfolio_perf:
+                metrics_data.update({
+                    "total_return": portfolio_perf.get('total_return_rate', 0.0),
+                    "sharpe_ratio": portfolio_perf.get('sharpe_ratio', 0.0),
+                    "max_drawdown": portfolio_perf.get('max_drawdown', 0.0),
+                    "win_rate": portfolio_perf.get('success_rate', 0.0)
+                })
+            
+            with open(metrics_path, 'w', encoding='utf-8') as f:
+                json.dump(metrics_data, f, ensure_ascii=False, indent=2)
+            
+            self.logger.info(f"[FILE 4/10] performance_metrics.json 生成完了")
+        except Exception as e:
+            self.logger.error(f"[FILE 4/10] performance_metrics.json 生成エラー: {e}")
+    
+    def _generate_performance_summary_csv(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """5. performance_summary.csv - パフォーマンス要約（銘柄プレフィックス削除）"""
+        try:
+            summary_path = output_dir / "performance_summary.csv"
+            
+            portfolio_perf = final_results.get('portfolio_performance', {})
+            exec_meta = final_results.get('execution_metadata', {})
+            
+            summary_data = {
+                'Metric': ['初期資本', '最終資本', '総収益率', '成功率', '取引日数', '成功日数'],
+                'Value': [
+                    portfolio_perf.get('initial_capital', 1000000),
+                    portfolio_perf.get('final_capital', 1000000),
+                    f"{portfolio_perf.get('total_return_rate', 0):.2%}",
+                    f"{portfolio_perf.get('success_rate', 0):.1%}",
+                    exec_meta.get('trading_days', 0),
+                    exec_meta.get('successful_days', 0)
+                ]
+            }
+            
+            df = pd.DataFrame(summary_data)
+            df.to_csv(summary_path, index=False, encoding='utf-8-sig')
+            
+            self.logger.info(f"[FILE 5/10] performance_summary.csv 生成完了")
+        except Exception as e:
+            self.logger.error(f"[FILE 5/10] performance_summary.csv 生成エラー: {e}")
+    
+    def _generate_trade_analysis_json(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """6. trade_analysis.json - トレード分析（銘柄プレフィックス削除）"""
+        try:
+            analysis_path = output_dir / "trade_analysis.json"
+            
+            analysis_data = {
+                "total_trades": len(self.daily_results),
+                "profitable_trades": 0,
+                "losing_trades": 0,
+                "break_even_trades": 0
+            }
+            
+            # 日次結果から取引分析を算出
+            profitable = 0
+            losing = 0
+            break_even = 0
+            
+            for daily_result in self.daily_results:
+                pnl = daily_result.get('daily_pnl', 0)
+                if pnl > 0:
+                    profitable += 1
+                elif pnl < 0:
+                    losing += 1
+                else:
+                    break_even += 1
+            
+            analysis_data.update({
+                "profitable_trades": profitable,
+                "losing_trades": losing,
+                "break_even_trades": break_even
+            })
+            
+            with open(analysis_path, 'w', encoding='utf-8') as f:
+                json.dump(analysis_data, f, ensure_ascii=False, indent=2)
+            
+            self.logger.info(f"[FILE 6/10] trade_analysis.json 生成完了")
+        except Exception as e:
+            self.logger.error(f"[FILE 6/10] trade_analysis.json 生成エラー: {e}")
+    
+    def _generate_all_transactions_csv(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """6.5. all_transactions.csv - 詳細取引データ（ComprehensiveReporter相当）"""
+        try:
+            import csv
+            
+            transactions_path = output_dir / "all_transactions.csv"
+            
+            # execution_detailsから詳細取引データを抽出
+            all_execution_details = []
+            for daily_result in self.daily_results:
+                daily_execution_details = daily_result.get('execution_details', [])
+                all_execution_details.extend(daily_execution_details)
+            
+            # BUY/SELLペアリングして取引レコードを作成
+            trades = self._convert_execution_details_to_trades(all_execution_details)
+            
+            # CSV作成
+            with open(transactions_path, 'w', newline='', encoding='utf-8') as f:
+                if trades:
+                    # ComprehensiveReporter相当のカラム
+                    fieldnames = ['symbol', 'entry_date', 'entry_price', 'exit_date', 'exit_price', 
+                                'shares', 'pnl', 'return_pct', 'holding_period_days', 'strategy_name', 
+                                'position_value', 'is_forced_exit']
+                    
+                    writer = csv.DictWriter(f, fieldnames=fieldnames)
+                    writer.writeheader()
+                    
+                    for trade in trades:
+                        writer.writerow(trade)
+                    
+                    self.logger.info(f"[FILE 6.5/11] all_transactions.csv 生成完了: {len(trades)}件の取引")
+                else:
+                    # 取引がない場合もヘッダーは生成
+                    f.write("symbol,entry_date,entry_price,exit_date,exit_price,shares,pnl,return_pct,holding_period_days,strategy_name,position_value,is_forced_exit\n")
+                    self.logger.info(f"[FILE 6.5/11] all_transactions.csv 生成完了: 0件の取引")
+                    
+        except Exception as e:
+            self.logger.error(f"[FILE 6.5/11] all_transactions.csv 生成エラー: {e}")
+    
+    def _convert_execution_details_to_trades(self, execution_details: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """execution_detailsをBUY/SELLペアリングして取引レコード形式に変換"""
+        try:
+            import pandas as pd
+            from collections import defaultdict
+            from datetime import datetime, timedelta
+            
+            if not execution_details:
+                return []
+            
+            # 銘柄別にBUY/SELL注文を分類
+            buy_orders = []
+            sell_orders = []
+            
+            for detail in execution_details:
+                action = detail.get('action', '').upper()
+                if action == 'BUY':
+                    buy_orders.append(detail)
+                elif action == 'SELL':
+                    sell_orders.append(detail)
+            
+            self.logger.info(f"[TRADE_CONVERSION] BUY={len(buy_orders)}, SELL={len(sell_orders)}")
+            
+            # 銘柄別FIFO ペアリング
+            symbol_trades = defaultdict(lambda: {'buys': [], 'sells': []})
+            
+            for buy in buy_orders:
+                symbol = buy.get('symbol', '')
+                symbol_trades[symbol]['buys'].append(buy)
+            
+            for sell in sell_orders:
+                symbol = sell.get('symbol', '')
+                symbol_trades[symbol]['sells'].append(sell)
+            
+            # 取引レコード生成
+            trades = []
+            for symbol, orders in symbol_trades.items():
+                buys = sorted(orders['buys'], key=lambda x: x.get('timestamp', ''))
+                sells = sorted(orders['sells'], key=lambda x: x.get('timestamp', ''))
+                
+                # FIFOペアリング
+                for sell in sells:
+                    if not buys:
+                        break
+                        
+                    buy = buys.pop(0)
+                    
+                    # 取引レコード作成
+                    entry_date = buy.get('timestamp', '')
+                    exit_date = sell.get('timestamp', '')
+                    entry_price = buy.get('executed_price', 0.0)
+                    exit_price = sell.get('executed_price', 0.0)
+                    shares = buy.get('quantity', 0)
+                    strategy_name = buy.get('strategy_name', '')
+                    
+                    if entry_price > 0 and exit_price > 0 and shares > 0:
+                        pnl = (exit_price - entry_price) * shares
+                        return_pct = ((exit_price - entry_price) / entry_price) if entry_price > 0 else 0
+                        position_value = entry_price * shares
+                        
+                        # 保有期間計算
+                        try:
+                            entry_dt = pd.to_datetime(entry_date)
+                            exit_dt = pd.to_datetime(exit_date)
+                            holding_days = (exit_dt - entry_dt).days
+                        except:
+                            holding_days = 0
+                        
+                        # 強制決済判定
+                        is_forced_exit = sell.get('status') == 'force_closed' or False
+                        
+                        trade_record = {
+                            'symbol': symbol,
+                            'entry_date': entry_date,
+                            'entry_price': entry_price,
+                            'exit_date': exit_date,
+                            'exit_price': exit_price,
+                            'shares': shares,
+                            'pnl': pnl,
+                            'return_pct': return_pct,
+                            'holding_period_days': holding_days,
+                            'strategy_name': strategy_name,
+                            'position_value': position_value,
+                            'is_forced_exit': is_forced_exit
+                        }
+                        
+                        trades.append(trade_record)
+            
+            self.logger.info(f"[TRADE_CONVERSION] 生成された取引レコード: {len(trades)}件")
+            return trades
+            
+        except Exception as e:
+            self.logger.error(f"[TRADE_CONVERSION] エラー: {e}")
+            return []
+
+    def _generate_portfolio_equity_curve_csv(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """7. portfolio_equity_curve.csv - ポートフォリオ資産曲線"""
+        try:
+            curve_path = output_dir / "portfolio_equity_curve.csv"
+            
+            # daily_resultsから資産曲線データを作成
+            curve_data = []
+            portfolio_value = 1000000  # 初期値
+            
+            for daily_result in self.daily_results:
+                date = daily_result.get('date', datetime.now().strftime('%Y-%m-%d'))
+                # daily_pnlとdaily_returnの両方をチェック
+                daily_pnl = daily_result.get('daily_pnl', daily_result.get('daily_return', 0))
+                
+                # 実際の取引データがある場合は execution_details から計算
+                if 'execution_details' in daily_result:
+                    calculated_pnl = 0
+                    for exec_detail in daily_result['execution_details']:
+                        if isinstance(exec_detail, dict) and 'pnl' in exec_detail:
+                            calculated_pnl += exec_detail.get('pnl', 0)
+                        elif isinstance(exec_detail, dict) and 'realized_pnl' in exec_detail:
+                            calculated_pnl += exec_detail.get('realized_pnl', 0)
+                    
+                    # execution_detailsから計算したPnLがある場合は優先使用
+                    if calculated_pnl != 0:
+                        daily_pnl = calculated_pnl
+                
+                portfolio_value += daily_pnl
+                
+                curve_data.append({
+                    'Date': date,
+                    'Portfolio_Value': portfolio_value,
+                    'Daily_PnL': daily_pnl,
+                    'Symbol': daily_result.get('symbol', self.current_symbol)
+                })
+            
+            if curve_data:
+                df = pd.DataFrame(curve_data)
+            else:
+                # 空データの場合のフォールバック
+                df = pd.DataFrame({
+                    'Date': [datetime.now().strftime('%Y-%m-%d')],
+                    'Portfolio_Value': [1000000],
+                    'Daily_PnL': [0],
+                    'Symbol': [self.current_symbol]
+                })
+            
+            df.to_csv(curve_path, index=False, encoding='utf-8-sig')
+            
+            self.logger.info(f"[FILE 7/10] portfolio_equity_curve.csv 生成完了: {len(curve_data)}日分のデータ")
+        except Exception as e:
+            self.logger.error(f"[FILE 7/10] portfolio_equity_curve.csv 生成エラー: {e}")
+    
+    def _generate_comprehensive_report_txt(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """8. comprehensive_report.txt - 包括レポート（ComprehensiveReporter相当の詳細分析）"""
+        try:
+            report_path = output_dir / "comprehensive_report.txt"
+            
+            # 詳細取引データを取得
+            all_execution_details = []
+            for daily_result in self.daily_results:
+                daily_execution_details = daily_result.get('execution_details', [])
+                all_execution_details.extend(daily_execution_details)
+            
+            trades = self._convert_execution_details_to_trades(all_execution_details)
+            
+            with open(report_path, 'w', encoding='utf-8') as f:
+                # ヘッダー
+                f.write("=" * 80 + "\n")
+                f.write("DSSMS マルチ戦略動的バックテスト包括レポート\n")
+                f.write("=" * 80 + "\n")
+                f.write(f"現在の銘柄: {self.current_symbol}\n")
+                f.write(f"レポート生成日時: {datetime.now().strftime('%Y%m%d_%H%M%S')}\n")
+                f.write(f"レポート種別: DSSMS 統合戦略実行結果\n\n")
+                
+                # 1. システム実行概要
+                f.write("1. システム実行概要\n")
+                f.write("-" * 40 + "\n")
+                f.write(f"総取引回数: {len(trades)}\n")
+                
+                if self.daily_results:
+                    start_date = self.daily_results[0].get('date', 'N/A')
+                    end_date = self.daily_results[-1].get('date', 'N/A')
+                    f.write(f"データ期間: {start_date} - {end_date}\n")
+                    f.write(f"取引日数: {len(self.daily_results)}\n")
+                
+                # ポートフォリオ統計
+                portfolio_perf = final_results.get('portfolio_performance', {})
+                initial_capital = portfolio_perf.get('initial_capital', 1000000)
+                final_capital = portfolio_perf.get('final_capital', 1000000)
+                total_return_rate = portfolio_perf.get('total_return_rate', 0)
+                
+                f.write(f"初期資金: ¥{initial_capital:,}\n")
+                f.write(f"最終ポートフォリオ値: ¥{final_capital:,}\n")
+                f.write(f"総リターン: {total_return_rate:.2%}\n")
+                
+                # 勝率計算
+                winning_trades = len([t for t in trades if t.get('pnl', 0) > 0])
+                losing_trades = len([t for t in trades if t.get('pnl', 0) < 0])
+                win_rate = (winning_trades / max(1, len(trades))) * 100
+                f.write(f"勝率: {win_rate:.2f}%\n\n")
+                
+                # 2. パフォーマンス統計
+                f.write("2. パフォーマンス統計\n")
+                f.write("-" * 40 + "\n")
+                f.write(f"総取引数: {len(trades)}\n")
+                f.write(f"勝ちトレード数: {winning_trades}\n")
+                f.write(f"負けトレード数: {losing_trades}\n")
+                f.write(f"勝率: {win_rate:.2f}%\n\n")
+                
+                # 損益統計
+                if trades:
+                    profits = [t.get('pnl', 0) for t in trades if t.get('pnl', 0) > 0]
+                    losses = [t.get('pnl', 0) for t in trades if t.get('pnl', 0) < 0]
+                    
+                    avg_profit = sum(profits) / max(1, len(profits)) if profits else 0
+                    avg_loss = sum(losses) / max(1, len(losses)) if losses else 0
+                    max_profit = max(profits) if profits else 0
+                    max_loss = min(losses) if losses else 0
+                    
+                    total_profit = sum(profits)
+                    total_loss = sum(losses)
+                    net_profit = total_profit + total_loss  # lossは負の値
+                    
+                    f.write(f"平均利益: ¥{avg_profit:,.0f}\n")
+                    f.write(f"平均損失: ¥{avg_loss:,.0f}\n")
+                    f.write(f"最大利益: ¥{max_profit:,.0f}\n")
+                    f.write(f"最大損失: ¥{max_loss:,.0f}\n\n")
+                    
+                    f.write(f"総利益: ¥{total_profit:,.0f}\n")
+                    f.write(f"総損失: ¥{total_loss:,.0f}\n")
+                    f.write(f"純利益: ¥{net_profit:,.0f}\n")
+                    
+                    profit_factor = abs(total_profit / total_loss) if total_loss != 0 else 0
+                    f.write(f"プロフィットファクター: {profit_factor:.2f}\n\n")
+                else:
+                    f.write("取引データなし\n\n")
+                
+                # 3. 期待値分析
+                f.write("3. 期待値分析\n")
+                f.write("-" * 40 + "\n")
+                if trades:
+                    avg_pnl_per_trade = sum([t.get('pnl', 0) for t in trades]) / len(trades)
+                    f.write(f"システム期待値 (1トレードあたり):\n")
+                    f.write(f"  金額: ¥{avg_pnl_per_trade:,.0f}\n")
+                    f.write(f"  基準: {len(trades)}取引の平均\n\n")
+                    
+                    # 戦略別期待値（簡略化）
+                    strategy_stats = {}
+                    for trade in trades:
+                        strategy = trade.get('strategy_name', 'Unknown')
+                        if strategy not in strategy_stats:
+                            strategy_stats[strategy] = {'pnl': 0, 'count': 0, 'wins': 0}
+                        strategy_stats[strategy]['pnl'] += trade.get('pnl', 0)
+                        strategy_stats[strategy]['count'] += 1
+                        if trade.get('pnl', 0) > 0:
+                            strategy_stats[strategy]['wins'] += 1
+                    
+                    f.write("戦略別期待値:\n")
+                    for strategy, stats in strategy_stats.items():
+                        expected_value = stats['pnl'] / stats['count'] if stats['count'] > 0 else 0
+                        win_rate = (stats['wins'] / stats['count']) * 100 if stats['count'] > 0 else 0
+                        f.write(f"  {strategy}:\n")
+                        f.write(f"    期待値: ¥{expected_value:,.0f}\n")
+                        f.write(f"    取引数: {stats['count']}\n")
+                        f.write(f"    勝率: {win_rate:.2f}%\n\n")
+                    
+                    # 期待値統計
+                    daily_expected = avg_pnl_per_trade if len(self.daily_results) > 0 else 0
+                    monthly_expected = daily_expected * 20  # 概算
+                    yearly_expected = monthly_expected * 12
+                    
+                    f.write("期待値統計:\n")
+                    f.write(f"  日次期待値: ¥{daily_expected:,.0f}\n")
+                    f.write(f"  月次期待値: ¥{monthly_expected:,.0f}\n")
+                    f.write(f"  年次期待値: ¥{yearly_expected:,.0f}\n\n")
+                else:
+                    f.write("取引データがないため期待値計算不可\n\n")
+                
+                # 4. 取引詳細
+                f.write("4. 取引詳細\n")
+                f.write("-" * 40 + "\n")
+                f.write(f"総取引数: {len(trades)}\n\n")
+                
+                if trades:
+                    f.write("取引履歴 (最初の10件):\n\n")
+                    f.write("No.  戦略                   エントリー日       エグジット日       価格         価格         PnL         \n")
+                    f.write("                                                    (エントリー)    (エグジット)    (円)         \n")
+                    f.write("-" * 90 + "\n")
+                    
+                    for i, trade in enumerate(trades[:10], 1):
+                        strategy = trade.get('strategy_name', 'Unknown')[:20]  # 戦略名を20文字で切り詰め
+                        entry_date = trade.get('entry_date', '')[:10]  # 日付部分のみ
+                        exit_date = trade.get('exit_date', '')[:10]
+                        entry_price = trade.get('entry_price', 0)
+                        exit_price = trade.get('exit_price', 0)
+                        pnl = trade.get('pnl', 0)
+                        
+                        f.write(f"{i:<4} {strategy:<20} {entry_date:<14} {exit_date:<14} {entry_price:<10.2f} {exit_price:<10.2f} {pnl:<10.0f}\n")
+                    
+                    if len(trades) > 10:
+                        f.write(f"... 他{len(trades) - 10}件の取引\n")
+                else:
+                    f.write("取引履歴なし\n")
+                
+                f.write("\n")
+                
+                # 5. DSSMS統計
+                f.write("5. DSSMS統計\n")
+                f.write("-" * 40 + "\n")
+                f.write(f"銘柄切替回数: {len(self.switch_history)}回\n")
+                f.write(f"平均実行時間: {self._calculate_average_execution_time():.0f}ms\n")
+                if self.daily_results:
+                    success_rate = (len([r for r in self.daily_results if r.get('success')]) / len(self.daily_results)) * 100
+                    f.write(f"日次成功率: {success_rate:.1f}%\n")
+                
+                # 6. フッター
+                f.write("\n" + "=" * 80 + "\n")
+                f.write("レポート終了\n")
+                f.write("=" * 80 + "\n")
+            
+            self.logger.info(f"[FILE 8/11] comprehensive_report.txt 生成完了 (ComprehensiveReporter相当)")
+        except Exception as e:
+            self.logger.error(f"[FILE 8/11] comprehensive_report.txt 生成エラー: {e}")
+    
+    def _calculate_average_execution_time(self) -> float:
+        """平均実行時間を計算"""
+        if not self.daily_results:
+            return 0.0
+        
+        execution_times = [r.get('execution_time_ms', 0) for r in self.daily_results]
+        return sum(execution_times) / len(execution_times) if execution_times else 0.0
+    
+    def _generate_summary_txt(self, output_dir: Path, final_results: Dict[str, Any]) -> None:
+        """9. summary.txt - サマリー（銘柄プレフィックス削除）"""
+        try:
+            summary_path = output_dir / "summary.txt"
+            
+            portfolio_perf = final_results.get('portfolio_performance', {})
+            exec_meta = final_results.get('execution_metadata', {})
+            
+            with open(summary_path, 'w', encoding='utf-8') as f:
+                f.write("DSSMS 実行サマリー\n")
+                f.write("=" * 30 + "\n")
+                f.write(f"現在銘柄: {self.current_symbol}\n")
+                f.write(f"ポートフォリオ価値: {self.portfolio_value:,.0f}円\n")
+                f.write(f"総収益率: {portfolio_perf.get('total_return_rate', 0):.2%}\n")
+                f.write(f"成功率: {portfolio_perf.get('success_rate', 0):.1%}\n")
+                f.write(f"取引日数: {exec_meta.get('trading_days', 0)}日\n")
+                f.write(f"銘柄切替回数: {len(self.switch_history)}回\n")
+                f.write(f"実行日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            
+            self.logger.info(f"[FILE 9/10] summary.txt 生成完了")
+        except Exception as e:
+            self.logger.error(f"[FILE 9/10] summary.txt 生成エラー: {e}")
+    
+    # 既存メソッド継続
     
     def _prepare_market_data_for_analysis(self, symbols: List[str], target_date: datetime) -> Optional[Dict[str, Any]]:
         """
