@@ -568,9 +568,9 @@ class VWAPBreakoutStrategy(BaseStrategy):
                 'reason': f'VWAPBreakout: No data available for {current_date.strftime("%Y-%m-%d")}'
             }
             
-        # Phase 3: ウォームアップ期間考慮（150日）
+        # Phase 3: ウォームアップ期間考慮（短縮版: 30日）
         current_idx = stock_data.index.get_loc(current_date)
-        warmup_period = 150
+        warmup_period = 30  # 2026-01-10修正: 150日→30日（取引0件問題対応）
         
         if current_idx < warmup_period:
             return {

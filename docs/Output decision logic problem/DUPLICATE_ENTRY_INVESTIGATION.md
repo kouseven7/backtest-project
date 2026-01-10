@@ -85,15 +85,14 @@ strategy_result = self._execute_multi_strategies_daily(
 | main_new.py | VWAPBreakoutStrategy + BreakoutStrategy | **3取引成功** |
 | DSSMS | GCStrategy選択 → backtest_daily()実行 | **0取引（action=hold）** |
 
-#### 根本原因
+#### 根本原因の推測とおそらく間違いの理由
 - DSSMS: GCStrategyのbacktest_daily()メソッドが`action=hold, signal=0`を返す
 - main_new.py: VWAPBreakoutStrategyとBreakoutStrategyで正常に取引実行
-- 問題は**GCStrategyの日次取引条件**にある
+- 問題は**GCStrategyの日次取引条件**にあると推測したが、数か月のDSSMSバックテストで取引が発生していない別の問題があると考えられる
 
 ### 次の調査課題
 1. GCStrategyのbacktest_daily()メソッドでエントリー条件が満たされない理由
 2. GoldenCross条件がなぜ日次モードで機能しないのか
-3. 2025-01-15〜2025-01-17期間でのゴールデンクロス発生状況の確認
 
 ### ゴール（継続中）
 - **エントリーが一回以上ありかつ重複しない状態**の実現

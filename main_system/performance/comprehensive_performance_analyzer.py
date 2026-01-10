@@ -3,9 +3,30 @@
 Phase 3: 実行・制御システム構築 - 包括的パフォーマンス分析
 EnhancedPerformanceCalculator + PerformanceAggregator の統合
 
+## DSSMS完全取引サイクルゴール条件
+
+### 必須成功条件（全て満足必要）
+1. **完全な取引サイクル**: エントリー + エグジット両方実行
+2. **正確なP&L計算**: (売値 - 買値) * 株数 - 手数料
+3. **正確なポートフォリオ管理**: 現金残高の増減反映
+4. **完全な出力データ**: 10個のファイル全てに正確データ
+5. **数学的正確性**: 1-1=0レベルの基本計算整合性
+
+### 失格条件（一つでも該当すると失格）
+- エグジットなしのエントリー存在
+- exit_price=0.0の取引記録  
+- 最終資本が大幅マイナス（未決済による見せかけ）
+- comprehensive_report.txtで総利益・総損失が0円
+
+### 検証手順
+1. all_transactions.csv: exit_price > 0, pnl != 0 確認
+2. portfolio_equity_curve.csv: 資産推移が論理的確認
+3. comprehensive_report.txt: 総利益・総損失が非ゼロ確認
+4. 最終資本 = 初期資本 + Σ(取引P&L) の数学的整合性確認
+
 Author: imega
 Created: 2025-10-18
-Modified: 2025-10-18
+Modified: 2026-01-10 (DSSMS完全取引サイクル対応)
 """
 
 import sys
