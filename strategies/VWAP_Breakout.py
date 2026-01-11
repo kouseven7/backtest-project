@@ -522,16 +522,21 @@ class VWAPBreakoutStrategy(BaseStrategy):
         
         return self.data
 
-    def backtest_daily(self, current_date, stock_data, existing_position=None):
+    def backtest_daily(self, current_date, stock_data, existing_position=None, **kwargs):
         """
         VWAPBreakoutStrategy 日次バックテスト実行
         
         Phase 3-A Step A2実装: VWAPBreakout戦略での実証実装
         
+        Cycle 26修正: **kwargs追加
+        - 理由: force_close時にentry_symbol_dataがkwargsで渡される（Cycle 7修正）
+        - VWAPBreakoutStrategyはentry_symbol_dataを使用しないが、受け取れるようにする
+        
         Parameters:
             current_date (datetime): 判定対象日
             stock_data (pd.DataFrame): 最新の株価データ
             existing_position (dict, optional): 既存ポジション情報
+            **kwargs: 追加引数（entry_symbol_data等）
             
         Returns:
             dict: {
@@ -557,7 +562,14 @@ class VWAPBreakoutStrategy(BaseStrategy):
             current_date = pd.Timestamp(current_date)
         elif not isinstance(current_date, pd.Timestamp):
             current_date = pd.Timestamp(current_date)
-            
+        
+        # Cycle 24修正: タイムゾーン統一（Breakout.py Cycle 20, GCStrategy Cycle 23パターン）
+        # 理由: stock_data.indexは+09:00タイムゾーン付き、current_dateはtz-naiveの可能性
+        if current_date.tz is not None:
+            current_date = current_date.tz_localize(None)
+        if stock_data.index.tz is not None:
+            stock_data.index = stock_data.index.tz_localize(None)
+        
         # Phase 2: データ整合性チェック
         if current_date not in stock_data.index:
             return {
@@ -568,17 +580,19 @@ class VWAPBreakoutStrategy(BaseStrategy):
                 'reason': f'VWAPBreakout: No data available for {current_date.strftime("%Y-%m-%d")}'
             }
             
-        # Phase 3: ウォームアップ期間考慮（短縮版: 30日）
+        # Phase 3: ウォームアップ期間考慮
+        # Cycle 24修正: DSSMSがwarmup_days=150で既にデータ拡大済み（GCStrategy Cycle 23パターン）
+        # 戦略はsma_long期間分のみ必要（Breakout.py: look_back=5, GCStrategy: long_window=25）
         current_idx = stock_data.index.get_loc(current_date)
-        warmup_period = 30  # 2026-01-10修正: 150日→30日（取引0件問題対応）
+        min_required = self.params.get("sma_long", 30)  # VWAPBreakout固有: sma_long期間
         
-        if current_idx < warmup_period:
+        if current_idx < min_required:
             return {
                 'action': 'hold',
                 'signal': 0,
                 'price': 0.0,
                 'shares': 0,
-                'reason': f'VWAPBreakout: Insufficient warmup data. Required: {warmup_period}, Available: {current_idx}'
+                'reason': f'VWAPBreakout: Insufficient warmup data. Required: {min_required}, Available: {current_idx}'
             }
         
         # Phase 4: データ更新（Option B方式を活用）

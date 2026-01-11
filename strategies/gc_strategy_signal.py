@@ -316,11 +316,15 @@ class GCStrategy(BaseStrategy):
             info['optimized_params'] = self._approved_params
         return info
 
-    def backtest_daily(self, current_date, stock_data: pd.DataFrame, existing_position=None):
+    def backtest_daily(self, current_date, stock_data: pd.DataFrame, existing_position=None, **kwargs):
         """
         日次バックテスト実行（Phase 3-C Day 11実装）
         
         GCStrategy専用のbacktest_daily()実装。templates/backtest_daily_template.pyパターンを活用。
+        
+        Cycle 26修正: **kwargs追加
+        - 理由: force_close時にentry_symbol_dataがkwargsで渡される（Cycle 7修正）
+        - GCStrategyはentry_symbol_dataを使用しないが、受け取れるようにする
         
         Parameters:
             current_date: 判定対象日（datetime/pd.Timestamp/str）
@@ -348,14 +352,29 @@ class GCStrategy(BaseStrategy):
             - 既存generate_entry_signal/exit_signal活用
             - Entry_Signal依存なし（翌日始値対応済み）
         """
+        print(f"[GC_DEBUG] backtest_daily() called: current_date={current_date}, stock_data.shape={stock_data.shape}")
+        
         # Phase 1: current_dateの型変換・検証
         if isinstance(current_date, str):
             current_date = pd.Timestamp(current_date)
         elif not isinstance(current_date, pd.Timestamp):
             current_date = pd.Timestamp(current_date)
         
+        print(f"[GC_DEBUG] Phase 1 complete: current_date={current_date}, type={type(current_date)}")
+        
+        # Cycle 23修正: Breakout.py Cycle 20修正を参考にタイムゾーン統一
+        if current_date.tz is not None:
+            current_date = current_date.tz_localize(None)
+            print(f"[GC_DEBUG] current_date tz-naive conversion完了")
+        if stock_data.index.tz is not None:
+            stock_data.index = stock_data.index.tz_localize(None)
+            print(f"[GC_DEBUG] stock_data.index tz-naive conversion完了")
+        
         # Phase 2: データ整合性チェック
+        print(f"[GC_DEBUG] Phase 2 check: current_date={current_date}, current_date in index={current_date in stock_data.index}")
+        
         if current_date not in stock_data.index:
+            print(f"[GC_DEBUG] Phase 2 early return: current_date NOT in index")
             return {
                 'action': 'hold',
                 'signal': 0,
@@ -364,17 +383,24 @@ class GCStrategy(BaseStrategy):
                 'reason': f'GCStrategy: No data available for {current_date.strftime("%Y-%m-%d")}'
             }
         
-        # Phase 3: ウォームアップ期間考慮
-        current_idx = stock_data.index.get_loc(current_date)
-        warmup_period = max(self.long_window, 150)  # 長期MAまたは150日の大きい方
+        print(f"[GC_DEBUG] Phase 2 passed, proceeding to Phase 3")
         
-        if current_idx < warmup_period:
+        # Phase 3: ウォームアップ期間考慮
+        # Cycle 23修正: Breakout.py Cycle 19修正を参考に、戦略固有の最小期間のみを要求
+        # 理由: DSSMSがwarmup_days=150で既にデータ拡大しているため、戦略側で150日要求は不要
+        current_idx = stock_data.index.get_loc(current_date)
+        min_required = self.long_window  # GCStrategyはlong_window=25のみ必要
+        
+        print(f"[GC_WARMUP_DEBUG] current_idx={current_idx}, min_required={min_required}, long_window={self.long_window}")
+        
+        if current_idx < min_required:
+            print(f"[GC_WARMUP_DEBUG] INSUFFICIENT DATA: current_idx={current_idx} < min_required={min_required}")
             return {
                 'action': 'hold',
                 'signal': 0,
                 'price': 0.0,
                 'shares': 0,
-                'reason': f'GCStrategy: Insufficient warmup data. Required: {warmup_period}, Available: {current_idx}'
+                'reason': f'GCStrategy: Insufficient warmup data. Required: {min_required}, Available: {current_idx}'
             }
         
         # Phase 4: データ更新（Option B方式）
@@ -401,11 +427,15 @@ class GCStrategy(BaseStrategy):
                 self.logger.debug(f"[GCStrategy.backtest_daily] SMA columns recalculated")
             
             # Phase 5: 既存ポジション処理分岐
+            print(f"[GC_DEBUG] Phase 5: existing_position={existing_position is not None}")
+            
             if existing_position is not None:
                 # 既存ポジションあり: エグジット判定
+                print(f"[GC_DEBUG] Calling _handle_exit_logic_daily")
                 return self._handle_exit_logic_daily(current_idx, existing_position, stock_data, current_date)
             else:
                 # 既存ポジションなし: エントリー判定
+                print(f"[GC_DEBUG] Calling _handle_entry_logic_daily")
                 return self._handle_entry_logic_daily(current_idx, stock_data, current_date)
         
         finally:
@@ -480,8 +510,16 @@ class GCStrategy(BaseStrategy):
             dict: {'action': 'entry'|'hold', 'signal': 1|0, 'price': float, 'shares': int, 'reason': str}
         """
         try:
+            # Cycle 23デバッグ: generate_entry_signal呼び出し前の状態確認
+            short_sma = self.data[f"SMA_{self.short_window}"].iloc[current_idx]
+            long_sma = self.data[f"SMA_{self.long_window}"].iloc[current_idx]
+            self.logger.info(f"[GC_ENTRY_DEBUG] current_idx={current_idx}, date={current_date}, "
+                           f"short_sma={short_sma:.2f}, long_sma={long_sma:.2f}")
+            
             # generate_entry_signal呼び出し（既存実装活用）
             entry_signal = self.generate_entry_signal(current_idx)
+            
+            self.logger.info(f"[GC_ENTRY_DEBUG] entry_signal={entry_signal}")
             
             if entry_signal == 1:
                 # エントリーシグナル発生

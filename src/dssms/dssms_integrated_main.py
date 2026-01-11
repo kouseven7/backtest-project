@@ -2091,17 +2091,22 @@ class DSSMSIntegratedBacktester:
             
             # Phase 3-C Day 12 Task 2-2: 戦略選択ロジック（DynamicStrategySelector使用）
             # Cycle 13修正: BreakoutStrategyRelaxed強制使用を削除し、実戦略選択を有効化
-            # Cycle 13最終検証用: BreakoutStrategyRelaxedで全ゴール達成確認後、実戦略に切替予定
-            if False:  # 実戦略テスト時はTrueに変更
+            # Cycle 14修正: volume_threshold=1.0に調整後、実戦略使用（BreakoutStrategy）
+            if True:  # Cycle 14: 実戦略テスト有効化
                 if self.strategy_selector:
                     try:
-                        self.logger.info(f"[PHASE3-C-B1] DynamicStrategySelector.select_best_strategy()実行開始")
-                        strategy_selection_result = self.strategy_selector.select_best_strategy(
-                            processed_data, market_analysis, existing_position=self.current_position
+                        self.logger.info(f"[PHASE3-C-B1] DynamicStrategySelector.select_optimal_strategies()実行開始")
+                        # Cycle 23修正: select_best_strategy() → select_optimal_strategies()
+                        strategy_selection_result = self.strategy_selector.select_optimal_strategies(
+                            market_analysis=market_analysis, 
+                            stock_data=processed_data, 
+                            ticker=symbol
                         )
-                        best_strategy_name = strategy_selection_result.get('selected_strategy', 'BreakoutStrategy')
+                        # Cycle 23修正: 'selected_strategy' → 'selected_strategies'（リスト）
+                        selected_strategies = strategy_selection_result.get('selected_strategies', ['BreakoutStrategy'])
+                        best_strategy_name = selected_strategies[0] if selected_strategies else 'BreakoutStrategy'
                         strategy_selection = strategy_selection_result
-                        self.logger.info(f"[PHASE3-C-B1] 戦略選択完了: {best_strategy_name}")
+                        self.logger.info(f"[PHASE3-C-B1] 戦略選択完了: {best_strategy_name}, 全選択: {selected_strategies}")
                     except Exception as e:
                         self.logger.warning(f"[PHASE3-C-B1] DynamicStrategySelector実行エラー、BreakoutStrategyにフォールバック: {e}")
                         best_strategy_name = 'BreakoutStrategy'
@@ -2111,7 +2116,7 @@ class DSSMSIntegratedBacktester:
                     best_strategy_name = 'BreakoutStrategy'
                     strategy_selection = {'status': 'default', 'reason': 'Strategy selector not initialized', 'selected_strategies': ['BreakoutStrategy']}
             else:
-                # Cycle 13最終検証用: BreakoutStrategyRelaxedで全ゴール達成確認
+                # Cycle 13最終検証用: BreakoutStrategyRelaxedで全ゴール達成確認（Cycle 14では無効化）
                 self.logger.info(f"[CYCLE13_VERIFICATION] BreakoutStrategyRelaxedで最終検証実施")
                 best_strategy_name = 'BreakoutStrategyRelaxed'
                 strategy_selection = {'status': 'verification', 'reason': 'Cycle 13 final verification with BreakoutStrategyRelaxed', 'selected_strategies': ['BreakoutStrategyRelaxed']}
@@ -2201,6 +2206,15 @@ class DSSMSIntegratedBacktester:
                 missing_keys = [key for key in required_keys if key not in result]
                 if missing_keys:
                     raise ValueError(f"Missing required keys: {missing_keys}")
+                
+                # Cycle 21修正: action値の正規化（'entry'→'buy', 'exit'→'sell'）
+                # 理由: BreakoutStrategyは'entry'/'exit'を返すが、DSSMSは'buy'/'sell'を期待
+                if result['action'] == 'entry':
+                    result['action'] = 'buy'
+                    self.logger.info(f"[PHASE3-C-B1] action正規化: 'entry' → 'buy'")
+                elif result['action'] == 'exit':
+                    result['action'] = 'sell'
+                    self.logger.info(f"[PHASE3-C-B1] action正規化: 'exit' → 'sell'")
                     
             except Exception as e:
                 self.logger.error(f"[PHASE3-C-B1] backtest_daily()実行エラー: {e}", exc_info=True)
@@ -3777,6 +3791,11 @@ class DSSMSIntegratedBacktester:
             
             # BUY/SELLペアリングして取引レコードを作成
             trades = self._convert_execution_details_to_trades(all_execution_details)
+            
+            # Cycle 23デバッグ: tradesの内容確認
+            self.logger.info(f"[CSV_DEBUG] trades type={type(trades)}, len={len(trades) if trades else 0}")
+            if trades:
+                self.logger.info(f"[CSV_DEBUG] trades[0]={trades[0]}")
             
             # CSV作成
             with open(transactions_path, 'w', newline='', encoding='utf-8') as f:

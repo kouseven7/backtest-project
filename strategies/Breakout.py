@@ -19,6 +19,7 @@ sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")  # プロジェ
 
 import pandas as pd
 import numpy as np
+import os
 from typing import Dict, Any
 from strategies.base_strategy import BaseStrategy
 
@@ -74,10 +75,22 @@ class BreakoutStrategy(BaseStrategy):
         """
         look_back = self.params["look_back"]
         
+        # Cycle 20デバッグログ追加
+        if os.getenv("DEBUG_BACKTEST"):
+            print(f"[DEBUG_ENTRY_SIG] generate_entry_signal開始: idx={idx}, look_back={look_back}, data.shape={self.data.shape}")
+            self.log_trade(f"[DEBUG_ENTRY_SIG] generate_entry_signal開始: idx={idx}, look_back={look_back}, "
+                         f"data.shape={self.data.shape}")
+        
         if idx < look_back:  # 過去データが必要
+            if os.getenv("DEBUG_BACKTEST"):
+                print(f"[DEBUG_ENTRY_SIG] 早期リターン: idx({idx}) < look_back({look_back})")
+                self.log_trade(f"[DEBUG_ENTRY_SIG] 早期リターン: idx({idx}) < look_back({look_back})")
             return 0
             
         if 'High' not in self.data.columns:
+            if os.getenv("DEBUG_BACKTEST"):
+                print(f"[DEBUG_ENTRY_SIG] 早期リターン: Highカラムなし, columns={self.data.columns.tolist()}")
+                self.log_trade(f"[DEBUG_ENTRY_SIG] 早期リターン: Highカラムなし, columns={self.data.columns.tolist()}")
             return 0  # 高値データがない場合
 
         current_price = self.data[self.price_column].iloc[idx]
@@ -94,29 +107,21 @@ class BreakoutStrategy(BaseStrategy):
 
         # 前日高値を上抜けた場合（上抜け幅をパラメータ化）
         price_breakout = current_price > previous_high * (1 + self.params["breakout_buffer"])
+        
+        # Cycle 19デバッグログ追加
+        if os.getenv("DEBUG_BACKTEST"):
+            date_str = self.data.index[idx]
+            self.log_trade(f"[DEBUG_ENTRY] idx={idx}, date={date_str}, "
+                         f"price={current_price:.2f}, prev_high={previous_high:.2f}, "
+                         f"vol={current_volume if self.volume_column in self.data.columns else 'N/A'}, "
+                         f"prev_vol={previous_volume if self.volume_column in self.data.columns else 'N/A'}, "
+                         f"price_breakout={price_breakout}, volume_increase={volume_increase}")
 
         if price_breakout and volume_increase:
-            # Phase 1a修正: エントリー価格を翌日始値に変更（ルックアヘッドバイアス修正）
-            # Phase 2修正: スリッページ・取引コスト対応（2025-12-23追加）
-            # 理由: idx日の終値を見てからidx日の終値で買うことは不可能
-            # リアルトレードでは翌日（idx+1日目）の始値でエントリー
-            next_day_open = self.data['Open'].iloc[idx + 1]
-            
-            # Phase 2: スリッページ・取引コスト適用（買い注文は不利な方向）
-            # デフォルト: slippage=0.001（0.1%）、transaction_cost=0.0（0%）
-            slippage = self.params.get("slippage", 0.001)
-            transaction_cost = self.params.get("transaction_cost", 0.0)
-            entry_price = next_day_open * (1 + slippage + transaction_cost)
-            self.entry_prices[idx] = entry_price  # スリッページ適用後の価格を記録
-            
-            # 高値の初期値も翌日始値を使用（トレーリングストップの起点）
-            if 'High' in self.data.columns:
-                # 翌日の高値を使用
-                self.high_prices[idx] = self.data['High'].iloc[idx + 1]
-            else:
-                self.high_prices[idx] = next_day_open
-                
-            self.log_trade(f"Breakout エントリーシグナル: 日付={self.data.index[idx]}, 価格={next_day_open}, 前日高値={previous_high}")
+            # Cycle 19修正: idx+1アクセスを削除（IndexError回避）
+            # generate_entry_signal()は1/0のみを返す
+            # 価格計算は_handle_entry_logic_daily()で実施
+            self.log_trade(f"Breakout エントリーシグナル: 日付={self.data.index[idx]}, 前日高値={previous_high}")
             return 1
 
         return 0
@@ -263,16 +268,21 @@ class BreakoutStrategy(BaseStrategy):
 
         return self.data
 
-    def backtest_daily(self, current_date, stock_data, existing_position=None):
+    def backtest_daily(self, current_date, stock_data, existing_position=None, **kwargs):
         """
         BreakoutStrategy 日次バックテスト実行
         
         Phase 3-C Day 9実装: Breakout戦略でのbacktest_daily()実装
         
+        Cycle 26修正: **kwargs追加
+        - 理由: force_close時にentry_symbol_dataがkwargsで渡される（Cycle 7修正）
+        - BreakoutStrategyはentry_symbol_dataを使用しないが、受け取れるようにする
+        
         Parameters:
             current_date (datetime): 判定対象日
             stock_data (pd.DataFrame): 最新の株価データ
             existing_position (dict, optional): 既存ポジション情報
+            **kwargs: 追加引数（entry_symbol_data等）
                 {
                     'symbol': str,
                     'quantity': int,
@@ -293,14 +303,38 @@ class BreakoutStrategy(BaseStrategy):
         import logging
         logger = logging.getLogger(__name__)
         
+        # Cycle 20: 関数呼び出し確認用print()
+        if os.getenv("DEBUG_BACKTEST"):
+            print(f"[DEBUG_BACKTEST_DAILY] backtest_daily()呼び出し確認: current_date={current_date}")
+            print(f"[DEBUG_BACKTEST_DAILY] stock_data.shape={stock_data.shape}")
+            print(f"[DEBUG_BACKTEST_DAILY] stock_data.index[0]={stock_data.index[0]}, stock_data.index[-1]={stock_data.index[-1]}")
+            print(f"[DEBUG_BACKTEST_DAILY] current_date in stock_data.index: {current_date in stock_data.index}")
+        
         # Phase 1: current_dateの型変換・検証
         if isinstance(current_date, str):
             current_date = pd.Timestamp(current_date)
         elif not isinstance(current_date, pd.Timestamp):
             current_date = pd.Timestamp(current_date)
+        
+        # Cycle 20修正: タイムゾーン統一（tz-naiveに変換）
+        if current_date.tz is not None:
+            current_date = current_date.tz_localize(None)
+        
+        if os.getenv("DEBUG_BACKTEST"):
+            print(f"[DEBUG_PHASE1] current_date={current_date}, type={type(current_date)}, tz={current_date.tz}")
+            print(f"[DEBUG_PHASE1] stock_data.index has tz: {stock_data.index.tz is not None}")
+            if stock_data.index.tz is not None:
+                print(f"[DEBUG_PHASE1] stock_data.index.tz: {stock_data.index.tz}")
             
-        # Phase 2: データ整合性チェック
+        # Phase 2: データ整合性チェック（タイムゾーン統一後）
+        # stock_dataのインデックスもtz-naiveに変換
+        if stock_data.index.tz is not None:
+            stock_data.index = stock_data.index.tz_localize(None)
+        
         if current_date not in stock_data.index:
+            if os.getenv("DEBUG_BACKTEST"):
+                print(f"[DEBUG_PHASE2] 早期リターン: current_date({current_date})がstock_data.indexに存在しない")
+                print(f"[DEBUG_PHASE2] stock_data.index available: {stock_data.index.tolist()[:5]} ... {stock_data.index.tolist()[-5:]}")
             return {
                 'action': 'hold',
                 'signal': 0,
@@ -308,24 +342,49 @@ class BreakoutStrategy(BaseStrategy):
                 'shares': 0,
                 'reason': f'Breakout: No data available for {current_date.strftime("%Y-%m-%d")}'
             }
+        
+        if os.getenv("DEBUG_BACKTEST"):
+            print(f"[DEBUG_PHASE2] データ整合性OK: current_date({current_date}) in stock_data.index")
             
         # Phase 3: ウォームアップ期間考慮
         current_idx = stock_data.index.get_loc(current_date)
-        warmup_period = 150
         look_back = self.params.get("look_back", 1)
-        min_required = max(warmup_period, look_back)
+        # Cycle 19修正: warmup_periodチェックを削除（DSSMSが既にwarmup込みデータを渡すため）
+        # min_required = max(warmup_period, look_back) だと常にmin_required=150でエントリー不可
+        min_required = look_back
+        
+        if os.getenv("DEBUG_BACKTEST"):
+            print(f"[DEBUG_PHASE3] current_idx={current_idx}, min_required={min_required}, stock_data.shape={stock_data.shape}")
         
         if current_idx < min_required:
+            if os.getenv("DEBUG_BACKTEST"):
+                print(f"[DEBUG_PHASE3] 早期リターン: Insufficient data (current_idx={current_idx} < min_required={min_required})")
             return {
                 'action': 'hold',
                 'signal': 0,
                 'price': 0.0,
                 'shares': 0,
-                'reason': f'Breakout: Insufficient warmup data. Required: {min_required}, Available: {current_idx}'
+                'reason': f'Breakout: Insufficient data for look_back. Required: {min_required}, Available: {current_idx}'
             }
         
         # Phase 4: データ更新（Option B方式）
         original_data = self.data.copy()
+        
+        # Cycle 20デバッグログ追加
+        if os.getenv("DEBUG_BACKTEST"):
+            print(f"[DEBUG_DATA_UPDATE] データ更新前: self.data.shape={self.data.shape}")
+            print(f"[DEBUG_DATA_UPDATE] self.data.index: [0]={self.data.index[0]}, [-1]={self.data.index[-1]}")
+            print(f"[DEBUG_DATA_UPDATE] stock_data: shape={stock_data.shape}, index: [0]={stock_data.index[0]}, [-1]={stock_data.index[-1]}")
+            print(f"[DEBUG_DATA_UPDATE] current_date={current_date}, current_idx={current_idx}")
+            if current_idx < len(self.data):
+                print(f"[DEBUG_DATA_UPDATE] self.data.index[{current_idx}]={self.data.index[current_idx]}")
+            logger.info(f"[DEBUG_DATA_UPDATE] データ更新前: self.data.shape={self.data.shape}, "
+                      f"self.data.index[0]={self.data.index[0]}, self.data.index[-1]={self.data.index[-1]}")
+            logger.info(f"[DEBUG_DATA_UPDATE] stock_data: shape={stock_data.shape}, "
+                      f"index[0]={stock_data.index[0]}, index[-1]={stock_data.index[-1]}")
+            logger.info(f"[DEBUG_DATA_UPDATE] current_date={current_date}, current_idx={current_idx}")
+            if current_idx < len(self.data):
+                logger.info(f"[DEBUG_DATA_UPDATE] self.data.index[{current_idx}]={self.data.index[current_idx]}")
         
         try:
             basic_columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
@@ -340,12 +399,20 @@ class BreakoutStrategy(BaseStrategy):
             
             logger.debug(f"[Breakout.backtest_daily] Data updated: {updated_columns}")
             
+            # Cycle 20: 分岐確認用print()
+            if os.getenv("DEBUG_BACKTEST"):
+                print(f"[DEBUG_BRANCH] existing_position: {existing_position is not None}, type={type(existing_position)}")
+            
             # Phase 5: 既存ポジション処理分岐
             if existing_position is not None:
                 # エグジット判定（簡易版: Entry_Signal依存を回避）
+                if os.getenv("DEBUG_BACKTEST"):
+                    print(f"[DEBUG_BRANCH] エグジットロジックへ: existing_position={existing_position}")
                 return self._handle_exit_logic_daily(current_idx, existing_position, stock_data, current_date)
             else:
                 # エントリー判定
+                if os.getenv("DEBUG_BACKTEST"):
+                    print(f"[DEBUG_BRANCH] エントリーロジックへ")
                 return self._handle_entry_logic_daily(current_idx, stock_data, current_date)
         
         finally:
@@ -444,10 +511,26 @@ class BreakoutStrategy(BaseStrategy):
         logger = logging.getLogger(__name__)
         
         try:
+            # Cycle 20デバッグログ追加
+            if os.getenv("DEBUG_BACKTEST"):
+                print(f"[DEBUG_ENTRY_LOGIC] _handle_entry_logic_daily呼び出し: current_idx={current_idx}, date={current_date}")
+                logger.info(f"[DEBUG_ENTRY_LOGIC] _handle_entry_logic_daily呼び出し: current_idx={current_idx}, "
+                          f"date={current_date}, stock_data.shape={stock_data.shape}")
+            
             # generate_entry_signal()を使用してエントリー判定
             entry_signal = self.generate_entry_signal(current_idx)
             
+            # Cycle 20デバッグログ追加
+            if os.getenv("DEBUG_BACKTEST"):
+                print(f"[DEBUG_ENTRY_LOGIC] generate_entry_signal()返り値: entry_signal={entry_signal}")
+                logger.info(f"[DEBUG_ENTRY_LOGIC] generate_entry_signal()返り値: entry_signal={entry_signal}")
+            
             if entry_signal == 1:
+                # Cycle 20デバッグログ追加
+                if os.getenv("DEBUG_BACKTEST"):
+                    print(f"[DEBUG_ENTRY_CHECK] entry_signal=1, current_idx={current_idx}, len(stock_data)={len(stock_data)}")
+                    print(f"[DEBUG_ENTRY_CHECK] current_idx + 1 < len(stock_data): {current_idx + 1 < len(stock_data)}")
+                
                 # 翌日始値でエントリー + スリッページ
                 if current_idx + 1 < len(stock_data):
                     entry_price = stock_data.iloc[current_idx + 1]['Open']
@@ -457,16 +540,34 @@ class BreakoutStrategy(BaseStrategy):
                     transaction_cost = self.params.get("transaction_cost", 0.0)
                     entry_price = entry_price * (1 + slippage + transaction_cost)
                     
+                    # Cycle 19修正: entry_prices/high_pricesをここで初期化
+                    # generate_entry_signal()から移動
+                    entry_date = self.data.index[current_idx]
+                    self.entry_prices[entry_date] = entry_price
+                    
+                    # 高値の初期値も翌日高値を使用（トレーリングストップの起点）
+                    if 'High' in stock_data.columns:
+                        self.high_prices[entry_date] = stock_data.iloc[current_idx + 1]['High']
+                    else:
+                        self.high_prices[entry_date] = stock_data.iloc[current_idx + 1]['Open']
+                    
                     # ポジションサイズ計算
                     shares = self._calculate_position_size_daily(entry_price)
                     
-                    return {
+                    result = {
                         'action': 'entry',
                         'signal': 1,
                         'price': float(entry_price),
                         'shares': shares,
                         'reason': f'Breakout: Entry signal detected on {current_date.strftime("%Y-%m-%d")}'
                     }
+                    
+                    # Cycle 20デバッグログ追加
+                    if os.getenv("DEBUG_BACKTEST"):
+                        print(f"[DEBUG_RETURN] _handle_entry_logic_daily returning: {result}")
+                        logger.info(f"[DEBUG_RETURN] _handle_entry_logic_daily returning: {result}")
+                    
+                    return result
                 else:
                     # 最終日の場合エントリー不可
                     return {
