@@ -362,8 +362,17 @@ class ComprehensivePerformanceAnalyzer:
             )
             
             for symbol in sorted(all_symbols):
-                buys = buy_by_symbol.get(symbol, [])
-                sells = sell_by_symbol.get(symbol, [])
+                # タイムスタンプでソート（FIFO順序保証のため、ComprehensiveReporterと同一ロジック）
+                # 理由: execution_detailsが戦略実行順で追加されるため、時系列順になっていない
+                # 不正データ対策: timestampが空の場合は最後尾に配置
+                buys = sorted(
+                    buy_by_symbol.get(symbol, []),
+                    key=lambda x: x.get('timestamp', '9999-12-31T23:59:59+09:00')
+                )
+                sells = sorted(
+                    sell_by_symbol.get(symbol, []),
+                    key=lambda x: x.get('timestamp', '9999-12-31T23:59:59+09:00')
+                )
                 paired_count = min(len(buys), len(sells))
                 
                 if paired_count > 0:
@@ -376,39 +385,39 @@ class ComprehensivePerformanceAnalyzer:
                 for i in range(paired_count):
                     buy_order = buys[i]
                     sell_order = sells[i]
-                
-                try:
-                    # 実データから取引レコード作成
-                    entry_price = buy_order.get('executed_price', 0.0)
-                    exit_price = sell_order.get('executed_price', 0.0)
-                    shares = buy_order.get('quantity', 0)
                     
-                    # データ検証
-                    if not all([entry_price > 0, exit_price > 0, shares > 0]):
-                        self.logger.error(
-                            f"[DATA_VALIDATION_FAILED] 不正な取引データ（ペア{i+1}）: "
-                            f"entry_price={entry_price}, exit_price={exit_price}, shares={shares}. "
-                            f"スキップします（フォールバック禁止）。"
-                        )
+                    try:
+                        # 実データから取引レコード作成
+                        entry_price = buy_order.get('executed_price', 0.0)
+                        exit_price = sell_order.get('executed_price', 0.0)
+                        shares = buy_order.get('quantity', 0)
+                        
+                        # データ検証
+                        if not all([entry_price > 0, exit_price > 0, shares > 0]):
+                            self.logger.error(
+                                f"[DATA_VALIDATION_FAILED] 不正な取引データ（ペア{i+1}）: "
+                                f"entry_price={entry_price}, exit_price={exit_price}, shares={shares}. "
+                                f"スキップします（フォールバック禁止）。"
+                            )
+                            continue
+                        
+                        # 損益計算（実データに基づく）
+                        pnl = (exit_price - entry_price) * shares
+                        return_pct = (exit_price - entry_price) / entry_price if entry_price > 0 else 0.0
+                        
+                        trade = {
+                            'pnl': pnl,
+                            'return_pct': return_pct,
+                            'entry_price': entry_price,
+                            'exit_price': exit_price,
+                            'shares': shares
+                        }
+                        
+                        trades.append(trade)
+                        
+                    except Exception as trade_error:
+                        self.logger.error(f"[TRADE_EXTRACTION_ERROR] 銘柄={symbol}, ペア{i+1}: {trade_error}")
                         continue
-                    
-                    # 損益計算（実データに基づく）
-                    pnl = (exit_price - entry_price) * shares
-                    return_pct = (exit_price - entry_price) / entry_price if entry_price > 0 else 0.0
-                    
-                    trade = {
-                        'pnl': pnl,
-                        'return_pct': return_pct,
-                        'entry_price': entry_price,
-                        'exit_price': exit_price,
-                        'shares': shares
-                    }
-                    
-                    trades.append(trade)
-                    
-                except Exception as trade_error:
-                    self.logger.error(f"[TRADE_EXTRACTION_ERROR] 銘柄={symbol}, ペア{i+1}: {trade_error}")
-                    continue
                 
                 # 銘柄別未ペアリング検出
                 if len(buys) > paired_count:

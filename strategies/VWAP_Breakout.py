@@ -530,7 +530,9 @@ class VWAPBreakoutStrategy(BaseStrategy):
         
         Cycle 26修正: **kwargs追加
         - 理由: force_close時にentry_symbol_dataがkwargsで渡される（Cycle 7修正）
-        - VWAPBreakoutStrategyはentry_symbol_dataを使用しないが、受け取れるようにする
+        
+        Cycle 27修正: entry_symbol_data使用
+        - force_close時はentry_symbol_data（元の銘柄）でエグジット価格を取得
         
         Parameters:
             current_date (datetime): 判定対象日
@@ -617,6 +619,17 @@ class VWAPBreakoutStrategy(BaseStrategy):
             # Phase 5: 前日データで判定（ルックアヘッドバイアス防止）
             # 注意: インジケーターは既にinitialize_strategy()でshift(1)適用済み
             
+            # Cycle 27修正: entry_symbol_dataをkwargsから取得
+            entry_symbol_data = kwargs.get('entry_symbol_data', None)
+            is_force_close = existing_position.get('force_close', False) if existing_position else False
+            
+            # force_close時はentry_symbol_dataを使用
+            if is_force_close and entry_symbol_data is not None:
+                data_for_exit = entry_symbol_data
+                logger.info(f"[VWAP_EXIT] force_close=True: entry_symbol_dataを使用（{len(entry_symbol_data)}行）")
+            else:
+                data_for_exit = stock_data
+            
             # 現在のポジション状態を確認
             if existing_position is not None:
                 # 既存ポジションあり: エグジット判定
@@ -627,11 +640,12 @@ class VWAPBreakoutStrategy(BaseStrategy):
                     # エグジットシグナル発生
                     try:
                         # Phase 6: 翌日始値でエグジット（ルックアヘッドバイアス防止）
-                        if current_idx + 1 < len(stock_data):
-                            exit_price = stock_data.iloc[current_idx + 1]['Open']
+                        # Cycle 27修正: data_for_exitを使用
+                        if current_idx + 1 < len(data_for_exit):
+                            exit_price = data_for_exit.iloc[current_idx + 1]['Open']
                         else:
                             # 最終日の場合（フォールバック: copilot-instructions.md制約により限定的使用）
-                            exit_price = stock_data.iloc[current_idx]['Close']
+                            exit_price = data_for_exit.iloc[current_idx]['Close']
                             logger.warning(f"[VWAPBreakout.backtest_daily] Using Close price fallback for final day: {current_date}")
                         
                         return {

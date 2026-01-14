@@ -47,28 +47,18 @@ if project_root not in sys.path:
 import importlib.util
 import os
 
-def _load_symbol_switch_manager_fast():
-    """SymbolSwitchManagerFast direct load (avoid heavy __init__.py)"""
-    try:
-        # Get absolute path from relative path
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        fast_path = os.path.join(current_dir, "symbol_switch_manager_ultra_light.py")
-        
-        spec = importlib.util.spec_from_file_location("symbol_switch_manager_ultra_light", fast_path)
-        if spec and spec.loader:
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            return module.SymbolSwitchManagerUltraLight
-    except Exception:
-        pass
-    
-    try:
-        from src.dssms.symbol_switch_manager import SymbolSwitchManager
-        return SymbolSwitchManager
-    except ImportError:
-        return None
+# Task 1実装 (2026-01-13): 完全版SymbolSwitchManagerに切替
+# ultra_light版から変更 - 保有期間制限・頻度削減ロジックを復元
+# 目標: 85回 → 30回以下の切替、平均保有期間 3.9日 → 10日以上
+# パフォーマンス影響: +0.1秒/11ヶ月（無視可能）
+# DSSMS_Implementation_Plan.md Task 1 参照
 
-SymbolSwitchManager = _load_symbol_switch_manager_fast()
+try:
+    from src.dssms.symbol_switch_manager import SymbolSwitchManager
+except ImportError as e:
+    import logging
+    logging.error(f"[TASK1_ERROR] SymbolSwitchManager import failed: {e}")
+    SymbolSwitchManager = None
 
 # SystemFallbackPolicy利用可能性チェック(TODO-INTEGRATE-001対応)
 try:
@@ -211,6 +201,9 @@ class DSSMSIntegratedBacktester:
             
             self._setup_file_logging()
             
+            # Task 1実装 (2026-01-13): __init__()でコンポーネント初期化を実行
+            # 理由: 完全版SymbolSwitchManagerを確実にロードするため
+            self._initialize_components()
             
         except Exception as e:
             raise DSSMSIntegrationError(f"初期化失敗: {e}")
@@ -3344,12 +3337,15 @@ class DSSMSIntegratedBacktester:
             raise e
     
     def _load_default_config(self) -> Dict[str, Any]:
-        """デフォルト設定読み込み"""
+        """デフォルト設定読み込み（Task 1: 2026-01-13最適化）"""
         return {
             'initial_capital': 1000000,
             'symbol_switch': {
-                'min_holding_days': 1,
-                'max_switches_per_month': 10,
+                # Task 1実装: 設定値最適化（DSSMS_Implementation_Plan.md参照）
+                # 目標: 85回 → 30回以下、平均保有期間 3.9日 → 10日以上
+                'min_holding_days': 10,  # 1日 → 10日に変更
+                'max_switches_per_month': 5,  # 10回 → 5回に変更
+                'switch_cost_rate': 0.001,  # 0.1%（明示的に追加）
             },
             'data_cache': {
                 'cache_size_mb': 100,
@@ -4338,11 +4334,16 @@ def main():
     try:
         # 1. 初期化テスト
         
+        # Task 1実装 (2026-01-13): 設定値を最適化
+        # 重要: SymbolSwitchManagerは'switch_management'キーを期待
         config = {
             'initial_capital': 1000000,
             'symbol_switch': {
-                'min_holding_days': 2,
-                'max_switches_per_month': 8
+                'switch_management': {
+                    'min_holding_days': 10,  # 2日 → 10日に変更（Task 1）
+                    'max_switches_per_month': 5,  # 8回 → 5回に変更（Task 1）
+                    'switch_cost_rate': 0.001  # 0.1%（明示的に追加）
+                }
             }
         }
         

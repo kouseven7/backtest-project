@@ -292,10 +292,7 @@ class ComprehensiveReporter:
             抽出・分析結果
         """
         try:
-            # MainDataExtractorを使用してデータ抽出（バックテストシグナルから）
-            extracted_trades = self.data_extractor.extract_accurate_trades(stock_data)
-            
-            # Phase 4.2-5-3: execution_resultsから実行された取引を追加
+            # Phase 4.2-5-3: execution_resultsから実行された取引を抽出（重複問題修正）
             # 優先度C: 決済済み取引と保有中ポジションを分離
             # copilot-instructions.md: 実際の取引件数 > 0 を検証
             executed_data = self._extract_executed_trades(execution_results)
@@ -303,12 +300,15 @@ class ComprehensiveReporter:
             open_positions = executed_data.get('open_positions', [])
             
             if executed_trades:
-                self.logger.info(f"[OK] Adding {len(executed_trades)} executed trades to report")
-                # 実行された取引をマージ
-                extracted_trades.extend(executed_trades)
-                self.logger.info(f"Total trades after merge: {len(extracted_trades)}")
+                self.logger.info(f"[REAL_DATA_PRIORITY] Using {len(executed_trades)} executed trades from execution_results (skipping MainDataExtractor to avoid duplicates)")
+                # 実際の実行データを優先使用（重複回避）
+                extracted_trades = executed_trades
+                self.logger.info(f"Total trades from execution_results: {len(extracted_trades)}")
             else:
-                self.logger.warning("No executed trades found in execution_results")
+                self.logger.info("[FALLBACK_TO_SIGNALS] No executed trades found, using MainDataExtractor fallback")
+                # フォールバック：MainDataExtractorを使用してデータ抽出（バックテストシグナルから）
+                extracted_trades = self.data_extractor.extract_accurate_trades(stock_data)
+                self.logger.warning("[FALLBACK_WARNING] Using signal-based fallback data - may not reflect actual execution results")
             
             if open_positions:
                 self.logger.info(f"[OK] Found {len(open_positions)} open positions")

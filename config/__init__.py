@@ -102,8 +102,9 @@ try:
 except ImportError:
     pass
 
-# ポートフォリオ相関最適化システムのインポート
-try:
-    from .portfolio_correlation_optimizer import *
-except ImportError:
-    pass
+# ポートフォリオ相関最適化システムのインポート（遅延インポート化、2026-01-11修正）
+# Note: seaborn/scipy依存により初回起動が重いため遅延インポート化
+# try:
+#     from .portfolio_correlation_optimizer import *
+# except ImportError:
+#     pass

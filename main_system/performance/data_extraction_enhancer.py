@@ -123,7 +123,7 @@ class MainDataExtractor:
         positions[position_key] = {
             'entry_date': date,
             'entry_price': entry_price,
-            'strategy': strategy,
+            'strategy_name': strategy,
             'shares': shares,
             'position_value': entry_price * shares
         }
@@ -138,7 +138,7 @@ class MainDataExtractor:
             return None
         
         # 該当戦略の最も古いポジションを決済
-        strategy_positions = {k: v for k, v in positions.items() if v['strategy'] == strategy}
+        strategy_positions = {k: v for k, v in positions.items() if v['strategy_name'] == strategy}
         if not strategy_positions:
             self.logger.warning(f"決済対象ポジションなし: {strategy}")
             return None
@@ -157,7 +157,7 @@ class MainDataExtractor:
             trade = self._create_trade_record(position, final_date, final_price)
             trade['is_forced_exit'] = True
             final_trades.append(trade)
-            self.logger.info(f"強制決済: {position['strategy']} @ {final_price:.2f}")
+            self.logger.info(f"強制決済: {position['strategy_name']} @ {final_price:.2f}")
         
         return final_trades
     
@@ -188,7 +188,7 @@ class MainDataExtractor:
             'pnl': pnl,
             'return_pct': return_pct,
             'holding_period_days': holding_days,
-            'strategy': position['strategy'],
+            'strategy_name': position['strategy_name'],
             'position_value': position['position_value'],
             'is_forced_exit': False
         }

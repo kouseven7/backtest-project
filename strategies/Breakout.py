@@ -276,7 +276,9 @@ class BreakoutStrategy(BaseStrategy):
         
         Cycle 26修正: **kwargs追加
         - 理由: force_close時にentry_symbol_dataがkwargsで渡される（Cycle 7修正）
-        - BreakoutStrategyはentry_symbol_dataを使用しないが、受け取れるようにする
+        
+        Cycle 27修正: entry_symbol_data使用
+        - force_close時はentry_symbol_data（元の銘柄）でエグジット価格を取得
         
         Parameters:
             current_date (datetime): 判定対象日
@@ -403,12 +405,15 @@ class BreakoutStrategy(BaseStrategy):
             if os.getenv("DEBUG_BACKTEST"):
                 print(f"[DEBUG_BRANCH] existing_position: {existing_position is not None}, type={type(existing_position)}")
             
+            # Cycle 27修正: entry_symbol_dataをkwargsから取得
+            entry_symbol_data = kwargs.get('entry_symbol_data', None)
+            
             # Phase 5: 既存ポジション処理分岐
             if existing_position is not None:
                 # エグジット判定（簡易版: Entry_Signal依存を回避）
                 if os.getenv("DEBUG_BACKTEST"):
                     print(f"[DEBUG_BRANCH] エグジットロジックへ: existing_position={existing_position}")
-                return self._handle_exit_logic_daily(current_idx, existing_position, stock_data, current_date)
+                return self._handle_exit_logic_daily(current_idx, existing_position, stock_data, current_date, entry_symbol_data)
             else:
                 # エントリー判定
                 if os.getenv("DEBUG_BACKTEST"):
@@ -419,12 +424,16 @@ class BreakoutStrategy(BaseStrategy):
             # データ復元
             self.data = original_data
     
-    def _handle_exit_logic_daily(self, current_idx, existing_position, stock_data, current_date):
+    def _handle_exit_logic_daily(self, current_idx, existing_position, stock_data, current_date, entry_symbol_data=None):
         """
         エグジット判定ロジック（backtest_daily用簡易版）
         
         generate_exit_signal()がEntry_Signal依存のため、
         直接エグジット条件を判定する簡易実装
+        
+        Cycle 27修正: entry_symbol_data対応
+        - force_close時（entry_symbol_data提供時）は元の銘柄のデータでエグジット価格を取得
+        - 通常時は現在の銘柄（stock_data）でエグジット価格を取得
         """
         import logging
         logger = logging.getLogger(__name__)
@@ -434,6 +443,14 @@ class BreakoutStrategy(BaseStrategy):
             entry_price = existing_position.get('entry_price', 0)
             entry_date = existing_position.get('entry_date')
             entry_idx = existing_position.get('entry_idx', current_idx)
+            is_force_close = existing_position.get('force_close', False)
+            
+            # Cycle 27修正: force_close時はentry_symbol_dataを使用
+            if is_force_close and entry_symbol_data is not None:
+                data_for_exit = entry_symbol_data
+                logger.info(f"[BREAKOUT_EXIT] force_close=True: entry_symbol_dataを使用（{len(entry_symbol_data)}行）")
+            else:
+                data_for_exit = stock_data
             
             if entry_price == 0:
                 return {
@@ -445,12 +462,15 @@ class BreakoutStrategy(BaseStrategy):
                 }
             
             # 翌日始値でエグジット（ルックアヘッドバイアス防止）
-            if current_idx + 1 < len(stock_data):
-                exit_price = stock_data.iloc[current_idx + 1]['Open']
+            # Cycle 27修正: data_for_exitを使用
+            if current_idx + 1 < len(data_for_exit):
+                exit_price = data_for_exit.iloc[current_idx + 1]['Open']
             else:
                 # 最終日フォールバック
-                exit_price = stock_data.iloc[current_idx]['Close']
+                exit_price = data_for_exit.iloc[current_idx]['Close']
                 logger.warning(f"[Breakout] Using Close price fallback for final day: {current_date}")
+            
+            logger.info(f"[BREAKOUT_EXIT] exit_price={exit_price}, source={'entry_symbol_data' if is_force_close and entry_symbol_data is not None else 'stock_data'}")
             
             # エグジット条件判定
             # 1. 利益確定

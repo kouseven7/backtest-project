@@ -324,7 +324,10 @@ class GCStrategy(BaseStrategy):
         
         Cycle 26修正: **kwargs追加
         - 理由: force_close時にentry_symbol_dataがkwargsで渡される（Cycle 7修正）
-        - GCStrategyはentry_symbol_dataを使用しないが、受け取れるようにする
+        
+        Cycle 27修正: entry_symbol_data使用
+        - force_close時はentry_symbol_data（元の銘柄）でエグジット価格を取得
+        - 問題: 全跨銘柄取引で切替先の価格が入っていた（5202→2768: 3325円 vs 実際383円）
         
         Parameters:
             current_date: 判定対象日（datetime/pd.Timestamp/str）
@@ -429,10 +432,13 @@ class GCStrategy(BaseStrategy):
             # Phase 5: 既存ポジション処理分岐
             print(f"[GC_DEBUG] Phase 5: existing_position={existing_position is not None}")
             
+            # Cycle 27修正: entry_symbol_dataをkwargsから取得
+            entry_symbol_data = kwargs.get('entry_symbol_data', None)
+            
             if existing_position is not None:
                 # 既存ポジションあり: エグジット判定
-                print(f"[GC_DEBUG] Calling _handle_exit_logic_daily")
-                return self._handle_exit_logic_daily(current_idx, existing_position, stock_data, current_date)
+                print(f"[GC_DEBUG] Calling _handle_exit_logic_daily, entry_symbol_data={entry_symbol_data is not None}")
+                return self._handle_exit_logic_daily(current_idx, existing_position, stock_data, current_date, entry_symbol_data)
             else:
                 # 既存ポジションなし: エントリー判定
                 print(f"[GC_DEBUG] Calling _handle_entry_logic_daily")
@@ -443,11 +449,19 @@ class GCStrategy(BaseStrategy):
             self.data = original_data
 
     def _handle_exit_logic_daily(self, current_idx: int, existing_position: dict, 
-                                  stock_data: pd.DataFrame, current_date: pd.Timestamp):
+                                  stock_data: pd.DataFrame, current_date: pd.Timestamp,
+                                  entry_symbol_data: pd.DataFrame = None):
         """
         エグジット判定ロジック（GCStrategy専用）
         
         既存のgenerate_exit_signal()を活用。Entry_Signal依存なし。
+        
+        Cycle 27修正: entry_symbol_data対応
+        - force_close時（entry_symbol_data提供時）は元の銘柄のデータでエグジット価格を取得
+        - 通常時は現在の銘柄（stock_data）でエグジット価格を取得
+        
+        Parameters:
+            entry_symbol_data: force_close時の元の銘柄データ（オプション）
         
         Returns:
             dict: {'action': 'exit'|'hold', 'signal': -1|0, 'price': float, 'shares': int, 'reason': str}
@@ -456,21 +470,35 @@ class GCStrategy(BaseStrategy):
             # entry_idxを取得（existing_positionから、またはcurrent_idxをフォールバック）
             entry_idx = existing_position.get('entry_idx', current_idx)
             
+            # force_closeフラグ確認
+            is_force_close = existing_position.get('force_close', False)
+            
+            # Cycle 27修正: force_close時はentry_symbol_dataを使用
+            if is_force_close and entry_symbol_data is not None:
+                data_for_exit = entry_symbol_data
+                self.logger.info(f"[GC_EXIT] force_close=True: entry_symbol_dataを使用（{len(entry_symbol_data)}行）")
+            else:
+                data_for_exit = stock_data
+                self.logger.debug(f"[GC_EXIT] force_close={is_force_close}: stock_dataを使用")
+            
             # entry_pricesとhigh_pricesを準備（generate_exit_signalが依存）
             if entry_idx not in self.entry_prices:
-                self.entry_prices[entry_idx] = existing_position.get('entry_price', stock_data.iloc[current_idx]['Close'])
+                self.entry_prices[entry_idx] = existing_position.get('entry_price', data_for_exit.iloc[current_idx]['Close'])
             
             # generate_exit_signal呼び出し（既存実装活用）
             exit_signal = self.generate_exit_signal(current_idx, entry_idx)
             
             if exit_signal == -1:
                 # エグジットシグナル発生
-                if current_idx + 1 < len(stock_data):
-                    exit_price = stock_data.iloc[current_idx + 1]['Open']
+                # Cycle 27修正: data_for_exitからエグジット価格を取得
+                if current_idx + 1 < len(data_for_exit):
+                    exit_price = data_for_exit.iloc[current_idx + 1]['Open']
                 else:
                     # 最終日の場合
-                    exit_price = stock_data.iloc[current_idx]['Close']
+                    exit_price = data_for_exit.iloc[current_idx]['Close']
                     self.logger.warning(f"[GCStrategy] Using Close price fallback for final day: {current_date}")
+                
+                self.logger.info(f"[GC_EXIT] exit_price={exit_price}, source={'entry_symbol_data' if is_force_close and entry_symbol_data is not None else 'stock_data'}")
                 
                 return {
                     'action': 'exit',

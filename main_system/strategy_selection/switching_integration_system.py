@@ -30,8 +30,11 @@ except ImportError:
     STRATEGY_SELECTOR_AVAILABLE = False
     
 try:
-    from config.drawdown_controller import DrawdownController
-    DRAWDOWN_CONTROLLER_AVAILABLE = True
+    # 遅延インポート化（2026-01-11修正）
+    # Note: DrawdownControllerはPortfolioRiskManager → scipyに依存し初回起動が重い
+    # from config.drawdown_controller import DrawdownController
+    # DRAWDOWN_CONTROLLER_AVAILABLE = True
+    DRAWDOWN_CONTROLLER_AVAILABLE = False  # 初回起動時は無効化
 except ImportError:
     DRAWDOWN_CONTROLLER_AVAILABLE = False
     
