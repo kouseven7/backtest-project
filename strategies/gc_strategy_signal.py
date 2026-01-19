@@ -50,14 +50,14 @@ class GCStrategy(BaseStrategy):
             price_column = "Close"
             self.price_column = price_column
         
-        # デフォルトパラメータの設定
+        # デフォルトパラメータの設定（Phase 2最終推奨パラメータ: 2026-01-18最適化完了）
         default_params = {
             "short_window": 5,       # 短期移動平均期間
             "long_window": 25,       # 長期移動平均期間
-            "take_profit": 0.05,     # 利益確定（5%）
-            "stop_loss": 0.03,       # ストップロス（3%）
-            "trailing_stop_pct": 0.03,  # トレーリングストップ（3%）
-            "max_hold_days": 20,     # 最大保有期間（20日）
+            "take_profit": 0.15,     # 利益確定（15%）← Phase 2最終推奨（Phase 1/2最適化完了）
+            "stop_loss": 0.03,       # ストップロス（3%）← Phase 2-1最適化完了（2%は悪化、5%は横ばい）
+            "trailing_stop_pct": 0.05,  # トレーリングストップ（5%）← Phase 2最終推奨（Phase 1最適化完了）
+            "max_hold_days": 300,    # 最大保有期間（300日、実質無効化）
             "exit_on_death_cross": True,  # デッドクロスでイグジットするかどうか
             
             # トレンドフィルター設定
@@ -157,11 +157,26 @@ class GCStrategy(BaseStrategy):
         prev_short_sma = self.data[f"SMA_{self.short_window}"].iloc[idx-1]
         prev_long_sma = self.data[f"SMA_{self.long_window}"].iloc[idx-1]
         
-        # ゴールデンクロス（短期MAが長期MAを下から上に抜けた）
+        # Task 2実装 (2026-01-16): トレンド継続中のエントリー条件緩和
+        # 目的: 11ヶ月3取引 → エントリー機会増加、利益向上
+        # 背景: DSSMSがパーフェクトオーダー銘柄を選択 → 既にGC済み → エントリー不可
+        # 対策: トレンド継続中（両MA上昇中）でもエントリー許可
+        
+        # 従来のゴールデンクロス（短期MAが長期MAを下から上に抜けた）
         golden_cross = short_sma > long_sma and prev_short_sma <= prev_long_sma
+        
+        # トレンド継続中のエントリー条件（新規追加）
+        # 条件: 短期MA > 長期MA かつ 両MA上昇中
+        uptrend_continuation = (
+            short_sma > long_sma and 
+            short_sma > prev_short_sma and  # 短期MA上昇中
+            long_sma > prev_long_sma         # 長期MA上昇中
+        )
+        
+        # 緩和後のエントリー条件（ゴールデンクロス or トレンド継続中）
+        entry_signal = golden_cross or uptrend_continuation
 
-        # ゴールデンクロスが検出された場合のみエントリー
-        if golden_cross:
+        if entry_signal:
             return 1
             
         return 0

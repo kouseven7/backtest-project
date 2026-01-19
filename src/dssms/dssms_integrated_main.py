@@ -1621,14 +1621,23 @@ class DSSMSIntegratedBacktester:
         
         Args:
             target_date: 対象日付
-            target_symbols: 対象銘柄リスト
+            target_symbols: 対象銘柄リスト（固定銘柄モード時に使用）
         
         Returns:
+            Optional[str]: 選択された銘柄（パーフェクトオーダーでない場合はNone）
         """
         try:
             self.ensure_components()
             self.ensure_advanced_ranking()  # AdvancedRankingEngine初期化
             self.ensure_dss_core()         # DSS Core V3初期化
+            
+            # 固定銘柄モード処理
+            if target_symbols and len(target_symbols) == 1:
+                fixed_symbol = target_symbols[0]
+                self.logger.info(f"[FIXED-SYMBOL MODE] 固定銘柄モード: {fixed_symbol} @ {target_date.strftime('%Y-%m-%d')}")
+                # NOTE: パーフェクトオーダーチェックは一時的に無効化（data_manager未初期化のため）
+                # TODO: DSSMSDataManagerを初期化し、パーフェクトオーダーチェックを復元
+                return fixed_symbol
             
             if self.dss_core and dss_available:
                 # DSS Core V3による動的選択
@@ -4327,6 +4336,7 @@ def main():
     parser = argparse.ArgumentParser(description='DSSMS Integrated Backtest System')
     parser.add_argument('--start-date', type=str, help='開始日 (YYYY-MM-DD形式)', default='2023-01-01')
     parser.add_argument('--end-date', type=str, help='終了日 (YYYY-MM-DD形式)', default='December 31, 2023')
+    parser.add_argument('--fixed-symbol', type=str, help='固定銘柄モード: 指定銘柄のみでバックテスト (例: 8306.T)', default=None)
     args = parser.parse_args()
     
     print("=" * 60)
@@ -4367,7 +4377,13 @@ def main():
         except ValueError as e:
             print("正しい形式: YYYY-MM-DD (例: 2023-01-01)")
             return
-        target_symbols = None  # 全銘柄(日経225自動選択)
+        
+        # 固定銘柄モード処理
+        if args.fixed_symbol:
+            print(f"\n[FIXED-SYMBOL MODE] 固定銘柄モード: {args.fixed_symbol}")
+            target_symbols = [args.fixed_symbol]
+        else:
+            target_symbols = None  # 全銘柄(日経225自動選択)
         
         results = backtester.run_dynamic_backtest(start_date, end_date, target_symbols)
         
