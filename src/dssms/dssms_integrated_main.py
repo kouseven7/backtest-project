@@ -133,6 +133,9 @@ class DSSMSIntegratedBacktester:
             self.portfolio_value = self.config.get('initial_capital', 1000000)
             self.initial_capital = self.portfolio_value
             
+            # Cycle 4-A Cycle 3改善: 利益保護用エントリー価格追跡
+            self.last_entry_price = None  # 最後のエントリー価格（切替判定時に参照）
+            
             # Cycle 4-2: 残高管理システム追加（2026-01-10）
             self.cash_balance = self.initial_capital  # 現金残高追跡
             self.logger.info(f"[CASH_MANAGEMENT] 残高管理システム初期化: cash_balance={self.cash_balance:,.0f}円")
@@ -1696,6 +1699,11 @@ class DSSMSIntegratedBacktester:
     def _evaluate_and_execute_switch(self, selected_symbol: str, 
                                    target_date: datetime) -> Dict[str, Any]:
         """
+        銘柄切替の評価と実行
+        
+        Cycle 4-A実装: 利益中ポジション保護機能
+        - 含み益ポジション（unrealized_pnl > 0）の場合は銘柄切替をスキップ
+        - 目的: 利益を伸ばしている銘柄を早期に手放さない
         
         Args:
             selected_symbol: 選択された銘柄
@@ -1705,6 +1713,55 @@ class DSSMSIntegratedBacktester:
             Dict[str, Any]: 切替実行結果
         """
         try:
+            # Cycle 4-A改善: Cycle 3実装（修正案3）
+            # 問題: current_positionは切替判定時にNoneまたは古いデータ（Line 2301で更新されるが、それは切替後）
+            # 解決: current_symbolをチェックし、最新価格を取得して利益判定
+            self.logger.info(
+                f"[CYCLE4-A-DEBUG] _evaluate_and_execute_switch() 開始 | "
+                f"target_date={target_date.strftime('%Y-%m-%d')}, "
+                f"current_symbol={self.current_symbol}, "
+                f"selected_symbol={selected_symbol}, "
+                f"current_position={'存在' if self.current_position else 'None'}"
+            )
+            
+            # Cycle 4-A Cycle 3改善版: 利益中ポジション保護チェック
+            # 修正案3改善: current_symbolとlast_entry_priceをチェック
+            if self.current_symbol and self.last_entry_price is not None:
+                entry_price = self.last_entry_price  # 修正: last_entry_priceを使用
+                current_symbol = self.current_symbol
+                
+                # 現在価格を取得（target_dateの終値）
+                try:
+                    symbol_data, _ = self._get_symbol_data(current_symbol, target_date)
+                    if symbol_data is not None and len(symbol_data) > 0:
+                        current_price = symbol_data['Adj Close'].iloc[-1]
+                        unrealized_pnl = (current_price - entry_price) / entry_price
+                        
+                        # 含み益がある場合は銘柄切替をスキップ
+                        if unrealized_pnl > 0:
+                            self.logger.warning(
+                                f"[CYCLE4-A] ★★★ 利益中ポジション保護: 銘柄切替スキップ ★★★ | "
+                                f"symbol={current_symbol}, entry_price={entry_price:.2f}, "
+                                f"current_price={current_price:.2f}, unrealized_pnl={unrealized_pnl:.2%}"
+                            )
+                            return {
+                                'date': target_date.strftime('%Y-%m-%d'),
+                                'from_symbol': self.current_symbol,
+                                'to_symbol': selected_symbol,
+                                'switch_executed': False,
+                                'switch_cost': 0,
+                                'reason': 'profit_protection',
+                                'unrealized_pnl': unrealized_pnl
+                            }
+                        else:
+                            # 含み損の場合は通常の切替判定へ進む
+                            self.logger.info(
+                                f"[CYCLE4-A] 損失中ポジション: 通常切替判定へ | "
+                                f"symbol={current_symbol}, unrealized_pnl={unrealized_pnl:.2%}"
+                            )
+                except Exception as e:
+                    self.logger.warning(f"[CYCLE4-A] 現在価格取得エラー: {e}")
+            
             # 切替評価
             self.ensure_components()  # 遅延初期化
             switch_evaluation = self.switch_manager.evaluate_symbol_switch(
@@ -2247,11 +2304,15 @@ class DSSMSIntegratedBacktester:
                     'entry_date': adjusted_target_date,
                     'entry_idx': result.get('entry_idx', processed_data.index.get_loc(adjusted_target_date) if adjusted_target_date in processed_data.index else 0)
                 }
-                self.logger.info(f"[PHASE3-C-B1] ポジション更新（buy）: {self.current_position}")
+                # Cycle 4-A Cycle 3改善: last_entry_price更新
+                self.last_entry_price = result['price']
+                self.logger.info(f"[PHASE3-C-B1] ポジション更新（buy）: {self.current_position}, last_entry_price={self.last_entry_price:.2f}")
             elif result['action'] == 'sell':
                 # エグジット: current_positionクリア
                 self.logger.info(f"[PHASE3-C-B1] ポジション更新（sell）: current_position={self.current_position} → None")
                 self.current_position = None
+                # Cycle 4-A Cycle 3改善: last_entry_priceクリア
+                self.last_entry_price = None
             else:
                 # hold: ポジション維持
                 self.logger.debug(f"[PHASE3-C-B1] ポジション維持（hold）: current_position={self.current_position}")
