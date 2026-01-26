@@ -48,6 +48,15 @@ sys.path.insert(0, str(project_root))
 from data_fetcher import get_parameters_and_data
 from strategies.gc_strategy_signal import GCStrategy
 
+# talib インポート（ATR計算用）
+try:
+    import talib
+    TALIB_AVAILABLE = True
+except ImportError:
+    TALIB_AVAILABLE = False
+    import warnings
+    warnings.warn("talib未インストール。ATR計算は簡易版で代用します。")
+
 # ロガー設定
 import config.logger_config
 logger = config.logger_config.setup_logger(
@@ -122,12 +131,13 @@ WARMUP_DAYS = 150
 
 # ==================== ヘルパー関数 ====================
 
-def calculate_performance_metrics(results_df: pd.DataFrame) -> Tuple[Dict, pd.DataFrame]:
+def calculate_performance_metrics(results_df: pd.DataFrame, exit_params: Dict = None) -> Tuple[Dict, pd.DataFrame]:
     """
     パフォーマンス指標を計算
     
     Args:
         results_df: バックテスト結果データフレーム（Entry_Signal/Exit_Signal/Profit_Loss列を含む）
+        exit_params: エグジットパラメータ（stop_loss_pct等を含む）
     
     Returns:
         (パフォーマンス指標辞書, 個別取引履歴DataFrame)
@@ -246,7 +256,7 @@ def calculate_performance_metrics(results_df: pd.DataFrame) -> Tuple[Dict, pd.Da
             else:
                 exit_reasons['other_count'] += 1
     
-    # 個別取引履歴の作成（エントリー日・エグジット日を含む）
+    # 個別取引履歴の作成（エントリー日・エグジット日を含む + Phase 1必須7項目）
     trade_details = []
     
     # Entry_Price列とExit_Price列が存在する場合、エントリー日を特定
@@ -269,6 +279,212 @@ def calculate_performance_metrics(results_df: pd.DataFrame) -> Tuple[Dict, pd.Da
             profit_loss = exit_row['Profit_Loss']
             exit_reason = exit_row.get('Exit_Reason', 'unknown')
             
+            # ==================== Phase 1必須7項目計算 ====================
+            # 1. holding_days - 保有日数
+            if entry_date is not None and exit_date is not None:
+                holding_days = (exit_date - entry_date).days
+            else:
+                holding_days = None
+            
+            # 2. profit_loss_pct - 損益率（%）
+            if entry_price is not None and entry_price != 0:
+                profit_loss_pct = (exit_price - entry_price) / entry_price * 100
+            else:
+                profit_loss_pct = None
+            
+            # 3-4. max_profit_pct / max_loss_pct - 保有期間中の最大含み益/含み損（%）
+            max_profit_pct = None
+            max_loss_pct = None
+            if entry_date is not None and exit_date is not None and entry_price is not None and entry_price != 0:
+                # 保有期間のデータ抽出
+                try:
+                    hold_data = results_df.loc[entry_date:exit_date]
+                    if 'High' in hold_data.columns and 'Low' in hold_data.columns and len(hold_data) > 0:
+                        max_profit_pct = (hold_data['High'].max() - entry_price) / entry_price * 100
+                        max_loss_pct = (entry_price - hold_data['Low'].min()) / entry_price * 100
+                except Exception:
+                    pass  # データ不足の場合はNone
+            
+            # 5-6. entry_atr / entry_atr_pct - エントリー時のATR（絶対値/株価比%）
+            entry_atr = None
+            entry_atr_pct = None
+            if entry_date is not None:
+                try:
+                    # ATR計算（14日）
+                    if TALIB_AVAILABLE and 'High' in results_df.columns and 'Low' in results_df.columns and 'Close' in results_df.columns:
+                        # エントリー日までのデータでATR計算
+                        entry_idx_pos = results_df.index.get_loc(entry_date)
+                        if entry_idx_pos >= 14:  # ATR14に必要な最低行数
+                            atr_series = talib.ATR(
+                                results_df['High'].iloc[:entry_idx_pos+1].values,
+                                results_df['Low'].iloc[:entry_idx_pos+1].values,
+                                results_df['Close'].iloc[:entry_idx_pos+1].values,
+                                timeperiod=14
+                            )
+                            entry_atr = atr_series[-1]  # 最新値
+                            if entry_price is not None and entry_price != 0:
+                                entry_atr_pct = entry_atr / entry_price * 100
+                    else:
+                        # talib未利用時: 簡易版ATR（High-Low平均）
+                        entry_idx_pos = results_df.index.get_loc(entry_date)
+                        if entry_idx_pos >= 14:
+                            lookback_data = results_df.iloc[entry_idx_pos-14:entry_idx_pos+1]
+                            if 'High' in lookback_data.columns and 'Low' in lookback_data.columns:
+                                entry_atr = (lookback_data['High'] - lookback_data['Low']).mean()
+                                if entry_price is not None and entry_price != 0:
+                                    entry_atr_pct = entry_atr / entry_price * 100
+                except Exception:
+                    pass  # 計算失敗時はNone
+            
+            # 7. entry_gap_pct - エントリー日の窓（前日終値と当日始値の乖離%）
+            entry_gap_pct = None
+            if entry_date is not None:
+                try:
+                    entry_idx_pos = results_df.index.get_loc(entry_date)
+                    if entry_idx_pos > 0 and 'Close' in results_df.columns:
+                        prev_close = results_df['Close'].iloc[entry_idx_pos - 1]
+                        if prev_close is not None and prev_close != 0 and entry_price is not None:
+                            entry_gap_pct = (entry_price - prev_close) / prev_close * 100
+                except Exception:
+                    pass  # 計算失敗時はNone
+            # ==============================================================
+            
+            # ==================== Phase 2優先度高6項目計算 ====================
+            # 1. r_multiple - リスク対リターン評価（1R = 損切り幅）
+            r_multiple = None
+            if profit_loss_pct is not None and exit_params is not None:
+                stop_loss_pct_value = exit_params.get('stop_loss_pct', None)
+                if stop_loss_pct_value is not None and stop_loss_pct_value != 0:
+                    # stop_loss_pctは0.03形式（3%）で保存されているため、100倍して%化
+                    r_multiple = profit_loss_pct / (stop_loss_pct_value * 100)
+            
+            # 2-4. entry_volume / avg_volume_20d / volume_ratio - 流動性分析
+            entry_volume = None
+            avg_volume_20d = None
+            volume_ratio = None
+            if entry_date is not None and 'Volume' in results_df.columns:
+                try:
+                    entry_idx_pos = results_df.index.get_loc(entry_date)
+                    entry_volume = results_df['Volume'].iloc[entry_idx_pos]
+                    
+                    # 20日平均出来高（エントリー日を含む過去20日間）
+                    if entry_idx_pos >= 19:  # 20日分のデータが必要
+                        volume_data = results_df['Volume'].iloc[entry_idx_pos-19:entry_idx_pos+1]
+                        avg_volume_20d = volume_data.mean()
+                        
+                        # 出来高比率
+                        if avg_volume_20d is not None and avg_volume_20d != 0:
+                            volume_ratio = entry_volume / avg_volume_20d
+                except Exception:
+                    pass  # 計算失敗時はNone
+            
+            # 5. exit_gap_pct - エグジット時のギャップ（前日終値とエグジット価格の乖離%）
+            exit_gap_pct = None
+            if exit_date is not None and exit_price is not None:
+                try:
+                    exit_idx_pos = results_df.index.get_loc(exit_date)
+                    if exit_idx_pos > 0 and 'Close' in results_df.columns:
+                        prev_close_exit = results_df['Close'].iloc[exit_idx_pos - 1]
+                        if prev_close_exit is not None and prev_close_exit != 0:
+                            exit_gap_pct = (exit_price - prev_close_exit) / prev_close_exit * 100
+                except Exception:
+                    pass  # 計算失敗時はNone
+            
+            # 6. highest_price_during_hold - 保有期間中の最高値
+            highest_price_during_hold = None
+            if entry_date is not None and exit_date is not None:
+                try:
+                    hold_data = results_df.loc[entry_date:exit_date]
+                    if 'High' in hold_data.columns and len(hold_data) > 0:
+                        highest_price_during_hold = hold_data['High'].max()
+                except Exception:
+                    pass  # データ不足の場合はNone
+            # ==============================================================
+            
+            # ==================== Phase 3優先度中6項目計算 ====================
+            # 1. exit_atr - エグジット時のATR（14日）
+            exit_atr = None
+            if exit_date is not None:
+                try:
+                    # ATR計算（14日）
+                    if TALIB_AVAILABLE and 'High' in results_df.columns and 'Low' in results_df.columns and 'Close' in results_df.columns:
+                        exit_idx_pos = results_df.index.get_loc(exit_date)
+                        if exit_idx_pos >= 14:  # ATR14に必要な最低行数
+                            atr_series = talib.ATR(
+                                results_df['High'].iloc[:exit_idx_pos+1].values,
+                                results_df['Low'].iloc[:exit_idx_pos+1].values,
+                                results_df['Close'].iloc[:exit_idx_pos+1].values,
+                                timeperiod=14
+                            )
+                            exit_atr = atr_series[-1]  # 最新値
+                    else:
+                        # talib未利用時: 簡易版ATR（High-Low平均）
+                        exit_idx_pos = results_df.index.get_loc(exit_date)
+                        if exit_idx_pos >= 14:
+                            lookback_data = results_df.iloc[exit_idx_pos-14:exit_idx_pos+1]
+                            if 'High' in lookback_data.columns and 'Low' in lookback_data.columns:
+                                exit_atr = (lookback_data['High'] - lookback_data['Low']).mean()
+                except Exception:
+                    pass  # 計算失敗時はNone
+            
+            # 2. max_gap_during_hold - 保有期間中の最大ギャップ（絶対値）
+            max_gap_during_hold = None
+            if entry_date is not None and exit_date is not None:
+                try:
+                    hold_data = results_df.loc[entry_date:exit_date]
+                    if 'Open' in hold_data.columns and 'Close' in hold_data.columns and len(hold_data) > 1:
+                        # 前日終値との差分を計算
+                        prev_close = hold_data['Close'].shift(1)
+                        gap_pct = ((hold_data['Open'] - prev_close) / prev_close * 100).abs()
+                        max_gap_during_hold = gap_pct.max()
+                except Exception:
+                    pass  # 計算失敗時はNone
+            
+            # 3. trailing_activated - トレーリング発動有無
+            trailing_activated = None
+            if max_profit_pct is not None and exit_params is not None:
+                trailing_stop_pct_value = exit_params.get('trailing_stop_pct', None)
+                if trailing_stop_pct_value is not None:
+                    # trailing_stop_pctは0.10形式（10%）で保存されているため、100倍して%化
+                    trailing_activated = max_profit_pct >= (trailing_stop_pct_value * 100)
+            
+            # 4. trailing_trigger_price - トレーリング発動価格
+            trailing_trigger_price = None
+            if entry_price is not None and exit_params is not None:
+                trailing_stop_pct_value = exit_params.get('trailing_stop_pct', None)
+                if trailing_stop_pct_value is not None:
+                    trailing_trigger_price = entry_price * (1 + trailing_stop_pct_value)
+            
+            # 5. entry_trend_strength - エントリー時のトレンド強度（ADX）
+            entry_trend_strength = None
+            if entry_date is not None:
+                try:
+                    if TALIB_AVAILABLE and 'High' in results_df.columns and 'Low' in results_df.columns and 'Close' in results_df.columns:
+                        entry_idx_pos = results_df.index.get_loc(entry_date)
+                        if entry_idx_pos >= 14:  # ADX14に必要な最低行数
+                            adx_series = talib.ADX(
+                                results_df['High'].iloc[:entry_idx_pos+1].values,
+                                results_df['Low'].iloc[:entry_idx_pos+1].values,
+                                results_df['Close'].iloc[:entry_idx_pos+1].values,
+                                timeperiod=14
+                            )
+                            entry_trend_strength = adx_series[-1]  # 最新値
+                except Exception:
+                    pass  # 計算失敗時はNone（talib未利用時は常にNone）
+            
+            # 6. sma_distance_pct - 移動平均線（20日）との乖離率
+            sma_distance_pct = None
+            if entry_date is not None and entry_price is not None:
+                try:
+                    entry_idx_pos = results_df.index.get_loc(entry_date)
+                    if entry_idx_pos >= 19 and 'Close' in results_df.columns:  # 20日分のデータが必要
+                        sma_20 = results_df['Close'].iloc[entry_idx_pos-19:entry_idx_pos+1].mean()
+                        if sma_20 is not None and sma_20 != 0:
+                            sma_distance_pct = (entry_price - sma_20) / sma_20 * 100
+                except Exception:
+                    pass  # 計算失敗時はNone
+            # ==============================================================
+            
             trade_details.append({
                 'trade_id': trade_id,
                 'entry_date': entry_date,
@@ -276,7 +492,29 @@ def calculate_performance_metrics(results_df: pd.DataFrame) -> Tuple[Dict, pd.Da
                 'exit_date': exit_date,
                 'exit_price': exit_price,
                 'profit_loss': profit_loss,
-                'exit_reason': exit_reason
+                'exit_reason': exit_reason,
+                # Phase 1必須7項目
+                'holding_days': holding_days,
+                'profit_loss_pct': profit_loss_pct,
+                'max_profit_pct': max_profit_pct,
+                'max_loss_pct': max_loss_pct,
+                'entry_atr': entry_atr,
+                'entry_atr_pct': entry_atr_pct,
+                'entry_gap_pct': entry_gap_pct,
+                # Phase 2優先度高6項目
+                'r_multiple': r_multiple,
+                'entry_volume': entry_volume,
+                'avg_volume_20d': avg_volume_20d,
+                'volume_ratio': volume_ratio,
+                'exit_gap_pct': exit_gap_pct,
+                'highest_price_during_hold': highest_price_during_hold,
+                # Phase 3優先度中6項目
+                'exit_atr': exit_atr,
+                'max_gap_during_hold': max_gap_during_hold,
+                'trailing_activated': trailing_activated,
+                'trailing_trigger_price': trailing_trigger_price,
+                'entry_trend_strength': entry_trend_strength,
+                'sma_distance_pct': sma_distance_pct
             })
     
     trade_details_df = pd.DataFrame(trade_details)
@@ -343,7 +581,12 @@ def run_single_backtest(
         
         # パフォーマンス指標計算
         if results_df is not None and not results_df.empty:
-            metrics, trade_details = calculate_performance_metrics(results_df)
+            metrics, trade_details = calculate_performance_metrics(results_df, exit_params=exit_params)
+            
+            # ticker, stop_loss_pct, trailing_stop_pct列を追加
+            trade_details['ticker'] = ticker
+            trade_details['stop_loss_pct'] = exit_params['stop_loss_pct']
+            trade_details['trailing_stop_pct'] = exit_params['trailing_stop_pct']
             
             # PF上限制約チェック
             if metrics['profit_factor'] > MAX_PF:
@@ -354,14 +597,13 @@ def run_single_backtest(
             return metrics, trade_details
         else:
             logger.warning(f"{ticker}: 取引履歴なし")
-            metrics_empty, trade_details_empty = calculate_performance_metrics(pd.DataFrame())
+            metrics_empty, trade_details_empty = calculate_performance_metrics(pd.DataFrame(), exit_params=None)
             return metrics_empty, trade_details_empty
     
     except Exception as e:
         logger.error(f"{ticker} バックテスト失敗: {e}")
-        metrics_error, trade_details_error = calculate_performance_metrics(pd.DataFrame())
+        metrics_error, trade_details_error = calculate_performance_metrics(pd.DataFrame(), exit_params=None)
         return metrics_error, trade_details_error
-        return calculate_performance_metrics(pd.DataFrame()), pd.DataFrame()
 
 
 def filter_overfit_params(results_df: pd.DataFrame) -> pd.DataFrame:
@@ -513,10 +755,10 @@ def run_phase1(args) -> bool:
     success = avg_pf > 1.0 and pass_rate >= MIN_PASS_RATE
     
     if success:
-        logger.info(f"\n✅ Phase 1成功: 平均PF={avg_pf:.2f} > 1.0, 合格率={pass_rate:.1%} >= {MIN_PASS_RATE:.1%}")
+        logger.info(f"\n[SUCCESS] Phase 1成功: 平均PF={avg_pf:.2f} > 1.0, 合格率={pass_rate:.1%} >= {MIN_PASS_RATE:.1%}")
         logger.info("→ Phase 2（グリッドサーチ）へ進むことを推奨")
     else:
-        logger.warning(f"\n❌ Phase 1失敗: 平均PF={avg_pf:.2f}, 合格率={pass_rate:.1%}")
+        logger.warning(f"\n[FAIL] Phase 1失敗: 平均PF={avg_pf:.2f}, 合格率={pass_rate:.1%}")
         logger.warning("→ パラメータ微調整（損切3-7%、トレーリング5-15%）を推奨")
     
     return success
@@ -650,11 +892,11 @@ def run_phase1_5(args) -> Tuple[bool, pd.DataFrame]:
         logger.info(f"  平均Win Rate: {best_params['win_rate']:.1%}")
         logger.info(f"  平均取引数: {best_params['num_trades']:.1f}")
         logger.info(f"  合格率: {best_params['pass_rate']:.1%}")
-        logger.info("\n✅ Phase 1.5成功: 合格率80%以上のパラメータ発見")
+        logger.info("\n[SUCCESS] Phase 1.5成功: 合格率80%以上のパラメータ発見")
         logger.info("→ Phase 2（拡張グリッドサーチ）へ進むことを推奨")
         success = True
     else:
-        logger.warning("\n❌ Phase 1.5失敗: 合格率80%以上のパラメータなし")
+        logger.warning("\n[FAIL] Phase 1.5失敗: 合格率80%以上のパラメータなし")
         logger.warning("→ エントリー戦略の見直しを推奨（Win Rate向上が必要）")
         success = False
     
@@ -816,11 +1058,11 @@ def run_phase1_6(args) -> Tuple[bool, pd.DataFrame]:
         logger.info(f"  平均Win Rate: {best_params['win_rate']:.1%}")
         logger.info(f"  平均取引数: {best_params['num_trades']:.1f}")
         logger.info(f"  合格率: {best_params['pass_rate']:.1%}")
-        logger.info("\n✅ Phase 1.6成功: 合格率80%以上のパラメータ発見")
+        logger.info("\n[SUCCESS] Phase 1.6成功: 合格率80%以上のパラメータ発見")
         logger.info("→ Task 4（大敗パターン洗い出し）へ進むことを推奨")
         success = True
     else:
-        logger.warning("\n❌ Phase 1.6失敗: 合格率80%以上のパラメータなし")
+        logger.warning("\n[FAIL] Phase 1.6失敗: 合格率80%以上のパラメータなし")
         logger.warning("→ Task 4（大敗パターン分析）とTask 5（ペイオフレシオ分析）を実施")
         success = False
     
@@ -897,7 +1139,7 @@ def run_phase2(args) -> pd.DataFrame:
     filtered = filter_overfit_params(results_df)
     
     if filtered.empty:
-        logger.error("\n❌ Phase 2失敗: フィルタリング後のパラメータが0件")
+        logger.error("\n[FAIL] Phase 2失敗: フィルタリング後のパラメータが0件")
         logger.error("→ Phase 1に戻ってパラメータ空間を再検討推奨")
         return pd.DataFrame()
     
@@ -947,7 +1189,7 @@ def run_phase2(args) -> pd.DataFrame:
         json.dump(top3_clean, f, indent=2, ensure_ascii=False)
     
     logger.info(f"\nTOP 3パラメータ保存: {top3_file}")
-    logger.info("\n✅ Phase 2完了: Phase 3（Out-of-Sample検証）へ進むことを推奨")
+    logger.info("\n[SUCCESS] Phase 2完了: Phase 3（Out-of-Sample検証）へ進むことを推奨")
     
     return top3
 
@@ -976,7 +1218,7 @@ def run_phase3(args, top3_params: pd.DataFrame = None) -> Dict:
         top3_file = Path(args.top3_file if hasattr(args, 'top3_file') else "results/phase2_top3.json")
         
         if not top3_file.exists():
-            logger.error(f"❌ TOP 3パラメータファイルが見つかりません: {top3_file}")
+            logger.error(f"[FAIL] TOP 3パラメータファイルが見つかりません: {top3_file}")
             logger.error("→ Phase 2を先に実行してください")
             return {}
         
@@ -1050,7 +1292,7 @@ def run_phase3(args, top3_params: pd.DataFrame = None) -> Dict:
         
         degradation = (in_pf - oos_pf) / in_pf if in_pf > 0 else 0.0
         
-        status = "✅ 合格" if degradation < MAX_DEGRADATION else "❌ 過学習"
+        status = "[PASS] 合格" if degradation < MAX_DEGRADATION else "[FAIL] 過学習"
         
         logger.info(f"\n{key}:")
         logger.info(f"  In-Sample PF:  {in_pf:.2f}")
@@ -1066,15 +1308,15 @@ def run_phase3(args, top3_params: pd.DataFrame = None) -> Dict:
     logger.info("=" * 80)
     
     if len(final_recommendations) >= 2:
-        logger.info(f"\n✅ Phase 3成功: {len(final_recommendations)}パラメータがOut-of-Sample通過")
+        logger.info(f"\n[SUCCESS] Phase 3成功: {len(final_recommendations)}パラメータがOut-of-Sample通過")
         logger.info(f"推奨パラメータ: {final_recommendations[0]}")
         logger.info("\n→ リアルトレード移行判断可能")
     elif len(final_recommendations) == 1:
-        logger.warning(f"\n⚠️ Phase 3部分的成功: 1パラメータのみOut-of-Sample通過")
+        logger.warning(f"\n[WARNING] Phase 3部分的成功: 1パラメータのみOut-of-Sample通過")
         logger.warning(f"推奨パラメータ: {final_recommendations[0]}")
         logger.warning("\n→ Phase 2で別候補を追加検証推奨")
     else:
-        logger.error("\n❌ Phase 3失敗: 汎化性能不足、全パラメータがOut-of-Sampleで劣化")
+        logger.error("\n[FAIL] Phase 3失敗: 汎化性能不足、全パラメータがOut-of-Sampleで劣化")
         logger.error("\n→ Phase 2再実施（パラメータ空間拡張）推奨")
     
     return {
