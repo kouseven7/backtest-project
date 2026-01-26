@@ -181,7 +181,7 @@ class GCStrategy(BaseStrategy):
             
         return 0
 
-    def generate_exit_signal(self, idx: int, entry_idx: int = -1) -> int:
+    def generate_exit_signal(self, idx: int, entry_idx: int = -1):
         """
         イグジットシグナルを生成する
         
@@ -190,16 +190,18 @@ class GCStrategy(BaseStrategy):
             entry_idx (int): エントリー時のインデックス（BaseStrategyから渡される）
             
         Returns:
-            int: イグジットシグナル（-1: イグジット, 0: なし）
+            tuple: (signal, reason)
+                signal (int): イグジットシグナル（-1: イグジット, 0: なし）
+                reason (str): エグジット理由（'stop_loss', 'trailing_stop', 'dead_cross', 'take_profit', 'force_close', 'none'）
         """
         if idx < self.params["long_window"]:
-            return 0
+            return (0, 'none')
         
         # entry_idxが渡されていない場合はシグナルを返さない
         # （BaseStrategy.backtest()は必ずentry_idxを渡すため、ここには来ない）
         if entry_idx < 0:
             self.logger.debug(f"[EXIT CHECK] idx={idx}, entry_idx={entry_idx} (< 0), returning 0")
-            return 0
+            return (0, 'none')
         
         # エントリー価格を取得
         entry_price = self.entry_prices.get(entry_idx)
@@ -207,10 +209,16 @@ class GCStrategy(BaseStrategy):
         # Phase 1b修正: イグジット価格を翌日始値に変更（ルックアヘッドバイアス修正）
         # 理由: idx日目の終値を見てからidx日目の終値で売ることは不可能
         # リアルトレードでは翌日（idx+1日目）の始値でイグジット
-        current_price = float(self.data['Open'].iloc[idx + 1])
+        # Cycle 4修正: 最終日チェック追加（idx + 1が範囲外の場合は当日終値を使用）
+        if idx + 1 < len(self.data):
+            current_price = float(self.data['Open'].iloc[idx + 1])
+        else:
+            # 最終日の場合は当日終値を使用（例外処理）
+            current_price = float(self.data['Adj Close'].iloc[idx])
+            self.logger.warning(f"[EXIT CHECK] Final day: using Close instead of next Open. idx={idx}, date={self.data.index[idx]}")
         
         # デバッグログ: 価格情報
-        self.logger.debug(f"[EXIT CHECK] idx={idx}, entry_idx={entry_idx}, entry_price={entry_price}, current_price={current_price:.2f} (next_day_open)")
+        self.logger.debug(f"[EXIT CHECK] idx={idx}, entry_idx={entry_idx}, entry_price={entry_price}, current_price={current_price:.2f}")
         
         # entry_priceがNoneの場合はエラー（フォールバック禁止）
         if entry_price is None:
@@ -231,7 +239,7 @@ class GCStrategy(BaseStrategy):
             if prev_short_ma >= prev_long_ma and short_ma < long_ma:
                 self.logger.info(f"デッドクロスによるイグジット: 日付={self.data.index[idx]}")
                 self.logger.debug(f"[EXIT REASON] Death Cross: prev_short={prev_short_ma:.2f}, prev_long={prev_long_ma:.2f}, short={short_ma:.2f}, long={long_ma:.2f}")
-                return -1
+                return (-1, 'dead_cross')
     
         # 2. トレーリングストップ
         if entry_idx not in self.high_prices:
@@ -245,29 +253,31 @@ class GCStrategy(BaseStrategy):
         if current_price < trailing_stop:
             self.logger.info(f"トレーリングストップによるイグジット: 日付={self.data.index[idx]}")
             self.logger.debug(f"[EXIT REASON] Trailing Stop: {current_price:.2f} (next_day_open) < {trailing_stop:.2f}")
-            return -1
+            return (-1, 'trailing_stop')
     
         # 3. 利益確定
-        take_profit_price = entry_price * (1 + self.params.get("take_profit", 0.05))
-        if current_price >= take_profit_price:
-            self.logger.info(f"利益確定によるイグジット: 日付={self.data.index[idx]}")
-            self.logger.debug(f"[EXIT REASON] Take Profit: {current_price:.2f} (next_day_open) >= {take_profit_price:.2f}")
-            return -1
+        take_profit = self.params.get("take_profit")
+        if take_profit is not None:
+            take_profit_price = entry_price * (1 + take_profit)
+            if current_price >= take_profit_price:
+                self.logger.info(f"利益確定によるイグジット: 日付={self.data.index[idx]}")
+                self.logger.debug(f"[EXIT REASON] Take Profit: {current_price:.2f} (next_day_open) >= {take_profit_price:.2f}")
+                return (-1, 'take_profit')
     
         # 4. 損切り
         stop_loss_price = entry_price * (1 - self.params.get("stop_loss", 0.03))
         if current_price <= stop_loss_price:
             self.logger.info(f"損切りによるイグジット: 日付={self.data.index[idx]}")
             self.logger.debug(f"[EXIT REASON] Stop Loss: {current_price:.2f} (next_day_open) <= {stop_loss_price:.2f}")
-            return -1
+            return (-1, 'stop_loss')
     
         # 5. 最大保有期間
         days_held = idx - entry_idx
         if days_held >= self.params.get("max_hold_days", 20):
             self.logger.info(f"最大保有期間によるイグジット: 日付={self.data.index[idx]}")
-            return -1
+            return (-1, 'force_close')
     
-        return 0
+        return (0, 'none')
 
     def load_optimized_parameters(self) -> bool:
         """
