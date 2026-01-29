@@ -259,6 +259,60 @@ def generate_entry_signal(self, idx: int) -> int:
 
 ---
 
+## 📊 Priority 1実装記録（2026-01-27 19:30）
+
+### Cycle 2: Priority 1実装（TASK 5-B推奨パラメータ適用）
+
+**問題**: Phase 1.13 Priority 1としてTASK 5-B推奨パラメータをGCStrategyに適用
+
+**仮説**: デフォルトパラメータ変更のみでPF1.15達成可能
+
+**修正**: [gc_strategy_signal.py](../../strategies/gc_strategy_signal.py#L53-L65)修正
+```python
+# 変更内容
+"take_profit": 0.15 → None      # トレンドフォロー維持（TASK 5-B推奨）
+"trailing_stop_pct": 0.05 → 0.10  # TASK 5-B推奨（PF1.15期待）
+```
+
+**検証**: ⏳ 実行待ち（main_new.py経由で検証予定）
+
+**副作用**: なし（デフォルト値変更のみ、既存機能に影響なし）
+
+**次**: ユーザーによるバックテスト実行・PF検証
+
+### 実装詳細
+
+**変更ファイル**: [strategies/gc_strategy_signal.py](../../strategies/gc_strategy_signal.py)
+
+**変更箇所**: Line 53-59
+
+**変更前**:
+```python
+"take_profit": 0.15,     # 利益確定（15%）← Phase 2最終推奨
+"trailing_stop_pct": 0.05,  # トレーリングストップ（5%）← Phase 2最終推奨
+```
+
+**変更後**:
+```python
+"take_profit": None,     # 利益確定なし（Phase 1.13: トレンドフォロー維持、TASK 5-B推奨）
+"trailing_stop_pct": 0.10,  # トレーリングストップ（10%）← Phase 1.13: TASK 5-B推奨（PF1.15期待）
+```
+
+**期待効果**:
+- **PF**: 1.15（TASK 5-B検証済み、180レコード・11,013件エグジット）
+- **ペイオフレシオ**: 2.15
+- **トレーリング発動率**: 4.7%
+- **利確なし**: トレンドフォロー維持、大きな上昇トレンドを逃さない
+
+**検証コマンド**:
+```powershell
+python main_new.py
+```
+
+**検証銘柄推奨**: 4502.T（武田薬品、TASK 5-B基準銘柄）
+
+---
+
 ### 推奨2: 損切・トレーリングは**GCStrategy**に実装
 
 #### 理由
@@ -457,3 +511,72 @@ default_params = {
 **調査完了日**: 2026-01-27 18:45:00  
 **ステータス**: 調査完了・実装推奨提示  
 **次のアクション**: ユーザー判断待ち（Option 1～4選択）
+
+
+---
+
+## ?? Cycle 3-4�L�^: Option 1 + Priority 3����
+
+### Cycle 3: Option 1�����iSMA����臒l3.0%�ύX�j- 2026-01-27 21:15
+
+**���**: SMA����臒l5.0%�ł͏�Ƀt�B���^�[��ʉ߁i����3.61%�j�AOR�������@�\���Ȃ�
+
+**����**: 臒l��3.0%�ɉ����邱�ƂœK�؂ȃt�B���^�����O���ʂ�������
+
+**�C��**: [gc_strategy_signal.py Line 81](../../strategies/gc_strategy_signal.py#L81)�C��
+```python
+# �ύX���e
+\"sma_divergence_threshold\": 5.0 -> 3.0  # Option 1�K�p
+```
+
+**�ǉ��C��**: 
+1. Line 158: period�ϐ��X�R�[�v���C���iUnboundLocalError����j
+2. Line 243: ���O�o�͂�threshold���I�擾�i�Œ�5.0%�\�����C���j
+
+**����**: ? �R���p�C�������A���s�m�F
+
+**�e�X�g����**: 
+- 8306.T (2018-2024, 7�N��)
+  - Baseline trades: 54
+  - OR filter trades: 53�ifilter_mode=\"or\", sma_divergence_threshold=3.0%�j
+  - Trade reduction: 1.9%�i**�ڕW13.8%�啝���B**�j
+  - PF: 1.62�i�x�[�X���C���Ƃقړ����j
+- 4502.T (2018-2024, 7�N��)
+  - AND filter trades: 13�ifilter_mode=\"and\", sma_divergence_threshold=3.0%�j
+  - PF: 0.26�i�����j
+
+**����p**: �Ȃ��i�����@�\�ɉe���Ȃ��j
+
+**��**: ���{���������K�v
+- 3.0%臒l�ł�1.9%�팸�̂݁iPhase 1.11-B: 13.8%�팸�Ƃ̑啝�����j
+- SMA�����v�Z���@�̍Č��ؕK�v�iPhase 1���؃X�N���v�g�Ƃ̔�r�j
+- ADX臒l�̑Ó����m�F�i67%ile臒l������������\���j
+
+---
+
+### Cycle 4: ���{���������Ƒ΍􌟓� - ������
+
+**���**: Option 1�������OR������1.9%�팸�̂݁i�ڕW13.8%���B�j
+
+**����**: 
+1. SMA�����v�Z���@���ˑR�Ƃ���Phase 1���؂ƈقȂ�
+2. ADX臒l�i67%ile�j������������OR������SMA�����݂̂Ɉˑ�
+3. Phase 1���؃X�N���v�g�̎������قȂ郍�W�b�N���g�p
+
+**�������e**:
+- [ ] test_20260127_filter_debug.py���s�i臒l3.0%�ōČ��؁j
+- [ ] Phase 1���؃X�N���v�g�iscripts/validate_phase1_11b_or_filter.py�j�Ƃ̏ڍה�r
+- [ ] ADX�l���z�m�F�i67%ile臒l�̑Ó����j
+- [ ] SMA�����l���z�m�F�i3.0%臒l�ł̒ʉߗ��j
+
+**����**: ? ������
+
+**����p**: TBD
+
+**��**: �������ʂɊ�Â��΍�����
+
+---
+
+**�X�V����**: 2026-01-27 21:18:00  
+**�X�e�[�^�X**: Cycle 3�����ACycle 4������  
+**���̃A�N�V����**: ���{���������A���[�U�[�ɕ񍐂��đ΍�����c

@@ -50,19 +50,33 @@ class GCStrategy(BaseStrategy):
             price_column = "Close"
             self.price_column = price_column
         
-        # デフォルトパラメータの設定（Phase 2最終推奨パラメータ: 2026-01-18最適化完了）
+        # デフォルトパラメータの設定（Phase 1.13 AND条件フィルター: 2026-01-27変更）
         default_params = {
             "short_window": 5,       # 短期移動平均期間
             "long_window": 25,       # 長期移動平均期間
-            "take_profit": 0.15,     # 利益確定（15%）← Phase 2最終推奨（Phase 1/2最適化完了）
+            "take_profit": None,     # 利益確定なし（Phase 1.13: トレンドフォロー維持、TASK 5-B推奨）
             "stop_loss": 0.03,       # ストップロス（3%）← Phase 2-1最適化完了（2%は悪化、5%は横ばい）
-            "trailing_stop_pct": 0.05,  # トレーリングストップ（5%）← Phase 2最終推奨（Phase 1最適化完了）
-            "max_hold_days": 300,    # 最大保有期間（300日、実質無効化）
+            "trailing_stop_pct": 0.10,  # トレーリングストップ（10%）← Phase 1.13: TASK 5-B推奨（PF1.15期待）
+            "max_hold_days": 300,    # 最大保有期間（300日、実質無効）
             "exit_on_death_cross": True,  # デッドクロスでイグジットするかどうか
             
-            # トレンドフィルター設定
-            "trend_filter_enabled": False,  # デフォルトは無効（マルチ戦略システムで既にフィルタリング済み）  # 統一トレンド判定の有効化
-            "allowed_trends": ["uptrend"]  # 許可するトレンド（上昇トレンド）
+            # トレンドフィルター設定（既存）
+            "trend_filter_enabled": False,  # デフォルトは無効（マルチ戦略システムで既にフィルタリング済み）
+            "allowed_trends": ["uptrend"],  # 許可するトレンド（上昇トレンド）
+            
+            # Phase 1.13 AND条件フィルター（SMA乖離 AND トレンド強度）
+            "use_entry_filter": True,         # エントリーフィルター有効化（普遍性0.80達成）
+            "filter_mode": "or",              # フィルターモード: OR条件（Phase 1.13比較検証中、2026-01-28変更）
+            
+            # Phase 1.13: トレンド強度フィルター（ADX）
+            "trend_strength_enabled": True,   # トレンド強度フィルター有効化
+            "trend_strength_period": 14,      # ADX計算期間
+            "trend_strength_percentile": 67,  # 閾値パーセンタイル（67%ile=高トレンド）
+            
+            # Phase 1.13: SMA乖離フィルター（AND条件では5.0%）
+            "sma_divergence_enabled": True,   # SMA乖離フィルター有効化
+            "sma_divergence_threshold": 5.0,  # SMA乖離閾値（%）AND条件では5.0%（Phase 1.13検証済み）
+            "sma_divergence_period": 25,      # SMA期間（long_windowと同じ）
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -92,6 +106,10 @@ class GCStrategy(BaseStrategy):
         if f"SMA_{self.long_window}" not in self.data.columns:
             self.data[f"SMA_{self.long_window}"] = self.data[self.price_column].rolling(window=self.long_window).mean().shift(1)
         
+        # Phase 1.13 Priority 2: AND/ORフィルター初期化
+        if self.params.get("use_entry_filter", False):
+            self._initialize_filters()
+        
         # 統一トレンド検出器の初期化
         # 最新時点でのトレンド判定をコンソールに出力
         if len(self.data) > 0:
@@ -118,6 +136,131 @@ class GCStrategy(BaseStrategy):
             (self.data[f'SMA_{self.short_window}'].shift(1) <= self.data[f'SMA_{self.long_window}'].shift(1)),
             1, 0
         )
+
+    def _initialize_filters(self):
+        """
+        Phase 1.13 Priority 2: AND/ORフィルター用インジケーター初期化
+        
+        トレンド強度（ADX）とSMA乖離率を計算し、フィルター閾値を設定。
+        """
+        # トレンド強度（ADX）計算
+        if self.params.get("trend_strength_enabled", True):
+            period = self.params.get("trend_strength_period", 14)
+            if 'ADX' not in self.data.columns:
+                self.data['ADX'] = self._calculate_adx(period)
+            
+            # 銘柄別閾値計算（67%ile）
+            percentile = self.params.get("trend_strength_percentile", 67)
+            adx_values = self.data['ADX'].dropna()
+            self.trend_strength_threshold = np.percentile(adx_values, percentile)
+            
+            self.logger.info(
+                f"[FILTER_INIT] Trend Strength: ADX period={period}, "
+                f"threshold={self.trend_strength_threshold:.2f} ({percentile}%ile)"
+            )
+        
+        # SMA乖離率計算
+        if self.params.get("sma_divergence_enabled", True):
+            sma_period = self.params.get("sma_divergence_period", self.long_window)
+            if 'SMA_Divergence' not in self.data.columns:
+                sma = self.data[self.price_column].rolling(window=sma_period).mean()
+                self.data['SMA_Divergence'] = ((self.data[self.price_column] - sma) / sma) * 100
+            
+            threshold = self.params.get("sma_divergence_threshold", 5.0)
+            self.logger.info(
+                f"[FILTER_INIT] SMA Divergence: period={sma_period}, threshold={threshold:.1f}%"
+            )
+
+    def _calculate_adx(self, period: int = 14) -> pd.Series:
+        """
+        ADX（Average Directional Index）計算
+        
+        トレンド強度を0-100の範囲で計算。高い値ほど強いトレンド。
+        
+        Args:
+            period: 計算期間（デフォルト14日）
+        
+        Returns:
+            pd.Series: ADX値（0-100）
+        """
+        # True Range計算
+        high_low = self.data['High'] - self.data['Low']
+        high_close = np.abs(self.data['High'] - self.data['Close'].shift(1))
+        low_close = np.abs(self.data['Low'] - self.data['Close'].shift(1))
+        tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+        
+        # Directional Movement計算
+        plus_dm = self.data['High'] - self.data['High'].shift(1)
+        minus_dm = self.data['Low'].shift(1) - self.data['Low']
+        plus_dm[plus_dm < 0] = 0
+        minus_dm[minus_dm < 0] = 0
+        plus_dm[(plus_dm - minus_dm) < 0] = 0
+        minus_dm[(minus_dm - plus_dm) < 0] = 0
+        
+        # ATR and Directional Indicators
+        atr = tr.rolling(window=period).mean()
+        plus_di = 100 * (plus_dm.rolling(window=period).mean() / atr)
+        minus_di = 100 * (minus_dm.rolling(window=period).mean() / atr)
+        
+        # DX and ADX
+        dx = 100 * np.abs(plus_di - minus_di) / (plus_di + minus_di)
+        adx = dx.rolling(window=period).mean()
+        
+        return adx
+
+    def _check_entry_filter(self, idx: int) -> bool:
+        """
+        Phase 1.13 Priority 2: AND/ORフィルター判定
+        
+        トレンド強度とSMA乖離の条件をAND/ORで判定。
+        
+        Args:
+            idx: 現在のインデックス
+        
+        Returns:
+            bool: True=フィルター通過、False=フィルター不通過
+        """
+        # トレンド強度チェック
+        trend_ok = True
+        if self.params.get("trend_strength_enabled", True):
+            current_adx = self.data['ADX'].iloc[idx]
+            if pd.isna(current_adx):
+                trend_ok = False
+            else:
+                trend_ok = current_adx >= self.trend_strength_threshold
+        
+        # SMA乖離チェック
+        sma_ok = True
+        if self.params.get("sma_divergence_enabled", True):
+            current_divergence = abs(self.data['SMA_Divergence'].iloc[idx])
+            if pd.isna(current_divergence):
+                sma_ok = False
+            else:
+                threshold = self.params.get("sma_divergence_threshold", 5.0)
+                sma_ok = current_divergence < threshold
+        
+        # AND/OR判定
+        filter_mode = self.params.get("filter_mode", "or")
+        threshold = self.params.get("sma_divergence_threshold", 5.0)  # ログ用に再取得
+        
+        if filter_mode == "and":
+            result = trend_ok and sma_ok
+            self.logger.info(
+                f"[FILTER_AND] idx={idx}, ADX={self.data['ADX'].iloc[idx]:.2f}>=thresh={self.trend_strength_threshold:.2f}={trend_ok}, "
+                f"SMA_div={abs(self.data['SMA_Divergence'].iloc[idx]):.2f}%<{threshold:.1f}%={sma_ok}, result={result}"
+            )
+        elif filter_mode == "or":
+            result = trend_ok or sma_ok
+            self.logger.info(
+                f"[FILTER_OR] idx={idx}, ADX={self.data['ADX'].iloc[idx]:.2f}>=thresh={self.trend_strength_threshold:.2f}={trend_ok}, "
+                f"SMA_div={abs(self.data['SMA_Divergence'].iloc[idx]):.2f}%<{threshold:.1f}%={sma_ok}, result={result}"
+            )
+        else:
+            # 無効なモード（デフォルトOR）
+            self.logger.warning(f"[FILTER_ERROR] Invalid filter_mode={filter_mode}, using OR")
+            result = trend_ok or sma_ok
+        
+        return result
 
     def generate_entry_signal(self, idx: int) -> int:
         """
@@ -176,10 +319,20 @@ class GCStrategy(BaseStrategy):
         # 緩和後のエントリー条件（ゴールデンクロス or トレンド継続中）
         entry_signal = golden_cross or uptrend_continuation
 
-        if entry_signal:
-            return 1
-            
-        return 0
+        if not entry_signal:
+            return 0
+        
+        # Phase 1.13 Priority 2: AND/ORフィルター適用
+        if self.params.get("use_entry_filter", False):
+            filter_passed = self._check_entry_filter(idx)
+            if not filter_passed:
+                self.logger.debug(
+                    f"[FILTER_REJECT] idx={idx}, date={self.data.index[idx]}, "
+                    f"GC signal but filter rejected"
+                )
+                return 0
+        
+        return 1
 
     def generate_exit_signal(self, idx: int, entry_idx: int = -1):
         """
