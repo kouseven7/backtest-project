@@ -263,23 +263,150 @@ symbol,entry_date,entry_price,exit_date,exit_price,shares,pnl,return_pct,holding
 
 ---
 
-## 📌 次のアクション
+## � 問題解決サイクル記録
+
+### Cycle 1: 根本原因特定とコード修正
+
+**問題**: SELL execution_detailが生成されない（BUY=1, SELL=0）
+
+**仮説**: GCStrategy._handle_exit_logic_daily()がgenerate_exit_signal()の戻り値を誤って処理している
+
+**調査結果**:
+1. **BaseStrategy.backtest_daily()の仕組み確認** (Line 489-650):
+   - trading_start_date = current_date でbacktest()を呼び出す
+   - backtest()は全期間シグナル生成するが、trading_start_date以降のみ有効
+   
+2. **GCStrategy.backtest_daily()の実装確認** (Line 497-750):
+   - _handle_exit_logic_daily()でgenerate_exit_signal()を呼び出し（Line 678）
+   - **問題発見**: generate_exit_signal()は`(signal, reason)`タプルを返す
+   - しかし`exit_signal == -1`で比較（タプルは-1と等しくない）
+   
+3. **generate_exit_signal()の戻り値確認** (Line 339-450):
+   ```python
+   return (-1, 'trailing_stop')  # タプルを返す
+   ```
+
+**修正内容**:
+- strategies/gc_strategy_signal.py Line 678付近:
+  ```python
+  # 修正前
+  exit_signal = self.generate_exit_signal(current_idx, entry_idx)
+  if exit_signal == -1:  # タプルと比較してしまう
+  
+  # 修正後（Cycle 28）
+  exit_signal_result = self.generate_exit_signal(current_idx, entry_idx)
+  if isinstance(exit_signal_result, tuple):
+      exit_signal, exit_reason = exit_signal_result
+  else:
+      exit_signal = exit_signal_result
+      exit_reason = 'unknown'
+  
+  self.logger.debug(f"[GC_EXIT] exit_signal={exit_signal}, exit_reason={exit_reason}")
+  if exit_signal == -1:  # 正しく比較
+  ```
+
+**検証**: ✅ 2025-01-01～2025-01-15期間で実行
+```
+[DEBUG-A1-1] action=exit, signal=-1, price=3368.0, shares=100 (2025-01-08)
+[DEBUG-A1-2] execution_detail生成: action=SELL, symbol=8053, price=3368.0
+[DEBUG-A1-3] all_execution_details: total=3, BUY=2, SELL=1
+[TRADE_CONVERSION] 通常取引: 8053, PnL=-10,747円
+```
+
+**副作用チェック**: ✅ なし
+- GCStrategy専用の修正（他戦略への影響なし）
+- generate_exit_signal()の戻り値仕様は維持
+- タプル/単一値の両対応で後方互換性保証
+
+**次**: 完全期間（2025-01-01～2025-12-30）で最終検証
+
+### Cycle 2: 完全期間での最終検証
 
 ### 優先度A: 緊急対応（エグジット未記録問題）
 
-1. **execution_details → all_transactions.csv フロー調査**
-   - ComprehensiveReporter呼び出し箇所を確認
-   - エグジット行の生成ロジックを追跡
-   - エントリーとエグジットのマッチング処理を検証
+#### A-1: execution_details → all_transactions.csv フロー詳細分析
 
-2. **初期ポジションクリーニング**
-   - DSSMS実行開始時にcurrent_positionを強制クリア
-   - 期間外エントリーの検出と警告
+**調査実施日**: 2026-01-29
 
-3. **デバッグログ強化**
-   - backtest_daily()の戻り値をログ出力
-   - execution_details生成をログ出力
-   - all_transactions.csv書き込み前のデータをログ出力
+**フロー確認結果**:
+
+1. **backtest_daily()呼び出し** (Line 2257):
+   ```python
+   result = strategy.backtest_daily(adjusted_target_date, processed_data, existing_position=existing_position, **kwargs)
+   ```
+   - 戻り値: `{'action': 'entry'|'exit'|'hold', 'signal': int, 'price': float, 'shares': int, 'reason': str}`
+   - 'exit'は'sell'に正規化される（Line 2274-2276）
+
+2. **execution_details生成** (Line 2369-2379):
+   ```python
+   execution_detail = {
+       'timestamp': adjusted_target_date.strftime('%Y-%m-%d %H:%M:%S'),
+       'symbol': symbol,
+       'action': result['action'].upper(),  # 'exit' -> 'sell' -> 'SELL'
+       'price': result['price'],
+       'shares': result['shares'],
+       'strategy': best_strategy_name,
+       'signal_strength': result['signal'],
+       'reason': result['reason'],
+       'status': 'executed'
+   }
+   execution_details.append(execution_detail)
+   ```
+   - result['action']が'sell'の場合、SELLのexecution_detailが生成される
+
+3. **daily_resultsへの保存** (Line 2454-2460):
+   ```python
+   unified_result = {
+       'execution_details': execution_details,  # 含まれる
+       ...
+   }
+   ```
+   - execution_detailsはunified_resultに含まれる
+
+4. **all_transactions.csv生成** (Line 3846-4020):
+   - `_save_all_transactions_csv()`: daily_resultsからexecution_detailsを収集
+   - `_convert_execution_details_to_trades()`: BUY/SELLをFIFOペアリング
+   - Line 4017-4018: BUY数/SELL数をログ出力（重要検証ポイント）
+
+**実行結果（2026-01-29 10:37実行）**:
+
+```
+[DEBUG-A1-1] backtest_daily()戻り値詳細: action=hold, signal=0, price=0.0
+[DEBUG-A1-3] all_execution_details: total=1, BUY=1, SELL=0
+[TRADE_CONVERSION] BUY=1, SELL=0
+[TRADE_CONVERSION] 生成された取引レコード: 1件
+```
+
+**根本原因確定**:
+- **SELL execution_detailが1件も生成されていない**（BUY=1, SELL=0）
+- backtest_daily()が'hold'を返しているため、SELL execution_detailが作成されない
+- エントリー(2024-12-30)のBUYは存在するが、エグジット(2025-01-09)のSELLが存在しない
+
+**次の疑問**:
+- なぜ2025-01-09にbacktest_daily()が'exit'を返さないのか？
+- GCStrategy.generate_exit_signal()は正しくsignalを返しているが、backtest_daily()に伝わっていない可能性
+
+**検証必須項目**:
+- [x] 2025-01-09にbacktest_daily()が'sell'を返しているか → **NO（'hold'を返している）**
+- [x] SELL execution_detailが生成されているか → **NO（0件）**
+- [x] all_execution_details内にSELL orderが含まれているか → **NO**
+- [ ] GCStrategy.backtest_daily()内部でgenerate_exit_signal()が呼ばれているか
+- [ ] 2025-01-09のDSSMS実行ログを確認（エントリー日が期間外のため処理スキップされている可能性）
+
+**次アクション**: 
+1. 2025-01-09のdaily_resultsがあるか確認（DSSMS実行期間2025-01-01~12-30のため、2025-01-09は含まれるはず）
+2. BaseStrategy.backtest_daily()の実装を確認し、existing_position処理を検証
+
+#### A-2: 初期ポジションクリーニング
+
+- DSSMS実行開始時にcurrent_positionを強制クリア
+- 期間外エントリーの検出と警告
+
+#### A-3: デバッグログ強化
+
+- backtest_daily()の戻り値をログ出力
+- execution_details生成をログ出力
+- all_transactions.csv書き込み前のデータをログ出力
 
 ### 優先度B: 根本対策（設計改善）
 
