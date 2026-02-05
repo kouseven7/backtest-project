@@ -172,8 +172,7 @@ class DSSMSDataManager:
             yf = get_yfinance()  # Phase 3最適化: 遅延インポート
             
             # .Tサフィックス追加（nikkei225_screener.pyからは.Tなしで渡される）
-            symbol_with_suffix = symbol if ".T" in symbol else symbol + ".T"
-            ticker = yf.Ticker(symbol_with_suffix)
+            ticker = yf.Ticker(to_yfinance(symbol))
             
             # 直近2日分取得（市場休場を考慮、copilot-instructions.md: auto_adjust=False必須）
             hist = ticker.history(period="2d", interval="1d", auto_adjust=False)

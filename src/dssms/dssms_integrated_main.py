@@ -75,6 +75,8 @@ except ImportError as e:
     logging.error(f"[TASK1_ERROR] SymbolSwitchManager import failed: {e}")
     SymbolSwitchManager = None
 
+from src.utils.symbol_utils import to_yfinance
+
 # SystemFallbackPolicy利用可能性チェック(TODO-INTEGRATE-001対応)
 try:
     from src.config.system_modes import get_fallback_policy, ComponentType
@@ -2899,8 +2901,7 @@ class DSSMSIntegratedBacktester:
                 try:
                     from src.utils.lazy_import_manager import get_yfinance
                     yf = get_yfinance()
-                    symbol_with_suffix = symbol if symbol.endswith('.T') else f"{symbol}.T"
-                    ticker = yf.Ticker(symbol_with_suffix)
+                    ticker = yf.Ticker(to_yfinance(symbol))
                     # auto_adjust=False指定でAdj Closeカラムを保証(VWAPBreakoutStrategy対応)
                     stock_data = ticker.history(start=start_date, end=end_date + timedelta(days=7), auto_adjust=False)
                     
