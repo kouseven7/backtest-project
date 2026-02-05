@@ -19,6 +19,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
+from src.utils.symbol_utils import to_yfinance
+
 # 既存システムインポート
 from config.logger_config import setup_logger
 from src.utils.lazy_import_manager import get_yfinance  # Phase 3最適化: 遅延インポート
@@ -243,8 +245,7 @@ class DSSMSDataManager:
             yf = get_yfinance()  # Phase 3最適化: 遅延インポート
             
             # .Tサフィックス追加（nikkei225_screener.pyからは.Tなしで渡される）
-            symbol_with_suffix = symbol if ".T" in symbol else symbol + ".T"
-            ticker = yf.Ticker(symbol_with_suffix)
+            ticker = yf.Ticker(to_yfinance(symbol))
             
             # 期間設定
             end_date = datetime.now()

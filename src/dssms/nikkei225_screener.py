@@ -19,6 +19,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 import time
 
+from src.utils.symbol_utils import to_yfinance
+
 # プロジェクトルートを追加
 project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
@@ -291,7 +293,7 @@ class Nikkei225Screener:
         for symbol in symbols:
             try:
                 yf = get_yfinance()  # Phase 3最適化: 遅延インポート
-                ticker = yf.Ticker(symbol + ".T")
+                ticker = yf.Ticker(to_yfinance(symbol))
                 info = ticker.info
                 
                 market_cap = info.get('marketCap')

@@ -18,6 +18,7 @@ from pathlib import Path
 import yfinance as yf
 import pandas as pd
 from typing import Dict, List, Optional, Tuple, Any
+from src.utils.symbol_utils import to_yfinance
 from datetime import datetime, timedelta
 import numpy as np
 import json
@@ -89,7 +90,7 @@ class FundamentalAnalyzer:
             
             # Step 2: CSV永続キャッシュチェック（Phase 3追加）
             # Phase 3修正: キャッシュキーには.T付きシンボルを使用
-            symbol_with_suffix = symbol if ".T" in symbol else symbol + ".T"
+            symbol_with_suffix = to_yfinance(symbol)
             csv_cache_path = self._persistent_cache_dir / f"{symbol_with_suffix}_{self._cache_version}.json"
             if csv_cache_path.exists() and not force_refresh:
                 try:
@@ -130,8 +131,7 @@ class FundamentalAnalyzer:
             
             # Step 3: Yahoo Finance データ取得（既存）
             # Phase 3修正: symbolに.Tを付与（キャッシュキー統一）
-            symbol_with_suffix = symbol if ".T" in symbol else symbol + ".T"
-            ticker = yf.Ticker(symbol_with_suffix)
+            ticker = yf.Ticker(to_yfinance(symbol))
             
             # 基本情報
             info = ticker.info
@@ -173,7 +173,7 @@ class FundamentalAnalyzer:
                 }
                 
                 # Phase 3修正: キャッシュキーには.T付きシンボルを使用
-                symbol_with_suffix = symbol if ".T" in symbol else symbol + ".T"
+                symbol_with_suffix = to_yfinance(symbol)
                 csv_cache_path = self._persistent_cache_dir / f"{symbol_with_suffix}_{self._cache_version}.json"
                 with open(csv_cache_path, 'w', encoding='utf-8') as f:
                     json.dump(cache_data, f, ensure_ascii=False, indent=2, default=str)

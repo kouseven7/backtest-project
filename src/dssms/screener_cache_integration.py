@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+from src.utils.symbol_utils import to_yfinance
 
 class ScreenerSmartCache:
     """Screener特化SmartCacheシステム - 軽量統合版"""

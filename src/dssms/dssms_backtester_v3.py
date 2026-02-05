@@ -28,6 +28,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 # DSSMSコンポーネントインポート
 from src.dssms.perfect_order_detector import PerfectOrderDetector
 from src.dssms.hierarchical_ranking_system import HierarchicalRankingSystem
+from src.utils.symbol_utils import to_yfinance
 from src.dssms.comprehensive_scoring_engine import ComprehensiveScoringEngine
 from src.dssms.intelligent_switch_manager import IntelligentSwitchManager
 from src.dssms.market_condition_monitor import MarketConditionMonitor
@@ -235,7 +236,7 @@ class DSSBacktesterV3:
         for symbol in symbols:
             try:
                 # 日本株式の場合、.T を付加
-                ticker_symbol = f"{symbol}.T"
+                ticker_symbol = to_yfinance(symbol)
                 self.logger.info(f"データ取得中: {ticker_symbol}")
                 
                 # yfinance でデータ取得
