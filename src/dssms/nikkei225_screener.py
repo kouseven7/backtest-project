@@ -86,21 +86,28 @@ class Nikkei225Screener:
         
         self.logger.info("Nikkei225Screener initialized")
     
-    def fetch_nikkei225_symbols(self, force_refresh: bool = False) -> List[str]:
+    def fetch_nikkei225_symbols(self, force_refresh: bool = False, target_date: Optional[datetime] = None) -> List[str]:
         """
         日経225構成銘柄取得
         
         Args:
             force_refresh: 強制更新フラグ
+            target_date: 判定日時（バックテスト時に使用、Noneの場合はリアルトレードモード）
             
         Returns:
             List[str]: 銘柄コードリスト
         """
         try:
-            # キャッシュチェック
+            # バックテスト時はキャッシュを使用しない
+            # （各target_dateで銘柄リストが変わる可能性があるため）
+            if target_date is not None:
+                force_refresh = True
+            
+            # キャッシュチェック（リアルトレード時のみ）
             if (not force_refresh and 
                 self._nikkei225_symbols is not None and 
                 self._cache_expiry is not None and 
+                target_date is None and 
                 datetime.now() < self._cache_expiry):
                 return self._nikkei225_symbols
             
@@ -203,20 +210,32 @@ class Nikkei225Screener:
             self.logger.error(f"Error in price filter: {e}")
             raise
     
-    def apply_market_cap_filter(self, symbols: List[str], min_cap: Optional[float] = None) -> List[str]:
+    def apply_market_cap_filter(self, symbols: List[str], min_cap: Optional[float] = None, target_date: Optional[datetime] = None) -> List[str]:
         """
         時価総額フィルタ適用（仕手株除外）- TODO-PERF-007 Stage 2: 並列処理統合版
         
         Args:
             symbols: 銘柄リスト
             min_cap: 最低時価総額（None時は設定値使用）
+            target_date: 判定日時（バックテスト時に使用）
             
         Returns:
             List[str]: フィルタ後銘柄リスト
+            
+        Note:
+            Phase 1実装: ticker.infoはリアルタイムデータのため、target_date時点の
+            時価総額を取得できない。現時点では時価総額フィルタをスキップする。
+            将来的には履歴データから推定する実装（Phase 2）を検討。
         """
         try:
             min_cap = min_cap or self.config["screening"]["nikkei225_filters"]["min_market_cap"]
             
+            # Phase 1: バックテスト時は時価総額フィルタをスキップ
+            if target_date is not None:
+                self.logger.warning(f"[LOOKBACK_FIX] 時価総額フィルタをスキップ（target_date={target_date.strftime('%Y-%m-%d')}、リアルタイムデータ回避）")
+                return symbols
+            
+            # リアルトレード時のみフィルタ実行
             # 並列処理で高速化（TODO-PERF-007 Stage 2統合）
             if len(symbols) >= 5:  # 5銘柄以上なら並列処理
                 return self._parallel_market_cap_filter(symbols, min_cap)
@@ -385,20 +404,21 @@ class Nikkei225Screener:
             self.logger.error(f"Error in volume filter: {e}")
             raise
     
-    def get_filtered_symbols(self, available_funds: float) -> List[str]:
+    def get_filtered_symbols(self, available_funds: float, target_date: datetime) -> List[str]:
         """
         全フィルタ適用による最終銘柄選定
         
         Args:
             available_funds: 利用可能資金
+            target_date: 判定日時（バックテスト時は過去の日付、この日時点の情報のみ使用）
             
         Returns:
             List[str]: 最終選定銘柄リスト（最大50銘柄）
         """
         try:
             # 1. 日経225構成銘柄取得
-            symbols = self.fetch_nikkei225_symbols()
-            self.logger.info(f"Starting screening with {len(symbols)} Nikkei225 symbols")
+            symbols = self.fetch_nikkei225_symbols(target_date=target_date)
+            self.logger.info(f"[LOOKBACK_FIX] Starting screening with {len(symbols)} Nikkei225 symbols (target_date={target_date.strftime('%Y-%m-%d')})")
             
             # 2. 無効銘柄フィルタ（上場廃止等を事前除外）
             symbols = self.apply_valid_symbol_filter(symbols)
@@ -406,8 +426,8 @@ class Nikkei225Screener:
             # 3. 価格フィルタ
             symbols = self.apply_price_filter(symbols)
             
-            # 4. 時価総額フィルタ
-            symbols = self.apply_market_cap_filter(symbols)
+            # 4. 時価総額フィルタ（Phase 1: バックテスト時はスキップ）
+            symbols = self.apply_market_cap_filter(symbols, target_date=target_date)
             
             # 4. 購入可能性フィルタ
             symbols = self.apply_affordability_filter(symbols, available_funds)
@@ -436,12 +456,13 @@ class Nikkei225Screener:
             self.logger.error(f"Error in symbol screening: {e}")
             raise
     
-    def get_screening_statistics(self, available_funds: float) -> Dict[str, int]:
+    def get_screening_statistics(self, available_funds: float, target_date: Optional[datetime] = None) -> Dict[str, int]:
         """
         スクリーニング統計取得
         
         Args:
             available_funds: 利用可能資金
+            target_date: 判定日時（バックテスト時に使用）
             
         Returns:
             Dict[str, int]: 各段階の銘柄数統計
@@ -450,14 +471,14 @@ class Nikkei225Screener:
             stats = {}
             
             # 初期銘柄数
-            symbols = self.fetch_nikkei225_symbols()
+            symbols = self.fetch_nikkei225_symbols(target_date=target_date)
             stats['initial'] = len(symbols)
             
             # 各フィルタ後
             symbols = self.apply_price_filter(symbols)
             stats['after_price_filter'] = len(symbols)
             
-            symbols = self.apply_market_cap_filter(symbols)
+            symbols = self.apply_market_cap_filter(symbols, target_date=target_date)
             stats['after_market_cap_filter'] = len(symbols)
             
             symbols = self.apply_affordability_filter(symbols, available_funds)

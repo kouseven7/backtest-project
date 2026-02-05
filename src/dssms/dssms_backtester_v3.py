@@ -68,9 +68,11 @@ class DSSBacktesterV3:
         # 銘柄リスト（Nikkei225動的選択システム - 完全統合版）
         try:
             from src.dssms.nikkei225_screener import Nikkei225Screener
+            from datetime import datetime
             self.nikkei225_screener = Nikkei225Screener()
             # デフォルト資金で銘柄をフィルタリング（100万円想定）
-            self.symbol_universe = self.nikkei225_screener.get_filtered_symbols(1000000)
+            # Note: 初期化時はリアルトレードモード（target_date=現在日時）
+            self.symbol_universe = self.nikkei225_screener.get_filtered_symbols(1000000, datetime.now())
             self.logger.info(f"[OK] Nikkei225動的選択: {len(self.symbol_universe)}銘柄取得成功")
         except Exception as e:
             self.logger.error(f"Nikkei225Screener初期化失敗: {e}")
