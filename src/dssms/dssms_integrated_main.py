@@ -1,26 +1,41 @@
 """
+DSSMS統合メインモジュール - 動的銘柄選択とマルチ戦略バックテスト実行
 
-DSSMS Integrated Main System - Multi-Strategy Backtest Controller with Dynamic Symbol Selection
+日経225銘柄からパーフェクトオーダーの銘柄を動的に選択し、
+複数の戦略を統合してバックテストを実行します。
 
-This module integrates DSSMS Core with multi-strategy execution for Nikkei 225 optimal symbol selection
-and comprehensive backtesting across multiple trading strategies.
+主な機能:
+- DSSMS銘柄選択（Screening/Ranking/Scoring/Symbol Switching）
+- マルチ戦略実行制御（BaseStrategy派生クラス統合）
+- ポジション管理（エントリー/エグジット/銘柄切替）
+- バックテスト終了時の強制決済処理（重要: 削除禁止、Line 670-850付近）
+- 日次データ取得とルックアヘッドバイアス防止
+- 取引履歴の記録とレポート生成
+- パフォーマンス統計の計算
 
-Main Functions:
-- DSSMS Core Integration (Screening/Ranking/Scoring/Symbol Switching)
-- Multi-Strategy Execution Control (BaseStrategy-derived classes coordination)
-- Cumulative Period Backtest Execution (Phase 1 restored)
+統合コンポーネント:
+- DSSMS Core: symbol_switch_manager_ultra_light（銘柄選択）
+- Screener: nikkei225_screener.py（日経225銘柄フィルタリング）
+- 戦略層: GCStrategy, VWAPBreakoutStrategy, BreakoutStrategy等
+- データ層: data_fetcher.py, data_cache_manager.py
+- 出力: CSV+JSON+TXT統一出力エンジン
 
-Integration Components:
-- DSSMS Core: Uses symbol_switch_manager_ultra_light for symbol selection
-- MainSystemController: Executes multi-strategy through main_new.py interface
+セーフティ機能/注意事項:
+- バックテスト終了時の強制決済処理は絶対に削除しないこと
+  （Line 670-850付近、削除すると未決済ポジションが残る）
+- ルックアヘッドバイアス防止（日次データ取得、翌日始値エントリー）
+- yfinance auto_adjust=False 必須（Adj Close取得のため）
+- 二重サフィックス防止（to_yfinance()関数使用）
+- DSSMS日次判定 vs マルチ戦略全期間判定の整合性に注意
 
-Safety Features/Important Notes:
-- Current design has DSSMS daily judgment vs multi-strategy full-period judgment inconsistency
-- Requires careful handling of symbol switching timing and strategy continuity
+既知の問題と対策:
+- Issue #2: 強制決済コードの削除 -> 削除禁止コメント追加済み
+- Issue #5: API期間異常 -> Screener target_date対応必要
+- Issue #1: 二重サフィックス問題 -> to_yfinance()関数で防止
 
-Author: AI Assistant
-Created: September 28, 2025
-Last Modified: December 30, 2025
+Author: Backtest Project Team
+Created: 2025-09-28
+Last Modified: 2026-02-05
 """
 
 import sys
@@ -666,15 +681,148 @@ class DSSMSIntegratedBacktester:
                 
                 current_date += timedelta(days=1)
             
-            # ==========================================
-            # 期間終了時の強制決済(December 11, 2025実装)
-            # ==========================================
-            # 参考実装: 銘柄切替ForceClose(Line 1567-1583)
+            # ============================================================
+            # [重要] このコードは絶対に削除しないでください
+            # ============================================================
+            # 【目的】
+            # バックテスト終了時に保有中のポジションを強制決済し、
+            # all_transactions.csvに正確なexit_date, exit_price, pnlを記録する
+            #
+            # 【削除してはいけない理由】
+            # 1. 未決済ポジションが残ると、最終ポートフォリオ値が確定しない
+            # 2. 取引履歴（all_transactions.csv）が不完全になる
+            # 3. パフォーマンス計算（総損益、勝率等）が不正確になる
+            #
+            # 【複数銘柄保有対応との関係】
+            # 複数銘柄保有対応を実装する際も、この処理は必須です。
+            # current_position（単数形）を current_positions（複数形）に変更する際も、
+            # 全ポジションをループで強制決済する処理を維持してください。
+            #
+            # 【過去の問題】
+            # Issue #2: AI（VSCode Copilot）が削除して問題発生
+            # -> 復元後、このコメントを追加（2026-02-05）
+            #
+            # 【参照】
+            # - KNOWN_ISSUES_AND_PREVENTION.md Issue #2
+            # - MULTI_POSITION_IMPLEMENTATION_PLAN.md Sprint 1
+            # ============================================================
             
-            # 削除: バックテスト終了時のForceClose処理(Line 486-542, 57行)
-            # 削除理由: DSSMSが取引実行しないため,期末強制決済も不要
-            # 代替: main_new.pyのForceCloseStrategyが担当
-            # 影響: バックテスト終了時のexecution_detailsが生成されない(意図通り)
+            # ==========================================
+            # 期間終了時の強制決済（Phase 1修正: 2026-01-30）
+            # ==========================================
+            # 目的: バックテスト終了時に保有中のポジションを強制決済し、
+            #       all_transactions.csvに正確なexit_dateを記録する
+            # 修正履歴: Phase 1（複数銘柄対応）実装時に削除されたが、必要な処理
+            
+            if self.current_position:
+                self.logger.info(
+                    f"[FINAL_CLOSE] バックテスト終了時の強制決済開始"
+                )
+                
+                final_execution_details = []
+                
+                symbol = self.current_position['symbol']
+                try:
+                    shares = self.current_position['shares']
+                    entry_price = self.current_position['entry_price']
+                    
+                    # デバッグログ追加 (2026-02-05)
+                    self.logger.info(f"\n[DEBUG_PRICE] ========== 銘柄{symbol}の強制決済 ==========")
+                    self.logger.info(f"[DEBUG_PRICE] entry_price: {entry_price}, shares: {shares}")
+                    
+                    # 最終日の終値を取得
+                    final_price = None
+                    stock_data, _ = self._get_symbol_data(symbol, end_date)
+                    
+                    # デバッグログ追加
+                    if stock_data is not None and len(stock_data) > 0:
+                        self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data.shape = {stock_data.shape}")
+                        self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data.index[-5:] = {stock_data.index[-5:].tolist()}")
+                        self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data['Close'].iloc[-5:] = {stock_data['Close'].iloc[-5:].tolist()}")
+                    else:
+                        self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data取得失敗(None or empty)")
+                    
+                    if stock_data is None or len(stock_data) == 0:
+                        # エラーログ出力（フォールバックなし）
+                        self.logger.error(
+                            f"[FINAL_CLOSE] データ取得失敗: {symbol} - "
+                            f"yfinance APIエラーまたはデータ不足"
+                        )
+                        # 強制決済レコードは生成するがfinal_priceはentry_priceを使用
+                        # （最悪ケース: PnL=0として決済記録）
+                        final_price = entry_price
+                        
+                        self.logger.info(f"[DEBUG_PRICE] final_price = entry_price: {final_price}")
+                        
+                        self.logger.warning(
+                            f"[FINAL_CLOSE] {symbol}: データ取得失敗のため "
+                            f"entry_price({entry_price:.2f})をfinal_priceとして使用 (PnL=0)"
+                        )
+                    else:
+                        final_price = stock_data['Close'].iloc[-1]
+                        
+                        self.logger.info(f"[DEBUG_PRICE] final_price = Close最終値: {final_price}")
+                        self.logger.info(f"[DEBUG_PRICE] entry_price = {entry_price}")
+                    
+                    # PnL計算
+                    pnl = (final_price - entry_price) * shares
+                    
+                    self.logger.info(f"[DEBUG_PRICE] PnL: {pnl:.2f}円")
+                    self.logger.info(f"[DEBUG_PRICE] ==========================================\n")
+                    
+                    # 決済記録（データ取得失敗でも記録）
+                    exit_detail = {
+                        'timestamp': end_date,
+                        'symbol': symbol,
+                        'action': 'SELL',
+                        'shares': shares,
+                        'price': final_price,
+                        'total_value': final_price * shares,
+                        'strategy': self.current_position.get('strategy', 'DSSMS_Integrated'),
+                        'reason': 'backtest_end',
+                        'status': 'force_closed',
+                        'pnl': pnl,
+                        'return_pct': (final_price - entry_price) / entry_price if entry_price > 0 else 0.0
+                    }
+                    
+                    final_execution_details.append(exit_detail)
+                    
+                    # cash_balance更新（DSSMSのみ）
+                    self.cash_balance += final_price * shares
+                    
+                    # ログ出力
+                    self.logger.info(
+                        f"[FINAL_CLOSE] {symbol}: {shares}株 @{final_price:.2f}円, "
+                        f"PnL={pnl:+,.0f}円({exit_detail['return_pct']:+.2%})"
+                    )
+                    
+                    # ポジション削除
+                    self.current_position = None
+                    
+                except Exception as e:
+                    self.logger.error(
+                        f"[FINAL_CLOSE] 強制決済エラー: {symbol}, {e}",
+                        exc_info=True
+                    )
+                    # 例外発生時もポジション削除を試行
+                    self.current_position = None
+                
+                # 最終日の日次結果にexecution_detailsを追加
+                if self.daily_results and final_execution_details:
+                    last_daily_result = self.daily_results[-1]
+                    if 'execution_details' not in last_daily_result:
+                        last_daily_result['execution_details'] = []
+                    last_daily_result['execution_details'].extend(final_execution_details)
+                    
+                    self.logger.info(
+                        f"[FINAL_CLOSE] 強制決済完了: {len(final_execution_details)}件の決済記録を追加"
+                    )
+                
+                # portfolio_valueをcash_balanceに同期（全決済後は現金のみ）
+                self.portfolio_value = self.cash_balance
+                self.logger.info(
+                    f"[FINAL_CLOSE] portfolio_value更新: {self.portfolio_value:,.2f}円（全決済後）"
+                )
             
             self.logger.info(
                 f"current_symbol={self.current_symbol}"
