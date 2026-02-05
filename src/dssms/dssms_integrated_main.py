@@ -4061,11 +4061,26 @@ class DSSMSIntegratedBacktester:
             all_orders = []
             for detail in execution_details:
                 action = detail.get('action', '').upper()
-                self.logger.debug(f"[DEBUG_TRADE] execution_detail: action={action}, symbol={detail.get('symbol')}, price={detail.get('price')}, shares={detail.get('shares')}, timestamp={detail.get('timestamp')}")
+                ts = detail.get('timestamp')
+                
+                # timestamp型統一: str → datetime変換（2026-02-05 修正）
+                if isinstance(ts, str):
+                    try:
+                        ts = datetime.strptime(ts, '%Y-%m-%d %H:%M:%S')
+                        detail['timestamp'] = ts  # 元のdictも更新
+                    except ValueError:
+                        self.logger.warning(f"[TIMESTAMP_PARSE] 変換失敗: {ts}")
+                
+                self.logger.debug(f"[DEBUG_TRADE] execution_detail: action={action}, symbol={detail.get('symbol')}, price={detail.get('price')}, shares={detail.get('shares')}, timestamp={ts}, type={type(ts)}")
                 if action in ['BUY', 'SELL']:
                     all_orders.append(detail)
             
             # 時系列順でソート（datetime vs str エラー修正: 2026-02-05）
+            self.logger.debug(f"[SORT_DEBUG] ソート前: all_orders count={len(all_orders)}")
+            for i, order in enumerate(all_orders[:3]):  # 最初の3件のみ
+                ts = order.get('timestamp')
+                self.logger.debug(f"[SORT_DEBUG] order[{i}]: timestamp={ts}, type={type(ts)}, value={repr(ts)}")
+            
             all_orders.sort(key=lambda x: x.get('timestamp', datetime.min))
             
             # FIFO ペアリング（銘柄横断）
