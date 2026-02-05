@@ -1806,7 +1806,10 @@ class DSSMSIntegratedBacktester:
                     self.logger.info(f"[SYMBOL_SELECTION] 銘柄選定開始: {target_date.strftime('%Y-%m-%d')}")
                     
                     available_funds = self.portfolio_value * 0.8
-                    filtered_symbols = self.nikkei225_screener.get_filtered_symbols(available_funds)
+                    filtered_symbols = self.nikkei225_screener.get_filtered_symbols(
+                        available_funds, 
+                        target_date  # target_dateを渡してルックアヘッドバイアス防止
+                    )
                     
                     
                     self.logger.debug(
@@ -2903,7 +2906,8 @@ class DSSMSIntegratedBacktester:
                     yf = get_yfinance()
                     ticker = yf.Ticker(to_yfinance(symbol))
                     # auto_adjust=False指定でAdj Closeカラムを保証(VWAPBreakoutStrategy対応)
-                    stock_data = ticker.history(start=start_date, end=end_date + timedelta(days=7), auto_adjust=False)
+                    # Line 2880で既にtarget_date + 1日（exclusive対策）済み、追加の期間拡大は不要
+                    stock_data = ticker.history(start=start_date, end=end_date, auto_adjust=False)
                     
                     if 'Adj Close' not in stock_data.columns and 'Close' in stock_data.columns:
                         stock_data['Adj Close'] = stock_data['Close']
@@ -2933,7 +2937,8 @@ class DSSMSIntegratedBacktester:
                             )
                     
                     nikkei_ticker = yf.Ticker("^N225")
-                    index_data = nikkei_ticker.history(start=start_date, end=end_date + timedelta(days=7), auto_adjust=False)
+                    # Line 2880で既にtarget_date + 1日（exclusive対策）済み、追加の期間拡大は不要
+                    index_data = nikkei_ticker.history(start=start_date, end=end_date, auto_adjust=False)
                     
                     if 'Adj Close' not in index_data.columns and 'Close' in index_data.columns:
                         index_data['Adj Close'] = index_data['Close']
