@@ -3997,11 +3997,23 @@ class DSSMSIntegratedBacktester:
             
             transactions_path = output_dir / "all_transactions.csv"
             
+            # デバッグ: self.daily_resultsの内容確認（2026-02-05追加）
+            print(f"\n[DEBUG] ========== CSV出力前のデバッグ ==========")
+            print(f"[DEBUG] self.daily_results の件数: {len(self.daily_results) if self.daily_results else 0}")
+            
             # execution_detailsから詳細取引データを抽出
             all_execution_details = []
-            for daily_result in self.daily_results:
+            for i, daily_result in enumerate(self.daily_results):
                 daily_execution_details = daily_result.get('execution_details', [])
+                if daily_execution_details:
+                    print(f"[DEBUG] daily_results[{i}] ({daily_result.get('date', 'N/A')}): {len(daily_execution_details)}件のexecution_details")
+                    for j, detail in enumerate(daily_execution_details):
+                        print(f"[DEBUG]   [{j}] action={detail.get('action')}, symbol={detail.get('symbol')}, price={detail.get('price')}, shares={detail.get('shares')}")
                 all_execution_details.extend(daily_execution_details)
+            
+            print(f"[DEBUG] all_execution_details 合計: {len(all_execution_details)}件")
+            print(f"[DEBUG] CSV出力パス: {transactions_path}")
+            print(f"[DEBUG] ==========================================\n")
             
             # BUY/SELLペアリングして取引レコードを作成
             trades = self._convert_execution_details_to_trades(all_execution_details)
@@ -4053,8 +4065,8 @@ class DSSMSIntegratedBacktester:
                 if action in ['BUY', 'SELL']:
                     all_orders.append(detail)
             
-            # 時系列順でソート
-            all_orders.sort(key=lambda x: x.get('timestamp', ''))
+            # 時系列順でソート（datetime vs str エラー修正: 2026-02-05）
+            all_orders.sort(key=lambda x: x.get('timestamp', datetime.min))
             
             # FIFO ペアリング（銘柄横断）
             buy_stack = []
