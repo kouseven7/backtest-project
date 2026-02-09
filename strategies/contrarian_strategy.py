@@ -305,11 +305,15 @@ class ContrarianStrategy(BaseStrategy):
 
         return self.data
 
-    def backtest_daily(self, current_date, stock_data, existing_position=None):
+    def backtest_daily(self, current_date, stock_data, existing_position=None, **kwargs):
         """
         ContrarianStrategy 日次バックテスト実行
         
         Phase 3-C Day 10実装: Contrarian戦略でのbacktest_daily()実装
+        
+        Sprint 1.5修正 (2026-02-09): force_close対応
+        - **kwargs追加: entry_symbol_dataを受け取れるように拡張
+        - force_close時はentry_symbol_dataで決済価格を取得
         
         Parameters:
             current_date (datetime): 判定対象日
@@ -320,8 +324,12 @@ class ContrarianStrategy(BaseStrategy):
                     'quantity': int,
                     'entry_price': float,
                     'entry_date': datetime,
-                    'entry_idx': int
+                    'entry_idx': int,
+                    'force_close': bool,         # Sprint 1.5: 強制決済フラグ
+                    'entry_symbol': str          # Cycle 7: エントリー銘柄コード
                 }
+            **kwargs: 追加引数
+                - entry_symbol_data (pd.DataFrame): force_close時の元の銘柄データ
                 
         Returns:
             dict: {
@@ -390,7 +398,9 @@ class ContrarianStrategy(BaseStrategy):
             # Phase 5: 既存ポジション処理分岐
             if existing_position is not None:
                 # エグジット判定（簡易版: Entry_Signal依存を回避）
-                return self._handle_exit_logic_daily(current_idx, existing_position, stock_data, current_date)
+                # Sprint 1.5修正: entry_symbol_dataをkwargsから取得して渡す
+                entry_symbol_data = kwargs.get('entry_symbol_data', None)
+                return self._handle_exit_logic_daily(current_idx, existing_position, stock_data, current_date, entry_symbol_data)
             else:
                 # エントリー判定
                 return self._handle_entry_logic_daily(current_idx, stock_data, current_date)
@@ -399,12 +409,43 @@ class ContrarianStrategy(BaseStrategy):
             # データ復元
             self.data = original_data
     
-    def _handle_exit_logic_daily(self, current_idx, existing_position, stock_data, current_date):
+    def _handle_exit_logic_daily(self, current_idx, existing_position, stock_data, current_date, entry_symbol_data=None):
         """
         エグジット判定ロジック（backtest_daily用簡易版）
         
         generate_exit_signal()がEntry_Signal依存のため、
         直接エグジット条件を判定する簡易実装
+        
+        Cycle 27修正: entry_symbol_data対応
+        - force_close時（entry_symbol_data提供時）は元の銘柄のデータでエグジット価格を取得
+        - 通常時は現在の銘柄（stock_data）でエグジット価格を取得
+        
+        Sprint 1.5修正 (2026-02-09): force_close強制決済実装
+        - force_close=True の場合、エグジット条件に関わらず強制決済
+        - 銘柄切替時の旧ポジション自動決済を保証
+        
+        Parameters:
+            current_idx: 現在のインデックス
+            existing_position: 既存ポジション情報
+                {
+                    'entry_idx': int,
+                    'quantity': int,
+                    'entry_price': float,
+                    'entry_date': datetime,
+                    'force_close': bool,         # Sprint 1.5: 強制決済フラグ
+                    'entry_symbol': str          # Cycle 7: エントリー銘柄コード
+                }
+            stock_data: 現在の銘柄データ
+            current_date: 判定日時
+            entry_symbol_data: force_close時の元の銘柄データ（オプション）
+        
+        Returns:
+            dict: {'action': 'exit'|'hold', 'signal': -1|0, 'price': float, 'shares': int, 'reason': str}
+        
+        Note:
+            - copilot-instructions.md準拠（ルックアヘッドバイアス防止、フォールバック制限）
+            - force_close=True の場合、エグジット条件判定をスキップして強制決済
+            - 最終日フォールバックは限定的使用（copilot-instructions.md Section 68-73準拠）
         """
         import logging
         logger = logging.getLogger(__name__)
@@ -414,6 +455,18 @@ class ContrarianStrategy(BaseStrategy):
             entry_price = existing_position.get('entry_price', 0)
             entry_date = existing_position.get('entry_date')
             entry_idx = existing_position.get('entry_idx', current_idx)
+            is_force_close = existing_position.get('force_close', False)
+            
+            # Cycle 27修正: force_close時はentry_symbol_dataを使用
+            if is_force_close and entry_symbol_data is not None:
+                data_for_exit = entry_symbol_data
+                logger.info(
+                    f"[CONTRARIAN_EXIT] force_close=True: entry_symbol_dataを使用 "
+                    f"(rows={len(entry_symbol_data)}, symbol={existing_position.get('entry_symbol', 'Unknown')})"
+                )
+            else:
+                data_for_exit = stock_data
+                logger.debug(f"[CONTRARIAN_EXIT] force_close={is_force_close}: stock_dataを使用")
             
             if entry_price == 0:
                 return {
@@ -424,12 +477,84 @@ class ContrarianStrategy(BaseStrategy):
                     'reason': 'Contrarian: Invalid entry price in existing_position'
                 }
             
+            # ============================================================
+            # Sprint 1.5修正: force_close強制決済（最優先処理）
+            # ============================================================
+            # 【削除禁止】このブロックは銘柄切替時の旧ポジション決済に必須
+            # 削除すると、ポジションが残り続け、all_transactions.csvが不完全になる
+            # 参照: MULTI_POSITION_IMPLEMENTATION_PLAN.md Sprint 1.5
+            # ============================================================
+            if is_force_close:
+                # 強制決済ログ（デバッグ用詳細情報）
+                entry_symbol = existing_position.get('entry_symbol', 'Unknown')
+                quantity = existing_position.get('quantity', 0)
+                
+                logger.warning(
+                    f"[CONTRARIAN_FORCE_CLOSE] 銘柄切替による強制決済を実行"
+                )
+                logger.info(
+                    f"[CONTRARIAN_FORCE_CLOSE] Position Info: "
+                    f"entry_symbol={entry_symbol}, "
+                    f"entry_price={entry_price:.2f}円, "
+                    f"quantity={quantity}株, "
+                    f"date={current_date.strftime('%Y-%m-%d')}"
+                )
+                
+                # エグジット価格取得（entry_symbol_data優先）
+                if current_idx + 1 < len(data_for_exit):
+                    # 標準: 翌日始値（ルックアヘッドバイアス防止）
+                    exit_price = data_for_exit.iloc[current_idx + 1]['Open']
+                    data_source = "entry_symbol_data" if entry_symbol_data is not None else "stock_data"
+                    price_type = "Open (next day)"
+                else:
+                    # フォールバック: 最終日は当日終値
+                    # 理由: current_idx + 1 が存在しない境界条件
+                    # copilot-instructions.md Section 68-73: 限定的フォールバック使用を許可
+                    exit_price = data_for_exit.iloc[current_idx]['Close']
+                    data_source = f"{'entry_symbol_data' if entry_symbol_data is not None else 'stock_data'} (Close fallback)"
+                    price_type = "Close (final day)"
+                    logger.warning(
+                        f"[CONTRARIAN_FORCE_CLOSE] Final day exit: using Close price fallback. "
+                        f"idx={current_idx}, date={current_date.strftime('%Y-%m-%d')}"
+                    )
+                
+                # 決済価格ログ
+                logger.info(
+                    f"[CONTRARIAN_FORCE_CLOSE] Exit Price: {exit_price:.2f}円 "
+                    f"(source={data_source}, type={price_type})"
+                )
+                
+                # 損益計算（参考情報）
+                pnl = (exit_price - entry_price) * quantity
+                pnl_pct = ((exit_price / entry_price) - 1) * 100 if entry_price > 0 else 0.0
+                
+                logger.info(
+                    f"[CONTRARIAN_FORCE_CLOSE] P&L: {pnl:,.0f}円 ({pnl_pct:+.2f}%), "
+                    f"entry={entry_price:.2f}円 → exit={exit_price:.2f}円"
+                )
+                
+                # 強制決済実行
+                return {
+                    'action': 'exit',
+                    'signal': -1,
+                    'price': float(exit_price),
+                    'shares': quantity,
+                    'reason': f'Force close due to symbol switch from {entry_symbol}'
+                }
+            # ============================================================
+            # Sprint 1.5修正ここまで
+            # ============================================================
+            
+            # ------------------------------------------------------------
+            # 通常のエグジット判定（force_close=False）
+            # ------------------------------------------------------------
             # 翌日始値でエグジット（ルックアヘッドバイアス防止）
-            if current_idx + 1 < len(stock_data):
-                exit_price = stock_data.iloc[current_idx + 1]['Open']
+            # Cycle 27修正: data_for_exitを使用
+            if current_idx + 1 < len(data_for_exit):
+                exit_price = data_for_exit.iloc[current_idx + 1]['Open']
             else:
                 # 最終日フォールバック
-                exit_price = stock_data.iloc[current_idx]['Close']
+                exit_price = data_for_exit.iloc[current_idx]['Close']
                 logger.warning(f"[Contrarian] Using Close price fallback for final day: {current_date}")
             
             # エグジット条件判定
@@ -507,7 +632,8 @@ class ContrarianStrategy(BaseStrategy):
             }
         
         except Exception as e:
-            logger.error(f"[Contrarian] Exit logic error: {e}")
+            # エラーハンドリング（copilot-instructions.md準拠: エラー隠蔽禁止）
+            logger.error(f"[Contrarian] Exit logic error: {e}", exc_info=True)
             return {
                 'action': 'hold',
                 'signal': 0,
