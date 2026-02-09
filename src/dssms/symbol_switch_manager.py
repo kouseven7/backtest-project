@@ -115,20 +115,33 @@ class SymbolSwitchManager:
         try:
             self.logger.debug(f"銘柄切替評価開始: {from_symbol} → {to_symbol} @ {target_date}")
             
-            # 初回設定（銘柄なし → 新規銘柄）
+            # Cycle 10-12修正: 初回エントリー判定
+            # 問題: 初回エントリー時に should_switch=True を返していた
+            # 解決: 初回エントリーは「切替」ではないため should_switch=False に変更
+            # 修正日: 2026-02-08
+            # 修正者: Sprint 1 Task 1-12
             if from_symbol is None:
+                self.logger.info(
+                    f"[SWITCH_EVAL] 初回エントリー判定: to_symbol={to_symbol}, "
+                    f"should_switch=False（初回エントリーは切替ではない）"
+                )
                 return {
-                    'should_switch': True,
+                    'should_switch': False,
+                    'switch_executed': False,
                     'from_symbol': None,
                     'to_symbol': to_symbol,
                     'target_date': target_date,
-                    'reason': 'initial_symbol_selection',
+                    'reason': 'initial_entry',
                     'evaluation_details': {
+                        'allowed': False,
+                        'reason': 'initial_entry',
+                        'from_symbol': None,
+                        'to_symbol': to_symbol,
                         'is_initial': True,
                         'cost_estimate': 0.0,
                         'expected_benefit': 'portfolio_start'
                     },
-                    'status': 'approved'
+                    'status': 'rejected'
                 }
             
             # 同一銘柄の場合

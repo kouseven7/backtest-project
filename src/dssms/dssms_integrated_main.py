@@ -894,7 +894,13 @@ class DSSMSIntegratedBacktester:
             
             switch_result = self._evaluate_and_execute_switch(selected_symbol, target_date)
             
+            # Cycle 10-11追加: 初回エントリー時のcurrent_symbol更新
+            # 問題: 初回エントリー時（current_symbol=None）にswitch_executed=Falseとなる
+            # 解決: switch_executedに関わらず、current_symbolを更新
+            # 修正日: 2026-02-08
+            # 修正者: Sprint 1 Task 1-11
             if switch_result.get('switch_executed', False):
+                # 銘柄切替が実行された場合
                 daily_result['switch_executed'] = True
                 daily_result['symbol'] = self.current_symbol  # P3修正: switch後の銘柄を反映
                 self.switch_history.append(switch_result)
@@ -908,6 +914,28 @@ class DSSMSIntegratedBacktester:
                         daily_result['execution_details'] = []
                     daily_result['execution_details'].extend(switch_result['execution_details'])
                     self.logger.info(f"[DSSMS_SWITCH_COLLECT] 銘柄切替SELL+BUY記録をdaily_resultに追加: {len(switch_result['execution_details'])}件")
+            else:
+                # 銘柄切替が実行されなかった場合
+                # ケース1: 初回エントリー時（current_symbol=None → selected_symbol）
+                if self.current_symbol is None and selected_symbol:
+                    self.current_symbol = selected_symbol
+                    daily_result['symbol'] = selected_symbol
+                    self.logger.info(
+                        f"[INITIAL_SYMBOL] 初回銘柄設定: current_symbol=None → {selected_symbol}"
+                    )
+                
+                # ケース2: 銘柄切替が拒否された場合
+                elif self.current_symbol != selected_symbol:
+                    self.logger.info(
+                        f"[SWITCH_REJECTED] 銘柄切替拒否: {self.current_symbol} → {selected_symbol}, "
+                        f"reason={switch_result.get('reason', 'unknown')}"
+                    )
+                    # current_symbolは変更しない（現在の銘柄を維持）
+                
+                # ケース3: 同じ銘柄が選択された場合
+                else:
+                    # 何もしない（current_symbolを維持）
+                    pass
             
             # 3. 現在銘柄でのマルチ戦略実行(銘柄切替時はForceClose実行)
             if self.current_symbol:
@@ -978,6 +1006,19 @@ class DSSMSIntegratedBacktester:
                 
                 self.cumulative_pnl += position_return
                 daily_result['cumulative_pnl'] = self.cumulative_pnl
+                
+                # Cycle 10-7修正: total_portfolio_valueをself.portfolio_valueに反映
+                # 理由: cash_balance + position_valueの合計値を正確に追跡
+                # 修正日: 2026-02-05
+                # 修正者: Sprint 1 Task 1-10
+                if 'total_portfolio_value' in strategy_result:
+                    self.portfolio_value = strategy_result['total_portfolio_value']
+                    self.logger.debug(
+                        f"[PORTFOLIO_SYNC] {target_date.strftime('%Y-%m-%d')}: "
+                        f"self.portfolio_value更新 -> {self.portfolio_value:,.0f}円 "
+                        f"(cash={strategy_result.get('cash_balance', 0):,.0f}円 + "
+                        f"position={strategy_result.get('position_value', 0):,.0f}円)"
+                    )
             
             # 修正理由: switch実行日に取引がない場合でも,switch後のportfolio_valueを反映するため
             # switch処理でself.portfolio_valueが変更される可能性があるため,if position_update外で実行
@@ -1881,7 +1922,14 @@ class DSSMSIntegratedBacktester:
             # 修正案3改善: current_symbolとlast_entry_priceをチェック
             if self.current_symbol and self.last_entry_price is not None:
                 entry_price = self.last_entry_price  # 修正: last_entry_priceを使用
-                current_symbol = self.current_symbol
+                
+                # Cycle 10-8修正: エントリー銘柄のデータを取得
+                # 問題: self.current_symbolは切替後の銘柄（5802）を参照
+                # 正解: self.current_position['symbol']（実際のエントリー銘柄）を参照
+                # 修正日: 2026-02-05
+                # 修正者: Sprint 1 Task 1-11
+                current_symbol = self.current_position.get('symbol', self.current_symbol) \
+                                 if self.current_position else self.current_symbol
                 
                 # 現在価格を取得（target_dateの終値）
                 try:
@@ -1940,22 +1988,68 @@ class DSSMSIntegratedBacktester:
             
             # 切替実行判定
             if should_switch:
-                # 削除: 銘柄切替時の取引実行処理(_close_position, _open_position呼び出し)
-                # 削除: execution_type='switch'設定
-                # 理由: DSSMSは銘柄選択のみ担当,取引実行はmain_new.py(PaperBroker)が担当
-                # 影響: switch関連のexecution_detailsが0件になる(意図通り)
+                execution_details = []
                 
-                # 削除理由: DSSMSが取引実行しないため,コスト計算は無意味
-                # 影響: portfolio_value更新なし,switch_result簡略化
+                # Cycle 10-9追加: 銘柄切替時の強制決済
+                # 削除理由: Stage 3-3で取引実行機能が削除された
+                # 復元理由: DSSMSは統合バックテストシステムとして取引実行が必要
+                # 修正日: 2026-02-06
+                # 修正者: Sprint 1 Task 1-11
+                if self.current_position is not None:
+                    # 元の銘柄（エントリー銘柄）のデータを取得
+                    old_symbol = self.current_position['symbol']
+                    old_symbol_data, _ = self._get_symbol_data(old_symbol, target_date)
+                    
+                    if old_symbol_data is not None and len(old_symbol_data) > 0:
+                        # 決済価格: 当日終値
+                        sell_price = old_symbol_data['Adj Close'].iloc[-1]
+                        sell_shares = self.current_position.get('shares', 0)
+                        entry_price = self.current_position.get('entry_price', 0)
+                        
+                        # SELL execution_detail 生成
+                        sell_detail = {
+                            'timestamp': target_date.strftime('%Y-%m-%d %H:%M:%S'),
+                            'symbol': old_symbol,
+                            'action': 'SELL',
+                            'price': float(sell_price),  # numpy型をfloatに変換
+                            'shares': sell_shares,
+                            'strategy': self.current_position.get('strategy', 'DSSMS'),
+                            'signal_strength': 1,
+                            'reason': 'symbol_switch_forced_exit',
+                            'status': 'executed'
+                        }
+                        execution_details.append(sell_detail)
+                        
+                        # 現金残高更新
+                        proceeds = sell_price * sell_shares
+                        self.cash_balance += proceeds
+                        
+                        # PnL計算とログ出力
+                        pnl = (sell_price - entry_price) * sell_shares
+                        pnl_pct = (pnl / (entry_price * sell_shares)) * 100 if entry_price > 0 else 0
+                        self.logger.info(
+                            f"[SWITCH_CLOSE] {old_symbol}: {sell_shares}株 @{sell_price:.2f}円, "
+                            f"PnL={pnl:,.0f}円 ({pnl_pct:.2f}%)"
+                        )
+                        
+                        # ポジションクリア
+                        self.current_position = None
+                        self.last_entry_price = None
+                    else:
+                        self.logger.warning(
+                            f"[SWITCH_CLOSE] データ取得失敗: {old_symbol}, target_date={target_date}"
+                        )
                 
+                # 銘柄更新
+                self.current_symbol = selected_symbol
+                
+                # switch_result更新（execution_detailsを含める）
                 switch_result.update({
                     'switch_executed': True,
                     'reason': switch_evaluation.get('reason', 'dss_optimization'),
-                    'executed_date': target_date
+                    'executed_date': target_date,
+                    'execution_details': execution_details  # ← 追加（Line 906-912で自動的にdaily_resultに追加される）
                 })
-                
-                # 現在銘柄更新
-                self.current_symbol = selected_symbol
                 
                 # 切替履歴記録
                 self.switch_manager.record_switch_executed(switch_result)
@@ -2447,6 +2541,13 @@ class DSSMSIntegratedBacktester:
                 }
             
             # Phase 3-C Day 12 Task 2-4: ポジション状態更新ロジック追加
+            # Cycle 10-10検証: result['action']の実際の値を確認
+            self.logger.info(
+                f"[DEBUG_ACTION] result['action']='{result.get('action')}', "
+                f"type={type(result.get('action'))}, "
+                f"symbol={symbol}, target_date={adjusted_target_date.strftime('%Y-%m-%d')}"
+            )
+            
             if result['action'] == 'buy':
                 # エントリー: current_position更新
                 self.current_position = {
@@ -3565,9 +3666,10 @@ class DSSMSIntegratedBacktester:
         return {
             'initial_capital': 1000000,
             'symbol_switch': {
-                # Task 1実装: 設定値最適化（DSSMS_Implementation_Plan.md参照）
-                # 目標: 85回 → 30回以下、平均保有期間 3.9日 → 10日以上
-                'min_holding_days': 10,  # 1日 → 10日に変更
+                # Sprint 1 検証用設定: 最小保有期間を5日に設定
+                # 目的: システム動作の最低限確認
+                # 修正日: 2026-02-09
+                'min_holding_days': 5,  # 10 → 5に変更（Sprint 1検証用）
                 'max_switches_per_month': 5,  # 10回 → 5回に変更
                 'switch_cost_rate': 0.001,  # 0.1%（明示的に追加）
             },
@@ -4592,7 +4694,7 @@ def main():
             'initial_capital': 1000000,
             'symbol_switch': {
                 'switch_management': {
-                    'min_holding_days': 10,  # 2日 → 10日に変更（Task 1）
+                    'min_holding_days': 5,  # 10 → 5に変更（Sprint 1検証用、2026-02-09）
                     'max_switches_per_month': 5,  # 8回 → 5回に変更（Task 1）
                     'switch_cost_rate': 0.001  # 0.1%（明示的に追加）
                 }
