@@ -44,6 +44,29 @@ kabu STATION API を通じて継続的なリスク調整後利益を獲得する
 4. Realtime Execution / kabu manager の空メソッド充足  
 5. Perfect Order 検出検証用ミニテストスイート追加
 
+### 既知の問題と予防策
+
+本プロジェクトで発生した重大な問題と、その予防策を体系的に記録しています。
+詳細は [既知の問題と予防策ドキュメント](docs/KNOWN_ISSUES_AND_PREVENTION.md) を参照してください。
+
+**Issue #7: BUY/SELL後のself.positions管理漏れ（2026-02-10解決）**
+- **症状**: all_transactions.csvにEXIT情報が記録されない
+- **深刻度**: P0-Critical
+- **根本原因**: Sprint 2実装時、BUY/SELL処理にpositions更新ロジックが実装漏れ
+- **対策**: 設計テンプレート作成、実装チェックリスト追加、既知の問題カタログ作成
+
+**再発防止リソース**:
+- [BUY/SELL処理設計テンプレート](docs/templates/BUY_SELL_PROCESS_DESIGN_TEMPLATE.md)
+- [ポジション管理設計テンプレート](docs/templates/POSITION_MANAGEMENT_DESIGN_TEMPLATE.md)
+- [プロジェクト用語集](docs/PROJECT_GLOSSARY.md)（self.positions、execution_details、強制決済の定義）
+- [実装チェックリスト（.github/copilot-instructions.md）](https://github.com/yourusername/my_backtest_project/blob/main/.github/copilot-instructions.md#実装チェックリスト)
+
+**新機能実装時の推奨手順**:
+1. KNOWN_ISSUES_AND_PREVENTION.mdで類似問題を検索
+2. 該当する設計テンプレートを使用
+3. 実装チェックリストで検証
+4. 内部状態（self.positions等）の正確性を確認
+
 ## 🔁 Purpose Hierarchy（目的階層）
 1. Ultimate Business Goal: 日次DSSMS選択 + マルチ戦略実行 + kabu発注でリスク調整後利益最大化  
 2. System Goal (DSSMS Core): 50銘柄ランキング→最適銘柄+バックアップ抽出→切替判定→ログ/学習  

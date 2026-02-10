@@ -1280,4 +1280,101 @@ symbol,entry_date,exit_date,entry_price,exit_price,shares,pnl,strategy,entry_sym
 
 ---
 
+## 事後評価: 教訓と改善提案（2026-02-10追記）
+
+### Issue #7: BUY/SELL後のself.positions管理漏れ
+
+**発生時期**: Sprint 2実装から約1ヶ月後（2026-02-10発見）  
+**深刻度**: P0-Critical  
+**発見のきっかけ**: all_transactions.csvにEXIT情報（exit_date, exit_price, pnl）が記録されない
+
+#### 症状
+- all_transactions.csvにBUY情報のみ記録、SELL情報が空
+- 強制決済が実行されない（`[FINAL_CLOSE]`ログ不在）
+- バックテスト結果が無効（総収益率等の統計が計算されない）
+
+#### 根本原因の分析
+
+**1. 設計の粒度不足**
+- Sprint 2設計は「枠組み」（self.positionsの初期化）にフォーカス
+- 「状態更新」（BUY/SELL時のpositions追加/削除）は設計から漏れた
+- マルチポジション対応の「構造」に注力し、「操作」が抜け落ちた
+
+**2. 実装チェックリストの不在**
+- BUY/SELL実装時の詳細チェックリストが存在しない
+- Sprint 2完了レポートにBUY/SELL処理の実装詳細なし（Line 1041にside='buy'の条件式のみ）
+
+**3. 検証項目の不足**
+- 結果（複数銘柄保有、FIFO決済）の動作は確認
+- 内部状態（self.positionsの正確性）は検証対象外
+- 強制決済の動作も検証項目に含まれていない
+
+**4. Git履歴の活用不足**
+- 2025年12月19日（コミットd84cd6d）: DSSMSからpositions管理を削除（417行）
+- 2026年02月10日（コミット5147549）: Sprint 2で再実装したが、BUY/SELL更新処理が実装漏れ
+- 削除されたコードの全体像が把握されず、再実装が不完全
+
+#### 実装された改善策
+
+**Phase 1: 設計テンプレート作成（2026-02-10実施）**
+- [BUY/SELL処理設計テンプレート](../templates/BUY_SELL_PROCESS_DESIGN_TEMPLATE.md)
+  - BUY処理実装時の4項目チェックリスト（残高、positions追加、履歴、ログ）
+  - SELL処理実装時の4項目チェックリスト（残高、positions削除、履歴、ログ）
+  - エラーハンドリング仕様、検証方法
+
+- [ポジション管理設計テンプレート](../templates/POSITION_MANAGEMENT_DESIGN_TEMPLATE.md)
+  - 設計の3要素（初期化、状態更新、状態確認）
+  - BUY/SELL実行時の更新処理を明示的に設計
+  - 自動テストスクリプト例（verify_positions_integrity.py）
+
+**Phase 2: copilot-instructions.md更新**
+- 「実装チェックリスト」セクション追加
+- BUY/SELL処理実装時の必須チェック項目（4項目×2）をプロジェクト標準に
+- Git履歴活用ガイドライン追加（大規模削除時の記録、リファクタリング時の手順）
+
+**Phase 3: 既知の問題カタログ作成**
+- [KNOWN_ISSUES_AND_PREVENTION.md](../KNOWN_ISSUES_AND_PREVENTION.md)
+  - Issue #7の詳細記録（症状、原因、解決策、予防策）
+  - ギャップ分析結果（設計不足、実装チェックリスト不在、検証漏れ）
+  - Git履歴調査（positions管理削除→再実装の経緯）
+  - 再発防止ベストプラクティス
+
+**Phase 4: プロジェクト用語集作成**
+- [PROJECT_GLOSSARY.md](../PROJECT_GLOSSARY.md)
+  - self.positions、execution_details、強制決済の定義
+  - Issue #7関連用語の詳細解説
+
+#### 今後の開発への影響
+
+**設計段階**:
+- 状態管理の変更を含む機能は、3要素（初期化、状態更新、状態確認）を必ず設計に含める
+- BUY/SELL処理は設計テンプレートを使用し、状態更新処理を明記
+
+**実装段階**:
+- BUY/SELL処理実装時は4項目チェックリスト（残高、positions、履歴、ログ）を必ず確認
+- 大規模な削除（100行以上）時は機能リスト作成と設計判断文書化
+
+**検証段階**:
+- 結果だけでなく内部状態（self.positions）の正確性を検証
+- 強制決済の動作確認を必須項目に追加
+- 自動テストスクリプト（verify_positions_integrity.py）の活用
+
+**リファクタリング時**:
+- 削除コミットの差分確認（`git show <commit>^:<file>`）
+- 削除されたコードの機能リストを作成
+- 再実装時に削除前のコードを参照
+
+#### Sprint 2の真の完了
+
+Issue #7の修正とギャップ分析の実施により、Sprint 2は以下の点で**真に完了**した：
+1. ✅ 複数銘柄保有対応の実装完了
+2. ✅ ポジション管理の正確性確保（BUY/SELL更新処理実装）
+3. ✅ 強制決済の動作確認（all_transactions.csvにEXIT情報記録）
+4. ✅ 再発防止策の確立（設計テンプレート、チェックリスト、既知の問題カタログ）
+
+**最終評価更新**: S（期待を大きく上回る成果）→ **S+（課題発見と体系的改善まで実施）**
+
+---
+
 **End of Report**
+

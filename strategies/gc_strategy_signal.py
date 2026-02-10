@@ -267,12 +267,43 @@ class GCStrategy(BaseStrategy):
         指定されたインデックス位置でのエントリーシグナルを生成する。
         短期移動平均が長期移動平均を上回り、かつトレンドが上昇トレンドの場合、1を返す。
         
+        Issue調査報告20260210修正: ウォームアップ期間フィルタリング追加
+        - trading_start_date未満の日付ではエントリーシグナルを0に設定
+        - バックテスト期間外のエントリーを防止
+        
         Parameters:
             idx (int): 現在のインデックス
             
         Returns:
             int: エントリーシグナル（1: エントリー, 0: なし）
         """
+        # ウォームアップ期間フィルタリング（Issue調査報告20260210対応）
+        if hasattr(self, 'trading_start_date') and self.trading_start_date is not None:
+            try:
+                current_date_at_idx = self.data.index[idx]
+                # pd.Timestampに変換して比較
+                if not isinstance(current_date_at_idx, pd.Timestamp):
+                    current_date_at_idx = pd.Timestamp(current_date_at_idx)
+                if not isinstance(self.trading_start_date, pd.Timestamp):
+                    trading_start_ts = pd.Timestamp(self.trading_start_date)
+                else:
+                    trading_start_ts = self.trading_start_date
+                
+                # タイムゾーン統一
+                if current_date_at_idx.tz is not None:
+                    current_date_at_idx = current_date_at_idx.tz_localize(None)
+                if trading_start_ts.tz is not None:
+                    trading_start_ts = trading_start_ts.tz_localize(None)
+                
+                if current_date_at_idx < trading_start_ts:
+                    self.logger.debug(
+                        f"[WARMUP_SKIP] ウォームアップ期間のためエントリースキップ: "
+                        f"{current_date_at_idx.strftime('%Y-%m-%d')} < {trading_start_ts.strftime('%Y-%m-%d')}"
+                    )
+                    return 0  # エントリー禁止
+            except Exception as e:
+                self.logger.warning(f"[WARMUP_FILTER_ERROR] trading_start_date比較エラー: {e}")
+        
         if idx < self.long_window:  # 長期移動平均の計算に必要な日数分のデータがない場合
             return 0
             
@@ -494,7 +525,7 @@ class GCStrategy(BaseStrategy):
             info['optimized_params'] = self._approved_params
         return info
 
-    def backtest_daily(self, current_date, stock_data: pd.DataFrame, existing_position=None, **kwargs):
+    def backtest_daily(self, current_date, stock_data: pd.DataFrame, existing_position=None, trading_start_date=None, **kwargs):
         """
         日次バックテスト実行（Phase 3-C Day 11実装）
         
@@ -507,6 +538,10 @@ class GCStrategy(BaseStrategy):
         - force_close時はentry_symbol_data（元の銘柄）でエグジット価格を取得
         - 問題: 全跨銘柄取引で切替先の価格が入っていた（5202→2768: 3325円 vs 実際383円）
         
+        Issue調査報告20260210修正: trading_start_date追加
+        - ウォームアップ期間（trading_start_date未満）のエントリー防止
+        - generate_entry_signal()でフィルタリング実行
+        
         Parameters:
             current_date: 判定対象日（datetime/pd.Timestamp/str）
             stock_data: current_dateまでのデータ（ウォームアップ含む）
@@ -518,6 +553,7 @@ class GCStrategy(BaseStrategy):
                     'entry_date': datetime,  # エントリー日
                     'entry_idx': int         # エントリー時のインデックス（オプション）
                 }
+            trading_start_date: バックテスト開始日（この日以降のみエントリー許可）
         
         Returns:
             {
@@ -534,6 +570,11 @@ class GCStrategy(BaseStrategy):
             - Entry_Signal依存なし（翌日始値対応済み）
         """
         print(f"[GC_DEBUG] backtest_daily() called: current_date={current_date}, stock_data.shape={stock_data.shape}")
+        
+        # Issue調査報告20260210修正: trading_start_dateを保存（generate_entry_signal()で使用）
+        self.trading_start_date = trading_start_date
+        if trading_start_date is not None:
+            self.logger.info(f"[WARMUP_FILTER] trading_start_date設定: {trading_start_date.strftime('%Y-%m-%d') if hasattr(trading_start_date, 'strftime') else trading_start_date}")
         
         # Phase 1: current_dateの型変換・検証
         if isinstance(current_date, str):

@@ -269,7 +269,157 @@ ticker, start, end, stock_data, index_data = get_parameters_and_data(
 2. `results_df`に取引履歴が含まれるか確認
 3. 統一出力エンジン呼び出し時のパラメータ確認
 
-## 📊 **重要なファイル**
+### **リファクタリング・再実装時のGit履歴活用**
+1. **過去の実装を削除・再実装する際の手順**:
+   - 削除コミットの差分を必ず確認: `git show <commit-hash> --stat`
+   - 削除前のコードを確認: `git show <commit-hash>^:<file>`
+   - 削除されたコードの機能リストを作成
+2. **大規模な削除（100行以上）時の記録必須**:
+   - 削除理由と影響範囲をdocs/design/に文書化
+   - コミットメッセージに設計判断を詳細に記載
+   - 将来の再実装に備えた参考資料の作成
+3. **設計方針変更時のチェックリスト**:
+   - [ ] 変更前のコードの機能を網羅的にリストアップ
+   - [ ] 変更後の設計で、すべての機能をカバーできるか確認
+   - [ ] 削除される機能の移行先を明確に文書化
+   - [ ] 移行先での実装完了を検証
+
+### **ウォームアップ期間エントリー問題（2026-02-10修正済み）**
+
+**症状**: `all_transactions.csv`に`trading_start_date`より前のエントリーが記録される
+
+**原因**: `backtest_daily()`が`trading_start_date`を受け取らず、`generate_entry_signal()`でフィルタリングしていない
+
+**修正箇所**（全3箇所）:
+1. **dssms_integrated_main.py** Line 2490付近:
+   ```python
+   result = strategy.backtest_daily(
+       adjusted_target_date, processed_data, 
+       existing_position=existing_position,
+       trading_start_date=self.dssms_backtest_start_date,  # 追加
+       **kwargs
+   )
+   ```
+
+2. **戦略クラスのbacktest_daily()シグネチャ**（GCStrategy、ContrarianStrategy等）:
+   ```python
+   def backtest_daily(self, current_date, stock_data, 
+                      existing_position=None, 
+                      trading_start_date=None,  # 追加
+                      **kwargs):
+       # backtest_daily()内部でtrading_start_dateを保存
+       self.trading_start_date = trading_start_date
+       if trading_start_date is not None:
+           self.logger.info(f"[WARMUP_FILTER] trading_start_date設定: {trading_start_date.strftime('%Y-%m-%d')}")
+   ```
+
+3. **戦略クラスのgenerate_entry_signal()内部**（GCStrategy、ContrarianStrategy等）:
+   ```python
+   def generate_entry_signal(self, idx):
+       # ウォームアップ期間フィルタリング
+       if hasattr(self, 'trading_start_date') and self.trading_start_date is not None:
+           current_date_at_idx = self.data.index[idx]
+           if isinstance(self.trading_start_date, str):
+               trading_start_ts = pd.Timestamp(self.trading_start_date)
+           elif isinstance(self.trading_start_date, pd.Timestamp):
+               trading_start_ts = self.trading_start_date
+           else:
+               trading_start_ts = pd.Timestamp(self.trading_start_date)
+           
+           # タイムゾーン考慮したtz-naive比較
+           if trading_start_ts.tz is not None:
+               trading_start_ts = trading_start_ts.tz_localize(None)
+           if current_date_at_idx.tz is not None:
+               current_date_at_idx = current_date_at_idx.tz_localize(None)
+           
+           if current_date_at_idx < trading_start_ts:
+               self.logger.info(f"[WARMUP_SKIP] idx={idx}, current_date={current_date_at_idx.strftime('%Y-%m-%d')}, trading_start_date={trading_start_ts.strftime('%Y-%m-%d')}")
+               return 0
+   ```
+
+**検証方法**:
+```python
+# verify_warmup_fix.pyスクリプトで確認
+python verify_warmup_fix.py
+# 期待結果: ウォームアップ期間エントリー: 0件
+```
+
+**ログ確認**:
+```bash
+# [WARMUP_FILTER]ログを確認
+grep "\[WARMUP_FILTER\]" output/dssms_integration/dssms_*/dssms_execution_log.txt
+# [WARMUP_SKIP]ログを確認（エントリースキップ件数）
+grep "\[WARMUP_SKIP\]" output/dssms_integration/dssms_*/dssms_execution_log.txt
+```
+
+**重要**: 新規戦略を実装する際は、必ずこの3箇所の修正パターンを適用すること。
+
+**実例**: Issue #7（BUY/SELL後のself.positions管理漏れ）
+- 2025年12月19日（コミットd84cd6d）: DSSMSからpositions管理を削除（417行）
+- 2026年02月10日（コミット5147549）: Sprint 2で再実装したが、BUY/SELL更新処理が実装漏れ
+- 原因: 削除されたコードの全体像が把握されず、再実装が不完全
+- 詳細: [KNOWN_ISSUES_AND_PREVENTION.md - Git履歴調査](../docs/KNOWN_ISSUES_AND_PREVENTION.md)
+
+## � **実装チェックリスト**
+
+### **BUY/SELL処理実装時（必須）**
+
+新しいBUY/SELL処理を実装する際は、以下のチェックリストを必ず確認すること。
+
+#### **BUY処理実装時（4項目全てクリア必須）**
+- [ ] **1. 資金残高更新**: `self.cash_balance -= trade_cost`
+- [ ] **2. ポジション追加**: `self.positions[symbol] = {...}`
+- [ ] **3. 取引履歴記録**: `execution_details.append(...)`
+- [ ] **4. ログ出力**: `self.logger.info("[POSITION_ADD] ...")`
+
+#### **SELL処理実装時（4項目全てクリア必須）**
+- [ ] **1. 資金残高更新**: `self.cash_balance += trade_profit`
+- [ ] **2. ポジション削除**: `del self.positions[symbol]`（KeyErrorチェック実装）
+- [ ] **3. 取引履歴記録**: `execution_details.append(...)`
+- [ ] **4. ログ出力**: `self.logger.info("[POSITION_DELETE] ...")`
+
+#### **エラーハンドリング**
+- [ ] 資金不足チェック（`if self.cash_balance < trade_cost:`）
+- [ ] max_positionsチェック（`if len(self.positions) >= self.max_positions:`）
+- [ ] ポジション存在チェック（`if symbol in self.positions:`）
+
+#### **検証方法**
+```bash
+# ログ確認
+grep "\[POSITION_ADD\]" output/dssms_integration/dssms_*/dssms_execution_log.txt
+grep "\[POSITION_DELETE\]" output/dssms_integration/dssms_*/dssms_execution_log.txt
+grep "\[FINAL_CLOSE\]" output/dssms_integration/dssms_*/dssms_execution_log.txt
+```
+
+```python
+# all_transactions.csv完全性確認
+import pandas as pd
+df = pd.read_csv("output/dssms_integration/dssms_*/all_transactions.csv")
+assert df['exit_date'].notna().all(), "exit_date に空の行があります"
+assert df['exit_price'].notna().all(), "exit_price に空の行があります"
+assert df['pnl'].notna().all(), "pnl に空の行があります"
+print("✅ all_transactions.csv検証成功")
+```
+
+### **設計テンプレート**
+
+新しいBUY/SELL処理やポジション管理を実装する際は、以下のテンプレートを使用すること：
+
+- [BUY/SELL処理設計テンプレート](../docs/templates/BUY_SELL_PROCESS_DESIGN_TEMPLATE.md)
+- [ポジション管理設計テンプレート](../docs/templates/POSITION_MANAGEMENT_DESIGN_TEMPLATE.md)
+
+**重要**: Issue #7の教訓から、状態管理の設計には以下の3要素が必須：
+1. **初期化（Initialization）**: いつ、どこで、どのように初期化するか
+2. **状態更新（State Update）**: どこで、いつ、どのように更新するか（**BUY/SELL実行時の更新処理を明記**）
+3. **状態確認（State Verification）**: どのように検証するか
+
+## �📊 **重要なファイル**
+
+### **既知の問題カタログ**
+- [KNOWN_ISSUES_AND_PREVENTION.md](../docs/KNOWN_ISSUES_AND_PREVENTION.md): 発生した重大な問題と予防策
+  - 新機能実装前: 関連Issueをチェック
+  - デバッグ時: 類似症状のIssueを検索
+  - **Git履歴調査**: Issue #7でのpositions管理削除→再実装の経緯
 
 
 ## 🔗 **統合ポイント**

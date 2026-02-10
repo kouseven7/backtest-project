@@ -142,7 +142,38 @@ class ContrarianStrategy(BaseStrategy):
     def generate_entry_signal(self, idx: int) -> int:
         """
         エントリーシグナルを生成する。
+        
+        Issue調査報告20260210修正: ウォームアップ期間フィルタリング追加
+        - trading_start_date未満の日付ではエントリーシグナルを0に設定
+        - バックテスト期間外のエントリーを防止
         """
+        # ウォームアップ期間フィルタリング（Issue調査報告20260210対応）
+        if hasattr(self, 'trading_start_date') and self.trading_start_date is not None:
+            try:
+                current_date_at_idx = self.data.index[idx]
+                # pd.Timestampに変換して比較
+                if not isinstance(current_date_at_idx, pd.Timestamp):
+                    current_date_at_idx = pd.Timestamp(current_date_at_idx)
+                if not isinstance(self.trading_start_date, pd.Timestamp):
+                    trading_start_ts = pd.Timestamp(self.trading_start_date)
+                else:
+                    trading_start_ts = self.trading_start_date
+                
+                # タイムゾーン統一
+                if current_date_at_idx.tz is not None:
+                    current_date_at_idx = current_date_at_idx.tz_localize(None)
+                if trading_start_ts.tz is not None:
+                    trading_start_ts = trading_start_ts.tz_localize(None)
+                
+                if current_date_at_idx < trading_start_ts:
+                    self.logger.debug(
+                        f"[WARMUP_SKIP] ウォームアップ期間のためエントリースキップ: "
+                        f"{current_date_at_idx.strftime('%Y-%m-%d')} < {trading_start_ts.strftime('%Y-%m-%d')}"
+                    )
+                    return 0  # エントリー禁止
+            except Exception as e:
+                self.logger.warning(f"[WARMUP_FILTER_ERROR] trading_start_date比較エラー: {e}")
+        
         if idx < 5:  # 過去データが不足している場合
             return 0
 
@@ -305,7 +336,7 @@ class ContrarianStrategy(BaseStrategy):
 
         return self.data
 
-    def backtest_daily(self, current_date, stock_data, existing_position=None, **kwargs):
+    def backtest_daily(self, current_date, stock_data, existing_position=None, trading_start_date=None, **kwargs):
         """
         ContrarianStrategy 日次バックテスト実行
         
@@ -315,9 +346,14 @@ class ContrarianStrategy(BaseStrategy):
         - **kwargs追加: entry_symbol_dataを受け取れるように拡張
         - force_close時はentry_symbol_dataで決済価格を取得
         
+        Issue調査報告20260210修正: trading_start_date追加
+        - ウォームアップ期間（trading_start_date未満）のエントリー防止
+        - generate_entry_signal()でフィルタリング実行
+        
         Parameters:
             current_date (datetime): 判定対象日
             stock_data (pd.DataFrame): 最新の株価データ
+            trading_start_date: バックテスト開始日（この日以降のみエントリー許可）
             existing_position (dict, optional): 既存ポジション情報
                 {
                     'symbol': str,
@@ -340,6 +376,11 @@ class ContrarianStrategy(BaseStrategy):
                 'reason': str
             }
         """
+        # Issue調査報告20260210修正: trading_start_dateを保存（generate_entry_signal()で使用）
+        self.trading_start_date = trading_start_date
+        if trading_start_date is not None:
+            self.logger.info(f"[WARMUP_FILTER] trading_start_date設定: {trading_start_date.strftime('%Y-%m-%d') if hasattr(trading_start_date, 'strftime') else trading_start_date}")
+        
         import logging
         logger = logging.getLogger(__name__)
         
