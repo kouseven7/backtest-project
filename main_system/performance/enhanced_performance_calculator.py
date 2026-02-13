@@ -346,7 +346,7 @@ class EnhancedPerformanceCalculator:
                 risk_metrics[RiskMetric.TRACKING_ERROR.value] = tracking_error
             
             # 月次リターン
-            returns_monthly = returns.resample('M').apply(lambda x: (1 + x).prod() - 1)
+            returns_monthly = returns.resample('ME').apply(lambda x: (1 + x).prod() - 1)
             
             # ローリング指標
             rolling_window = min(60, len(returns) // 4)  # 最低60日、データの1/4

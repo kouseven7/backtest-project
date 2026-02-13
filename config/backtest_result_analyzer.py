@@ -1066,7 +1066,7 @@ def test_backtest_result_analyzer():
         'win_rate': (pd.Series(returns) > 0).mean(),
         'start_date': dates[0],
         'end_date': dates[-1],
-        'monthly_returns': pd.Series(returns).resample('M').apply(lambda x: (1 + x).prod() - 1).to_dict()
+        'monthly_returns': pd.Series(returns).resample('ME').apply(lambda x: (1 + x).prod() - 1).to_dict()
     }
     
     # 分析器の初期化

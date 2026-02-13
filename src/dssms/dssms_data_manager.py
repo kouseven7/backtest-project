@@ -310,7 +310,7 @@ class DSSMSDataManager:
                 return daily_data
             
             # 月足リサンプル
-            monthly = daily_data.resample('M').agg({
+            monthly = daily_data.resample('ME').agg({
                 'Open': 'first',
                 'High': 'max',
                 'Low': 'min',

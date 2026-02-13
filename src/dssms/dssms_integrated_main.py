@@ -526,7 +526,11 @@ class DSSMSIntegratedBacktester:
             
         Returns:
             datetime: 調整後の業務日
-            
+            Copilot 要求 ID: a08bb073-de05-4d54-a37b-77161756f496
+
+GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
+
+理由: client not supported: bad request: the VS Code version you are using is no longer supported. Please upgrade VS Code to version 1.109.2+.
         copilot-instructions.md遵守:
         - 実データ範囲内での調整（フォールバック禁止）
         - 決定論保証（同じ入力で同じ出力）
@@ -2501,7 +2505,12 @@ class DSSMSIntegratedBacktester:
                     kwargs['entry_symbol_data'] = entry_symbol_data
                     
                 self.logger.info(f"[PHASE3-C-B1] backtest_daily()実行開始: adjusted_target_date={adjusted_target_date.strftime('%Y-%m-%d')}, existing_position={existing_position}, kwargs={list(kwargs.keys())}")
-                result = strategy.backtest_daily(adjusted_target_date, processed_data, existing_position=existing_position, **kwargs)
+                result = strategy.backtest_daily(
+                    adjusted_target_date, processed_data, 
+                    existing_position=existing_position,
+                    trading_start_date=self.dssms_backtest_start_date,  # 追加: ウォームアップ期間フィルタリング対応（Issue調査報告20260210）
+                    **kwargs
+                )
                 self.logger.info(f"[PHASE3-C-B1] backtest_daily()実行完了: action={result['action']}, signal={result['signal']}")
                 
                 # 実際の実行結果を検証（copilot-instructions.md: 検証なしの報告禁止）

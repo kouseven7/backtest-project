@@ -297,7 +297,7 @@ class BreakoutStrategy(BaseStrategy):
 
         return self.data
 
-    def backtest_daily(self, current_date, stock_data, existing_position=None, **kwargs):
+    def backtest_daily(self, current_date, stock_data, existing_position=None, trading_start_date=None, **kwargs):
         """
         BreakoutStrategy 日次バックテスト実行
         
@@ -333,6 +333,11 @@ class BreakoutStrategy(BaseStrategy):
         """
         import logging
         logger = logging.getLogger(__name__)
+        
+        # Issue調査報告20260210修正: trading_start_dateを保存（generate_entry_signal()で使用）
+        self.trading_start_date = trading_start_date
+        if trading_start_date is not None:
+            logger.info(f"[WARMUP_FILTER] trading_start_date設定: {trading_start_date.strftime('%Y-%m-%d') if hasattr(trading_start_date, 'strftime') else trading_start_date}")
         
         # Cycle 20: 関数呼び出し確認用print()
         if os.getenv("DEBUG_BACKTEST"):

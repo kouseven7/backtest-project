@@ -418,7 +418,7 @@ class EnhancedPerformanceEvaluator:
             
             # パフォーマンスの一貫性
             if len(portfolio_returns) > 12:
-                monthly_returns = portfolio_returns.resample('M').sum() if hasattr(portfolio_returns, 'resample') else portfolio_returns
+                monthly_returns = portfolio_returns.resample('ME').sum() if hasattr(portfolio_returns, 'resample') else portfolio_returns
                 positive_months = (monthly_returns > 0).sum()
                 total_months = len(monthly_returns)
                 metrics['performance_consistency'] = positive_months / total_months if total_months > 0 else 0

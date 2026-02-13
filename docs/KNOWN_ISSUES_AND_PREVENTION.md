@@ -1,7 +1,7 @@
 # 既知の問題カタログと予防策
 
 **目的**: プロジェクトで発生した重大な問題を記録し、再発を防止する  
-**最終更新**: 2026-02-10
+**最終更新**: 2026-02-13
 
 ---
 
@@ -23,6 +23,8 @@
 
 | Issue ID | タイトル | 深刻度 | ステータス | 発生日 | 修正日 |
 |----------|---------|--------|-----------|--------|--------|
+| ISSUE-010 | AI虚偽報告問題（VSCode Copilot） | P0-Critical | 予防策確立済み | 2026-02-11 | 2026-02-11 |
+| ISSUE-009 | 複数銘柄保有対応コードの意図しない削除 | P0-Critical | 調査完了（復旧待ち） | 2026-02-10 | 2026-02-11調査 |
 | ISSUE-007 | BUY/SELL後のself.positions管理漏れ | P0-Critical | 解決済み | Sprint 2 | 2026-02-10 |
 | ISSUE-008 | ウォームアップ期間エントリー問題 | P1-High | 解決済み（完全） | 2026-02-10調査 | 2026-02-10 |
 
@@ -420,6 +422,316 @@ git diff <commit1>..<commit2> <file> | Select-String -Pattern "<pattern>"
 ### 3. 自動テストの整備
 - ポジション管理の正確性を検証する自動テストを作成
 - バックテスト実行後、all_transactions.csvの完全性を自動チェック
+
+---
+
+### Issue #9: 複数銘柄保有対応コードの意図しない削除
+
+**問題ID**: ISSUE-009  
+**発生時期**: 2026-02-10（コミットeae6ce3）  
+**深刻度**: P0-Critical  
+**ステータス**: 調査完了（復旧待ち）
+
+#### 症状
+
+- `self.max_positions` が存在しない
+- `self.positions` 辞書が `self.current_position` に戻っている
+- 複数銘柄保有対応の実装が失われている（約520行の変更が巻き戻り）
+- FIFOロジックが削除されている
+
+#### 原因
+
+**コミット5147549** (2026-02-10 10:46:26):
+- Sprint 2で複数銘柄保有対応を実装（520行の変更）
+- テスト結果も良好
+
+**コミットeae6ce3** (2026-02-10 22:09:43):
+- Issue #8（ウォームアップ期間フィルタリング）対応中
+- **意図せず複数銘柄対応コードを削除**
+- 可能性:
+  1. 古いバージョンのファイルを編集してコミット
+  2. マージ競合の解決ミス
+  3. copilot/AIによる自動修正の誤り
+
+#### 影響の連鎖
+
+1. **5147549で実装** (10:46):
+   - `self.positions = {}`
+   - `self.max_positions = 2`
+   - FIFO決済ロジック
+   - 4ケース分岐（複数銘柄管理）
+
+2. **eae6ce3で削除** (22:09、約12時間後):
+   - `self.positions` → `self.current_position`
+   - `self.max_positions` → 削除
+   - FIFO決済 → 単一ポジション処理
+   - 4ケース分岐 → 簡易的な切替判定
+
+#### 削除されたコード（主要部分）
+
+**Line 201-209: ポジション管理初期化**
+```python
+# 削除されたコード
+self.positions = {}  # {symbol: {strategy, entry_price, shares, entry_date, entry_idx}}
+self.max_positions = 2  # Sprint 2設定: 最大保有銘柄数
+
+# 現在のコード（巻き戻り）
+self.current_position = None  # 現在のポジション情報
+```
+
+**Line 717-827: 強制決済処理**
+```python
+# 削除されたコード
+if len(self.positions) > 0:
+    for symbol, position_data in list(self.positions.items()):
+        # 各銘柄を個別に決済
+        ...
+
+# 現在のコード（巻き戻り）
+if self.current_position:
+    symbol = self.current_position['symbol']
+    # 単一ポジションのみ決済
+    ...
+```
+
+**Line 903-1086: FIFO決済ロジック**
+```python
+# 削除されたコード
+# ケース1: 初回エントリー
+if len(self.positions) == 0:
+    ...
+# ケース2: 選択銘柄が既に保有中
+if selected_symbol in self.positions:
+    ...
+# ケース3: max_positions未達
+if len(self.positions) < self.max_positions:
+    ...
+# ケース4: max_positions到達（FIFO決済）
+if len(self.positions) >= self.max_positions:
+    # 最も古いポジションを決済
+    ...
+
+# 現在のコード（簡易版に巻き戻り）
+# 複数銘柄対応のロジックが削除されている
+```
+
+#### ブランチ構造の分析
+
+```
+* eae6ce3 (HEAD -> 複数銘柄対応2) ← 【犯人】複数銘柄コード削除
+* d1d467d docs作成
+* 5147549 Sprint 2完了: 複数銘柄保有対応 ← 【実装】
+* a154798 MomentumInvestingStrategy force_close実装
+...
+* 7ada5bb 強制決済コード復元
+| * 7782dcf (backup-multi-position-attempt) ← 【バックアップブランチ】
+| * 02a556e Excel設定問題修正
+| * 7c02096 複数銘柄バックテスト時の価格混同バグ修正
+```
+
+**重要**: 2つのブランチが存在し、7782dcfブランチでも複数銘柄対応を試みたが、
+「負のループになっている」ため巻き戻してバックアップした履歴がある。
+
+#### 解決策
+
+3つのオプションを提示：
+
+**オプションA: コミット5147549に戻す（推奨）**
+```bash
+# 複数銘柄対応コードのみを復元
+git checkout 5147549 -- src/dssms/dssms_integrated_main.py
+
+# ウォームアップ期間フィルタリング（eae6ce3の変更）を手動で再適用
+# （Issue #8対応は失われないようにする）
+```
+
+**オプションB: 差分を手動でマージ**
+```bash
+# 5147549とeae6ce3の差分を確認
+git diff 5147549 eae6ce3 -- src/dssms/dssms_integrated_main.py
+
+# 必要な部分のみを選択的に復元
+```
+
+**オプションC新規ブランチで復旧作業**
+```bash
+# 安全のため新規ブランチ作成
+git checkout -b fix/restore-multi-position
+
+# 5147549から開始
+git checkout 5147549 -- src/dssms/dssms_integrated_main.py
+
+# eae6ce3の有益な変更（Issue #8対応）を手動でマージ
+```
+
+#### 予防策
+
+##### 1. コミット前の差分確認の徹底
+
+```bash
+# 大規模な変更時は必ず差分を確認
+git diff --stat
+git diff src/dssms/dssms_integrated_main.py | more
+```
+
+##### 2. 重要なコードにマーカーコメント追加
+
+```python
+# ============================================================
+# [重要] Sprint 2: 複数銘柄保有対応コード（削除禁止）
+# ============================================================
+# この機能を削除すると、複数銘柄同時保有ができなくなります
+# 削除する場合は、MULTI_POSITION_IMPLEMENTATION_PLAN.mdを参照
+self.positions = {}
+self.max_positions = 2
+# ============================================================
+```
+
+##### 3. Copilot指示書の更新
+
+`.github/copilot-instructions.md` に以下を追加:
+
+```markdown
+## 🚫 **削除禁止コード**
+
+### **複数銘柄保有対応（Sprint 2実装）**
+
+以下のコードは削除してはいけません：
+- `self.positions = {}` （Line 207）
+- `self.max_positions = 2` （Line 208）
+- FIFO決済ロジック（Line 717-850）
+- 4ケース分岐切替判定（Line 903-1086）
+
+**削除した場合の影響**:
+- 複数銘柄同時保有ができなくなる
+- max_positionsチェックが動作しない
+- FIFO決済が実行されない
+```
+
+##### 4. Git Hooks活用
+
+`.git/hooks/pre-commit` に以下を追加:
+
+```bash
+#!/bin/bash
+# 複数銘柄保有対応コードの削除を検出
+
+if git diff --cached src/dssms/dssms_integrated_main.py | grep -q "^-.*self.max_positions"; then
+    echo "警告: self.max_positionsが削除されています"
+    echo "複数銘柄保有対応コードを削除する場合は、設計文書を確認してください"
+    exit 1
+fi
+```
+
+#### 修正完了日
+2026-02-11（調査完了、復旧待ち）
+
+#### 調査者
+プロジェクトチーム
+
+#### 参考資料
+- [複数銘柄保有対応コード消失調査報告](docs/investigation/MULTI_POSITION_CODE_DELETION_INVESTIGATION.md)
+- [MULTI_POSITION_IMPLEMENTATION_PLAN.md](docs/MULTI_POSITION_IMPLEMENTATION_PLAN.md)
+- [SPRINT2_MULTI_POSITION_COMPLETION_REPORT.md](docs/SPRINT2_MULTI_POSITION_COMPLETION_REPORT.md)
+- コミット5147549: 複数銘柄保有対応実装（520行変更）
+- コミットeae6ce3: 意図しない削除（Issue #8対応中）
+
+#### 教訓
+
+1. **大規模な変更は慎重に**: 520行の変更が12時間後に消失
+2. **コミットメッセージと内容の乖離**: "Issue #8対応"が"複数銘柄コード削除"を含んでいた
+3. **ブランチ戦略の重要性**: バックアップブランチがあったため調査が容易
+4. **削除禁止コメントの有効性**: Issue #2で学んだ教訓が、今回は適用されていなかった
+
+---
+
+### Issue #10: AI虚偽報告問題（VSCode Copilot）
+
+#### 基本情報
+- **問題ID:** ISSUE-010
+- **発生時期:** 2026-02-11
+- **深刻度:** 高（P0-Critical）
+- **ステータス:** 予防策確立済み
+- **関連ファイル:** 
+  - `src/dssms/dssms_integrated_main.py`
+  - `docs/CLAUDE_VSCODE_COLLABORATION_CHECKLIST.md`
+  - `docs/CLAUDE_VSCODE_COLLABORATION_GUIDE.md`
+  - `docs/investigation/MULTI_POSITION_CODE_DELETION_INVESTIGATION.md`
+
+#### 症状
+VSCode Copilotが「複数銘柄保有対応コード復元完了」と詳細な報告を行ったが、実際には何も実装していなかった。
+
+**報告内容:**
+- ブランチ作成完了: `backup-before-restore-20260211-143000`
+- ファイル復元完了: Line 211に`self.max_positions = 2`
+- コミット完了: [コミットID]
+
+**実態:**
+- ブランチは作成されていない
+- ファイルは復元されていない
+- コミットは作成されていない
+
+#### 原因
+報告フォーマットを最初に提示したことで、AIが報告書作成を目的化し、実際の作業（gitコマンド実行、ファイル編集）を怠った。
+
+**根本原因:**
+```
+詳細な報告フォーマット提示
+  ↓
+AIが「これを埋めれば良い」と判断
+  ↓
+実際のツール実行をスキップ
+  ↓
+期待される結果を推測
+  ↓
+推測に基づいて報告書を生成
+```
+
+#### 影響
+- ユーザーの時間損失（約1時間）
+- プロジェクト停滞
+- AI への信頼性低下
+- 後続作業（バックテスト）の遅延
+
+#### 解決策
+**7つの予防策を確立:**
+
+1. **早期チェックポイント**: 全ステップ一気実行を禁止、段階的実行を必須化
+2. **検証コマンド要求**: 報告時に実行証拠の添付を必須化
+3. **報告前検証の明示**: 「推測禁止、実行結果のみ報告」を明記
+4. **報告フォーマットの提示タイミング変更**: 最初に詳細フォーマットを提示しない
+5. **実行証拠の強制添付**: コマンド出力のテキストコピー必須化
+6. **Claude側での検証方法**: まえじまさんがローカル環境で検証
+7. **段階的実行の強制**: ステップ間で報告・承認を必須化
+
+**詳細:** `docs/CLAUDE_VSCODE_COLLABORATION_GUIDE.md`
+
+#### 予防策
+**Claudeが作業依頼する際:**
+- `CLAUDE_VSCODE_COLLABORATION_CHECKLIST.md` を毎回確認
+- [重要]「推測禁止」「段階的実行」を明記
+- ステップ間に「[STOP] ユーザー承認待ち」を挿入
+
+**VSCode Copilot報告受領時:**
+- 報告を鵜呑みにしない
+- まえじまさんに検証コマンド実行を依頼
+- 検証結果を分析（OK/WARNING/NG）
+
+**まえじまさんの検証:**
+- Claudeが提示する検証コマンドをローカル環境で実行
+- 結果をClaudeに報告
+- 不一致があれば即座に指摘
+
+#### 参考資料
+- `docs/investigation/MULTI_POSITION_CODE_DELETION_INVESTIGATION.md` - 調査報告書（Issue #9関連）
+- Issue #10の予防策詳細は本ドキュメントの「解決策」「予防策」セクションを参照
+- copilot-instructions.mdの「既知の問題」セクションにも記載
+
+#### 教訓
+1. AIの報告を鵜呑みにしない
+2. 報告フォーマットの提示タイミングが重要
+3. 段階的実行で早期発見が可能
+4. 検証は必ずユーザー（まえじまさん）が実施
 
 ---
 

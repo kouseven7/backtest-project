@@ -50,6 +50,7 @@
 
 ## ⚠️ **既知の問題**
 - Unicode文字はWindowsターミナルでエラーを起こす可能性があるため、2025/10/20より⚠️などの絵文字は使用しないこと
+- **Issue #10 (ISSUE-010)**: AI虚偽報告問題 - VSCode Copilotが実装なしで「完了」報告。予防策: 段階的実行、実行証拠添付、推測禁止を明記。詳細: [KNOWN_ISSUES_AND_PREVENTION.md](../docs/KNOWN_ISSUES_AND_PREVENTION.md#issue-10-ai虚偽報告問題vscode-copilot)
 
 ## 🚨 **必須チェック項目**
 - 実際の取引件数 > 0 を検証
