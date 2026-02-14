@@ -146,7 +146,8 @@ class DSSMSIntegratedBacktester:
             # 実際の初期化は必要時に行う
             
             # システム状態
-            self.current_symbol = None
+            # self.current_symbol = None  # Sprint 2削除: 複数銘柄保有対応
+            # 代替: self.positions.keys()で保有銘柄リストを取得
             self.portfolio_value = self.config.get('initial_capital', 1000000)
             self.initial_capital = self.portfolio_value
             
@@ -200,7 +201,13 @@ class DSSMSIntegratedBacktester:
                 self.strategy_selector = None
             
             # Phase 3-C Day 12: ポジション状態管理
-            self.current_position = None  # 現在のポジション情報
+            # Sprint 2: 複数銘柄保有対応 (2026-02-10)
+            # self.current_position = None  # Sprint 2削除: positionsに統合
+            # 削除理由: 複数銘柄保有対応により、単一ポジション管理は不要
+            # 代替: self.positions辞書で複数ポジションを管理
+            # 参照: MULTI_POSITION_IMPLEMENTATION_PLAN.md Task 2-2-1
+            self.positions = {}  # {symbol: {strategy, entry_price, shares, entry_date, entry_idx}}
+            self.max_positions = 2  # Sprint 2設定: 最大保有銘柄数
             
             # Phase 2: equity_curve再構築用追跡変数
             self.cumulative_pnl = 0.0  # 累積損益追跡
@@ -526,11 +533,7 @@ class DSSMSIntegratedBacktester:
             
         Returns:
             datetime: 調整後の業務日
-            Copilot 要求 ID: a08bb073-de05-4d54-a37b-77161756f496
-
-GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
-
-理由: client not supported: bad request: the VS Code version you are using is no longer supported. Please upgrade VS Code to version 1.109.2+.
+            
         copilot-instructions.md遵守:
         - 実データ範囲内での調整（フォールバック禁止）
         - 決定論保証（同じ入力で同じ出力）
@@ -714,23 +717,25 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
             # ============================================================
             
             # ==========================================
-            # 期間終了時の強制決済（Phase 1修正: 2026-01-30）
+            # 期間終了時の強制決済（Sprint 2修正: 2026-02-10）
             # ==========================================
-            # 目的: バックテスト終了時に保有中のポジションを強制決済し、
+            # 目的: バックテスト終了時に保有中の全ポジションを強制決済し、
             #       all_transactions.csvに正確なexit_dateを記録する
-            # 修正履歴: Phase 1（複数銘柄対応）実装時に削除されたが、必要な処理
+            # Sprint 2修正: 複数銘柄保有対応（全ポジションをループで決済）
             
-            if self.current_position:
+            if len(self.positions) > 0:
                 self.logger.info(
-                    f"[FINAL_CLOSE] バックテスト終了時の強制決済開始"
+                    f"[FINAL_CLOSE] バックテスト終了時の強制決済開始: "
+                    f"{len(self.positions)}銘柄保有中"
                 )
                 
                 final_execution_details = []
                 
-                symbol = self.current_position['symbol']
-                try:
-                    shares = self.current_position['shares']
-                    entry_price = self.current_position['entry_price']
+                # Sprint 2: 全ポジションをループで決済
+                for symbol, position_data in list(self.positions.items()):
+                    try:
+                        shares = position_data['shares']
+                        entry_price = position_data['entry_price']
                     
                     # デバッグログ追加 (2026-02-05)
                     self.logger.info(f"\n[DEBUG_PRICE] ========== 銘柄{symbol}の強制決済 ==========")
@@ -784,7 +789,7 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
                         'shares': shares,
                         'price': final_price,
                         'total_value': final_price * shares,
-                        'strategy': self.current_position.get('strategy', 'DSSMS_Integrated'),
+                        'strategy': position_data.get('strategy', 'DSSMS_Integrated'),
                         'reason': 'backtest_end',
                         'status': 'force_closed',
                         'pnl': pnl,
@@ -802,16 +807,15 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
                         f"PnL={pnl:+,.0f}円({exit_detail['return_pct']:+.2%})"
                     )
                     
-                    # ポジション削除
-                    self.current_position = None
-                    
                 except Exception as e:
                     self.logger.error(
                         f"[FINAL_CLOSE] 強制決済エラー: {symbol}, {e}",
                         exc_info=True
                     )
-                    # 例外発生時もポジション削除を試行
-                    self.current_position = None
+                
+                # Sprint 2: 全ポジション削除
+                self.positions.clear()
+                self.logger.info(f"[FINAL_CLOSE] 全ポジション削除完了")
                 
                 # 最終日の日次結果にexecution_detailsを追加
                 if self.daily_results and final_execution_details:
@@ -831,7 +835,8 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
                 )
             
             self.logger.info(
-                f"current_symbol={self.current_symbol}"
+                f"[BACKTEST_END] 保有銘柄リスト: {list(self.positions.keys())} "
+                f"(保有数: {len(self.positions)}/{self.max_positions})"
             )
             
             # ==========================================
@@ -863,7 +868,7 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
         try:
             daily_result = {
                 'date': target_date.strftime('%Y-%m-%d'),
-                'symbol': self.current_symbol,
+                'symbol': None,  # Sprint 2: selected_symbolで後ほど設定
                 'success': False,
                 'portfolio_value_start': self.portfolio_value,
                 'daily_return': 0,
@@ -898,82 +903,85 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
             
             switch_result = self._evaluate_and_execute_switch(selected_symbol, target_date)
             
-            # Cycle 10-11追加: 初回エントリー時のcurrent_symbol更新
-            # 問題: 初回エントリー時（current_symbol=None）にswitch_executed=Falseとなる
-            # 解決: switch_executedに関わらず、current_symbolを更新
-            # 修正日: 2026-02-08
-            # 修正者: Sprint 1 Task 1-11
+            # Sprint 2追加: force_close対象銘柄がある場合、先に決済
+            force_close_symbol = switch_result.get('force_close_symbol')
+            if force_close_symbol:
+                self.logger.warning(
+                    f"[FORCE_CLOSE] {force_close_symbol}を決済: "
+                    f"reason={switch_result.get('reason')}"
+                )
+                # force_close対象銘柄のデータ取得
+                close_stock_data, _ = self._get_symbol_data(force_close_symbol, target_date)
+                if close_stock_data is not None:
+                    # force_closeフラグ付きで戦略実行（決済のみ）
+                    # existing_positionにforce_close=Trueを設定
+                    if force_close_symbol in self.positions:
+                        # 決済処理実行
+                        close_result = self._execute_multi_strategies_daily(
+                            target_date, 
+                            force_close_symbol, 
+                            close_stock_data
+                        )
+                        
+                        # 決済結果をdaily_resultに記録
+                        if 'execution_details' in close_result:
+                            if 'execution_details' not in daily_result:
+                                daily_result['execution_details'] = []
+                            daily_result['execution_details'].extend(close_result['execution_details'])
+                        
+                        self.logger.info(
+                            f"[FORCE_CLOSE] {force_close_symbol}決済完了: "
+                            f"action={close_result.get('action')}, "
+                            f"price={close_result.get('price', 0):.2f}円"
+                        )
+                    else:
+                        self.logger.warning(
+                            f"[FORCE_CLOSE_ERROR] {force_close_symbol}のポジションが存在しません"
+                        )
+                else:
+                    self.logger.error(
+                        f"[FORCE_CLOSE_ERROR] {force_close_symbol}のデータ取得失敗: "
+                        f"date={target_date.strftime('%Y-%m-%d')}"
+                    )
+            
+            # Sprint 2修正: switch_executedの処理（簡素化）
             if switch_result.get('switch_executed', False):
                 # 銘柄切替が実行された場合
                 daily_result['switch_executed'] = True
-                daily_result['symbol'] = self.current_symbol  # P3修正: switch後の銘柄を反映
+                daily_result['symbol'] = selected_symbol  # Sprint 2: 新銘柄を設定
                 self.switch_history.append(switch_result)
-                
-                # [修正案1実装] 銘柄切替時のexecution_details収集(December 14, 2025修正)
-                # 修正: 単数形'execution_detail'から複数形'execution_details'に変更
-                # 理由: SELL+BUY両方のexecution_detailsを記録するため
-                if 'execution_details' in switch_result:
-                    # daily_resultのexecution_detailsに追加
-                    if 'execution_details' not in daily_result:
-                        daily_result['execution_details'] = []
-                    daily_result['execution_details'].extend(switch_result['execution_details'])
-                    self.logger.info(f"[DSSMS_SWITCH_COLLECT] 銘柄切替SELL+BUY記録をdaily_resultに追加: {len(switch_result['execution_details'])}件")
-            else:
-                # 銘柄切替が実行されなかった場合
-                # ケース1: 初回エントリー時（current_symbol=None → selected_symbol）
-                if self.current_symbol is None and selected_symbol:
-                    self.current_symbol = selected_symbol
-                    daily_result['symbol'] = selected_symbol
-                    self.logger.info(
-                        f"[INITIAL_SYMBOL] 初回銘柄設定: current_symbol=None → {selected_symbol}"
-                    )
-                
-                # ケース2: 銘柄切替が拒否された場合
-                elif self.current_symbol != selected_symbol:
-                    self.logger.info(
-                        f"[SWITCH_REJECTED] 銘柄切替拒否: {self.current_symbol} → {selected_symbol}, "
-                        f"reason={switch_result.get('reason', 'unknown')}"
-                    )
-                    # current_symbolは変更しない（現在の銘柄を維持）
-                
-                # ケース3: 同じ銘柄が選択された場合
-                else:
-                    # 何もしない（current_symbolを維持）
-                    pass
+                self.logger.info(
+                    f"[SWITCH] 銘柄切替実行: {switch_result.get('from_symbol')} -> {selected_symbol}"
+                )
             
-            # 3. 現在銘柄でのマルチ戦略実行(銘柄切替時はForceClose実行)
-            if self.current_symbol:
-                # 銘柄切替実行フラグ取得
-                switch_executed = switch_result.get('switch_executed', False)
+            # 3. 選択銘柄でのマルチ戦略実行
+            # Sprint 2: 新規エントリーまたは既存ポジション継続
+            if selected_symbol:
+                # Sprint 2: 選択銘柄でのマルチ戦略実行
+                self.logger.debug(
+                    f"[STRATEGY_EXEC] {selected_symbol}でマルチ戦略実行: "
+                    f"date={target_date.strftime('%Y-%m-%d')}, "
+                    f"switch_executed={switch_result.get('switch_executed', False)}"
+                )
                 
-                if switch_executed:
-                    self.logger.info(
-                        f"from={switch_result.get('from_symbol')} -> to={self.current_symbol}, "
-                        f"date={target_date.strftime('%Y-%m-%d')}"
-                    )
-                
-                # マルチ戦略実行(銘柄切替時はforce_close_on_entry=True)
-                # 修正：日次取引モード使用（重複エントリー防止）
-                # 問題の原因：以前の全期間バックテスト（_execute_multi_strategies）から
-                # 日次取引モード（_execute_multi_strategies_daily）への切替確実実行
-                stock_data, _ = self._get_symbol_data(self.current_symbol, target_date)
+                # selected_symbolのデータ取得
+                stock_data, _ = self._get_symbol_data(selected_symbol, target_date)
                 if stock_data is not None:
-                    # force_close_on_entryをcurrent_positionのforce_closeフラグで処理
-                    if switch_executed and self.current_position:
-                        self.current_position['force_close'] = True
-                    
-                    # 確実に日次取引モード使用（重複エントリー防止の決定的修正）
+                    # 確実に日次取引モード使用（重複エントリー防止）
                     strategy_result = self._execute_multi_strategies_daily(
                         target_date,
-                        self.current_symbol,
+                        selected_symbol,
                         stock_data
                     )
                 else:
-                    self.logger.error(f"[DAILY_TRADING] データ取得失敗: symbol={self.current_symbol}, date={target_date}")
+                    self.logger.error(
+                        f"[DAILY_TRADING] データ取得失敗: symbol={selected_symbol}, "
+                        f"date={target_date.strftime('%Y-%m-%d')}"
+                    )
                     strategy_result = {
                         'status': 'error',
                         'reason': 'Data unavailable',
-                        'symbol': self.current_symbol,
+                        'symbol': selected_symbol,
                         'target_date': target_date
                     }
                 daily_result['strategy_results'] = strategy_result
@@ -1090,9 +1098,10 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
             return daily_result
             
         except Exception as e:
+            self.logger.error(f"[DAILY_TRADING_ERROR] {e}", exc_info=True)
             return {
                 'date': target_date.strftime('%Y-%m-%d'),
-                'symbol': self.current_symbol,
+                'symbol': None,  # Sprint 2: 複数銘柄保有対応
                 'success': False,
                 'portfolio_value_start': self.portfolio_value,
                 'portfolio_value_end': self.portfolio_value,
@@ -1897,11 +1906,14 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
     def _evaluate_and_execute_switch(self, selected_symbol: str, 
                                    target_date: datetime) -> Dict[str, Any]:
         """
-        銘柄切替の評価と実行
+        銘柄切替の評価と実行（Sprint 2: 複数銘柄保有対応）
         
-        Cycle 4-A実装: 利益中ポジション保護機能
-        - 含み益ポジション（unrealized_pnl > 0）の場合は銘柄切替をスキップ
-        - 目的: 利益を伸ばしている銘柄を早期に手放さない
+        Sprint 2実装: FIFO方式による複数銘柄保有対応
+        - max_positions到達時は最も古いポジションを決済（FIFO）
+        - 4ケース分岐: 初回エントリー/銘柄継続/新規エントリー/銘柄切替
+        
+        Cycle 4-A実装: 利益中ポジション保護機能（保留）
+        - Sprint 2では単純FIFO実装、利益保護はSprint 3で検討
         
         Args:
             selected_symbol: 選択された銘柄
@@ -1909,165 +1921,142 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
         
         Returns:
             Dict[str, Any]: 切替実行結果
+                - switch_executed: bool（切替実行フラグ）
+                - from_symbol: str | None（切替元銘柄）
+                - to_symbol: str（切替先銘柄）
+                - reason: str（理由）
+                - force_close_symbol: str | None（決済対象銘柄、重要）
         """
         try:
-            # Cycle 4-A改善: Cycle 3実装（修正案3）
-            # 問題: current_positionは切替判定時にNoneまたは古いデータ（Line 2301で更新されるが、それは切替後）
-            # 解決: current_symbolをチェックし、最新価格を取得して利益判定
+            # Sprint 2: 複数銘柄保有対応 - 4ケース分岐
             self.logger.info(
-                f"[CYCLE4-A-DEBUG] _evaluate_and_execute_switch() 開始 | "
+                f"[SWITCH] 銘柄切替判定開始 | "
                 f"target_date={target_date.strftime('%Y-%m-%d')}, "
-                f"current_symbol={self.current_symbol}, "
                 f"selected_symbol={selected_symbol}, "
-                f"current_position={'存在' if self.current_position else 'None'}"
+                f"保有数={len(self.positions)}/{self.max_positions}, "
+                f"保有銘柄={list(self.positions.keys())}"
             )
             
-            # Cycle 4-A Cycle 3改善版: 利益中ポジション保護チェック
-            # 修正案3改善: current_symbolとlast_entry_priceをチェック
-            if self.current_symbol and self.last_entry_price is not None:
-                entry_price = self.last_entry_price  # 修正: last_entry_priceを使用
-                
-                # Cycle 10-8修正: エントリー銘柄のデータを取得
-                # 問題: self.current_symbolは切替後の銘柄（5802）を参照
-                # 正解: self.current_position['symbol']（実際のエントリー銘柄）を参照
-                # 修正日: 2026-02-05
-                # 修正者: Sprint 1 Task 1-11
-                current_symbol = self.current_position.get('symbol', self.current_symbol) \
-                                 if self.current_position else self.current_symbol
-                
-                # 現在価格を取得（target_dateの終値）
-                try:
-                    symbol_data, _ = self._get_symbol_data(current_symbol, target_date)
-                    if symbol_data is not None and len(symbol_data) > 0:
-                        current_price = symbol_data['Adj Close'].iloc[-1]
-                        unrealized_pnl = (current_price - entry_price) / entry_price
-                        
-                        # 含み益がある場合は銘柄切替をスキップ
-                        if unrealized_pnl > 0:
-                            self.logger.warning(
-                                f"[CYCLE4-A] ★★★ 利益中ポジション保護: 銘柄切替スキップ ★★★ | "
-                                f"symbol={current_symbol}, entry_price={entry_price:.2f}, "
-                                f"current_price={current_price:.2f}, unrealized_pnl={unrealized_pnl:.2%}"
-                            )
-                            return {
-                                'date': target_date.strftime('%Y-%m-%d'),
-                                'from_symbol': self.current_symbol,
-                                'to_symbol': selected_symbol,
-                                'switch_executed': False,
-                                'switch_cost': 0,
-                                'reason': 'profit_protection',
-                                'unrealized_pnl': unrealized_pnl
-                            }
-                        else:
-                            # 含み損の場合は通常の切替判定へ進む
-                            self.logger.info(
-                                f"[CYCLE4-A] 損失中ポジション: 通常切替判定へ | "
-                                f"symbol={current_symbol}, unrealized_pnl={unrealized_pnl:.2%}"
-                            )
-                except Exception as e:
-                    self.logger.warning(f"[CYCLE4-A] 現在価格取得エラー: {e}")
+            # ケース1: 初回エントリー
+            if len(self.positions) == 0:
+                self.logger.info(f"[SWITCH] 初回エントリー: {selected_symbol}")
+                return {
+                    'date': target_date.strftime('%Y-%m-%d'),
+                    'switch_executed': False,
+                    'from_symbol': None,
+                    'to_symbol': selected_symbol,
+                    'reason': 'initial_entry',
+                    'force_close_symbol': None,
+                    'switch_cost': 0
+                }
             
-            # 切替評価
+            # ケース2: 選択銘柄が既に保有中
+            if selected_symbol in self.positions:
+                self.logger.debug(
+                    f"[SWITCH] 銘柄継続: {selected_symbol} "
+                    f"(entry_date={self.positions[selected_symbol].get('entry_date')})"
+                )
+                return {
+                    'date': target_date.strftime('%Y-%m-%d'),
+                    'switch_executed': False,
+                    'from_symbol': selected_symbol,
+                    'to_symbol': selected_symbol,
+                    'reason': 'symbol_already_held',
+                    'force_close_symbol': None,
+                    'switch_cost': 0
+                }
+            
+            # ケース3: max_positions未満（新規エントリー可能）
+            if len(self.positions) < self.max_positions:
+                self.logger.info(
+                    f"[SWITCH] 新規エントリー枠あり: {selected_symbol} "
+                    f"(現在{len(self.positions)}/{self.max_positions}銘柄)"
+                )
+                return {
+                    'date': target_date.strftime('%Y-%m-%d'),
+                    'switch_executed': False,
+                    'from_symbol': None,
+                    'to_symbol': selected_symbol,
+                    'reason': 'new_entry_available',
+                    'force_close_symbol': None,
+                    'switch_cost': 0
+                }
+            
+            # ケース4: max_positions到達、銘柄切替判定
+            # 最も古いポジションを決済候補とする（FIFO）
+            oldest_symbol, oldest_position = min(
+                self.positions.items(), 
+                key=lambda x: x[1]['entry_date']
+            )
+            
+            self.logger.info(
+                f"[SWITCH] max_positions到達、FIFO決済候補: {oldest_symbol} "
+                f"(entry_date={oldest_position['entry_date']}, "
+                f"strategy={oldest_position.get('strategy', 'unknown')})"
+            )
+            
+            # SymbolSwitchManagerで切替可否を判定
             self.ensure_components()  # 遅延初期化
             switch_evaluation = self.switch_manager.evaluate_symbol_switch(
-                from_symbol=self.current_symbol,
+                from_symbol=oldest_symbol,
                 to_symbol=selected_symbol,
                 target_date=target_date
             )
             
-            switch_result = {
-                'date': target_date.strftime('%Y-%m-%d'),
-                'from_symbol': self.current_symbol,
-                'to_symbol': selected_symbol,
-                'switch_executed': False,
-                'switch_cost': 0,
-                'reason': 'no_switch_needed'
-            }
-            
             should_switch = switch_evaluation.get('should_switch', False)
             self.logger.debug(
-                f"[DEBUG] _evaluate_and_execute_switch | should_switch: {should_switch} | "
-                f"switch_evaluation: {switch_evaluation}"
+                f"[SWITCH] SymbolSwitchManager判定: should_switch={should_switch}, "
+                f"reason={switch_evaluation.get('reason')}"
             )
             
-            # 切替実行判定
             if should_switch:
-                execution_details = []
+                # 銘柄切替実行（force_closeフラグ付き）
+                self.logger.warning(
+                    f"[SWITCH] 銘柄切替実行: {oldest_symbol} -> {selected_symbol} "
+                    f"(FIFO決済, entry_date={oldest_position['entry_date']})"
+                )
                 
-                # Cycle 10-9追加: 銘柄切替時の強制決済
-                # 削除理由: Stage 3-3で取引実行機能が削除された
-                # 復元理由: DSSMSは統合バックテストシステムとして取引実行が必要
-                # 修正日: 2026-02-06
-                # 修正者: Sprint 1 Task 1-11
-                if self.current_position is not None:
-                    # 元の銘柄（エントリー銘柄）のデータを取得
-                    old_symbol = self.current_position['symbol']
-                    old_symbol_data, _ = self._get_symbol_data(old_symbol, target_date)
-                    
-                    if old_symbol_data is not None and len(old_symbol_data) > 0:
-                        # 決済価格: 当日終値
-                        sell_price = old_symbol_data['Adj Close'].iloc[-1]
-                        sell_shares = self.current_position.get('shares', 0)
-                        entry_price = self.current_position.get('entry_price', 0)
-                        
-                        # SELL execution_detail 生成
-                        sell_detail = {
-                            'timestamp': target_date.strftime('%Y-%m-%d %H:%M:%S'),
-                            'symbol': old_symbol,
-                            'action': 'SELL',
-                            'price': float(sell_price),  # numpy型をfloatに変換
-                            'shares': sell_shares,
-                            'strategy': self.current_position.get('strategy', 'DSSMS'),
-                            'signal_strength': 1,
-                            'reason': 'symbol_switch_forced_exit',
-                            'status': 'executed'
-                        }
-                        execution_details.append(sell_detail)
-                        
-                        # 現金残高更新
-                        proceeds = sell_price * sell_shares
-                        self.cash_balance += proceeds
-                        
-                        # PnL計算とログ出力
-                        pnl = (sell_price - entry_price) * sell_shares
-                        pnl_pct = (pnl / (entry_price * sell_shares)) * 100 if entry_price > 0 else 0
-                        self.logger.info(
-                            f"[SWITCH_CLOSE] {old_symbol}: {sell_shares}株 @{sell_price:.2f}円, "
-                            f"PnL={pnl:,.0f}円 ({pnl_pct:.2f}%)"
-                        )
-                        
-                        # ポジションクリア
-                        self.current_position = None
-                        self.last_entry_price = None
-                    else:
-                        self.logger.warning(
-                            f"[SWITCH_CLOSE] データ取得失敗: {old_symbol}, target_date={target_date}"
-                        )
-                
-                # 銘柄更新
-                self.current_symbol = selected_symbol
-                
-                # switch_result更新（execution_detailsを含める）
-                switch_result.update({
+                switch_result = {
+                    'date': target_date.strftime('%Y-%m-%d'),
                     'switch_executed': True,
-                    'reason': switch_evaluation.get('reason', 'dss_optimization'),
+                    'from_symbol': oldest_symbol,
+                    'to_symbol': selected_symbol,
+                    'reason': switch_evaluation.get('reason', 'max_positions_fifo'),
                     'executed_date': target_date,
-                    'execution_details': execution_details  # ← 追加（Line 906-912で自動的にdaily_resultに追加される）
-                })
+                    'force_close_symbol': oldest_symbol,  # 決済対象（重要）
+                    'switch_cost': 0
+                }
                 
                 # 切替履歴記録
                 self.switch_manager.record_switch_executed(switch_result)
                 
-                self.logger.info(f"銘柄切替実行: {switch_result['from_symbol']} -> {selected_symbol}")
-            
-            return switch_result
+                return switch_result
+            else:
+                # 切替拒否（min_holding_days未満、max_switches_per_month超過等）
+                self.logger.info(
+                    f"[SWITCH] 銘柄切替拒否: {selected_symbol}, "
+                    f"reason={switch_evaluation.get('reason')}"
+                )
+                return {
+                    'date': target_date.strftime('%Y-%m-%d'),
+                    'switch_executed': False,
+                    'from_symbol': oldest_symbol,
+                    'to_symbol': selected_symbol,
+                    'reason': switch_evaluation.get('reason'),
+                    'force_close_symbol': None,
+                    'switch_cost': 0
+                }
             
         except Exception as e:
+            self.logger.error(f"[SWITCH] 銘柄切替評価エラー: {e}", exc_info=True)
             return {
                 'date': target_date.strftime('%Y-%m-%d'),
-                'from_symbol': self.current_symbol,
-                'to_symbol': selected_symbol,
                 'switch_executed': False,
+                'from_symbol': None,
+                'to_symbol': selected_symbol,
+                'reason': f'error: {e}',
+                'force_close_symbol': None,
+                'switch_cost': 0,
                 'error': str(e)
             }
     
@@ -2454,33 +2443,26 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
                 }
             
             # Phase 3-C Day 12 Task 2-3: existing_position判定ロジック追加
-            if self.current_position:
-                if self.current_position['symbol'] == symbol:
-                    # 銘柄継続: 既存ポジション情報を伝達
-                    existing_position = {
-                        'entry_idx': self.current_position.get('entry_idx', 0),
-                        'quantity': self.current_position.get('shares', 0),
-                        'entry_price': self.current_position.get('entry_price', 0.0),
-                        'entry_date': self.current_position.get('entry_date', None),
-                        'strategy': self.current_position.get('strategy', best_strategy_name)
-                    }
-                    self.logger.info(f"[PHASE3-C-B1] 銘柄継続: symbol={symbol}, existing_position={existing_position}")
-                else:
-                    # 銘柄切替: 強制決済のため既存ポジション情報を伝達（Cycle 7: entry_symbol追加）
-                    existing_position = {
-                        'entry_idx': self.current_position.get('entry_idx', 0),
-                        'quantity': self.current_position.get('shares', 0),
-                        'entry_price': self.current_position.get('entry_price', 0.0),
-                        'entry_date': self.current_position.get('entry_date', None),
-                        'strategy': self.current_position.get('strategy', best_strategy_name),
-                        'force_close': True,  # 銘柄切替フラグ
-                        'entry_symbol': self.current_position.get('symbol', '')  # Cycle 7: エントリー銘柄追加
-                    }
-                    self.logger.warning(f"[PHASE3-C-B1] 銘柄切替: {self.current_position['symbol']} → {symbol}, force_close=True, entry_symbol={existing_position['entry_symbol']}")
+            # Sprint 2修正: self.current_position → self.positions[symbol]
+            if symbol in self.positions:
+                # 既に同じ銘柄でポジション保有中（戦略継続）
+                existing_position = {
+                    'entry_idx': self.positions[symbol].get('entry_idx', 0),
+                    'quantity': self.positions[symbol].get('shares', 0),
+                    'entry_price': self.positions[symbol].get('entry_price', 0.0),
+                    'entry_date': self.positions[symbol].get('entry_date', None),
+                    'strategy': self.positions[symbol].get('strategy', best_strategy_name),
+                    'entry_symbol': symbol  # Cycle 7: エントリー銘柄コード
+                }
+                self.logger.info(
+                    f"[MULTI_POSITION] 銘柄継続: {symbol}, "
+                    f"既存戦略={existing_position['strategy']}, "
+                    f"保有数={len(self.positions)}/{self.max_positions}"
+                )
             else:
-                # 新規: ポジションなし
+                # ポジションなし
                 existing_position = None
-                self.logger.debug(f"[PHASE3-C-B1] 新規判定: existing_position=None")
+                self.logger.debug(f"[MULTI_POSITION] 新規判定: {symbol}, existing_position=None")
             
             # backtest_daily()実行（copilot-instructions.md: バックテスト実行必須）
             # Cycle 7: force_close時にentry_symbolのデータを取得
@@ -2505,12 +2487,7 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
                     kwargs['entry_symbol_data'] = entry_symbol_data
                     
                 self.logger.info(f"[PHASE3-C-B1] backtest_daily()実行開始: adjusted_target_date={adjusted_target_date.strftime('%Y-%m-%d')}, existing_position={existing_position}, kwargs={list(kwargs.keys())}")
-                result = strategy.backtest_daily(
-                    adjusted_target_date, processed_data, 
-                    existing_position=existing_position,
-                    trading_start_date=self.dssms_backtest_start_date,  # 追加: ウォームアップ期間フィルタリング対応（Issue調査報告20260210）
-                    **kwargs
-                )
+                result = strategy.backtest_daily(adjusted_target_date, processed_data, existing_position=existing_position, **kwargs)
                 self.logger.info(f"[PHASE3-C-B1] backtest_daily()実行完了: action={result['action']}, signal={result['signal']}")
                 
                 # 実際の実行結果を検証（copilot-instructions.md: 検証なしの報告禁止）
@@ -2557,28 +2534,8 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
                 f"symbol={symbol}, target_date={adjusted_target_date.strftime('%Y-%m-%d')}"
             )
             
-            if result['action'] == 'buy':
-                # エントリー: current_position更新
-                self.current_position = {
-                    'symbol': symbol,
-                    'strategy': best_strategy_name,
-                    'entry_price': result['price'],
-                    'shares': result['shares'],
-                    'entry_date': adjusted_target_date,
-                    'entry_idx': result.get('entry_idx', processed_data.index.get_loc(adjusted_target_date) if adjusted_target_date in processed_data.index else 0)
-                }
-                # Cycle 4-A Cycle 3改善: last_entry_price更新
-                self.last_entry_price = result['price']
-                self.logger.info(f"[PHASE3-C-B1] ポジション更新（buy）: {self.current_position}, last_entry_price={self.last_entry_price:.2f}")
-            elif result['action'] == 'sell':
-                # エグジット: current_positionクリア
-                self.logger.info(f"[PHASE3-C-B1] ポジション更新（sell）: current_position={self.current_position} → None")
-                self.current_position = None
-                # Cycle 4-A Cycle 3改善: last_entry_priceクリア
-                self.last_entry_price = None
-            else:
-                # hold: ポジション維持
-                self.logger.debug(f"[PHASE3-C-B1] ポジション維持（hold）: current_position={self.current_position}")
+            # Sprint 2削除: 古いcurrent_position更新ロジック（Line 2537-2558）
+            # 理由: Task 2-2-2で実装済みの self.positions ベースの処理に統合
             
             # 結果処理・ログ記録
             execution_time = time.time() - execution_start
@@ -2604,10 +2561,8 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
                             f"株数: {original_shares}株 → {affordable_shares}株（調整後必要額: {adjusted_required_cash:,.0f}円）"
                         )
                         
-                        # Cycle 12修正: current_positionのshares更新（BALANCE_CHECK調整後の株数反映）
-                        if self.current_position is not None:
-                            self.current_position['shares'] = affordable_shares
-                            self.logger.info(f"[BALANCE_CHECK] current_position['shares']更新: {original_shares} → {affordable_shares}")
+                        # Sprint 2削除: current_position['shares']更新は不要（実際のポジション追加は_process_daily_tradingで実行）
+                        # 旧コード: if self.current_position is not None: self.current_position['shares'] = affordable_shares
                         
                         # 調整後のrequired_cashを更新
                         required_cash = adjusted_required_cash
@@ -2665,15 +2620,16 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
             
             # Cycle 10-4: ポジション価値計算修正（日次終値ベースの時価評価）
             # 注: portfolio_equity_curve.csvは「その日終了時点のポートフォリオ状態」を記録
+            # Sprint 2修正: 現在の銘柄のポジション価値のみ計算（全体はループ外で計算）
             position_value = 0.0
             
-            if self.current_position is not None:
+            if symbol in self.positions:
                 # ポジション保有中: 当日終値ベースで時価評価
                 try:
                     current_price = processed_data['Adj Close'].iloc[-1] if len(processed_data) > 0 else 0
-                    position_value = self.current_position.get('shares', 0) * current_price
+                    position_value = self.positions[symbol].get('shares', 0) * current_price
                     self.logger.debug(
-                        f"[PORTFOLIO_VALUE] ポジション評価: {self.current_position.get('shares')}株 × "
+                        f"[PORTFOLIO_VALUE] ポジション評価: {self.positions[symbol].get('shares')}株 × "
                         f"{current_price:.2f}円 = {position_value:,.2f}円"
                     )
                 except Exception as e:
@@ -3199,11 +3155,12 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
             
             # Cycle 11-2: 正確なfinal_capital計算（cash_balance + ポジション時価評価）
             # portfolio_valueは未決済ポジションを含む計算のため、cash_balance + position_valueを使用
+            # Sprint 2修正: self.current_position → len(self.positions)チェック
             final_cash_balance = self.cash_balance
             final_position_value = 0.0
-            if self.current_position is not None:
+            if len(self.positions) > 0:
                 try:
-                    # 最終日の終値でポジション時価評価
+                    # 最終日の終値でポジション時価評価（全ポジションの合計）
                     if self.daily_results:
                         last_daily_result = self.daily_results[-1]
                         final_position_value = last_daily_result.get('position_value', 0.0)
@@ -3678,7 +3635,7 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
                 # Sprint 1 検証用設定: 最小保有期間を5日に設定
                 # 目的: システム動作の最低限確認
                 # 修正日: 2026-02-09
-                'min_holding_days': 10,  # 10 日
+                'min_holding_days': 5,  # 10 → 5に変更（Sprint 1検証用）
                 'max_switches_per_month': 5,  # 10回 → 5回に変更
                 'switch_cost_rate': 0.001,  # 0.1%（明示的に追加）
             },
@@ -3697,14 +3654,16 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
         }
     
     def get_system_status(self) -> Dict[str, Any]:
-        """システム状態取得"""
+        """システム状態取得（Sprint 2: 複数銘柄保有対応）"""
         try:
             dss_available = self._check_dss_availability()
             risk_available = self._check_risk_management_availability()
             data_available = self._check_data_fetcher_availability()
             
             return {
-                'current_symbol': self.current_symbol,
+                'held_symbols': list(self.positions.keys()),  # Sprint 2: 保有銘柄リスト
+                'positions_count': len(self.positions),
+                'max_positions': self.max_positions,
                 'portfolio_value': self.portfolio_value,
                 # Phase 1 Stage 4-2: position_size削除(December 19, 2025)
                 'daily_results_count': len(self.daily_results),
@@ -3773,7 +3732,7 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
                 f.write("DSSMS 実行ログ\n")
                 f.write("=" * 50 + "\n")
                 f.write(f"生成日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                f.write(f"現在銘柄: {self.current_symbol}\n")
+                f.write(f"保有銘柄: {', '.join(self.positions.keys()) if self.positions else 'なし'} ({len(self.positions)}/{self.max_positions})\n")
                 f.write(f"ポートフォリオ値: {self.portfolio_value:,.0f}円\n\n")
                 
                 # 日次結果ログ
@@ -4343,7 +4302,7 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
                     'cash_balance': cash_balance,
                     'position_value': position_value,
                     'total_value': total_value,
-                    'symbol': daily_result.get('symbol', self.current_symbol)
+                    'symbol': daily_result.get('symbol', ', '.join(self.positions.keys()) if self.positions else 'N/A')
                 })
             
             if curve_data:
@@ -4355,7 +4314,7 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
                     'cash_balance': [1000000],
                     'position_value': [0],
                     'total_value': [1000000],
-                    'symbol': [self.current_symbol]
+                    'symbol': list(self.positions.keys())
                 })
             
             df.to_csv(curve_path, index=False, encoding='utf-8-sig')
@@ -4382,7 +4341,7 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
                 f.write("=" * 80 + "\n")
                 f.write("DSSMS マルチ戦略動的バックテスト包括レポート\n")
                 f.write("=" * 80 + "\n")
-                f.write(f"現在の銘柄: {self.current_symbol}\n")
+                f.write(f"保有銘柄: {', '.join(self.positions.keys()) if self.positions else 'なし'} ({len(self.positions)}/{self.max_positions})\n")
                 f.write(f"レポート生成日時: {datetime.now().strftime('%Y%m%d_%H%M%S')}\n")
                 f.write(f"レポート種別: DSSMS 統合戦略実行結果\n\n")
                 
@@ -4555,7 +4514,7 @@ GH 要求 ID: CA83:3CBABE:2F8E03:350B16:698C7D7B
             with open(summary_path, 'w', encoding='utf-8') as f:
                 f.write("DSSMS 実行サマリー\n")
                 f.write("=" * 30 + "\n")
-                f.write(f"現在銘柄: {self.current_symbol}\n")
+                f.write(f"保有銘柄: {', '.join(self.positions.keys()) if self.positions else 'なし'} ({len(self.positions)}/{self.max_positions})\n")
                 f.write(f"ポートフォリオ価値: {self.portfolio_value:,.0f}円\n")
                 f.write(f"総収益率: {portfolio_perf.get('total_return_rate', 0):.2%}\n")
                 f.write(f"成功率: {portfolio_perf.get('success_rate', 0):.1%}\n")
@@ -4703,7 +4662,7 @@ def main():
             'initial_capital': 1000000,
             'symbol_switch': {
                 'switch_management': {
-                    'min_holding_days': 10,  # 10 日
+                    'min_holding_days': 5,  # 10 → 5に変更（Sprint 1検証用、2026-02-09）
                     'max_switches_per_month': 5,  # 8回 → 5回に変更（Task 1）
                     'switch_cost_rate': 0.001  # 0.1%（明示的に追加）
                 }
