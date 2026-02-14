@@ -2602,6 +2602,17 @@ class DSSMSIntegratedBacktester:
                     # Cycle 4-2: BUY時に現金残高を減少
                     self.cash_balance -= trade_cost
                     position_update = {'return': -trade_cost, 'cost': trade_cost}
+                    
+                    # Sprint 2: self.positionsへの追加（2026-02-15修正）
+                    self.positions[symbol] = {
+                        'strategy': best_strategy_name,
+                        'entry_price': result['price'],
+                        'shares': result['shares'],
+                        'entry_date': adjusted_target_date,
+                        'entry_idx': len(result.get('data', []))  # データ長をidxとして使用
+                    }
+                    self.logger.info(f"[POSITION_ADD] {symbol}: {result['shares']}株を追加（保有数: {len(self.positions)}/{self.max_positions}）")
+                    
                     self.logger.info(
                         f"[PORTFOLIO_TRADE] BUY執行: {symbol} {result['shares']}株 @ {result['price']:.2f}円, "
                         f"コスト: {trade_cost:,.0f}円, 残高: {self.cash_balance:,.0f}円"
@@ -2611,6 +2622,14 @@ class DSSMSIntegratedBacktester:
                     # Cycle 4-2: SELL時に現金残高を増加
                     self.cash_balance += trade_profit
                     position_update = {'return': trade_profit, 'cost': 0}
+                    
+                    # Sprint 2: self.positionsからの削除（2026-02-15修正）
+                    if symbol in self.positions:
+                        del self.positions[symbol]
+                        self.logger.info(f"[POSITION_DELETE] {symbol}: ポジション削除（保有数: {len(self.positions)}/{self.max_positions}）")
+                    else:
+                        self.logger.warning(f"[POSITION_DELETE] {symbol}: ポジション未登録（削除スキップ）")
+                    
                     self.logger.info(
                         f"[PORTFOLIO_TRADE] SELL執行: {symbol} {result['shares']}株 @ {result['price']:.2f}円, "
                         f"収益: {trade_profit:,.0f}円, 残高: {self.cash_balance:,.0f}円"
