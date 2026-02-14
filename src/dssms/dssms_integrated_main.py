@@ -736,82 +736,82 @@ class DSSMSIntegratedBacktester:
                     try:
                         shares = position_data['shares']
                         entry_price = position_data['entry_price']
+                        
+                        # デバッグログ追加 (2026-02-05)
+                        self.logger.info(f"\n[DEBUG_PRICE] ========== 銘柄{symbol}の強制決済 ==========")
+                        self.logger.info(f"[DEBUG_PRICE] entry_price: {entry_price}, shares: {shares}")
+                        
+                        # 最終日の終値を取得
+                        final_price = None
+                        stock_data, _ = self._get_symbol_data(symbol, end_date)
+                        
+                        # デバッグログ追加
+                        if stock_data is not None and len(stock_data) > 0:
+                            self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data.shape = {stock_data.shape}")
+                            self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data.index[-5:] = {stock_data.index[-5:].tolist()}")
+                            self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data['Close'].iloc[-5:] = {stock_data['Close'].iloc[-5:].tolist()}")
+                        else:
+                            self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data取得失敗(None or empty)")
+                        
+                        if stock_data is None or len(stock_data) == 0:
+                            # エラーログ出力（フォールバックなし）
+                            self.logger.error(
+                                f"[FINAL_CLOSE] データ取得失敗: {symbol} - "
+                                f"yfinance APIエラーまたはデータ不足"
+                            )
+                            # 強制決済レコードは生成するがfinal_priceはentry_priceを使用
+                            # （最悪ケース: PnL=0として決済記録）
+                            final_price = entry_price
+                            
+                            self.logger.info(f"[DEBUG_PRICE] final_price = entry_price: {final_price}")
+                            
+                            self.logger.warning(
+                                f"[FINAL_CLOSE] {symbol}: データ取得失敗のため "
+                                f"entry_price({entry_price:.2f})をfinal_priceとして使用 (PnL=0)"
+                            )
+                        else:
+                            final_price = stock_data['Close'].iloc[-1]
+                            
+                            self.logger.info(f"[DEBUG_PRICE] final_price = Close最終値: {final_price}")
+                            self.logger.info(f"[DEBUG_PRICE] entry_price = {entry_price}")
+                        
+                        # PnL計算
+                        pnl = (final_price - entry_price) * shares
+                        
+                        self.logger.info(f"[DEBUG_PRICE] PnL: {pnl:.2f}円")
+                        self.logger.info(f"[DEBUG_PRICE] ==========================================\n")
+                        
+                        # 決済記録（データ取得失敗でも記録）
+                        exit_detail = {
+                            'timestamp': end_date,
+                            'symbol': symbol,
+                            'action': 'SELL',
+                            'shares': shares,
+                            'price': final_price,
+                            'total_value': final_price * shares,
+                            'strategy': position_data.get('strategy', 'DSSMS_Integrated'),
+                            'reason': 'backtest_end',
+                            'status': 'force_closed',
+                            'pnl': pnl,
+                            'return_pct': (final_price - entry_price) / entry_price if entry_price > 0 else 0.0
+                        }
+                        
+                        final_execution_details.append(exit_detail)
+                        
+                        # cash_balance更新（DSSMSのみ）
+                        self.cash_balance += final_price * shares
+                        
+                        # ログ出力
+                        self.logger.info(
+                            f"[FINAL_CLOSE] {symbol}: {shares}株 @{final_price:.2f}円, "
+                            f"PnL={pnl:+,.0f}円({exit_detail['return_pct']:+.2%})"
+                        )
                     
-                    # デバッグログ追加 (2026-02-05)
-                    self.logger.info(f"\n[DEBUG_PRICE] ========== 銘柄{symbol}の強制決済 ==========")
-                    self.logger.info(f"[DEBUG_PRICE] entry_price: {entry_price}, shares: {shares}")
-                    
-                    # 最終日の終値を取得
-                    final_price = None
-                    stock_data, _ = self._get_symbol_data(symbol, end_date)
-                    
-                    # デバッグログ追加
-                    if stock_data is not None and len(stock_data) > 0:
-                        self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data.shape = {stock_data.shape}")
-                        self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data.index[-5:] = {stock_data.index[-5:].tolist()}")
-                        self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data['Close'].iloc[-5:] = {stock_data['Close'].iloc[-5:].tolist()}")
-                    else:
-                        self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data取得失敗(None or empty)")
-                    
-                    if stock_data is None or len(stock_data) == 0:
-                        # エラーログ出力（フォールバックなし）
+                    except Exception as e:
                         self.logger.error(
-                            f"[FINAL_CLOSE] データ取得失敗: {symbol} - "
-                            f"yfinance APIエラーまたはデータ不足"
+                            f"[FINAL_CLOSE] 強制決済エラー: {symbol}, {e}",
+                            exc_info=True
                         )
-                        # 強制決済レコードは生成するがfinal_priceはentry_priceを使用
-                        # （最悪ケース: PnL=0として決済記録）
-                        final_price = entry_price
-                        
-                        self.logger.info(f"[DEBUG_PRICE] final_price = entry_price: {final_price}")
-                        
-                        self.logger.warning(
-                            f"[FINAL_CLOSE] {symbol}: データ取得失敗のため "
-                            f"entry_price({entry_price:.2f})をfinal_priceとして使用 (PnL=0)"
-                        )
-                    else:
-                        final_price = stock_data['Close'].iloc[-1]
-                        
-                        self.logger.info(f"[DEBUG_PRICE] final_price = Close最終値: {final_price}")
-                        self.logger.info(f"[DEBUG_PRICE] entry_price = {entry_price}")
-                    
-                    # PnL計算
-                    pnl = (final_price - entry_price) * shares
-                    
-                    self.logger.info(f"[DEBUG_PRICE] PnL: {pnl:.2f}円")
-                    self.logger.info(f"[DEBUG_PRICE] ==========================================\n")
-                    
-                    # 決済記録（データ取得失敗でも記録）
-                    exit_detail = {
-                        'timestamp': end_date,
-                        'symbol': symbol,
-                        'action': 'SELL',
-                        'shares': shares,
-                        'price': final_price,
-                        'total_value': final_price * shares,
-                        'strategy': position_data.get('strategy', 'DSSMS_Integrated'),
-                        'reason': 'backtest_end',
-                        'status': 'force_closed',
-                        'pnl': pnl,
-                        'return_pct': (final_price - entry_price) / entry_price if entry_price > 0 else 0.0
-                    }
-                    
-                    final_execution_details.append(exit_detail)
-                    
-                    # cash_balance更新（DSSMSのみ）
-                    self.cash_balance += final_price * shares
-                    
-                    # ログ出力
-                    self.logger.info(
-                        f"[FINAL_CLOSE] {symbol}: {shares}株 @{final_price:.2f}円, "
-                        f"PnL={pnl:+,.0f}円({exit_detail['return_pct']:+.2%})"
-                    )
-                    
-                except Exception as e:
-                    self.logger.error(
-                        f"[FINAL_CLOSE] 強制決済エラー: {symbol}, {e}",
-                        exc_info=True
-                    )
                 
                 # Sprint 2: 全ポジション削除
                 self.positions.clear()
