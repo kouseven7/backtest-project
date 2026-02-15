@@ -914,13 +914,23 @@ class DSSMSIntegratedBacktester:
                 close_stock_data, _ = self._get_symbol_data(force_close_symbol, target_date)
                 if close_stock_data is not None:
                     # force_closeフラグ付きで戦略実行（決済のみ）
-                    # existing_positionにforce_close=Trueを設定
                     if force_close_symbol in self.positions:
-                        # 決済処理実行
+                        # force_close用のexisting_positionを構築
+                        force_close_position = self.positions[force_close_symbol].copy()
+                        force_close_position['force_close'] = True  # 強制決済フラグ
+                        force_close_position['entry_symbol'] = force_close_symbol
+                        self.logger.info(
+                            f"[FORCE_CLOSE] force_close_position構築: "
+                            f"symbol={force_close_symbol}, force_close=True, "
+                            f"entry_price={force_close_position.get('entry_price', 0):.2f}"
+                        )
+                        
+                        # 決済処理実行（force_close_position付き）
                         close_result = self._execute_multi_strategies_daily(
                             target_date, 
                             force_close_symbol, 
-                            close_stock_data
+                            close_stock_data,
+                            force_close_position=force_close_position
                         )
                         
                         # 決済結果をdaily_resultに記録
@@ -929,11 +939,58 @@ class DSSMSIntegratedBacktester:
                                 daily_result['execution_details'] = []
                             daily_result['execution_details'].extend(close_result['execution_details'])
                         
-                        self.logger.info(
-                            f"[FORCE_CLOSE] {force_close_symbol}決済完了: "
-                            f"action={close_result.get('action')}, "
-                            f"price={close_result.get('price', 0):.2f}円"
-                        )
+                        # 決済完了確認（防御的チェック）
+                        if force_close_symbol not in self.positions:
+                            self.logger.info(
+                                f"[FORCE_CLOSE] FIFO決済成功: {force_close_symbol} "
+                                f"削除完了（残り保有数: {len(self.positions)}/{self.max_positions}）"
+                            )
+                        else:
+                            # 戦略がSELLを返さなかった場合: 直接ポジション削除（フォールバック）
+                            self.logger.warning(
+                                f"[FORCE_CLOSE_FALLBACK] 戦略が決済を返さなかったため直接削除: "
+                                f"{force_close_symbol}"
+                            )
+                            # 当日終値で強制決済
+                            try:
+                                close_price = close_stock_data['Adj Close'].iloc[-1]
+                                position = self.positions[force_close_symbol]
+                                shares = position.get('shares', 0)
+                                entry_price = position.get('entry_price', 0)
+                                pnl = (close_price - entry_price) * shares
+                                
+                                # 残高更新
+                                self.cash_balance += close_price * shares
+                                
+                                # execution_details記録
+                                force_detail = {
+                                    'timestamp': target_date.strftime('%Y-%m-%d %H:%M:%S'),
+                                    'symbol': force_close_symbol,
+                                    'action': 'SELL',
+                                    'price': close_price,
+                                    'shares': shares,
+                                    'strategy': position.get('strategy', 'FIFO_FORCE_CLOSE'),
+                                    'signal_strength': -1,
+                                    'reason': 'FIFO強制決済（max_positions到達）',
+                                    'status': 'executed'
+                                }
+                                if 'execution_details' not in daily_result:
+                                    daily_result['execution_details'] = []
+                                daily_result['execution_details'].append(force_detail)
+                                
+                                # ポジション削除
+                                del self.positions[force_close_symbol]
+                                self.logger.info(
+                                    f"[FORCE_CLOSE_FALLBACK] 直接決済完了: "
+                                    f"{force_close_symbol} {shares}株 @{close_price:.2f}円, "
+                                    f"PnL={pnl:+,.0f}円, "
+                                    f"残り保有数: {len(self.positions)}/{self.max_positions}"
+                                )
+                            except Exception as e:
+                                self.logger.error(
+                                    f"[FORCE_CLOSE_FALLBACK_ERROR] 直接決済失敗: "
+                                    f"{force_close_symbol}: {e}"
+                                )
                     else:
                         self.logger.warning(
                             f"[FORCE_CLOSE_ERROR] {force_close_symbol}のポジションが存在しません"
@@ -957,33 +1014,54 @@ class DSSMSIntegratedBacktester:
             # 3. 選択銘柄でのマルチ戦略実行
             # Sprint 2: 新規エントリーまたは既存ポジション継続
             if selected_symbol:
-                # Sprint 2: 選択銘柄でのマルチ戦略実行
-                self.logger.debug(
-                    f"[STRATEGY_EXEC] {selected_symbol}でマルチ戦略実行: "
-                    f"date={target_date.strftime('%Y-%m-%d')}, "
-                    f"switch_executed={switch_result.get('switch_executed', False)}"
-                )
-                
-                # selected_symbolのデータ取得
-                stock_data, _ = self._get_symbol_data(selected_symbol, target_date)
-                if stock_data is not None:
-                    # 確実に日次取引モード使用（重複エントリー防止）
-                    strategy_result = self._execute_multi_strategies_daily(
-                        target_date,
-                        selected_symbol,
-                        stock_data
+                # Sprint 2修正: BUY実行前にmax_positionsチェック（防御的）
+                # 選択銘柄が未保有の場合のみチェック（保有中なら継続判定なのでOK）
+                if selected_symbol not in self.positions and len(self.positions) >= self.max_positions:
+                    self.logger.warning(
+                        f"[SAFETY_CHECK] BUY実行前: "
+                        f"len={len(self.positions)} >= max={self.max_positions}, "
+                        f"selected_symbol={selected_symbol} は未保有 → BUYスキップ"
                     )
-                else:
-                    self.logger.error(
-                        f"[DAILY_TRADING] データ取得失敗: symbol={selected_symbol}, "
-                        f"date={target_date.strftime('%Y-%m-%d')}"
-                    )
+                    # max_positions到達でBUY不可: この日の戦略実行をスキップ
                     strategy_result = {
-                        'status': 'error',
-                        'reason': 'Data unavailable',
+                        'status': 'skipped',
+                        'reason': f'max_positions reached ({len(self.positions)}/{self.max_positions})',
                         'symbol': selected_symbol,
-                        'target_date': target_date
+                        'action': 'hold',
+                        'signal': 0,
+                        'price': 0.0,
+                        'shares': 0
                     }
+                    daily_result['strategy_results'] = strategy_result
+                    # 以下のstrategy実行をスキップ
+                else:
+                    # Sprint 2: 選択銘柄でのマルチ戦略実行
+                    self.logger.debug(
+                        f"[STRATEGY_EXEC] {selected_symbol}でマルチ戦略実行: "
+                        f"date={target_date.strftime('%Y-%m-%d')}, "
+                        f"switch_executed={switch_result.get('switch_executed', False)}"
+                    )
+                    
+                    # selected_symbolのデータ取得
+                    stock_data, _ = self._get_symbol_data(selected_symbol, target_date)
+                    if stock_data is not None:
+                        # 確実に日次取引モード使用（重複エントリー防止）
+                        strategy_result = self._execute_multi_strategies_daily(
+                            target_date,
+                            selected_symbol,
+                            stock_data
+                        )
+                    else:
+                        self.logger.error(
+                            f"[DAILY_TRADING] データ取得失敗: symbol={selected_symbol}, "
+                            f"date={target_date.strftime('%Y-%m-%d')}"
+                        )
+                        strategy_result = {
+                            'status': 'error',
+                            'reason': 'Data unavailable',
+                            'symbol': selected_symbol,
+                            'target_date': target_date
+                        }
                 daily_result['strategy_results'] = strategy_result
                 
                 # Cycle 10-6: cash_balance/position_valueをdaily_resultに引き継ぎ
@@ -2341,7 +2419,7 @@ class DSSMSIntegratedBacktester:
             'source': 'simple_fallback'
         }
     
-    def _execute_multi_strategies_daily(self, target_date: datetime, symbol: str, stock_data) -> Dict[str, Any]:
+    def _execute_multi_strategies_daily(self, target_date: datetime, symbol: str, stock_data, force_close_position: dict = None) -> Dict[str, Any]:
         """
         Phase 3-C 拡張版統合実行 - 市場分析・戦略選択・ポジション管理統合
         
@@ -2352,6 +2430,7 @@ class DSSMSIntegratedBacktester:
             target_date (datetime): 判定対象日
             symbol (str): 対象銘柄コード
             stock_data (pd.DataFrame): 株価データ（ウォームアップ期間含む）
+            force_close_position (dict): FIFO強制決済用ポジション情報（force_close=True含む）。指定時はexisting_positionを上書き。
             
         Returns:
             Dict[str, Any]: {
@@ -2467,7 +2546,23 @@ class DSSMSIntegratedBacktester:
             
             # Phase 3-C Day 12 Task 2-3: existing_position判定ロジック追加
             # Sprint 2修正: self.current_position → self.positions[symbol]
-            if symbol in self.positions:
+            # Fix 2: force_close_positionが渡された場合、existing_positionを上書き
+            if force_close_position is not None:
+                existing_position = {
+                    'entry_idx': force_close_position.get('entry_idx', 0),
+                    'quantity': force_close_position.get('shares', 0),
+                    'entry_price': force_close_position.get('entry_price', 0.0),
+                    'entry_date': force_close_position.get('entry_date', None),
+                    'strategy': force_close_position.get('strategy', best_strategy_name),
+                    'entry_symbol': symbol,
+                    'force_close': True
+                }
+                self.logger.info(
+                    f"[FORCE_CLOSE] existing_position overridden: symbol={symbol}, "
+                    f"entry_price={existing_position['entry_price']:.2f}, "
+                    f"force_close=True"
+                )
+            elif symbol in self.positions:
                 # 既に同じ銘柄でポジション保有中（戦略継続）
                 existing_position = {
                     'entry_idx': self.positions[symbol].get('entry_idx', 0),

@@ -699,6 +699,64 @@ class MomentumInvestingStrategy(BaseStrategy):
                 # Cycle 27修正: entry_symbol_dataをkwargsから取得
                 entry_symbol_data = kwargs.get('entry_symbol_data', None)
                 
+                # Sprint 2修正: force_closeフラグ確認
+                is_force_close = existing_position.get('force_close', False)
+                
+                # データソース選択（force_close時はentry_symbol_data優先）
+                if is_force_close and entry_symbol_data is not None:
+                    data_for_exit = entry_symbol_data
+                    logger.info(
+                        f"[MomentumInvesting_EXIT] force_close=True: entry_symbol_dataを使用 "
+                        f"(rows={len(entry_symbol_data)}, symbol={existing_position.get('entry_symbol', 'Unknown')})"
+                    )
+                else:
+                    data_for_exit = stock_data
+                
+                # ============================================================
+                # Sprint 2修正: force_close強制決済（最優先処理）
+                # ============================================================
+                # 【削除禁止】このブロックは銘柄切替時の旧ポジション決済に必須
+                # 削除すると、ポジションが残り続け、max_positions制約違反となる
+                # ============================================================
+                if is_force_close:
+                    entry_symbol = existing_position.get('entry_symbol', 'Unknown')
+                    entry_price = existing_position.get('entry_price', 0.0)
+                    quantity = existing_position.get('quantity', 0)
+                    
+                    logger.warning(
+                        f"[MOMENTUM_FORCE_CLOSE] FIFO強制決済実行: "
+                        f"symbol={entry_symbol}, entry_price={entry_price:.2f}, "
+                        f"quantity={quantity}, date={current_date.strftime('%Y-%m-%d')}"
+                    )
+                    
+                    # エグジット価格取得（entry_symbol_data優先）
+                    if current_idx + 1 < len(data_for_exit):
+                        exit_price = data_for_exit.iloc[current_idx + 1]['Open']
+                        price_type = "Open (next day)"
+                    else:
+                        exit_price = data_for_exit.iloc[current_idx]['Close']
+                        price_type = "Close (final day)"
+                        logger.warning(
+                            f"[MOMENTUM_FORCE_CLOSE] Final day exit: Close price fallback. "
+                            f"idx={current_idx}, date={current_date.strftime('%Y-%m-%d')}"
+                        )
+                    
+                    if isinstance(exit_price, pd.Series):
+                        exit_price = exit_price.values[0]
+                    
+                    logger.info(
+                        f"[MOMENTUM_FORCE_CLOSE] exit_price={float(exit_price):.2f} ({price_type}), "
+                        f"PnL={(float(exit_price) - entry_price) * quantity:+,.0f}"
+                    )
+                    
+                    return {
+                        'action': 'exit',
+                        'signal': -1,
+                        'price': float(exit_price),
+                        'shares': quantity,
+                        'reason': f'MomentumInvesting: FIFO force_close on {current_date.strftime("%Y-%m-%d")} (max_positions reached)'
+                    }
+                
                 # 最終日チェック
                 if current_idx + 1 >= len(stock_data):
                     # 最終日の場合は当日終値でエグジット（境界条件）
