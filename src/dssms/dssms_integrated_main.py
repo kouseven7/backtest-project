@@ -1937,8 +1937,19 @@ class DSSMSIntegratedBacktester:
                 f"保有銘柄={list(self.positions.keys())}"
             )
             
+            # ===== デバッグログ追加 (2026-02-15) =====
+            self.logger.info(
+                f"[SWITCH_DEBUG] 切替判定: " 
+                f"len(positions)={len(self.positions)}, "
+                f"max_positions={self.max_positions}, "
+                f"selected_symbol={selected_symbol}, "
+                f"positions.keys()={list(self.positions.keys())}"
+            )
+            # ==========================================
+            
             # ケース1: 初回エントリー
             if len(self.positions) == 0:
+                self.logger.info(f"[SWITCH_DEBUG] ケース1実行: 初回エントリー selected_symbol={selected_symbol}")
                 self.logger.info(f"[SWITCH] 初回エントリー: {selected_symbol}")
                 return {
                     'date': target_date.strftime('%Y-%m-%d'),
@@ -1952,6 +1963,7 @@ class DSSMSIntegratedBacktester:
             
             # ケース2: 選択銘柄が既に保有中
             if selected_symbol in self.positions:
+                self.logger.info(f"[SWITCH_DEBUG] ケース2実行: 継続保有 symbol={selected_symbol}")
                 self.logger.debug(
                     f"[SWITCH] 銘柄継続: {selected_symbol} "
                     f"(entry_date={self.positions[selected_symbol].get('entry_date')})"
@@ -1968,6 +1980,11 @@ class DSSMSIntegratedBacktester:
             
             # ケース3: max_positions未満（新規エントリー可能）
             if len(self.positions) < self.max_positions:
+                self.logger.info(
+                    f"[SWITCH_DEBUG] ケース3実行: 新規追加 "
+                    f"len={len(self.positions)} < max={self.max_positions}, "
+                    f"selected_symbol={selected_symbol}"
+                )
                 self.logger.info(
                     f"[SWITCH] 新規エントリー枠あり: {selected_symbol} "
                     f"(現在{len(self.positions)}/{self.max_positions}銘柄)"
@@ -1989,6 +2006,12 @@ class DSSMSIntegratedBacktester:
                 key=lambda x: x[1]['entry_date']
             )
             
+            self.logger.info(
+                f"[SWITCH_DEBUG] ケース4実行: FIFO決済 "
+                f"len={len(self.positions)} >= max={self.max_positions}, "
+                f"oldest_symbol={oldest_symbol}, "
+                f"selected_symbol={selected_symbol}"
+            )
             self.logger.info(
                 f"[SWITCH] max_positions到達、FIFO決済候補: {oldest_symbol} "
                 f"(entry_date={oldest_position['entry_date']}, "
@@ -2530,6 +2553,7 @@ class DSSMSIntegratedBacktester:
             # Cycle 10-10検証: result['action']の実際の値を確認
             self.logger.info(
                 f"[DEBUG_ACTION] result['action']='{result.get('action')}', "
+                f"signal={result.get('signal')}, "
                 f"type={type(result.get('action'))}, "
                 f"symbol={symbol}, target_date={adjusted_target_date.strftime('%Y-%m-%d')}"
             )
@@ -2612,6 +2636,13 @@ class DSSMSIntegratedBacktester:
                         'entry_idx': len(result.get('data', []))  # データ長をidxとして使用
                     }
                     self.logger.info(f"[POSITION_ADD] {symbol}: {result['shares']}株を追加（保有数: {len(self.positions)}/{self.max_positions}）")
+                    # ===== デバッグログ追加 (2026-02-15) =====
+                    self.logger.info(
+                        f"[POSITION_DEBUG] BUY後: {adjusted_target_date.strftime('%Y-%m-%d')}, "
+                        f"len(positions)={len(self.positions)}, "
+                        f"保有銘柄={list(self.positions.keys())}"
+                    )
+                    # ==========================================
                     
                     self.logger.info(
                         f"[PORTFOLIO_TRADE] BUY執行: {symbol} {result['shares']}株 @ {result['price']:.2f}円, "
