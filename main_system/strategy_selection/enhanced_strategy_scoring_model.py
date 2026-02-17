@@ -182,6 +182,7 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
                                         strategy_name: str, 
                                         ticker: str,
                                         market_data: pd.DataFrame = None,
+                                        market_analysis: Dict[str, Any] = None,
                                         use_trend_validation: bool = True,
                                         integration_method: str = "adaptive") -> StrategyScore:
         """
@@ -199,7 +200,10 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
         """
         try:
             # 基本スコアの計算
-            base_score = self.calculate_strategy_score(strategy_name, ticker, market_data)
+            base_score = self.calculate_strategy_score(
+                strategy_name, ticker, market_data,
+                trend_context=market_analysis
+            )
             # Phase 5-A-11デバッグ: base_scoreの型と値を確認
             logger.debug(f"[ENHANCED_DEBUG] base_score type: {type(base_score)}, value: {base_score}")
             if not base_score:

@@ -287,6 +287,15 @@ class DynamicStrategySelector:
         # tickerを取得（market_analysisまたはstock_dataから）
         ticker = market_analysis.get('ticker', 'UNKNOWN')
         
+        # DEBUG: 市場レジーム情報をログ出力
+        regime = market_analysis.get('market_regime', 'UNKNOWN')
+        trend_strength = market_analysis.get('trend_strength', 'UNKNOWN')
+        self.logger.info(
+            f"[DEBUG_REGIME] Ticker: {ticker}, "
+            f"Regime: {regime}, "
+            f"Trend_strength: {trend_strength}"
+        )
+        
         for strategy_name in self.available_strategies:
             try:
                 # calculate_enhanced_strategy_score(strategy_name, ticker, market_data)
@@ -294,6 +303,7 @@ class DynamicStrategySelector:
                     strategy_name=strategy_name,
                     ticker=ticker,
                     market_data=stock_data,
+                    market_analysis=market_analysis,
                     use_trend_validation=True,
                     integration_method="adaptive"
                 )
