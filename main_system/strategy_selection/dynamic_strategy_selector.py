@@ -202,7 +202,7 @@ class DynamicStrategySelector:
             # 修正: スコア計算結果の詳細ログ出力（デバッグ用）
             self.logger.info(f"[SCORE_DETAIL] Strategy scores calculated for {ticker}:")
             for strategy_name, score in strategy_scores.items():
-                self.logger.info(f"  - {strategy_name}: {score:.4f}")
+                self.logger.info(f"[SCORE_DETAIL]   - {strategy_name}: {score:.4f}")
             
             # 2. 市場レジームベース戦略選択
             selected_strategies = self._select_strategies_by_regime(
@@ -218,7 +218,7 @@ class DynamicStrategySelector:
             # 修正: 選択結果の詳細ログ出力
             self.logger.info(f"[SELECTION_RESULT] Selected {len(selected_strategies)} strategies for {ticker}:")
             for strategy in selected_strategies:
-                self.logger.info(f"  - {strategy} (score: {strategy_scores[strategy]:.4f})")
+                self.logger.info(f"[SELECTION_RESULT]   - {strategy} (score: {strategy_scores[strategy]:.4f})")
             
             # 3. 戦略重み計算
             strategy_weights = self._calculate_strategy_weights(strategy_scores, selected_strategies)

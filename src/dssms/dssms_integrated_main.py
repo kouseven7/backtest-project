@@ -226,7 +226,6 @@ class DSSMSIntegratedBacktester:
                 'max_switch_cost_rate': 0.05
             }
             
-            self._setup_file_logging()
             
             # Task 1実装 (2026-01-13): __init__()でコンポーネント初期化を実行
             # 理由: 完全版SymbolSwitchManagerを確実にロードするため
@@ -292,31 +291,61 @@ class DSSMSIntegratedBacktester:
         """RiskManagement確保(パブリックアクセス用)"""
         return self._initialize_risk_management()
 
-    def _setup_file_logging(self):
-        """
-        Enhanced Logger Managerを使用してファイルロギング設定
-        自動ログローテーション・圧縮機能付き
+    def _setup_file_logging(self, output_dir: str = None, run_id: str = None):
+        '''
+        詳細ログ出力を設定
+        
+        戦略選択・市場分析・FIFO決済の詳細ログをファイル出力します。
+        
+        Args:
+            output_dir: ログ出力ディレクトリ(省略時はデフォルト)
+            run_id: 実行ID(省略時は自動生成)
         
         Returns:
             None
-        """
+        '''
         if self._file_logging_initialized:
             return
         
         try:
-            # Enhanced Logger Managerを使用（ログローテーション・圧縮対応）
-            from src.utils.logger_setup import get_logger_manager
+            # 2026-02-15改善: 詳細戦略ログ機能を使用
+            from config.logger_config import setup_detailed_strategy_logger
             
-            logger_manager = get_logger_manager()
-            self.logger = logger_manager.get_strategy_logger("DSSMS_Integrated")
+            # output_dirが指定されていない場合はデフォルト
+            if output_dir is None:
+                from datetime import datetime
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                output_dir = f"output/dssms_integration/dssms_{timestamp}"
+            
+            # run_idが指定されていない場合は出力ディレクトリから抽出
+            if run_id is None:
+                import os
+                run_id = os.path.basename(output_dir).replace('dssms_', '')
+            
+            # 詳細ログ設定(戦略選択、市場分析、FIFO決済を自動ファイル出力)
+            self.logger = setup_detailed_strategy_logger(
+                "DSSMS_Integrated",
+                output_dir,
+                run_id=run_id,
+                enable_console=True
+            )
             
             self._file_logging_initialized = True
-            self.logger.info("Enhanced Logger Manager初期化完了（ログローテーション・圧縮機能有効）")
+            self.logger.info("詳細戦略ログ初期化完了（戦略選択・市場分析・FIFO決済ログ有効）")
             
         except Exception as e:
-            # フォールバック: 基本ロガー使用
-            self.logger.warning(f"Enhanced Logger Manager初期化失敗: {e}, 基本ロガー使用")
-            self._file_logging_initialized = True  # 再試行を防ぐ
+            # フォールバック: 従来のEnhanced Logger Manager使用
+            self.logger.warning(f"詳細戦略ログ初期化失敗: {e}, Enhanced Logger Managerにフォールバック")
+            try:
+                from src.utils.logger_setup import get_logger_manager
+                logger_manager = get_logger_manager()
+                self.logger = logger_manager.get_strategy_logger("DSSMS_Integrated")
+                self._file_logging_initialized = True
+                self.logger.info("Enhanced Logger Manager初期化完了（ログローテーション・圧縮機能有効）")
+            except Exception as e2:
+                # 最終フォールバック: 基本ロガー
+                self.logger.warning(f"Enhanced Logger Manager初期化も失敗: {e2}, 基本ロガー使用")
+                self._file_logging_initialized = True
 
     def _initialize_components(self):
         if not self._components_initialized:
@@ -637,6 +666,13 @@ class DSSMSIntegratedBacktester:
             # 修正案A: バックテスト開始日を保存(累積期間方式用)
             self.dssms_backtest_start_date = start_date
             
+            # 2026-02-15修正: run_idを動的に生成してバックテストごとに新ファイル作成
+            from config.logger_config import add_detailed_handlers_to_existing_loggers
+            from datetime import datetime
+            current_run_id = datetime.now().strftime('%Y%m%d_%H%M%S')
+            temp_output_dir = f"output/dssms_integration/backtest_{current_run_id}"
+            add_detailed_handlers_to_existing_loggers(temp_output_dir, current_run_id) 
+
             if target_symbols:
                 self._warm_fundamental_cache(target_symbols)
             
@@ -942,7 +978,7 @@ class DSSMSIntegratedBacktester:
                         # 決済完了確認（防御的チェック）
                         if force_close_symbol not in self.positions:
                             self.logger.info(
-                                f"[FORCE_CLOSE] FIFO決済成功: {force_close_symbol} "
+                                f"[FIFO_EXIT] FIFO決済成功: {force_close_symbol} "
                                 f"削除完了（残り保有数: {len(self.positions)}/{self.max_positions}）"
                             )
                         else:
@@ -981,7 +1017,7 @@ class DSSMSIntegratedBacktester:
                                 # ポジション削除
                                 del self.positions[force_close_symbol]
                                 self.logger.info(
-                                    f"[FORCE_CLOSE_FALLBACK] 直接決済完了: "
+                                    f"[FIFO_DETAIL] 直接決済完了: "
                                     f"{force_close_symbol} {shares}株 @{close_price:.2f}円, "
                                     f"PnL={pnl:+,.0f}円, "
                                     f"残り保有数: {len(self.positions)}/{self.max_positions}"
@@ -2091,7 +2127,7 @@ class DSSMSIntegratedBacktester:
                 f"selected_symbol={selected_symbol}"
             )
             self.logger.info(
-                f"[SWITCH] max_positions到達、FIFO決済候補: {oldest_symbol} "
+                f"[FIFO_EXIT] max_positions到達、FIFO決済候補: {oldest_symbol} "
                 f"(entry_date={oldest_position['entry_date']}, "
                 f"strategy={oldest_position.get('strategy', 'unknown')})"
             )
@@ -2113,7 +2149,7 @@ class DSSMSIntegratedBacktester:
             if should_switch:
                 # 銘柄切替実行（force_closeフラグ付き）
                 self.logger.warning(
-                    f"[SWITCH] 銘柄切替実行: {oldest_symbol} -> {selected_symbol} "
+                    f"[FIFO_EXIT] 銘柄切替実行: {oldest_symbol} -> {selected_symbol} "
                     f"(FIFO決済, entry_date={oldest_position['entry_date']})"
                 )
                 
@@ -3725,7 +3761,7 @@ class DSSMSIntegratedBacktester:
             # DSSMS専用出力先ディレクトリ設定
             output_dir = Path(f"output/dssms_integration/dssms_{timestamp}")
             output_dir.mkdir(parents=True, exist_ok=True)
-            
+                        
             self.logger.info(f"[DSSMS_OUTPUT] DSSMS専用10ファイル生成開始: {output_dir}")
             
             # 1. dssms_comprehensive_report.json - 包括分析レポート

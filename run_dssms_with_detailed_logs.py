@@ -175,15 +175,18 @@ def main():
     
     try:
         # DSSMS実行
-        from src.dssms.dssms_integrated_main import DSSIntegratedBacktester
+        from src.dssms.dssms_integrated_main import DSSMSIntegratedBacktester
+        from datetime import datetime
         
-        backtester = DSSIntegratedBacktester(
-            dssms_backtest_start_date=args.start_date,
-            dssms_backtest_end_date=args.end_date,
-            initial_cash=1000000
+        backtester = DSSMSIntegratedBacktester()
+        
+        start_dt = datetime.strptime(args.start_date, '%Y-%m-%d')
+        end_dt = datetime.strptime(args.end_date, '%Y-%m-%d')
+        
+        results = backtester.run_dynamic_backtest(
+            start_date=start_dt,
+            end_date=end_dt
         )
-        
-        backtester.run_full_backtest()
         
         print("\nバックテスト完了")
         print("="* 80)
