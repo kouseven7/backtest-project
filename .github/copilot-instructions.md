@@ -365,6 +365,71 @@ grep "\[WARMUP_SKIP\]" output/dssms_integration/dssms_*/dssms_execution_log.txt
 
 ---
 
+## 🔍 **BUY/SELLペアリング価格混線バグ（2026-02-17修正済み）**
+
+**症状**: `all_transactions.csv`で異なる銘柄の価格が混線し、PnLが±200,000円超の異常値になる（特に強制決済時）
+
+**具体例**:
+- 8233 (高島屋): entry=1,253円 → exit=**4,097円** (実際は1,264円) → PnL=+284,325円 (異常)
+- 6301 (日本製鋼): entry=4,224円 → exit=**1,264円** (実際は4,350円) → PnL=-296,022円 (異常)
+
+**原因**: `_convert_execution_details_to_trades()` の `buy_stack` が全銘柄共通スタックで、銘柄チェックなしでBUY/SELLをペアリング
+
+**問題コード**:
+```python
+# バグあり: 全銘柄共通スタック
+buy_stack = []
+for order in all_orders:
+    if order['action'] == 'BUY':
+        buy_stack.append(order)
+    elif order['action'] == 'SELL':
+        buy_order = buy_stack.pop(0)  # 銘柄チェックなし！
+```
+
+**修正コード**:
+```python
+# 修正済み: 銘柄別スタック管理
+buy_stacks = {}  # {symbol: [buy_orders]}
+for order in all_orders:
+    symbol = order.get('symbol', '')
+    if order['action'] == 'BUY':
+        if symbol not in buy_stacks:
+            buy_stacks[symbol] = []
+        buy_stacks[symbol].append(order)
+    elif order['action'] == 'SELL':
+        if symbol in buy_stacks and buy_stacks[symbol]:
+            buy_order = buy_stacks[symbol].pop(0)  # 同銘柄のみマッチング
+```
+
+**修正内容**:
+- ファイル: `src/dssms/dssms_integrated_main.py` (Line 4346-4449)
+- コミット: `05e6ffcc8ffb24d34ae5b99ed6efd413224e71e5`
+- 変更行数: 89行修正
+
+**検証方法**:
+```bash
+# [TRADE_MATCH]ログで銘柄が一致しているか確認
+grep "\[TRADE_MATCH\]" output/dssms_integration/dssms_*/logs/*.log
+
+# all_transactions.csvでPnLが異常値でないか確認
+# ±200,000円以上は要注意
+```
+
+**新規追加ログ**:
+```
+[TRADE_MATCH] 8233: BUY@1253.75(2024-12-06) -> SELL@1264.00(2024-12-31)
+[TRADE_MATCH] 6301: BUY@4224.22(2024-12-12) -> SELL@4097.00(2024-12-18)
+[TRADE_MATCH] 6301: BUY@4266.26(2024-12-25) -> SELL@4350.00(2024-12-31)
+```
+
+**関連ドキュメント**:
+- `docs/investigation/20251211_git_history_investigation_report.md` (過去の類似症状)
+- `docs/CYCLE10-9_SWITCH_FORCE_CLOSE_INVESTIGATION.md` (銘柄切替時の問題)
+
+**重要**: 同一銘柄の複数ポジション保有時に、このバグが顕著に現れる。[TRADE_MATCH]ログで必ず銘柄一致を確認すること。
+
+---
+
 ## ✅ **BUY/SELL処理実装チェックリスト**
 
 新しいBUY/SELL処理を実装する際は、以下のチェックリストを必ず確認すること。
