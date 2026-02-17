@@ -4340,17 +4340,22 @@ class DSSMSIntegratedBacktester:
             
             all_orders.sort(key=lambda x: x.get('timestamp', datetime.min))
             
-            # FIFO ペアリング（銘柄横断）
-            buy_stack = []
+            # FIFO ペアリング（銘柄別管理）
+            buy_stacks = {}  # {symbol: [buy_orders]}
             trades = []
             
             for order in all_orders:
                 action = order.get('action', '').upper()
+                symbol = order.get('symbol', order.get('ticker', ''))
+                
                 if action == 'BUY':
-                    buy_stack.append(order)
+                    if symbol not in buy_stacks:
+                        buy_stacks[symbol] = []
+                    buy_stacks[symbol].append(order)
+                    
                 elif action == 'SELL':
-                    if buy_stack:  # ペアリング可能
-                        buy_order = buy_stack.pop(0)  # FIFO
+                    if symbol in buy_stacks and buy_stacks[symbol]:  # ペアリング可能
+                        buy_order = buy_stacks[symbol].pop(0)  # FIFO (同銘柄のみ)
                         
                         # 取引レコード作成
                         entry_date = buy_order.get('timestamp', '')
@@ -4364,6 +4369,19 @@ class DSSMSIntegratedBacktester:
                         
                         # SELLのexecution_detailから価格取得（跨銘柄切替でも同様）
                         exit_price = order.get('executed_price', order.get('price', 0.0))
+                        
+                        # ペアリング成功ログ
+                        self.logger.info(
+                            f"[TRADE_MATCH] {symbol}: "
+                            f"BUY@{entry_price:.2f}({entry_date}) "
+                            f"-> SELL@{exit_price:.2f}({exit_date})"
+                        )
+                        # ペアリング成功ログ
+                        self.logger.info(
+                            f"[TRADE_MATCH] {symbol}: "
+                            f"BUY@{entry_price:.2f}({entry_date}) "
+                            f"-> SELL@{exit_price:.2f}({exit_date})"
+                        )
                         
                         if buy_symbol != sell_symbol:
                             # 跨銘柄切替: ログ記録のみ
@@ -4418,36 +4436,43 @@ class DSSMSIntegratedBacktester:
                                 self.logger.info(f"[TRADE_CONVERSION] 銘柄切替取引: {buy_symbol}(BUY) -> {sell_symbol}(SELL), PnL={pnl:,.0f}円")
                             else:
                                 self.logger.info(f"[TRADE_CONVERSION] 通常取引: {display_symbol}, PnL={pnl:,.0f}円")
+                    else:
+                        # ペアリング失敗（対応するBUYがない）
+                        self.logger.warning(
+                            f"[TRADE_MATCH] {symbol}: "
+                            f"対応するBUY注文が見つかりません (SELL日:{order.get('timestamp','?')})"
+                        )
             
             # 未決済BUY注文処理
-            for buy in buy_stack:
-                entry_date = buy.get('timestamp', '')
-                entry_price = buy.get('executed_price', buy.get('price', 0.0))
-                shares = buy.get('quantity', buy.get('shares', 0))
-                strategy_name = buy.get('strategy_name', buy.get('strategy', ''))
-                symbol = buy.get('symbol', '')
-                
-                if entry_price > 0 and shares > 0:
-                    position_value = entry_price * shares
+            for symbol, symbol_buy_stack in buy_stacks.items():
+                for buy in symbol_buy_stack:
+                    entry_date = buy.get('timestamp', '')
+                    entry_price = buy.get('executed_price', buy.get('price', 0.0))
+                    shares = buy.get('quantity', buy.get('shares', 0))
+                    strategy_name = buy.get('strategy_name', buy.get('strategy', ''))
+                    symbol = buy.get('symbol', '')
                     
-                    # 未決済取引レコード作成
-                    trade_record = {
-                        'symbol': symbol,
-                        'entry_date': entry_date,
-                        'entry_price': entry_price,
-                        'exit_date': '',  # 未決済
-                        'exit_price': 0.0,  # 未決済
-                        'shares': shares,
-                        'pnl': 0.0,  # 未決済のためPnL未確定
-                        'return_pct': 0.0,  # 未決済のため収益率未確定
-                        'holding_period_days': 0,
-                        'strategy_name': strategy_name,
-                        'position_value': position_value,
-                        'is_forced_exit': False
-                    }
-                    
-                    trades.append(trade_record)
-                    self.logger.info(f"[TRADE_CONVERSION] 未決済BUY注文を取引レコードに追加: {symbol} {shares}株 @ {entry_price}")
+                    if entry_price > 0 and shares > 0:
+                        position_value = entry_price * shares
+                        
+                        # 未決済取引レコード作成
+                        trade_record = {
+                            'symbol': symbol,
+                            'entry_date': entry_date,
+                            'entry_price': entry_price,
+                            'exit_date': '',  # 未決済
+                            'exit_price': 0.0,  # 未決済
+                            'shares': shares,
+                            'pnl': 0.0,  # 未決済のためPnL未確定
+                            'return_pct': 0.0,  # 未決済のため収益率未確定
+                            'holding_period_days': 0,
+                            'strategy_name': strategy_name,
+                            'position_value': position_value,
+                            'is_forced_exit': False
+                        }
+                        
+                        trades.append(trade_record)
+                        self.logger.info(f"[TRADE_CONVERSION] 未決済BUY注文を取引レコードに追加: {symbol} {shares}株 @ {entry_price}")
             
             self.logger.info(f"[TRADE_CONVERSION] BUY={len([o for o in all_orders if o.get('action', '').upper() == 'BUY'])}, SELL={len([o for o in all_orders if o.get('action', '').upper() == 'SELL'])}")
             self.logger.info(f"[TRADE_CONVERSION] 生成された取引レコード: {len(trades)}件")
