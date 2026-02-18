@@ -1050,6 +1050,35 @@ class DSSMSIntegratedBacktester:
             # 3. 選択銘柄でのマルチ戦略実行
             # Sprint 2: 新規エントリーまたは既存ポジション継続
             if selected_symbol:
+                print(f"DEBUG positions={list(self.positions.keys())} selected={selected_symbol} date={target_date.strftime('%Y-%m-%d')}", flush=True)
+                # ============================================================
+                # 保有中銘柄のエグジットチェック（毎日・全保有銘柄を評価）
+                # selected_symbol以外の保有銘柄もストップロス等を毎日確認する
+                # ============================================================
+                for held_symbol in list(self.positions.keys()):
+                    held_stock_data, _ = self._get_symbol_data(held_symbol, target_date)
+                    if held_stock_data is None or held_stock_data.empty:
+                        self.logger.warning(
+                            f"[EXIT_CHECK] {held_symbol}: データ取得失敗のためエグジットチェックをスキップ"
+                        )
+                        continue
+                    
+                    # エグジットチェックのみ実行（エントリーは行わない）
+                    # force_close_position=Noneで通常のエグジット条件（ストップロス等）を評価させる
+                    exit_check_result = self._execute_multi_strategies_daily(
+                        target_date,
+                        held_symbol,
+                        held_stock_data,
+                        force_close_position=None
+                    )
+                    
+                    self.logger.info(
+                        f"[EXIT_CHECK] {held_symbol}: action={exit_check_result.get('action', 'hold')}"
+                    )
+                # ============================================================
+                # 保有中銘柄エグジットチェック ここまで
+                # ============================================================
+                
                 # Sprint 2修正: BUY実行前にmax_positionsチェック（防御的）
                 # 選択銘柄が未保有の場合のみチェック（保有中なら継続判定なのでOK）
                 if selected_symbol not in self.positions and len(self.positions) >= self.max_positions:
@@ -2736,6 +2765,11 @@ class DSSMSIntegratedBacktester:
             # Phase 3-C Stage 2: execution_details生成（DSSMS取引0件問題修正）
             execution_details = []
             position_update = {'return': 0, 'cost': 0}
+            self.logger.info(
+                f"[CONDITION_CHECK] date={adjusted_target_date.strftime('%Y-%m-%d')}, "
+                f"symbol={symbol}, action={result['action']}, signal={result['signal']}, "
+                f"passes_condition={result['action'] in ['buy', 'sell'] and result['signal'] != 0}"
+            )
             if result['action'] in ['buy', 'sell'] and result['signal'] != 0:
                 # backtest_daily()の結果をexecution_details形式に変換
                 execution_detail = {
