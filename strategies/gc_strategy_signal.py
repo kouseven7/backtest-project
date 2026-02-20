@@ -450,9 +450,11 @@ class GCStrategy(BaseStrategy):
     
         # 4. 損切り
         stop_loss_price = entry_price * (1 - self.params.get("stop_loss", 0.03))
+        # デバッグ: stop loss評価を常にログ出力
+        self.logger.info(f"[STOP_LOSS_CHECK] idx={idx}, date={self.data.index[idx]}, entry_price={entry_price:.2f}, current_price={current_price:.2f}, stop_loss_price={stop_loss_price:.2f}, triggered={current_price <= stop_loss_price}")
         if current_price <= stop_loss_price:
-            self.logger.info(f"損切りによるイグジット: 日付={self.data.index[idx]}")
-            self.logger.debug(f"[EXIT REASON] Stop Loss: {current_price:.2f} (next_day_open) <= {stop_loss_price:.2f}")
+            self.logger.warning(f"【損切り発動】損切りによるイグジット: 日付={self.data.index[idx]}")
+            self.logger.warning(f"[EXIT REASON] Stop Loss: {current_price:.2f} (next_day_open) <= {stop_loss_price:.2f}")
             return (-1, 'stop_loss')
     
         # 5. 最大保有期間

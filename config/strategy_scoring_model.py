@@ -415,7 +415,7 @@ class StrategyScoreCalculator:
                 try:
                     detector = UnifiedTrendDetector(market_data, strategy_name=strategy_name)
                     current_trend = detector.detect_trend()
-                    trend_strength = detector.get_trend_confidence()
+                    trend_strength = detector.get_confidence_score()
                 except Exception as e:
                     logger.warning(f"Failed to detect trend using UnifiedTrendDetector: {e}")
                     current_trend = 'neutral'

@@ -300,15 +300,15 @@ class StrategySelector:
             
             # トレンド判定
             trend = trend_detector.detect_trend()
-            confidence = trend_detector.get_confidence()
-            trend_strength = trend_detector.get_trend_strength()
+            confidence = trend_detector.get_confidence_score()
+            trend_strength = confidence  # get_confidence_score()を強度として使用
             
             # 詳細分析
             trend_analysis = {
                 "trend": trend,
                 "confidence": confidence,
                 "strength": trend_strength,
-                "reliability": trend_detector.get_reliability_score(),
+                "reliability": confidence,  # get_confidence_score()を信頼度として使用
                 "volatility": self._calculate_volatility(market_data),
                 "momentum": self._calculate_momentum(market_data),
                 "analysis_timestamp": datetime.now(),

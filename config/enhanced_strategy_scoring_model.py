@@ -68,6 +68,19 @@ except ImportError as e:
         def __init__(self):
             pass
 
+# トレンド信頼度ユーティリティのインポート
+try:
+    from src.indicators.trend_reliability_utils import get_trend_reliability_for_strategy
+except ImportError:
+    try:
+        from indicators.trend_reliability_utils import get_trend_reliability_for_strategy
+    except ImportError as e:
+        logger = logging.getLogger(__name__)
+        logger.warning(f"trend_reliability_utils import error: {e}. Enhanced trend features disabled.")
+        # フォールバック関数
+        def get_trend_reliability_for_strategy(data, strategy_name, **kwargs):
+            return {"confidence_score": 0.5, "is_reliable": False, "error": "Import failed"}
+
 # ロガーの設定
 logger = logging.getLogger(__name__)
 
