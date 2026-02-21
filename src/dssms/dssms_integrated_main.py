@@ -1047,37 +1047,49 @@ class DSSMSIntegratedBacktester:
                     f"[SWITCH] 銘柄切替実行: {switch_result.get('from_symbol')} -> {selected_symbol}"
                 )
             
+            # ============================================================
+            # 保有中銘柄のエグジットチェック（毎日・全保有銘柄を評価）
+            # 修正 (2026-02-20): selected_symbolの有無に関わらず毎日実行
+            # 理由: selected_symbol=Noneでも既存ポジションのstop loss等を確認する必要がある
+            # ============================================================
+            for held_symbol in list(self.positions.keys()):
+                held_stock_data, _ = self._get_symbol_data(held_symbol, target_date)
+                if held_stock_data is None or held_stock_data.empty:
+                    self.logger.warning(
+                        f"[EXIT_CHECK] {held_symbol}: データ取得失敗のためエグジットチェックをスキップ"
+                    )
+                    continue
+                
+                # エグジットチェックのみ実行（エントリーは行わない）
+                # force_close_position=Noneで通常のエグジット条件（ストップロス等）を評価させる
+                exit_check_result = self._execute_multi_strategies_daily(
+                    target_date,
+                    held_symbol,
+                    held_stock_data,
+                    force_close_position=None
+                )
+                
+                self.logger.info(
+                    f"[EXIT_CHECK] {held_symbol}: action={exit_check_result.get('action', 'hold')}"
+                )
+                
+                # 修正 (2026-02-20): EXIT_CHECKの結果をdaily_resultに記録
+                # 理由: エグジット判定でSELLが返されても、execution_detailsに記録されず未完了取引になっていた
+                if 'execution_details' in exit_check_result and exit_check_result['execution_details']:
+                    if 'execution_details' not in daily_result:
+                        daily_result['execution_details'] = []
+                    daily_result['execution_details'].extend(exit_check_result['execution_details'])
+                    self.logger.info(
+                        f"[EXIT_CHECK_RECORD] {held_symbol}: {len(exit_check_result['execution_details'])}件のexecution_detailsを記録"
+                    )
+            # ============================================================
+            # 保有中銘柄エグジットチェック ここまで
+            # ============================================================
+            
             # 3. 選択銘柄でのマルチ戦略実行
             # Sprint 2: 新規エントリーまたは既存ポジション継続
             if selected_symbol:
                 print(f"DEBUG positions={list(self.positions.keys())} selected={selected_symbol} date={target_date.strftime('%Y-%m-%d')}", flush=True)
-                # ============================================================
-                # 保有中銘柄のエグジットチェック（毎日・全保有銘柄を評価）
-                # selected_symbol以外の保有銘柄もストップロス等を毎日確認する
-                # ============================================================
-                for held_symbol in list(self.positions.keys()):
-                    held_stock_data, _ = self._get_symbol_data(held_symbol, target_date)
-                    if held_stock_data is None or held_stock_data.empty:
-                        self.logger.warning(
-                            f"[EXIT_CHECK] {held_symbol}: データ取得失敗のためエグジットチェックをスキップ"
-                        )
-                        continue
-                    
-                    # エグジットチェックのみ実行（エントリーは行わない）
-                    # force_close_position=Noneで通常のエグジット条件（ストップロス等）を評価させる
-                    exit_check_result = self._execute_multi_strategies_daily(
-                        target_date,
-                        held_symbol,
-                        held_stock_data,
-                        force_close_position=None
-                    )
-                    
-                    self.logger.info(
-                        f"[EXIT_CHECK] {held_symbol}: action={exit_check_result.get('action', 'hold')}"
-                    )
-                # ============================================================
-                # 保有中銘柄エグジットチェック ここまで
-                # ============================================================
                 
                 # Sprint 2修正: BUY実行前にmax_positionsチェック（防御的）
                 # 選択銘柄が未保有の場合のみチェック（保有中なら継続判定なのでOK）
