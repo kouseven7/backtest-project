@@ -66,6 +66,8 @@ class BreakoutStrategy(BaseStrategy):
         条件:
         - 前日高値を上抜けた場合
         - 出来高が前日比で20%増加している
+        
+        Issue調査報告20260210修正: ウォームアップ期間フィルタリング追加
 
         Parameters:
             idx (int): 現在のインデックス
@@ -73,6 +75,33 @@ class BreakoutStrategy(BaseStrategy):
         Returns:
             int: エントリーシグナル（1: エントリー, 0: なし）
         """
+        # ウォームアップ期間フィルタリング（Issue調査報告20260210対応）
+        if hasattr(self, 'trading_start_date') and self.trading_start_date is not None:
+            try:
+                current_date_at_idx = self.data.index[idx]
+                # pd.Timestampに変換して比較
+                if not isinstance(current_date_at_idx, pd.Timestamp):
+                    current_date_at_idx = pd.Timestamp(current_date_at_idx)
+                if not isinstance(self.trading_start_date, pd.Timestamp):
+                    trading_start_ts = pd.Timestamp(self.trading_start_date)
+                else:
+                    trading_start_ts = self.trading_start_date
+                
+                # タイムゾーン統一
+                if current_date_at_idx.tz is not None:
+                    current_date_at_idx = current_date_at_idx.tz_localize(None)
+                if trading_start_ts.tz is not None:
+                    trading_start_ts = trading_start_ts.tz_localize(None)
+                
+                if current_date_at_idx < trading_start_ts:
+                    self.logger.debug(
+                        f"[WARMUP_SKIP] ウォームアップ期間のためエントリースキップ: "
+                        f"{current_date_at_idx.strftime('%Y-%m-%d')} < {trading_start_ts.strftime('%Y-%m-%d')}"
+                    )
+                    return 0  # エントリー禁止
+            except Exception as e:
+                self.logger.warning(f"[WARMUP_FILTER_ERROR] trading_start_date比較エラー: {e}")
+        
         look_back = self.params["look_back"]
         
         # Cycle 20デバッグログ追加
@@ -268,7 +297,7 @@ class BreakoutStrategy(BaseStrategy):
 
         return self.data
 
-    def backtest_daily(self, current_date, stock_data, existing_position=None, **kwargs):
+    def backtest_daily(self, current_date, stock_data, existing_position=None, trading_start_date=None, **kwargs):
         """
         BreakoutStrategy 日次バックテスト実行
         
@@ -304,6 +333,11 @@ class BreakoutStrategy(BaseStrategy):
         """
         import logging
         logger = logging.getLogger(__name__)
+        
+        # Issue調査報告20260210修正: trading_start_dateを保存（generate_entry_signal()で使用）
+        self.trading_start_date = trading_start_date
+        if trading_start_date is not None:
+            logger.info(f"[WARMUP_FILTER] trading_start_date設定: {trading_start_date.strftime('%Y-%m-%d') if hasattr(trading_start_date, 'strftime') else trading_start_date}")
         
         # Cycle 20: 関数呼び出し確認用print()
         if os.getenv("DEBUG_BACKTEST"):
@@ -434,6 +468,33 @@ class BreakoutStrategy(BaseStrategy):
         Cycle 27修正: entry_symbol_data対応
         - force_close時（entry_symbol_data提供時）は元の銘柄のデータでエグジット価格を取得
         - 通常時は現在の銘柄（stock_data）でエグジット価格を取得
+        
+        Sprint 1.5修正 (2026-02-09): force_close強制決済実装
+        - force_close=True の場合、エグジット条件に関わらず強制決済
+        - 銘柄切替時の旧ポジション自動決済を保証
+        
+        Parameters:
+            current_idx: 現在のインデックス
+            existing_position: 既存ポジション情報
+                {
+                    'entry_idx': int,
+                    'quantity': int,
+                    'entry_price': float,
+                    'entry_date': datetime,
+                    'force_close': bool,         # Sprint 1.5: 強制決済フラグ
+                    'entry_symbol': str          # Cycle 7: エントリー銘柄コード
+                }
+            stock_data: 現在の銘柄データ
+            current_date: 判定日時
+            entry_symbol_data: force_close時の元の銘柄データ（オプション）
+        
+        Returns:
+            dict: {'action': 'exit'|'hold', 'signal': -1|0, 'price': float, 'shares': int, 'reason': str}
+        
+        Note:
+            - copilot-instructions.md準拠（ルックアヘッドバイアス防止、フォールバック制限）
+            - force_close=True の場合、エグジット条件判定をスキップして強制決済
+            - 最終日フォールバックは限定的使用（copilot-instructions.md Section 68-73準拠）
         """
         import logging
         logger = logging.getLogger(__name__)
@@ -448,9 +509,13 @@ class BreakoutStrategy(BaseStrategy):
             # Cycle 27修正: force_close時はentry_symbol_dataを使用
             if is_force_close and entry_symbol_data is not None:
                 data_for_exit = entry_symbol_data
-                logger.info(f"[BREAKOUT_EXIT] force_close=True: entry_symbol_dataを使用（{len(entry_symbol_data)}行）")
+                logger.info(
+                    f"[BREAKOUT_EXIT] force_close=True: entry_symbol_dataを使用 "
+                    f"(rows={len(entry_symbol_data)}, symbol={existing_position.get('entry_symbol', 'Unknown')})"
+                )
             else:
                 data_for_exit = stock_data
+                logger.debug(f"[BREAKOUT_EXIT] force_close={is_force_close}: stock_dataを使用")
             
             if entry_price == 0:
                 return {
@@ -461,6 +526,77 @@ class BreakoutStrategy(BaseStrategy):
                     'reason': 'Breakout: Invalid entry price in existing_position'
                 }
             
+            # ============================================================
+            # Sprint 1.5修正: force_close強制決済（最優先処理）
+            # ============================================================
+            # 【削除禁止】このブロックは銘柄切替時の旧ポジション決済に必須
+            # 削除すると、ポジションが残り続け、all_transactions.csvが不完全になる
+            # 参照: MULTI_POSITION_IMPLEMENTATION_PLAN.md Sprint 1.5
+            # ============================================================
+            if is_force_close:
+                # 強制決済ログ（デバッグ用詳細情報）
+                entry_symbol = existing_position.get('entry_symbol', 'Unknown')
+                quantity = existing_position.get('quantity', 0)
+                
+                logger.warning(
+                    f"[BREAKOUT_FORCE_CLOSE] 銘柄切替による強制決済を実行"
+                )
+                logger.info(
+                    f"[BREAKOUT_FORCE_CLOSE] Position Info: "
+                    f"entry_symbol={entry_symbol}, "
+                    f"entry_price={entry_price:.2f}円, "
+                    f"quantity={quantity}株, "
+                    f"date={current_date.strftime('%Y-%m-%d')}"
+                )
+                
+                # エグジット価格取得（entry_symbol_data優先）
+                if current_idx + 1 < len(data_for_exit):
+                    # 標準: 翌日始値（ルックアヘッドバイアス防止）
+                    exit_price = data_for_exit.iloc[current_idx + 1]['Open']
+                    data_source = "entry_symbol_data" if entry_symbol_data is not None else "stock_data"
+                    price_type = "Open (next day)"
+                else:
+                    # フォールバック: 最終日は当日終値
+                    # 理由: current_idx + 1 が存在しない境界条件
+                    # copilot-instructions.md Section 68-73: 限定的フォールバック使用を許可
+                    exit_price = data_for_exit.iloc[current_idx]['Close']
+                    data_source = f"{'entry_symbol_data' if entry_symbol_data is not None else 'stock_data'} (Close fallback)"
+                    price_type = "Close (final day)"
+                    logger.warning(
+                        f"[BREAKOUT_FORCE_CLOSE] Final day exit: using Close price fallback. "
+                        f"idx={current_idx}, date={current_date.strftime('%Y-%m-%d')}"
+                    )
+                
+                # 決済価格ログ
+                logger.info(
+                    f"[BREAKOUT_FORCE_CLOSE] Exit Price: {exit_price:.2f}円 "
+                    f"(source={data_source}, type={price_type})"
+                )
+                
+                # 損益計算（参考情報）
+                pnl = (exit_price - entry_price) * quantity
+                pnl_pct = ((exit_price / entry_price) - 1) * 100 if entry_price > 0 else 0.0
+                
+                logger.info(
+                    f"[BREAKOUT_FORCE_CLOSE] P&L: {pnl:,.0f}円 ({pnl_pct:+.2f}%), "
+                    f"entry={entry_price:.2f}円 -> exit={exit_price:.2f}円"
+                )
+                
+                # 強制決済実行
+                return {
+                    'action': 'exit',
+                    'signal': -1,
+                    'price': float(exit_price),
+                    'shares': quantity,
+                    'reason': f'Force close due to symbol switch from {entry_symbol}'
+                }
+            # ============================================================
+            # Sprint 1.5修正ここまで
+            # ============================================================
+            
+            # ------------------------------------------------------------
+            # 通常のエグジット判定（force_close=False）
+            # ------------------------------------------------------------
             # 翌日始値でエグジット（ルックアヘッドバイアス防止）
             # Cycle 27修正: data_for_exitを使用
             if current_idx + 1 < len(data_for_exit):
@@ -514,7 +650,8 @@ class BreakoutStrategy(BaseStrategy):
             }
         
         except Exception as e:
-            logger.error(f"[Breakout] Exit logic error: {e}")
+            # エラーハンドリング（copilot-instructions.md準拠: エラー隠蔽禁止）
+            logger.error(f"[Breakout] Exit logic error: {e}", exc_info=True)
             return {
                 'action': 'hold',
                 'signal': 0,

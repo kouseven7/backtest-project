@@ -383,9 +383,9 @@ class TrendStrategyIntegrationInterface:
             
             # 基本トレンド情報
             trend = trend_detector.detect_trend()
-            confidence = trend_detector.get_confidence()
-            strength = trend_detector.get_trend_strength()
-            reliability = trend_detector.get_reliability_score()
+            confidence = trend_detector.get_confidence_score()
+            strength = confidence  # get_confidence_score()を強度として使用
+            reliability = confidence  # get_confidence_score()を信頼度として使用
             
             # 追加分析
             supporting_indicators = self._calculate_supporting_indicators(market_data)

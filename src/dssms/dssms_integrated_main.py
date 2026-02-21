@@ -1,26 +1,41 @@
 """
+DSSMS統合メインモジュール - 動的銘柄選択とマルチ戦略バックテスト実行
 
-DSSMS Integrated Main System - Multi-Strategy Backtest Controller with Dynamic Symbol Selection
+日経225銘柄からパーフェクトオーダーの銘柄を動的に選択し、
+複数の戦略を統合してバックテストを実行します。
 
-This module integrates DSSMS Core with multi-strategy execution for Nikkei 225 optimal symbol selection
-and comprehensive backtesting across multiple trading strategies.
+主な機能:
+- DSSMS銘柄選択（Screening/Ranking/Scoring/Symbol Switching）
+- マルチ戦略実行制御（BaseStrategy派生クラス統合）
+- ポジション管理（エントリー/エグジット/銘柄切替）
+- バックテスト終了時の強制決済処理（重要: 削除禁止、Line 670-850付近）
+- 日次データ取得とルックアヘッドバイアス防止
+- 取引履歴の記録とレポート生成
+- パフォーマンス統計の計算
 
-Main Functions:
-- DSSMS Core Integration (Screening/Ranking/Scoring/Symbol Switching)
-- Multi-Strategy Execution Control (BaseStrategy-derived classes coordination)
-- Cumulative Period Backtest Execution (Phase 1 restored)
+統合コンポーネント:
+- DSSMS Core: symbol_switch_manager_ultra_light（銘柄選択）
+- Screener: nikkei225_screener.py（日経225銘柄フィルタリング）
+- 戦略層: GCStrategy, VWAPBreakoutStrategy, BreakoutStrategy等
+- データ層: data_fetcher.py, data_cache_manager.py
+- 出力: CSV+JSON+TXT統一出力エンジン
 
-Integration Components:
-- DSSMS Core: Uses symbol_switch_manager_ultra_light for symbol selection
-- MainSystemController: Executes multi-strategy through main_new.py interface
+セーフティ機能/注意事項:
+- バックテスト終了時の強制決済処理は絶対に削除しないこと
+  （Line 670-850付近、削除すると未決済ポジションが残る）
+- ルックアヘッドバイアス防止（日次データ取得、翌日始値エントリー）
+- yfinance auto_adjust=False 必須（Adj Close取得のため）
+- 二重サフィックス防止（to_yfinance()関数使用）
+- DSSMS日次判定 vs マルチ戦略全期間判定の整合性に注意
 
-Safety Features/Important Notes:
-- Current design has DSSMS daily judgment vs multi-strategy full-period judgment inconsistency
-- Requires careful handling of symbol switching timing and strategy continuity
+既知の問題と対策:
+- Issue #2: 強制決済コードの削除 -> 削除禁止コメント追加済み
+- Issue #5: API期間異常 -> Screener target_date対応必要
+- Issue #1: 二重サフィックス問題 -> to_yfinance()関数で防止
 
-Author: AI Assistant
-Created: September 28, 2025
-Last Modified: December 30, 2025
+Author: Backtest Project Team
+Created: 2025-09-28
+Last Modified: 2026-02-05
 """
 
 import sys
@@ -59,6 +74,8 @@ except ImportError as e:
     import logging
     logging.error(f"[TASK1_ERROR] SymbolSwitchManager import failed: {e}")
     SymbolSwitchManager = None
+
+from src.utils.symbol_utils import to_yfinance
 
 # SystemFallbackPolicy利用可能性チェック(TODO-INTEGRATE-001対応)
 try:
@@ -129,7 +146,8 @@ class DSSMSIntegratedBacktester:
             # 実際の初期化は必要時に行う
             
             # システム状態
-            self.current_symbol = None
+            # self.current_symbol = None  # Sprint 2削除: 複数銘柄保有対応
+            # 代替: self.positions.keys()で保有銘柄リストを取得
             self.portfolio_value = self.config.get('initial_capital', 1000000)
             self.initial_capital = self.portfolio_value
             
@@ -183,7 +201,13 @@ class DSSMSIntegratedBacktester:
                 self.strategy_selector = None
             
             # Phase 3-C Day 12: ポジション状態管理
-            self.current_position = None  # 現在のポジション情報
+            # Sprint 2: 複数銘柄保有対応 (2026-02-10)
+            # self.current_position = None  # Sprint 2削除: positionsに統合
+            # 削除理由: 複数銘柄保有対応により、単一ポジション管理は不要
+            # 代替: self.positions辞書で複数ポジションを管理
+            # 参照: MULTI_POSITION_IMPLEMENTATION_PLAN.md Task 2-2-1
+            self.positions = {}  # {symbol: {strategy, entry_price, shares, entry_date, entry_idx}}
+            self.max_positions = 2  # Sprint 2設定: 最大保有銘柄数
             
             # Phase 2: equity_curve再構築用追跡変数
             self.cumulative_pnl = 0.0  # 累積損益追跡
@@ -202,7 +226,6 @@ class DSSMSIntegratedBacktester:
                 'max_switch_cost_rate': 0.05
             }
             
-            self._setup_file_logging()
             
             # Task 1実装 (2026-01-13): __init__()でコンポーネント初期化を実行
             # 理由: 完全版SymbolSwitchManagerを確実にロードするため
@@ -268,31 +291,61 @@ class DSSMSIntegratedBacktester:
         """RiskManagement確保(パブリックアクセス用)"""
         return self._initialize_risk_management()
 
-    def _setup_file_logging(self):
-        """
-        Enhanced Logger Managerを使用してファイルロギング設定
-        自動ログローテーション・圧縮機能付き
+    def _setup_file_logging(self, output_dir: str = None, run_id: str = None):
+        '''
+        詳細ログ出力を設定
+        
+        戦略選択・市場分析・FIFO決済の詳細ログをファイル出力します。
+        
+        Args:
+            output_dir: ログ出力ディレクトリ(省略時はデフォルト)
+            run_id: 実行ID(省略時は自動生成)
         
         Returns:
             None
-        """
+        '''
         if self._file_logging_initialized:
             return
         
         try:
-            # Enhanced Logger Managerを使用（ログローテーション・圧縮対応）
-            from src.utils.logger_setup import get_logger_manager
+            # 2026-02-15改善: 詳細戦略ログ機能を使用
+            from config.logger_config import setup_detailed_strategy_logger
             
-            logger_manager = get_logger_manager()
-            self.logger = logger_manager.get_strategy_logger("DSSMS_Integrated")
+            # output_dirが指定されていない場合はデフォルト
+            if output_dir is None:
+                from datetime import datetime
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                output_dir = f"output/dssms_integration/dssms_{timestamp}"
+            
+            # run_idが指定されていない場合は出力ディレクトリから抽出
+            if run_id is None:
+                import os
+                run_id = os.path.basename(output_dir).replace('dssms_', '')
+            
+            # 詳細ログ設定(戦略選択、市場分析、FIFO決済を自動ファイル出力)
+            self.logger = setup_detailed_strategy_logger(
+                "DSSMS_Integrated",
+                output_dir,
+                run_id=run_id,
+                enable_console=True
+            )
             
             self._file_logging_initialized = True
-            self.logger.info("Enhanced Logger Manager初期化完了（ログローテーション・圧縮機能有効）")
+            self.logger.info("詳細戦略ログ初期化完了（戦略選択・市場分析・FIFO決済ログ有効）")
             
         except Exception as e:
-            # フォールバック: 基本ロガー使用
-            self.logger.warning(f"Enhanced Logger Manager初期化失敗: {e}, 基本ロガー使用")
-            self._file_logging_initialized = True  # 再試行を防ぐ
+            # フォールバック: 従来のEnhanced Logger Manager使用
+            self.logger.warning(f"詳細戦略ログ初期化失敗: {e}, Enhanced Logger Managerにフォールバック")
+            try:
+                from src.utils.logger_setup import get_logger_manager
+                logger_manager = get_logger_manager()
+                self.logger = logger_manager.get_strategy_logger("DSSMS_Integrated")
+                self._file_logging_initialized = True
+                self.logger.info("Enhanced Logger Manager初期化完了（ログローテーション・圧縮機能有効）")
+            except Exception as e2:
+                # 最終フォールバック: 基本ロガー
+                self.logger.warning(f"Enhanced Logger Manager初期化も失敗: {e2}, 基本ロガー使用")
+                self._file_logging_initialized = True
 
     def _initialize_components(self):
         if not self._components_initialized:
@@ -613,6 +666,13 @@ class DSSMSIntegratedBacktester:
             # 修正案A: バックテスト開始日を保存(累積期間方式用)
             self.dssms_backtest_start_date = start_date
             
+            # 2026-02-15修正: run_idを動的に生成してバックテストごとに新ファイル作成
+            from config.logger_config import add_detailed_handlers_to_existing_loggers
+            from datetime import datetime
+            current_run_id = datetime.now().strftime('%Y%m%d_%H%M%S')
+            temp_output_dir = f"output/dssms_integration/backtest_{current_run_id}"
+            add_detailed_handlers_to_existing_loggers(temp_output_dir, current_run_id) 
+
             if target_symbols:
                 self._warm_fundamental_cache(target_symbols)
             
@@ -666,18 +726,153 @@ class DSSMSIntegratedBacktester:
                 
                 current_date += timedelta(days=1)
             
-            # ==========================================
-            # 期間終了時の強制決済(December 11, 2025実装)
-            # ==========================================
-            # 参考実装: 銘柄切替ForceClose(Line 1567-1583)
+            # ============================================================
+            # [重要] このコードは絶対に削除しないでください
+            # ============================================================
+            # 【目的】
+            # バックテスト終了時に保有中のポジションを強制決済し、
+            # all_transactions.csvに正確なexit_date, exit_price, pnlを記録する
+            #
+            # 【削除してはいけない理由】
+            # 1. 未決済ポジションが残ると、最終ポートフォリオ値が確定しない
+            # 2. 取引履歴（all_transactions.csv）が不完全になる
+            # 3. パフォーマンス計算（総損益、勝率等）が不正確になる
+            #
+            # 【複数銘柄保有対応との関係】
+            # 複数銘柄保有対応を実装する際も、この処理は必須です。
+            # current_position（単数形）を current_positions（複数形）に変更する際も、
+            # 全ポジションをループで強制決済する処理を維持してください。
+            #
+            # 【過去の問題】
+            # Issue #2: AI（VSCode Copilot）が削除して問題発生
+            # -> 復元後、このコメントを追加（2026-02-05）
+            #
+            # 【参照】
+            # - KNOWN_ISSUES_AND_PREVENTION.md Issue #2
+            # - MULTI_POSITION_IMPLEMENTATION_PLAN.md Sprint 1
+            # ============================================================
             
-            # 削除: バックテスト終了時のForceClose処理(Line 486-542, 57行)
-            # 削除理由: DSSMSが取引実行しないため,期末強制決済も不要
-            # 代替: main_new.pyのForceCloseStrategyが担当
-            # 影響: バックテスト終了時のexecution_detailsが生成されない(意図通り)
+            # ==========================================
+            # 期間終了時の強制決済（Sprint 2修正: 2026-02-10）
+            # ==========================================
+            # 目的: バックテスト終了時に保有中の全ポジションを強制決済し、
+            #       all_transactions.csvに正確なexit_dateを記録する
+            # Sprint 2修正: 複数銘柄保有対応（全ポジションをループで決済）
+            
+            if len(self.positions) > 0:
+                self.logger.info(
+                    f"[FINAL_CLOSE] バックテスト終了時の強制決済開始: "
+                    f"{len(self.positions)}銘柄保有中"
+                )
+                
+                final_execution_details = []
+                
+                # Sprint 2: 全ポジションをループで決済
+                for symbol, position_data in list(self.positions.items()):
+                    try:
+                        shares = position_data['shares']
+                        entry_price = position_data['entry_price']
+                        
+                        # デバッグログ追加 (2026-02-05)
+                        self.logger.info(f"\n[DEBUG_PRICE] ========== 銘柄{symbol}の強制決済 ==========")
+                        self.logger.info(f"[DEBUG_PRICE] entry_price: {entry_price}, shares: {shares}")
+                        
+                        # 最終日の終値を取得
+                        final_price = None
+                        stock_data, _ = self._get_symbol_data(symbol, end_date)
+                        
+                        # デバッグログ追加
+                        if stock_data is not None and len(stock_data) > 0:
+                            self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data.shape = {stock_data.shape}")
+                            self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data.index[-5:] = {stock_data.index[-5:].tolist()}")
+                            self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data['Close'].iloc[-5:] = {stock_data['Close'].iloc[-5:].tolist()}")
+                        else:
+                            self.logger.info(f"[DEBUG_PRICE] 取得後: stock_data取得失敗(None or empty)")
+                        
+                        if stock_data is None or len(stock_data) == 0:
+                            # エラーログ出力（フォールバックなし）
+                            self.logger.error(
+                                f"[FINAL_CLOSE] データ取得失敗: {symbol} - "
+                                f"yfinance APIエラーまたはデータ不足"
+                            )
+                            # 強制決済レコードは生成するがfinal_priceはentry_priceを使用
+                            # （最悪ケース: PnL=0として決済記録）
+                            final_price = entry_price
+                            
+                            self.logger.info(f"[DEBUG_PRICE] final_price = entry_price: {final_price}")
+                            
+                            self.logger.warning(
+                                f"[FINAL_CLOSE] {symbol}: データ取得失敗のため "
+                                f"entry_price({entry_price:.2f})をfinal_priceとして使用 (PnL=0)"
+                            )
+                        else:
+                            final_price = stock_data['Close'].iloc[-1]
+                            
+                            self.logger.info(f"[DEBUG_PRICE] final_price = Close最終値: {final_price}")
+                            self.logger.info(f"[DEBUG_PRICE] entry_price = {entry_price}")
+                        
+                        # PnL計算
+                        pnl = (final_price - entry_price) * shares
+                        
+                        self.logger.info(f"[DEBUG_PRICE] PnL: {pnl:.2f}円")
+                        self.logger.info(f"[DEBUG_PRICE] ==========================================\n")
+                        
+                        # 決済記録（データ取得失敗でも記録）
+                        exit_detail = {
+                            'timestamp': end_date,
+                            'symbol': symbol,
+                            'action': 'SELL',
+                            'shares': shares,
+                            'price': final_price,
+                            'total_value': final_price * shares,
+                            'strategy': position_data.get('strategy', 'DSSMS_Integrated'),
+                            'reason': 'backtest_end',
+                            'status': 'force_closed',
+                            'pnl': pnl,
+                            'return_pct': (final_price - entry_price) / entry_price if entry_price > 0 else 0.0
+                        }
+                        
+                        final_execution_details.append(exit_detail)
+                        
+                        # cash_balance更新（DSSMSのみ）
+                        self.cash_balance += final_price * shares
+                        
+                        # ログ出力
+                        self.logger.info(
+                            f"[FINAL_CLOSE] {symbol}: {shares}株 @{final_price:.2f}円, "
+                            f"PnL={pnl:+,.0f}円({exit_detail['return_pct']:+.2%})"
+                        )
+                    
+                    except Exception as e:
+                        self.logger.error(
+                            f"[FINAL_CLOSE] 強制決済エラー: {symbol}, {e}",
+                            exc_info=True
+                        )
+                
+                # Sprint 2: 全ポジション削除
+                self.positions.clear()
+                self.logger.info(f"[FINAL_CLOSE] 全ポジション削除完了")
+                
+                # 最終日の日次結果にexecution_detailsを追加
+                if self.daily_results and final_execution_details:
+                    last_daily_result = self.daily_results[-1]
+                    if 'execution_details' not in last_daily_result:
+                        last_daily_result['execution_details'] = []
+                    last_daily_result['execution_details'].extend(final_execution_details)
+                    
+                    self.logger.info(
+                        f"[FINAL_CLOSE] 強制決済完了: {len(final_execution_details)}件の決済記録を追加"
+                    )
+                
+                # portfolio_valueをcash_balanceに同期（全決済後は現金のみ）
+                self.portfolio_value = self.cash_balance
+                self.logger.info(
+                    f"[FINAL_CLOSE] portfolio_value更新: {self.portfolio_value:,.2f}円（全決済後）"
+                )
             
             self.logger.info(
-                f"current_symbol={self.current_symbol}"
+                f"[BACKTEST_END] 保有銘柄リスト: {list(self.positions.keys())} "
+                f"(保有数: {len(self.positions)}/{self.max_positions})"
             )
             
             # ==========================================
@@ -709,7 +904,7 @@ class DSSMSIntegratedBacktester:
         try:
             daily_result = {
                 'date': target_date.strftime('%Y-%m-%d'),
-                'symbol': self.current_symbol,
+                'symbol': None,  # Sprint 2: selected_symbolで後ほど設定
                 'success': False,
                 'portfolio_value_start': self.portfolio_value,
                 'daily_return': 0,
@@ -744,56 +939,206 @@ class DSSMSIntegratedBacktester:
             
             switch_result = self._evaluate_and_execute_switch(selected_symbol, target_date)
             
-            if switch_result.get('switch_executed', False):
-                daily_result['switch_executed'] = True
-                daily_result['symbol'] = self.current_symbol  # P3修正: switch後の銘柄を反映
-                self.switch_history.append(switch_result)
-                
-                # [修正案1実装] 銘柄切替時のexecution_details収集(December 14, 2025修正)
-                # 修正: 単数形'execution_detail'から複数形'execution_details'に変更
-                # 理由: SELL+BUY両方のexecution_detailsを記録するため
-                if 'execution_details' in switch_result:
-                    # daily_resultのexecution_detailsに追加
-                    if 'execution_details' not in daily_result:
-                        daily_result['execution_details'] = []
-                    daily_result['execution_details'].extend(switch_result['execution_details'])
-                    self.logger.info(f"[DSSMS_SWITCH_COLLECT] 銘柄切替SELL+BUY記録をdaily_resultに追加: {len(switch_result['execution_details'])}件")
-            
-            # 3. 現在銘柄でのマルチ戦略実行(銘柄切替時はForceClose実行)
-            if self.current_symbol:
-                # 銘柄切替実行フラグ取得
-                switch_executed = switch_result.get('switch_executed', False)
-                
-                if switch_executed:
-                    self.logger.info(
-                        f"from={switch_result.get('from_symbol')} -> to={self.current_symbol}, "
+            # Sprint 2追加: force_close対象銘柄がある場合、先に決済
+            force_close_symbol = switch_result.get('force_close_symbol')
+            if force_close_symbol:
+                self.logger.warning(
+                    f"[FORCE_CLOSE] {force_close_symbol}を決済: "
+                    f"reason={switch_result.get('reason')}"
+                )
+                # force_close対象銘柄のデータ取得
+                close_stock_data, _ = self._get_symbol_data(force_close_symbol, target_date)
+                if close_stock_data is not None:
+                    # force_closeフラグ付きで戦略実行（決済のみ）
+                    if force_close_symbol in self.positions:
+                        # force_close用のexisting_positionを構築
+                        force_close_position = self.positions[force_close_symbol].copy()
+                        force_close_position['force_close'] = True  # 強制決済フラグ
+                        force_close_position['entry_symbol'] = force_close_symbol
+                        self.logger.info(
+                            f"[FORCE_CLOSE] force_close_position構築: "
+                            f"symbol={force_close_symbol}, force_close=True, "
+                            f"entry_price={force_close_position.get('entry_price', 0):.2f}"
+                        )
+                        
+                        # 決済処理実行（force_close_position付き）
+                        close_result = self._execute_multi_strategies_daily(
+                            target_date, 
+                            force_close_symbol, 
+                            close_stock_data,
+                            force_close_position=force_close_position
+                        )
+                        
+                        # 決済結果をdaily_resultに記録
+                        if 'execution_details' in close_result:
+                            if 'execution_details' not in daily_result:
+                                daily_result['execution_details'] = []
+                            daily_result['execution_details'].extend(close_result['execution_details'])
+                        
+                        # 決済完了確認（防御的チェック）
+                        if force_close_symbol not in self.positions:
+                            self.logger.info(
+                                f"[FIFO_EXIT] FIFO決済成功: {force_close_symbol} "
+                                f"削除完了（残り保有数: {len(self.positions)}/{self.max_positions}）"
+                            )
+                        else:
+                            # 戦略がSELLを返さなかった場合: 直接ポジション削除（フォールバック）
+                            self.logger.warning(
+                                f"[FORCE_CLOSE_FALLBACK] 戦略が決済を返さなかったため直接削除: "
+                                f"{force_close_symbol}"
+                            )
+                            # 当日終値で強制決済
+                            try:
+                                close_price = close_stock_data['Adj Close'].iloc[-1]
+                                position = self.positions[force_close_symbol]
+                                shares = position.get('shares', 0)
+                                entry_price = position.get('entry_price', 0)
+                                pnl = (close_price - entry_price) * shares
+                                
+                                # 残高更新
+                                self.cash_balance += close_price * shares
+                                
+                                # execution_details記録
+                                force_detail = {
+                                    'timestamp': target_date.strftime('%Y-%m-%d %H:%M:%S'),
+                                    'symbol': force_close_symbol,
+                                    'action': 'SELL',
+                                    'price': close_price,
+                                    'shares': shares,
+                                    'strategy': position.get('strategy', 'FIFO_FORCE_CLOSE'),
+                                    'signal_strength': -1,
+                                    'reason': 'FIFO強制決済（max_positions到達）',
+                                    'status': 'executed'
+                                }
+                                if 'execution_details' not in daily_result:
+                                    daily_result['execution_details'] = []
+                                daily_result['execution_details'].append(force_detail)
+                                
+                                # ポジション削除
+                                del self.positions[force_close_symbol]
+                                self.logger.info(
+                                    f"[FIFO_DETAIL] 直接決済完了: "
+                                    f"{force_close_symbol} {shares}株 @{close_price:.2f}円, "
+                                    f"PnL={pnl:+,.0f}円, "
+                                    f"残り保有数: {len(self.positions)}/{self.max_positions}"
+                                )
+                            except Exception as e:
+                                self.logger.error(
+                                    f"[FORCE_CLOSE_FALLBACK_ERROR] 直接決済失敗: "
+                                    f"{force_close_symbol}: {e}"
+                                )
+                    else:
+                        self.logger.warning(
+                            f"[FORCE_CLOSE_ERROR] {force_close_symbol}のポジションが存在しません"
+                        )
+                else:
+                    self.logger.error(
+                        f"[FORCE_CLOSE_ERROR] {force_close_symbol}のデータ取得失敗: "
                         f"date={target_date.strftime('%Y-%m-%d')}"
                     )
-                
-                # マルチ戦略実行(銘柄切替時はforce_close_on_entry=True)
-                # 修正：日次取引モード使用（重複エントリー防止）
-                # 問題の原因：以前の全期間バックテスト（_execute_multi_strategies）から
-                # 日次取引モード（_execute_multi_strategies_daily）への切替確実実行
-                stock_data, _ = self._get_symbol_data(self.current_symbol, target_date)
-                if stock_data is not None:
-                    # force_close_on_entryをcurrent_positionのforce_closeフラグで処理
-                    if switch_executed and self.current_position:
-                        self.current_position['force_close'] = True
-                    
-                    # 確実に日次取引モード使用（重複エントリー防止の決定的修正）
-                    strategy_result = self._execute_multi_strategies_daily(
-                        target_date,
-                        self.current_symbol,
-                        stock_data
+            
+            # Sprint 2修正: switch_executedの処理（簡素化）
+            if switch_result.get('switch_executed', False):
+                # 銘柄切替が実行された場合
+                daily_result['switch_executed'] = True
+                daily_result['symbol'] = selected_symbol  # Sprint 2: 新銘柄を設定
+                self.switch_history.append(switch_result)
+                self.logger.info(
+                    f"[SWITCH] 銘柄切替実行: {switch_result.get('from_symbol')} -> {selected_symbol}"
+                )
+            
+            # ============================================================
+            # 保有中銘柄のエグジットチェック（毎日・全保有銘柄を評価）
+            # 修正 (2026-02-20): selected_symbolの有無に関わらず毎日実行
+            # 理由: selected_symbol=Noneでも既存ポジションのstop loss等を確認する必要がある
+            # ============================================================
+            for held_symbol in list(self.positions.keys()):
+                held_stock_data, _ = self._get_symbol_data(held_symbol, target_date)
+                if held_stock_data is None or held_stock_data.empty:
+                    self.logger.warning(
+                        f"[EXIT_CHECK] {held_symbol}: データ取得失敗のためエグジットチェックをスキップ"
                     )
-                else:
-                    self.logger.error(f"[DAILY_TRADING] データ取得失敗: symbol={self.current_symbol}, date={target_date}")
+                    continue
+                
+                # エグジットチェックのみ実行（エントリーは行わない）
+                # force_close_position=Noneで通常のエグジット条件（ストップロス等）を評価させる
+                exit_check_result = self._execute_multi_strategies_daily(
+                    target_date,
+                    held_symbol,
+                    held_stock_data,
+                    force_close_position=None
+                )
+                
+                self.logger.info(
+                    f"[EXIT_CHECK] {held_symbol}: action={exit_check_result.get('action', 'hold')}"
+                )
+                
+                # 修正 (2026-02-20): EXIT_CHECKの結果をdaily_resultに記録
+                # 理由: エグジット判定でSELLが返されても、execution_detailsに記録されず未完了取引になっていた
+                if 'execution_details' in exit_check_result and exit_check_result['execution_details']:
+                    if 'execution_details' not in daily_result:
+                        daily_result['execution_details'] = []
+                    daily_result['execution_details'].extend(exit_check_result['execution_details'])
+                    self.logger.info(
+                        f"[EXIT_CHECK_RECORD] {held_symbol}: {len(exit_check_result['execution_details'])}件のexecution_detailsを記録"
+                    )
+            # ============================================================
+            # 保有中銘柄エグジットチェック ここまで
+            # ============================================================
+            
+            # 3. 選択銘柄でのマルチ戦略実行
+            # Sprint 2: 新規エントリーまたは既存ポジション継続
+            if selected_symbol:
+                print(f"DEBUG positions={list(self.positions.keys())} selected={selected_symbol} date={target_date.strftime('%Y-%m-%d')}", flush=True)
+                
+                # Sprint 2修正: BUY実行前にmax_positionsチェック（防御的）
+                # 選択銘柄が未保有の場合のみチェック（保有中なら継続判定なのでOK）
+                if selected_symbol not in self.positions and len(self.positions) >= self.max_positions:
+                    self.logger.warning(
+                        f"[SAFETY_CHECK] BUY実行前: "
+                        f"len={len(self.positions)} >= max={self.max_positions}, "
+                        f"selected_symbol={selected_symbol} は未保有 → BUYスキップ"
+                    )
+                    # max_positions到達でBUY不可: この日の戦略実行をスキップ
                     strategy_result = {
-                        'status': 'error',
-                        'reason': 'Data unavailable',
-                        'symbol': self.current_symbol,
-                        'target_date': target_date
+                        'status': 'skipped',
+                        'reason': f'max_positions reached ({len(self.positions)}/{self.max_positions})',
+                        'symbol': selected_symbol,
+                        'action': 'hold',
+                        'signal': 0,
+                        'price': 0.0,
+                        'shares': 0
                     }
+                    daily_result['strategy_results'] = strategy_result
+                    # 以下のstrategy実行をスキップ
+                else:
+                    # Sprint 2: 選択銘柄でのマルチ戦略実行
+                    self.logger.debug(
+                        f"[STRATEGY_EXEC] {selected_symbol}でマルチ戦略実行: "
+                        f"date={target_date.strftime('%Y-%m-%d')}, "
+                        f"switch_executed={switch_result.get('switch_executed', False)}"
+                    )
+                    
+                    # selected_symbolのデータ取得
+                    stock_data, _ = self._get_symbol_data(selected_symbol, target_date)
+                    if stock_data is not None:
+                        # 確実に日次取引モード使用（重複エントリー防止）
+                        strategy_result = self._execute_multi_strategies_daily(
+                            target_date,
+                            selected_symbol,
+                            stock_data
+                        )
+                    else:
+                        self.logger.error(
+                            f"[DAILY_TRADING] データ取得失敗: symbol={selected_symbol}, "
+                            f"date={target_date.strftime('%Y-%m-%d')}"
+                        )
+                        strategy_result = {
+                            'status': 'error',
+                            'reason': 'Data unavailable',
+                            'symbol': selected_symbol,
+                            'target_date': target_date
+                        }
                 daily_result['strategy_results'] = strategy_result
                 
                 # Cycle 10-6: cash_balance/position_valueをdaily_resultに引き継ぎ
@@ -828,6 +1173,19 @@ class DSSMSIntegratedBacktester:
                 
                 self.cumulative_pnl += position_return
                 daily_result['cumulative_pnl'] = self.cumulative_pnl
+                
+                # Cycle 10-7修正: total_portfolio_valueをself.portfolio_valueに反映
+                # 理由: cash_balance + position_valueの合計値を正確に追跡
+                # 修正日: 2026-02-05
+                # 修正者: Sprint 1 Task 1-10
+                if 'total_portfolio_value' in strategy_result:
+                    self.portfolio_value = strategy_result['total_portfolio_value']
+                    self.logger.debug(
+                        f"[PORTFOLIO_SYNC] {target_date.strftime('%Y-%m-%d')}: "
+                        f"self.portfolio_value更新 -> {self.portfolio_value:,.0f}円 "
+                        f"(cash={strategy_result.get('cash_balance', 0):,.0f}円 + "
+                        f"position={strategy_result.get('position_value', 0):,.0f}円)"
+                    )
             
             # 修正理由: switch実行日に取引がない場合でも,switch後のportfolio_valueを反映するため
             # switch処理でself.portfolio_valueが変更される可能性があるため,if position_update外で実行
@@ -895,9 +1253,10 @@ class DSSMSIntegratedBacktester:
             return daily_result
             
         except Exception as e:
+            self.logger.error(f"[DAILY_TRADING_ERROR] {e}", exc_info=True)
             return {
                 'date': target_date.strftime('%Y-%m-%d'),
-                'symbol': self.current_symbol,
+                'symbol': None,  # Sprint 2: 複数銘柄保有対応
                 'success': False,
                 'portfolio_value_start': self.portfolio_value,
                 'portfolio_value_end': self.portfolio_value,
@@ -1656,7 +2015,10 @@ class DSSMSIntegratedBacktester:
                     self.logger.info(f"[SYMBOL_SELECTION] 銘柄選定開始: {target_date.strftime('%Y-%m-%d')}")
                     
                     available_funds = self.portfolio_value * 0.8
-                    filtered_symbols = self.nikkei225_screener.get_filtered_symbols(available_funds)
+                    filtered_symbols = self.nikkei225_screener.get_filtered_symbols(
+                        available_funds, 
+                        target_date  # target_dateを渡してルックアヘッドバイアス防止
+                    )
                     
                     
                     self.logger.debug(
@@ -1699,11 +2061,14 @@ class DSSMSIntegratedBacktester:
     def _evaluate_and_execute_switch(self, selected_symbol: str, 
                                    target_date: datetime) -> Dict[str, Any]:
         """
-        銘柄切替の評価と実行
+        銘柄切替の評価と実行（Sprint 2: 複数銘柄保有対応）
         
-        Cycle 4-A実装: 利益中ポジション保護機能
-        - 含み益ポジション（unrealized_pnl > 0）の場合は銘柄切替をスキップ
-        - 目的: 利益を伸ばしている銘柄を早期に手放さない
+        Sprint 2実装: FIFO方式による複数銘柄保有対応
+        - max_positions到達時は最も古いポジションを決済（FIFO）
+        - 4ケース分岐: 初回エントリー/銘柄継続/新規エントリー/銘柄切替
+        
+        Cycle 4-A実装: 利益中ポジション保護機能（保留）
+        - Sprint 2では単純FIFO実装、利益保護はSprint 3で検討
         
         Args:
             selected_symbol: 選択された銘柄
@@ -1711,112 +2076,165 @@ class DSSMSIntegratedBacktester:
         
         Returns:
             Dict[str, Any]: 切替実行結果
+                - switch_executed: bool（切替実行フラグ）
+                - from_symbol: str | None（切替元銘柄）
+                - to_symbol: str（切替先銘柄）
+                - reason: str（理由）
+                - force_close_symbol: str | None（決済対象銘柄、重要）
         """
         try:
-            # Cycle 4-A改善: Cycle 3実装（修正案3）
-            # 問題: current_positionは切替判定時にNoneまたは古いデータ（Line 2301で更新されるが、それは切替後）
-            # 解決: current_symbolをチェックし、最新価格を取得して利益判定
+            # Sprint 2: 複数銘柄保有対応 - 4ケース分岐
             self.logger.info(
-                f"[CYCLE4-A-DEBUG] _evaluate_and_execute_switch() 開始 | "
+                f"[SWITCH] 銘柄切替判定開始 | "
                 f"target_date={target_date.strftime('%Y-%m-%d')}, "
-                f"current_symbol={self.current_symbol}, "
                 f"selected_symbol={selected_symbol}, "
-                f"current_position={'存在' if self.current_position else 'None'}"
+                f"保有数={len(self.positions)}/{self.max_positions}, "
+                f"保有銘柄={list(self.positions.keys())}"
             )
             
-            # Cycle 4-A Cycle 3改善版: 利益中ポジション保護チェック
-            # 修正案3改善: current_symbolとlast_entry_priceをチェック
-            if self.current_symbol and self.last_entry_price is not None:
-                entry_price = self.last_entry_price  # 修正: last_entry_priceを使用
-                current_symbol = self.current_symbol
-                
-                # 現在価格を取得（target_dateの終値）
-                try:
-                    symbol_data, _ = self._get_symbol_data(current_symbol, target_date)
-                    if symbol_data is not None and len(symbol_data) > 0:
-                        current_price = symbol_data['Adj Close'].iloc[-1]
-                        unrealized_pnl = (current_price - entry_price) / entry_price
-                        
-                        # 含み益がある場合は銘柄切替をスキップ
-                        if unrealized_pnl > 0:
-                            self.logger.warning(
-                                f"[CYCLE4-A] ★★★ 利益中ポジション保護: 銘柄切替スキップ ★★★ | "
-                                f"symbol={current_symbol}, entry_price={entry_price:.2f}, "
-                                f"current_price={current_price:.2f}, unrealized_pnl={unrealized_pnl:.2%}"
-                            )
-                            return {
-                                'date': target_date.strftime('%Y-%m-%d'),
-                                'from_symbol': self.current_symbol,
-                                'to_symbol': selected_symbol,
-                                'switch_executed': False,
-                                'switch_cost': 0,
-                                'reason': 'profit_protection',
-                                'unrealized_pnl': unrealized_pnl
-                            }
-                        else:
-                            # 含み損の場合は通常の切替判定へ進む
-                            self.logger.info(
-                                f"[CYCLE4-A] 損失中ポジション: 通常切替判定へ | "
-                                f"symbol={current_symbol}, unrealized_pnl={unrealized_pnl:.2%}"
-                            )
-                except Exception as e:
-                    self.logger.warning(f"[CYCLE4-A] 現在価格取得エラー: {e}")
+            # ===== デバッグログ追加 (2026-02-15) =====
+            self.logger.info(
+                f"[SWITCH_DEBUG] 切替判定: " 
+                f"len(positions)={len(self.positions)}, "
+                f"max_positions={self.max_positions}, "
+                f"selected_symbol={selected_symbol}, "
+                f"positions.keys()={list(self.positions.keys())}"
+            )
+            # ==========================================
             
-            # 切替評価
+            # ケース1: 初回エントリー
+            if len(self.positions) == 0:
+                self.logger.info(f"[SWITCH_DEBUG] ケース1実行: 初回エントリー selected_symbol={selected_symbol}")
+                self.logger.info(f"[SWITCH] 初回エントリー: {selected_symbol}")
+                return {
+                    'date': target_date.strftime('%Y-%m-%d'),
+                    'switch_executed': False,
+                    'from_symbol': None,
+                    'to_symbol': selected_symbol,
+                    'reason': 'initial_entry',
+                    'force_close_symbol': None,
+                    'switch_cost': 0
+                }
+            
+            # ケース2: 選択銘柄が既に保有中
+            if selected_symbol in self.positions:
+                self.logger.info(f"[SWITCH_DEBUG] ケース2実行: 継続保有 symbol={selected_symbol}")
+                self.logger.debug(
+                    f"[SWITCH] 銘柄継続: {selected_symbol} "
+                    f"(entry_date={self.positions[selected_symbol].get('entry_date')})"
+                )
+                return {
+                    'date': target_date.strftime('%Y-%m-%d'),
+                    'switch_executed': False,
+                    'from_symbol': selected_symbol,
+                    'to_symbol': selected_symbol,
+                    'reason': 'symbol_already_held',
+                    'force_close_symbol': None,
+                    'switch_cost': 0
+                }
+            
+            # ケース3: max_positions未満（新規エントリー可能）
+            if len(self.positions) < self.max_positions:
+                self.logger.info(
+                    f"[SWITCH_DEBUG] ケース3実行: 新規追加 "
+                    f"len={len(self.positions)} < max={self.max_positions}, "
+                    f"selected_symbol={selected_symbol}"
+                )
+                self.logger.info(
+                    f"[SWITCH] 新規エントリー枠あり: {selected_symbol} "
+                    f"(現在{len(self.positions)}/{self.max_positions}銘柄)"
+                )
+                return {
+                    'date': target_date.strftime('%Y-%m-%d'),
+                    'switch_executed': False,
+                    'from_symbol': None,
+                    'to_symbol': selected_symbol,
+                    'reason': 'new_entry_available',
+                    'force_close_symbol': None,
+                    'switch_cost': 0
+                }
+            
+            # ケース4: max_positions到達、銘柄切替判定
+            # 最も古いポジションを決済候補とする（FIFO）
+            oldest_symbol, oldest_position = min(
+                self.positions.items(), 
+                key=lambda x: x[1]['entry_date']
+            )
+            
+            self.logger.info(
+                f"[SWITCH_DEBUG] ケース4実行: FIFO決済 "
+                f"len={len(self.positions)} >= max={self.max_positions}, "
+                f"oldest_symbol={oldest_symbol}, "
+                f"selected_symbol={selected_symbol}"
+            )
+            self.logger.info(
+                f"[FIFO_EXIT] max_positions到達、FIFO決済候補: {oldest_symbol} "
+                f"(entry_date={oldest_position['entry_date']}, "
+                f"strategy={oldest_position.get('strategy', 'unknown')})"
+            )
+            
+            # SymbolSwitchManagerで切替可否を判定
             self.ensure_components()  # 遅延初期化
             switch_evaluation = self.switch_manager.evaluate_symbol_switch(
-                from_symbol=self.current_symbol,
+                from_symbol=oldest_symbol,
                 to_symbol=selected_symbol,
                 target_date=target_date
             )
             
-            switch_result = {
-                'date': target_date.strftime('%Y-%m-%d'),
-                'from_symbol': self.current_symbol,
-                'to_symbol': selected_symbol,
-                'switch_executed': False,
-                'switch_cost': 0,
-                'reason': 'no_switch_needed'
-            }
-            
             should_switch = switch_evaluation.get('should_switch', False)
             self.logger.debug(
-                f"[DEBUG] _evaluate_and_execute_switch | should_switch: {should_switch} | "
-                f"switch_evaluation: {switch_evaluation}"
+                f"[SWITCH] SymbolSwitchManager判定: should_switch={should_switch}, "
+                f"reason={switch_evaluation.get('reason')}"
             )
             
-            # 切替実行判定
             if should_switch:
-                # 削除: 銘柄切替時の取引実行処理(_close_position, _open_position呼び出し)
-                # 削除: execution_type='switch'設定
-                # 理由: DSSMSは銘柄選択のみ担当,取引実行はmain_new.py(PaperBroker)が担当
-                # 影響: switch関連のexecution_detailsが0件になる(意図通り)
+                # 銘柄切替実行（force_closeフラグ付き）
+                self.logger.warning(
+                    f"[FIFO_EXIT] 銘柄切替実行: {oldest_symbol} -> {selected_symbol} "
+                    f"(FIFO決済, entry_date={oldest_position['entry_date']})"
+                )
                 
-                # 削除理由: DSSMSが取引実行しないため,コスト計算は無意味
-                # 影響: portfolio_value更新なし,switch_result簡略化
-                
-                switch_result.update({
+                switch_result = {
+                    'date': target_date.strftime('%Y-%m-%d'),
                     'switch_executed': True,
-                    'reason': switch_evaluation.get('reason', 'dss_optimization'),
-                    'executed_date': target_date
-                })
-                
-                # 現在銘柄更新
-                self.current_symbol = selected_symbol
+                    'from_symbol': oldest_symbol,
+                    'to_symbol': selected_symbol,
+                    'reason': switch_evaluation.get('reason', 'max_positions_fifo'),
+                    'executed_date': target_date,
+                    'force_close_symbol': oldest_symbol,  # 決済対象（重要）
+                    'switch_cost': 0
+                }
                 
                 # 切替履歴記録
                 self.switch_manager.record_switch_executed(switch_result)
                 
-                self.logger.info(f"銘柄切替実行: {switch_result['from_symbol']} -> {selected_symbol}")
-            
-            return switch_result
+                return switch_result
+            else:
+                # 切替拒否（min_holding_days未満、max_switches_per_month超過等）
+                self.logger.info(
+                    f"[SWITCH] 銘柄切替拒否: {selected_symbol}, "
+                    f"reason={switch_evaluation.get('reason')}"
+                )
+                return {
+                    'date': target_date.strftime('%Y-%m-%d'),
+                    'switch_executed': False,
+                    'from_symbol': oldest_symbol,
+                    'to_symbol': selected_symbol,
+                    'reason': switch_evaluation.get('reason'),
+                    'force_close_symbol': None,
+                    'switch_cost': 0
+                }
             
         except Exception as e:
+            self.logger.error(f"[SWITCH] 銘柄切替評価エラー: {e}", exc_info=True)
             return {
                 'date': target_date.strftime('%Y-%m-%d'),
-                'from_symbol': self.current_symbol,
-                'to_symbol': selected_symbol,
                 'switch_executed': False,
+                'from_symbol': None,
+                'to_symbol': selected_symbol,
+                'reason': f'error: {e}',
+                'force_close_symbol': None,
+                'switch_cost': 0,
                 'error': str(e)
             }
     
@@ -2078,7 +2496,7 @@ class DSSMSIntegratedBacktester:
             'source': 'simple_fallback'
         }
     
-    def _execute_multi_strategies_daily(self, target_date: datetime, symbol: str, stock_data) -> Dict[str, Any]:
+    def _execute_multi_strategies_daily(self, target_date: datetime, symbol: str, stock_data, force_close_position: dict = None) -> Dict[str, Any]:
         """
         Phase 3-C 拡張版統合実行 - 市場分析・戦略選択・ポジション管理統合
         
@@ -2089,6 +2507,7 @@ class DSSMSIntegratedBacktester:
             target_date (datetime): 判定対象日
             symbol (str): 対象銘柄コード
             stock_data (pd.DataFrame): 株価データ（ウォームアップ期間含む）
+            force_close_position (dict): FIFO強制決済用ポジション情報（force_close=True含む）。指定時はexisting_positionを上書き。
             
         Returns:
             Dict[str, Any]: {
@@ -2203,33 +2622,42 @@ class DSSMSIntegratedBacktester:
                 }
             
             # Phase 3-C Day 12 Task 2-3: existing_position判定ロジック追加
-            if self.current_position:
-                if self.current_position['symbol'] == symbol:
-                    # 銘柄継続: 既存ポジション情報を伝達
-                    existing_position = {
-                        'entry_idx': self.current_position.get('entry_idx', 0),
-                        'quantity': self.current_position.get('shares', 0),
-                        'entry_price': self.current_position.get('entry_price', 0.0),
-                        'entry_date': self.current_position.get('entry_date', None),
-                        'strategy': self.current_position.get('strategy', best_strategy_name)
-                    }
-                    self.logger.info(f"[PHASE3-C-B1] 銘柄継続: symbol={symbol}, existing_position={existing_position}")
-                else:
-                    # 銘柄切替: 強制決済のため既存ポジション情報を伝達（Cycle 7: entry_symbol追加）
-                    existing_position = {
-                        'entry_idx': self.current_position.get('entry_idx', 0),
-                        'quantity': self.current_position.get('shares', 0),
-                        'entry_price': self.current_position.get('entry_price', 0.0),
-                        'entry_date': self.current_position.get('entry_date', None),
-                        'strategy': self.current_position.get('strategy', best_strategy_name),
-                        'force_close': True,  # 銘柄切替フラグ
-                        'entry_symbol': self.current_position.get('symbol', '')  # Cycle 7: エントリー銘柄追加
-                    }
-                    self.logger.warning(f"[PHASE3-C-B1] 銘柄切替: {self.current_position['symbol']} → {symbol}, force_close=True, entry_symbol={existing_position['entry_symbol']}")
+            # Sprint 2修正: self.current_position → self.positions[symbol]
+            # Fix 2: force_close_positionが渡された場合、existing_positionを上書き
+            if force_close_position is not None:
+                existing_position = {
+                    'entry_idx': force_close_position.get('entry_idx', 0),
+                    'quantity': force_close_position.get('shares', 0),
+                    'entry_price': force_close_position.get('entry_price', 0.0),
+                    'entry_date': force_close_position.get('entry_date', None),
+                    'strategy': force_close_position.get('strategy', best_strategy_name),
+                    'entry_symbol': symbol,
+                    'force_close': True
+                }
+                self.logger.info(
+                    f"[FORCE_CLOSE] existing_position overridden: symbol={symbol}, "
+                    f"entry_price={existing_position['entry_price']:.2f}, "
+                    f"force_close=True"
+                )
+            elif symbol in self.positions:
+                # 既に同じ銘柄でポジション保有中（戦略継続）
+                existing_position = {
+                    'entry_idx': self.positions[symbol].get('entry_idx', 0),
+                    'quantity': self.positions[symbol].get('shares', 0),
+                    'entry_price': self.positions[symbol].get('entry_price', 0.0),
+                    'entry_date': self.positions[symbol].get('entry_date', None),
+                    'strategy': self.positions[symbol].get('strategy', best_strategy_name),
+                    'entry_symbol': symbol  # Cycle 7: エントリー銘柄コード
+                }
+                self.logger.info(
+                    f"[MULTI_POSITION] 銘柄継続: {symbol}, "
+                    f"既存戦略={existing_position['strategy']}, "
+                    f"保有数={len(self.positions)}/{self.max_positions}"
+                )
             else:
-                # 新規: ポジションなし
+                # ポジションなし
                 existing_position = None
-                self.logger.debug(f"[PHASE3-C-B1] 新規判定: existing_position=None")
+                self.logger.debug(f"[MULTI_POSITION] 新規判定: {symbol}, existing_position=None")
             
             # backtest_daily()実行（copilot-instructions.md: バックテスト実行必須）
             # Cycle 7: force_close時にentry_symbolのデータを取得
@@ -2294,28 +2722,16 @@ class DSSMSIntegratedBacktester:
                 }
             
             # Phase 3-C Day 12 Task 2-4: ポジション状態更新ロジック追加
-            if result['action'] == 'buy':
-                # エントリー: current_position更新
-                self.current_position = {
-                    'symbol': symbol,
-                    'strategy': best_strategy_name,
-                    'entry_price': result['price'],
-                    'shares': result['shares'],
-                    'entry_date': adjusted_target_date,
-                    'entry_idx': result.get('entry_idx', processed_data.index.get_loc(adjusted_target_date) if adjusted_target_date in processed_data.index else 0)
-                }
-                # Cycle 4-A Cycle 3改善: last_entry_price更新
-                self.last_entry_price = result['price']
-                self.logger.info(f"[PHASE3-C-B1] ポジション更新（buy）: {self.current_position}, last_entry_price={self.last_entry_price:.2f}")
-            elif result['action'] == 'sell':
-                # エグジット: current_positionクリア
-                self.logger.info(f"[PHASE3-C-B1] ポジション更新（sell）: current_position={self.current_position} → None")
-                self.current_position = None
-                # Cycle 4-A Cycle 3改善: last_entry_priceクリア
-                self.last_entry_price = None
-            else:
-                # hold: ポジション維持
-                self.logger.debug(f"[PHASE3-C-B1] ポジション維持（hold）: current_position={self.current_position}")
+            # Cycle 10-10検証: result['action']の実際の値を確認
+            self.logger.info(
+                f"[DEBUG_ACTION] result['action']='{result.get('action')}', "
+                f"signal={result.get('signal')}, "
+                f"type={type(result.get('action'))}, "
+                f"symbol={symbol}, target_date={adjusted_target_date.strftime('%Y-%m-%d')}"
+            )
+            
+            # Sprint 2削除: 古いcurrent_position更新ロジック（Line 2537-2558）
+            # 理由: Task 2-2-2で実装済みの self.positions ベースの処理に統合
             
             # 結果処理・ログ記録
             execution_time = time.time() - execution_start
@@ -2341,10 +2757,8 @@ class DSSMSIntegratedBacktester:
                             f"株数: {original_shares}株 → {affordable_shares}株（調整後必要額: {adjusted_required_cash:,.0f}円）"
                         )
                         
-                        # Cycle 12修正: current_positionのshares更新（BALANCE_CHECK調整後の株数反映）
-                        if self.current_position is not None:
-                            self.current_position['shares'] = affordable_shares
-                            self.logger.info(f"[BALANCE_CHECK] current_position['shares']更新: {original_shares} → {affordable_shares}")
+                        # Sprint 2削除: current_position['shares']更新は不要（実際のポジション追加は_process_daily_tradingで実行）
+                        # 旧コード: if self.current_position is not None: self.current_position['shares'] = affordable_shares
                         
                         # 調整後のrequired_cashを更新
                         required_cash = adjusted_required_cash
@@ -2363,6 +2777,11 @@ class DSSMSIntegratedBacktester:
             # Phase 3-C Stage 2: execution_details生成（DSSMS取引0件問題修正）
             execution_details = []
             position_update = {'return': 0, 'cost': 0}
+            self.logger.info(
+                f"[CONDITION_CHECK] date={adjusted_target_date.strftime('%Y-%m-%d')}, "
+                f"symbol={symbol}, action={result['action']}, signal={result['signal']}, "
+                f"passes_condition={result['action'] in ['buy', 'sell'] and result['signal'] != 0}"
+            )
             if result['action'] in ['buy', 'sell'] and result['signal'] != 0:
                 # backtest_daily()の結果をexecution_details形式に変換
                 execution_detail = {
@@ -2384,6 +2803,24 @@ class DSSMSIntegratedBacktester:
                     # Cycle 4-2: BUY時に現金残高を減少
                     self.cash_balance -= trade_cost
                     position_update = {'return': -trade_cost, 'cost': trade_cost}
+                    
+                    # Sprint 2: self.positionsへの追加（2026-02-15修正）
+                    self.positions[symbol] = {
+                        'strategy': best_strategy_name,
+                        'entry_price': result['price'],
+                        'shares': result['shares'],
+                        'entry_date': adjusted_target_date,
+                        'entry_idx': len(result.get('data', []))  # データ長をidxとして使用
+                    }
+                    self.logger.info(f"[POSITION_ADD] {symbol}: {result['shares']}株を追加（保有数: {len(self.positions)}/{self.max_positions}）")
+                    # ===== デバッグログ追加 (2026-02-15) =====
+                    self.logger.info(
+                        f"[POSITION_DEBUG] BUY後: {adjusted_target_date.strftime('%Y-%m-%d')}, "
+                        f"len(positions)={len(self.positions)}, "
+                        f"保有銘柄={list(self.positions.keys())}"
+                    )
+                    # ==========================================
+                    
                     self.logger.info(
                         f"[PORTFOLIO_TRADE] BUY執行: {symbol} {result['shares']}株 @ {result['price']:.2f}円, "
                         f"コスト: {trade_cost:,.0f}円, 残高: {self.cash_balance:,.0f}円"
@@ -2393,6 +2830,14 @@ class DSSMSIntegratedBacktester:
                     # Cycle 4-2: SELL時に現金残高を増加
                     self.cash_balance += trade_profit
                     position_update = {'return': trade_profit, 'cost': 0}
+                    
+                    # Sprint 2: self.positionsからの削除（2026-02-15修正）
+                    if symbol in self.positions:
+                        del self.positions[symbol]
+                        self.logger.info(f"[POSITION_DELETE] {symbol}: ポジション削除（保有数: {len(self.positions)}/{self.max_positions}）")
+                    else:
+                        self.logger.warning(f"[POSITION_DELETE] {symbol}: ポジション未登録（削除スキップ）")
+                    
                     self.logger.info(
                         f"[PORTFOLIO_TRADE] SELL執行: {symbol} {result['shares']}株 @ {result['price']:.2f}円, "
                         f"収益: {trade_profit:,.0f}円, 残高: {self.cash_balance:,.0f}円"
@@ -2402,15 +2847,16 @@ class DSSMSIntegratedBacktester:
             
             # Cycle 10-4: ポジション価値計算修正（日次終値ベースの時価評価）
             # 注: portfolio_equity_curve.csvは「その日終了時点のポートフォリオ状態」を記録
+            # Sprint 2修正: 現在の銘柄のポジション価値のみ計算（全体はループ外で計算）
             position_value = 0.0
             
-            if self.current_position is not None:
+            if symbol in self.positions:
                 # ポジション保有中: 当日終値ベースで時価評価
                 try:
                     current_price = processed_data['Adj Close'].iloc[-1] if len(processed_data) > 0 else 0
-                    position_value = self.current_position.get('shares', 0) * current_price
+                    position_value = self.positions[symbol].get('shares', 0) * current_price
                     self.logger.debug(
-                        f"[PORTFOLIO_VALUE] ポジション評価: {self.current_position.get('shares')}株 × "
+                        f"[PORTFOLIO_VALUE] ポジション評価: {self.positions[symbol].get('shares')}株 × "
                         f"{current_price:.2f}円 = {position_value:,.2f}円"
                     )
                 except Exception as e:
@@ -2751,10 +3197,10 @@ class DSSMSIntegratedBacktester:
                 try:
                     from src.utils.lazy_import_manager import get_yfinance
                     yf = get_yfinance()
-                    symbol_with_suffix = symbol if symbol.endswith('.T') else f"{symbol}.T"
-                    ticker = yf.Ticker(symbol_with_suffix)
+                    ticker = yf.Ticker(to_yfinance(symbol))
                     # auto_adjust=False指定でAdj Closeカラムを保証(VWAPBreakoutStrategy対応)
-                    stock_data = ticker.history(start=start_date, end=end_date + timedelta(days=7), auto_adjust=False)
+                    # Line 2880で既にtarget_date + 1日（exclusive対策）済み、追加の期間拡大は不要
+                    stock_data = ticker.history(start=start_date, end=end_date, auto_adjust=False)
                     
                     if 'Adj Close' not in stock_data.columns and 'Close' in stock_data.columns:
                         stock_data['Adj Close'] = stock_data['Close']
@@ -2784,7 +3230,8 @@ class DSSMSIntegratedBacktester:
                             )
                     
                     nikkei_ticker = yf.Ticker("^N225")
-                    index_data = nikkei_ticker.history(start=start_date, end=end_date + timedelta(days=7), auto_adjust=False)
+                    # Line 2880で既にtarget_date + 1日（exclusive対策）済み、追加の期間拡大は不要
+                    index_data = nikkei_ticker.history(start=start_date, end=end_date, auto_adjust=False)
                     
                     if 'Adj Close' not in index_data.columns and 'Close' in index_data.columns:
                         index_data['Adj Close'] = index_data['Close']
@@ -2935,11 +3382,12 @@ class DSSMSIntegratedBacktester:
             
             # Cycle 11-2: 正確なfinal_capital計算（cash_balance + ポジション時価評価）
             # portfolio_valueは未決済ポジションを含む計算のため、cash_balance + position_valueを使用
+            # Sprint 2修正: self.current_position → len(self.positions)チェック
             final_cash_balance = self.cash_balance
             final_position_value = 0.0
-            if self.current_position is not None:
+            if len(self.positions) > 0:
                 try:
-                    # 最終日の終値でポジション時価評価
+                    # 最終日の終値でポジション時価評価（全ポジションの合計）
                     if self.daily_results:
                         last_daily_result = self.daily_results[-1]
                         final_position_value = last_daily_result.get('position_value', 0.0)
@@ -3359,7 +3807,7 @@ class DSSMSIntegratedBacktester:
             # DSSMS専用出力先ディレクトリ設定
             output_dir = Path(f"output/dssms_integration/dssms_{timestamp}")
             output_dir.mkdir(parents=True, exist_ok=True)
-            
+                        
             self.logger.info(f"[DSSMS_OUTPUT] DSSMS専用10ファイル生成開始: {output_dir}")
             
             # 1. dssms_comprehensive_report.json - 包括分析レポート
@@ -3411,9 +3859,10 @@ class DSSMSIntegratedBacktester:
         return {
             'initial_capital': 1000000,
             'symbol_switch': {
-                # Task 1実装: 設定値最適化（DSSMS_Implementation_Plan.md参照）
-                # 目標: 85回 → 30回以下、平均保有期間 3.9日 → 10日以上
-                'min_holding_days': 10,  # 1日 → 10日に変更
+                # Sprint 1 検証用設定: 最小保有期間を5日に設定
+                # 目的: システム動作の最低限確認
+                # 修正日: 2026-02-09
+                'min_holding_days': 5,  # 10 → 5に変更（Sprint 1検証用）
                 'max_switches_per_month': 5,  # 10回 → 5回に変更
                 'switch_cost_rate': 0.001,  # 0.1%（明示的に追加）
             },
@@ -3432,14 +3881,16 @@ class DSSMSIntegratedBacktester:
         }
     
     def get_system_status(self) -> Dict[str, Any]:
-        """システム状態取得"""
+        """システム状態取得（Sprint 2: 複数銘柄保有対応）"""
         try:
             dss_available = self._check_dss_availability()
             risk_available = self._check_risk_management_availability()
             data_available = self._check_data_fetcher_availability()
             
             return {
-                'current_symbol': self.current_symbol,
+                'held_symbols': list(self.positions.keys()),  # Sprint 2: 保有銘柄リスト
+                'positions_count': len(self.positions),
+                'max_positions': self.max_positions,
                 'portfolio_value': self.portfolio_value,
                 # Phase 1 Stage 4-2: position_size削除(December 19, 2025)
                 'daily_results_count': len(self.daily_results),
@@ -3508,7 +3959,7 @@ class DSSMSIntegratedBacktester:
                 f.write("DSSMS 実行ログ\n")
                 f.write("=" * 50 + "\n")
                 f.write(f"生成日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                f.write(f"現在銘柄: {self.current_symbol}\n")
+                f.write(f"保有銘柄: {', '.join(self.positions.keys()) if self.positions else 'なし'} ({len(self.positions)}/{self.max_positions})\n")
                 f.write(f"ポートフォリオ値: {self.portfolio_value:,.0f}円\n\n")
                 
                 # 日次結果ログ
@@ -3849,11 +4300,23 @@ class DSSMSIntegratedBacktester:
             
             transactions_path = output_dir / "all_transactions.csv"
             
+            # デバッグ: self.daily_resultsの内容確認（2026-02-05追加）
+            print(f"\n[DEBUG] ========== CSV出力前のデバッグ ==========")
+            print(f"[DEBUG] self.daily_results の件数: {len(self.daily_results) if self.daily_results else 0}")
+            
             # execution_detailsから詳細取引データを抽出
             all_execution_details = []
-            for daily_result in self.daily_results:
+            for i, daily_result in enumerate(self.daily_results):
                 daily_execution_details = daily_result.get('execution_details', [])
+                if daily_execution_details:
+                    print(f"[DEBUG] daily_results[{i}] ({daily_result.get('date', 'N/A')}): {len(daily_execution_details)}件のexecution_details")
+                    for j, detail in enumerate(daily_execution_details):
+                        print(f"[DEBUG]   [{j}] action={detail.get('action')}, symbol={detail.get('symbol')}, price={detail.get('price')}, shares={detail.get('shares')}")
                 all_execution_details.extend(daily_execution_details)
+            
+            print(f"[DEBUG] all_execution_details 合計: {len(all_execution_details)}件")
+            print(f"[DEBUG] CSV出力パス: {transactions_path}")
+            print(f"[DEBUG] ==========================================\n")
             
             # BUY/SELLペアリングして取引レコードを作成
             trades = self._convert_execution_details_to_trades(all_execution_details)
@@ -3901,24 +4364,44 @@ class DSSMSIntegratedBacktester:
             all_orders = []
             for detail in execution_details:
                 action = detail.get('action', '').upper()
-                self.logger.debug(f"[DEBUG_TRADE] execution_detail: action={action}, symbol={detail.get('symbol')}, price={detail.get('price')}, shares={detail.get('shares')}, timestamp={detail.get('timestamp')}")
+                ts = detail.get('timestamp')
+                
+                # timestamp型統一: str → datetime変換（2026-02-05 修正）
+                if isinstance(ts, str):
+                    try:
+                        ts = datetime.strptime(ts, '%Y-%m-%d %H:%M:%S')
+                        detail['timestamp'] = ts  # 元のdictも更新
+                    except ValueError:
+                        self.logger.warning(f"[TIMESTAMP_PARSE] 変換失敗: {ts}")
+                
+                self.logger.debug(f"[DEBUG_TRADE] execution_detail: action={action}, symbol={detail.get('symbol')}, price={detail.get('price')}, shares={detail.get('shares')}, timestamp={ts}, type={type(ts)}")
                 if action in ['BUY', 'SELL']:
                     all_orders.append(detail)
             
-            # 時系列順でソート
-            all_orders.sort(key=lambda x: x.get('timestamp', ''))
+            # 時系列順でソート（datetime vs str エラー修正: 2026-02-05）
+            self.logger.debug(f"[SORT_DEBUG] ソート前: all_orders count={len(all_orders)}")
+            for i, order in enumerate(all_orders[:3]):  # 最初の3件のみ
+                ts = order.get('timestamp')
+                self.logger.debug(f"[SORT_DEBUG] order[{i}]: timestamp={ts}, type={type(ts)}, value={repr(ts)}")
             
-            # FIFO ペアリング（銘柄横断）
-            buy_stack = []
+            all_orders.sort(key=lambda x: x.get('timestamp', datetime.min))
+            
+            # FIFO ペアリング（銘柄別管理）
+            buy_stacks = {}  # {symbol: [buy_orders]}
             trades = []
             
             for order in all_orders:
                 action = order.get('action', '').upper()
+                symbol = order.get('symbol', order.get('ticker', ''))
+                
                 if action == 'BUY':
-                    buy_stack.append(order)
+                    if symbol not in buy_stacks:
+                        buy_stacks[symbol] = []
+                    buy_stacks[symbol].append(order)
+                    
                 elif action == 'SELL':
-                    if buy_stack:  # ペアリング可能
-                        buy_order = buy_stack.pop(0)  # FIFO
+                    if symbol in buy_stacks and buy_stacks[symbol]:  # ペアリング可能
+                        buy_order = buy_stacks[symbol].pop(0)  # FIFO (同銘柄のみ)
                         
                         # 取引レコード作成
                         entry_date = buy_order.get('timestamp', '')
@@ -3932,6 +4415,19 @@ class DSSMSIntegratedBacktester:
                         
                         # SELLのexecution_detailから価格取得（跨銘柄切替でも同様）
                         exit_price = order.get('executed_price', order.get('price', 0.0))
+                        
+                        # ペアリング成功ログ
+                        self.logger.info(
+                            f"[TRADE_MATCH] {symbol}: "
+                            f"BUY@{entry_price:.2f}({entry_date}) "
+                            f"-> SELL@{exit_price:.2f}({exit_date})"
+                        )
+                        # ペアリング成功ログ
+                        self.logger.info(
+                            f"[TRADE_MATCH] {symbol}: "
+                            f"BUY@{entry_price:.2f}({entry_date}) "
+                            f"-> SELL@{exit_price:.2f}({exit_date})"
+                        )
                         
                         if buy_symbol != sell_symbol:
                             # 跨銘柄切替: ログ記録のみ
@@ -3986,36 +4482,43 @@ class DSSMSIntegratedBacktester:
                                 self.logger.info(f"[TRADE_CONVERSION] 銘柄切替取引: {buy_symbol}(BUY) -> {sell_symbol}(SELL), PnL={pnl:,.0f}円")
                             else:
                                 self.logger.info(f"[TRADE_CONVERSION] 通常取引: {display_symbol}, PnL={pnl:,.0f}円")
+                    else:
+                        # ペアリング失敗（対応するBUYがない）
+                        self.logger.warning(
+                            f"[TRADE_MATCH] {symbol}: "
+                            f"対応するBUY注文が見つかりません (SELL日:{order.get('timestamp','?')})"
+                        )
             
             # 未決済BUY注文処理
-            for buy in buy_stack:
-                entry_date = buy.get('timestamp', '')
-                entry_price = buy.get('executed_price', buy.get('price', 0.0))
-                shares = buy.get('quantity', buy.get('shares', 0))
-                strategy_name = buy.get('strategy_name', buy.get('strategy', ''))
-                symbol = buy.get('symbol', '')
-                
-                if entry_price > 0 and shares > 0:
-                    position_value = entry_price * shares
+            for symbol, symbol_buy_stack in buy_stacks.items():
+                for buy in symbol_buy_stack:
+                    entry_date = buy.get('timestamp', '')
+                    entry_price = buy.get('executed_price', buy.get('price', 0.0))
+                    shares = buy.get('quantity', buy.get('shares', 0))
+                    strategy_name = buy.get('strategy_name', buy.get('strategy', ''))
+                    symbol = buy.get('symbol', '')
                     
-                    # 未決済取引レコード作成
-                    trade_record = {
-                        'symbol': symbol,
-                        'entry_date': entry_date,
-                        'entry_price': entry_price,
-                        'exit_date': '',  # 未決済
-                        'exit_price': 0.0,  # 未決済
-                        'shares': shares,
-                        'pnl': 0.0,  # 未決済のためPnL未確定
-                        'return_pct': 0.0,  # 未決済のため収益率未確定
-                        'holding_period_days': 0,
-                        'strategy_name': strategy_name,
-                        'position_value': position_value,
-                        'is_forced_exit': False
-                    }
-                    
-                    trades.append(trade_record)
-                    self.logger.info(f"[TRADE_CONVERSION] 未決済BUY注文を取引レコードに追加: {symbol} {shares}株 @ {entry_price}")
+                    if entry_price > 0 and shares > 0:
+                        position_value = entry_price * shares
+                        
+                        # 未決済取引レコード作成
+                        trade_record = {
+                            'symbol': symbol,
+                            'entry_date': entry_date,
+                            'entry_price': entry_price,
+                            'exit_date': '',  # 未決済
+                            'exit_price': 0.0,  # 未決済
+                            'shares': shares,
+                            'pnl': 0.0,  # 未決済のためPnL未確定
+                            'return_pct': 0.0,  # 未決済のため収益率未確定
+                            'holding_period_days': 0,
+                            'strategy_name': strategy_name,
+                            'position_value': position_value,
+                            'is_forced_exit': False
+                        }
+                        
+                        trades.append(trade_record)
+                        self.logger.info(f"[TRADE_CONVERSION] 未決済BUY注文を取引レコードに追加: {symbol} {shares}株 @ {entry_price}")
             
             self.logger.info(f"[TRADE_CONVERSION] BUY={len([o for o in all_orders if o.get('action', '').upper() == 'BUY'])}, SELL={len([o for o in all_orders if o.get('action', '').upper() == 'SELL'])}")
             self.logger.info(f"[TRADE_CONVERSION] 生成された取引レコード: {len(trades)}件")
@@ -4051,7 +4554,7 @@ class DSSMSIntegratedBacktester:
                     'cash_balance': cash_balance,
                     'position_value': position_value,
                     'total_value': total_value,
-                    'symbol': daily_result.get('symbol', self.current_symbol)
+                    'symbol': daily_result.get('symbol', ', '.join(self.positions.keys()) if self.positions else 'N/A')
                 })
             
             if curve_data:
@@ -4063,7 +4566,7 @@ class DSSMSIntegratedBacktester:
                     'cash_balance': [1000000],
                     'position_value': [0],
                     'total_value': [1000000],
-                    'symbol': [self.current_symbol]
+                    'symbol': list(self.positions.keys())
                 })
             
             df.to_csv(curve_path, index=False, encoding='utf-8-sig')
@@ -4090,7 +4593,7 @@ class DSSMSIntegratedBacktester:
                 f.write("=" * 80 + "\n")
                 f.write("DSSMS マルチ戦略動的バックテスト包括レポート\n")
                 f.write("=" * 80 + "\n")
-                f.write(f"現在の銘柄: {self.current_symbol}\n")
+                f.write(f"保有銘柄: {', '.join(self.positions.keys()) if self.positions else 'なし'} ({len(self.positions)}/{self.max_positions})\n")
                 f.write(f"レポート生成日時: {datetime.now().strftime('%Y%m%d_%H%M%S')}\n")
                 f.write(f"レポート種別: DSSMS 統合戦略実行結果\n\n")
                 
@@ -4263,7 +4766,7 @@ class DSSMSIntegratedBacktester:
             with open(summary_path, 'w', encoding='utf-8') as f:
                 f.write("DSSMS 実行サマリー\n")
                 f.write("=" * 30 + "\n")
-                f.write(f"現在銘柄: {self.current_symbol}\n")
+                f.write(f"保有銘柄: {', '.join(self.positions.keys()) if self.positions else 'なし'} ({len(self.positions)}/{self.max_positions})\n")
                 f.write(f"ポートフォリオ価値: {self.portfolio_value:,.0f}円\n")
                 f.write(f"総収益率: {portfolio_perf.get('total_return_rate', 0):.2%}\n")
                 f.write(f"成功率: {portfolio_perf.get('success_rate', 0):.1%}\n")
@@ -4411,7 +4914,7 @@ def main():
             'initial_capital': 1000000,
             'symbol_switch': {
                 'switch_management': {
-                    'min_holding_days': 10,  # 2日 → 10日に変更（Task 1）
+                    'min_holding_days': 5,  # 10 → 5に変更（Sprint 1検証用、2026-02-09）
                     'max_switches_per_month': 5,  # 8回 → 5回に変更（Task 1）
                     'switch_cost_rate': 0.001  # 0.1%（明示的に追加）
                 }

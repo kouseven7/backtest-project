@@ -406,7 +406,7 @@ def test_perfect_order_detector():
     data_dict = {
         'daily': data,
         'weekly': data.resample('W').last(),
-        'monthly': data.resample('M').last()
+        'monthly': data.resample('ME').last()
     }
     
     multi_result = detector.check_multi_timeframe_perfect_order("7203", data_dict)

@@ -172,7 +172,7 @@ class MarketAnalyzer:
                 
                 results['unified_trend'] = unified_trend
                 results['components_status']['unified_trend'] = 'success'
-                self.logger.info(f"Unified trend: {unified_trend.get('trend', 'N/A') if isinstance(unified_trend, dict) else unified_trend_result[0]}")
+                self.logger.info(f"[MARKET_TREND] Unified trend: {unified_trend.get('trend', 'N/A') if isinstance(unified_trend, dict) else unified_trend_result[0]}")
             except Exception as e:
                 self.logger.warning(f"Unified trend detection failed: {e}")
                 results['components_status']['unified_trend'] = f'failed: {str(e)}'
@@ -200,7 +200,7 @@ class MarketAnalyzer:
             confidence_score = self._calculate_confidence_score(results)
             results['confidence_score'] = confidence_score
             
-            self.logger.info(f"Market analysis completed - Regime: {market_regime.value}, Confidence: {confidence_score:.2f}")
+            self.logger.info(f"[MARKET_ANALYSIS] Market analysis completed - Regime: {market_regime.value}, Confidence: {confidence_score:.2f}")
             
         except Exception as e:
             self.logger.error(f"Comprehensive market analysis error: {e}")

@@ -68,6 +68,19 @@ except ImportError as e:
         def __init__(self):
             pass
 
+# トレンド信頼度ユーティリティのインポート
+try:
+    from src.indicators.trend_reliability_utils import get_trend_reliability_for_strategy
+except ImportError:
+    try:
+        from indicators.trend_reliability_utils import get_trend_reliability_for_strategy
+    except ImportError as e:
+        logger = logging.getLogger(__name__)
+        logger.warning(f"trend_reliability_utils import error: {e}. Enhanced trend features disabled.")
+        # フォールバック関数
+        def get_trend_reliability_for_strategy(data, strategy_name, **kwargs):
+            return {"confidence_score": 0.5, "is_reliable": False, "error": "Import failed"}
+
 # ロガーの設定
 logger = logging.getLogger(__name__)
 
@@ -182,6 +195,7 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
                                         strategy_name: str, 
                                         ticker: str,
                                         market_data: pd.DataFrame = None,
+                                        market_analysis: Dict[str, Any] = None,
                                         use_trend_validation: bool = True,
                                         integration_method: str = "adaptive") -> StrategyScore:
         """
@@ -199,7 +213,10 @@ class EnhancedStrategyScoreCalculator(StrategyScoreCalculator):
         """
         try:
             # 基本スコアの計算
-            base_score = self.calculate_strategy_score(strategy_name, ticker, market_data)
+            base_score = self.calculate_strategy_score(
+                strategy_name, ticker, market_data,
+                trend_context=market_analysis
+            )
             # Phase 5-A-11デバッグ: base_scoreの型と値を確認
             logger.debug(f"[ENHANCED_DEBUG] base_score type: {type(base_score)}, value: {base_score}")
             if not base_score:

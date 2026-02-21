@@ -194,8 +194,8 @@ class StrategyScoreCalculator:
                     logger.warning(f"No metadata available for strategy {strategy_name}")
                     return None
                 
-                # メタデータを ticker_data 形式に変換
-                ticker_data = self._convert_metadata_to_ticker_data(metadata, ticker)
+                # メタデータを ticker_data 形式に変換（trend_contextをmarket_analysisとして渡す）
+                ticker_data = self._convert_metadata_to_ticker_data(metadata, ticker, market_analysis=trend_context)
                 logger.debug(f"Using metadata for {strategy_name}, ticker {ticker}")
             
             # 各コンポーネントスコアを計算
@@ -415,7 +415,7 @@ class StrategyScoreCalculator:
                 try:
                     detector = UnifiedTrendDetector(market_data, strategy_name=strategy_name)
                     current_trend = detector.detect_trend()
-                    trend_strength = detector.get_trend_confidence()
+                    trend_strength = detector.get_confidence_score()
                 except Exception as e:
                     logger.warning(f"Failed to detect trend using UnifiedTrendDetector: {e}")
                     current_trend = 'neutral'
@@ -453,13 +453,14 @@ class StrategyScoreCalculator:
             logger.warning(f"Error calculating confidence: {e}")
             return 0.5
     
-    def _convert_metadata_to_ticker_data(self, metadata: Dict[str, Any], ticker: str) -> Dict[str, Any]:
+    def _convert_metadata_to_ticker_data(self, metadata: Dict[str, Any], ticker: str, market_analysis: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         メタデータを ticker_data 形式に変換
         
         Args:
             metadata: 戦略メタデータ (v1.0 or v2.0 schema)
             ticker: ティッカーシンボル
+            market_analysis: 市場分析結果（オプショナル、デバッグ用）
             
         Returns:
             Dict[str, Any]: ticker_data 形式のデータ
@@ -467,6 +468,20 @@ class StrategyScoreCalculator:
         try:
             # DEBUG: メソッド呼び出しを確認
             strategy_name = metadata.get('strategy_id', metadata.get('strategy_name', 'unknown'))
+            
+            # DEBUG: 市場レジーム情報の受信確認（Step 2追加）
+            if market_analysis:
+                regime = market_analysis.get('market_regime', 'UNKNOWN')
+                logger.info(
+                    f"[DEBUG_METADATA] Strategy: {strategy_name}, "
+                    f"Received regime: {regime}"
+                )
+            else:
+                logger.info(
+                    f"[DEBUG_METADATA] Strategy: {strategy_name}, "
+                    f"No market_analysis received"
+                )
+            
             logger.debug(f"[METADATA_DEBUG] Converting metadata for strategy: {strategy_name}")
             logger.debug(f"[METADATA_DEBUG] Metadata keys: {list(metadata.keys())[:10]}")  # 最初の10キーのみ
             
@@ -482,17 +497,49 @@ class StrategyScoreCalculator:
             if not performance_metrics and 'trend_adaptability' in metadata:
                 # trend_adaptability から performance_metrics を生成
                 trend_data = metadata.get('trend_adaptability', {})
-                uptrend_data = trend_data.get('uptrend', {})
+                
+                # 市場レジームに応じたデータ選択ロジック (Step 5追加)
+                current_regime = 'uptrend'  # デフォルト
+                
+                if market_analysis:
+                    regime_str = market_analysis.get('market_regime', 'uptrend')
+                    
+                    if isinstance(regime_str, str):
+                        regime_lower = regime_str.lower()
+                        
+                        # レジーム判定とキー名マッピング
+                        if 'downtrend' in regime_lower or 'down' in regime_lower:
+                            current_regime = 'downtrend'
+                        elif 'sideways' in regime_lower or 'range' in regime_lower or 'neutral' in regime_lower:
+                            current_regime = 'range-bound'  # メタデータのキー名に合わせる
+                        else:
+                            current_regime = 'uptrend'
+                    
+                    logger.info(
+                        f"[REGIME_ADAPTIVE] Strategy: {strategy_name}, "
+                        f"Market regime: {regime_str} -> Using: {current_regime} data"
+                    )
+                
+                # 市場レジームに応じたデータを取得
+                regime_data = trend_data.get(current_regime, {})
+                
+                # フォールバック: current_regimeのデータがない場合はuptrendを使用
+                if not regime_data:
+                    logger.warning(
+                        f"[REGIME_ADAPTIVE] No {current_regime} data for {strategy_name}, "
+                        f"falling back to uptrend"
+                    )
+                    regime_data = trend_data.get('uptrend', {})
                 
                 # DEBUG: 抽出元データをログ出力
-                logger.debug(f"[METADATA_DEBUG] schema_version={schema_version}, uptrend_data keys={list(uptrend_data.keys())}")
+                logger.debug(f"[METADATA_DEBUG] schema_version={schema_version}, regime_data keys={list(regime_data.keys())}")
                 
                 if schema_version == '2.0':
                     # v2.0: performance_metrics キーを使用
-                    perf = uptrend_data.get('performance_metrics', {})
+                    perf = regime_data.get('performance_metrics', {})
                 else:
                     # v1.0: 直接キーを使用
-                    perf = uptrend_data
+                    perf = regime_data
                 
                 # DEBUG: 抽出したデータをログ出力
                 logger.debug(f"[METADATA_DEBUG] perf data: {perf}")

@@ -180,6 +180,7 @@ class BaseStrategy:
         result = self.data.copy()  # データのコピーを作成して元のデータに影響を与えない
         result['Entry_Signal'] = 0
         result['Exit_Signal'] = 0
+        result['Exit_Reason'] = 'none'  # Task 1実装: エグジット理由列を追加
         result['Position'] = 0  # ポジション管理列を追加（0: なし, 1: ロング）
         
         # 戦略名を追加
@@ -305,20 +306,29 @@ class BaseStrategy:
                     entry_idx = idx
                     entry_count += 1
                     
-                    # Pattern C実装: 当日終値でエントリー（ルックアヘッドバイアス無視）
-                    # 2025-12-29: 従来ロジックに戻す（テスト目的）
+                    # ルックアヘッドバイアス禁止対応（2026-01-22修正）
+                    # idx日のシグナル → idx+1日の始値で執行（copilot-instructions.md準拠）
                     # Phase 2統合: スリッページ・取引コスト対応（2025-12-23追加）
                     # デフォルト: slippage=0.001（0.1%）、transaction_cost=0.0（0%）
-                    current_close = float(result['Adj Close'].iloc[idx])
+                    if idx + 1 < len(result):
+                        next_open = float(result['Open'].iloc[idx + 1])
+                    else:
+                        # 最終日の場合は当日終値を使用（例外処理）
+                        next_open = float(result['Adj Close'].iloc[idx])
+                        self.logger.warning(
+                            f"[ENTRY] Final day entry: using Close instead of next Open. "
+                            f"idx={idx}, date={result.index[idx]}"
+                        )
+                    
                     slippage = self.params.get("slippage", 0.001)
                     transaction_cost = self.params.get("transaction_cost", 0.0)
-                    entry_price = current_close * (1 + slippage + transaction_cost)
+                    entry_price = next_open * (1 + slippage + transaction_cost)
                     self.entry_prices[idx] = entry_price
                     
                     # デバッグログ: エントリー記録（Phase 2対応）
                     self.logger.debug(
                         f"[ENTRY #{entry_count}] idx={idx}, date={result.index[idx]}, "
-                        f"current_close={current_close:.2f}, entry_price={entry_price:.2f}, "
+                        f"next_open={next_open:.2f}, entry_price={entry_price:.2f}, "
                         f"slippage+cost={slippage+transaction_cost:.4f}, in_position={in_position}"
                     )
             
@@ -335,16 +345,25 @@ class BaseStrategy:
                     )
                 
                 # entry_idxを渡してgenerate_exit_signalを呼び出す
-                exit_signal = self.generate_exit_signal(idx, entry_idx=entry_idx)
+                exit_result = self.generate_exit_signal(idx, entry_idx=entry_idx)
+                
+                # Task 1実装: タプル返り値対応（signal, reason）
+                if isinstance(exit_result, tuple):
+                    exit_signal, exit_reason = exit_result
+                else:
+                    # 後方互換性: int返り値のサポート
+                    exit_signal = exit_result
+                    exit_reason = 'unknown'
                 
                 # デバッグログ: イグジット判定
                 if exit_signal == -1:
                     exit_count += 1
                     result.at[result.index[idx], 'Exit_Signal'] = -1
                     result.at[result.index[idx], 'Position'] = 0
+                    result.at[result.index[idx], 'Exit_Reason'] = exit_reason
                     
                     # デバッグログ: イグジット記録
-                    self.logger.debug(f"[EXIT #{exit_count}] idx={idx}, date={result.index[idx]}, exit_signal={exit_signal}, in_position(before)={in_position}")
+                    self.logger.debug(f"[EXIT #{exit_count}] idx={idx}, date={result.index[idx]}, exit_signal={exit_signal}, exit_reason={exit_reason}, in_position(before)={in_position}")
                     
                     in_position = False
                     entry_idx = -1
@@ -354,13 +373,97 @@ class BaseStrategy:
             last_idx = len(result) - 1
             result.at[result.index[last_idx], 'Exit_Signal'] = -1
             result.at[result.index[last_idx], 'Position'] = 0
+            result.at[result.index[last_idx], 'Exit_Reason'] = 'force_close'
             self.logger.info(f"バックテスト終了時のオープンポジションを強制決済: エントリー日={result.index[entry_idx]}, 決済日={result.index[last_idx]}")
 
         # エントリーとエグジットの回数を検証
         entry_count = (result['Entry_Signal'] == 1).sum()
         exit_count = (result['Exit_Signal'] == -1).sum()
         
-        # [WARMUP_DEBUG] バックテスト結果サマリー
+        # [Profit_Loss計算] Priority 1実装（2026-01-22）
+        # 目的: PF・勝率・シャープレシオ計算可能にする
+        # copilot-instructions.md準拠: 実データのみ使用、フォールバック禁止
+        result['Profit_Loss'] = 0.0
+        result['Entry_Price'] = np.nan
+        result['Exit_Price'] = np.nan
+        result['Trade_ID'] = 0  # 取引IDを追加（後続分析用）
+        
+        trade_id = 0
+        current_entry_idx = None
+        current_entry_price = None
+        
+        for idx in range(len(result)):
+            # エントリー記録
+            if result['Entry_Signal'].iloc[idx] == 1:
+                trade_id += 1
+                current_entry_idx = idx
+                current_entry_price = self.entry_prices.get(idx)
+                
+                if current_entry_price is None:
+                    self.logger.error(
+                        f"[PL_CALC_ERROR] Entry price not found for idx={idx}, date={result.index[idx]}. "
+                        f"This should never happen (copilot-instructions.md violation)."
+                    )
+                    raise RuntimeError(f"Entry price missing at idx={idx}. This indicates a bug in backtest() logic.")
+                
+                result.at[result.index[idx], 'Entry_Price'] = current_entry_price
+                result.at[result.index[idx], 'Trade_ID'] = trade_id
+                
+                self.logger.debug(
+                    f"[PL_CALC] Trade #{trade_id} Entry: idx={idx}, date={result.index[idx]}, "
+                    f"entry_price={current_entry_price:.2f}"
+                )
+            
+            # エグジット記録・損益計算
+            if result['Exit_Signal'].iloc[idx] == -1:
+                if current_entry_idx is None or current_entry_price is None:
+                    self.logger.error(
+                        f"[PL_CALC_ERROR] Exit without entry at idx={idx}, date={result.index[idx]}. "
+                        f"This should never happen."
+                    )
+                    raise RuntimeError(f"Exit without entry at idx={idx}. This indicates a bug in backtest() logic.")
+                
+                # エグジット価格計算（ルックアヘッドバイアス防止: 翌日始値）
+                # Phase 1b修正: idx日目のシグナルでidx+1日目の始値で執行
+                if idx + 1 < len(result):
+                    exit_price = float(result['Open'].iloc[idx + 1])
+                else:
+                    # 最終日の場合は終値を使用（例外処理）
+                    exit_price = float(result['Adj Close'].iloc[idx])
+                    self.logger.warning(
+                        f"[PL_CALC] Final day exit: using Close instead of next Open. "
+                        f"idx={idx}, date={result.index[idx]}, exit_price={exit_price:.2f}"
+                    )
+                
+                # Phase 2統合: スリッページ・取引コスト対応（エグジット時）
+                slippage = self.params.get("slippage", 0.001)
+                transaction_cost = self.params.get("transaction_cost", 0.0)
+                exit_price_adjusted = exit_price * (1 - slippage - transaction_cost)
+                
+                # 損益計算
+                profit_loss = exit_price_adjusted - current_entry_price
+                result.at[result.index[idx], 'Exit_Price'] = exit_price_adjusted
+                result.at[result.index[idx], 'Profit_Loss'] = profit_loss
+                result.at[result.index[idx], 'Trade_ID'] = trade_id
+                
+                self.logger.debug(
+                    f"[PL_CALC] Trade #{trade_id} Exit: idx={idx}, date={result.index[idx]}, "
+                    f"exit_price={exit_price:.2f}, exit_price_adjusted={exit_price_adjusted:.2f}, "
+                    f"profit_loss={profit_loss:.2f} (entry={current_entry_price:.2f})"
+                )
+                
+                # リセット
+                current_entry_idx = None
+                current_entry_price = None
+        
+        # [Profit_Loss統計] バックテスト結果サマリーに追加
+        total_profit = result[result['Profit_Loss'] > 0]['Profit_Loss'].sum()
+        total_loss = abs(result[result['Profit_Loss'] < 0]['Profit_Loss'].sum())
+        profit_factor = total_profit / total_loss if total_loss > 0 else 0.0
+        win_count = (result['Profit_Loss'] > 0).sum()
+        loss_count = (result['Profit_Loss'] < 0).sum()
+        win_rate = win_count / (win_count + loss_count) if (win_count + loss_count) > 0 else 0.0
+        
         self.logger.info(
             f"[WARMUP_SUMMARY] Backtest completed: "
             f"strategy={self.__class__.__name__}, "
@@ -369,6 +472,11 @@ class BaseStrategy:
             f"trading_rows={len(result) - warmup_filtered_count}, "
             f"entry_signals={entry_count}, "
             f"exit_signals={exit_count}"
+        )
+        
+        self.logger.info(
+            f"[PL_SUMMARY] Profit Factor={profit_factor:.2f}, Win Rate={win_rate:.1%} "
+            f"({win_count}W/{loss_count}L), Total Profit={total_profit:.2f}, Total Loss={total_loss:.2f}"
         )
         
         if entry_count != exit_count:

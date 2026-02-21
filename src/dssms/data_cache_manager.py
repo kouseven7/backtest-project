@@ -26,6 +26,7 @@ if project_root not in sys.path:
     sys.path.append(project_root)
 
 from config.logger_config import setup_logger
+from src.utils.symbol_utils import to_yfinance
 
 
 class CacheError(Exception):
@@ -484,7 +485,7 @@ class DataCacheManager:
             self.cache_stats['data_fetches'] += 1
             
             # yfinanceでデータ取得
-            ticker = yf.Ticker(f"{symbol}.T")  # 東証銘柄
+            ticker = yf.Ticker(to_yfinance(symbol))  # 東証銘柄
             # auto_adjust=False: Adj Closeカラムを取得するために必須
             # yfinanceのhistory()はend_dateをexclusiveとして扱うため、
             # target_date当日のデータを確実に取得するには+3日の余裕を持たせる

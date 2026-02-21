@@ -337,7 +337,7 @@ class MarketConditionMonitor:
                     result["weekly"] = self._check_perfect_order_timeframe(weekly_data, 13, 26, 52)
                 
                 # 月足相当チェック
-                monthly_data = data.resample('M').last().dropna()
+                monthly_data = data.resample('ME').last().dropna()
                 if len(monthly_data) >= 60:
                     result["monthly"] = self._check_perfect_order_timeframe(monthly_data, 9, 24, 60)
             

@@ -1,22 +1,39 @@
 # Copilot Instructions - 日本語版
 
-🎯 【最優先目的】リアルトレードで利益を上げる
+## 🚨 **最優先原則（これだけは絶対に守る）**
+
+### **実行第一**
+1. ユーザーが何かを依頼したら、該当するツールを即座に実行する
+2. 実行結果をそのまま貼り付ける
+3. 実行せずに報告を作成しない
+
+### **わからなければ聞く**
+- 実行方法がわからない → ユーザーに聞く
+- 推測で報告を作成しない
+
+---
+
+## 🎯 **最優先目的：リアルトレードで利益を上げる**
+
 本プロジェクトの最終目的は「リアルトレードで利益を上げること」である。
 すべてのコーディング・設計判断は、この目的達成のために行う。
-目的達成のための階層
+
+### 目的達成のための階層
 1. バックテストで利益を上げる戦略を構築
    ├─ 正確性の担保（バグ・オーバーフィッティングの排除）
    └─ 実取引件数 > 0 の検証必須
 2. ペーパートレードで戦略を検証
 3. kabu STATION API経由でリアルトレードへ移行
 4. 実利益の獲得
-コーディング時の判断基準
 
-✅ この実装は「利益向上」または「バックテストの正確性向上」に寄与するか？
-❌ 手段が目的化していないか？（例：保有期間の固定自体が目的になっていないか）
-❌ バックテストの信頼性を損なう実装になっていないか？
+### コーディング時の判断基準
+- この実装は「利益向上」または「バックテストの正確性向上」に寄与するか？
+- 手段が目的化していないか？
+- バックテストの信頼性を損なう実装になっていないか？
 
 迷ったら、常にこの目的に立ち返って判断する。
+
+---
 
 ## 📐 **プロジェクトアーキテクチャ**
 
@@ -39,22 +56,37 @@
 - **決定論モード**: DSSMS切替は完全再現可能（ランダム性排除）
 - **分散投資なし**: 単一最適銘柄への集中運用（将来拡張余地のみ確保）
 
+---
+
 ## 🎯 **基本原則**
 1. **バックテスト実行必須**: `strategy.backtest()` の呼び出しをスキップしない
 2. **検証なしの報告禁止**: 実際の実行結果を確認せず「成功」と報告しない
 3. **わからないことは正直に**: 不明な場合は推測せず「わかりません」と回答
 
+---
+
 ## 📋 **品質ルール**
 - **報告前に検証**: 実際の実行、実際の数値を確認してから報告
-- **Excel出力禁止**: CSV+JSON+TXTを使用（2025-10-08以降）Excel入力は許可する
+- **Excel出力禁止**: CSV+JSON+TXTを使用（2025-10-08以降）、Excel入力は許可
 
-## ⚠️ **既知の問題**
-- Unicode文字はWindowsターミナルでエラーを起こす可能性があるため、2025/10/20より⚠️などの絵文字は使用しないこと
+---
 
-## 🚨 **必須チェック項目**
+## ⚠️ **禁止事項（過去の問題から確立）**
+
+### **絵文字・Unicode禁止**
+- Windowsターミナルでエラーを起こすため、絵文字は使用しないこと（2025/10/20以降）
+
+### **AI虚偽報告の禁止**
+- 実装なしで「完了」報告しない
+- 推測で報告を作成しない
+- 実行証拠なしで成功報告しない
+
+### **必須チェック項目**
 - 実際の取引件数 > 0 を検証
 - 出力ファイルの内容を確認（存在確認だけでは不十分）
 - 推測ではなく正確な数値を報告
+
+---
 
 ## 🚫 **フォールバック機能の制限**
 - **モック/ダミー/テストデータを使用するフォールバック禁止**: 実データと乖離する結果を生成するフォールバック機能は実装しない
@@ -62,7 +94,9 @@
 - **フォールバック実行時のログ必須**: フォールバック機能が動作した場合は必ずログに記録し、ユーザーが認識できるようにする
 - **フォールバックを発見した場合はいかなる場合も報告する**: フォールバックを発見した場合は過去のモジュールであっても通知する
 
-## � **ルックアヘッドバイアス禁止（2025-12-20以降必須）**
+---
+
+## 🛡️ **ルックアヘッドバイアス禁止（2025-12-20以降必須）**
 
 ### **基本ルール**
 ```python
@@ -76,7 +110,7 @@ entry_price = data['Open'].iloc[idx + 1] * (1 + slippage)
 ### **3原則**
 1. **前日データで判断**: インジケーターは`.shift(1)`必須
 2. **翌日始値でエントリー**: `data['Open'].iloc[idx + 1]`
-3. **取引コスト考慮**: スリッページ・を加味
+3. **取引コスト考慮**: スリッページを加味
 
 ### **対象**
 全戦略（BaseStrategy派生クラス全て）
@@ -91,7 +125,9 @@ entry_price = data['Open'].iloc[idx + 1] * (1 + slippage)
 - [ ] インジケーターに`.shift(1)`適用
 - [ ] スリッページ考慮（推奨0.1%）
 
-## �📝 **コーディング規約**
+---
+
+## 📝 **コーディング規約**
 
 ### **モジュールヘッダーコメント（2025-10-20以降必須）**
 
@@ -107,17 +143,12 @@ entry_price = data['Open'].iloc[idx + 1] * (1 + slippage)
 - [機能1]
 - [機能2]
 - [機能3]
-- ...（最低3つ、できれば5-7つ）
 
 統合コンポーネント:
 - [連携するモジュール1]: [連携内容]
-- [連携するモジュール2]: [連携内容]
-- ...
 
 セーフティ機能/注意事項:
 - [重要な制約や注意点1]
-- [重要な制約や注意点2]
-- ...
 
 Author: Backtest Project Team
 Created: YYYY-MM-DD
@@ -125,24 +156,14 @@ Last Modified: YYYY-MM-DD
 """
 ```
 
-**ヘッダーコメントのチェックリスト:**
-- [ ] モジュール名と役割が明確
-- [ ] 主な機能が3つ以上リストアップされている
-- [ ] 他のモジュールとの連携が明記されている（該当する場合）
-- [ ] セーフティ機能や注意事項が記載されている
-- [ ] 作成日が記入されている
-
 **例外:**
 - `__init__.py`（空の場合）
 - テストファイル（`test_*.py`）には簡略版でも可
 - 5行未満の極小ユーティリティスクリプト
 
-**違反時の対応:**
-新規モジュール作成時にヘッダーコメントが不足している場合、コード生成を**中断**し、ユーザーに以下を確認:
-1. ヘッダーコメントを追加するか
-2. このモジュールは例外に該当するか
+**重要**: このプロジェクトの目的はバックテストの実行とリアルトレードの実行であり、実際のバックテストを妨げる、またはスキップする変更は目的に反します。
 
-**重要**:このプロジェクトの目的はバックテストの実行とリアルトレードの実行であり、実際のバックテストを妨げる、またはスキップする変更は目的に反します。
+---
 
 ## 📊 **データ取得ルール（2025-12-03以降必須）**
 
@@ -154,12 +175,6 @@ Last Modified: YYYY-MM-DD
 - yfinanceのデフォルト（`auto_adjust=True`）では`Adj Close`カラムが取得されない（7カラムのみ）
 - `auto_adjust=False`指定で8カラム取得され、`Adj Close`が含まれる
 - DSSMS等の戦略は`Adj Close`を使用するため、未指定は致命的エラーの原因となる
-
-**対象箇所:**
-以下の6箇所は特に重要（2025-12-03修正完了済み）:
-1. `data_fetcher.py` Line 181, 229, 242: `yf_download(..., auto_adjust=False)`
-2. `data_cache_manager.py` Line 489, 498: `ticker.history(..., auto_adjust=False)`
-3. `config/error_handling.py` Line 78: `yf.download(..., auto_adjust=False)`
 
 **コード例:**
 ```python
@@ -183,7 +198,7 @@ stock_data = ticker.history(start=start_date, end=end_date)  # auto_adjust未指
 - [ ] 取得データに`Adj Close`カラムが含まれることを確認
 - [ ] CSVキャッシュ保存時に`Adj Close`が保存されることを確認
 
-**重要**: 新規にyfinanceを使用するコードを作成する際は、必ずこのルールを遵守すること。
+---
 
 ## 📁 **テストファイル配置ルール**
 
@@ -199,17 +214,12 @@ stock_data = ticker.history(start=start_date, end=end_date)  # auto_adjust未指
 ### **一時テスト (tests/temp/)**
 - **命名**: `test_YYYYMMDD_<feature>.py`
 - **用途**: 新機能の動作確認、一度のみの検証
-- **削除基準**:
-  - [ ] 全アサーション成功
-  - [ ] 実データ検証完了（モック/ダミー不使用）
-  - [ ] フォールバックなし動作確認
-  - [ ] `docs/test_history/` に記録済み
 - **削除**: `python tests/cleanup_temp_tests.py`
 
 ### **継続テスト (tests/core/)**
 - **用途**: 回帰テスト、CI/CD自動テスト
 
-**重要**: エージェントモードでテストを作成する際は、必ず適切なフォルダに配置すること。
+---
 
 ## 🔧 **開発ワークフロー**
 
@@ -256,6 +266,8 @@ ticker, start, end, stock_data, index_data = get_parameters_and_data(
 )
 ```
 
+---
+
 ## 🐛 **デバッグTips**
 
 ### **戦略でトレードが0件の場合**
@@ -269,8 +281,201 @@ ticker, start, end, stock_data, index_data = get_parameters_and_data(
 2. `results_df`に取引履歴が含まれるか確認
 3. 統一出力エンジン呼び出し時のパラメータ確認
 
-## 📊 **重要なファイル**
+### **リファクタリング・再実装時のGit履歴活用**
+1. **過去の実装を削除・再実装する際の手順**:
+   - 削除コミットの差分を必ず確認: `git show <commit-hash> --stat`
+   - 削除前のコードを確認: `git show <commit-hash>^:<file>`
+   - 削除されたコードの機能リストを作成
+2. **大規模な削除（100行以上）時の記録必須**:
+   - 削除理由と影響範囲をdocs/design/に文書化
+   - コミットメッセージに設計判断を詳細に記載
+   - 将来の再実装に備えた参考資料の作成
 
+---
+
+## 🔍 **ウォームアップ期間エントリー問題（2026-02-10修正済み）**
+
+**症状**: `all_transactions.csv`に`trading_start_date`より前のエントリーが記録される
+
+**原因**: `backtest_daily()`が`trading_start_date`を受け取らず、`generate_entry_signal()`でフィルタリングしていない
+
+**修正箇所**（全3箇所）:
+1. **dssms_integrated_main.py** Line 2490付近:
+   ```python
+   result = strategy.backtest_daily(
+       adjusted_target_date, processed_data, 
+       existing_position=existing_position,
+       trading_start_date=self.dssms_backtest_start_date,  # 追加
+       **kwargs
+   )
+   ```
+
+2. **戦略クラスのbacktest_daily()シグネチャ**（GCStrategy、ContrarianStrategy等）:
+   ```python
+   def backtest_daily(self, current_date, stock_data, 
+                      existing_position=None, 
+                      trading_start_date=None,  # 追加
+                      **kwargs):
+       # backtest_daily()内部でtrading_start_dateを保存
+       self.trading_start_date = trading_start_date
+       if trading_start_date is not None:
+           self.logger.info(f"[WARMUP_FILTER] trading_start_date設定: {trading_start_date.strftime('%Y-%m-%d')}")
+   ```
+
+3. **戦略クラスのgenerate_entry_signal()内部**（GCStrategy、ContrarianStrategy等）:
+   ```python
+   def generate_entry_signal(self, idx):
+       # ウォームアップ期間フィルタリング
+       if hasattr(self, 'trading_start_date') and self.trading_start_date is not None:
+           current_date_at_idx = self.data.index[idx]
+           if isinstance(self.trading_start_date, str):
+               trading_start_ts = pd.Timestamp(self.trading_start_date)
+           elif isinstance(self.trading_start_date, pd.Timestamp):
+               trading_start_ts = self.trading_start_date
+           else:
+               trading_start_ts = pd.Timestamp(self.trading_start_date)
+           
+           # タイムゾーン考慮したtz-naive比較
+           if trading_start_ts.tz is not None:
+               trading_start_ts = trading_start_ts.tz_localize(None)
+           if current_date_at_idx.tz is not None:
+               current_date_at_idx = current_date_at_idx.tz_localize(None)
+           
+           if current_date_at_idx < trading_start_ts:
+               self.logger.info(f"[WARMUP_SKIP] idx={idx}, current_date={current_date_at_idx.strftime('%Y-%m-%d')}, trading_start_date={trading_start_ts.strftime('%Y-%m-%d')}")
+               return 0
+   ```
+
+**検証方法**:
+```python
+# verify_warmup_fix.pyスクリプトで確認
+python verify_warmup_fix.py
+# 期待結果: ウォームアップ期間エントリー: 0件
+```
+
+**ログ確認**:
+```bash
+# [WARMUP_FILTER]ログを確認
+grep "\[WARMUP_FILTER\]" output/dssms_integration/dssms_*/dssms_execution_log.txt
+# [WARMUP_SKIP]ログを確認（エントリースキップ件数）
+grep "\[WARMUP_SKIP\]" output/dssms_integration/dssms_*/dssms_execution_log.txt
+```
+
+**重要**: 新規戦略を実装する際は、必ずこの3箇所の修正パターンを適用すること。
+
+---
+
+## 🔍 **BUY/SELLペアリング価格混線バグ（2026-02-17修正済み）**
+
+**症状**: `all_transactions.csv`で異なる銘柄の価格が混線し、PnLが±200,000円超の異常値になる（特に強制決済時）
+
+**具体例**:
+- 8233 (高島屋): entry=1,253円 → exit=**4,097円** (実際は1,264円) → PnL=+284,325円 (異常)
+- 6301 (日本製鋼): entry=4,224円 → exit=**1,264円** (実際は4,350円) → PnL=-296,022円 (異常)
+
+**原因**: `_convert_execution_details_to_trades()` の `buy_stack` が全銘柄共通スタックで、銘柄チェックなしでBUY/SELLをペアリング
+
+**問題コード**:
+```python
+# バグあり: 全銘柄共通スタック
+buy_stack = []
+for order in all_orders:
+    if order['action'] == 'BUY':
+        buy_stack.append(order)
+    elif order['action'] == 'SELL':
+        buy_order = buy_stack.pop(0)  # 銘柄チェックなし！
+```
+
+**修正コード**:
+```python
+# 修正済み: 銘柄別スタック管理
+buy_stacks = {}  # {symbol: [buy_orders]}
+for order in all_orders:
+    symbol = order.get('symbol', '')
+    if order['action'] == 'BUY':
+        if symbol not in buy_stacks:
+            buy_stacks[symbol] = []
+        buy_stacks[symbol].append(order)
+    elif order['action'] == 'SELL':
+        if symbol in buy_stacks and buy_stacks[symbol]:
+            buy_order = buy_stacks[symbol].pop(0)  # 同銘柄のみマッチング
+```
+
+**修正内容**:
+- ファイル: `src/dssms/dssms_integrated_main.py` (Line 4346-4449)
+- コミット: `05e6ffcc8ffb24d34ae5b99ed6efd413224e71e5`
+- 変更行数: 89行修正
+
+**検証方法**:
+```bash
+# [TRADE_MATCH]ログで銘柄が一致しているか確認
+grep "\[TRADE_MATCH\]" output/dssms_integration/dssms_*/logs/*.log
+
+# all_transactions.csvでPnLが異常値でないか確認
+# ±200,000円以上は要注意
+```
+
+**新規追加ログ**:
+```
+[TRADE_MATCH] 8233: BUY@1253.75(2024-12-06) -> SELL@1264.00(2024-12-31)
+[TRADE_MATCH] 6301: BUY@4224.22(2024-12-12) -> SELL@4097.00(2024-12-18)
+[TRADE_MATCH] 6301: BUY@4266.26(2024-12-25) -> SELL@4350.00(2024-12-31)
+```
+
+**関連ドキュメント**:
+- `docs/investigation/20251211_git_history_investigation_report.md` (過去の類似症状)
+- `docs/CYCLE10-9_SWITCH_FORCE_CLOSE_INVESTIGATION.md` (銘柄切替時の問題)
+
+**重要**: 同一銘柄の複数ポジション保有時に、このバグが顕著に現れる。[TRADE_MATCH]ログで必ず銘柄一致を確認すること。
+
+---
+
+## ✅ **BUY/SELL処理実装チェックリスト**
+
+新しいBUY/SELL処理を実装する際は、以下のチェックリストを必ず確認すること。
+
+### **BUY処理実装時（4項目全てクリア必須）**
+- [ ] **1. 資金残高更新**: `self.cash_balance -= trade_cost`
+- [ ] **2. ポジション追加**: `self.positions[symbol] = {...}`
+- [ ] **3. 取引履歴記録**: `execution_details.append(...)`
+- [ ] **4. ログ出力**: `self.logger.info("[POSITION_ADD] ...")`
+
+### **SELL処理実装時（4項目全てクリア必須）**
+- [ ] **1. 資金残高更新**: `self.cash_balance += trade_profit`
+- [ ] **2. ポジション削除**: `del self.positions[symbol]`（KeyErrorチェック実装）
+- [ ] **3. 取引履歴記録**: `execution_details.append(...)`
+- [ ] **4. ログ出力**: `self.logger.info("[POSITION_DELETE] ...")`
+
+### **エラーハンドリング**
+- [ ] 資金不足チェック（`if self.cash_balance < trade_cost:`）
+- [ ] max_positionsチェック（`if len(self.positions) >= self.max_positions:`）
+- [ ] ポジション存在チェック（`if symbol in self.positions:`）
+
+### **検証方法**
+```bash
+# ログ確認
+grep "\[POSITION_ADD\]" output/dssms_integration/dssms_*/dssms_execution_log.txt
+grep "\[POSITION_DELETE\]" output/dssms_integration/dssms_*/dssms_execution_log.txt
+grep "\[FINAL_CLOSE\]" output/dssms_integration/dssms_*/dssms_execution_log.txt
+```
+
+```python
+# all_transactions.csv完全性確認
+import pandas as pd
+df = pd.read_csv("output/dssms_integration/dssms_*/all_transactions.csv")
+assert df['exit_date'].notna().all(), "exit_date に空の行があります"
+assert df['exit_price'].notna().all(), "exit_price に空の行があります"
+assert df['pnl'].notna().all(), "pnl に空の行があります"
+print("✅ all_transactions.csv検証成功")
+```
+
+### **設計テンプレート参考**
+BUY/SELL処理やポジション管理を実装する際は、以下の3要素が必須：
+1. **初期化（Initialization）**: いつ、どこで、どのように初期化するか
+2. **状態更新（State Update）**: どこで、いつ、どのように更新するか（**BUY/SELL実行時の更新処理を明記**）
+3. **状態確認（State Verification）**: どのように検証するか
+
+---
 
 ## 🔗 **統合ポイント**
 
@@ -285,6 +490,8 @@ ticker, start, end, stock_data, index_data = get_parameters_and_data(
 ### **出力エンジン統合**
 - 全戦略の結果は統一出力エンジン経由でCSV+JSON+TXT形式で保存
 - Excel依存は完全に廃止済み（入力のみ許可）
+
+---
 
 ## 📋 **Phase実装状況（2026-01-03更新）**
 

@@ -234,7 +234,36 @@ class VWAPBreakoutStrategy(BaseStrategy):
         """
         エントリーシグナルを生成する。
         条件を満たさない場合は理由をDEBUGログに出す（デバッグ用）
+        
+        Issue調査報告20260210修正: ウォームアップ期間フィルタリング追加
         """
+        # ウォームアップ期間フィルタリング（Issue調査報告20260210対応）
+        if hasattr(self, 'trading_start_date') and self.trading_start_date is not None:
+            try:
+                current_date_at_idx = self.data.index[idx]
+                # pd.Timestampに変換して比較
+                if not isinstance(current_date_at_idx, pd.Timestamp):
+                    current_date_at_idx = pd.Timestamp(current_date_at_idx)
+                if not isinstance(self.trading_start_date, pd.Timestamp):
+                    trading_start_ts = pd.Timestamp(self.trading_start_date)
+                else:
+                    trading_start_ts = self.trading_start_date
+                
+                # タイムゾーン統一
+                if current_date_at_idx.tz is not None:
+                    current_date_at_idx = current_date_at_idx.tz_localize(None)
+                if trading_start_ts.tz is not None:
+                    trading_start_ts = trading_start_ts.tz_localize(None)
+                
+                if current_date_at_idx < trading_start_ts:
+                    logger.debug(
+                        f"[WARMUP_SKIP] ウォームアップ期間のためエントリースキップ: "
+                        f"{current_date_at_idx.strftime('%Y-%m-%d')} < {trading_start_ts.strftime('%Y-%m-%d')}"
+                    )
+                    return 0  # エントリー禁止
+            except Exception as e:
+                logger.warning(f"[WARMUP_FILTER_ERROR] trading_start_date比較エラー: {e}")
+        
         try:
             # 必要なデータ準備
             sma_short_key = 'SMA_' + str(self.params["sma_short"])
@@ -522,7 +551,7 @@ class VWAPBreakoutStrategy(BaseStrategy):
         
         return self.data
 
-    def backtest_daily(self, current_date, stock_data, existing_position=None, **kwargs):
+    def backtest_daily(self, current_date, stock_data, existing_position=None, trading_start_date=None, **kwargs):
         """
         VWAPBreakoutStrategy 日次バックテスト実行
         
@@ -534,11 +563,22 @@ class VWAPBreakoutStrategy(BaseStrategy):
         Cycle 27修正: entry_symbol_data使用
         - force_close時はentry_symbol_data（元の銘柄）でエグジット価格を取得
         
+        Sprint 1.5修正: force_close強制決済実装（2026-02-09）
+        - 銘柄切替時（existing_position['force_close']=True）は無条件で決済
+        - generate_exit_signal()をスキップし、即座にエグジット
+        - 旧銘柄のentry_symbol_dataで翌日始値決済（ルックアヘッドバイアス防止）
+        - [VWAP_FORCE_CLOSE]ログタグで追跡可能
+        
         Parameters:
             current_date (datetime): 判定対象日
             stock_data (pd.DataFrame): 最新の株価データ
             existing_position (dict, optional): 既存ポジション情報
-            **kwargs: 追加引数（entry_symbol_data等）
+                - force_close (bool): 強制決済フラグ（銘柄切替時True）
+                - entry_symbol (str): エントリー時の銘柄コード
+                - entry_price (float): エントリー価格
+                - quantity (int): 保有数量
+            **kwargs: 追加引数
+                - entry_symbol_data (pd.DataFrame): 旧銘柄の価格データ（force_close時必須）
             
         Returns:
             dict: {
@@ -558,6 +598,14 @@ class VWAPBreakoutStrategy(BaseStrategy):
         """
         from datetime import timedelta
         import pandas as pd
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
+        # Issue調査報告20260210修正: trading_start_dateを保存（generate_entry_signal()で使用）
+        self.trading_start_date = trading_start_date
+        if trading_start_date is not None:
+            logger.info(f"[WARMUP_FILTER] trading_start_date設定: {trading_start_date.strftime('%Y-%m-%d') if hasattr(trading_start_date, 'strftime') else trading_start_date}")
         
         # Phase 1: current_dateの型変換・検証
         if isinstance(current_date, str):
@@ -632,6 +680,86 @@ class VWAPBreakoutStrategy(BaseStrategy):
             
             # 現在のポジション状態を確認
             if existing_position is not None:
+                # ============================================================
+                # Sprint 1.5修正: force_close強制決済（最優先処理）
+                # ============================================================
+                # 【削除禁止】このブロックは銘柄切替時の旧ポジション決済に必須
+                # 削除すると、ポジションが残り続け、all_transactions.csvが不完全になる
+                # 参照: MULTI_POSITION_IMPLEMENTATION_PLAN.md Sprint 1.5
+                # ============================================================
+                if is_force_close:
+                    entry_symbol = existing_position.get('entry_symbol', 'Unknown')
+                    entry_price = existing_position.get('entry_price', 0.0)
+                    quantity = existing_position.get('quantity', 0)
+                    
+                    logger.warning(
+                        f"[VWAP_FORCE_CLOSE] 銘柄切替による強制決済を実行\n"
+                        f"  旧銘柄: {entry_symbol}\n"
+                        f"  エントリー価格: {entry_price:.2f}円\n"
+                        f"  保有数量: {quantity}株\n"
+                        f"  決済日: {current_date.strftime('%Y-%m-%d')}"
+                    )
+                    
+                    # 旧銘柄のデータで決済価格を取得
+                    # Cycle 27修正: entry_symbol_data（旧銘柄）を使用
+                    if entry_symbol_data is not None:
+                        data_for_exit = entry_symbol_data
+                        logger.info(f"[VWAP_FORCE_CLOSE] entry_symbol_dataを使用（{len(entry_symbol_data)}行、銘柄={entry_symbol}）")
+                    else:
+                        logger.error(f"[VWAP_FORCE_CLOSE] entry_symbol_dataが未提供。stock_dataで代替。")
+                        data_for_exit = stock_data
+                    
+                    # 翌日始値で決済（ルックアヘッドバイアス防止）
+                    exit_price = None
+                    try:
+                        if current_idx + 1 < len(data_for_exit):
+                            exit_price = data_for_exit.iloc[current_idx + 1]['Open']
+                            logger.info(f"[VWAP_FORCE_CLOSE] 翌日始値で決済: {exit_price:.2f}円")
+                        else:
+                            # 最終日フォールバック（copilot-instructions.md制約: 境界条件のみ許可）
+                            exit_price = data_for_exit.iloc[current_idx]['Close']
+                            logger.warning(
+                                f"[VWAP_FORCE_CLOSE] 最終日のため終値で決済: {exit_price:.2f}円\n"
+                                f"  （境界条件フォールバック: copilot-instructions.md準拠）"
+                            )
+                        
+                        # 損益計算
+                        pnl = (exit_price - entry_price) * quantity
+                        pnl_pct = ((exit_price / entry_price) - 1) * 100 if entry_price > 0 else 0.0
+                        
+                        logger.warning(
+                            f"[VWAP_FORCE_CLOSE] 強制決済完了\n"
+                            f"  決済価格: {exit_price:.2f}円\n"
+                            f"  損益: {pnl:,.0f}円 ({pnl_pct:+.2f}%)"
+                        )
+                        
+                        # 強制決済を実行（早期return）
+                        return {
+                            'action': 'exit',
+                            'signal': -1,
+                            'price': float(exit_price),
+                            'shares': quantity,
+                            'reason': f'VWAPBreakout: Force close due to symbol switch on {current_date.strftime("%Y-%m-%d")}'
+                        }
+                    except Exception as e:
+                        logger.error(
+                            f"[VWAP_FORCE_CLOSE] 決済価格取得エラー: {e}\n"
+                            f"  現在インデックス: {current_idx}\n"
+                            f"  データ長: {len(data_for_exit)}"
+                        )
+                        # エラー時もエグジットを返す（ポジションを残さない）
+                        fallback_price = existing_position.get('entry_price', 0.0)
+                        logger.warning(f"[VWAP_FORCE_CLOSE] フォールバック: エントリー価格で決済 ({fallback_price:.2f}円)")
+                        return {
+                            'action': 'exit',
+                            'signal': -1,
+                            'price': float(fallback_price),
+                            'shares': quantity,
+                            'reason': f'VWAPBreakout: Force close (error fallback) on {current_date.strftime("%Y-%m-%d")}'
+                        }
+                # ============================================================
+                # 通常のエグジット判定（force_close=Falseの場合のみ実行）
+                # ============================================================
                 # 既存ポジションあり: エグジット判定
                 entry_idx = existing_position.get('entry_idx', current_idx)
                 exit_signal = self.generate_exit_signal(current_idx, entry_idx)

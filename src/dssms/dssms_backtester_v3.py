@@ -28,6 +28,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 # DSSMSコンポーネントインポート
 from src.dssms.perfect_order_detector import PerfectOrderDetector
 from src.dssms.hierarchical_ranking_system import HierarchicalRankingSystem
+from src.utils.symbol_utils import to_yfinance
 from src.dssms.comprehensive_scoring_engine import ComprehensiveScoringEngine
 from src.dssms.intelligent_switch_manager import IntelligentSwitchManager
 from src.dssms.market_condition_monitor import MarketConditionMonitor
@@ -67,9 +68,11 @@ class DSSBacktesterV3:
         # 銘柄リスト（Nikkei225動的選択システム - 完全統合版）
         try:
             from src.dssms.nikkei225_screener import Nikkei225Screener
+            from datetime import datetime
             self.nikkei225_screener = Nikkei225Screener()
             # デフォルト資金で銘柄をフィルタリング（100万円想定）
-            self.symbol_universe = self.nikkei225_screener.get_filtered_symbols(1000000)
+            # Note: 初期化時はリアルトレードモード（target_date=現在日時）
+            self.symbol_universe = self.nikkei225_screener.get_filtered_symbols(1000000, datetime.now())
             self.logger.info(f"[OK] Nikkei225動的選択: {len(self.symbol_universe)}銘柄取得成功")
         except Exception as e:
             self.logger.error(f"Nikkei225Screener初期化失敗: {e}")
@@ -235,7 +238,7 @@ class DSSBacktesterV3:
         for symbol in symbols:
             try:
                 # 日本株式の場合、.T を付加
-                ticker_symbol = f"{symbol}.T"
+                ticker_symbol = to_yfinance(symbol)
                 self.logger.info(f"データ取得中: {ticker_symbol}")
                 
                 # yfinance でデータ取得

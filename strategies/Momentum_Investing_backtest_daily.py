@@ -125,7 +125,7 @@ def backtest_daily(self, current_date, stock_data: pd.DataFrame, existing_positi
         self.data = original_data
 
 
-def _handle_exit_logic(self, current_idx: int, existing_position: Dict, stock_data: pd.DataFrame, current_date: pd.Timestamp) -> Dict[str, Any]:
+def _handle_exit_logic(self, current_idx: int, existing_position: Dict, stock_data: pd.DataFrame, current_date: pd.Timestamp, entry_symbol_data: pd.DataFrame = None) -> Dict[str, Any]:
     """
     エグジット判定ロジック（Momentum戦略固有）
     
@@ -134,20 +134,138 @@ def _handle_exit_logic(self, current_idx: int, existing_position: Dict, stock_da
     - ルックアヘッドバイアス防止: 前日データで判定
     - 翌日始値でエグジット価格設定
     - 既存のATRストップロス、モメンタム失速、最大保有期間等を考慮
+    
+    Cycle 27修正: entry_symbol_data対応
+    - force_close時（entry_symbol_data提供時）は元の銘柄のデータでエグジット価格を取得
+    - 通常時は現在の銘柄（stock_data）でエグジット価格を取得
+    
+    Sprint 1.5修正 (2026-02-09): force_close強制決済実装
+    - force_close=True の場合、エグジット条件に関わらず強制決済
+    - 銘柄切替時の旧ポジション自動決済を保証
+    
+    Parameters:
+        current_idx: 現在のインデックス
+        existing_position: 既存ポジション情報
+            {
+                'entry_idx': int,
+                'quantity': int,
+                'entry_price': float,
+                'entry_date': datetime,
+                'force_close': bool,         # Sprint 1.5: 強制決済フラグ
+                'entry_symbol': str          # Cycle 7: エントリー銘柄コード
+            }
+        stock_data: 現在の銘柄データ
+        current_date: 判定日時
+        entry_symbol_data: force_close時の元の銘柄データ（オプション）
+    
+    Returns:
+        dict: {'action': 'exit'|'hold', 'signal': -1|0, 'price': float, 'shares': int, 'reason': str}
+    
+    Note:
+        - copilot-instructions.md準拠（ルックアヘッドバイアス防止、フォールバック制限）
+        - force_close=True の場合、generate_exit_signal()をスキップして強制決済
+        - 最終日フォールバックは限定的使用（copilot-instructions.md Section 68-73準拠）
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     try:
         # エントリーインデックスの取得（existing_positionから）
         entry_idx = existing_position.get('entry_idx', current_idx)
+        is_force_close = existing_position.get('force_close', False)
+        
+        # Cycle 27修正: force_close時はentry_symbol_dataを使用
+        if is_force_close and entry_symbol_data is not None:
+            data_for_exit = entry_symbol_data
+            logger.info(
+                f"[MOMENTUM_EXIT] force_close=True: entry_symbol_dataを使用 "
+                f"(rows={len(entry_symbol_data)}, symbol={existing_position.get('entry_symbol', 'Unknown')})"
+            )
+        else:
+            data_for_exit = stock_data
+            logger.debug(f"[MOMENTUM_EXIT] force_close={is_force_close}: stock_dataを使用")
         
         # 【重要】entry_pricesに記録（generate_exit_signal()が参照する）
         if entry_idx not in self.entry_prices:
             self.entry_prices[entry_idx] = existing_position.get('entry_price', 0.0)
         
+        # ============================================================
+        # Sprint 1.5修正: force_close強制決済（最優先処理）
+        # ============================================================
+        # 【削除禁止】このブロックは銘柄切替時の旧ポジション決済に必須
+        # 削除すると、ポジションが残り続け、all_transactions.csvが不完全になる
+        # 参照: MULTI_POSITION_IMPLEMENTATION_PLAN.md Sprint 1.5
+        # ============================================================
+        if is_force_close:
+            # 強制決済ログ（デバッグ用詳細情報）
+            entry_symbol = existing_position.get('entry_symbol', 'Unknown')
+            entry_price = existing_position.get('entry_price', 0.0)
+            quantity = existing_position.get('quantity', 0)
+            
+            logger.warning(
+                f"[MOMENTUM_FORCE_CLOSE] 銘柄切替による強制決済を実行"
+            )
+            logger.info(
+                f"[MOMENTUM_FORCE_CLOSE] Position Info: "
+                f"entry_symbol={entry_symbol}, "
+                f"entry_price={entry_price:.2f}円, "
+                f"quantity={quantity}株, "
+                f"date={current_date.strftime('%Y-%m-%d')}"
+            )
+            
+            # エグジット価格取得（entry_symbol_data優先）
+            if current_idx + 1 < len(data_for_exit):
+                # 標準: 翌日始値（ルックアヘッドバイアス防止）
+                exit_price = data_for_exit.iloc[current_idx + 1]['Open']
+                data_source = "entry_symbol_data" if entry_symbol_data is not None else "stock_data"
+                price_type = "Open (next day)"
+            else:
+                # フォールバック: 最終日は当日終値
+                # 理由: current_idx + 1 が存在しない境界条件
+                # copilot-instructions.md Section 68-73: 限定的フォールバック使用を許可
+                exit_price = data_for_exit.iloc[current_idx]['Close']
+                data_source = f"{'entry_symbol_data' if entry_symbol_data is not None else 'stock_data'} (Close fallback)"
+                price_type = "Close (final day)"
+                logger.warning(
+                    f"[MOMENTUM_FORCE_CLOSE] Final day exit: using Close price fallback. "
+                    f"idx={current_idx}, date={current_date.strftime('%Y-%m-%d')}"
+                )
+            
+            # 決済価格ログ
+            logger.info(
+                f"[MOMENTUM_FORCE_CLOSE] Exit Price: {exit_price:.2f}円 "
+                f"(source={data_source}, type={price_type})"
+            )
+            
+            # 損益計算（参考情報）
+            pnl = (exit_price - entry_price) * quantity
+            pnl_pct = ((exit_price / entry_price) - 1) * 100 if entry_price > 0 else 0.0
+            
+            logger.info(
+                f"[MOMENTUM_FORCE_CLOSE] P&L: {pnl:,.0f}円 ({pnl_pct:+.2f}%), "
+                f"entry={entry_price:.2f}円 → exit={exit_price:.2f}円"
+            )
+            
+            # 強制決済実行
+            return {
+                'action': 'exit',
+                'signal': -1,
+                'price': float(exit_price),
+                'shares': quantity,
+                'reason': f'Force close due to symbol switch from {entry_symbol}'
+            }
+        # ============================================================
+        # Sprint 1.5修正ここまで
+        # ============================================================
+        
+        # ------------------------------------------------------------
+        # 通常のエグジット判定（force_close=False）
+        # ------------------------------------------------------------
         # Momentum戦略固有のエグジット判定（既存メソッドを活用）
         # 注意: idx+1アクセスが必要なため、最終日チェック
-        if current_idx + 1 >= len(stock_data):
+        if current_idx + 1 >= len(data_for_exit):
             # 最終日の場合は当日終値でエグジット（境界条件）
-            exit_price = stock_data.iloc[current_idx]['Close']
+            exit_price = data_for_exit.iloc[current_idx]['Close']
             logger.warning(f"[MomentumInvesting.exit] Final day exit: {current_date}")
             
             return {
@@ -163,7 +281,7 @@ def _handle_exit_logic(self, current_idx: int, existing_position: Dict, stock_da
         if exit_signal == -1:
             # エグジットシグナル発生
             # 【重要】翌日始値でエグジット（ルックアヘッドバイアス防止）
-            exit_price = stock_data.iloc[current_idx + 1]['Open']
+            exit_price = data_for_exit.iloc[current_idx + 1]['Open']
             
             # Series型のままの場合はスカラー化
             if isinstance(exit_price, pd.Series):

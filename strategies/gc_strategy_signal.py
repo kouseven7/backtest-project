@@ -50,19 +50,33 @@ class GCStrategy(BaseStrategy):
             price_column = "Close"
             self.price_column = price_column
         
-        # デフォルトパラメータの設定（Phase 2最終推奨パラメータ: 2026-01-18最適化完了）
+        # デフォルトパラメータの設定（Phase 1.13 AND条件フィルター: 2026-01-27変更）
         default_params = {
             "short_window": 5,       # 短期移動平均期間
             "long_window": 25,       # 長期移動平均期間
-            "take_profit": 0.15,     # 利益確定（15%）← Phase 2最終推奨（Phase 1/2最適化完了）
+            "take_profit": None,     # 利益確定なし（Phase 1.13: トレンドフォロー維持、TASK 5-B推奨）
             "stop_loss": 0.03,       # ストップロス（3%）← Phase 2-1最適化完了（2%は悪化、5%は横ばい）
-            "trailing_stop_pct": 0.05,  # トレーリングストップ（5%）← Phase 2最終推奨（Phase 1最適化完了）
-            "max_hold_days": 300,    # 最大保有期間（300日、実質無効化）
+            "trailing_stop_pct": 0.10,  # トレーリングストップ（10%）← Phase 1.13: TASK 5-B推奨（PF1.15期待）
+            "max_hold_days": 300,    # 最大保有期間（300日、実質無効）
             "exit_on_death_cross": True,  # デッドクロスでイグジットするかどうか
             
-            # トレンドフィルター設定
-            "trend_filter_enabled": False,  # デフォルトは無効（マルチ戦略システムで既にフィルタリング済み）  # 統一トレンド判定の有効化
-            "allowed_trends": ["uptrend"]  # 許可するトレンド（上昇トレンド）
+            # トレンドフィルター設定（既存）
+            "trend_filter_enabled": False,  # デフォルトは無効（マルチ戦略システムで既にフィルタリング済み）
+            "allowed_trends": ["uptrend"],  # 許可するトレンド（上昇トレンド）
+            
+            # Phase 1.13 AND条件フィルター（SMA乖離 AND トレンド強度）
+            "use_entry_filter": True,         # エントリーフィルター有効化（普遍性0.80達成）
+            "filter_mode": "or",              # フィルターモード: OR条件（Phase 1.13比較検証中、2026-01-28変更）
+            
+            # Phase 1.13: トレンド強度フィルター（ADX）
+            "trend_strength_enabled": True,   # トレンド強度フィルター有効化
+            "trend_strength_period": 14,      # ADX計算期間
+            "trend_strength_percentile": 67,  # 閾値パーセンタイル（67%ile=高トレンド）
+            
+            # Phase 1.13: SMA乖離フィルター（AND条件では5.0%）
+            "sma_divergence_enabled": True,   # SMA乖離フィルター有効化
+            "sma_divergence_threshold": 5.0,  # SMA乖離閾値（%）AND条件では5.0%（Phase 1.13検証済み）
+            "sma_divergence_period": 25,      # SMA期間（long_windowと同じ）
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -92,6 +106,10 @@ class GCStrategy(BaseStrategy):
         if f"SMA_{self.long_window}" not in self.data.columns:
             self.data[f"SMA_{self.long_window}"] = self.data[self.price_column].rolling(window=self.long_window).mean().shift(1)
         
+        # Phase 1.13 Priority 2: AND/ORフィルター初期化
+        if self.params.get("use_entry_filter", False):
+            self._initialize_filters()
+        
         # 統一トレンド検出器の初期化
         # 最新時点でのトレンド判定をコンソールに出力
         if len(self.data) > 0:
@@ -119,10 +137,139 @@ class GCStrategy(BaseStrategy):
             1, 0
         )
 
+    def _initialize_filters(self):
+        """
+        Phase 1.13 Priority 2: AND/ORフィルター用インジケーター初期化
+        
+        トレンド強度（ADX）とSMA乖離率を計算し、フィルター閾値を設定。
+        """
+        # トレンド強度（ADX）計算
+        if self.params.get("trend_strength_enabled", True):
+            period = self.params.get("trend_strength_period", 14)
+            if 'ADX' not in self.data.columns:
+                self.data['ADX'] = self._calculate_adx(period)
+            
+            # 銘柄別閾値計算（67%ile）
+            percentile = self.params.get("trend_strength_percentile", 67)
+            adx_values = self.data['ADX'].dropna()
+            self.trend_strength_threshold = np.percentile(adx_values, percentile)
+            
+            self.logger.info(
+                f"[FILTER_INIT] Trend Strength: ADX period={period}, "
+                f"threshold={self.trend_strength_threshold:.2f} ({percentile}%ile)"
+            )
+        
+        # SMA乖離率計算
+        if self.params.get("sma_divergence_enabled", True):
+            sma_period = self.params.get("sma_divergence_period", self.long_window)
+            if 'SMA_Divergence' not in self.data.columns:
+                sma = self.data[self.price_column].rolling(window=sma_period).mean()
+                self.data['SMA_Divergence'] = ((self.data[self.price_column] - sma) / sma) * 100
+            
+            threshold = self.params.get("sma_divergence_threshold", 5.0)
+            self.logger.info(
+                f"[FILTER_INIT] SMA Divergence: period={sma_period}, threshold={threshold:.1f}%"
+            )
+
+    def _calculate_adx(self, period: int = 14) -> pd.Series:
+        """
+        ADX（Average Directional Index）計算
+        
+        トレンド強度を0-100の範囲で計算。高い値ほど強いトレンド。
+        
+        Args:
+            period: 計算期間（デフォルト14日）
+        
+        Returns:
+            pd.Series: ADX値（0-100）
+        """
+        # True Range計算
+        high_low = self.data['High'] - self.data['Low']
+        high_close = np.abs(self.data['High'] - self.data['Close'].shift(1))
+        low_close = np.abs(self.data['Low'] - self.data['Close'].shift(1))
+        tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+        
+        # Directional Movement計算
+        plus_dm = self.data['High'] - self.data['High'].shift(1)
+        minus_dm = self.data['Low'].shift(1) - self.data['Low']
+        plus_dm[plus_dm < 0] = 0
+        minus_dm[minus_dm < 0] = 0
+        plus_dm[(plus_dm - minus_dm) < 0] = 0
+        minus_dm[(minus_dm - plus_dm) < 0] = 0
+        
+        # ATR and Directional Indicators
+        atr = tr.rolling(window=period).mean()
+        plus_di = 100 * (plus_dm.rolling(window=period).mean() / atr)
+        minus_di = 100 * (minus_dm.rolling(window=period).mean() / atr)
+        
+        # DX and ADX
+        dx = 100 * np.abs(plus_di - minus_di) / (plus_di + minus_di)
+        adx = dx.rolling(window=period).mean()
+        
+        return adx
+
+    def _check_entry_filter(self, idx: int) -> bool:
+        """
+        Phase 1.13 Priority 2: AND/ORフィルター判定
+        
+        トレンド強度とSMA乖離の条件をAND/ORで判定。
+        
+        Args:
+            idx: 現在のインデックス
+        
+        Returns:
+            bool: True=フィルター通過、False=フィルター不通過
+        """
+        # トレンド強度チェック
+        trend_ok = True
+        if self.params.get("trend_strength_enabled", True):
+            current_adx = self.data['ADX'].iloc[idx]
+            if pd.isna(current_adx):
+                trend_ok = False
+            else:
+                trend_ok = current_adx >= self.trend_strength_threshold
+        
+        # SMA乖離チェック
+        sma_ok = True
+        if self.params.get("sma_divergence_enabled", True):
+            current_divergence = abs(self.data['SMA_Divergence'].iloc[idx])
+            if pd.isna(current_divergence):
+                sma_ok = False
+            else:
+                threshold = self.params.get("sma_divergence_threshold", 5.0)
+                sma_ok = current_divergence < threshold
+        
+        # AND/OR判定
+        filter_mode = self.params.get("filter_mode", "or")
+        threshold = self.params.get("sma_divergence_threshold", 5.0)  # ログ用に再取得
+        
+        if filter_mode == "and":
+            result = trend_ok and sma_ok
+            self.logger.info(
+                f"[FILTER_AND] idx={idx}, ADX={self.data['ADX'].iloc[idx]:.2f}>=thresh={self.trend_strength_threshold:.2f}={trend_ok}, "
+                f"SMA_div={abs(self.data['SMA_Divergence'].iloc[idx]):.2f}%<{threshold:.1f}%={sma_ok}, result={result}"
+            )
+        elif filter_mode == "or":
+            result = trend_ok or sma_ok
+            self.logger.info(
+                f"[FILTER_OR] idx={idx}, ADX={self.data['ADX'].iloc[idx]:.2f}>=thresh={self.trend_strength_threshold:.2f}={trend_ok}, "
+                f"SMA_div={abs(self.data['SMA_Divergence'].iloc[idx]):.2f}%<{threshold:.1f}%={sma_ok}, result={result}"
+            )
+        else:
+            # 無効なモード（デフォルトOR）
+            self.logger.warning(f"[FILTER_ERROR] Invalid filter_mode={filter_mode}, using OR")
+            result = trend_ok or sma_ok
+        
+        return result
+
     def generate_entry_signal(self, idx: int) -> int:
         """
         指定されたインデックス位置でのエントリーシグナルを生成する。
         短期移動平均が長期移動平均を上回り、かつトレンドが上昇トレンドの場合、1を返す。
+        
+        Issue調査報告20260210修正: ウォームアップ期間フィルタリング追加
+        - trading_start_date未満の日付ではエントリーシグナルを0に設定
+        - バックテスト期間外のエントリーを防止
         
         Parameters:
             idx (int): 現在のインデックス
@@ -130,6 +277,33 @@ class GCStrategy(BaseStrategy):
         Returns:
             int: エントリーシグナル（1: エントリー, 0: なし）
         """
+        # ウォームアップ期間フィルタリング（Issue調査報告20260210対応）
+        if hasattr(self, 'trading_start_date') and self.trading_start_date is not None:
+            try:
+                current_date_at_idx = self.data.index[idx]
+                # pd.Timestampに変換して比較
+                if not isinstance(current_date_at_idx, pd.Timestamp):
+                    current_date_at_idx = pd.Timestamp(current_date_at_idx)
+                if not isinstance(self.trading_start_date, pd.Timestamp):
+                    trading_start_ts = pd.Timestamp(self.trading_start_date)
+                else:
+                    trading_start_ts = self.trading_start_date
+                
+                # タイムゾーン統一
+                if current_date_at_idx.tz is not None:
+                    current_date_at_idx = current_date_at_idx.tz_localize(None)
+                if trading_start_ts.tz is not None:
+                    trading_start_ts = trading_start_ts.tz_localize(None)
+                
+                if current_date_at_idx < trading_start_ts:
+                    self.logger.debug(
+                        f"[WARMUP_SKIP] ウォームアップ期間のためエントリースキップ: "
+                        f"{current_date_at_idx.strftime('%Y-%m-%d')} < {trading_start_ts.strftime('%Y-%m-%d')}"
+                    )
+                    return 0  # エントリー禁止
+            except Exception as e:
+                self.logger.warning(f"[WARMUP_FILTER_ERROR] trading_start_date比較エラー: {e}")
+        
         if idx < self.long_window:  # 長期移動平均の計算に必要な日数分のデータがない場合
             return 0
             
@@ -176,12 +350,22 @@ class GCStrategy(BaseStrategy):
         # 緩和後のエントリー条件（ゴールデンクロス or トレンド継続中）
         entry_signal = golden_cross or uptrend_continuation
 
-        if entry_signal:
-            return 1
-            
-        return 0
+        if not entry_signal:
+            return 0
+        
+        # Phase 1.13 Priority 2: AND/ORフィルター適用
+        if self.params.get("use_entry_filter", False):
+            filter_passed = self._check_entry_filter(idx)
+            if not filter_passed:
+                self.logger.debug(
+                    f"[FILTER_REJECT] idx={idx}, date={self.data.index[idx]}, "
+                    f"GC signal but filter rejected"
+                )
+                return 0
+        
+        return 1
 
-    def generate_exit_signal(self, idx: int, entry_idx: int = -1) -> int:
+    def generate_exit_signal(self, idx: int, entry_idx: int = -1):
         """
         イグジットシグナルを生成する
         
@@ -190,16 +374,18 @@ class GCStrategy(BaseStrategy):
             entry_idx (int): エントリー時のインデックス（BaseStrategyから渡される）
             
         Returns:
-            int: イグジットシグナル（-1: イグジット, 0: なし）
+            tuple: (signal, reason)
+                signal (int): イグジットシグナル（-1: イグジット, 0: なし）
+                reason (str): エグジット理由（'stop_loss', 'trailing_stop', 'dead_cross', 'take_profit', 'force_close', 'none'）
         """
         if idx < self.params["long_window"]:
-            return 0
+            return (0, 'none')
         
         # entry_idxが渡されていない場合はシグナルを返さない
         # （BaseStrategy.backtest()は必ずentry_idxを渡すため、ここには来ない）
         if entry_idx < 0:
             self.logger.debug(f"[EXIT CHECK] idx={idx}, entry_idx={entry_idx} (< 0), returning 0")
-            return 0
+            return (0, 'none')
         
         # エントリー価格を取得
         entry_price = self.entry_prices.get(entry_idx)
@@ -207,10 +393,16 @@ class GCStrategy(BaseStrategy):
         # Phase 1b修正: イグジット価格を翌日始値に変更（ルックアヘッドバイアス修正）
         # 理由: idx日目の終値を見てからidx日目の終値で売ることは不可能
         # リアルトレードでは翌日（idx+1日目）の始値でイグジット
-        current_price = float(self.data['Open'].iloc[idx + 1])
+        # Cycle 4修正: 最終日チェック追加（idx + 1が範囲外の場合は当日終値を使用）
+        if idx + 1 < len(self.data):
+            current_price = float(self.data['Open'].iloc[idx + 1])
+        else:
+            # 最終日の場合は当日終値を使用（例外処理）
+            current_price = float(self.data['Adj Close'].iloc[idx])
+            self.logger.warning(f"[EXIT CHECK] Final day: using Close instead of next Open. idx={idx}, date={self.data.index[idx]}")
         
         # デバッグログ: 価格情報
-        self.logger.debug(f"[EXIT CHECK] idx={idx}, entry_idx={entry_idx}, entry_price={entry_price}, current_price={current_price:.2f} (next_day_open)")
+        self.logger.debug(f"[EXIT CHECK] idx={idx}, entry_idx={entry_idx}, entry_price={entry_price}, current_price={current_price:.2f}")
         
         # entry_priceがNoneの場合はエラー（フォールバック禁止）
         if entry_price is None:
@@ -231,7 +423,7 @@ class GCStrategy(BaseStrategy):
             if prev_short_ma >= prev_long_ma and short_ma < long_ma:
                 self.logger.info(f"デッドクロスによるイグジット: 日付={self.data.index[idx]}")
                 self.logger.debug(f"[EXIT REASON] Death Cross: prev_short={prev_short_ma:.2f}, prev_long={prev_long_ma:.2f}, short={short_ma:.2f}, long={long_ma:.2f}")
-                return -1
+                return (-1, 'dead_cross')
     
         # 2. トレーリングストップ
         if entry_idx not in self.high_prices:
@@ -245,29 +437,33 @@ class GCStrategy(BaseStrategy):
         if current_price < trailing_stop:
             self.logger.info(f"トレーリングストップによるイグジット: 日付={self.data.index[idx]}")
             self.logger.debug(f"[EXIT REASON] Trailing Stop: {current_price:.2f} (next_day_open) < {trailing_stop:.2f}")
-            return -1
+            return (-1, 'trailing_stop')
     
         # 3. 利益確定
-        take_profit_price = entry_price * (1 + self.params.get("take_profit", 0.05))
-        if current_price >= take_profit_price:
-            self.logger.info(f"利益確定によるイグジット: 日付={self.data.index[idx]}")
-            self.logger.debug(f"[EXIT REASON] Take Profit: {current_price:.2f} (next_day_open) >= {take_profit_price:.2f}")
-            return -1
+        take_profit = self.params.get("take_profit")
+        if take_profit is not None:
+            take_profit_price = entry_price * (1 + take_profit)
+            if current_price >= take_profit_price:
+                self.logger.info(f"利益確定によるイグジット: 日付={self.data.index[idx]}")
+                self.logger.debug(f"[EXIT REASON] Take Profit: {current_price:.2f} (next_day_open) >= {take_profit_price:.2f}")
+                return (-1, 'take_profit')
     
         # 4. 損切り
         stop_loss_price = entry_price * (1 - self.params.get("stop_loss", 0.03))
+        # デバッグ: stop loss評価を常にログ出力
+        self.logger.info(f"[STOP_LOSS_CHECK] idx={idx}, date={self.data.index[idx]}, entry_price={entry_price:.2f}, current_price={current_price:.2f}, stop_loss_price={stop_loss_price:.2f}, triggered={current_price <= stop_loss_price}")
         if current_price <= stop_loss_price:
-            self.logger.info(f"損切りによるイグジット: 日付={self.data.index[idx]}")
-            self.logger.debug(f"[EXIT REASON] Stop Loss: {current_price:.2f} (next_day_open) <= {stop_loss_price:.2f}")
-            return -1
+            self.logger.warning(f"【損切り発動】損切りによるイグジット: 日付={self.data.index[idx]}")
+            self.logger.warning(f"[EXIT REASON] Stop Loss: {current_price:.2f} (next_day_open) <= {stop_loss_price:.2f}")
+            return (-1, 'stop_loss')
     
         # 5. 最大保有期間
         days_held = idx - entry_idx
         if days_held >= self.params.get("max_hold_days", 20):
             self.logger.info(f"最大保有期間によるイグジット: 日付={self.data.index[idx]}")
-            return -1
+            return (-1, 'force_close')
     
-        return 0
+        return (0, 'none')
 
     def load_optimized_parameters(self) -> bool:
         """
@@ -331,7 +527,7 @@ class GCStrategy(BaseStrategy):
             info['optimized_params'] = self._approved_params
         return info
 
-    def backtest_daily(self, current_date, stock_data: pd.DataFrame, existing_position=None, **kwargs):
+    def backtest_daily(self, current_date, stock_data: pd.DataFrame, existing_position=None, trading_start_date=None, **kwargs):
         """
         日次バックテスト実行（Phase 3-C Day 11実装）
         
@@ -344,6 +540,10 @@ class GCStrategy(BaseStrategy):
         - force_close時はentry_symbol_data（元の銘柄）でエグジット価格を取得
         - 問題: 全跨銘柄取引で切替先の価格が入っていた（5202→2768: 3325円 vs 実際383円）
         
+        Issue調査報告20260210修正: trading_start_date追加
+        - ウォームアップ期間（trading_start_date未満）のエントリー防止
+        - generate_entry_signal()でフィルタリング実行
+        
         Parameters:
             current_date: 判定対象日（datetime/pd.Timestamp/str）
             stock_data: current_dateまでのデータ（ウォームアップ含む）
@@ -355,6 +555,7 @@ class GCStrategy(BaseStrategy):
                     'entry_date': datetime,  # エントリー日
                     'entry_idx': int         # エントリー時のインデックス（オプション）
                 }
+            trading_start_date: バックテスト開始日（この日以降のみエントリー許可）
         
         Returns:
             {
@@ -371,6 +572,11 @@ class GCStrategy(BaseStrategy):
             - Entry_Signal依存なし（翌日始値対応済み）
         """
         print(f"[GC_DEBUG] backtest_daily() called: current_date={current_date}, stock_data.shape={stock_data.shape}")
+        
+        # Issue調査報告20260210修正: trading_start_dateを保存（generate_entry_signal()で使用）
+        self.trading_start_date = trading_start_date
+        if trading_start_date is not None:
+            self.logger.info(f"[WARMUP_FILTER] trading_start_date設定: {trading_start_date.strftime('%Y-%m-%d') if hasattr(trading_start_date, 'strftime') else trading_start_date}")
         
         # Phase 1: current_dateの型変換・検証
         if isinstance(current_date, str):
@@ -475,11 +681,32 @@ class GCStrategy(BaseStrategy):
         - force_close時（entry_symbol_data提供時）は元の銘柄のデータでエグジット価格を取得
         - 通常時は現在の銘柄（stock_data）でエグジット価格を取得
         
+        Sprint 1.5修正 (2026-02-09): force_close強制決済実装
+        - force_close=True の場合、エグジット条件に関わらず強制決済
+        - 銘柄切替時の旧ポジション自動決済を保証
+        
         Parameters:
+            current_idx: 現在のインデックス
+            existing_position: 既存ポジション情報
+                {
+                    'entry_idx': int,
+                    'quantity': int,
+                    'entry_price': float,
+                    'entry_date': datetime,
+                    'force_close': bool,         # Sprint 1.5: 強制決済フラグ
+                    'entry_symbol': str          # Cycle 7: エントリー銘柄コード
+                }
+            stock_data: 現在の銘柄データ
+            current_date: 判定日時
             entry_symbol_data: force_close時の元の銘柄データ（オプション）
         
         Returns:
             dict: {'action': 'exit'|'hold', 'signal': -1|0, 'price': float, 'shares': int, 'reason': str}
+        
+        Note:
+            - copilot-instructions.md準拠（ルックアヘッドバイアス防止、フォールバック制限）
+            - force_close=True の場合、generate_exit_signal()をスキップして強制決済
+            - 最終日フォールバックは限定的使用（copilot-instructions.md Section 68-73準拠）
         """
         try:
             # entry_idxを取得（existing_positionから、またはcurrent_idxをフォールバック）
@@ -488,20 +715,104 @@ class GCStrategy(BaseStrategy):
             # force_closeフラグ確認
             is_force_close = existing_position.get('force_close', False)
             
-            # Cycle 27修正: force_close時はentry_symbol_dataを使用
+            # Cycle 27修正: データソース選択
             if is_force_close and entry_symbol_data is not None:
                 data_for_exit = entry_symbol_data
-                self.logger.info(f"[GC_EXIT] force_close=True: entry_symbol_dataを使用（{len(entry_symbol_data)}行）")
+                self.logger.info(
+                    f"[GC_EXIT] force_close=True: entry_symbol_dataを使用 "
+                    f"(rows={len(entry_symbol_data)}, symbol={existing_position.get('entry_symbol', 'Unknown')})"
+                )
             else:
                 data_for_exit = stock_data
                 self.logger.debug(f"[GC_EXIT] force_close={is_force_close}: stock_dataを使用")
             
-            # entry_pricesとhigh_pricesを準備（generate_exit_signalが依存）
+            # ============================================================
+            # Sprint 1.5修正: force_close強制決済（最優先処理）
+            # ============================================================
+            # 【削除禁止】このブロックは銘柄切替時の旧ポジション決済に必須
+            # 削除すると、ポジションが残り続け、all_transactions.csvが不完全になる
+            # 参照: MULTI_POSITION_IMPLEMENTATION_PLAN.md Sprint 1.5
+            # ============================================================
+            if is_force_close:
+                # 強制決済ログ（デバッグ用詳細情報）
+                entry_symbol = existing_position.get('entry_symbol', 'Unknown')
+                entry_price = existing_position.get('entry_price', 0.0)
+                quantity = existing_position.get('quantity', 0)
+                
+                self.logger.warning(
+                    f"[GC_FORCE_CLOSE] 銘柄切替による強制決済を実行"
+                )
+                self.logger.info(
+                    f"[GC_FORCE_CLOSE] Position Info: "
+                    f"entry_symbol={entry_symbol}, "
+                    f"entry_price={entry_price:.2f}円, "
+                    f"quantity={quantity}株, "
+                    f"date={current_date.strftime('%Y-%m-%d')}"
+                )
+                
+                # エグジット価格取得（entry_symbol_data優先）
+                if current_idx + 1 < len(data_for_exit):
+                    # 標準: 翌日始値（ルックアヘッドバイアス防止）
+                    exit_price = data_for_exit.iloc[current_idx + 1]['Open']
+                    data_source = "entry_symbol_data" if entry_symbol_data is not None else "stock_data"
+                    price_type = "Open (next day)"
+                else:
+                    # フォールバック: 最終日は当日終値
+                    # 理由: current_idx + 1 が存在しない境界条件
+                    # copilot-instructions.md Section 68-73: 限定的フォールバック使用を許可
+                    exit_price = data_for_exit.iloc[current_idx]['Close']
+                    data_source = f"{'entry_symbol_data' if entry_symbol_data is not None else 'stock_data'} (Close fallback)"
+                    price_type = "Close (final day)"
+                    self.logger.warning(
+                        f"[GC_FORCE_CLOSE] Final day exit: using Close price fallback. "
+                        f"idx={current_idx}, date={current_date.strftime('%Y-%m-%d')}"
+                    )
+                
+                # 決済価格ログ
+                self.logger.info(
+                    f"[GC_FORCE_CLOSE] Exit Price: {exit_price:.2f}円 "
+                    f"(source={data_source}, type={price_type})"
+                )
+                
+                # 損益計算（参考情報）
+                pnl = (exit_price - entry_price) * quantity
+                pnl_pct = ((exit_price / entry_price) - 1) * 100 if entry_price > 0 else 0.0
+                
+                self.logger.info(
+                    f"[GC_FORCE_CLOSE] P&L: {pnl:,.0f}円 ({pnl_pct:+.2f}%), "
+                    f"entry={entry_price:.2f}円 -> exit={exit_price:.2f}円"
+                )
+                
+                # 強制決済実行
+                return {
+                    'action': 'exit',
+                    'signal': -1,
+                    'price': float(exit_price),
+                    'shares': quantity,
+                    'reason': f'Force close due to symbol switch from {entry_symbol}'
+                }
+            # ============================================================
+            # Sprint 1.5修正ここまで
+            # ============================================================
+            
+            # ------------------------------------------------------------
+            # 通常のエグジット判定（force_close=False）
+            # ------------------------------------------------------------
+            # entry_pricesを準備（generate_exit_signalが依存）
             if entry_idx not in self.entry_prices:
                 self.entry_prices[entry_idx] = existing_position.get('entry_price', data_for_exit.iloc[current_idx]['Close'])
             
             # generate_exit_signal呼び出し（既存実装活用）
-            exit_signal = self.generate_exit_signal(current_idx, entry_idx)
+            exit_signal_result = self.generate_exit_signal(current_idx, entry_idx)
+            
+            # Cycle 28対応: タプル戻り値対応
+            if isinstance(exit_signal_result, tuple):
+                exit_signal, exit_reason = exit_signal_result
+            else:
+                exit_signal = exit_signal_result
+                exit_reason = 'unknown'
+            
+            self.logger.debug(f"[GC_EXIT] exit_signal={exit_signal}, exit_reason={exit_reason}")
             
             if exit_signal == -1:
                 # エグジットシグナル発生
@@ -509,18 +820,22 @@ class GCStrategy(BaseStrategy):
                 if current_idx + 1 < len(data_for_exit):
                     exit_price = data_for_exit.iloc[current_idx + 1]['Open']
                 else:
-                    # 最終日の場合
+                    # 最終日の場合（境界条件フォールバック）
                     exit_price = data_for_exit.iloc[current_idx]['Close']
                     self.logger.warning(f"[GCStrategy] Using Close price fallback for final day: {current_date}")
                 
-                self.logger.info(f"[GC_EXIT] exit_price={exit_price}, source={'entry_symbol_data' if is_force_close and entry_symbol_data is not None else 'stock_data'}")
+                self.logger.info(
+                    f"[GC_EXIT] exit_price={exit_price:.2f}, "
+                    f"source={'entry_symbol_data' if is_force_close and entry_symbol_data is not None else 'stock_data'}, "
+                    f"reason={exit_reason}"
+                )
                 
                 return {
                     'action': 'exit',
                     'signal': -1,
                     'price': float(exit_price),
                     'shares': existing_position.get('quantity', 0),
-                    'reason': f'GCStrategy: Exit signal detected on {current_date.strftime("%Y-%m-%d")}'
+                    'reason': f'GCStrategy: Exit signal detected on {current_date.strftime("%Y-%m-%d")} (reason: {exit_reason})'
                 }
             else:
                 # エグジットシグナルなし: ホールド
@@ -533,7 +848,8 @@ class GCStrategy(BaseStrategy):
                 }
         
         except Exception as e:
-            self.logger.error(f"[GCStrategy] Exit logic error: {e}")
+            # エラーハンドリング（copilot-instructions.md準拠: エラー隠蔽禁止）
+            self.logger.error(f"[GCStrategy] Exit logic error: {e}", exc_info=True)
             return {
                 'action': 'hold',
                 'signal': 0,

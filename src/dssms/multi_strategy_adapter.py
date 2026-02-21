@@ -28,6 +28,7 @@ sys.path.append(str(PROJECT_ROOT))
 
 # 既存システムのインポート
 from config.logger_config import setup_logger
+from src.utils.symbol_utils import to_yfinance
 
 # main.pyの戦略適用ロジックをインポート
 try:
@@ -372,7 +373,7 @@ class MultiStrategyAdapter:
         """フォールバックデータ取得実装"""
         try:
             # 株価データ取得
-            ticker_symbol = f"{symbol}.T" if not symbol.endswith('.T') else symbol
+            ticker_symbol = to_yfinance(symbol)
             stock_data = yf.download(
                 ticker_symbol, 
                 start=start_date, 

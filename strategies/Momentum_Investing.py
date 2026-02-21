@@ -118,6 +118,8 @@ class MomentumInvestingStrategy(BaseStrategy):
         - RSIが50以上68未満の範囲内
         - MACDラインがシグナルラインを上抜け
         - 出来高増加または価格の明確なブレイクアウト
+        
+        Issue調査報告20260210修正: ウォームアップ期間フィルタリング追加
 
         Parameters:
             idx (int): 現在のインデックス
@@ -125,6 +127,33 @@ class MomentumInvestingStrategy(BaseStrategy):
         Returns:
             int: エントリーシグナル（1: エントリー, 0: なし）
         """
+        # ウォームアップ期間フィルタリング（Issue調査報告20260210対応）
+        if hasattr(self, 'trading_start_date') and self.trading_start_date is not None:
+            try:
+                current_date_at_idx = self.data.index[idx]
+                # pd.Timestampに変換して比較
+                if not isinstance(current_date_at_idx, pd.Timestamp):
+                    current_date_at_idx = pd.Timestamp(current_date_at_idx)
+                if not isinstance(self.trading_start_date, pd.Timestamp):
+                    trading_start_ts = pd.Timestamp(self.trading_start_date)
+                else:
+                    trading_start_ts = self.trading_start_date
+                
+                # タイムゾーン統一
+                if current_date_at_idx.tz is not None:
+                    current_date_at_idx = current_date_at_idx.tz_localize(None)
+                if trading_start_ts.tz is not None:
+                    trading_start_ts = trading_start_ts.tz_localize(None)
+                
+                if current_date_at_idx < trading_start_ts:
+                    self.logger.debug(
+                        f"[WARMUP_SKIP] ウォームアップ期間のためエントリースキップ: "
+                        f"{current_date_at_idx.strftime('%Y-%m-%d')} < {trading_start_ts.strftime('%Y-%m-%d')}"
+                    )
+                    return 0  # エントリー禁止
+            except Exception as e:
+                self.logger.warning(f"[WARMUP_FILTER_ERROR] trading_start_date比較エラー: {e}")
+        
         sma_short_key = 'MA_' + str(self.params["sma_short"])
         sma_long_key = 'MA_' + str(self.params["sma_long"])
         rsi_lower = self.params["rsi_lower"]
@@ -547,11 +576,18 @@ class MomentumInvestingStrategy(BaseStrategy):
         
         return info
 
-    def backtest_daily(self, current_date, stock_data, existing_position=None):
+    def backtest_daily(self, current_date, stock_data, existing_position=None, trading_start_date=None, **kwargs):
         """
         MomentumInvestingStrategy 日次バックテスト実行
         
         Phase 3-B Step B3実装: Momentum戦略での実証実装
+        
+        Cycle 26修正: **kwargs追加
+        - 理由: force_close時にentry_symbol_dataがkwargsで渡される（Cycle 7修正）
+        
+        Sprint 1.5修正 (2026-02-09): force_close強制決済実装
+        - force_close=True の場合、エグジット条件に関わらず強制決済
+        - 銘柄切替時の旧ポジション自動決済を保証
         
         Parameters:
             current_date (datetime): 判定対象日
@@ -562,8 +598,12 @@ class MomentumInvestingStrategy(BaseStrategy):
                     'quantity': int,         # 保有株数
                     'entry_price': float,    # エントリー価格
                     'entry_date': datetime,  # エントリー日
-                    'entry_idx': int         # エントリー時のインデックス（オプション）
+                    'entry_idx': int,        # エントリー時のインデックス（オプション）
+                    'force_close': bool,     # Sprint 1.5: 強制決済フラグ
+                    'entry_symbol': str      # Cycle 7: エントリー銘柄コード
                 }
+            **kwargs: 追加引数
+                - entry_symbol_data (pd.DataFrame): force_close時の元の銘柄データ
                 
         Returns:
             dict: {
@@ -589,6 +629,11 @@ class MomentumInvestingStrategy(BaseStrategy):
         import logging
         
         logger = logging.getLogger(__name__)
+        
+        # Issue調査報告20260210修正: trading_start_dateを保存（generate_entry_signal()で使用）
+        self.trading_start_date = trading_start_date
+        if trading_start_date is not None:
+            logger.info(f"[WARMUP_FILTER] trading_start_date設定: {trading_start_date.strftime('%Y-%m-%d') if hasattr(trading_start_date, 'strftime') else trading_start_date}")
         
         # Phase 1: current_dateの型変換・検証
         if isinstance(current_date, str):
@@ -651,9 +696,73 @@ class MomentumInvestingStrategy(BaseStrategy):
                 if entry_idx not in self.entry_prices:
                     self.entry_prices[entry_idx] = existing_position.get('entry_price', 0.0)
                 
+                # Cycle 27修正: entry_symbol_dataをkwargsから取得
+                entry_symbol_data = kwargs.get('entry_symbol_data', None)
+                
+                # Sprint 2修正: force_closeフラグ確認
+                is_force_close = existing_position.get('force_close', False)
+                
+                # データソース選択（force_close時はentry_symbol_data優先）
+                if is_force_close and entry_symbol_data is not None:
+                    data_for_exit = entry_symbol_data
+                    logger.info(
+                        f"[MomentumInvesting_EXIT] force_close=True: entry_symbol_dataを使用 "
+                        f"(rows={len(entry_symbol_data)}, symbol={existing_position.get('entry_symbol', 'Unknown')})"
+                    )
+                else:
+                    data_for_exit = stock_data
+                
+                # ============================================================
+                # Sprint 2修正: force_close強制決済（最優先処理）
+                # ============================================================
+                # 【削除禁止】このブロックは銘柄切替時の旧ポジション決済に必須
+                # 削除すると、ポジションが残り続け、max_positions制約違反となる
+                # ============================================================
+                if is_force_close:
+                    entry_symbol = existing_position.get('entry_symbol', 'Unknown')
+                    entry_price = existing_position.get('entry_price', 0.0)
+                    quantity = existing_position.get('quantity', 0)
+                    
+                    logger.warning(
+                        f"[MOMENTUM_FORCE_CLOSE] FIFO強制決済実行: "
+                        f"symbol={entry_symbol}, entry_price={entry_price:.2f}, "
+                        f"quantity={quantity}, date={current_date.strftime('%Y-%m-%d')}"
+                    )
+                    
+                    # エグジット価格取得（entry_symbol_data優先）
+                    if current_idx + 1 < len(data_for_exit):
+                        exit_price = data_for_exit.iloc[current_idx + 1]['Open']
+                        price_type = "Open (next day)"
+                    else:
+                        exit_price = data_for_exit.iloc[current_idx]['Close']
+                        price_type = "Close (final day)"
+                        logger.warning(
+                            f"[MOMENTUM_FORCE_CLOSE] Final day exit: Close price fallback. "
+                            f"idx={current_idx}, date={current_date.strftime('%Y-%m-%d')}"
+                        )
+                    
+                    if isinstance(exit_price, pd.Series):
+                        exit_price = exit_price.values[0]
+                    
+                    logger.info(
+                        f"[MOMENTUM_FORCE_CLOSE] exit_price={float(exit_price):.2f} ({price_type}), "
+                        f"PnL={(float(exit_price) - entry_price) * quantity:+,.0f}"
+                    )
+                    
+                    return {
+                        'action': 'exit',
+                        'signal': -1,
+                        'price': float(exit_price),
+                        'shares': quantity,
+                        'reason': f'MomentumInvesting: FIFO force_close on {current_date.strftime("%Y-%m-%d")} (max_positions reached)'
+                    }
+                
                 # 最終日チェック
                 if current_idx + 1 >= len(stock_data):
-                    exit_price = stock_data.iloc[current_idx]['Close']
+                    # 最終日の場合は当日終値でエグジット（境界条件）
+                    # Cycle 27修正: entry_symbol_data優先
+                    data_for_exit = entry_symbol_data if entry_symbol_data is not None else stock_data
+                    exit_price = data_for_exit.iloc[current_idx]['Close']
                     logger.warning(f"[MomentumInvesting.exit] Final day exit: {current_date}")
                     
                     return {
@@ -665,62 +774,9 @@ class MomentumInvestingStrategy(BaseStrategy):
                     }
                 
                 # エグジット判定（簡易実装: entry_prices辞書を使用）
-                entry_price = self.entry_prices[entry_idx]
-                current_price_idx = stock_data.iloc[current_idx + 1]['Open']
-                if isinstance(current_price_idx, pd.Series):
-                    current_price_idx = current_price_idx.values[0]
-                
-                # 簡易エグジット条件（ATRストップロス・利益確定・トレーリングストップ）
-                # ATRベースのストップロス
-                if 'ATR' in self.data.columns:
-                    atr = self.data['ATR'].iloc[entry_idx]
-                    atr_multiple = self.params.get("atr_multiple", 2.0)
-                    atr_stop_loss = entry_price - (atr * atr_multiple)
-                    if current_price_idx <= atr_stop_loss:
-                        logger.info(f"[MomentumInvesting] ATR stop loss: {current_date}")
-                        exit_price = current_price_idx * (1 - self.params.get("slippage", 0.001) - self.params.get("transaction_cost", 0.0))
-                        return {
-                            'action': 'exit',
-                            'signal': -1,
-                            'price': float(exit_price),
-                            'shares': existing_position.get('quantity', 0),
-                            'reason': f'MomentumInvesting: ATR stop loss on {current_date.strftime("%Y-%m-%d")}'
-                        }
-                
-                # 利益確定
-                if current_price_idx >= entry_price * (1 + self.params["take_profit"]):
-                    logger.info(f"[MomentumInvesting] Take profit: {current_date}")
-                    exit_price = current_price_idx * (1 - self.params.get("slippage", 0.001) - self.params.get("transaction_cost", 0.0))
-                    return {
-                        'action': 'exit',
-                        'signal': -1,
-                        'price': float(exit_price),
-                        'shares': existing_position.get('quantity', 0),
-                        'reason': f'MomentumInvesting: Take profit on {current_date.strftime("%Y-%m-%d")}'
-                    }
-                
-                # 最大保有期間
-                max_hold_days = self.params.get("max_hold_days", 15)
-                days_held = current_idx - entry_idx
-                if days_held >= max_hold_days:
-                    logger.info(f"[MomentumInvesting] Max holding period: {days_held} days")
-                    exit_price = current_price_idx * (1 - self.params.get("slippage", 0.001) - self.params.get("transaction_cost", 0.0))
-                    return {
-                        'action': 'exit',
-                        'signal': -1,
-                        'price': float(exit_price),
-                        'shares': existing_position.get('quantity', 0),
-                        'reason': f'MomentumInvesting: Max holding period ({days_held} days) on {current_date.strftime("%Y-%m-%d")}'
-                    }
-                
-                # ホールド
-                return {
-                    'action': 'hold',
-                    'signal': 0,
-                    'price': 0.0,
-                    'shares': existing_position.get('quantity', 0),
-                    'reason': f'MomentumInvesting: Holding position from {current_date.strftime("%Y-%m-%d")}'
-                }
+                # Sprint 1.5修正: _handle_exit_logic()にentry_symbol_data渡す
+                from strategies.Momentum_Investing_backtest_daily import _handle_exit_logic
+                return _handle_exit_logic(self, current_idx, existing_position, stock_data, current_date, entry_symbol_data=entry_symbol_data)
             else:
                 # 【既存ポジションなし: エントリー判定】
                 entry_signal = self.generate_entry_signal(current_idx)
