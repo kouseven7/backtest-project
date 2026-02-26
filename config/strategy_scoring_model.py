@@ -158,8 +158,11 @@ class StrategyScoreCalculator:
             StrategyScore: 計算されたスコア、エラー時はNone
         """
         try:
-            # キャッシュチェック
-            cache_key = f"{strategy_name}_{ticker}"
+            # キャッシュチェック（market_regimeを含めて異なるレジームで再計算可能にする）
+            regime = "unknown"
+            if trend_context and isinstance(trend_context, dict):
+                regime = trend_context.get('market_regime', 'unknown')
+            cache_key = f"{strategy_name}_{ticker}_{regime}"
             if use_cache and cache_key in self._cache:
                 cached_score, cached_time = self._cache[cache_key]
                 if datetime.now() - cached_time < self._cache_expiry:
@@ -195,7 +198,7 @@ class StrategyScoreCalculator:
                     return None
                 
                 # メタデータを ticker_data 形式に変換（trend_contextをmarket_analysisとして渡す）
-                ticker_data = self._convert_metadata_to_ticker_data(metadata, ticker, market_analysis=trend_context)
+                ticker_data = self._convert_metadata_to_ticker_data(metadata, ticker, market_analysis=trend_context, market_data=market_data)
                 logger.debug(f"Using metadata for {strategy_name}, ticker {ticker}")
             
             # 各コンポーネントスコアを計算
@@ -453,7 +456,7 @@ class StrategyScoreCalculator:
             logger.warning(f"Error calculating confidence: {e}")
             return 0.5
     
-    def _convert_metadata_to_ticker_data(self, metadata: Dict[str, Any], ticker: str, market_analysis: Dict[str, Any] = None) -> Dict[str, Any]:
+    def _convert_metadata_to_ticker_data(self, metadata: Dict[str, Any], ticker: str, market_analysis: Dict[str, Any] = None, market_data: pd.DataFrame = None) -> Dict[str, Any]:
         """
         メタデータを ticker_data 形式に変換
         
@@ -461,6 +464,7 @@ class StrategyScoreCalculator:
             metadata: 戦略メタデータ (v1.0 or v2.0 schema)
             ticker: ティッカーシンボル
             market_analysis: 市場分析結果（オプショナル、デバッグ用）
+            market_data: 株価データ（動的スコア調整用、オプショナル）
             
         Returns:
             Dict[str, Any]: ticker_data 形式のデータ
@@ -572,6 +576,66 @@ class StrategyScoreCalculator:
                 
                 # DEBUG: 生成された performance_metrics をログ出力
                 logger.debug(f"[METADATA_DEBUG] generated performance_metrics: {performance_metrics}")
+                
+                # 動的スコア調整: market_data（株価データ）を使って固定値を調整
+                if market_data is not None and len(market_data) >= 30:
+                    try:
+                        # ルックアヘッドバイアス防止: iloc[-2]以前のデータを使用
+                        recent_data = market_data.iloc[:-1].tail(30)
+                        
+                        if len(recent_data) >= 30:
+                            # 日次リターン計算（Adj Closeを優先、なければClose）
+                            price_col = 'Adj Close' if 'Adj Close' in recent_data.columns else 'Close'
+                            daily_returns = recent_data[price_col].pct_change().dropna()
+                            
+                            if len(daily_returns) > 0:
+                                # 直近30日の平均リターンと標準偏差
+                                avg_return_recent = daily_returns.mean()
+                                volatility_recent = daily_returns.std()
+                                
+                                # 固定値を取得
+                                base_win_rate = performance_metrics['win_rate']
+                                base_sharpe = performance_metrics['sharpe_ratio']
+                                
+                                # win_rate調整: base_win_rate + avg_return_recent * 2.0 （上限1.0、下限0.0）
+                                adjusted_win_rate = base_win_rate + avg_return_recent * 2.0
+                                adjusted_win_rate = min(1.0, max(0.0, adjusted_win_rate))
+                                
+                                # sharpe_ratio調整: base_sharpe + avg_return_recent / volatility_recent * 0.3
+                                if volatility_recent > 0:
+                                    adjusted_sharpe = base_sharpe + (avg_return_recent / volatility_recent) * 0.3
+                                else:
+                                    adjusted_sharpe = base_sharpe
+                                
+                                # 調整値を適用
+                                performance_metrics['win_rate'] = adjusted_win_rate
+                                performance_metrics['sharpe_ratio'] = adjusted_sharpe
+                                
+                                # ログ出力
+                                logger.info(
+                                    f"[DEBUG_DYNAMIC_SCORE] Strategy: {strategy_name}, Ticker: {ticker}, "
+                                    f"Regime: {current_regime}, "
+                                    f"win_rate: {base_win_rate:.3f} -> {adjusted_win_rate:.3f} "
+                                    f"(avg_return_recent: {avg_return_recent:.4f}), "
+                                    f"sharpe_ratio: {base_sharpe:.3f} -> {adjusted_sharpe:.3f} "
+                                    f"(volatility_recent: {volatility_recent:.4f})"
+                                )
+                            else:
+                                logger.debug(f"[DEBUG_DYNAMIC_SCORE] No valid daily returns for {ticker}")
+                        else:
+                            logger.debug(f"[DEBUG_DYNAMIC_SCORE] Insufficient recent data for {ticker} (got {len(recent_data)} rows)")
+                    
+                    except Exception as e:
+                        # 例外発生時は固定値をそのまま使用
+                        logger.warning(
+                            f"[DEBUG_DYNAMIC_SCORE] Failed to calculate dynamic adjustment for {ticker}: {e}, "
+                            f"using base values"
+                        )
+                else:
+                    if market_data is None:
+                        logger.debug(f"[DEBUG_DYNAMIC_SCORE] No market_data provided for {ticker}, using base values")
+                    else:
+                        logger.debug(f"[DEBUG_DYNAMIC_SCORE] Insufficient market_data rows for {ticker} (got {len(market_data)} rows), using base values")
             
             # ticker_data 形式に変換
             ticker_data = {

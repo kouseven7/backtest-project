@@ -2570,7 +2570,22 @@ class DSSMSIntegratedBacktester:
             # Phase 3-C Day 12 Task 2-2: 戦略選択ロジック（DynamicStrategySelector使用）
             # Cycle 13修正: BreakoutStrategyRelaxed強制使用を削除し、実戦略選択を有効化
             # Cycle 14修正: volume_threshold=1.0に調整後、実戦略使用（BreakoutStrategy）
-            if True:  # Cycle 14: 実戦略テスト有効化
+            # 2026-02-26修正: 既存ポジション時は戦略継続（ストップロス判定を正常化）
+            # 既存ポジションがある場合はエントリー時の戦略を継続使用
+            if symbol in self.positions and self.positions[symbol].get('strategy'):
+                position_strategy = self.positions[symbol].get('strategy')
+                best_strategy_name = position_strategy
+                strategy_selection = {
+                    'status': 'position_continuity',
+                    'reason': f'Existing position: continuing {position_strategy}',
+                    'selected_strategies': [position_strategy]
+                }
+                self.logger.info(
+                    f"[STRATEGY_CONTINUITY] 既存ポジション戦略を継続: "
+                    f"{best_strategy_name}（エントリー時戦略）"
+                )
+            else:
+                # 新規エントリー候補: DynamicStrategySelector で選択
                 if self.strategy_selector:
                     try:
                         self.logger.info(f"[PHASE3-C-B1] DynamicStrategySelector.select_optimal_strategies()実行開始")
@@ -2584,20 +2599,29 @@ class DSSMSIntegratedBacktester:
                         selected_strategies = strategy_selection_result.get('selected_strategies', ['BreakoutStrategy'])
                         best_strategy_name = selected_strategies[0] if selected_strategies else 'BreakoutStrategy'
                         strategy_selection = strategy_selection_result
-                        self.logger.info(f"[PHASE3-C-B1] 戦略選択完了: {best_strategy_name}, 全選択: {selected_strategies}")
+                        self.logger.info(
+                            f"[PHASE3-C-B1] 戦略選択完了: {best_strategy_name}, "
+                            f"全選択: {selected_strategies}"
+                        )
                     except Exception as e:
-                        self.logger.warning(f"[PHASE3-C-B1] DynamicStrategySelector実行エラー、BreakoutStrategyにフォールバック: {e}")
+                        self.logger.warning(
+                            f"[PHASE3-C-B1] DynamicStrategySelector実行エラー、"
+                            f"BreakoutStrategyにフォールバック: {e}"
+                        )
                         best_strategy_name = 'BreakoutStrategy'
-                        strategy_selection = {'status': 'fallback', 'reason': f'Selector error: {str(e)}', 'selected_strategies': ['BreakoutStrategy']}
+                        strategy_selection = {
+                            'status': 'fallback',
+                            'reason': f'Selector error: {str(e)}',
+                            'selected_strategies': ['BreakoutStrategy']
+                        }
                 else:
                     self.logger.warning(f"[PHASE3-C-B1] DynamicStrategySelector未初期化、BreakoutStrategyをデフォルト使用")
                     best_strategy_name = 'BreakoutStrategy'
-                    strategy_selection = {'status': 'default', 'reason': 'Strategy selector not initialized', 'selected_strategies': ['BreakoutStrategy']}
-            else:
-                # Cycle 13最終検証用: BreakoutStrategyRelaxedで全ゴール達成確認（Cycle 14では無効化）
-                self.logger.info(f"[CYCLE13_VERIFICATION] BreakoutStrategyRelaxedで最終検証実施")
-                best_strategy_name = 'BreakoutStrategyRelaxed'
-                strategy_selection = {'status': 'verification', 'reason': 'Cycle 13 final verification with BreakoutStrategyRelaxed', 'selected_strategies': ['BreakoutStrategyRelaxed']}
+                    strategy_selection = {
+                        'status': 'default',
+                        'reason': 'Strategy selector not initialized',
+                        'selected_strategies': ['BreakoutStrategy']
+                    }
             
             # Phase 3-C Day 12 Task 2-2: 動的戦略インスタンス生成
             try:
@@ -2642,7 +2666,7 @@ class DSSMSIntegratedBacktester:
             elif symbol in self.positions:
                 # 既に同じ銘柄でポジション保有中（戦略継続）
                 existing_position = {
-                    'entry_idx': self.positions[symbol].get('entry_idx', 0),
+                    'entry_idx': self.positions[symbol].get('entry_idx', 0),  # 2026-02-26: BUY時に正しく保存されるはず
                     'quantity': self.positions[symbol].get('shares', 0),
                     'entry_price': self.positions[symbol].get('entry_price', 0.0),
                     'entry_date': self.positions[symbol].get('entry_date', None),
@@ -2804,22 +2828,36 @@ class DSSMSIntegratedBacktester:
                     self.cash_balance -= trade_cost
                     position_update = {'return': -trade_cost, 'cost': trade_cost}
                     
-                    # Sprint 2: self.positionsへの追加（2026-02-15修正）
+                    # 2026-02-26修正: entry_idxを正確に計算して保存
+                    # current_idxを計算（ストップロス判定で使用）
+                    try:
+                        current_idx = processed_data.index.get_loc(adjusted_target_date)
+                        if isinstance(current_idx, slice):
+                            current_idx = current_idx.start
+                    except Exception as e:
+                        self.logger.warning(f"[ENTRY_IDX] adjusted_target_date={adjusted_target_date}のインデックス取得失敗: {e}, データ末尾を使用")
+                        current_idx = len(processed_data) - 1
+                    
+                    # Sprint 2: self.positionsへの追加（2026-02-15修正、2026-02-26 entry_idx修正）
                     self.positions[symbol] = {
                         'strategy': best_strategy_name,
                         'entry_price': result['price'],
                         'shares': result['shares'],
                         'entry_date': adjusted_target_date,
-                        'entry_idx': len(result.get('data', []))  # データ長をidxとして使用
+                        'entry_idx': current_idx  # 2026-02-26修正: 正しいインデックスを保存
                     }
-                    self.logger.info(f"[POSITION_ADD] {symbol}: {result['shares']}株を追加（保有数: {len(self.positions)}/{self.max_positions}）")
-                    # ===== デバッグログ追加 (2026-02-15) =====
+                    self.logger.info(
+                        f"[POSITION_ADD] {symbol}: {result['shares']}株を追加, entry_idx={current_idx}, "
+                        f"entry_date={adjusted_target_date.strftime('%Y-%m-%d')}, "
+                        f"保有数: {len(self.positions)}/{self.max_positions}"
+                    )
+                    # ===== デバッグログ (2026-02-15, 2026-02-26更新) =====
                     self.logger.info(
                         f"[POSITION_DEBUG] BUY後: {adjusted_target_date.strftime('%Y-%m-%d')}, "
                         f"len(positions)={len(self.positions)}, "
                         f"保有銘柄={list(self.positions.keys())}"
                     )
-                    # ==========================================
+                    # ========================================================
                     
                     self.logger.info(
                         f"[PORTFOLIO_TRADE] BUY執行: {symbol} {result['shares']}株 @ {result['price']:.2f}円, "
