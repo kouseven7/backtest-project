@@ -55,7 +55,7 @@ class GCStrategy(BaseStrategy):
             "short_window": 5,       # 短期移動平均期間
             "long_window": 25,       # 長期移動平均期間
             "take_profit": None,     # 利益確定なし（Phase 1.13: トレンドフォロー維持、TASK 5-B推奨）
-            "stop_loss": 0.05,       # ストップロス（5%）← Phase 2-1最適化完了（2%は悪化、5%は横ばい）
+            "stop_loss": 0.03,       # ストップロス（3%）← Phase 2-1最適化完了（2%は悪化、5%は横ばい）
             "trailing_stop_pct": 0.10,  # トレーリングストップ（10%）← Phase 1.13: TASK 5-B推奨（PF1.15期待）
             "max_hold_days": 300,    # 最大保有期間（300日、実質無効）
             "exit_on_death_cross": True,  # デッドクロスでイグジットするかどうか
@@ -124,7 +124,7 @@ class GCStrategy(BaseStrategy):
         self.logger.info(
             f"GCStrategy initialized with short_window={self.short_window}, long_window={self.long_window}, "
             f"take_profit_pct={self.params.get('take_profit_pct', self.params.get('take_profit', 0.05))}, "
-            f"stop_loss_pct={self.params.get('stop_loss_pct', self.params.get('stop_loss', 0.05))}"
+            f"stop_loss_pct={self.params.get('stop_loss_pct', self.params.get('stop_loss', 0.03))}"
         )
         
         # 移動平均は上記（Lines 82-85）で既に計算済み（存在しない場合のみ）
@@ -365,14 +365,13 @@ class GCStrategy(BaseStrategy):
         
         return 1
 
-    def generate_exit_signal(self, idx: int, entry_idx: int = -1, entry_price_override: float = None):
+    def generate_exit_signal(self, idx: int, entry_idx: int = -1):
         """
         イグジットシグナルを生成する
         
         Parameters:
             idx (int): 現在のインデックス
             entry_idx (int): エントリー時のインデックス（BaseStrategyから渡される）
-            entry_price_override (float): エントリー価格の直接指定（existing_positionから渡される）
             
         Returns:
             tuple: (signal, reason)
@@ -388,34 +387,19 @@ class GCStrategy(BaseStrategy):
             self.logger.debug(f"[EXIT CHECK] idx={idx}, entry_idx={entry_idx} (< 0), returning 0")
             return (0, 'none')
         
-        # エントリー価格取得（優先順位: override > entry_prices辞書 > iloc）
-        if entry_price_override is not None:
-            entry_price = entry_price_override
-            self.logger.info(
-                f"[STOP_LOSS_CHECK_ENTRY] entry_price={entry_price:.2f}（override使用）"
-            )
-        elif entry_idx in self.entry_prices:
-            entry_price = self.entry_prices[entry_idx]
-        else:
-            entry_price = self.data['Adj Close'].iloc[entry_idx]
-            self.logger.warning(
-                f"[STOP_LOSS_CHECK_ENTRY] entry_price={entry_price:.2f}（ilocフォールバック、要注意）"
-            )
+        # エントリー価格を取得
+        entry_price = self.entry_prices.get(entry_idx)
         
         # Phase 1b修正: イグジット価格を翌日始値に変更（ルックアヘッドバイアス修正）
         # 理由: idx日目の終値を見てからidx日目の終値で売ることは不可能
         # リアルトレードでは翌日（idx+1日目）の始値でイグジット
         # Cycle 4修正: 最終日チェック追加（idx + 1が範囲外の場合は当日終値を使用）
-        # 現在価格取得（翌日始値を優先、範囲外の場合は当日終値を使用）
         if idx + 1 < len(self.data):
-            current_price = self.data['Open'].iloc[idx + 1]
+            current_price = float(self.data['Open'].iloc[idx + 1])
         else:
-            # 翌日データが存在しない場合は当日終値を使用
-            current_price = self.data['Close'].iloc[idx]
-            self.logger.info(
-                f"[PRICE_FALLBACK] idx={idx}は最終行のため当日終値を使用: "
-                f"current_price={current_price:.2f}"
-            )
+            # 最終日の場合は当日終値を使用（例外処理）
+            current_price = float(self.data['Adj Close'].iloc[idx])
+            self.logger.warning(f"[EXIT CHECK] Final day: using Close instead of next Open. idx={idx}, date={self.data.index[idx]}")
         
         # デバッグログ: 価格情報
         self.logger.debug(f"[EXIT CHECK] idx={idx}, entry_idx={entry_idx}, entry_price={entry_price}, current_price={current_price:.2f}")
@@ -465,7 +449,7 @@ class GCStrategy(BaseStrategy):
                 return (-1, 'take_profit')
     
         # 4. 損切り
-        stop_loss_price = entry_price * (1 - self.params.get("stop_loss", 0.05))
+        stop_loss_price = entry_price * (1 - self.params.get("stop_loss", 0.03))
         # デバッグ: stop loss評価を常にログ出力
         self.logger.info(f"[STOP_LOSS_CHECK] idx={idx}, date={self.data.index[idx]}, entry_price={entry_price:.2f}, current_price={current_price:.2f}, stop_loss_price={stop_loss_price:.2f}, triggered={current_price <= stop_loss_price}")
         if current_price <= stop_loss_price:
@@ -532,7 +516,7 @@ class GCStrategy(BaseStrategy):
                 "short_window": 5,
                 "long_window": 25,
                 "take_profit": 0.05,
-                "stop_loss": 0.05,
+                "stop_loss": 0.03,
                 "trailing_stop_pct": 0.03,
                 "max_hold_days": 20,
                 "exit_on_death_cross": True
@@ -725,24 +709,8 @@ class GCStrategy(BaseStrategy):
             - 最終日フォールバックは限定的使用（copilot-instructions.md Section 68-73準拠）
         """
         try:
-            # entry_idxを取得（existing_positionから、取得できない場合はentry_dateから逆算）
-            entry_idx = existing_position.get('entry_idx')
-            
-            if entry_idx is None:
-                # entry_idxがない場合は entry_date からインデックスを逆算する
-                entry_date = existing_position.get('entry_date')
-                if entry_date is not None:
-                    try:
-                        entry_idx = stock_data.index.get_loc(entry_date)
-                        if isinstance(entry_idx, slice):
-                            entry_idx = entry_idx.start
-                        self.logger.info(f"[GC_EXIT] entry_idxをentry_dateから逆算: {entry_date} -> idx={entry_idx}")
-                    except Exception as e:
-                        self.logger.error(f"[GC_EXIT] entry_date={entry_date}からのindex取得失敗: {e}")
-                        entry_idx = 0
-                else:
-                    self.logger.error(f"[GC_EXIT] entry_idxもentry_dateも取得できません: {existing_position}")
-                    entry_idx = 0
+            # entry_idxを取得（existing_positionから、またはcurrent_idxをフォールバック）
+            entry_idx = existing_position.get('entry_idx', current_idx)
             
             # force_closeフラグ確認
             is_force_close = existing_position.get('force_close', False)
@@ -831,28 +799,11 @@ class GCStrategy(BaseStrategy):
             # 通常のエグジット判定（force_close=False）
             # ------------------------------------------------------------
             # entry_pricesを準備（generate_exit_signalが依存）
-            # entry_priceをexisting_positionから直接取得
             if entry_idx not in self.entry_prices:
-                stored_entry_price = existing_position.get('entry_price')
-                
-                if stored_entry_price:
-                    self.entry_prices[entry_idx] = stored_entry_price
-                    self.logger.info(
-                        f"[GC_EXIT] entry_prices登録: entry_idx={entry_idx}, "
-                        f"entry_price={stored_entry_price:.2f}（existing_positionから取得）"
-                    )
-                else:
-                    self.logger.error(
-                        f"[GC_EXIT] entry_price が existing_position にありません: {existing_position}"
-                    )
+                self.entry_prices[entry_idx] = existing_position.get('entry_price', data_for_exit.iloc[current_idx]['Close'])
             
             # generate_exit_signal呼び出し（既存実装活用）
-            stored_entry_price = existing_position.get('entry_price')
-            exit_signal_result = self.generate_exit_signal(
-                current_idx, 
-                entry_idx,
-                entry_price_override=stored_entry_price  # 直接渡す
-            )
+            exit_signal_result = self.generate_exit_signal(current_idx, entry_idx)
             
             # Cycle 28対応: タプル戻り値対応
             if isinstance(exit_signal_result, tuple):
