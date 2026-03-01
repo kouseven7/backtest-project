@@ -207,7 +207,7 @@ class DSSMSIntegratedBacktester:
             # 代替: self.positions辞書で複数ポジションを管理
             # 参照: MULTI_POSITION_IMPLEMENTATION_PLAN.md Task 2-2-1
             self.positions = {}  # {symbol: {strategy, entry_price, shares, entry_date, entry_idx}}
-            self.max_positions = 2  # Sprint 2設定: 最大保有銘柄数
+            self.max_positions = 3  # Sprint 2設定: 最大保有銘柄数（2026-03-01変更: 2→3）
             
             # Phase 2: equity_curve再構築用追跡変数
             self.cumulative_pnl = 0.0  # 累積損益追跡
