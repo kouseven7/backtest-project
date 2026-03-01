@@ -47,7 +47,7 @@ class BreakoutStrategy(BaseStrategy):
         
         # デフォルトパラメータの設定
         default_params = {
-            "volume_threshold": 1.05,   # 出来高増加率の閾値（5%）- 2026-03-01変更: 1.2→1.05
+            "volume_threshold": 1.2,   # 出来高増加率の閾値（20%）
             "take_profit": 0.03,       # 利益確定（3%）
             "look_back": 1,            # 前日からのブレイクアウトを見る日数
             "trailing_stop": 0.02,     # トレーリングストップ（高値から2%下落）
