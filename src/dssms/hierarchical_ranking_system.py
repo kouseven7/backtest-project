@@ -55,7 +55,7 @@ import numpy as np
 import logging
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 # Phase 1のモジュールをインポート
 from .perfect_order_detector import PerfectOrderDetector
@@ -579,7 +579,7 @@ class HierarchicalRankingSystem:
                 return self.ranking_cache[cache_key]['data']
             
             # Nikkei225Screenerから取得
-            symbols = self.screener.get_filtered_symbols(available_funds)
+            symbols = self.screener.get_filtered_symbols(available_funds, target_date=date.today())
             
             # キャッシュ更新
             self.ranking_cache[cache_key] = {

@@ -17,7 +17,7 @@
     "board_data_limit": 50
   },
   "development_settings": {
-    "use_test_password": "qwerty",
+    "use_test_password": "",
     "use_test_symbols": ["9433", "5401", "6758", "8035"],
     "debug_mode": true
   }
