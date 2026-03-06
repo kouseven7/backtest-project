@@ -10,7 +10,7 @@ import time
 import schedule
 from pathlib import Path
 from typing import Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, date
 import threading
 import signal
 
@@ -137,6 +137,15 @@ class DSSMSScheduler:
                 try:
                     sync_success = self.kabu_integrator.sync_screening_results_to_kabu(10000000.0)
                     self.logger.info(f"kabu API同期: {'成功' if sync_success else '失敗'}")
+                    # BUYモック注文
+                    symbol = screening_result["selected_symbol"]
+                    order_result = self.kabu_integrator.kabu_manager.execute_dynamic_orders({
+                        'symbol': symbol,
+                        'side': '2',
+                        'quantity': 100,
+                        'price': 0
+                    })
+                    self.logger.info(f"前場BUY注文: {symbol} 結果={order_result}")
                 except Exception as e:
                     self.logger.error(f"kabu API同期エラー: {e}")
             
@@ -190,6 +199,15 @@ class DSSMSScheduler:
                 try:
                     sync_success = self.kabu_integrator.sync_screening_results_to_kabu(10000000.0)
                     self.logger.info(f"kabu API同期: {'成功' if sync_success else '失敗'}")
+                    # BUYモック注文
+                    symbol = screening_result["selected_symbol"]
+                    order_result = self.kabu_integrator.kabu_manager.execute_dynamic_orders({
+                        'symbol': symbol,
+                        'side': '2',
+                        'quantity': 100,
+                        'price': 0
+                    })
+                    self.logger.info(f"後場BUY注文: {symbol} 結果={order_result}")
                 except Exception as e:
                     self.logger.error(f"kabu API同期エラー: {e}")
             
@@ -301,7 +319,10 @@ class DSSMSScheduler:
             # Nikkei225スクリーニング
             if self.nikkei225_screener:
                 try:
-                    candidates = self.nikkei225_screener.get_high_volume_candidates(limit=50)
+                    candidates = self.nikkei225_screener.get_filtered_symbols(
+                        available_funds=10000000.0,
+                        target_date=date.today()
+                    )
                     result["candidate_count"] = len(candidates)
                     self.logger.info(f"スクリーニング候補取得: {len(candidates)}銘柄")
                 except Exception as e:
@@ -357,7 +378,29 @@ class DSSMSScheduler:
                         if switch_success:
                             self.current_monitoring_symbol = target_symbol
                             self.logger.info(f"緊急切替成功: {symbol} → {target_symbol}")
-                            
+
+                            # SELL→BUYモック注文
+                            if self.kabu_integration:
+                                try:
+                                    # 旧銘柄SELL
+                                    sell_result = self.kabu_integration.execute_dynamic_orders({
+                                        'symbol': symbol,
+                                        'side': '1',
+                                        'quantity': 100,
+                                        'price': 0
+                                    })
+                                    self.logger.info(f"緊急SELL注文: {symbol} 結果={sell_result}")
+                                    # 新銘柄BUY
+                                    buy_result = self.kabu_integration.execute_dynamic_orders({
+                                        'symbol': target_symbol,
+                                        'side': '2',
+                                        'quantity': 100,
+                                        'price': 0
+                                    })
+                                    self.logger.info(f"緊急BUY注文: {target_symbol} 結果={buy_result}")
+                                except Exception as e:
+                                    self.logger.error(f"緊急注文エラー: {e}")
+
                             # 切替記録
                             switch_data = {
                                 "from_symbol": symbol,
