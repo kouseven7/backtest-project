@@ -112,11 +112,12 @@ class DSSMSIntegratedBacktester:
     - マルチ戦略システムとの統合
     """
     
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: Optional[Dict[str, Any]] = None, force_strategy: Optional[str] = None):
         """
         
         Args:
             config: 統合設定辞書
+            force_strategy: 強制使用する戦略名（オプション）
         
         Raises:
             DSSMSIntegrationError: 初期化失敗
@@ -124,6 +125,7 @@ class DSSMSIntegratedBacktester:
         try:
             # 設定初期化
             self.config = config or self._load_default_config()
+            self.force_strategy = force_strategy
             self.logger = logging.getLogger(f"{self.__class__.__name__}")
             self.logger.setLevel(logging.INFO)
             
@@ -2597,7 +2599,11 @@ class DSSMSIntegratedBacktester:
                         )
                         # Cycle 23修正: 'selected_strategy' → 'selected_strategies'（リスト）
                         selected_strategies = strategy_selection_result.get('selected_strategies', ['BreakoutStrategy'])
-                        best_strategy_name = selected_strategies[0] if selected_strategies else 'BreakoutStrategy'
+                        if self.force_strategy:
+                            best_strategy_name = self.force_strategy
+                            self.logger.info(f"[FORCE_STRATEGY] 戦略強制指定: {best_strategy_name}")
+                        else:
+                            best_strategy_name = selected_strategies[0] if selected_strategies else 'BreakoutStrategy'
                         strategy_selection = strategy_selection_result
                         self.logger.info(
                             f"[PHASE3-C-B1] 戦略選択完了: {best_strategy_name}, "
@@ -4939,6 +4945,7 @@ def main():
     parser.add_argument('--start-date', type=str, help='開始日 (YYYY-MM-DD形式)', default='2023-01-01')
     parser.add_argument('--end-date', type=str, help='終了日 (YYYY-MM-DD形式)', default='December 31, 2023')
     parser.add_argument('--fixed-symbol', type=str, help='固定銘柄モード: 指定銘柄のみでバックテスト (例: 8306.T)', default=None)
+    parser.add_argument('--force-strategy', type=str, help='強制使用する戦略名 (例: BreakoutStrategy)', default=None)
     args = parser.parse_args()
     
     print("=" * 60)
@@ -4959,7 +4966,7 @@ def main():
             }
         }
         
-        backtester = DSSMSIntegratedBacktester(config)
+        backtester = DSSMSIntegratedBacktester(config, force_strategy=args.force_strategy)
         print("[SUCCESS] 初期化成功")
         
         # 2. システム状態確認
