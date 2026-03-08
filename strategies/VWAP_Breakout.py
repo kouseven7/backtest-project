@@ -63,6 +63,9 @@ class VWAPBreakoutStrategy(BaseStrategy):
         self.price_column = price_column
         self.volume_column = volume_column
         
+        # エントリー価格管理用辞書（GCStrategyパターン）
+        self.entry_prices = {}
+        
         # デフォルトパラメータの設定
         default_params = {
             # --- リスクリワード重視 ---
@@ -397,7 +400,15 @@ class VWAPBreakoutStrategy(BaseStrategy):
         current_price = self.data['Open'].iloc[idx + 1]
         
         vwap = self.data['VWAP'].iloc[idx]
-        entry_price = self.data[self.price_column].iloc[entry_idx]
+        
+        # 辞書からエントリー価格を取得（GCStrategyパターン）
+        entry_price = self.entry_prices.get(entry_idx)
+        if entry_price is None:
+            self.logger.warning(
+                f"[EXIT_ERROR] entry_price not found for entry_idx={entry_idx}, idx={idx}, "
+                f"date={self.data.index[idx]}. Skipping exit signal."
+            )
+            return 0
         # ATR（代用としてVWAPの2%）
         atr = vwap * 0.02
         # VWAPを下回った場合
@@ -520,6 +531,9 @@ class VWAPBreakoutStrategy(BaseStrategy):
                     
                     self.data.loc[self.data.index[idx], 'Entry_Price'] = entry_price
                     self.data.loc[self.data.index[idx], 'Entry_Idx'] = idx
+                    
+                    # 辞書にも保存（GCStrategyパターン）
+                    self.entry_prices[idx] = entry_price
             
             # ポジションがある場合、イグジットシグナルをチェック
             elif self.data['Position'].iloc[idx] == 1:
