@@ -10,10 +10,11 @@ import time
 import schedule
 import json
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from datetime import datetime, date
 import threading
 import signal
+import pandas as pd
 
 # プロジェクトルートを追加
 project_root = Path(__file__).parent.parent.parent
@@ -24,6 +25,10 @@ from src.dssms.market_time_manager import MarketTimeManager
 from src.dssms.emergency_detector import EmergencyDetector
 from src.dssms.execution_history import ExecutionHistory
 from src.dssms.kabu_integration_manager import KabuIntegrationManager, DSSMSKabuIntegrator
+
+# データ取得・戦略クラス
+from data_fetcher import get_parameters_and_data
+from strategies.gc_strategy_signal import GCStrategy
 
 # 既存DSSMSコンポーネント
 try:
@@ -120,15 +125,30 @@ class DSSMSScheduler:
         except Exception as e:
             self.logger.error(f"ポジション情報保存エラー: {e}")
     
-    def _add_position(self, symbol: str) -> None:
-        """ポジションを追加"""
+    def _add_position(self, symbol: str, entry_price: float = 0.0,
+                      strategy: str = "GCStrategy", quantity: int = 100) -> None:
+        """
+        ポジションを追加
+        
+        Args:
+            symbol: 銘柄コード
+            entry_price: エントリー価格（order_resultのexecuted_priceから取得）
+            strategy: 使用戦略名（デフォルト: GCStrategy）
+            quantity: 取引株数（デフォルト: 100株）
+        """
         self.positions[symbol] = {
             "symbol": symbol,
             "entry_time": datetime.now().isoformat(),
+            "entry_price": entry_price,
+            "strategy": strategy,
+            "quantity": quantity,
             "status": "open"
         }
         self._save_positions()
-        self.logger.info(f"ポジション追加: {symbol} ({len(self.positions)}/{self.max_positions})")
+        self.logger.info(
+            f"ポジション追加: {symbol} (戦略={strategy}, entry_price={entry_price:.2f}円, "
+            f"quantity={quantity}株, {len(self.positions)}/{self.max_positions})"
+        )
     
     def _remove_position(self, symbol: str) -> None:
         """ポジションを削除"""
@@ -141,8 +161,137 @@ class DSSMSScheduler:
     
     def _is_position_full(self) -> bool:
         """ポジションが満枠かどうか"""
-        return len(self.positions) >= self.max_positions
-    
+        return len(self.positions) >= self.max_positions    
+    def _check_exit_for_positions(self) -> List[str]:
+        """
+        保有ポジションのエグジット判定
+        
+        各保有ポジションについて:
+        1. data_fetcherでstock_dataを取得（warmup_days=150, auto_adjust=False）
+        2. position['strategy']に応じた戦略クラスをインスタンス化（まずGCStrategyのみ対応）
+        3. strategy.backtest_daily()を呼び出してエグジット判定
+        4. result['action']=='exit'ならSELL発注を実行
+        
+        Returns:
+            List[str]: SELL実行した銘柄リスト
+        """
+        self.logger.info(f"[EXIT_CHECK] ポジション監視開始: {len(self.positions)}銘柄")
+        sold_symbols = []
+        
+        for symbol, position in list(self.positions.items()):
+            try:
+                self.logger.info(f"[EXIT_CHECK] {symbol}: strategy={position.get('strategy', 'unknown')}, entry_price={position.get('entry_price', 0)}, entry_time={position.get('entry_time', 'unknown')}")
+                
+                # Step 1: stock_data取得（warmup_days=150）
+                try:
+                    ticker, start_date, end_date, stock_data, index_data = get_parameters_and_data(
+                        ticker=symbol,
+                        start_date="2023-01-01",  # ウォームアップ期間を含めた開始日
+                        end_date=date.today().strftime('%Y-%m-%d'),
+                        warmup_days=150
+                    )
+                    
+                    if stock_data is None or stock_data.empty:
+                        self.logger.warning(f"[EXIT_CHECK] {symbol}: データ取得失敗（空データ）→スキップ")
+                        continue
+                    
+                    self.logger.info(f"[EXIT_CHECK] {symbol}: データ取得成功 ({len(stock_data)}行, {stock_data.index[0]} - {stock_data.index[-1]})")
+                    
+                except Exception as e:
+                    self.logger.warning(f"[EXIT_CHECK] {symbol}: データ取得エラー → スキップ: {e}")
+                    continue
+                
+                # Step 2: 戦略クラスのインスタンス化（まずGCStrategyのみ対応、他はフォールバック）
+                strategy_name = position.get('strategy', 'GCStrategy')
+                if strategy_name != 'GCStrategy':
+                    self.logger.info(f"[EXIT_CHECK] {symbol}: 戦略'{strategy_name}'はGCStrategyにフォールバック")
+                    strategy_name = 'GCStrategy'
+                
+                try:
+                    strategy = GCStrategy(data=stock_data, ticker=symbol)
+                    strategy.initialize_strategy()  # 戦略の初期化
+                    self.logger.info(f"[EXIT_CHECK] {symbol}: {strategy_name}インスタンス化成功")
+                except Exception as e:
+                    self.logger.warning(f"[EXIT_CHECK] {symbol}: 戦略インスタンス化失敗 → スキップ: {e}")
+                    continue
+                
+                # Step 3: existing_position構築（entry_timeをentry_dateに変換）
+                try:
+                    entry_time_str = position.get('entry_time', '')
+                    if isinstance(entry_time_str, str):
+                        entry_date = pd.Timestamp(entry_time_str)
+                    else:
+                        entry_date = pd.Timestamp(entry_time_str)
+                    
+                    existing_position = {
+                        'symbol': symbol,
+                        'entry_price': position.get('entry_price', 0.0),
+                        'entry_date': entry_date,
+                        'quantity': position.get('quantity', 100),
+                        'force_close': False  # 通常エグジット判定
+                    }
+                    
+                    self.logger.info(f"[EXIT_CHECK] {symbol}: existing_position構築成功 (entry_price={existing_position['entry_price']}, entry_date={existing_position['entry_date'].strftime('%Y-%m-%d')})")
+                    
+                except Exception as e:
+                    self.logger.warning(f"[EXIT_CHECK] {symbol}: existing_position構築エラー → スキップ: {e}")
+                    continue
+                
+                # Step 4: backtest_daily()呼び出し
+                try:
+                    result = strategy.backtest_daily(
+                        current_date=date.today(),
+                        stock_data=stock_data,
+                        existing_position=existing_position
+                    )
+                    
+                    self.logger.info(f"[EXIT_CHECK] {symbol}: backtest_daily結果 action={result.get('action')}, signal={result.get('signal')}, reason={result.get('reason', 'N/A')}")
+                    
+                    # Step 5: exitアクション時のSELL発注
+                    if result.get('action') == 'exit':
+                        exit_price = result.get('price', 0.0)
+                        exit_shares = result.get('shares', existing_position['quantity'])
+                        exit_reason = result.get('reason', 'Exit signal')
+                        
+                        self.logger.info(f"[EXIT_SIGNAL] {symbol}: SELL発注 (price={exit_price}, shares={exit_shares}, reason={exit_reason})")
+                        
+                        # Debug modeのため実際の発注はせず、ログ出力のみ
+                        if self.debug_mode:
+                            self.logger.info(f"[DEBUG_MODE] {symbol}: SELL発注スキップ（デバッグモード）")
+                        else:
+                            # TODO: kabu API経由でSELL発注実装
+                            self.logger.info(f"[SELL_ORDER] {symbol}: kabu API発注実装待ち")
+                        
+                        # ポジション削除
+                        self._remove_position(symbol)
+                        sold_symbols.append(symbol)
+                        
+                        # 実行履歴記録
+                        self.history.add_event(
+                            event_type='sell',
+                            symbol=symbol,
+                            details={
+                                'price': exit_price,
+                                'shares': exit_shares,
+                                'reason': exit_reason,
+                                'entry_price': existing_position['entry_price'],
+                                'entry_date': existing_position['entry_date'].strftime('%Y-%m-%d'),
+                                'debug_mode': self.debug_mode
+                            }
+                        )
+                    else:
+                        self.logger.info(f"[EXIT_CHECK] {symbol}: ホールド継続 (action={result.get('action')})")
+                    
+                except Exception as e:
+                    self.logger.warning(f"[EXIT_CHECK] {symbol}: backtest_daily実行エラー → スキップ: {e}")
+                    continue
+                
+            except Exception as e:
+                self.logger.error(f"[EXIT_CHECK] {symbol}: 予期しないエラー → スキップ: {e}")
+                continue
+        
+        self.logger.info(f"[EXIT_CHECK] 監視完了: {len(sold_symbols)}銘柄をSELL ({sold_symbols})")
+        return sold_symbols    
     def _setup_schedule(self):
         """スケジュール設定"""
         try:
@@ -189,6 +338,12 @@ class DSSMSScheduler:
                 self.logger.warning("前場スクリーニング実行条件未満足")
                 return ""
             
+            # --- エグジット判定（追加） ---
+            exited_symbols = self._check_exit_for_positions()
+            if exited_symbols:
+                self.logger.info(f"[EXIT] {len(exited_symbols)}銘柄をSELL: {exited_symbols}")
+            # --- ここまで追加 ---
+            
             # スクリーニング実行
             screening_result = self._execute_screening("morning")
             
@@ -213,7 +368,14 @@ class DSSMSScheduler:
                         })
                         self.logger.info(f"前場BUY注文: {symbol} 結果={order_result}")
                         if order_result.get("success"):
-                            self._add_position(symbol)
+                            # executed_priceを取得（0の場合はフォールバック）
+                            executed_price = order_result.get("executed_price", 0.0)
+                            self._add_position(
+                                symbol=symbol,
+                                entry_price=executed_price,
+                                strategy="GCStrategy",  # TODO: DynamicStrategySelectorで動的選択
+                                quantity=100
+                            )
                 except Exception as e:
                     self.logger.error(f"kabu API同期エラー: {e}")
             
@@ -268,6 +430,12 @@ class DSSMSScheduler:
                 self.logger.warning("後場スクリーニング実行条件未満足")
                 return ""
             
+            # --- エグジット判定（追加） ---
+            exited_symbols = self._check_exit_for_positions()
+            if exited_symbols:
+                self.logger.info(f"[EXIT] {len(exited_symbols)}銘柄をSELL: {exited_symbols}")
+            # --- ここまで追加 ---
+            
             # スクリーニング実行
             screening_result = self._execute_screening("afternoon")
             
@@ -292,7 +460,14 @@ class DSSMSScheduler:
                         })
                         self.logger.info(f"後場BUY注文: {symbol} 結果={order_result}")
                         if order_result.get("success"):
-                            self._add_position(symbol)
+                            # executed_priceを取得（0の場合はフォールバック）
+                            executed_price = order_result.get("executed_price", 0.0)
+                            self._add_position(
+                                symbol=symbol,
+                                entry_price=executed_price,
+                                strategy="GCStrategy",  # TODO: DynamicStrategySelectorで動的選択
+                                quantity=100
+                            )
                 except Exception as e:
                     self.logger.error(f"kabu API同期エラー: {e}")
             
@@ -413,12 +588,24 @@ class DSSMSScheduler:
             self.logger.error(f"緊急切替チェックエラー: {e}")
     
     def _execute_screening(self, session: str) -> Dict[str, Any]:
-        """スクリーニング実行"""
+        """
+        スクリーニング実行
+        
+        Returns:
+            Dict[str, Any]: スクリーニング結果
+                - status: 'success' | 'error'
+                - session: 'morning' | 'afternoon'
+                - selected_symbol: 選択された銘柄コード
+                - selected_strategy: 使用戦略名 (TODO: DynamicStrategySelector統合)
+                - candidate_count: 候補銘柄数
+                - priority_distribution: 優先度分布
+        """
         try:
             result = {
                 "status": "success",
                 "session": session,
                 "selected_symbol": None,
+                "selected_strategy": "GCStrategy",  # TODO: DynamicStrategySelectorで動的選択
                 "candidate_count": 0,
                 "priority_distribution": {}
             }
@@ -462,6 +649,7 @@ class DSSMSScheduler:
             return {
                 "status": "error",
                 "session": session,
+                "selected_strategy": "GCStrategy",  # エラー時もデフォルト戦略を返す
                 "error": str(e)
             }
     
