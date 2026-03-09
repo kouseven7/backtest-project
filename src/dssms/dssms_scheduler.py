@@ -8,6 +8,7 @@ DSSMS Phase 4 Task 4.2: DSSMS実行スケジューラー
 import sys
 import time
 import schedule
+import json
 from pathlib import Path
 from typing import Dict, Any, Optional
 from datetime import datetime, date
@@ -85,10 +86,62 @@ class DSSMSScheduler:
         self.current_monitoring_symbol: Optional[str] = None
         self.scheduler_thread: Optional[threading.Thread] = None
         
+        # ポジション管理
+        self.positions_file = Path("logs/dssms/positions.json")
+        self.max_positions = 3
+        self._load_positions()
+        
         # スケジュール設定
         self._setup_schedule()
         
         self.logger.info("DSSMSScheduler: 初期化完了")
+    
+    def _load_positions(self) -> None:
+        """positions.jsonからポジション情報を読み込む"""
+        try:
+            if self.positions_file.exists():
+                with open(self.positions_file, 'r', encoding='utf-8') as f:
+                    self.positions = json.load(f)
+                self.logger.info(f"ポジション情報読み込み: {len(self.positions)}件")
+            else:
+                self.positions = {}
+                self.logger.info("positions.json未存在 - 空のポジション辞書で初期化")
+        except Exception as e:
+            self.logger.error(f"ポジション情報読み込みエラー: {e}")
+            self.positions = {}
+    
+    def _save_positions(self) -> None:
+        """positions.jsonにポジション情報を保存"""
+        try:
+            self.positions_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.positions_file, 'w', encoding='utf-8') as f:
+                json.dump(self.positions, f, ensure_ascii=False, indent=2)
+            self.logger.debug(f"ポジション情報保存: {len(self.positions)}件")
+        except Exception as e:
+            self.logger.error(f"ポジション情報保存エラー: {e}")
+    
+    def _add_position(self, symbol: str) -> None:
+        """ポジションを追加"""
+        self.positions[symbol] = {
+            "symbol": symbol,
+            "entry_time": datetime.now().isoformat(),
+            "status": "open"
+        }
+        self._save_positions()
+        self.logger.info(f"ポジション追加: {symbol} ({len(self.positions)}/{self.max_positions})")
+    
+    def _remove_position(self, symbol: str) -> None:
+        """ポジションを削除"""
+        if symbol in self.positions:
+            del self.positions[symbol]
+            self._save_positions()
+            self.logger.info(f"ポジション削除: {symbol} ({len(self.positions)}/{self.max_positions})")
+        else:
+            self.logger.warning(f"ポジション削除失敗: {symbol} が存在しません")
+    
+    def _is_position_full(self) -> bool:
+        """ポジションが満枠かどうか"""
+        return len(self.positions) >= self.max_positions
     
     def _setup_schedule(self):
         """スケジュール設定"""
@@ -139,15 +192,23 @@ class DSSMSScheduler:
                 try:
                     sync_success = self.kabu_integrator.sync_screening_results_to_kabu(10000000.0)
                     self.logger.info(f"kabu API同期: {'成功' if sync_success else '失敗'}")
-                    # BUYモック注文
+                    
                     symbol = screening_result["selected_symbol"]
-                    order_result = self.kabu_integrator.kabu_manager.execute_dynamic_orders({
-                        'symbol': symbol,
-                        'side': '2',
-                        'quantity': 100,
-                        'price': 0
-                    })
-                    self.logger.info(f"前場BUY注文: {symbol} 結果={order_result}")
+                    
+                    # 満枠チェック
+                    if self._is_position_full():
+                        self.logger.info(f"ポジション満枠({len(self.positions)}/{self.max_positions})のためBUYスキップ: {symbol}")
+                    else:
+                        # BUYモック注文
+                        order_result = self.kabu_integrator.kabu_manager.execute_dynamic_orders({
+                            'symbol': symbol,
+                            'side': '2',
+                            'quantity': 100,
+                            'price': 0
+                        })
+                        self.logger.info(f"前場BUY注文: {symbol} 結果={order_result}")
+                        if order_result.get("success"):
+                            self._add_position(symbol)
                 except Exception as e:
                     self.logger.error(f"kabu API同期エラー: {e}")
             
@@ -201,15 +262,23 @@ class DSSMSScheduler:
                 try:
                     sync_success = self.kabu_integrator.sync_screening_results_to_kabu(10000000.0)
                     self.logger.info(f"kabu API同期: {'成功' if sync_success else '失敗'}")
-                    # BUYモック注文
+                    
                     symbol = screening_result["selected_symbol"]
-                    order_result = self.kabu_integrator.kabu_manager.execute_dynamic_orders({
-                        'symbol': symbol,
-                        'side': '2',
-                        'quantity': 100,
-                        'price': 0
-                    })
-                    self.logger.info(f"後場BUY注文: {symbol} 結果={order_result}")
+                    
+                    # 満枠チェック
+                    if self._is_position_full():
+                        self.logger.info(f"ポジション満枠({len(self.positions)}/{self.max_positions})のためBUYスキップ: {symbol}")
+                    else:
+                        # BUYモック注文
+                        order_result = self.kabu_integrator.kabu_manager.execute_dynamic_orders({
+                            'symbol': symbol,
+                            'side': '2',
+                            'quantity': 100,
+                            'price': 0
+                        })
+                        self.logger.info(f"後場BUY注文: {symbol} 結果={order_result}")
+                        if order_result.get("success"):
+                            self._add_position(symbol)
                 except Exception as e:
                     self.logger.error(f"kabu API同期エラー: {e}")
             
