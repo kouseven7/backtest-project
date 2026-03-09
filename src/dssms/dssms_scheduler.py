@@ -178,6 +178,11 @@ class DSSMSScheduler:
         start_time = datetime.now()
         self.logger.info("=== 前場スクリーニング開始 ===")
         
+        selected_symbol = ""
+        error_occurred = False
+        error_message = ""
+        screening_result = {}
+        
         try:
             # 市場時間チェック
             if not self.market_time_manager.should_run_screening("morning"):
@@ -212,31 +217,35 @@ class DSSMSScheduler:
                 except Exception as e:
                     self.logger.error(f"kabu API同期エラー: {e}")
             
-            # 実行履歴記録
-            duration = (datetime.now() - start_time).total_seconds()
-            screening_result["duration"] = duration
-            
-            self.execution_history.record_screening_execution("morning", screening_result)
-            
             selected_symbol = screening_result.get("selected_symbol", "")
             
             # 選択銘柄の監視開始
             if selected_symbol:
                 self.start_selected_symbol_monitoring(selected_symbol)
             
-            self.logger.info(f"=== 前場スクリーニング完了: {selected_symbol} ({duration:.2f}秒) ===")
-            return selected_symbol
-            
         except Exception as e:
+            error_occurred = True
+            error_message = str(e)
             self.logger.error(f"前場スクリーニングエラー: {e}")
-            # エラー記録
-            error_result = {
+        
+        # try-exceptの外で1回だけ記録
+        duration = (datetime.now() - start_time).total_seconds()
+        if error_occurred:
+            record_result = {
                 "status": "error",
-                "error": str(e),
-                "duration": (datetime.now() - start_time).total_seconds()
+                "error": error_message,
+                "duration": duration
             }
-            self.execution_history.record_screening_execution("morning", error_result)
-            return ""
+        else:
+            screening_result["duration"] = duration
+            record_result = screening_result
+        
+        self.execution_history.record_screening_execution("morning", record_result)
+        
+        if not error_occurred:
+            self.logger.info(f"=== 前場スクリーニング完了: {selected_symbol} ({duration:.2f}秒) ===")
+        
+        return selected_symbol
     
     def run_afternoon_screening(self) -> str:
         """
@@ -247,6 +256,11 @@ class DSSMSScheduler:
         """
         start_time = datetime.now()
         self.logger.info("=== 後場スクリーニング開始 ===")
+        
+        selected_symbol = ""
+        error_occurred = False
+        error_message = ""
+        screening_result = {}
         
         try:
             # 市場時間チェック
@@ -282,31 +296,35 @@ class DSSMSScheduler:
                 except Exception as e:
                     self.logger.error(f"kabu API同期エラー: {e}")
             
-            # 実行履歴記録
-            duration = (datetime.now() - start_time).total_seconds()
-            screening_result["duration"] = duration
-            
-            self.execution_history.record_screening_execution("afternoon", screening_result)
-            
             selected_symbol = screening_result.get("selected_symbol", "")
             
             # 選択銘柄の監視開始
             if selected_symbol:
                 self.start_selected_symbol_monitoring(selected_symbol)
             
-            self.logger.info(f"=== 後場スクリーニング完了: {selected_symbol} ({duration:.2f}秒) ===")
-            return selected_symbol
-            
         except Exception as e:
+            error_occurred = True
+            error_message = str(e)
             self.logger.error(f"後場スクリーニングエラー: {e}")
-            # エラー記録
-            error_result = {
+        
+        # try-exceptの外で1回だけ記録
+        duration = (datetime.now() - start_time).total_seconds()
+        if error_occurred:
+            record_result = {
                 "status": "error",
-                "error": str(e),
-                "duration": (datetime.now() - start_time).total_seconds()
+                "error": error_message,
+                "duration": duration
             }
-            self.execution_history.record_screening_execution("afternoon", error_result)
-            return ""
+        else:
+            screening_result["duration"] = duration
+            record_result = screening_result
+        
+        self.execution_history.record_screening_execution("afternoon", record_result)
+        
+        if not error_occurred:
+            self.logger.info(f"=== 後場スクリーニング完了: {selected_symbol} ({duration:.2f}秒) ===")
+        
+        return selected_symbol
     
     def start_selected_symbol_monitoring(self, symbol: str) -> None:
         """
