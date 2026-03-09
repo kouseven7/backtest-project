@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 import json
+import yfinance as yf
 
 # プロジェクトルートを追加
 project_root = Path(__file__).parent.parent.parent
@@ -38,6 +39,10 @@ class EmergencyDetector:
             config_path_obj = Path(config_path)
         
         self.config = self._load_config(config_path_obj)
+        
+        # positions.jsonパス設定
+        self.positions_file = Path("logs/dssms/positions.json")
+        self.stop_loss_threshold = -0.03  # -3%
         
         # 既存コンポーネント初期化
         try:
@@ -88,6 +93,18 @@ class EmergencyDetector:
         }
         
         try:
+            # Phase 0: ストップロス判定（最優先）
+            stop_loss_check = self._check_stop_loss_trigger(symbol)
+            
+            if stop_loss_check.get("triggered"):
+                emergency_result["is_emergency"] = True
+                emergency_result["emergency_level"] = 3  # 最高レベル
+                emergency_result["trigger_conditions"].append("stop_loss_triggered")
+                emergency_result["recommended_action"] = "immediate_exit"
+                emergency_result["stop_loss_details"] = stop_loss_check
+                self.logger.warning(f"[STOP_LOSS] {symbol}: {stop_loss_check.get('loss_percentage', 0):.2%} 損失")
+                return emergency_result
+            
             # Phase 1: 基本パーフェクトオーダーチェック（高速）
             po_status = self._check_perfect_order_status(symbol)
             
@@ -114,6 +131,75 @@ class EmergencyDetector:
             self.logger.error(f"緊急判定エラー {symbol}: {e}")
             emergency_result["error"] = str(e)
             return emergency_result
+    
+    def _check_stop_loss_trigger(self, symbol: str) -> Dict[str, Any]:
+        """ストップロス判定（-3%）"""
+        result = {
+            "triggered": False,
+            "entry_price": None,
+            "current_price": None,
+            "loss_percentage": 0.0
+        }
+        
+        try:
+            # positions.json読み込み
+            if not self.positions_file.exists():
+                self.logger.debug("positions.json未存在 - ストップロス判定スキップ")
+                return result
+            
+            with open(self.positions_file, 'r', encoding='utf-8') as f:
+                positions = json.load(f)
+            
+            # 対象銘柄がポジションに存在するか
+            if symbol not in positions:
+                self.logger.debug(f"{symbol}はポジションに存在しない")
+                return result
+            
+            position = positions[symbol]
+            entry_price = position.get('entry_price')
+            
+            if entry_price is None:
+                self.logger.warning(f"{symbol}: entry_price未設定")
+                return result
+            
+            # yfinanceで現在価格取得（日本株の場合.Tサフィックス追加）
+            ticker_symbol = symbol if '.T' in symbol else f"{symbol}.T"
+            ticker = yf.Ticker(ticker_symbol)
+            current_data = ticker.history(period='1d', auto_adjust=False)
+            
+            if current_data.empty:
+                self.logger.warning(f"{symbol}: 現在価格取得失敗")
+                return result
+            
+            current_price = current_data['Close'].iloc[-1]
+            loss_percentage = (current_price - entry_price) / entry_price
+            
+            result["entry_price"] = entry_price
+            result["current_price"] = current_price
+            result["loss_percentage"] = loss_percentage
+            
+            # 常にログ出力（デバッグ用）
+            self.logger.info(
+                f"[STOP_LOSS_CHECK] {symbol}: "
+                f"entry={entry_price}, current={current_price:.2f}, "
+                f"loss={loss_percentage:.2%}, threshold={self.stop_loss_threshold:.2%}"
+            )
+            
+            # -3%以下で緊急判定
+            if loss_percentage <= self.stop_loss_threshold:
+                result["triggered"] = True
+                self.logger.warning(
+                    f"[STOP_LOSS_TRIGGER] {symbol}: "
+                    f"entry={entry_price}, current={current_price:.2f}, "
+                    f"loss={loss_percentage:.2%}"
+                )
+            
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"ストップロス判定エラー {symbol}: {e}")
+            result["error"] = str(e)
+            return result
     
     def _check_perfect_order_status(self, symbol: str) -> Dict[str, Any]:
         """パーフェクトオーダー状況チェック"""
