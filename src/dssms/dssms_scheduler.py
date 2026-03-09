@@ -366,7 +366,25 @@ class DSSMSScheduler:
                 # 推奨アクションに基づく処理
                 recommended_action = emergency_result.get("recommended_action")
                 
-                if recommended_action == "immediate_switch":
+                if recommended_action == "immediate_exit":
+                    # ストップロス発動時の処理
+                    stop_loss_details = emergency_result.get("stop_loss_details", {})
+                    entry_price = stop_loss_details.get("entry_price", "N/A")
+                    current_price = stop_loss_details.get("current_price", "N/A")
+                    loss_percentage = stop_loss_details.get("loss_percentage", 0.0)
+                    
+                    # モックSELL注文ログ出力（debug_mode=trueのため実際には発注しない）
+                    self.logger.warning(
+                        f"[SL_TRIGGERED] {symbol}: "
+                        f"entry={entry_price}, current={current_price:.2f}, "
+                        f"loss={loss_percentage:.2%}"
+                    )
+                    
+                    # ポジション削除
+                    self._remove_position(symbol)
+                    self.logger.warning(f"[SL_EXECUTED] {symbol}: ポジション削除完了")
+                    
+                elif recommended_action == "immediate_switch":
                     self._execute_emergency_switch(symbol, emergency_result)
                 elif recommended_action == "prepare_switch":
                     self._prepare_emergency_switch(symbol, emergency_result)
