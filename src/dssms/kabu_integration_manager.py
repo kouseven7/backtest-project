@@ -12,7 +12,7 @@ import urllib.request
 import urllib.error
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from dataclasses import dataclass
 from enum import Enum
 import pandas as pd
@@ -182,7 +182,7 @@ class DSSMSSymbolRegistry:
                 self.initialize_dssms_components()
             
             # DSSMS階層ランキングから候補取得
-            symbols = self.screener.get_filtered_symbols(available_funds) if self.screener else []
+            symbols = self.screener.get_filtered_symbols(available_funds, date.today()) if self.screener else []
             
             if not symbols:
                 # テスト用銘柄を使用
