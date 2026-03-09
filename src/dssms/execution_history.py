@@ -20,12 +20,13 @@ from config.logger_config import setup_logger
 class ExecutionHistory:
     """DSSMS実行履歴管理システム"""
     
-    def __init__(self, history_dir: Optional[str] = None):
+    def __init__(self, history_dir: Optional[str] = None, market_monitor=None):
         """
         初期化
         
         Args:
             history_dir: 履歴保存ディレクトリ（None時はデフォルト使用）
+            market_monitor: MarketConditionMonitorインスタンス（市場分析用）
         """
         self.logger = setup_logger('dssms.execution_history')
         
@@ -37,6 +38,9 @@ class ExecutionHistory:
         
         self.history_dir.mkdir(parents=True, exist_ok=True)
         self.history_file = self.history_dir / "execution_history.json"
+        
+        # MarketConditionMonitor統合
+        self.market_monitor = market_monitor
         
         # 現在セッションデータ
         self.current_session_data: Dict[str, Any] = {}
@@ -201,10 +205,19 @@ class ExecutionHistory:
     def _capture_market_snapshot(self) -> Dict[str, Any]:
         """市場スナップショット取得"""
         try:
+            # MarketConditionMonitorから日経225トレンドを取得
+            nikkei225_trend = "unknown"
+            if self.market_monitor is not None:
+                try:
+                    trend_analysis = self.market_monitor.analyze_nikkei225_trend()
+                    nikkei225_trend = trend_analysis.get("trend_direction", "unknown")
+                except Exception as e:
+                    self.logger.warning(f"日経225トレンド取得エラー: {e}")
+            
             return {
                 "timestamp": datetime.now().isoformat(),
                 "market_open": True,  # 簡略版
-                "nikkei225_trend": "unknown",
+                "nikkei225_trend": nikkei225_trend,
                 "volatility_level": "normal"
             }
         except Exception as e:

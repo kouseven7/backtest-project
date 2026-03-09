@@ -776,6 +776,13 @@ class VWAPBreakoutStrategy(BaseStrategy):
                 # ============================================================
                 # 既存ポジションあり: エグジット判定
                 entry_idx = existing_position.get('entry_idx', current_idx)
+                
+                # entry_pricesが未設定の場合はexisting_positionから補完（GCStrategyと同じパターン）
+                if entry_idx not in self.entry_prices:
+                    self.entry_prices[entry_idx] = existing_position.get(
+                        'entry_price', stock_data.iloc[current_idx]['Close']
+                    )
+                
                 exit_signal = self.generate_exit_signal(current_idx, entry_idx)
                 
                 if exit_signal == -1:

@@ -19,17 +19,17 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
 # DSSMS既存コンポーネントのインポート
-from .market_time_manager import MarketTimeManager
-from .emergency_detector import EmergencyDetector
-from .execution_history import ExecutionHistory
-from .kabu_integration_manager import KabuIntegrationManager, DSSMSKabuIntegrator
+from src.dssms.market_time_manager import MarketTimeManager
+from src.dssms.emergency_detector import EmergencyDetector
+from src.dssms.execution_history import ExecutionHistory
+from src.dssms.kabu_integration_manager import KabuIntegrationManager, DSSMSKabuIntegrator
 
 # 既存DSSMSコンポーネント
 try:
-    from .nikkei225_screener import Nikkei225Screener
-    from .hierarchical_ranking_system import HierarchicalRankingSystem
-    from .intelligent_switch_manager import IntelligentSwitchManager
-    from .market_condition_monitor import MarketConditionMonitor
+    from src.dssms.nikkei225_screener import Nikkei225Screener
+    from src.dssms.hierarchical_ranking_system import HierarchicalRankingSystem
+    from src.dssms.intelligent_switch_manager import IntelligentSwitchManager
+    from src.dssms.market_condition_monitor import MarketConditionMonitor
 except ImportError as e:
     print(f"Warning: DSSMS components import error: {e}")
 
@@ -50,7 +50,6 @@ class DSSMSScheduler:
         # スケジューリング制御
         self.market_time_manager = MarketTimeManager(config_path)
         self.emergency_detector = EmergencyDetector(config_path)
-        self.execution_history = ExecutionHistory()
         
         # kabu API統合（段階的連携）
         try:
@@ -77,6 +76,9 @@ class DSSMSScheduler:
             self.hierarchical_ranking = None
             self.intelligent_switch = None
             self.market_monitor = None
+        
+        # ExecutionHistory初期化（MarketConditionMonitor連携）
+        self.execution_history = ExecutionHistory(market_monitor=self.market_monitor)
         
         # スケジューラー状態
         self.is_running = False
