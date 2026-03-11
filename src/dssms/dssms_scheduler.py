@@ -150,6 +150,73 @@ class DSSMSScheduler:
             f"quantity={quantity}株, {len(self.positions)}/{self.max_positions})"
         )
     
+    def _execute_sl_sell(self, symbol: str, quantity: int) -> dict:
+        """
+        ストップロス発動時のSELL発注を実行する。
+
+        Args:
+            symbol: 銘柄コード（例: "8031"）
+            quantity: 売却株数
+
+        Returns:
+            dict:
+                success=True  → 発注成功
+                success=False → debug_modeスキップ または 発注失敗
+                error         → エラー内容（debug_modeスキップ時は "debug_mode=True"）
+        """
+        # debug_modeチェック
+        debug_mode = False
+        try:
+            debug_mode = self.kabu_integration.config.get(
+                "development_settings", {}
+            ).get("debug_mode", True)
+        except Exception:
+            debug_mode = True  # 取得失敗時は安全側（発注しない）
+
+        if debug_mode:
+            self.logger.info(
+                f"[DEBUG_SELL] {symbol}: SL SELL発注スキップ "
+                f"(debug_mode=True, qty={quantity})"
+            )
+            return {"success": False, "error": "debug_mode=True"}
+
+        # kabu_integrationが使用不能な場合はスキップ
+        if self.kabu_integration is None:
+            self.logger.warning(
+                f"[SL_SELL] {symbol}: kabu_integration未初期化、発注スキップ"
+            )
+            return {"success": False, "error": "kabu_integration=None"}
+
+        try:
+            self.logger.warning(
+                f"[SL_SELL] {symbol}: SELL発注送信 (qty={quantity})"
+            )
+
+            sell_result = self.kabu_integration.execute_dynamic_orders({
+                "symbol": symbol,
+                "side": "1",        # 1=SELL（2=BUY）
+                "quantity": quantity,
+                "price": 0,         # 成行
+                "exchange": 1       # 東証
+            })
+
+            if sell_result.get("success"):
+                return {
+                    "success": True,
+                    "order_id": sell_result.get("order_id", "unknown")
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": sell_result.get("error", "unknown error")
+                }
+
+        except Exception as e:
+            self.logger.error(
+                f"[SL_SELL] {symbol}: 発注例外 ({type(e).__name__}: {e})"
+            )
+            return {"success": False, "error": f"{type(e).__name__}: {e}"}
+    
     def _remove_position(self, symbol: str) -> None:
         """ポジションを削除"""
         if symbol in self.positions:
@@ -565,15 +632,29 @@ class DSSMSScheduler:
                     entry_price = stop_loss_details.get("entry_price", "N/A")
                     current_price = stop_loss_details.get("current_price", "N/A")
                     loss_percentage = stop_loss_details.get("loss_percentage", 0.0)
-                    
-                    # モックSELL注文ログ出力（debug_mode=trueのため実際には発注しない）
+                    quantity = self.positions.get(symbol, {}).get("quantity", 100)
+
                     self.logger.warning(
                         f"[SL_TRIGGERED] {symbol}: "
                         f"entry={entry_price}, current={current_price:.2f}, "
-                        f"loss={loss_percentage:.2%}"
+                        f"loss={loss_percentage:.2%}, qty={quantity}"
                     )
-                    
-                    # ポジション削除
+
+                    # --- C-1: 実SELL発注 ---
+                    sell_result = self._execute_sl_sell(symbol=symbol, quantity=quantity)
+                    if sell_result.get("success"):
+                        self.logger.warning(
+                            f"[SL_SELL_OK] {symbol}: SELL発注成功 "
+                            f"(order_id={sell_result.get('order_id')})"
+                        )
+                    else:
+                        self.logger.warning(
+                            f"[SL_SELL_NG] {symbol}: SELL発注失敗またはスキップ "
+                            f"({sell_result.get('error', 'debug_mode')})"
+                        )
+                    # --- C-1 ここまで ---
+
+                    # ポジション削除（発注成否に関わらず必ず実行）
                     self._remove_position(symbol)
                     self.logger.warning(f"[SL_EXECUTED] {symbol}: ポジション削除完了")
                     
