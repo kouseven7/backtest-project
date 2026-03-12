@@ -27,6 +27,7 @@ from src.dssms.market_time_manager import MarketTimeManager
 from src.dssms.emergency_detector import EmergencyDetector
 from src.dssms.execution_history import ExecutionHistory
 from src.dssms.kabu_integration_manager import KabuIntegrationManager, DSSMSKabuIntegrator
+from src.dssms.email_notifier import EmailNotifier
 
 # データ取得・戦略クラス
 from data_fetcher import get_parameters_and_data
@@ -194,6 +195,10 @@ class DSSMSScheduler:
             f"[PAPER_BALANCE] 初期化完了: 残高={self.paper_balance.balance:,.0f}円"
         )
         
+        # メール通知システム初期化
+        config_file_path = config_path or (Path(__file__).parent.parent.parent / "config" / "kabu_api" / "kabu_connection_config.json")
+        self.email_notifier = EmailNotifier(str(config_file_path))
+        
         self.logger.info("DSSMSScheduler: 初期化完了")
     
     def _load_positions(self) -> None:
@@ -286,6 +291,15 @@ class DSSMSScheduler:
         self.logger.error(
             f"[ORDER_FAILED] {caller}: {max_retries}回リトライ全失敗"
         )
+        
+        # メール通知送信
+        self.email_notifier.send_order_failed(
+            symbol=order_params.get("Symbol", "unknown"),
+            order_type=order_params.get("Side", "unknown"),
+            order_params=order_params,
+            retry_count=max_retries
+        )
+        
         return {"success": False, "error": f"max_retries({max_retries})exceeded"}
     
     def _execute_sl_sell(self, symbol: str, quantity: int) -> dict:
