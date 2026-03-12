@@ -624,14 +624,18 @@ class BreakoutStrategy(BaseStrategy):
             if entry_date is not None:
                 try:
                     entry_loc = stock_data.index.get_loc(entry_date)
-                    high_since_entry = stock_data.iloc[entry_loc:current_idx+1]['High'].max()
+                    if current_idx <= entry_loc:
+                        # 保有初日はトレーリングストップを適用しない
+                        high_since_entry = None
+                    else:
+                        high_since_entry = stock_data.iloc[entry_loc+1:current_idx+1]['High'].max()
                 except:
                     high_since_entry = exit_price
             else:
                 high_since_entry = exit_price
             
-            trailing_stop_level = high_since_entry * (1 - self.params["trailing_stop"])
-            if exit_price < trailing_stop_level:
+            trailing_stop_level = high_since_entry * (1 - self.params["trailing_stop"]) if high_since_entry is not None else None
+            if high_since_entry is not None and exit_price < trailing_stop_level:
                 return {
                     'action': 'exit',
                     'signal': -1,
