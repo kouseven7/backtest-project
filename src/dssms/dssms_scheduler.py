@@ -9,6 +9,8 @@ import sys
 import time
 import schedule
 import json
+import os
+import math
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from datetime import datetime, date
@@ -40,6 +42,88 @@ except ImportError as e:
     print(f"Warning: DSSMS components import error: {e}")
 
 from config.logger_config import setup_logger
+
+# ============================================================
+# ペーパートレード残高管理
+# ============================================================
+
+class PaperBalance:
+    """
+    ペーパートレード用の仮想残高を管理するクラス。
+    残高を logs/dssms/paper_balance.json に永続化する。
+
+    初期残高: 1,000,000円
+    BUY時: 残高 -= 株価 × 株数
+    SELL時: 残高 += 株価 × 株数
+    """
+    INITIAL_BALANCE = 1_000_000  # 100万円スタート
+    BALANCE_FILE = "logs/dssms/paper_balance.json"
+
+    def __init__(self):
+        self._balance = self._load()
+
+    def _load(self) -> float:
+        """残高ファイルから読み込む。存在しない場合は初期残高を返す。"""
+        try:
+            if os.path.exists(self.BALANCE_FILE):
+                with open(self.BALANCE_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    return float(data.get("balance", self.INITIAL_BALANCE))
+        except Exception:
+            pass
+        return float(self.INITIAL_BALANCE)
+
+    def _save(self) -> None:
+        """残高をファイルに保存する。"""
+        try:
+            os.makedirs(os.path.dirname(self.BALANCE_FILE), exist_ok=True)
+            with open(self.BALANCE_FILE, "w", encoding="utf-8") as f:
+                json.dump(
+                    {"balance": self._balance, "updated_at": datetime.now().isoformat()},
+                    f, ensure_ascii=False, indent=2
+                )
+        except Exception:
+            pass  # 保存失敗は無視（残高計算には影響させない）
+
+    @property
+    def balance(self) -> float:
+        return self._balance
+
+    def can_afford(self, price: float, quantity: int) -> bool:
+        """指定の株数を購入できる残高があるか確認する。"""
+        return self._balance >= price * quantity
+
+    def deduct(self, price: float, quantity: int) -> float:
+        """BUY時: 残高から購入金額を減算して保存する。残高を返す。"""
+        cost = price * quantity
+        self._balance -= cost
+        self._save()
+        return self._balance
+
+    def add(self, price: float, quantity: int) -> float:
+        """SELL時: 残高に売却金額を加算して保存する。残高を返す。"""
+        proceeds = price * quantity
+        self._balance += proceeds
+        self._save()
+        return self._balance
+
+    def calc_quantity(self, price: float, max_positions: int) -> int:
+        """
+        残高と最大ポジション数から購入可能な株数（100株単位）を計算する。
+
+        Args:
+            price: 株価
+            max_positions: 最大ポジション数（通常3）
+
+        Returns:
+            int: 購入株数（100株単位、0以上）
+        """
+        if price <= 0 or max_positions <= 0:
+            return 0
+        allocated = self._balance / max_positions          # 割当資金
+        raw_qty = allocated / price                        # 理論上の株数
+        units = int(math.floor(raw_qty / 100))            # 100株単位に切り捨て
+        return units * 100                                 # 0, 100, 200, ...
 
 class DSSMSScheduler:
     """DSSMS前場後場スケジューリングシステム"""
@@ -98,6 +182,12 @@ class DSSMSScheduler:
         
         # スケジュール設定
         self._setup_schedule()
+        
+        # ペーパートレード残高管理
+        self.paper_balance = PaperBalance()
+        self.logger.info(
+            f"[PAPER_BALANCE] 初期化完了: 残高={self.paper_balance.balance:,.0f}円"
+        )
         
         self.logger.info("DSSMSScheduler: 初期化完了")
     
@@ -322,30 +412,44 @@ class DSSMSScheduler:
                         
                         self.logger.info(f"[EXIT_SIGNAL] {symbol}: SELL発注 (price={exit_price}, shares={exit_shares}, reason={exit_reason})")
                         
-                        # Debug modeのため実際の発注はせず、ログ出力のみ
-                        if self.debug_mode:
-                            self.logger.info(f"[DEBUG_MODE] {symbol}: SELL発注スキップ（デバッグモード）")
+                        # SELL発注実行（_execute_sl_sell()を使用）
+                        sell_result = self._execute_sl_sell(symbol=symbol, quantity=exit_shares)
+                        if sell_result.get("success"):
+                            self.logger.info(
+                                f"[EXIT_SELL_OK] {symbol}: SELL発注成功 "
+                                f"(order_id={sell_result.get('order_id')})"
+                            )
                         else:
-                            # TODO: kabu API経由でSELL発注実装
-                            self.logger.info(f"[SELL_ORDER] {symbol}: kabu API発注実装待ち")
+                            self.logger.info(
+                                f"[EXIT_SELL_NG] {symbol}: SELL発注失敗またはスキップ "
+                                f"({sell_result.get('error', 'debug_mode')})"
+                            )
+                        
+                        # SELL時の残高加算
+                        if exit_price > 0 and exit_shares > 0:
+                            new_balance = self.paper_balance.add(exit_price, exit_shares)
+                            self.logger.info(
+                                f"[BALANCE_ADD] {symbol} (EXIT): "
+                                f"+{exit_price * exit_shares:,.0f}円 -> 残高={new_balance:,.0f}円"
+                            )
                         
                         # ポジション削除
                         self._remove_position(symbol)
                         sold_symbols.append(symbol)
                         
                         # 実行履歴記録
-                        self.history.add_event(
-                            event_type='sell',
-                            symbol=symbol,
-                            details={
-                                'price': exit_price,
-                                'shares': exit_shares,
-                                'reason': exit_reason,
-                                'entry_price': existing_position['entry_price'],
-                                'entry_date': existing_position['entry_date'].strftime('%Y-%m-%d'),
-                                'debug_mode': self.debug_mode
-                            }
-                        )
+                        if hasattr(self, 'history'):
+                            self.history.add_event(
+                                event_type='sell',
+                                symbol=symbol,
+                                details={
+                                    'price': exit_price,
+                                    'shares': exit_shares,
+                                    'reason': exit_reason,
+                                    'entry_price': existing_position['entry_price'],
+                                    'entry_date': existing_position['entry_date'].strftime('%Y-%m-%d')
+                                }
+                            )
                     else:
                         self.logger.info(f"[EXIT_CHECK] {symbol}: ホールド継続 (action={result.get('action')})")
                     
@@ -426,23 +530,64 @@ class DSSMSScheduler:
                     if self._is_position_full():
                         self.logger.info(f"ポジション満枠({len(self.positions)}/{self.max_positions})のためBUYスキップ: {symbol}")
                     else:
-                        # BUYモック注文
-                        order_result = self.kabu_integrator.kabu_manager.execute_dynamic_orders({
-                            'symbol': symbol,
-                            'side': '2',
-                            'quantity': 100,
-                            'price': 0
-                        })
-                        self.logger.info(f"前場BUY注文: {symbol} 結果={order_result}")
-                        if order_result.get("success"):
-                            # executed_priceを取得（0の場合はフォールバック）
-                            executed_price = order_result.get("executed_price", 0.0)
-                            self._add_position(
-                                symbol=symbol,
-                                entry_price=executed_price,
-                                strategy="GCStrategy",  # TODO: DynamicStrategySelectorで動的選択
-                                quantity=100
+                        # 株価取得（BUY前に株数計算のため）
+                        try:
+                            from datetime import timedelta
+                            ticker, start, end, stock_data, _ = get_parameters_and_data(
+                                ticker=symbol,
+                                start_date=(date.today() - timedelta(days=5)).strftime('%Y-%m-%d'),
+                                end_date=date.today().strftime('%Y-%m-%d'),
+                                warmup_days=0
                             )
+                            current_price = stock_data['Adj Close'].iloc[-1] if not stock_data.empty else 1000.0
+                            self.logger.info(f"[PRICE_FETCH] {symbol}: 現在価格={current_price:.2f}円")
+                        except Exception as e:
+                            self.logger.warning(f"[PRICE_FETCH] {symbol}: 価格取得失敗、仮株価1000円を使用: {e}")
+                            current_price = 1000.0
+                        
+                        # C-2: 動的株数計算
+                        quantity = self.paper_balance.calc_quantity(
+                            price=current_price,
+                            max_positions=self.max_positions
+                        )
+                        
+                        # C-3: 資金残高チェック
+                        if quantity == 0:
+                            self.logger.warning(
+                                f"[BALANCE_NG] {symbol}: 残高不足または株価高すぎで発注スキップ "
+                                f"(残高={self.paper_balance.balance:,.0f}円, 株価={current_price:.2f}円)"
+                            )
+                        elif not self.paper_balance.can_afford(current_price, quantity):
+                            self.logger.warning(
+                                f"[BALANCE_NG] {symbol}: 残高不足 "
+                                f"(必要={current_price * quantity:,.0f}円, 残高={self.paper_balance.balance:,.0f}円)"
+                            )
+                        else:
+                            # BUYモック注文
+                            order_result = self.kabu_integrator.kabu_manager.execute_dynamic_orders({
+                                'symbol': symbol,
+                                'side': '2',
+                                'quantity': quantity,
+                                'price': 0
+                            })
+                            self.logger.info(f"前場BUY注文: {symbol} qty={quantity}株 結果={order_result}")
+                            if order_result.get("success"):
+                                # executed_priceを取得（0の場合はcurrent_priceをフォールバック）
+                                executed_price = order_result.get("executed_price", current_price)
+                                
+                                # 残高から減算（BUY確定）
+                                new_balance = self.paper_balance.deduct(executed_price, quantity)
+                                self.logger.info(
+                                    f"[BALANCE_DEDUCT] {symbol}: "
+                                    f"-{executed_price * quantity:,.0f}円 -> 残高={new_balance:,.0f}円"
+                                )
+                                # ポジション追加
+                                self._add_position(
+                                    symbol=symbol,
+                                    entry_price=executed_price,
+                                    strategy="GCStrategy",  # TODO: DynamicStrategySelectorで動的選択
+                                    quantity=quantity
+                                )
                 except Exception as e:
                     self.logger.error(f"kabu API同期エラー: {e}")
             
@@ -518,23 +663,64 @@ class DSSMSScheduler:
                     if self._is_position_full():
                         self.logger.info(f"ポジション満枠({len(self.positions)}/{self.max_positions})のためBUYスキップ: {symbol}")
                     else:
-                        # BUYモック注文
-                        order_result = self.kabu_integrator.kabu_manager.execute_dynamic_orders({
-                            'symbol': symbol,
-                            'side': '2',
-                            'quantity': 100,
-                            'price': 0
-                        })
-                        self.logger.info(f"後場BUY注文: {symbol} 結果={order_result}")
-                        if order_result.get("success"):
-                            # executed_priceを取得（0の場合はフォールバック）
-                            executed_price = order_result.get("executed_price", 0.0)
-                            self._add_position(
-                                symbol=symbol,
-                                entry_price=executed_price,
-                                strategy="GCStrategy",  # TODO: DynamicStrategySelectorで動的選択
-                                quantity=100
+                        # 株価取得（BUY前に株数計算のため）
+                        try:
+                            from datetime import timedelta
+                            ticker, start, end, stock_data, _ = get_parameters_and_data(
+                                ticker=symbol,
+                                start_date=(date.today() - timedelta(days=5)).strftime('%Y-%m-%d'),
+                                end_date=date.today().strftime('%Y-%m-%d'),
+                                warmup_days=0
                             )
+                            current_price = stock_data['Adj Close'].iloc[-1] if not stock_data.empty else 1000.0
+                            self.logger.info(f"[PRICE_FETCH] {symbol}: 現在価格={current_price:.2f}円")
+                        except Exception as e:
+                            self.logger.warning(f"[PRICE_FETCH] {symbol}: 価格取得失敗、仮株価1000円を使用: {e}")
+                            current_price = 1000.0
+                        
+                        # C-2: 動的株数計算
+                        quantity = self.paper_balance.calc_quantity(
+                            price=current_price,
+                            max_positions=self.max_positions
+                        )
+                        
+                        # C-3: 資金残高チェック
+                        if quantity == 0:
+                            self.logger.warning(
+                                f"[BALANCE_NG] {symbol}: 残高不足または株価高すぎで発注スキップ "
+                                f"(残高={self.paper_balance.balance:,.0f}円, 株価={current_price:.2f}円)"
+                            )
+                        elif not self.paper_balance.can_afford(current_price, quantity):
+                            self.logger.warning(
+                                f"[BALANCE_NG] {symbol}: 残高不足 "
+                                f"(必要={current_price * quantity:,.0f}円, 残高={self.paper_balance.balance:,.0f}円)"
+                            )
+                        else:
+                            # BUYモック注文
+                            order_result = self.kabu_integrator.kabu_manager.execute_dynamic_orders({
+                                'symbol': symbol,
+                                'side': '2',
+                                'quantity': quantity,
+                                'price': 0
+                            })
+                            self.logger.info(f"後場BUY注文: {symbol} qty={quantity}株 結果={order_result}")
+                            if order_result.get("success"):
+                                # executed_priceを取得（0の場合はcurrent_priceをフォールバック）
+                                executed_price = order_result.get("executed_price", current_price)
+                                
+                                # 残高から減算（BUY確定）
+                                new_balance = self.paper_balance.deduct(executed_price, quantity)
+                                self.logger.info(
+                                    f"[BALANCE_DEDUCT] {symbol}: "
+                                    f"-{executed_price * quantity:,.0f}円 -> 残高={new_balance:,.0f}円"
+                                )
+                                # ポジション追加
+                                self._add_position(
+                                    symbol=symbol,
+                                    entry_price=executed_price,
+                                    strategy="GCStrategy",  # TODO: DynamicStrategySelectorで動的選択
+                                    quantity=quantity
+                                )
                 except Exception as e:
                     self.logger.error(f"kabu API同期エラー: {e}")
             
@@ -653,6 +839,15 @@ class DSSMSScheduler:
                             f"({sell_result.get('error', 'debug_mode')})"
                         )
                     # --- C-1 ここまで ---
+                    
+                    # SELL時の残高加算（約定価格はcurrent_priceを使用、取得できない場合はentry_priceをフォールバック）
+                    sell_price = current_price if isinstance(current_price, (int, float)) and current_price > 0 else self.positions.get(symbol, {}).get("entry_price", 0)
+                    if sell_price > 0 and quantity > 0:
+                        new_balance = self.paper_balance.add(sell_price, quantity)
+                        self.logger.info(
+                            f"[BALANCE_ADD] {symbol} (SL): "
+                            f"+{sell_price * quantity:,.0f}円 -> 残高={new_balance:,.0f}円"
+                        )
 
                     # ポジション削除（発注成否に関わらず必ず実行）
                     self._remove_position(symbol)
