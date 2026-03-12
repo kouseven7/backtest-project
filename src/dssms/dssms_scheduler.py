@@ -240,6 +240,49 @@ class DSSMSScheduler:
             f"quantity={quantity}株, {len(self.positions)}/{self.max_positions})"
         )
     
+    def _execute_with_retry(self, execute_func, order_params: dict, caller: str) -> dict:
+        """
+        kabu API発注をリトライ付きで実行する。
+        
+        Args:
+            execute_func: 発注を実行する関数（callable）
+            order_params: 発注パラメータdict
+            caller: ログ識別用の呼び出し元名（例: "SL_SELL", "前場BUY"）
+        
+        Returns:
+            dict: success=True/False、order_id or error
+        """
+        max_retries = 3
+        retry_interval = 5  # 秒
+
+        for attempt in range(1, max_retries + 1):
+            try:
+                result = execute_func(order_params)
+                if result.get("success"):
+                    if attempt > 1:
+                        self.logger.info(
+                            f"[RETRY_OK] {caller}: {attempt}回目で発注成功"
+                        )
+                    return result
+                else:
+                    error = result.get("error", "unknown")
+                    self.logger.warning(
+                        f"[RETRY] {caller}: 発注失敗({attempt}/{max_retries}) error={error}"
+                    )
+            except Exception as e:
+                self.logger.warning(
+                    f"[RETRY] {caller}: 発注例外({attempt}/{max_retries}) {type(e).__name__}: {e}"
+                )
+
+            if attempt < max_retries:
+                import time
+                time.sleep(retry_interval)
+
+        self.logger.error(
+            f"[ORDER_FAILED] {caller}: {max_retries}回リトライ全失敗"
+        )
+        return {"success": False, "error": f"max_retries({max_retries})exceeded"}
+    
     def _execute_sl_sell(self, symbol: str, quantity: int) -> dict:
         """
         ストップロス発動時のSELL発注を実行する。
@@ -282,13 +325,17 @@ class DSSMSScheduler:
                 f"[SL_SELL] {symbol}: SELL発注送信 (qty={quantity})"
             )
 
-            sell_result = self.kabu_integration.execute_dynamic_orders({
-                "symbol": symbol,
-                "side": "1",        # 1=SELL（2=BUY）
-                "quantity": quantity,
-                "price": 0,         # 成行
-                "exchange": 1       # 東証
-            })
+            sell_result = self._execute_with_retry(
+                execute_func=self.kabu_integration.execute_dynamic_orders,
+                order_params={
+                    "symbol": symbol,
+                    "side": "1",        # 1=SELL（2=BUY）
+                    "quantity": quantity,
+                    "price": 0,         # 成行
+                    "exchange": 1       # 東証
+                },
+                caller=f"SL_SELL_{symbol}"
+            )
 
             if sell_result.get("success"):
                 return {
@@ -560,12 +607,16 @@ class DSSMSScheduler:
                             )
                         else:
                             # BUYモック注文
-                            order_result = self.kabu_integrator.kabu_manager.execute_dynamic_orders({
-                                'symbol': symbol,
-                                'side': '2',
-                                'quantity': quantity,
-                                'price': 0
-                            })
+                            order_result = self._execute_with_retry(
+                                execute_func=self.kabu_integrator.kabu_manager.execute_dynamic_orders,
+                                order_params={
+                                    'symbol': symbol,
+                                    'side': '2',
+                                    'quantity': quantity,
+                                    'price': 0
+                                },
+                                caller=f"前場BUY_{symbol}"
+                            )
                             self.logger.info(f"前場BUY注文: {symbol} qty={quantity}株 結果={order_result}")
                             if order_result.get("success"):
                                 # executed_priceを取得（0の場合はcurrent_priceをフォールバック）
@@ -701,12 +752,16 @@ class DSSMSScheduler:
                             )
                         else:
                             # BUYモック注文
-                            order_result = self.kabu_integrator.kabu_manager.execute_dynamic_orders({
-                                'symbol': symbol,
-                                'side': '2',
-                                'quantity': quantity,
-                                'price': 0
-                            })
+                            order_result = self._execute_with_retry(
+                                execute_func=self.kabu_integrator.kabu_manager.execute_dynamic_orders,
+                                order_params={
+                                    'symbol': symbol,
+                                    'side': '2',
+                                    'quantity': quantity,
+                                    'price': 0
+                                },
+                                caller=f"後場BUY_{symbol}"
+                            )
                             self.logger.info(f"後場BUY注文: {symbol} qty={quantity}株 結果={order_result}")
                             if order_result.get("success"):
                                 # executed_priceを取得（0の場合はcurrent_priceをフォールバック）
