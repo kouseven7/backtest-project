@@ -364,3 +364,74 @@ class ExecutionHistory:
         except Exception as e:
             self.logger.error(f"履歴クリーンアップエラー: {e}")
             return False
+    
+    def record_trade_buy(self, symbol: str, price: float, quantity: int, strategy: str) -> bool:
+        """
+        BUY取引を記録する
+        
+        Args:
+            symbol: 銘柄コード
+            price: 購入価格
+            quantity: 購入株数
+            strategy: 使用戦略名
+        
+        Returns:
+            bool: 記録成功の場合True
+        """
+        try:
+            record = {
+                "timestamp": datetime.now().isoformat(),
+                "event_type": "buy",
+                "symbol": symbol,
+                "price": price,
+                "quantity": quantity,
+                "strategy": strategy,
+                "market_conditions": self._capture_market_snapshot()
+            }
+            self._append_to_history(record)
+            self.logger.info(f"BUY取引記録: {symbol} - {quantity}株 @ {price}円 (戦略: {strategy})")
+            return True
+        except Exception as e:
+            self.logger.error(f"BUY取引記録エラー: {e}")
+            return False
+    
+    def record_trade_sell(self, symbol: str, sell_price: float, quantity: int,
+                          entry_price: float, reason: str) -> bool:
+        """
+        SELL取引を記録する
+        
+        Args:
+            symbol: 銘柄コード
+            sell_price: 売却価格
+            quantity: 売却株数
+            entry_price: エントリー価格
+            reason: 売却理由
+        
+        Returns:
+            bool: 記録成功の場合True
+        """
+        try:
+            profit_loss = (sell_price - entry_price) * quantity
+            profit_loss_pct = (sell_price - entry_price) / entry_price * 100
+            
+            record = {
+                "timestamp": datetime.now().isoformat(),
+                "event_type": "sell",
+                "symbol": symbol,
+                "sell_price": sell_price,
+                "entry_price": entry_price,
+                "quantity": quantity,
+                "profit_loss": round(profit_loss, 0),
+                "profit_loss_pct": round(profit_loss_pct, 2),
+                "reason": reason,
+                "market_conditions": self._capture_market_snapshot()
+            }
+            self._append_to_history(record)
+            self.logger.info(
+                f"SELL取引記録: {symbol} - {quantity}株 @ {sell_price}円 "
+                f"(損益: {profit_loss:+,.0f}円 / {profit_loss_pct:+.2f}%, 理由: {reason})"
+            )
+            return True
+        except Exception as e:
+            self.logger.error(f"SELL取引記録エラー: {e}")
+            return False

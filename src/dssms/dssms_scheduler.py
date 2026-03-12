@@ -438,17 +438,13 @@ class DSSMSScheduler:
                         sold_symbols.append(symbol)
                         
                         # 実行履歴記録
-                        if hasattr(self, 'history'):
-                            self.history.add_event(
-                                event_type='sell',
+                        if hasattr(self, 'execution_history'):
+                            self.execution_history.record_trade_sell(
                                 symbol=symbol,
-                                details={
-                                    'price': exit_price,
-                                    'shares': exit_shares,
-                                    'reason': exit_reason,
-                                    'entry_price': existing_position['entry_price'],
-                                    'entry_date': existing_position['entry_date'].strftime('%Y-%m-%d')
-                                }
+                                sell_price=exit_price,
+                                quantity=exit_shares,
+                                entry_price=existing_position['entry_price'],
+                                reason=exit_reason
                             )
                     else:
                         self.logger.info(f"[EXIT_CHECK] {symbol}: ホールド継続 (action={result.get('action')})")
@@ -588,6 +584,14 @@ class DSSMSScheduler:
                                     strategy="GCStrategy",  # TODO: DynamicStrategySelectorで動的選択
                                     quantity=quantity
                                 )
+                                # 実行履歴記録（BUY）
+                                if hasattr(self, 'execution_history'):
+                                    self.execution_history.record_trade_buy(
+                                        symbol=symbol,
+                                        price=executed_price,
+                                        quantity=quantity,
+                                        strategy="GCStrategy"
+                                    )
                 except Exception as e:
                     self.logger.error(f"kabu API同期エラー: {e}")
             
@@ -721,6 +725,14 @@ class DSSMSScheduler:
                                     strategy="GCStrategy",  # TODO: DynamicStrategySelectorで動的選択
                                     quantity=quantity
                                 )
+                                # 実行履歴記録（BUY）
+                                if hasattr(self, 'execution_history'):
+                                    self.execution_history.record_trade_buy(
+                                        symbol=symbol,
+                                        price=executed_price,
+                                        quantity=quantity,
+                                        strategy="GCStrategy"
+                                    )
                 except Exception as e:
                     self.logger.error(f"kabu API同期エラー: {e}")
             
