@@ -798,6 +798,28 @@ class KabuIntegrationManager:
             self.logger.error(f"リアルタイムデータ取得エラー {symbol}: {e}")
             return pd.DataFrame()
     
+    def get_current_price(self, symbol: str) -> Optional[float]:
+        """
+        kabu STATIONから現在価格を取得する。
+        
+        Args:
+            symbol: 銘柄コード（例: "8031"）
+        
+        Returns:
+            float: 現在価格（円）。取得失敗時はNone。
+        """
+        try:
+            df = self.get_realtime_data_for_selected(symbol)
+            if not df.empty and 'current_price' in df.columns:
+                price = float(df['current_price'].iloc[0])
+                if price > 0:
+                    return price
+            self.logger.warning(f"[PRICE_FETCH] {symbol}: kabu API価格取得失敗")
+            return None
+        except Exception as e:
+            self.logger.error(f"[PRICE_FETCH] {symbol}: 現在価格取得エラー ({e})")
+            return None
+    
     def execute_dynamic_orders(self, switch_data: Dict) -> Dict[str, Any]:
         """動的注文実行（段階的統合）"""
         try:

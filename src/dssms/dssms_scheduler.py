@@ -139,7 +139,6 @@ class DSSMSScheduler:
         
         # スケジューリング制御
         self.market_time_manager = MarketTimeManager(config_path)
-        self.emergency_detector = EmergencyDetector(config_path)
         
         # kabu API統合（段階的連携）
         try:
@@ -152,6 +151,12 @@ class DSSMSScheduler:
             self.kabu_integration = None
             self.kabu_integrator = None
             self.integration_mode = 'disabled'
+        
+        # EmergencyDetectorにkabu統合を渡す
+        self.emergency_detector = EmergencyDetector(
+            config_path=config_path,
+            kabu_integration=self.kabu_integration
+        )
         
         # DSSMS コアエンジン統合
         try:
@@ -574,19 +579,32 @@ class DSSMSScheduler:
                         self.logger.info(f"ポジション満枠({len(self.positions)}/{self.max_positions})のためBUYスキップ: {symbol}")
                     else:
                         # 株価取得（BUY前に株数計算のため）
+                        # kabu STATIONからリアルタイム価格取得
+                        kabu_price = None
                         try:
-                            from datetime import timedelta
-                            ticker, start, end, stock_data, _ = get_parameters_and_data(
-                                ticker=symbol,
-                                start_date=(date.today() - timedelta(days=5)).strftime('%Y-%m-%d'),
-                                end_date=date.today().strftime('%Y-%m-%d'),
-                                warmup_days=0
-                            )
-                            current_price = stock_data['Adj Close'].iloc[-1] if not stock_data.empty else 1000.0
-                            self.logger.info(f"[PRICE_FETCH] {symbol}: 現在価格={current_price:.2f}円")
+                            if self.kabu_integration is not None:
+                                kabu_price = self.kabu_integration.get_current_price(symbol)
                         except Exception as e:
-                            self.logger.warning(f"[PRICE_FETCH] {symbol}: 価格取得失敗、仮株価1000円を使用: {e}")
-                            current_price = 1000.0
+                            self.logger.warning(f"[PRICE_FETCH] {symbol}: kabu API価格取得失敗 ({e})")
+
+                        if kabu_price is not None and kabu_price > 0:
+                            current_price = kabu_price
+                            self.logger.info(f"[PRICE_FETCH] {symbol}: kabu API価格={current_price:.2f}円")
+                        else:
+                            # フォールバック: yfinance
+                            try:
+                                from datetime import timedelta
+                                ticker, start, end, stock_data, _ = get_parameters_and_data(
+                                    ticker=symbol,
+                                    start_date=(date.today() - timedelta(days=5)).strftime('%Y-%m-%d'),
+                                    end_date=date.today().strftime('%Y-%m-%d'),
+                                    warmup_days=0
+                                )
+                                current_price = stock_data['Adj Close'].iloc[-1] if not stock_data.empty else 1000.0
+                                self.logger.info(f"[PRICE_FETCH] {symbol}: yfinance価格={current_price:.2f}円（フォールバック）")
+                            except Exception as e:
+                                self.logger.warning(f"[PRICE_FETCH] {symbol}: 価格取得失敗、仮株価1000円を使用: {e}")
+                                current_price = 1000.0
                         
                         # C-2: 動的株数計算
                         quantity = self.paper_balance.calc_quantity(
@@ -719,19 +737,32 @@ class DSSMSScheduler:
                         self.logger.info(f"ポジション満枠({len(self.positions)}/{self.max_positions})のためBUYスキップ: {symbol}")
                     else:
                         # 株価取得（BUY前に株数計算のため）
+                        # kabu STATIONからリアルタイム価格取得
+                        kabu_price = None
                         try:
-                            from datetime import timedelta
-                            ticker, start, end, stock_data, _ = get_parameters_and_data(
-                                ticker=symbol,
-                                start_date=(date.today() - timedelta(days=5)).strftime('%Y-%m-%d'),
-                                end_date=date.today().strftime('%Y-%m-%d'),
-                                warmup_days=0
-                            )
-                            current_price = stock_data['Adj Close'].iloc[-1] if not stock_data.empty else 1000.0
-                            self.logger.info(f"[PRICE_FETCH] {symbol}: 現在価格={current_price:.2f}円")
+                            if self.kabu_integration is not None:
+                                kabu_price = self.kabu_integration.get_current_price(symbol)
                         except Exception as e:
-                            self.logger.warning(f"[PRICE_FETCH] {symbol}: 価格取得失敗、仮株価1000円を使用: {e}")
-                            current_price = 1000.0
+                            self.logger.warning(f"[PRICE_FETCH] {symbol}: kabu API価格取得失敗 ({e})")
+
+                        if kabu_price is not None and kabu_price > 0:
+                            current_price = kabu_price
+                            self.logger.info(f"[PRICE_FETCH] {symbol}: kabu API価格={current_price:.2f}円")
+                        else:
+                            # フォールバック: yfinance
+                            try:
+                                from datetime import timedelta
+                                ticker, start, end, stock_data, _ = get_parameters_and_data(
+                                    ticker=symbol,
+                                    start_date=(date.today() - timedelta(days=5)).strftime('%Y-%m-%d'),
+                                    end_date=date.today().strftime('%Y-%m-%d'),
+                                    warmup_days=0
+                                )
+                                current_price = stock_data['Adj Close'].iloc[-1] if not stock_data.empty else 1000.0
+                                self.logger.info(f"[PRICE_FETCH] {symbol}: yfinance価格={current_price:.2f}円（フォールバック）")
+                            except Exception as e:
+                                self.logger.warning(f"[PRICE_FETCH] {symbol}: 価格取得失敗、仮株価1000円を使用: {e}")
+                                current_price = 1000.0
                         
                         # C-2: 動的株数計算
                         quantity = self.paper_balance.calc_quantity(

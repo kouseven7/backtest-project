@@ -23,12 +23,13 @@ from config.logger_config import setup_logger
 class EmergencyDetector:
     """階層的緊急事態判定システム"""
     
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: Optional[str] = None, kabu_integration=None):
         """
         初期化
         
         Args:
             config_path: 設定ファイルパス（None時はデフォルト使用）
+            kabu_integration: KabuIntegrationManagerインスタンス（価格取得用）
         """
         self.logger = setup_logger('dssms.emergency_detector')
         
@@ -43,6 +44,9 @@ class EmergencyDetector:
         # positions.jsonパス設定
         self.positions_file = Path("logs/dssms/positions.json")
         self.stop_loss_threshold = -0.03  # -3%
+        
+        # kabu API統合（価格取得用）
+        self.kabu_integration = kabu_integration
         
         # 既存コンポーネント初期化
         try:
@@ -162,16 +166,31 @@ class EmergencyDetector:
                 self.logger.warning(f"{symbol}: entry_price未設定")
                 return result
             
-            # yfinanceで現在価格取得（日本株の場合.Tサフィックス追加）
-            ticker_symbol = symbol if '.T' in symbol else f"{symbol}.T"
-            ticker = yf.Ticker(ticker_symbol)
-            current_data = ticker.history(period='1d', auto_adjust=False)
+            # kabu STATIONからリアルタイム価格取得（優先）
+            current_price = None
+            try:
+                if self.kabu_integration is not None:
+                    current_price = self.kabu_integration.get_current_price(symbol)
+            except Exception as e:
+                self.logger.warning(f"[SL_PRICE] {symbol}: kabu API価格取得失敗 ({e})")
             
-            if current_data.empty:
-                self.logger.warning(f"{symbol}: 現在価格取得失敗")
-                return result
+            # フォールバック: yfinance
+            if current_price is None or current_price <= 0:
+                try:
+                    ticker_symbol = symbol if '.T' in symbol else f"{symbol}.T"
+                    ticker = yf.Ticker(ticker_symbol)
+                    current_data = ticker.history(period='1d', auto_adjust=False)
+                    if current_data.empty:
+                        self.logger.warning(f"{symbol}: 現在価格取得失敗（yfinanceも失敗）")
+                        return result
+                    current_price = current_data['Close'].iloc[-1]
+                    self.logger.info(f"[SL_PRICE] {symbol}: yfinance価格={current_price:.2f}円（フォールバック）")
+                except Exception as e:
+                    self.logger.warning(f"[SL_PRICE] {symbol}: yfinance価格取得失敗 ({e})")
+                    return result
+            else:
+                self.logger.info(f"[SL_PRICE] {symbol}: kabu API価格={current_price:.2f}円")
             
-            current_price = current_data['Close'].iloc[-1]
             loss_percentage = (current_price - entry_price) / entry_price
             
             result["entry_price"] = entry_price
