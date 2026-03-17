@@ -1,0 +1,133 @@
+﻿# 繝ｭ繧ｰ繝輔ぃ繧､繝ｫ
+*.log
+logs/
+
+# Excel繝輔ぃ繧､繝ｫ
+*.xlsx
+*.xlsm
+*.xls
+*.xlsb
+
+# CSV繝輔ぃ繧､繝ｫ
+*.csv
+
+# Python縺ｮ繧ｭ繝｣繝・す繝･繝輔か繝ｫ繝縺ｨ繝輔ぃ繧､繝ｫ
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# VS Code髢｢騾｣
+.vscode/
+*.code-workspace
+.history/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# 迺ｰ蠅・､画焚繝輔ぃ繧､繝ｫ
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Mac縺ｮ荳崎ｦ√ヵ繧｡繧､繝ｫ
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows縺ｮ荳崎ｦ√ヵ繧｡繧､繝ｫ
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# 繝・Φ繝昴Λ繝ｪ繝輔ぃ繧､繝ｫ
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Problem 18 File Management - 霑ｽ蜉髯､螟悶ヱ繧ｿ繝ｼ繝ｳ
+# 謨ｴ逅・ｯｾ雎｡繝輔ぃ繧､繝ｫ縺ｮ閾ｪ蜍暮勁螟・
+
+# 繝舌ャ繧ｯ繧｢繝・・繝輔ぃ繧､繝ｫ
+backup_*
+*_backup*
+*_bak_*
+
+# 蛻・梵邨先棡繝ｻ蜃ｺ蜉帙ヵ繧｡繧､繝ｫ
+*.png
+*.txt
+output_*
+results_*
+
+# Problem 18 逕滓・繝輔ぃ繧､繝ｫ
+file_baseline_analysis_*.json
+cleanup_stats_*.json
+cleanup_report_*.txt
+cleanup_log_*.log
+
+# 荳譎ら噪縺ｪ蛻・梵繧ｹ繧ｯ繝ｪ繝励ヨ・井ｿ晄戟蟇ｾ雎｡縺ｯ髯､縺擾ｼ・
+analyze_temp_*.py
+check_temp_*.py
+temp_*.py
+
+# 繧｢繝ｼ繧ｫ繧､繝悶ョ繧｣繝ｬ繧ｯ繝医Μ・亥炎髯､貂医∩繝輔ぃ繧､繝ｫ菫晉ｮ｡・・
+archive/deleted_files/
+
+# 繧ｭ繝｣繝・す繝･繝ｻ繝・せ繝医ヵ繧｡繧､繝ｫ
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# IDE髢｢騾｣
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# 繧ｷ繧ｹ繝・Β逕滓・繝輔ぃ繧､繝ｫ
+.directory
+*.stackdump
+
+# Reports directory (temporary analysis files)
+reports/
+*.json
+
+# 荳譎ゅユ繧ｹ繝医ヵ繧ｩ繝ｫ繝 (tests/temp/)
+# 謌仙粥蠕悟炎髯､縺輔ｌ繧倶ｸ譎ら噪縺ｪ讀懆ｨｼ繝・せ繝・
+tests/temp/*.py
+tests/temp/*.log
+tests/temp/*.json
+tests/temp/*.txt
+# 縺溘□縺由EADME縺ｨgitignore縺ｯ菫晄戟
+!tests/temp/README.md
+!tests/temp/.gitignore
+
+# kabu API関連の機密情報
+config/kabu_api/kabu_connection_config.json
+scripts/send_kabu_login_reminder.ps1
+scripts/send_kabu_login_reminder.ps1

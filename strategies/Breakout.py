@@ -50,7 +50,7 @@ class BreakoutStrategy(BaseStrategy):
             "volume_threshold": 1.2,   # 出来高増加率の閾値（20%）
             "take_profit": 0.03,       # 利益確定（3%）
             "look_back": 1,            # 前日からのブレイクアウトを見る日数
-            "trailing_stop": 0.02,     # トレーリングストップ（高値から2%下落）
+            "trailing_stop": 0.03,     # トレーリングストップ（高値から3%下落）
             "breakout_buffer": 0.01,   # ブレイクアウト判定の閾値（1%）
             "slippage": 0.001,         # Phase 2: スリッページ（0.1%、買い注文は不利な方向）
             "transaction_cost": 0.0    # Phase 2: 取引コスト（0%、オプション）
@@ -441,6 +441,9 @@ class BreakoutStrategy(BaseStrategy):
             
             # Cycle 27修正: entry_symbol_dataをkwargsから取得
             entry_symbol_data = kwargs.get('entry_symbol_data', None)
+            
+            # デバッグログ追加（2026-03-15）
+            print(f"[ENTRY_EXIT_DEBUG] {current_date.date()} existing_position={'あり' if existing_position is not None else 'なし'} symbol={existing_position.get('entry_symbol', '?') if existing_position else '?'}")
             
             # Phase 5: 既存ポジション処理分岐
             if existing_position is not None:
