@@ -10,6 +10,10 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime, date, timedelta
 import json
+import threading
+import shutil
+import tempfile
+import os
 
 # プロジェクトルートを追加
 project_root = Path(__file__).parent.parent.parent
@@ -44,6 +48,25 @@ class ExecutionHistory:
         
         # 現在セッションデータ
         self.current_session_data: Dict[str, Any] = {}
+        
+        # スレッドロック
+        self._file_lock = threading.Lock()
+        
+        # 起動時JSON破損チェック
+        if self.history_file.exists():
+            try:
+                with open(self.history_file, 'r', encoding='utf-8') as f:
+                    json.load(f)
+            except json.JSONDecodeError as e:
+                backup_file = self.history_file.with_suffix(
+                    f'.backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+                )
+                shutil.copy2(self.history_file, backup_file)
+                with open(self.history_file, 'w', encoding='utf-8') as f:
+                    json.dump([], f)
+                self.logger.warning(
+                    f"履歴ファイル破損を検出しバックアップ保存: {backup_file.name} -> 空ファイルで初期化"
+                )
         
         self.logger.info(f"ExecutionHistory: 初期化完了 (履歴保存先: {self.history_file})")
     
@@ -180,24 +203,37 @@ class ExecutionHistory:
             return False
     
     def _append_to_history(self, record: Dict[str, Any]) -> bool:
-        """履歴ファイルに記録追加"""
+        """履歴ファイルに記録追加（スレッドセーフ・アトミック書き込み版）"""
         try:
-            # 既存履歴読み込み
-            if self.history_file.exists():
-                with open(self.history_file, 'r', encoding='utf-8') as f:
-                    history = json.load(f)
-            else:
-                history = []
-            
-            # 新しい記録追加
-            history.append(record)
-            
-            # ファイルに保存
-            with open(self.history_file, 'w', encoding='utf-8') as f:
-                json.dump(history, f, ensure_ascii=False, indent=2)
-            
-            return True
-            
+            with self._file_lock:
+                # 既存履歴読み込み
+                if self.history_file.exists():
+                    with open(self.history_file, 'r', encoding='utf-8') as f:
+                        history = json.load(f)
+                else:
+                    history = []
+
+                history.append(record)
+
+                # アトミック書き込み（一時ファイル経由でrenameする）
+                temp_fd, temp_path = tempfile.mkstemp(
+                    dir=str(self.history_file.parent),
+                    suffix='.tmp',
+                    prefix='execution_history_'
+                )
+                try:
+                    with os.fdopen(temp_fd, 'w', encoding='utf-8') as f:
+                        json.dump(history, f, ensure_ascii=False, indent=2)
+                    # Windowsでは上書きrenameのためunlinkが必要
+                    if self.history_file.exists():
+                        self.history_file.unlink()
+                    shutil.move(temp_path, str(self.history_file))
+                except Exception:
+                    Path(temp_path).unlink(missing_ok=True)
+                    raise
+
+                return True
+
         except Exception as e:
             self.logger.error(f"履歴ファイル記録エラー: {e}")
             return False
