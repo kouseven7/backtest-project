@@ -98,36 +98,50 @@ class DSSMSDataManager:
             raise
     
     def batch_get_multi_timeframe_data(self, symbols: List[str], 
-                                     max_workers: int = 5) -> Dict[str, Dict[str, pd.DataFrame]]:
+                                     max_workers: int = 3,
+                                     batch_size: int = 5,
+                                     batch_sleep: float = 1.0) -> Dict[str, Dict[str, pd.DataFrame]]:
         """
-        複数銘柄の並列データ取得
+        複数銘柄の並列データ取得（yfinanceレート制限対策版）
         
         Args:
             symbols: 銘柄リスト
-            max_workers: 並列実行数
+            max_workers: 並列実行数（デフォルト3、yfinance制限対策）
+            batch_size: バッチサイズ（デフォルト5銘柄/バッチ）
+            batch_sleep: バッチ間スリープ時間（秒）
             
         Returns:
             Dict[str, Dict[str, pd.DataFrame]]: {symbol: {"daily": df, "weekly": df, "monthly": df}}
         """
         results = {}
         
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # 並列タスク送信
-            future_to_symbol = {
-                executor.submit(self.get_multi_timeframe_data, symbol): symbol 
-                for symbol in symbols
-            }
+        # シンボルをチャンクに分割して順次処理（レート制限対策）
+        for i in range(0, len(symbols), batch_size):
+            chunk = symbols[i:i + batch_size]
+            self.logger.debug(f"Processing batch {i//batch_size + 1}/{(len(symbols)-1)//batch_size + 1}: {len(chunk)} symbols")
             
-            # 結果収集
-            for future in as_completed(future_to_symbol):
-                symbol = future_to_symbol[future]
-                try:
-                    data = future.result(timeout=30)
-                    results[symbol] = data
-                    self.logger.debug(f"Successfully fetched data for {symbol}")
-                except Exception as e:
-                    self.logger.warning(f"Failed to fetch data for {symbol}: {e}")
-                    continue
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                # 並列タスク送信
+                future_to_symbol = {
+                    executor.submit(self.get_multi_timeframe_data, symbol): symbol 
+                    for symbol in chunk
+                }
+                
+                # 結果収集
+                for future in as_completed(future_to_symbol):
+                    symbol = future_to_symbol[future]
+                    try:
+                        data = future.result(timeout=30)
+                        results[symbol] = data
+                        self.logger.debug(f"Successfully fetched data for {symbol}")
+                    except Exception as e:
+                        self.logger.warning(f"Failed to fetch data for {symbol}: {e}")
+                        continue
+            
+            # チャンク間にスリープ（最後のチャンクはスキップ）
+            if i + batch_size < len(symbols):
+                self.logger.debug(f"Rate limit protection: sleeping {batch_sleep}s after batch {i//batch_size + 1}")
+                time.sleep(batch_sleep)
         
         self.logger.info(f"Batch data fetch completed: {len(results)}/{len(symbols)} symbols")
         return results
