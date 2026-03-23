@@ -136,6 +136,11 @@ class KabuAuthManager:
         if password:
             return password
         
+        # 設定ファイル: authentication.api_password
+        password = self.config.get('authentication', {}).get('api_password', '')
+        if password:
+            return password
+        
         raise ValueError("API パスワードが設定されていません")
     
     def is_token_valid(self) -> bool:
@@ -635,7 +640,7 @@ class KabuIntegrationManager:
         self.config = self._load_config(config_path)
         
         # 認証・接続管理
-        self.auth_manager = KabuAuthManager(self.config['authentication'])
+        self.auth_manager = KabuAuthManager(self.config)
         
         # 50銘柄管理
         self.symbol_registry = DSSMSSymbolRegistry(self.config['registration_strategy'])
@@ -767,12 +772,12 @@ class KabuIntegrationManager:
             obj = {'Symbols': symbol_list}
             json_data = json.dumps(obj).encode('utf8')
             
-            url = f"{self.config['authentication']['base_url']}/register"
+            url = f"{self.config['base_url']}/register"
             req = urllib.request.Request(url, json_data, method='PUT')
             req.add_header('Content-Type', 'application/json')
             req.add_header('X-API-KEY', token)
             
-            with urllib.request.urlopen(req, timeout=self.config['authentication']['timeout_seconds']) as res:
+            with urllib.request.urlopen(req, timeout=self.config['timeout_seconds']) as res:
                 if res.status == 200:
                     content = json.loads(res.read())
                     self.logger.info(f"kabu API銘柄登録成功: {content}")
