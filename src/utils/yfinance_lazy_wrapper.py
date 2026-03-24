@@ -30,8 +30,6 @@ except ImportError:
 
 _CONFIG_CACHE: Dict[str, Any] = {"mtime": None, "data": {}}
 _JQUANTS_CLIENT: Optional[Any] = None
-# J-Quants Freeプラン利用可能期間
-_JQUANTS_FREE_PLAN_START = "20231229"
 
 
 def _handle_yfinance_error(error: Exception, operation: str):
@@ -341,22 +339,34 @@ def _jquants_download(ticker: str, start: Any = None, end: Any = None, interval:
         print("[INFO] ^N225 is not available via J-Quants; fallback to yfinance download")
         return _yfinance_download(ticker, start=start, end=end, interval=interval, auto_adjust=False)
 
+    code = _to_jquants_code(ticker)
+    cache_path = _project_root() / "data" / "jquants_cache" / f"{code}.csv"
+    if cache_path.exists():
+        try:
+            cache_df = pd.read_csv(cache_path)
+            cache_df["Date"] = pd.to_datetime(cache_df["Date"], errors="coerce")
+            cache_df = cache_df.dropna(subset=["Date"]).set_index("Date")
+            if cache_df.index.tz is not None:
+                cache_df.index = cache_df.index.tz_localize(None)
+
+            if start is not None:
+                start_ts = pd.Timestamp(start)
+                cache_df = cache_df[cache_df.index >= start_ts]
+            if end is not None:
+                end_ts = pd.Timestamp(end)
+                cache_df = cache_df[cache_df.index <= end_ts]
+
+            return cache_df
+        except Exception as exc:
+            print(f"[WARNING] Failed to read J-Quants cache {cache_path}: {exc}; fallback to API")
+
     from_yyyymmdd = _to_yyyymmdd(start)
     to_yyyymmdd = _to_yyyymmdd(end)
-
-    # Freeプラン期間外チェック
-    if from_yyyymmdd and from_yyyymmdd < _JQUANTS_FREE_PLAN_START:
-        raise ValueError(
-            f"[J-Quants] リクエスト期間がFreeプランの利用可能範囲外です。"
-            f" 開始日: {from_yyyymmdd}, Freeプラン開始: {_JQUANTS_FREE_PLAN_START}。"
-            f" Standardプランへのアップグレードが必要です。"
-        )
 
     if str(interval).lower() != "1d":
         print(f"[INFO] interval={interval} is not supported by J-Quants daily endpoint; fallback to yfinance")
         return _yfinance_download(ticker, start=start, end=end, interval=interval, auto_adjust=False)
 
-    code = _to_jquants_code(ticker)
     client = _get_jquants_client()
 
     raw_df = client.get_eq_bars_daily(
