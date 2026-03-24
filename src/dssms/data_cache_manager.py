@@ -14,7 +14,8 @@ from typing import Dict, List, Any, Optional, Tuple, Union
 import logging
 import pandas as pd
 import numpy as np
-import yfinance as yf
+from src.utils.yfinance_lazy_wrapper import Ticker as _WrapperTicker
+import yfinance as yf  # fallback: ^N225用
 from threading import Lock
 import hashlib
 import pickle
@@ -485,7 +486,7 @@ class DataCacheManager:
             self.cache_stats['data_fetches'] += 1
             
             # yfinanceでデータ取得
-            ticker = yf.Ticker(to_yfinance(symbol))  # 東証銘柄
+            ticker = _WrapperTicker(to_yfinance(symbol))  # 東証銘柄
             # auto_adjust=False: Adj Closeカラムを取得するために必須
             # yfinanceのhistory()はend_dateをexclusiveとして扱うため、
             # target_date当日のデータを確実に取得するには+3日の余裕を持たせる

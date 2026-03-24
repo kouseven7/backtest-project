@@ -224,7 +224,8 @@ class DSSBacktesterV3:
         Returns:
             Dict[symbol, DataFrame]: 銘柄別市場データ
         """
-        import yfinance as yf
+        from src.utils.yfinance_lazy_wrapper import Ticker as _WrapperTicker
+        import yfinance as yf  # fallback: ^N225用
         from datetime import timedelta
         
         self.logger.info(f"=== 市場データ取得開始: {len(symbols)}銘柄 [{date.strftime('%Y-%m-%d')}] ===")
@@ -242,7 +243,7 @@ class DSSBacktesterV3:
                 self.logger.info(f"データ取得中: {ticker_symbol}")
                 
                 # yfinance でデータ取得
-                ticker = yf.Ticker(ticker_symbol)
+                ticker = _WrapperTicker(ticker_symbol)
                 data = ticker.history(
                     start=start_date.strftime('%Y-%m-%d'),
                     end=(end_date + timedelta(days=1)).strftime('%Y-%m-%d'),  # 終了日も含める

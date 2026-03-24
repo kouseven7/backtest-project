@@ -1,0 +1,3 @@
+data_source: jquants
+jquants:
+  api_key: "gfnbrc1cC7VnvuquT9y6hEUlirKzOW8unfXyQ0EquOA"   # J-Quants ダッシュボードで発行したAPIキーをここに設定
