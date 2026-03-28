@@ -71,11 +71,11 @@ class GCStrategy(BaseStrategy):
             # Phase 1.13: トレンド強度フィルター（ADX）
             "trend_strength_enabled": True,   # トレンド強度フィルター有効化
             "trend_strength_period": 14,      # ADX計算期間
-            "trend_strength_percentile": 67,  # 閾値パーセンタイル（67%ile=高トレンド）
+            "trend_strength_percentile": 60,  # 閾値パーセンタイル（60%ile=高トレンド）
             
             # Phase 1.13: SMA乖離フィルター（AND条件では5.0%）
             "sma_divergence_enabled": True,   # SMA乖離フィルター有効化
-            "sma_divergence_threshold": 5.0,  # SMA乖離閾値（%）AND条件では5.0%（Phase 1.13検証済み）
+            "sma_divergence_threshold": 3.0,  # SMA乖離閾値（%）AND条件では3.0%
             "sma_divergence_period": 25,      # SMA期間（long_windowと同じ）
         }
         
