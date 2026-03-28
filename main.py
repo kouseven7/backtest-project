@@ -204,7 +204,7 @@ def get_default_parameters(strategy_name: str) -> Dict[str, Any]:
         },
         'GCStrategy': {
             'short_window': 5,
-            'long_window': 25,
+            'long_window': 75,
             'stop_loss': 0.05,
             'take_profit': 0.10
         }

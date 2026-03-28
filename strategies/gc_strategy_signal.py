@@ -53,10 +53,10 @@ class GCStrategy(BaseStrategy):
         # デフォルトパラメータの設定（Phase 1.13 AND条件フィルター: 2026-01-27変更）
         default_params = {
             "short_window": 5,       # 短期移動平均期間
-            "long_window": 25,       # 長期移動平均期間
+            "long_window": 75,       # 長期移動平均期間
             "take_profit": None,     # 利益確定なし（Phase 1.13: トレンドフォロー維持、TASK 5-B推奨）
             "stop_loss": 0.03,       # ストップロス（3%）← Phase 2-1最適化完了（2%は悪化、5%は横ばい）
-            "trailing_stop_pct": 0.10,  # トレーリングストップ（10%）← Phase 1.13: TASK 5-B推奨（PF1.15期待）
+            "trailing_stop_pct": None,  # トレーリングストップ無効（2026-03-27 グリッドサーチで最適化済み）
             "max_hold_days": 300,    # 最大保有期間（300日、実質無効）
             "exit_on_death_cross": True,  # デッドクロスでイグジットするかどうか
             
@@ -95,7 +95,7 @@ class GCStrategy(BaseStrategy):
         
         # 戦略パラメータの読み込み
         self.short_window = int(self.params.get("short_window", 5))
-        self.long_window = int(self.params.get("long_window", 25))
+        self.long_window = int(self.params.get("long_window", 75))
         
         # Phase 1c修正: 移動平均線にshift(1)を適用（ルックアヘッドバイアス修正）
         # 理由: idx日目の移動平均がidx日目の価格を含むのはルックアヘッドバイアス
@@ -514,7 +514,7 @@ class GCStrategy(BaseStrategy):
             'using_optimized_params': hasattr(self, '_approved_params') and self._approved_params is not None,
             'default_params': {
                 "short_window": 5,
-                "long_window": 25,
+                "long_window": 75,
                 "take_profit": 0.05,
                 "stop_loss": 0.03,
                 "trailing_stop_pct": 0.03,
