@@ -652,7 +652,10 @@ class DSSMSScheduler:
                             self.logger.info(f"前場BUY注文: {symbol} qty={quantity}株 結果={order_result}")
                             if order_result.get("success"):
                                 # executed_priceを取得（0の場合はcurrent_priceをフォールバック）
-                                executed_price = order_result.get("executed_price", current_price)
+                                executed_price = order_result.get("executed_price") or current_price
+                                if executed_price == 0 or executed_price is None:
+                                    executed_price = current_price
+                                self.logger.info(f"[BUY] {symbol}: executed_price={executed_price}円 (current_price={current_price}円)")
                                 
                                 # 残高から減算（BUY確定）
                                 new_balance = self.paper_balance.deduct(executed_price, quantity)
@@ -810,7 +813,10 @@ class DSSMSScheduler:
                             self.logger.info(f"後場BUY注文: {symbol} qty={quantity}株 結果={order_result}")
                             if order_result.get("success"):
                                 # executed_priceを取得（0の場合はcurrent_priceをフォールバック）
-                                executed_price = order_result.get("executed_price", current_price)
+                                executed_price = order_result.get("executed_price") or current_price
+                                if executed_price == 0 or executed_price is None:
+                                    executed_price = current_price
+                                self.logger.info(f"[BUY] {symbol}: executed_price={executed_price}円 (current_price={current_price}円)")
                                 
                                 # 残高から減算（BUY確定）
                                 new_balance = self.paper_balance.deduct(executed_price, quantity)

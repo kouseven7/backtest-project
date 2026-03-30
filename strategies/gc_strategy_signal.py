@@ -430,11 +430,16 @@ class GCStrategy(BaseStrategy):
             self.high_prices[entry_idx] = entry_price
         else:
             self.high_prices[entry_idx] = max(self.high_prices[entry_idx], current_price)
-    
-        trailing_stop = self.high_prices[entry_idx] * (1 - self.params.get("trailing_stop_pct", 0.03))
-        self.logger.debug(f"[TRAILING] high_price={self.high_prices[entry_idx]:.2f}, trailing_stop={trailing_stop:.2f}, current_price={current_price:.2f} (next_day_open)")
-        
-        if current_price < trailing_stop:
+
+        trailing_stop_pct = self.params.get("trailing_stop_pct")
+        trailing_stop = None
+        if trailing_stop_pct is not None:
+            trailing_stop = self.high_prices[entry_idx] * (1 - trailing_stop_pct)
+            self.logger.debug(f"[TRAILING] high_price={self.high_prices[entry_idx]:.2f}, trailing_stop={trailing_stop:.2f}, current_price={current_price:.2f} (next_day_open)")
+        else:
+            self.logger.debug("[TRAILING] trailing_stop_pct is None, trailing stop disabled")
+
+        if trailing_stop is not None and current_price < trailing_stop:
             self.logger.info(f"トレーリングストップによるイグジット: 日付={self.data.index[idx]}")
             self.logger.debug(f"[EXIT REASON] Trailing Stop: {current_price:.2f} (next_day_open) < {trailing_stop:.2f}")
             return (-1, 'trailing_stop')

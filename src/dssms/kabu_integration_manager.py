@@ -85,13 +85,18 @@ class KabuAuthManager:
     def authenticate(self) -> bool:
         """kabu STATION認証"""
         try:
+            base_url = self.config.get('base_url')
+            if not base_url:
+                self.logger.error("[AUTH] base_url が未設定です")
+                return False
+
             # 環境に応じたパスワード取得
             password = self._get_api_password()
             
             obj = {'APIPassword': password}
             json_data = json.dumps(obj).encode('utf8')
             
-            url = f"{self.config['base_url']}/token"
+            url = f"{base_url}/token"
             req = urllib.request.Request(url, json_data, method='POST')
             req.add_header('Content-Type', 'application/json')
             
@@ -320,7 +325,12 @@ class AdaptiveRealtimeClient:
     def _fetch_board_data(self, symbol: str, token: str) -> Optional[Dict[str, Any]]:
         """kabu APIからボードデータ取得"""
         try:
-            url = f"{self.config['base_url']}/board/{symbol}@1"
+            base_url = self.config.get('base_url')
+            if not base_url:
+                self.logger.error("[BOARD] base_url が未設定です")
+                return None
+
+            url = f"{base_url}/board/{symbol}@1"
             req = urllib.request.Request(url, method='GET')
             req.add_header('Content-Type', 'application/json')
             req.add_header('X-API-KEY', token)
@@ -553,11 +563,22 @@ class KabuOrderExecutor:
                     timestamp=datetime.now()
                 )
             
+            base_url = self.config.get('base_url')
+            if not base_url:
+                self.logger.error("[ORDER] base_url が未設定です")
+                return OrderExecutionResult(
+                    success=False,
+                    order_id=None,
+                    executed_price=None,
+                    error_message="base_url が未設定",
+                    timestamp=datetime.now()
+                )
+
             # 注文オブジェクト構築
             order_obj = self._build_order_object(switch_data)
             json_data = json.dumps(order_obj).encode('utf-8')
             
-            url = f"{self.config['base_url']}/sendorder"
+            url = f"{base_url}/sendorder"
             req = urllib.request.Request(url, json_data, method='POST')
             req.add_header('Content-Type', 'application/json')
             req.add_header('X-API-KEY', token)
@@ -771,8 +792,13 @@ class KabuIntegrationManager:
             
             obj = {'Symbols': symbol_list}
             json_data = json.dumps(obj).encode('utf8')
+
+            base_url = self.config.get('base_url')
+            if not base_url:
+                self.logger.error("[REGISTER] base_url が未設定です")
+                return False
             
-            url = f"{self.config['base_url']}/register"
+            url = f"{base_url}/register"
             req = urllib.request.Request(url, json_data, method='PUT')
             req.add_header('Content-Type', 'application/json')
             req.add_header('X-API-KEY', token)
