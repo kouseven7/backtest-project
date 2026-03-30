@@ -128,7 +128,13 @@ class PaperBalance:
 
 class DSSMSScheduler:
     """DSSMS前場後場スケジューリングシステム"""
-    
+
+    PAPER_TRADE_DIR = Path("logs/paper_trade")
+    DAILY_SNAPSHOT_FILE = PAPER_TRADE_DIR / "daily_snapshot.csv"
+    CLOSED_TRADES_FILE = PAPER_TRADE_DIR / "closed_trades.csv"
+    LAST_RUN_FILE = Path("logs/paper_trade/last_run.json")
+    EXECUTION_HISTORY_FILE = Path("logs/dssms/execution_history.json")
+
     def __init__(self, config_path: Optional[str] = None):
         """
         初期化
@@ -194,6 +200,16 @@ class DSSMSScheduler:
         self.logger.info(
             f"[PAPER_BALANCE] 初期化完了: 残高={self.paper_balance.balance:,.0f}円"
         )
+
+        # ペーパートレード専用ディレクトリ・ファイル初期化
+        self.PAPER_TRADE_DIR.mkdir(parents=True, exist_ok=True)
+        if not self.DAILY_SNAPSHOT_FILE.exists():
+            with open(self.DAILY_SNAPSHOT_FILE, "w", encoding="utf-8") as f:
+                f.write("date,cash,unrealized_pnl,total_assets,daily_pnl,cumulative_realized_pnl,open_positions,total_trades,price_fetch_ok\n")
+        if not self.CLOSED_TRADES_FILE.exists():
+            with open(self.CLOSED_TRADES_FILE, "w", encoding="utf-8") as f:
+                f.write("trade_id,symbol,strategy,entry_date,entry_price,shares,exit_date,exit_price,exit_reason,holding_days,pnl,pnl_pct,win\n")
+        self.logger.info(f"[PAPER_TRADE_DIR] 初期化完了: {self.PAPER_TRADE_DIR}")
         
         # メール通知システム初期化
         config_file_path = config_path or (Path(__file__).parent.parent.parent / "config" / "kabu_api" / "kabu_connection_config.json")
@@ -201,7 +217,7 @@ class DSSMSScheduler:
         
         self.logger.info("DSSMSScheduler: 初期化完了")
     
-    def _load_positions(self) -> None:
+    def _load_positions(self) -> dict:
         """positions.jsonからポジション情報を読み込む"""
         try:
             if self.positions_file.exists():
@@ -214,6 +230,7 @@ class DSSMSScheduler:
         except Exception as e:
             self.logger.error(f"ポジション情報読み込みエラー: {e}")
             self.positions = {}
+        return self.positions
     
     def _save_positions(self) -> None:
         """positions.jsonにポジション情報を保存"""
@@ -224,7 +241,349 @@ class DSSMSScheduler:
             self.logger.debug(f"ポジション情報保存: {len(self.positions)}件")
         except Exception as e:
             self.logger.error(f"ポジション情報保存エラー: {e}")
-    
+
+    def _load_balance(self) -> float:
+        """paper_balance から現金残高を取得する。"""
+        return self.paper_balance.balance
+
+    def _write_daily_snapshot(self, current_prices: dict) -> None:
+        """
+        日次スナップショットを daily_snapshot.csv に1行追記する。
+
+        Args:
+            current_prices: {symbol: price} の辞書。価格取得失敗の銘柄は含まれない。
+                            空辞書の場合は price_fetch_ok=False として記録する。
+        """
+        import csv
+        from datetime import date as _date
+
+        today = _date.today().isoformat()
+        price_fetch_ok = len(current_prices) > 0
+
+        positions = self._load_positions()
+        cash = self._load_balance()
+
+        # 含み損益の計算（価格取得成功時のみ）
+        unrealized_pnl = None
+        total_assets = None
+        if price_fetch_ok:
+            unrealized_pnl = 0.0
+            for symbol, pos in positions.items():
+                if symbol in current_prices:
+                    entry_price = pos.get("entry_price", 0)
+                    shares = pos.get("quantity", pos.get("shares", 0))
+                    unrealized_pnl += (current_prices[symbol] - entry_price) * shares
+            total_assets = cash + unrealized_pnl
+
+        # 前日のスナップショットから cumulative_realized_pnl と total_trades を引き継ぐ
+        cumulative_realized_pnl = 0.0
+        total_trades = 0
+        prev_total_assets = None
+
+        if self.DAILY_SNAPSHOT_FILE.exists():
+            with open(self.DAILY_SNAPSHOT_FILE, "r", encoding="utf-8") as f:
+                rows = list(csv.DictReader(f))
+                if rows:
+                    last = rows[-1]
+                    cumulative_realized_pnl = float(last.get("cumulative_realized_pnl") or 0)
+                    total_trades = int(last.get("total_trades") or 0)
+                    prev_total_assets_str = last.get("total_assets")
+                    if prev_total_assets_str:
+                        prev_total_assets = float(prev_total_assets_str)
+
+        # 当日損益（total_assets が両日とも取得できた場合のみ計算）
+        daily_pnl = None
+        if total_assets is not None and prev_total_assets is not None:
+            daily_pnl = total_assets - prev_total_assets
+
+        row = {
+            "date": today,
+            "cash": round(cash, 2),
+            "unrealized_pnl": round(unrealized_pnl, 2) if unrealized_pnl is not None else "",
+            "total_assets": round(total_assets, 2) if total_assets is not None else "",
+            "daily_pnl": round(daily_pnl, 2) if daily_pnl is not None else "",
+            "cumulative_realized_pnl": round(cumulative_realized_pnl, 2),
+            "open_positions": len(positions),
+            "total_trades": total_trades,
+            "price_fetch_ok": price_fetch_ok,
+        }
+
+        with open(self.DAILY_SNAPSHOT_FILE, "a", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=row.keys())
+            writer.writerow(row)
+
+        status = "OK" if price_fetch_ok else "価格取得失敗（残高のみ記録）"
+        self.logger.info(f"[DAILY_SNAPSHOT] {today} 記録完了 ({status})")
+
+    def _write_last_run(
+        self,
+        status: str,
+        price_fetch_ok: bool,
+        positions_held: int,
+        signals_today: dict,
+        error_message: str | None = None,
+    ) -> None:
+        """スケジューラーの最終実行状態を last_run.json に書き込む。
+        ダッシュボードのヘルスチェック用。24時間以上更新されない場合は異常とみなす。
+        """
+        import json
+        from datetime import datetime
+
+        data = {
+            "last_run_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+            "status": status,
+            "positions_held": positions_held,
+            "signals_today": signals_today,
+            "price_fetch_ok": price_fetch_ok,
+            "error_message": error_message,
+            "scheduler_version": "1.0",
+        }
+
+        try:
+            self.LAST_RUN_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.LAST_RUN_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            self.logger.info(f"[LAST_RUN] last_run.json を書き込みました: status={status}")
+        except Exception as e:
+            self.logger.warning(f"[LAST_RUN] last_run.json の書き込みに失敗: {e}")
+
+    def _record_opportunity_skipped(
+        self,
+        date: str,
+        symbol: str,
+        strategy: str,
+        positions_at_time: int,
+    ) -> None:
+        """max_positions到達によりBUYをスキップしたイベントをexecution_history.jsonに追記する。"""
+        import json
+        from datetime import datetime
+
+        event = {
+            "event_type": "opportunity_skipped",
+            "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+            "date": date,
+            "symbol": symbol,
+            "strategy": strategy,
+            "reason": "max_positions_reached",
+            "positions_at_time": positions_at_time,
+            "max_positions": self.max_positions,
+        }
+
+        try:
+            self.EXECUTION_HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+            existing = []
+            if self.EXECUTION_HISTORY_FILE.exists():
+                try:
+                    with open(self.EXECUTION_HISTORY_FILE, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        if isinstance(data, list):
+                            existing = data
+                        elif isinstance(data, dict):
+                            existing = data.get("events", [])
+                except (json.JSONDecodeError, KeyError):
+                    existing = []
+
+            existing.append(event)
+
+            with open(self.EXECUTION_HISTORY_FILE, "w", encoding="utf-8") as f:
+                json.dump(existing, f, ensure_ascii=False, indent=2)
+
+            self.logger.info(
+                f"[OPPORTUNITY_SKIPPED] 記録: {symbol} ({strategy}), "
+                f"ポジション={positions_at_time}/{self.max_positions}"
+            )
+        except Exception as e:
+            self.logger.warning(f"[OPPORTUNITY_SKIPPED] 記録失敗（処理は継続）: {e}")
+
+    def _collect_portfolio_summary(self, current_prices: dict) -> Dict[str, Any]:
+        """朝サマリー用の軽量なポートフォリオ情報を収集する。"""
+        import csv
+
+        positions = []
+        total_unrealized_pnl = 0.0
+        has_price_data = bool(current_prices)
+
+        for symbol, pos in self.positions.items():
+            entry_price = float(pos.get("entry_price", 0) or 0)
+            shares = int(pos.get("quantity", pos.get("shares", 0)) or 0)
+            price = current_prices.get(symbol, entry_price)
+            position_unrealized_pnl = (price - entry_price) * shares if has_price_data else 0.0
+            positions.append({
+                "symbol": symbol,
+                "price": float(price or 0),
+                "shares": shares,
+                "unrealized_pnl": float(position_unrealized_pnl),
+            })
+            total_unrealized_pnl += position_unrealized_pnl
+
+        cash_balance = float(getattr(self.paper_balance, "balance", 0) or 0)
+        unrealized_pnl = total_unrealized_pnl if has_price_data else None
+        total_assets = cash_balance + total_unrealized_pnl if has_price_data else 0.0
+        daily_pnl = 0.0
+
+        if self.DAILY_SNAPSHOT_FILE.exists():
+            with open(self.DAILY_SNAPSHOT_FILE, "r", encoding="utf-8") as f:
+                rows = list(csv.DictReader(f))
+
+            today = date.today().isoformat()
+            previous_total_assets = None
+            for row in reversed(rows):
+                row_date = (row.get("date") or "").strip()
+                row_total_assets = (row.get("total_assets") or "").strip()
+                if row_date and row_date != today and row_total_assets:
+                    previous_total_assets = float(row_total_assets)
+                    break
+
+            if unrealized_pnl is not None and previous_total_assets is not None:
+                daily_pnl = total_assets - previous_total_assets
+
+        return {
+            "cash_balance": cash_balance,
+            "unrealized_pnl": unrealized_pnl,
+            "total_assets": total_assets,
+            "daily_pnl": daily_pnl,
+            "positions": positions,
+        }
+
+    def _get_hours_since_last_screening_run(self, session: str, reference_time: datetime) -> float:
+        """ExecutionHistory から直近実行時刻との差分時間を取得する。"""
+        try:
+            if not self.execution_history.history_file.exists():
+                return 0.0
+
+            with open(self.execution_history.history_file, "r", encoding="utf-8") as f:
+                history = json.load(f)
+
+            for record in reversed(history):
+                if record.get("event_type") != "screening":
+                    continue
+                if record.get("session_type") != session:
+                    continue
+
+                timestamp_str = record.get("timestamp")
+                if not timestamp_str:
+                    continue
+
+                last_run_time = datetime.fromisoformat(timestamp_str)
+                if last_run_time.tzinfo is not None:
+                    last_run_time = last_run_time.replace(tzinfo=None)
+                if reference_time.tzinfo is not None:
+                    reference_time = reference_time.replace(tzinfo=None)
+
+                if last_run_time >= reference_time:
+                    continue
+
+                return (reference_time - last_run_time).total_seconds() / 3600.0
+
+        except Exception as e:
+            self.logger.warning(f"[MORNING_SUMMARY] 前回実行時刻取得失敗: {e}")
+
+        return 0.0
+
+    def _write_closed_trade(
+        self,
+        symbol: str,
+        strategy: str,
+        entry_date: str,
+        entry_price: float,
+        shares: int,
+        exit_date: str,
+        exit_price: float,
+        exit_reason: str,
+    ) -> None:
+        """
+        SELL 実行時にクローズド取引を closed_trades.csv に1行追記する。
+        あわせて daily_snapshot.csv の最終行の
+        cumulative_realized_pnl と total_trades を更新する。
+
+        Args:
+            symbol      : 銘柄コード（例: "3103.T"）
+            strategy    : 戦略名（例: "GCStrategy"）
+            entry_date  : エントリー日（YYYY-MM-DD）
+            entry_price : エントリー価格
+            shares      : 株数
+            exit_date   : エグジット日（YYYY-MM-DD）
+            exit_price  : エグジット価格
+            exit_reason : "death_cross" / "stop_loss" / "forced_close" のいずれか
+        """
+        import csv
+        from datetime import datetime
+
+        pnl = round((exit_price - entry_price) * shares, 2)
+        pnl_pct = round((exit_price - entry_price) / entry_price * 100, 4) if entry_price > 0 else 0.0
+        win = 1 if pnl > 0 else 0
+
+        try:
+            entry_dt = datetime.strptime(entry_date, "%Y-%m-%d")
+            exit_dt = datetime.strptime(exit_date, "%Y-%m-%d")
+            holding_days = (exit_dt - entry_dt).days
+        except Exception:
+            holding_days = 0
+
+        trade_id = 1
+        if self.CLOSED_TRADES_FILE.exists():
+            with open(self.CLOSED_TRADES_FILE, "r", encoding="utf-8") as f:
+                rows = list(csv.DictReader(f))
+                trade_id = len(rows) + 1
+
+        row = {
+            "trade_id": trade_id,
+            "symbol": symbol,
+            "strategy": strategy,
+            "entry_date": entry_date,
+            "entry_price": entry_price,
+            "shares": shares,
+            "exit_date": exit_date,
+            "exit_price": exit_price,
+            "exit_reason": exit_reason,
+            "holding_days": holding_days,
+            "pnl": pnl,
+            "pnl_pct": pnl_pct,
+            "win": win,
+        }
+
+        with open(self.CLOSED_TRADES_FILE, "a", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=row.keys())
+            writer.writerow(row)
+
+        self.logger.info(
+            f"[CLOSED_TRADE] {symbol} 記録完了 "
+            f"PnL={pnl:+,.0f}円({pnl_pct:+.2f}%) "
+            f"理由={exit_reason} 保有={holding_days}日"
+        )
+
+        self._update_snapshot_on_close(pnl)
+
+    def _update_snapshot_on_close(self, pnl: float) -> None:
+        """
+        SELL 実行時に daily_snapshot.csv の最終行の
+        cumulative_realized_pnl と total_trades を更新する。
+        当日のスナップショットがまだない場合は何もしない。
+        """
+        import csv
+
+        if not self.DAILY_SNAPSHOT_FILE.exists():
+            return
+
+        with open(self.DAILY_SNAPSHOT_FILE, "r", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+
+        if not rows:
+            return
+
+        last = rows[-1]
+        last["cumulative_realized_pnl"] = round(
+            float(last.get("cumulative_realized_pnl") or 0) + pnl, 2
+        )
+        last["total_trades"] = int(last.get("total_trades") or 0) + 1
+
+        fieldnames = list(rows[0].keys())
+        with open(self.DAILY_SNAPSHOT_FILE, "w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(rows)
+
     def _add_position(self, symbol: str, entry_price: float = 0.0,
                       strategy: str = "GCStrategy", quantity: int = 100) -> None:
         """
@@ -475,6 +834,16 @@ class DSSMSScheduler:
                         exit_price = result.get('price', 0.0)
                         exit_shares = result.get('shares', existing_position['quantity'])
                         exit_reason = result.get('reason', 'Exit signal')
+                        today = date.today().isoformat()
+
+                        strategy_signal = str(result.get('signal', '')).lower()
+                        close_exit_reason = "death_cross" if strategy_signal == "sell" else "forced_close"
+
+                        entry_date_raw = position.get('entry_time') or position.get('entry_date') or today
+                        try:
+                            entry_date_for_csv = pd.Timestamp(entry_date_raw).strftime('%Y-%m-%d')
+                        except Exception:
+                            entry_date_for_csv = today
                         
                         self.logger.info(f"[EXIT_SIGNAL] {symbol}: SELL発注 (price={exit_price}, shares={exit_shares}, reason={exit_reason})")
                         
@@ -501,6 +870,18 @@ class DSSMSScheduler:
                         
                         # ポジション削除
                         self._remove_position(symbol)
+
+                        self._write_closed_trade(
+                            symbol=symbol,
+                            strategy=strategy_name,
+                            entry_date=entry_date_for_csv,
+                            entry_price=float(existing_position.get('entry_price', 0.0) or 0.0),
+                            shares=int(exit_shares or 0),
+                            exit_date=today,
+                            exit_price=float(exit_price or 0.0),
+                            exit_reason=close_exit_reason,
+                        )
+
                         sold_symbols.append(symbol)
                         
                         # 実行履歴記録
@@ -564,6 +945,7 @@ class DSSMSScheduler:
         error_occurred = False
         error_message = ""
         screening_result = {}
+        current_prices = {}
         
         try:
             # 市場時間チェック
@@ -576,7 +958,40 @@ class DSSMSScheduler:
             if exited_symbols:
                 self.logger.info(f"[EXIT] {len(exited_symbols)}銘柄をSELL: {exited_symbols}")
             # --- ここまで追加 ---
-            
+
+            # --- 保有銘柄の現在価格取得 + 日次スナップショット記録 ---
+            current_prices = {}
+            for sym in list(self.positions.keys()):
+                try:
+                    price = None
+                    if self.kabu_integration is not None:
+                        try:
+                            price = self.kabu_integration.get_current_price(sym)
+                        except Exception:
+                            pass
+                    if price is None or price <= 0:
+                        from datetime import timedelta
+                        try:
+                            _, _, _, sym_data, _ = get_parameters_and_data(
+                                ticker=sym,
+                                start_date=(date.today() - timedelta(days=5)).strftime('%Y-%m-%d'),
+                                end_date=date.today().strftime('%Y-%m-%d'),
+                                warmup_days=0
+                            )
+                            if sym_data is not None and not sym_data.empty:
+                                price = float(sym_data['Adj Close'].iloc[-1])
+                        except Exception as e:
+                            self.logger.warning(f"[PRICE_FETCH] {sym}: yfinance価格取得失敗: {e}")
+                    if price is not None and price > 0:
+                        current_prices[sym] = price
+                        self.logger.info(f"[PRICE_FETCH] {sym}: {price:.2f}円")
+                    else:
+                        self.logger.warning(f"[PRICE_FETCH] {sym}: 価格取得失敗")
+                except Exception as e:
+                    self.logger.warning(f"[PRICE_FETCH] {sym}: エラー: {e}")
+            self._write_daily_snapshot(current_prices)
+            # --- ここまで ---
+
             # スクリーニング実行
             screening_result = self._execute_screening("morning")
             
@@ -591,6 +1006,12 @@ class DSSMSScheduler:
                     # 満枠チェック
                     if self._is_position_full():
                         self.logger.info(f"ポジション満枠({len(self.positions)}/{self.max_positions})のためBUYスキップ: {symbol}")
+                        self._record_opportunity_skipped(
+                            date=str(date.today()),
+                            symbol=symbol,
+                            strategy=screening_result.get("selected_strategy", "Unknown"),
+                            positions_at_time=len(self.positions),
+                        )
                     else:
                         # 株価取得（BUY前に株数計算のため）
                         # kabu STATIONからリアルタイム価格取得
@@ -708,6 +1129,24 @@ class DSSMSScheduler:
         
         if not error_occurred:
             self.logger.info(f"=== 前場スクリーニング完了: {selected_symbol} ({duration:.2f}秒) ===")
+
+        try:
+            portfolio_summary = self._collect_portfolio_summary(current_prices)
+            summary_data = {
+                "execution_time": datetime.now().strftime("%H:%M"),
+                "status": "異常" if error_occurred else "正常",
+                "error_message": error_message,
+                "cash_balance": portfolio_summary.get("cash_balance", 0.0),
+                "unrealized_pnl": portfolio_summary.get("unrealized_pnl"),
+                "total_assets": portfolio_summary.get("total_assets", 0.0),
+                "daily_pnl": portfolio_summary.get("daily_pnl", 0.0),
+                "positions": portfolio_summary.get("positions", []),
+                "screened_symbols": screening_result.get("screened_symbols") or ([selected_symbol] if selected_symbol else []),
+                "hours_since_last_run": self._get_hours_since_last_screening_run("morning", start_time),
+            }
+            self.email_notifier.send_morning_summary(summary_data)
+        except Exception as e:
+            self.logger.error(f"[MORNING_SUMMARY] 朝サマリー送信処理エラー: {e}")
         
         return selected_symbol
     
@@ -752,6 +1191,12 @@ class DSSMSScheduler:
                     # 満枠チェック
                     if self._is_position_full():
                         self.logger.info(f"ポジション満枠({len(self.positions)}/{self.max_positions})のためBUYスキップ: {symbol}")
+                        self._record_opportunity_skipped(
+                            date=str(date.today()),
+                            symbol=symbol,
+                            strategy=screening_result.get("selected_strategy", "Unknown"),
+                            positions_at_time=len(self.positions),
+                        )
                     else:
                         # 株価取得（BUY前に株数計算のため）
                         # kabu STATIONからリアルタイム価格取得
@@ -932,11 +1377,21 @@ class DSSMSScheduler:
                 
                 if recommended_action == "immediate_exit":
                     # ストップロス発動時の処理
+                    position_info = self.positions.get(symbol, {})
                     stop_loss_details = emergency_result.get("stop_loss_details", {})
                     entry_price = stop_loss_details.get("entry_price", "N/A")
                     current_price = stop_loss_details.get("current_price", "N/A")
                     loss_percentage = stop_loss_details.get("loss_percentage", 0.0)
-                    quantity = self.positions.get(symbol, {}).get("quantity", 100)
+                    quantity = position_info.get("quantity", 100)
+
+                    today = date.today().isoformat()
+                    strategy_name = position_info.get("strategy", "GCStrategy")
+                    entry_date_raw = position_info.get("entry_time") or position_info.get("entry_date") or today
+                    try:
+                        entry_date_for_csv = pd.Timestamp(entry_date_raw).strftime('%Y-%m-%d')
+                    except Exception:
+                        entry_date_for_csv = today
+                    entry_price_for_csv = float(position_info.get("entry_price", 0.0) or 0.0)
 
                     self.logger.warning(
                         f"[SL_TRIGGERED] {symbol}: "
@@ -970,6 +1425,18 @@ class DSSMSScheduler:
                     # ポジション削除（発注成否に関わらず必ず実行）
                     self._remove_position(symbol)
                     self.logger.warning(f"[SL_EXECUTED] {symbol}: ポジション削除完了")
+
+                    if position_info:
+                        self._write_closed_trade(
+                            symbol=symbol,
+                            strategy=strategy_name,
+                            entry_date=entry_date_for_csv,
+                            entry_price=entry_price_for_csv,
+                            shares=int(quantity or 0),
+                            exit_date=today,
+                            exit_price=float(sell_price or 0.0),
+                            exit_reason="stop_loss",
+                        )
                     
                 elif recommended_action == "immediate_switch":
                     self._execute_emergency_switch(symbol, emergency_result)
@@ -1071,6 +1538,16 @@ class DSSMSScheduler:
                             # SELL→BUYモック注文
                             if self.kabu_integration:
                                 try:
+                                    position_info = self.positions.get(symbol, {})
+                                    today = date.today().isoformat()
+                                    strategy_name = position_info.get("strategy", "GCStrategy")
+                                    entry_date_raw = position_info.get("entry_time") or position_info.get("entry_date") or today
+                                    try:
+                                        entry_date_for_csv = pd.Timestamp(entry_date_raw).strftime('%Y-%m-%d')
+                                    except Exception:
+                                        entry_date_for_csv = today
+                                    entry_price_for_csv = float(position_info.get("entry_price", 0.0) or 0.0)
+
                                     # 旧銘柄SELL
                                     sell_result = self.kabu_integration.execute_dynamic_orders({
                                         'symbol': symbol,
@@ -1079,6 +1556,23 @@ class DSSMSScheduler:
                                         'price': 0
                                     })
                                     self.logger.info(f"緊急SELL注文: {symbol} 結果={sell_result}")
+
+                                    if position_info:
+                                        forced_exit_price = sell_result.get("executed_price")
+                                        if forced_exit_price is None or forced_exit_price == 0:
+                                            forced_exit_price = entry_price_for_csv
+                                        forced_shares = int(position_info.get("quantity", 100) or 100)
+                                        self._write_closed_trade(
+                                            symbol=symbol,
+                                            strategy=strategy_name,
+                                            entry_date=entry_date_for_csv,
+                                            entry_price=entry_price_for_csv,
+                                            shares=forced_shares,
+                                            exit_date=today,
+                                            exit_price=float(forced_exit_price or 0.0),
+                                            exit_reason="forced_close",
+                                        )
+
                                     # 新銘柄BUY
                                     buy_result = self.kabu_integration.execute_dynamic_orders({
                                         'symbol': target_symbol,
@@ -1126,6 +1620,13 @@ class DSSMSScheduler:
         try:
             result = self.run_morning_screening()
             self.logger.info(f"前場スクリーニングジョブ完了: {result}")
+            self._write_last_run(
+                status="success",
+                price_fetch_ok=True,
+                positions_held=len(self.positions),
+                signals_today={"buy": 0, "sell": 0, "hold": 0},
+                error_message=None,
+            )
         except Exception as e:
             self.logger.error(f"前場スクリーニングジョブエラー: {e}")
     
@@ -1234,6 +1735,16 @@ def main():
         print("\nキーボード割り込みを受信しました...")
     except Exception as e:
         print(f"予期しないエラー: {e}")
+        try:
+            scheduler._write_last_run(
+                status="error",
+                price_fetch_ok=False,
+                positions_held=0,
+                signals_today={"buy": 0, "sell": 0, "hold": 0},
+                error_message=str(e)[:500],
+            )
+        except Exception:
+            pass  # last_run.json の書き込み失敗はスケジューラーの停止に影響させない
     finally:
         scheduler.stop_scheduler()
         print("DSSMSスケジューラー終了")
