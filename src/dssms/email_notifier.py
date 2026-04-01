@@ -131,3 +131,102 @@ class EmailNotifier:
             self.logger.error(f"[EMAIL_FAILED] SMTP送信エラー: {e}")
         except Exception as e:
             self.logger.error(f"[EMAIL_FAILED] メール送信失敗: {type(e).__name__}: {e}")
+
+    def send_morning_summary(self, summary_data: dict) -> bool:
+        """朝の実行サマリーメール送信"""
+        if not self.enabled:
+            self.logger.debug("[EMAIL_SKIP] enabled=false のためメール送信をスキップ")
+            return False
+
+        try:
+            from datetime import date
+            import json
+
+            today = date.today().isoformat()
+            execution_time = summary_data.get('execution_time', '--:--')
+            status = summary_data.get('status', '不明')
+            error_message = summary_data.get('error_message', '')
+            cash_balance = summary_data.get('cash_balance', 0)
+            unrealized_pnl = summary_data.get('unrealized_pnl', None)
+            total_assets = summary_data.get('total_assets', 0)
+            daily_pnl = summary_data.get('daily_pnl', 0)
+            positions = summary_data.get('positions', [])
+            screened_symbols = summary_data.get('screened_symbols', [])
+            hours_since_last_run = summary_data.get('hours_since_last_run', 0.0)
+
+            # 含み損益の表示
+            if unrealized_pnl is None:
+                unrealized_str = "取得失敗"
+            else:
+                unrealized_str = f"{unrealized_pnl:+,.0f}円"
+
+            # ポジション表示
+            if positions:
+                pos_lines = "\n".join([
+                    f"* {p.get('symbol', '?')}：{p.get('price', 0):,.0f}円 × {p.get('shares', 0)}株"
+                    f"（含み{p.get('unrealized_pnl', 0):+,.0f}円）"
+                    for p in positions
+                ])
+            else:
+                pos_lines = "なし"
+
+            # スクリーニング結果
+            screened_str = "、".join(screened_symbols) if screened_symbols else "なし"
+
+            # 異常検知
+            skip_warning = ""
+            if hours_since_last_run >= 24:
+                skip_warning = " ⚠ 前日スキップの可能性あり"
+
+            # エラー行
+            error_line = f"エラー内容：{error_message}\n" if status == '異常' and error_message else ""
+
+            body = f"""■ 実行結果
+実行時刻：{execution_time}
+ステータス：{status}
+{error_line}
+■ 資産状況
+現金残高：{cash_balance:,.0f}円
+含み損益：{unrealized_str}
+総資産：{total_assets:,.0f}円
+当日損益：{daily_pnl:+,.0f}円
+
+■ 保有ポジション（{len(positions)}/3銘柄）
+{pos_lines}
+
+■ 本日のスクリーニング結果
+選択銘柄：{screened_str}
+
+■ 異常検知
+前回実行からの経過時間：{hours_since_last_run:.1f}時間{skip_warning}
+"""
+
+            subject = f"【DSSMS】{today} 朝の実行サマリー"
+
+            import smtplib
+            from email.mime.text import MIMEText
+            from email.mime.multipart import MIMEMultipart
+
+            msg = MIMEMultipart()
+            msg['From'] = self.sender_email
+            msg['To'] = self.recipient_email
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+            with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
+                server.starttls()
+                server.login(self.sender_email, self.sender_password)
+                server.sendmail(self.sender_email, self.recipient_email, msg.as_string())
+
+            self.logger.info(f"[EMAIL_SENT] 朝サマリー送信成功 → {self.recipient_email}")
+            return True
+
+        except smtplib.SMTPAuthenticationError as e:
+            self.logger.error(f"[EMAIL_FAILED] SMTP認証失敗: {e}")
+            return False
+        except smtplib.SMTPException as e:
+            self.logger.error(f"[EMAIL_FAILED] SMTP送信失敗: {e}")
+            return False
+        except Exception as e:
+            self.logger.error(f"[EMAIL_FAILED] 予期しないエラー: {e}")
+            return False

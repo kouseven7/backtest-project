@@ -812,7 +812,7 @@ class BreakoutStrategy(BaseStrategy):
                 "volume_threshold": 1.2,
                 "take_profit": 0.03,
                 "look_back": 1,
-                "trailing_stop": 0.02,
+                "trailing_stop": 0.02,     # トレーリングストップ（高値から2%下落）
                 "breakout_buffer": 0.01
             },
             'current_params': self.params

@@ -550,7 +550,7 @@ class DSSMSScheduler:
         except Exception as e:
             self.logger.error(f"スケジュール設定エラー: {e}")
     
-    def run_morning_screening(self) -> str:
+    def run_morning_screening(self, force: bool = False) -> str:
         """
         09:30前場スクリーニング実行
         
@@ -567,7 +567,7 @@ class DSSMSScheduler:
         
         try:
             # 市場時間チェック
-            if not self.market_time_manager.should_run_screening("morning"):
+            if not force and not self.market_time_manager.should_run_screening("morning"):
                 self.logger.warning("前場スクリーニング実行条件未満足")
                 return ""
             
@@ -705,10 +705,37 @@ class DSSMSScheduler:
         
         if not error_occurred:
             self.logger.info(f"=== 前場スクリーニング完了: {selected_symbol} ({duration:.2f}秒) ===")
+
+        # 朝サマリーメール送信
+        try:
+            from datetime import datetime as _dt
+            summary_data = {
+                'execution_time': _dt.now().strftime('%H:%M'),
+                'status': '異常' if error_occurred else '正常',
+                'error_message': error_message if error_occurred else '',
+                'cash_balance': self.paper_balance.balance,
+                'unrealized_pnl': None,
+                'total_assets': self.paper_balance.balance,
+                'daily_pnl': 0,
+                'positions': [
+                    {
+                        'symbol': sym,
+                        'price': info.get('entry_price', 0),
+                        'shares': info.get('quantity', 0),
+                        'unrealized_pnl': 0
+                    }
+                    for sym, info in self.positions.items()
+                ],
+                'screened_symbols': [selected_symbol] if selected_symbol else [],
+                'hours_since_last_run': 0.0
+            }
+            self.email_notifier.send_morning_summary(summary_data)
+        except Exception as e:
+            self.logger.warning(f"[EMAIL_SKIP] 朝サマリーメール送信失敗: {e}")
         
         return selected_symbol
     
-    def run_afternoon_screening(self) -> str:
+    def run_afternoon_screening(self, force: bool = False) -> str:
         """
         12:30後場スクリーニング実行
         
@@ -725,7 +752,7 @@ class DSSMSScheduler:
         
         try:
             # 市場時間チェック
-            if not self.market_time_manager.should_run_screening("afternoon"):
+            if not force and not self.market_time_manager.should_run_screening("afternoon"):
                 self.logger.warning("後場スクリーニング実行条件未満足")
                 return ""
             
@@ -1118,7 +1145,7 @@ class DSSMSScheduler:
     def _run_morning_screening_job(self):
         """前場スクリーニングジョブ（内部）"""
         try:
-            result = self.run_morning_screening()
+            result = self.run_morning_screening(force=True)
             self.logger.info(f"前場スクリーニングジョブ完了: {result}")
         except Exception as e:
             self.logger.error(f"前場スクリーニングジョブエラー: {e}")
@@ -1126,7 +1153,7 @@ class DSSMSScheduler:
     def _run_afternoon_screening_job(self):
         """後場スクリーニングジョブ（内部）"""
         try:
-            result = self.run_afternoon_screening()
+            result = self.run_afternoon_screening(force=True)
             self.logger.info(f"後場スクリーニングジョブ完了: {result}")
         except Exception as e:
             self.logger.error(f"後場スクリーニングジョブエラー: {e}")
