@@ -14,9 +14,6 @@ Dependencies:
   - strategies.base_strategy
 """
 
-import sys
-sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")  # プロジェクトのルートを追加
-
 import pandas as pd
 import numpy as np
 import os
@@ -259,7 +256,6 @@ class BreakoutStrategy(BaseStrategy):
         
         # ポジション管理変数
         in_position = False
-        last_entry_idx = None
 
         # 各日にちについてシグナルを計算
         # Phase 1修正: 最終日を除外してidx+1アクセスを安全に（ルックアヘッドバイアス修正）
@@ -285,7 +281,6 @@ class BreakoutStrategy(BaseStrategy):
                 if entry_signal == 1:
                     self.data.at[self.data.index[idx], 'Entry_Signal'] = 1
                     in_position = True
-                    last_entry_idx = idx
             
             # ポジションを持っている場合のみイグジットシグナルをチェック
             elif in_position:
@@ -293,7 +288,6 @@ class BreakoutStrategy(BaseStrategy):
                 if exit_signal == -1:
                     self.data.at[self.data.index[idx], 'Exit_Signal'] = -1
                     in_position = False
-                    last_entry_idx = None
 
         return self.data
 
@@ -442,9 +436,6 @@ class BreakoutStrategy(BaseStrategy):
             # Cycle 27修正: entry_symbol_dataをkwargsから取得
             entry_symbol_data = kwargs.get('entry_symbol_data', None)
             
-            # デバッグログ追加（2026-03-15）
-            print(f"[ENTRY_EXIT_DEBUG] {current_date.date()} existing_position={'あり' if existing_position is not None else 'なし'} symbol={existing_position.get('entry_symbol', '?') if existing_position else '?'}")
-            
             # Phase 5: 既存ポジション処理分岐
             if existing_position is not None:
                 # エグジット判定（簡易版: Entry_Signal依存を回避）
@@ -506,7 +497,6 @@ class BreakoutStrategy(BaseStrategy):
             # existing_positionからエントリー情報取得
             entry_price = existing_position.get('entry_price', 0)
             entry_date = existing_position.get('entry_date')
-            entry_idx = existing_position.get('entry_idx', current_idx)
             is_force_close = existing_position.get('force_close', False)
             
             # Cycle 27修正: force_close時はentry_symbol_dataを使用
@@ -774,100 +764,3 @@ class BreakoutStrategy(BaseStrategy):
         else:
             return 0
 
-    def run_optimized_strategy(self) -> pd.DataFrame:
-        """
-        最適化されたパラメータを使用して戦略を実行
-        
-        Returns:
-            pd.DataFrame: 戦略実行結果
-        """
-        # 最適化パラメータの読み込み
-        if hasattr(self, 'optimization_mode') and self.optimization_mode and not self.load_optimized_parameters():
-            print(f"[WARNING] 最適化パラメータの読み込みに失敗しました。デフォルトパラメータを使用します。")
-        
-        # 使用するパラメータの表示
-        if hasattr(self, '_approved_params') and self._approved_params:
-            print(f"[OK] 最適化パラメータを使用:")
-            print(f"   パラメータID: {self._approved_params.get('parameter_id', 'N/A')}")
-            print(f"   作成日時: {self._approved_params.get('created_at', 'N/A')}")
-            print(f"   シャープレシオ: {self._approved_params.get('sharpe_ratio', 'N/A')}")
-            print(f"   パラメータ: {self._approved_params.get('parameters', {})}")
-        else:
-            print(f"[CHART] デフォルトパラメータを使用: {self.params}")
-        
-        # 戦略実行
-        return self.backtest()
-    
-    def get_optimization_info(self) -> Dict[str, Any]:
-        """
-        最適化情報を取得
-        
-        Returns:
-            dict: 最適化情報
-        """
-        info = {
-            'optimization_mode': getattr(self, 'optimization_mode', False),
-            'using_optimized_params': getattr(self, '_approved_params', None) is not None,
-            'default_params': {
-                "volume_threshold": 1.2,
-                "take_profit": 0.03,
-                "look_back": 1,
-                "trailing_stop": 0.02,     # トレーリングストップ（高値から2%下落）
-                "breakout_buffer": 0.01
-            },
-            'current_params': self.params
-        }
-        
-        if hasattr(self, '_approved_params') and self._approved_params:
-            info['optimized_params'] = self._approved_params
-        
-        return info
-    
-    def load_optimized_parameters(self) -> bool:
-        """
-        最適化されたパラメータを読み込み
-        
-        Returns:
-            bool: 読み込み成功
-        """
-        try:
-            from config.optimized_parameters import OptimizedParameterManager
-            
-            manager = OptimizedParameterManager()
-            
-            # データの時間範囲から銘柄を推定
-            ticker = getattr(self, 'ticker', 'DEFAULT')
-            
-            # 承認済みの最適化パラメータを取得
-            params = manager.load_approved_params('breakout', ticker)
-            
-            if params:
-                # パラメータを更新
-                self.params.update(params['parameters'])
-                self._approved_params = params
-                print(f"[OK] 最適化パラメータを読み込みました (Date: {params.get('optimization_date', 'N/A')})")
-                return True
-            else:
-                print(f"[WARNING] 承認済みの最適化パラメータが見つかりません (ticker: {ticker})")
-                return False
-                
-        except Exception as e:
-            print(f"[ERROR] 最適化パラメータの読み込みでエラー: {e}")
-            return False
-
-# テストコード
-if __name__ == "__main__":
-    # ダミーデータの作成
-    dates = pd.date_range(start="2022-01-01", periods=100, freq='B')
-    df = pd.DataFrame({
-        'Open': np.random.random(100) * 100,
-        'High': np.random.random(100) * 100,
-        'Low': np.random.random(100) * 100,
-        'Adj Close': np.random.random(100) * 100,
-        'Volume': np.random.randint(100, 1000, 100)
-    }, index=dates)
-
-    # ブレイクアウト戦略の実行
-    strategy = BreakoutStrategy(df)
-    result = strategy.backtest()
-    print(result)

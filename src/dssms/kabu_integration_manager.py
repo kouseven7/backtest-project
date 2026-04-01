@@ -122,22 +122,17 @@ class KabuAuthManager:
     
     def _get_api_password(self) -> str:
         """API パスワード取得（ハイブリッド方式）"""
-        # 本番環境: 環境変数優先
-        if os.getenv('ENVIRONMENT') == 'production':
-            password = os.getenv('KABU_API_PASSWORD')
-            if password:
-                return password
-        
-        # 開発環境: 設定ファイル使用
-        if self.config.get('development_settings', {}).get('use_test_password'):
-            return self.config['development_settings']['use_test_password']
-        
-        # 環境変数が設定されている場合
+        # 優先度1: 環境変数
         password = os.getenv('KABU_API_PASSWORD')
         if password:
             return password
-        
-        raise ValueError("API パスワードが設定されていません")
+
+        # 優先度2: self.config に直接ある api_password
+        password = self.config.get('api_password')
+        if password:
+            return password
+
+        raise ValueError("API パスワードが設定されていません（環境変数 KABU_API_PASSWORD または設定ファイルの authentication.api_password を設定してください）")
     
     def is_token_valid(self) -> bool:
         """トークン有効性確認"""
@@ -662,12 +657,39 @@ class KabuIntegrationManager:
     
     def _load_config(self, config_path: Optional[str] = None) -> Dict[str, Any]:
         """設定ファイル読み込み"""
+        def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+            """overrideの値でbaseを再帰的に上書きする。"""
+            for key, value in override.items():
+                if isinstance(value, dict) and isinstance(base.get(key), dict):
+                    _deep_merge(base[key], value)
+                else:
+                    base[key] = value
+            return base
+
+        defaults: Dict[str, Any] = {
+            'authentication': {
+                'base_url': 'http://localhost:18080/kabusapi',
+                'timeout_seconds': 30
+            },
+            'registration_strategy': {
+                'max_symbols': 50
+            },
+            'order_settings': {
+                'default_order_type': 'market'
+            }
+        }
+
         try:
+            configs: Dict[str, Any] = {
+                'authentication': dict(defaults['authentication']),
+                'registration_strategy': dict(defaults['registration_strategy']),
+                'order_settings': dict(defaults['order_settings'])
+            }
+
             if config_path is None:
                 config_dir = project_root / "config" / "kabu_api"
                 
                 # 各設定ファイル読み込み
-                configs = {}
                 config_files = [
                     "kabu_connection_config.json",
                     "symbol_registration_config.json", 
@@ -679,28 +701,18 @@ class KabuIntegrationManager:
                     if file_path.exists():
                         with open(file_path, 'r', encoding='utf-8') as f:
                             file_config = json.load(f)
-                            configs.update(file_config)
+                            _deep_merge(configs, file_config)
                 
                 return configs
             else:
                 with open(config_path, 'r', encoding='utf-8') as f:
-                    return json.load(f)
+                    file_config = json.load(f)
+                return _deep_merge(configs, file_config)
                     
         except Exception as e:
             self.logger.error(f"設定ファイル読み込みエラー: {e}")
             # デフォルト設定を返す
-            return {
-                'authentication': {
-                    'base_url': 'http://localhost:18080/kabusapi',
-                    'timeout_seconds': 30
-                },
-                'registration_strategy': {
-                    'max_symbols': 50
-                },
-                'order_settings': {
-                    'default_order_type': 'market'
-                }
-            }
+            return defaults
     
     def initialize(self) -> bool:
         """システム初期化"""

@@ -31714,5 +31714,149 @@
       "nikkei225_trend": "down",
       "volatility_level": "normal"
     }
+  },
+  {
+    "timestamp": "2026-04-01T15:36:47.982866",
+    "event_type": "monitoring",
+    "symbol": "4578",
+    "event_details": {
+      "event_type": "monitoring_start",
+      "symbol": "4578",
+      "start_time": "2026-04-01T15:36:47.982853"
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-01T15:36:48.115427",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-01T15:36:48.184563",
+    "event_type": "screening",
+    "session_type": "morning",
+    "execution_status": "success",
+    "selected_symbol": "4578",
+    "candidate_count": 20,
+    "screening_duration_seconds": 18.435181,
+    "priority_distribution": {
+      "level1": 1,
+      "level2": 2,
+      "level3": 2
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-01T15:36:48.186686",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-01T15:47:46.644661",
+    "event_type": "monitoring",
+    "symbol": "4578",
+    "event_details": {
+      "event_type": "monitoring_start",
+      "symbol": "4578",
+      "start_time": "2026-04-01T15:47:46.644647"
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-01T15:47:46.773814",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-01T15:47:46.848264",
+    "event_type": "screening",
+    "session_type": "morning",
+    "execution_status": "success",
+    "selected_symbol": "4578",
+    "candidate_count": 20,
+    "screening_duration_seconds": 18.115046,
+    "priority_distribution": {
+      "level1": 1,
+      "level2": 2,
+      "level3": 2
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-01T15:47:46.850397",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-01T15:55:04.808428",
+    "event_type": "monitoring",
+    "symbol": "4578",
+    "event_details": {
+      "event_type": "monitoring_start",
+      "symbol": "4578",
+      "start_time": "2026-04-01T15:55:04.808415"
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-01T15:55:04.937474",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-01T15:55:05.004340",
+    "event_type": "screening",
+    "session_type": "morning",
+    "execution_status": "success",
+    "selected_symbol": "4578",
+    "candidate_count": 20,
+    "screening_duration_seconds": 15.519446,
+    "priority_distribution": {
+      "level1": 1,
+      "level2": 2,
+      "level3": 2
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-01T15:55:05.006445",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-01T16:08:11.075032",
+    "event_type": "monitoring",
+    "symbol": "4578",
+    "event_details": {
+      "event_type": "monitoring_start",
+      "symbol": "4578",
+      "start_time": "2026-04-01T16:08:11.075018"
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-01T16:08:11.220763",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-01T16:08:11.287828",
+    "event_type": "screening",
+    "session_type": "morning",
+    "execution_status": "success",
+    "selected_symbol": "4578",
+    "candidate_count": 20,
+    "screening_duration_seconds": 29.791886,
+    "priority_distribution": {
+      "level1": 1,
+      "level2": 2,
+      "level3": 2
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-01T16:08:11.290219",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
   }
 ]

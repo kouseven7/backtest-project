@@ -123,19 +123,6 @@ class BreakoutStrategyTester:
                 volume_column="Volume"
             )
             
-            # ticker を設定（最適化パラメータ読み込みに必要）
-            self.strategy.ticker = self.ticker
-            
-            # 最適化パラメータを読み込み
-            try:
-                if self.strategy.load_optimized_parameters():
-                    self.logger.info("[OK] Loaded optimized parameters")
-                else:
-                    self.logger.info("[INFO] Using default parameters (no optimized params found)")
-            except Exception as e:
-                self.logger.warning(f"[WARNING] Failed to load optimized parameters: {e}")
-                self.logger.info("[INFO] Using default parameters")
-            
             # パラメータ確認（ログ出力）
             try:
                 params_repr = getattr(self.strategy, 'params', None)
@@ -144,13 +131,6 @@ class BreakoutStrategyTester:
             self.logger.info(f"[PARAMS] Strategy parameters: {params_repr}")
             self.logger.info(f"[PARAMS] Price column: {getattr(self.strategy, 'price_column', 'Close')}")
             self.logger.info(f"[PARAMS] Volume column: {getattr(self.strategy, 'volume_column', 'Volume')}")
-            
-            # 最適化パラメータ情報の表示（使用されている場合）
-            if hasattr(self.strategy, '_approved_params') and self.strategy._approved_params:
-                self.logger.info("[OPTIMIZATION] Using approved optimized parameters:")
-                self.logger.info(f"  Parameter ID: {self.strategy._approved_params.get('parameter_id', 'N/A')}")
-                self.logger.info(f"  Created at: {self.strategy._approved_params.get('created_at', 'N/A')}")
-                self.logger.info(f"  Sharpe ratio: {self.strategy._approved_params.get('sharpe_ratio', 'N/A')}")
             
             return True
             
