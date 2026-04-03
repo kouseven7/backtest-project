@@ -213,8 +213,8 @@ class StrategyExecutionAdapter:
             },
             'GCStrategy': {
                 'short_window': 5,
-                'long_window': 25,
-                'stop_loss': 0.05,
+                'long_window': 75,
+                'stop_loss': 0.03,
                 'take_profit': 0.10
             },
             'BreakoutStrategy': {
