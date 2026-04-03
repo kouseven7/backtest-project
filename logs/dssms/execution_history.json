@@ -295,5 +295,55 @@
       "nikkei225_trend": "down",
       "volatility_level": "normal"
     }
+  },
+  {
+    "timestamp": "2026-04-04T01:22:55.604209",
+    "event_type": "buy",
+    "symbol": "4502",
+    "price": 5802.0,
+    "quantity": 100,
+    "strategy": "GCStrategy",
+    "market_conditions": {
+      "timestamp": "2026-04-04T01:22:55.729253",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-04T01:23:01.032916",
+    "event_type": "monitoring",
+    "symbol": "4502",
+    "event_details": {
+      "event_type": "monitoring_start",
+      "symbol": "4502",
+      "start_time": "2026-04-04T01:23:01.032904"
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-04T01:23:01.036135",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-04T01:23:01.046869",
+    "event_type": "screening",
+    "session_type": "morning",
+    "execution_status": "success",
+    "selected_symbol": "4502",
+    "candidate_count": 20,
+    "screening_duration_seconds": 181.212578,
+    "priority_distribution": {
+      "level1": 1,
+      "level2": 2,
+      "level3": 2
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-04T01:23:01.049155",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
   }
 ]

@@ -130,6 +130,7 @@ class DSSMSScheduler:
     """DSSMS前場後場スケジューリングシステム"""
     LAST_RUN_FILE = Path("logs/paper_trade/last_run.json")
     DAILY_SNAPSHOT_FILE = Path("logs/paper_trade/daily_snapshot.csv")
+    GUARD_FILE = Path("logs/dssms/session_guard.json")
     
     def __init__(self, config_path: Optional[str] = None):
         """
@@ -298,6 +299,40 @@ class DSSMSScheduler:
             self.logger.info(f"[DAILY_SNAPSHOT] {today} 記録完了")
         except Exception as e:
             self.logger.warning(f"[DAILY_SNAPSHOT] 書き込み失敗: {e}")
+
+    def _already_executed_today(self, session: str) -> bool:
+        """当日の指定セッションが実行済みかどうかを返す。"""
+        # 設計方針:
+        # - force=True で手動実行した場合もガードを通す
+        # - 意図的な再実行が必要な場合は session_guard.json を手動削除して対応
+        # - キーに日付を含むため翌日は自動的に無効になる
+        today = datetime.now().strftime("%Y-%m-%d")
+        key = f"{today}:{session}"
+        try:
+            if self.GUARD_FILE.exists():
+                with open(self.GUARD_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                return data.get(key, False)
+        except Exception as e:
+            self.logger.warning(f"[SESSION_GUARD] 読み込み失敗: {e}")
+        return False
+
+    def _mark_executed_today(self, session: str) -> None:
+        """当日の指定セッションを実行済みとして記録する。"""
+        today = datetime.now().strftime("%Y-%m-%d")
+        key = f"{today}:{session}"
+        try:
+            self.GUARD_FILE.parent.mkdir(parents=True, exist_ok=True)
+            data = {}
+            if self.GUARD_FILE.exists():
+                with open(self.GUARD_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            data[key] = True
+            with open(self.GUARD_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            self.logger.info(f"[SESSION_GUARD] 記録: {key}")
+        except Exception as e:
+            self.logger.error(f"[SESSION_GUARD] 書き込み失敗: {e}")
     
     def _add_position(self, symbol: str, entry_price: float = 0.0,
                       strategy: str = "GCStrategy", quantity: int = 100) -> None:
@@ -633,6 +668,12 @@ class DSSMSScheduler:
         """
         start_time = datetime.now()
         self.logger.info("=== 前場スクリーニング開始 ===")
+
+        # --- session guard ---
+        if self._already_executed_today("morning"):
+            self.logger.warning("[SESSION_GUARD] morning already executed today. skip.")
+            return ""
+        # --- /session guard ---
         
         selected_symbol = ""
         error_occurred = False
@@ -821,6 +862,9 @@ class DSSMSScheduler:
             signals_today={"buy": 0, "sell": 0, "hold": 0},
             error_message=None,
         )
+
+        if not error_occurred:
+            self._mark_executed_today("morning")
         
         return selected_symbol
     
@@ -833,6 +877,12 @@ class DSSMSScheduler:
         """
         start_time = datetime.now()
         self.logger.info("=== 後場スクリーニング開始 ===")
+
+        # --- session guard ---
+        if self._already_executed_today("afternoon"):
+            self.logger.warning("[SESSION_GUARD] afternoon already executed today. skip.")
+            return ""
+        # --- /session guard ---
         
         selected_symbol = ""
         error_occurred = False
@@ -982,6 +1032,7 @@ class DSSMSScheduler:
         
         if not error_occurred:
             self.logger.info(f"=== 後場スクリーニング完了: {selected_symbol} ({duration:.2f}秒) ===")
+            self._mark_executed_today("afternoon")
         
         return selected_symbol
     
