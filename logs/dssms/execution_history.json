@@ -259,5 +259,41 @@
       "nikkei225_trend": "down",
       "volatility_level": "normal"
     }
+  },
+  {
+    "timestamp": "2026-04-04T00:19:57.803689",
+    "event_type": "emergency_check",
+    "symbol": "9502",
+    "is_emergency": true,
+    "emergency_level": 3,
+    "recommended_action": "immediate_exit",
+    "trigger_conditions": [
+      "stop_loss_triggered"
+    ],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-04T00:19:57.944327",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-04T00:20:02.150448",
+    "event_type": "emergency_check",
+    "symbol": "9984",
+    "is_emergency": true,
+    "emergency_level": 3,
+    "recommended_action": "immediate_exit",
+    "trigger_conditions": [
+      "stop_loss_triggered"
+    ],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-04T00:20:02.153066",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
   }
 ]

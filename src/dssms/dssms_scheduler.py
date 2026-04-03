@@ -1020,76 +1020,87 @@ class DSSMSScheduler:
     def handle_emergency_switch_check(self) -> None:
         """パーフェクトオーダー崩れ時の緊急判定処理"""
         try:
-            # 現在監視中の銘柄がない場合はスキップ
-            if not self.current_monitoring_symbol:
+            # 保有ポジションがない場合はスキップ
+            if not self.positions:
+                self.logger.debug("[EMERGENCY_CHECK] 保有ポジションなし、スキップ")
                 return
             
             # 市場開場中のみ実行
             if not self.market_time_manager.is_market_open():
                 return
             
-            symbol = self.current_monitoring_symbol
-            
-            # 緊急事態判定
-            emergency_result = self.emergency_detector.check_emergency_conditions(symbol)
-            
-            # 緊急判定記録
-            self.execution_history.record_emergency_check(symbol, emergency_result)
-            
-            # 緊急事態の場合の処理
-            if emergency_result.get("is_emergency"):
-                self.logger.warning(f"緊急事態検出: {symbol} - Level {emergency_result.get('emergency_level')}")
+            self.logger.info(
+                f"[EMERGENCY_CHECK] 監視銘柄数: {len(self.positions)}, "
+                f"銘柄: {list(self.positions.keys())}"
+            )
+
+            # 全保有銘柄をループ（list()でスナップショット取得）
+            for symbol in list(self.positions.keys()):
+                # ループ中に SELL 済みになった銘柄をスキップ
+                if symbol not in self.positions:
+                    self.logger.debug(f"[EMERGENCY_CHECK] {symbol} はループ中に決済済み、スキップ")
+                    continue
+
+                # 緊急事態判定
+                emergency_result = self.emergency_detector.check_emergency_conditions(symbol)
                 
-                # 推奨アクションに基づく処理
-                recommended_action = emergency_result.get("recommended_action")
+                # 緊急判定記録
+                self.execution_history.record_emergency_check(symbol, emergency_result)
                 
-                if recommended_action == "immediate_exit":
-                    # ストップロス発動時の処理
-                    stop_loss_details = emergency_result.get("stop_loss_details", {})
-                    entry_price = stop_loss_details.get("entry_price", "N/A")
-                    current_price = stop_loss_details.get("current_price", "N/A")
-                    loss_percentage = stop_loss_details.get("loss_percentage", 0.0)
-                    quantity = self.positions.get(symbol, {}).get("quantity", 100)
-
-                    self.logger.warning(
-                        f"[SL_TRIGGERED] {symbol}: "
-                        f"entry={entry_price}, current={current_price:.2f}, "
-                        f"loss={loss_percentage:.2%}, qty={quantity}"
-                    )
-
-                    # --- C-1: 実SELL発注 ---
-                    sell_result = self._execute_sl_sell(symbol=symbol, quantity=quantity)
-                    if sell_result.get("success"):
-                        self.logger.warning(
-                            f"[SL_SELL_OK] {symbol}: SELL発注成功 "
-                            f"(order_id={sell_result.get('order_id')})"
-                        )
-                        # SELL時の残高加算（約定価格はcurrent_priceを使用、取得できない場合はentry_priceをフォールバック）
-                        sell_price = current_price if isinstance(current_price, (int, float)) and current_price > 0 else self.positions.get(symbol, {}).get("entry_price", 0)
-                        if sell_price > 0 and quantity > 0:
-                            new_balance = self.paper_balance.add(sell_price, quantity)
-                            self.logger.info(
-                                f"[BALANCE_ADD] {symbol} (SL): "
-                                f"+{sell_price * quantity:,.0f}円 -> 残高={new_balance:,.0f}円"
-                            )
-
-                        # ポジション削除
-                        self._remove_position(symbol)
-                        self.logger.warning(f"[SL_EXECUTED] {symbol}: ポジション削除完了")
-                    else:
-                        self.logger.error(
-                            f"[SL_SELL_NG] {symbol}: SELL発注失敗 - "
-                            f"ポジション維持・残高変更なし。"
-                            f"error={sell_result.get('error', 'unknown')}"
-                        )
-                    # --- C-1 ここまで ---
+                # 緊急事態の場合の処理
+                if emergency_result.get("is_emergency"):
+                    self.logger.warning(f"緊急事態検出: {symbol} - Level {emergency_result.get('emergency_level')}")
                     
-                elif recommended_action == "immediate_switch":
-                    self._execute_emergency_switch(symbol, emergency_result)
-                elif recommended_action == "prepare_switch":
-                    self._prepare_emergency_switch(symbol, emergency_result)
-                elif recommended_action == "close_monitoring":
-                    self.logger.info(f"詳細監視開始: {symbol}")
+                    # 推奨アクションに基づく処理
+                    recommended_action = emergency_result.get("recommended_action")
+                    
+                    if recommended_action == "immediate_exit":
+                        # ストップロス発動時の処理
+                        stop_loss_details = emergency_result.get("stop_loss_details", {})
+                        entry_price = stop_loss_details.get("entry_price", "N/A")
+                        current_price = stop_loss_details.get("current_price", "N/A")
+                        loss_percentage = stop_loss_details.get("loss_percentage", 0.0)
+                        quantity = self.positions.get(symbol, {}).get("quantity", 100)
+
+                        self.logger.warning(
+                            f"[SL_TRIGGERED] {symbol}: "
+                            f"entry={entry_price}, current={current_price:.2f}, "
+                            f"loss={loss_percentage:.2%}, qty={quantity}"
+                        )
+
+                        # --- C-1: 実SELL発注 ---
+                        sell_result = self._execute_sl_sell(symbol=symbol, quantity=quantity)
+                        if sell_result.get("success"):
+                            self.logger.warning(
+                                f"[SL_SELL_OK] {symbol}: SELL発注成功 "
+                                f"(order_id={sell_result.get('order_id')})"
+                            )
+                            # SELL時の残高加算（約定価格はcurrent_priceを使用、取得できない場合はentry_priceをフォールバック）
+                            sell_price = current_price if isinstance(current_price, (int, float)) and current_price > 0 else self.positions.get(symbol, {}).get("entry_price", 0)
+                            if sell_price > 0 and quantity > 0:
+                                new_balance = self.paper_balance.add(sell_price, quantity)
+                                self.logger.info(
+                                    f"[BALANCE_ADD] {symbol} (SL): "
+                                    f"+{sell_price * quantity:,.0f}円 -> 残高={new_balance:,.0f}円"
+                                )
+
+                            # ポジション削除
+                            self._remove_position(symbol)
+                            self.logger.warning(f"[SL_EXECUTED] {symbol}: ポジション削除完了")
+                        else:
+                            self.logger.error(
+                                f"[SL_SELL_NG] {symbol}: SELL発注失敗 - "
+                                f"ポジション維持・残高変更なし。"
+                                f"error={sell_result.get('error', 'unknown')}"
+                            )
+                        # --- C-1 ここまで ---
+                        
+                    elif recommended_action == "immediate_switch":
+                        self._execute_emergency_switch(symbol, emergency_result)
+                    elif recommended_action == "prepare_switch":
+                        self._prepare_emergency_switch(symbol, emergency_result)
+                    elif recommended_action == "close_monitoring":
+                        self.logger.info(f"詳細監視開始: {symbol}")
             
         except Exception as e:
             self.logger.error(f"緊急切替チェックエラー: {e}")
