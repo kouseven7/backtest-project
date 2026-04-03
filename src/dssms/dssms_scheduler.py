@@ -128,6 +128,8 @@ class PaperBalance:
 
 class DSSMSScheduler:
     """DSSMS前場後場スケジューリングシステム"""
+    LAST_RUN_FILE = Path("logs/paper_trade/last_run.json")
+    DAILY_SNAPSHOT_FILE = Path("logs/paper_trade/daily_snapshot.csv")
     
     def __init__(self, config_path: Optional[str] = None):
         """
@@ -136,7 +138,14 @@ class DSSMSScheduler:
         Args:
             config_path: 設定ファイルパス（None時はデフォルト使用）
         """
-        self.logger = setup_logger('dssms.scheduler')
+        log_dir = Path("logs/dssms")
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_filename = log_dir / f"scheduler_{datetime.now().strftime('%Y%m%d')}.log"
+
+        self.logger = setup_logger(
+            'dssms.scheduler',
+            log_file=str(log_filename)
+        )
         
         # スケジューリング制御
         self.market_time_manager = MarketTimeManager(config_path)
@@ -224,6 +233,71 @@ class DSSMSScheduler:
             self.logger.debug(f"ポジション情報保存: {len(self.positions)}件")
         except Exception as e:
             self.logger.error(f"ポジション情報保存エラー: {e}")
+
+    def _write_last_run(
+        self,
+        status: str,
+        price_fetch_ok: bool,
+        positions_held: int,
+        signals_today: dict,
+        error_message=None,
+    ) -> None:
+        """スケジューラーの最終実行状態を last_run.json に書き込む。"""
+        import json
+        from datetime import datetime as _dt
+        data = {
+            "last_run_at": _dt.now().strftime("%Y-%m-%dT%H:%M:%S"),
+            "status": status,
+            "positions_held": positions_held,
+            "signals_today": signals_today,
+            "price_fetch_ok": price_fetch_ok,
+            "error_message": error_message,
+            "scheduler_version": "1.0",
+        }
+        try:
+            self.LAST_RUN_FILE.parent.mkdir(parents=True, exist_ok=True)
+            from pathlib import Path as _Path
+            _Path(self.LAST_RUN_FILE).write_text(
+                json.dumps(data, ensure_ascii=False, indent=2),
+                encoding='utf-8'
+            )
+            self.logger.info(
+                f"[LAST_RUN] last_run.json 書き込み完了: status={status}"
+            )
+        except Exception as e:
+            self.logger.warning(f"[LAST_RUN] 書き込み失敗（処理は継続）: {e}")
+
+    def _write_daily_snapshot(self, price_fetch_ok: bool = True) -> None:
+        """daily_snapshot.csv に本日の資産状況を1行追記する。"""
+        import csv
+        from datetime import date as _date
+        try:
+            self.DAILY_SNAPSHOT_FILE.parent.mkdir(parents=True, exist_ok=True)
+            today = str(_date.today())
+            # ヘッダーが存在しない場合は作成
+            write_header = not self.DAILY_SNAPSHOT_FILE.exists()
+            with open(self.DAILY_SNAPSHOT_FILE, 'a', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                if write_header:
+                    writer.writerow([
+                        'date', 'cash', 'unrealized_pnl', 'total_assets',
+                        'daily_pnl', 'cumulative_realized_pnl',
+                        'open_positions', 'total_trades', 'price_fetch_ok'
+                    ])
+                writer.writerow([
+                    today,
+                    self.paper_balance.balance,
+                    0,  # unrealized_pnl（暫定0）
+                    self.paper_balance.balance,  # total_assets（暫定）
+                    '',  # daily_pnl
+                    0,   # cumulative_realized_pnl
+                    len(self.positions),
+                    0,   # total_trades
+                    price_fetch_ok,
+                ])
+            self.logger.info(f"[DAILY_SNAPSHOT] {today} 記録完了")
+        except Exception as e:
+            self.logger.warning(f"[DAILY_SNAPSHOT] 書き込み失敗: {e}")
     
     def _add_position(self, symbol: str, entry_price: float = 0.0,
                       strategy: str = "GCStrategy", quantity: int = 100) -> None:
@@ -485,32 +559,32 @@ class DSSMSScheduler:
                                 f"[EXIT_SELL_OK] {symbol}: SELL発注成功 "
                                 f"(order_id={sell_result.get('order_id')})"
                             )
+                            # SELL時の残高加算
+                            if exit_price > 0 and exit_shares > 0:
+                                new_balance = self.paper_balance.add(exit_price, exit_shares)
+                                self.logger.info(
+                                    f"[BALANCE_ADD] {symbol} (EXIT): "
+                                    f"+{exit_price * exit_shares:,.0f}円 -> 残高={new_balance:,.0f}円"
+                                )
+
+                            # ポジション削除
+                            self._remove_position(symbol)
+                            sold_symbols.append(symbol)
+
+                            # 実行履歴記録
+                            if hasattr(self, 'execution_history'):
+                                self.execution_history.record_trade_sell(
+                                    symbol=symbol,
+                                    sell_price=exit_price,
+                                    quantity=exit_shares,
+                                    entry_price=existing_position['entry_price'],
+                                    reason=exit_reason
+                                )
                         else:
-                            self.logger.info(
-                                f"[EXIT_SELL_NG] {symbol}: SELL発注失敗またはスキップ "
-                                f"({sell_result.get('error', 'debug_mode')})"
-                            )
-                        
-                        # SELL時の残高加算
-                        if exit_price > 0 and exit_shares > 0:
-                            new_balance = self.paper_balance.add(exit_price, exit_shares)
-                            self.logger.info(
-                                f"[BALANCE_ADD] {symbol} (EXIT): "
-                                f"+{exit_price * exit_shares:,.0f}円 -> 残高={new_balance:,.0f}円"
-                            )
-                        
-                        # ポジション削除
-                        self._remove_position(symbol)
-                        sold_symbols.append(symbol)
-                        
-                        # 実行履歴記録
-                        if hasattr(self, 'execution_history'):
-                            self.execution_history.record_trade_sell(
-                                symbol=symbol,
-                                sell_price=exit_price,
-                                quantity=exit_shares,
-                                entry_price=existing_position['entry_price'],
-                                reason=exit_reason
+                            self.logger.error(
+                                f"[EXIT_SELL_NG] {symbol}: SELL発注失敗 - "
+                                f"ポジション維持・残高変更なし。"
+                                f"error={sell_result.get('error', 'unknown')}"
                             )
                     else:
                         self.logger.info(f"[EXIT_CHECK] {symbol}: ホールド継続 (action={result.get('action')})")
@@ -652,7 +726,10 @@ class DSSMSScheduler:
                             self.logger.info(f"前場BUY注文: {symbol} qty={quantity}株 結果={order_result}")
                             if order_result.get("success"):
                                 # executed_priceを取得（0の場合はcurrent_priceをフォールバック）
-                                executed_price = order_result.get("executed_price", current_price)
+                                executed_price = order_result.get("executed_price") or current_price
+                                if executed_price == 0 or executed_price is None:
+                                    executed_price = current_price
+                                self.logger.info(f"[BUY] {symbol}: executed_price={executed_price}円 (current_price={current_price}円)")
                                 
                                 # 残高から減算（BUY確定）
                                 new_balance = self.paper_balance.deduct(executed_price, quantity)
@@ -732,6 +809,18 @@ class DSSMSScheduler:
             self.email_notifier.send_morning_summary(summary_data)
         except Exception as e:
             self.logger.warning(f"[EMAIL_SKIP] 朝サマリーメール送信失敗: {e}")
+
+        # daily_snapshot.csv に記録
+        self._write_daily_snapshot(price_fetch_ok=True)
+
+        # last_run.json に記録
+        self._write_last_run(
+            status="success",
+            price_fetch_ok=True,
+            positions_held=len(self.positions),
+            signals_today={"buy": 0, "sell": 0, "hold": 0},
+            error_message=None,
+        )
         
         return selected_symbol
     
@@ -837,7 +926,10 @@ class DSSMSScheduler:
                             self.logger.info(f"後場BUY注文: {symbol} qty={quantity}株 結果={order_result}")
                             if order_result.get("success"):
                                 # executed_priceを取得（0の場合はcurrent_priceをフォールバック）
-                                executed_price = order_result.get("executed_price", current_price)
+                                executed_price = order_result.get("executed_price") or current_price
+                                if executed_price == 0 or executed_price is None:
+                                    executed_price = current_price
+                                self.logger.info(f"[BUY] {symbol}: executed_price={executed_price}円 (current_price={current_price}円)")
                                 
                                 # 残高から減算（BUY確定）
                                 new_balance = self.paper_balance.deduct(executed_price, quantity)
@@ -972,25 +1064,25 @@ class DSSMSScheduler:
                             f"[SL_SELL_OK] {symbol}: SELL発注成功 "
                             f"(order_id={sell_result.get('order_id')})"
                         )
+                        # SELL時の残高加算（約定価格はcurrent_priceを使用、取得できない場合はentry_priceをフォールバック）
+                        sell_price = current_price if isinstance(current_price, (int, float)) and current_price > 0 else self.positions.get(symbol, {}).get("entry_price", 0)
+                        if sell_price > 0 and quantity > 0:
+                            new_balance = self.paper_balance.add(sell_price, quantity)
+                            self.logger.info(
+                                f"[BALANCE_ADD] {symbol} (SL): "
+                                f"+{sell_price * quantity:,.0f}円 -> 残高={new_balance:,.0f}円"
+                            )
+
+                        # ポジション削除
+                        self._remove_position(symbol)
+                        self.logger.warning(f"[SL_EXECUTED] {symbol}: ポジション削除完了")
                     else:
-                        self.logger.warning(
-                            f"[SL_SELL_NG] {symbol}: SELL発注失敗またはスキップ "
-                            f"({sell_result.get('error', 'debug_mode')})"
+                        self.logger.error(
+                            f"[SL_SELL_NG] {symbol}: SELL発注失敗 - "
+                            f"ポジション維持・残高変更なし。"
+                            f"error={sell_result.get('error', 'unknown')}"
                         )
                     # --- C-1 ここまで ---
-                    
-                    # SELL時の残高加算（約定価格はcurrent_priceを使用、取得できない場合はentry_priceをフォールバック）
-                    sell_price = current_price if isinstance(current_price, (int, float)) and current_price > 0 else self.positions.get(symbol, {}).get("entry_price", 0)
-                    if sell_price > 0 and quantity > 0:
-                        new_balance = self.paper_balance.add(sell_price, quantity)
-                        self.logger.info(
-                            f"[BALANCE_ADD] {symbol} (SL): "
-                            f"+{sell_price * quantity:,.0f}円 -> 残高={new_balance:,.0f}円"
-                        )
-
-                    # ポジション削除（発注成否に関わらず必ず実行）
-                    self._remove_position(symbol)
-                    self.logger.warning(f"[SL_EXECUTED] {symbol}: ポジション削除完了")
                     
                 elif recommended_action == "immediate_switch":
                     self._execute_emergency_switch(symbol, emergency_result)

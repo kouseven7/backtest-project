@@ -55,7 +55,7 @@ class GCStrategy(BaseStrategy):
             "short_window": 5,       # 短期移動平均期間
             "long_window": 25,       # 長期移動平均期間
             "take_profit": None,     # 利益確定なし（Phase 1.13: トレンドフォロー維持、TASK 5-B推奨）
-            "stop_loss": 0.03,       # ストップロス（3%）← Phase 2-1最適化完了（2%は悪化、5%は横ばい）
+            "stop_loss": 0.05,       # ストップロス（3%）← Phase 2-1最適化完了（2%は悪化、5%は横ばい）
             "trailing_stop_pct": 0.10,  # トレーリングストップ（10%）← Phase 1.13: TASK 5-B推奨（PF1.15期待）
             "max_hold_days": 300,    # 最大保有期間（300日、実質無効）
             "exit_on_death_cross": True,  # デッドクロスでイグジットするかどうか
@@ -516,7 +516,7 @@ class GCStrategy(BaseStrategy):
                 "short_window": 5,
                 "long_window": 25,
                 "take_profit": 0.05,
-                "stop_loss": 0.03,
+                "stop_loss": 0.05,
                 "trailing_stop_pct": 0.03,
                 "max_hold_days": 20,
                 "exit_on_death_cross": True
