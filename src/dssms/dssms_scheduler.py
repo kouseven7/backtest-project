@@ -841,12 +841,29 @@ class DSSMSScheduler:
                             except Exception as e:
                                 self.logger.warning(f"[PRICE_FETCH] {symbol}: 価格取得失敗、仮株価1000円を使用: {e}")
                                 current_price = 1000.0
+
+                        # バックテスト側の shares を100株単位に安全丸め（base_strategy暫定実装の補正）
+                        raw_shares = screening_result.get('shares', None)
+                        if raw_shares is not None:
+                            lot_shares = (int(raw_shares) // 100) * 100
+                            if lot_shares == 0:
+                                self.logger.warning(
+                                    f"[LOT_GUARD] 単元未満のためエントリースキップ: "
+                                    f"銘柄={symbol}, 株価={current_price:.0f}円, "
+                                    f"算出株数={raw_shares}株 → 100株単位={lot_shares}株"
+                                )
+                            else:
+                                screening_result['shares'] = lot_shares
+                        
                         
                         # C-2: 動的株数計算
-                        quantity = self.paper_balance.calc_quantity(
-                            price=current_price,
-                            max_positions=self.max_positions
-                        )
+                        if raw_shares is not None and screening_result.get('shares', 0) == 0:
+                            quantity = 0
+                        else:
+                            quantity = self.paper_balance.calc_quantity(
+                                price=current_price,
+                                max_positions=self.max_positions
+                            )
                         
                         # C-3: 資金残高チェック
                         if quantity == 0:
@@ -1071,12 +1088,28 @@ class DSSMSScheduler:
                             except Exception as e:
                                 self.logger.warning(f"[PRICE_FETCH] {symbol}: 価格取得失敗、仮株価1000円を使用: {e}")
                                 current_price = 1000.0
+
+                        # バックテスト側の shares を100株単位に安全丸め（base_strategy暫定実装の補正）
+                        raw_shares = screening_result.get('shares', None)
+                        if raw_shares is not None:
+                            lot_shares = (int(raw_shares) // 100) * 100
+                            if lot_shares == 0:
+                                self.logger.warning(
+                                    f"[LOT_GUARD] 単元未満のためエントリースキップ: "
+                                    f"銘柄={symbol}, 株価={current_price:.0f}円, "
+                                    f"算出株数={raw_shares}株 → 100株単位={lot_shares}株"
+                                )
+                            else:
+                                screening_result['shares'] = lot_shares
                         
                         # C-2: 動的株数計算
-                        quantity = self.paper_balance.calc_quantity(
-                            price=current_price,
-                            max_positions=self.max_positions
-                        )
+                        if raw_shares is not None and screening_result.get('shares', 0) == 0:
+                            quantity = 0
+                        else:
+                            quantity = self.paper_balance.calc_quantity(
+                                price=current_price,
+                                max_positions=self.max_positions
+                            )
                         
                         # C-3: 資金残高チェック
                         if quantity == 0:
