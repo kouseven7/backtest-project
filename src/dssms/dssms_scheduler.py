@@ -129,7 +129,7 @@ class PaperBalance:
 class DSSMSScheduler:
     """DSSMS前場後場スケジューリングシステム"""
     LAST_RUN_FILE = Path("logs/paper_trade/last_run.json")
-    DAILY_SNAPSHOT_FILE = Path("logs/paper_trade/daily_snapshot.csv")
+    DAILY_SNAPSHOT_FILE = Path("logs/dssms/daily_snapshot.csv")
     GUARD_FILE = Path("logs/dssms/session_guard.json")
     
     def __init__(self, config_path: Optional[str] = None):
@@ -269,36 +269,125 @@ class DSSMSScheduler:
             self.logger.warning(f"[LAST_RUN] 書き込み失敗（処理は継続）: {e}")
 
     def _write_daily_snapshot(self, price_fetch_ok: bool = True) -> None:
-        """daily_snapshot.csv に本日の資産状況を1行追記する。"""
+        """daily_snapshot.csv に本日の資産状況を1行記録する（同日はupsert）。"""
         import csv
         from datetime import date as _date
         try:
+            # --- R-6: 実値計算ブロック ---
+            # execution_history から全レコードを取得
+            # ※ 既存の self.execution_history インスタンスを使うこと
+            all_records = self.execution_history.get_recent_events(limit=100000)  # 実質全件取得
+
+            # SELLレコードのみ抽出
+            sell_records = [r for r in all_records if r.get("event_type") == "sell"]
+
+            # cumulative_realized_pnl: 全SELLの profit_loss 合計
+            cumulative_realized_pnl = sum(r.get("profit_loss", 0) or 0 for r in sell_records)
+
+            # daily_pnl: 当日日付のSELLの profit_loss 合計
+            today_str = datetime.now().strftime("%Y-%m-%d")
+            daily_pnl = sum(
+                r.get("profit_loss", 0) or 0
+                for r in sell_records
+                if str(r.get("timestamp", ""))[:10] == today_str
+            )
+
+            # total_trades: 全SELL件数
+            total_trades = len(sell_records)
+
+            # unrealized_pnl: 保有ポジション × (現在値 - entry_price) × quantity
+            unrealized_pnl = 0.0
+            for symbol, pos in self.positions.items():
+                try:
+                    current_price = self._get_current_price(symbol)
+                    entry_price = float(pos.get("entry_price", 0) or 0)
+                    quantity = int(pos.get("quantity", 0) or 0)
+                    if current_price is not None and current_price > 0:
+                        unrealized_pnl += (current_price - entry_price) * quantity
+                    else:
+                        self.logger.warning(
+                            f"[SNAPSHOT] {symbol}: 現在値取得失敗のため unrealized_pnl をスキップ"
+                        )
+                except Exception as e:
+                    self.logger.warning(
+                        f"[SNAPSHOT] {symbol}: 現在値取得例外 ({e})、unrealized_pnl=0 として処理"
+                    )
+            # --- R-6 計算ブロック終わり ---
+
             self.DAILY_SNAPSHOT_FILE.parent.mkdir(parents=True, exist_ok=True)
             today = str(_date.today())
-            # ヘッダーが存在しない場合は作成
-            write_header = not self.DAILY_SNAPSHOT_FILE.exists()
-            with open(self.DAILY_SNAPSHOT_FILE, 'a', newline='', encoding='utf-8') as f:
-                writer = csv.writer(f)
-                if write_header:
-                    writer.writerow([
-                        'date', 'cash', 'unrealized_pnl', 'total_assets',
-                        'daily_pnl', 'cumulative_realized_pnl',
-                        'open_positions', 'total_trades', 'price_fetch_ok'
-                    ])
-                writer.writerow([
-                    today,
-                    self.paper_balance.balance,
-                    0,  # unrealized_pnl（暫定0）
-                    self.paper_balance.balance,  # total_assets（暫定）
-                    '',  # daily_pnl
-                    0,   # cumulative_realized_pnl
-                    len(self.positions),
-                    0,   # total_trades
-                    price_fetch_ok,
-                ])
-            self.logger.info(f"[DAILY_SNAPSHOT] {today} 記録完了")
+            headers = [
+                'date', 'cash', 'unrealized_pnl', 'total_assets',
+                'daily_pnl', 'cumulative_realized_pnl',
+                'open_positions', 'total_trades', 'price_fetch_ok'
+            ]
+
+            cash = self.paper_balance.balance
+            total_assets = cash + unrealized_pnl
+            new_row = {
+                'date': today,
+                'cash': cash,
+                'unrealized_pnl': unrealized_pnl,
+                'total_assets': total_assets,
+                'daily_pnl': daily_pnl,
+                'cumulative_realized_pnl': cumulative_realized_pnl,
+                'open_positions': len(self.positions),
+                'total_trades': total_trades,
+                'price_fetch_ok': price_fetch_ok,
+            }
+
+            existing_rows = []
+            if self.DAILY_SNAPSHOT_FILE.exists():
+                with open(self.DAILY_SNAPSHOT_FILE, 'r', newline='', encoding='utf-8') as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        row_date = str(row.get('date', ''))
+                        if row_date != today:
+                            existing_rows.append(row)
+
+            existing_rows.append(new_row)
+            with open(self.DAILY_SNAPSHOT_FILE, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=headers)
+                writer.writeheader()
+                writer.writerows(existing_rows)
+
+            self.logger.info(
+                f"[SNAPSHOT] {today} 記録完了: daily_pnl={daily_pnl:,.0f}, "
+                f"cumulative_realized_pnl={cumulative_realized_pnl:,.0f}, "
+                f"total_trades={total_trades}, unrealized_pnl={unrealized_pnl:,.0f}"
+            )
         except Exception as e:
-            self.logger.warning(f"[DAILY_SNAPSHOT] 書き込み失敗: {e}")
+            self.logger.warning(f"[SNAPSHOT] 書き込み失敗: {e}")
+
+    def _get_current_price(self, symbol: str) -> Optional[float]:
+        """銘柄の現在値を取得する。取得不可時はNoneを返す。"""
+        # 1) kabu API
+        try:
+            if self.kabu_integration is not None:
+                kabu_price = self.kabu_integration.get_current_price(symbol)
+                if kabu_price is not None and kabu_price > 0:
+                    return float(kabu_price)
+        except Exception as e:
+            self.logger.warning(f"[SNAPSHOT] {symbol}: kabu API価格取得失敗 ({e})")
+
+        # 2) yfinance via data_fetcher
+        try:
+            from datetime import timedelta
+            _, _, _, stock_data, _ = get_parameters_and_data(
+                ticker=symbol,
+                start_date=(date.today() - timedelta(days=5)).strftime('%Y-%m-%d'),
+                end_date=date.today().strftime('%Y-%m-%d'),
+                warmup_days=0
+            )
+            if stock_data is not None and not stock_data.empty:
+                if 'Adj Close' in stock_data.columns:
+                    return float(stock_data['Adj Close'].iloc[-1])
+                if 'Close' in stock_data.columns:
+                    return float(stock_data['Close'].iloc[-1])
+        except Exception as e:
+            self.logger.warning(f"[SNAPSHOT] {symbol}: yfinance価格取得失敗 ({e})")
+
+        return None
 
     def _already_executed_today(self, session: str) -> bool:
         """当日の指定セッションが実行済みかどうかを返す。"""
