@@ -345,5 +345,73 @@
       "nikkei225_trend": "down",
       "volatility_level": "normal"
     }
+  },
+  {
+    "timestamp": "2026-04-04T21:27:06.669088",
+    "event_type": "monitoring",
+    "symbol": "9502",
+    "event_details": {
+      "event_type": "monitoring_start",
+      "symbol": "9502",
+      "start_time": "2026-04-04T21:27:06.669079"
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-04T21:27:06.798926",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-04T21:27:06.802058",
+    "event_type": "screening",
+    "session_type": "morning",
+    "execution_status": "success",
+    "selected_symbol": "9502",
+    "candidate_count": 20,
+    "screening_duration_seconds": 25.486215,
+    "priority_distribution": {
+      "level1": 1,
+      "level2": 2,
+      "level3": 2
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-04T21:27:06.804119",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-04T21:28:13.263040",
+    "event_type": "screening",
+    "session_type": "morning",
+    "execution_status": "error",
+    "selected_symbol": null,
+    "candidate_count": 0,
+    "screening_duration_seconds": 0.000219,
+    "priority_distribution": {},
+    "market_conditions": {
+      "timestamp": "2026-04-04T21:28:13.829432",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-04T21:28:19.616185",
+    "event_type": "screening",
+    "session_type": "morning",
+    "execution_status": "error",
+    "selected_symbol": null,
+    "candidate_count": 0,
+    "screening_duration_seconds": 0.000675,
+    "priority_distribution": {},
+    "market_conditions": {
+      "timestamp": "2026-04-04T21:28:20.063985",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
   }
 ]

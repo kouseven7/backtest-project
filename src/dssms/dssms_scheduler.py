@@ -783,6 +783,7 @@ class DSSMSScheduler:
         selected_symbol = ""
         error_occurred = False
         error_message = ""
+        price_fetch_ok = True
         screening_result = {}
         
         try:
@@ -981,11 +982,11 @@ class DSSMSScheduler:
 
         # last_run.json に記録
         self._write_last_run(
-            status="success",
-            price_fetch_ok=True,
+            status="success" if not error_occurred else "error",
+            price_fetch_ok=price_fetch_ok,
             positions_held=len(self.positions),
             signals_today={"buy": 0, "sell": 0, "hold": 0},
-            error_message=None,
+            error_message=error_message if error_occurred else None,
         )
 
         if not error_occurred:
@@ -1012,6 +1013,7 @@ class DSSMSScheduler:
         selected_symbol = ""
         error_occurred = False
         error_message = ""
+        price_fetch_ok = True
         screening_result = {}
         
         try:
@@ -1160,6 +1162,14 @@ class DSSMSScheduler:
             error_occurred = True
             error_message = str(e)
             self.logger.error(f"後場スクリーニングエラー: {e}")
+        finally:
+            self._write_last_run(
+                status="success" if not error_occurred else "error",
+                price_fetch_ok=price_fetch_ok,
+                positions_held=len(self.positions),
+                signals_today={"buy": 0, "sell": 0, "hold": 0},
+                error_message=error_message if error_occurred else None,
+            )
         
         # try-exceptの外で1回だけ記録
         duration = (datetime.now() - start_time).total_seconds()
