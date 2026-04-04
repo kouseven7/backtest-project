@@ -21,6 +21,7 @@ sys.path.append(r"C:\Users\imega\Documents\my_backtest_project")  # プロジェ
 import pandas as pd
 import numpy as np
 import logging
+from typing import Optional
 from strategies.base_strategy import BaseStrategy
 from indicators.trend_analysis import detect_trend
 from indicators.unified_trend_detector import UnifiedTrendDetector, detect_unified_trend, detect_unified_trend_with_confidence
@@ -365,7 +366,7 @@ class GCStrategy(BaseStrategy):
         
         return 1
 
-    def generate_exit_signal(self, idx: int, entry_idx: int = -1):
+    def generate_exit_signal(self, idx: int, entry_idx: Optional[int] = -1):
         """
         イグジットシグナルを生成する
         
@@ -381,9 +382,9 @@ class GCStrategy(BaseStrategy):
         if idx < self.params["long_window"]:
             return (0, 'none')
         
-        # entry_idxが渡されていない場合はシグナルを返さない
+        # entry_idxが負値の場合はシグナルを返さない
         # （BaseStrategy.backtest()は必ずentry_idxを渡すため、ここには来ない）
-        if entry_idx < 0:
+        if entry_idx is not None and entry_idx < 0:
             self.logger.debug(f"[EXIT CHECK] idx={idx}, entry_idx={entry_idx} (< 0), returning 0")
             return (0, 'none')
         
@@ -458,10 +459,19 @@ class GCStrategy(BaseStrategy):
             return (-1, 'stop_loss')
     
         # 5. 最大保有期間
-        days_held = idx - entry_idx
-        if days_held >= self.params.get("max_hold_days", 20):
-            self.logger.info(f"最大保有期間によるイグジット: 日付={self.data.index[idx]}")
-            return (-1, 'force_close')
+        # entry_idx=None の場合は最大保有期間チェックをスキップ
+        if entry_idx is not None:
+            days_held = idx - entry_idx
+            if days_held >= self.params.get("max_hold_days", 20):
+                self.logger.info(
+                    f"最大保有期間によるイグジット: 日付={self.data.index[idx]}, "
+                    f"days_held={days_held}"
+                )
+                return (-1, 'force_close')
+        else:
+            self.logger.debug(
+                f"[R5] days_held チェックスキップ: entry_idx=None, idx={idx}"
+            )
     
         return (0, 'none')
 
@@ -709,8 +719,16 @@ class GCStrategy(BaseStrategy):
             - 最終日フォールバックは限定的使用（copilot-instructions.md Section 68-73準拠）
         """
         try:
-            # entry_idxを取得（existing_positionから、またはcurrent_idxをフォールバック）
-            entry_idx = existing_position.get('entry_idx', current_idx)
+            # entry_idxを取得（未設定の場合はNone）
+            entry_idx = existing_position.get('entry_idx')
+            if entry_idx is None:
+                # entry_idx 未設定（旧形式ポジションまたはスケジューラー未対応時）
+                # days_held を評価不能とし、最大保有期間チェックをスキップする
+                self.logger.warning(
+                    f"[R5] entry_idx=None: days_held チェックをスキップします"
+                    f"（保守的処理。次回エントリーから自動修正されます）"
+                )
+                entry_idx = None
             
             # force_closeフラグ確認
             is_force_close = existing_position.get('force_close', False)

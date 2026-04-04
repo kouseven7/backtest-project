@@ -335,7 +335,8 @@ class DSSMSScheduler:
             self.logger.error(f"[SESSION_GUARD] 書き込み失敗: {e}")
     
     def _add_position(self, symbol: str, entry_price: float = 0.0,
-                      strategy: str = "GCStrategy", quantity: int = 100) -> None:
+                      strategy: str = "GCStrategy", quantity: int = 100,
+                      entry_idx: Optional[int] = None) -> None:
         """
         ポジションを追加
         
@@ -355,6 +356,7 @@ class DSSMSScheduler:
             "symbol": symbol,
             "entry_time": datetime.now().isoformat(),
             "entry_price": entry_price,
+            "entry_idx": entry_idx,
             "strategy": strategy,
             "quantity": quantity,
             "status": "open"
@@ -544,6 +546,13 @@ class DSSMSScheduler:
                 if strategy_name != 'GCStrategy':
                     self.logger.info(f"[EXIT_CHECK] {symbol}: 戦略'{strategy_name}'はGCStrategyにフォールバック")
                     strategy_name = 'GCStrategy'
+
+                if position.get('entry_idx') is None:
+                    self.logger.warning(
+                        f"[R5_FALLBACK] {symbol}: entry_idx が未保存（旧形式 or 取得失敗）。"
+                        f"days_held 計算は GCStrategy 側フォールバックに委ねます。"
+                        f"次回エントリーから自動修正されます。"
+                    )
                 
                 try:
                     strategy = GCStrategy(data=stock_data, ticker=symbol)
@@ -565,6 +574,7 @@ class DSSMSScheduler:
                         'symbol': symbol,
                         'entry_price': position.get('entry_price', 0.0),
                         'entry_date': entry_date,
+                        'entry_idx': position.get('entry_idx'),
                         'quantity': position.get('quantity', 100),
                         'force_close': False  # 通常エグジット判定
                     }
@@ -713,6 +723,7 @@ class DSSMSScheduler:
                     if self._is_position_full():
                         self.logger.info(f"ポジション満枠({len(self.positions)}/{self.max_positions})のためBUYスキップ: {symbol}")
                     else:
+                        stock_data = None
                         # 株価取得（BUY前に株数計算のため）
                         # kabu STATIONからリアルタイム価格取得
                         kabu_price = None
@@ -784,12 +795,31 @@ class DSSMSScheduler:
                                     f"[BALANCE_DEDUCT] {symbol}: "
                                     f"-{executed_price * quantity:,.0f}円 -> 残高={new_balance:,.0f}円"
                                 )
+                                entry_idx = None
+                                entry_date = pd.Timestamp(date.today())
+                                if stock_data is not None and not stock_data.empty:
+                                    try:
+                                        entry_idx = stock_data.index.get_loc(entry_date)
+                                        if isinstance(entry_idx, slice):
+                                            entry_idx = entry_idx.start
+                                        elif hasattr(entry_idx, '__iter__'):
+                                            entry_idx = int(list(entry_idx).index(True))
+                                    except (KeyError, TypeError, ValueError):
+                                        entry_idx = None
+                                        self.logger.warning(
+                                            f"[R5] {symbol}: entry_idx 取得失敗、None で保存します"
+                                        )
+                                else:
+                                    self.logger.warning(
+                                        f"[R5] {symbol}: stock_data 未参照のため entry_idx=None で保存します"
+                                    )
                                 # ポジション追加
                                 self._add_position(
                                     symbol=symbol,
                                     entry_price=executed_price,
                                     strategy="GCStrategy",  # TODO: DynamicStrategySelectorで動的選択
-                                    quantity=quantity
+                                    quantity=quantity,
+                                    entry_idx=entry_idx
                                 )
                                 # 実行履歴記録（BUY）
                                 if hasattr(self, 'execution_history'):
@@ -922,6 +952,7 @@ class DSSMSScheduler:
                     if self._is_position_full():
                         self.logger.info(f"ポジション満枠({len(self.positions)}/{self.max_positions})のためBUYスキップ: {symbol}")
                     else:
+                        stock_data = None
                         # 株価取得（BUY前に株数計算のため）
                         # kabu STATIONからリアルタイム価格取得
                         kabu_price = None
@@ -993,12 +1024,31 @@ class DSSMSScheduler:
                                     f"[BALANCE_DEDUCT] {symbol}: "
                                     f"-{executed_price * quantity:,.0f}円 -> 残高={new_balance:,.0f}円"
                                 )
+                                entry_idx = None
+                                entry_date = pd.Timestamp(date.today())
+                                if stock_data is not None and not stock_data.empty:
+                                    try:
+                                        entry_idx = stock_data.index.get_loc(entry_date)
+                                        if isinstance(entry_idx, slice):
+                                            entry_idx = entry_idx.start
+                                        elif hasattr(entry_idx, '__iter__'):
+                                            entry_idx = int(list(entry_idx).index(True))
+                                    except (KeyError, TypeError, ValueError):
+                                        entry_idx = None
+                                        self.logger.warning(
+                                            f"[R5] {symbol}: entry_idx 取得失敗、None で保存します"
+                                        )
+                                else:
+                                    self.logger.warning(
+                                        f"[R5] {symbol}: stock_data 未参照のため entry_idx=None で保存します"
+                                    )
                                 # ポジション追加
                                 self._add_position(
                                     symbol=symbol,
                                     entry_price=executed_price,
                                     strategy="GCStrategy",  # TODO: DynamicStrategySelectorで動的選択
-                                    quantity=quantity
+                                    quantity=quantity,
+                                    entry_idx=entry_idx
                                 )
                                 # 実行履歴記録（BUY）
                                 if hasattr(self, 'execution_history'):
