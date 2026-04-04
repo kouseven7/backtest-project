@@ -345,6 +345,12 @@ class DSSMSScheduler:
             strategy: 使用戦略名（デフォルト: GCStrategy）
             quantity: 取引株数（デフォルト: 100株）
         """
+        if symbol in self.positions:
+            self.logger.warning(
+                f"[ADD_POSITION_SKIP] {symbol} は既にポジション保有中のためBUYをスキップします "
+                f"(既存entry_price={self.positions[symbol].get('entry_price', 'N/A')}円)"
+            )
+            return
         self.positions[symbol] = {
             "symbol": symbol,
             "entry_time": datetime.now().isoformat(),
