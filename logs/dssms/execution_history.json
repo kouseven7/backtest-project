@@ -485,5 +485,77 @@
       "nikkei225_trend": "down",
       "volatility_level": "normal"
     }
+  },
+  {
+    "timestamp": "2026-04-05T23:58:37.552199",
+    "event_type": "monitoring",
+    "symbol": "9502",
+    "event_details": {
+      "event_type": "monitoring_start",
+      "symbol": "9502",
+      "start_time": "2026-04-05T23:58:37.552174"
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-05T23:58:37.737599",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-05T23:58:37.741930",
+    "event_type": "screening",
+    "session_type": "morning",
+    "execution_status": "success",
+    "selected_symbol": "9502",
+    "candidate_count": 20,
+    "screening_duration_seconds": 281.361921,
+    "priority_distribution": {
+      "level1": 1,
+      "level2": 2,
+      "level3": 2
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-05T23:58:37.745546",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-06T00:13:03.538999",
+    "event_type": "monitoring",
+    "symbol": "9502",
+    "event_details": {
+      "event_type": "monitoring_start",
+      "symbol": "9502",
+      "start_time": "2026-04-06T00:13:03.538973"
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-06T00:13:03.696545",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-06T00:13:03.700611",
+    "event_type": "screening",
+    "session_type": "morning",
+    "execution_status": "success",
+    "selected_symbol": "9502",
+    "candidate_count": 20,
+    "screening_duration_seconds": 248.463635,
+    "priority_distribution": {
+      "level1": 1,
+      "level2": 2,
+      "level3": 2
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-06T00:13:03.703829",
+      "market_open": true,
+      "nikkei225_trend": "down",
+      "volatility_level": "normal"
+    }
   }
 ]

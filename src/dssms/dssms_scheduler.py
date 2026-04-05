@@ -532,11 +532,23 @@ class DSSMSScheduler:
             debug_mode = True  # 取得失敗時は安全側（発注しない）
 
         if debug_mode:
+            current_price = self._get_current_price(symbol)
+            if current_price is None or current_price <= 0:
+                current_price = float(
+                    self.positions.get(symbol, {}).get("entry_price", 0) or 0
+                )
+            if current_price <= 0:
+                current_price = 1000.0
             self.logger.info(
-                f"[DEBUG_SELL] {symbol}: SL SELL発注スキップ "
-                f"(debug_mode=True, qty={quantity})"
+                f"[PAPER_SELL] {symbol}: SL ペーパー約定 "
+                f"(debug_mode=True, price={current_price:.0f}円, qty={quantity}株)"
             )
-            return {"success": False, "error": "debug_mode=True"}
+            return {
+                "success": True,
+                "executed_price": current_price,
+                "order_id": f"PAPER_{symbol}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                "paper": True
+            }
 
         # kabu_integrationが使用不能な場合はスキップ
         if self.kabu_integration is None:
@@ -878,64 +890,68 @@ class DSSMSScheduler:
                             )
                         else:
                             # BUYモック注文
-                            order_result = self._execute_with_retry(
-                                execute_func=self.kabu_integrator.kabu_manager.execute_dynamic_orders,
-                                order_params={
-                                    'symbol': symbol,
-                                    'side': '2',
-                                    'quantity': quantity,
-                                    'price': 0
-                                },
-                                caller=f"前場BUY_{symbol}"
-                            )
-                            self.logger.info(f"前場BUY注文: {symbol} qty={quantity}株 結果={order_result}")
-                            if order_result.get("success"):
-                                # executed_priceを取得（0の場合はcurrent_priceをフォールバック）
-                                executed_price = order_result.get("executed_price") or current_price
-                                if executed_price == 0 or executed_price is None:
-                                    executed_price = current_price
-                                self.logger.info(f"[BUY] {symbol}: executed_price={executed_price}円 (current_price={current_price}円)")
-                                
-                                # 残高から減算（BUY確定）
-                                new_balance = self.paper_balance.deduct(executed_price, quantity)
-                                self.logger.info(
-                                    f"[BALANCE_DEDUCT] {symbol}: "
-                                    f"-{executed_price * quantity:,.0f}円 -> 残高={new_balance:,.0f}円"
+                            # 重複BUYチェック（注文前に確認）
+                            if symbol in self.positions:
+                                self.logger.warning(f"[DUPLICATE_BUY_GUARD] {symbol} は既にポジションあり。BUYをスキップします。")
+                            else:
+                                order_result = self._execute_with_retry(
+                                    execute_func=self.kabu_integrator.kabu_manager.execute_dynamic_orders,
+                                    order_params={
+                                        'symbol': symbol,
+                                        'side': '2',
+                                        'quantity': quantity,
+                                        'price': 0
+                                    },
+                                    caller=f"前場BUY_{symbol}"
                                 )
-                                entry_idx = None
-                                entry_date = pd.Timestamp(date.today())
-                                if stock_data is not None and not stock_data.empty:
-                                    try:
-                                        entry_idx = stock_data.index.get_loc(entry_date)
-                                        if isinstance(entry_idx, slice):
-                                            entry_idx = entry_idx.start
-                                        elif hasattr(entry_idx, '__iter__'):
-                                            entry_idx = int(list(entry_idx).index(True))
-                                    except (KeyError, TypeError, ValueError):
-                                        entry_idx = None
+                                self.logger.info(f"前場BUY注文: {symbol} qty={quantity}株 結果={order_result}")
+                                if order_result.get("success"):
+                                    # executed_priceを取得（0の場合はcurrent_priceをフォールバック）
+                                    executed_price = order_result.get("executed_price") or current_price
+                                    if executed_price == 0 or executed_price is None:
+                                        executed_price = current_price
+                                    self.logger.info(f"[BUY] {symbol}: executed_price={executed_price}円 (current_price={current_price}円)")
+                                    
+                                    # 残高から減算（BUY確定）
+                                    new_balance = self.paper_balance.deduct(executed_price, quantity)
+                                    self.logger.info(
+                                        f"[BALANCE_DEDUCT] {symbol}: "
+                                        f"-{executed_price * quantity:,.0f}円 -> 残高={new_balance:,.0f}円"
+                                    )
+                                    entry_idx = None
+                                    entry_date = pd.Timestamp(date.today())
+                                    if stock_data is not None and not stock_data.empty:
+                                        try:
+                                            entry_idx = stock_data.index.get_loc(entry_date)
+                                            if isinstance(entry_idx, slice):
+                                                entry_idx = entry_idx.start
+                                            elif hasattr(entry_idx, '__iter__'):
+                                                entry_idx = int(list(entry_idx).index(True))
+                                        except (KeyError, TypeError, ValueError):
+                                            entry_idx = None
+                                            self.logger.warning(
+                                                f"[R5] {symbol}: entry_idx 取得失敗、None で保存します"
+                                            )
+                                    else:
                                         self.logger.warning(
-                                            f"[R5] {symbol}: entry_idx 取得失敗、None で保存します"
+                                            f"[R5] {symbol}: stock_data 未参照のため entry_idx=None で保存します"
                                         )
-                                else:
-                                    self.logger.warning(
-                                        f"[R5] {symbol}: stock_data 未参照のため entry_idx=None で保存します"
-                                    )
-                                # ポジション追加
-                                self._add_position(
-                                    symbol=symbol,
-                                    entry_price=executed_price,
-                                    strategy="GCStrategy",  # TODO: DynamicStrategySelectorで動的選択
-                                    quantity=quantity,
-                                    entry_idx=entry_idx
-                                )
-                                # 実行履歴記録（BUY）
-                                if hasattr(self, 'execution_history'):
-                                    self.execution_history.record_trade_buy(
+                                    # ポジション追加
+                                    self._add_position(
                                         symbol=symbol,
-                                        price=executed_price,
+                                        entry_price=executed_price,
+                                        strategy="GCStrategy",  # TODO: DynamicStrategySelectorで動的選択
                                         quantity=quantity,
-                                        strategy="GCStrategy"
+                                        entry_idx=entry_idx
                                     )
+                                    # 実行履歴記録（BUY）
+                                    if hasattr(self, 'execution_history'):
+                                        self.execution_history.record_trade_buy(
+                                            symbol=symbol,
+                                            price=executed_price,
+                                            quantity=quantity,
+                                            strategy="GCStrategy"
+                                        )
                 except Exception as e:
                     self.logger.error(f"kabu API同期エラー: {e}")
             
@@ -1124,64 +1140,68 @@ class DSSMSScheduler:
                             )
                         else:
                             # BUYモック注文
-                            order_result = self._execute_with_retry(
-                                execute_func=self.kabu_integrator.kabu_manager.execute_dynamic_orders,
-                                order_params={
-                                    'symbol': symbol,
-                                    'side': '2',
-                                    'quantity': quantity,
-                                    'price': 0
-                                },
-                                caller=f"後場BUY_{symbol}"
-                            )
-                            self.logger.info(f"後場BUY注文: {symbol} qty={quantity}株 結果={order_result}")
-                            if order_result.get("success"):
-                                # executed_priceを取得（0の場合はcurrent_priceをフォールバック）
-                                executed_price = order_result.get("executed_price") or current_price
-                                if executed_price == 0 or executed_price is None:
-                                    executed_price = current_price
-                                self.logger.info(f"[BUY] {symbol}: executed_price={executed_price}円 (current_price={current_price}円)")
-                                
-                                # 残高から減算（BUY確定）
-                                new_balance = self.paper_balance.deduct(executed_price, quantity)
-                                self.logger.info(
-                                    f"[BALANCE_DEDUCT] {symbol}: "
-                                    f"-{executed_price * quantity:,.0f}円 -> 残高={new_balance:,.0f}円"
+                            # 重複BUYチェック（注文前に確認）
+                            if symbol in self.positions:
+                                self.logger.warning(f"[DUPLICATE_BUY_GUARD] {symbol} は既にポジションあり。BUYをスキップします。")
+                            else:
+                                order_result = self._execute_with_retry(
+                                    execute_func=self.kabu_integrator.kabu_manager.execute_dynamic_orders,
+                                    order_params={
+                                        'symbol': symbol,
+                                        'side': '2',
+                                        'quantity': quantity,
+                                        'price': 0
+                                    },
+                                    caller=f"後場BUY_{symbol}"
                                 )
-                                entry_idx = None
-                                entry_date = pd.Timestamp(date.today())
-                                if stock_data is not None and not stock_data.empty:
-                                    try:
-                                        entry_idx = stock_data.index.get_loc(entry_date)
-                                        if isinstance(entry_idx, slice):
-                                            entry_idx = entry_idx.start
-                                        elif hasattr(entry_idx, '__iter__'):
-                                            entry_idx = int(list(entry_idx).index(True))
-                                    except (KeyError, TypeError, ValueError):
-                                        entry_idx = None
+                                self.logger.info(f"後場BUY注文: {symbol} qty={quantity}株 結果={order_result}")
+                                if order_result.get("success"):
+                                    # executed_priceを取得（0の場合はcurrent_priceをフォールバック）
+                                    executed_price = order_result.get("executed_price") or current_price
+                                    if executed_price == 0 or executed_price is None:
+                                        executed_price = current_price
+                                    self.logger.info(f"[BUY] {symbol}: executed_price={executed_price}円 (current_price={current_price}円)")
+                                    
+                                    # 残高から減算（BUY確定）
+                                    new_balance = self.paper_balance.deduct(executed_price, quantity)
+                                    self.logger.info(
+                                        f"[BALANCE_DEDUCT] {symbol}: "
+                                        f"-{executed_price * quantity:,.0f}円 -> 残高={new_balance:,.0f}円"
+                                    )
+                                    entry_idx = None
+                                    entry_date = pd.Timestamp(date.today())
+                                    if stock_data is not None and not stock_data.empty:
+                                        try:
+                                            entry_idx = stock_data.index.get_loc(entry_date)
+                                            if isinstance(entry_idx, slice):
+                                                entry_idx = entry_idx.start
+                                            elif hasattr(entry_idx, '__iter__'):
+                                                entry_idx = int(list(entry_idx).index(True))
+                                        except (KeyError, TypeError, ValueError):
+                                            entry_idx = None
+                                            self.logger.warning(
+                                                f"[R5] {symbol}: entry_idx 取得失敗、None で保存します"
+                                            )
+                                    else:
                                         self.logger.warning(
-                                            f"[R5] {symbol}: entry_idx 取得失敗、None で保存します"
+                                            f"[R5] {symbol}: stock_data 未参照のため entry_idx=None で保存します"
                                         )
-                                else:
-                                    self.logger.warning(
-                                        f"[R5] {symbol}: stock_data 未参照のため entry_idx=None で保存します"
-                                    )
-                                # ポジション追加
-                                self._add_position(
-                                    symbol=symbol,
-                                    entry_price=executed_price,
-                                    strategy="GCStrategy",  # TODO: DynamicStrategySelectorで動的選択
-                                    quantity=quantity,
-                                    entry_idx=entry_idx
-                                )
-                                # 実行履歴記録（BUY）
-                                if hasattr(self, 'execution_history'):
-                                    self.execution_history.record_trade_buy(
+                                    # ポジション追加
+                                    self._add_position(
                                         symbol=symbol,
-                                        price=executed_price,
+                                        entry_price=executed_price,
+                                        strategy="GCStrategy",  # TODO: DynamicStrategySelectorで動的選択
                                         quantity=quantity,
-                                        strategy="GCStrategy"
+                                        entry_idx=entry_idx
                                     )
+                                    # 実行履歴記録（BUY）
+                                    if hasattr(self, 'execution_history'):
+                                        self.execution_history.record_trade_buy(
+                                            symbol=symbol,
+                                            price=executed_price,
+                                            quantity=quantity,
+                                            strategy="GCStrategy"
+                                        )
                 except Exception as e:
                     self.logger.error(f"kabu API同期エラー: {e}")
             
