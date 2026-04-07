@@ -359,6 +359,76 @@ class DSSMSScheduler:
         except Exception as e:
             self.logger.warning(f"[SNAPSHOT] 書き込み失敗: {e}")
 
+    def _write_closed_trade(self, symbol: str, exit_price: float,
+                             exit_reason: str) -> None:
+        """SELL成功時にclosed_trades.csvへ1行追記する"""
+        from datetime import date, datetime
+        import csv
+        from pathlib import Path
+        try:
+            position = self.positions.get(symbol)
+            if position is None:
+                self.logger.warning(
+                    f"[CLOSED_TRADE] {symbol}のpositionデータが見つかりません"
+                )
+                return
+
+            entry_date_str = position.get('entry_date', '')
+            entry_price = position.get('entry_price', 0)
+            shares = position.get('shares', 0)
+            strategy = position.get('strategy', '')
+            exit_date_str = str(date.today())
+
+            # holding_days計算
+            try:
+                entry_dt = datetime.strptime(entry_date_str[:10], '%Y-%m-%d').date()
+                holding_days = (date.today() - entry_dt).days
+            except Exception:
+                holding_days = 0
+
+            # 損益計算
+            pnl = (exit_price - entry_price) * shares
+            pnl_pct = ((exit_price - entry_price) / entry_price * 100
+                       if entry_price > 0 else 0.0)
+            win = 1 if pnl > 0 else 0
+
+            # trade_id：既存行数+1
+            closed_trades_file = Path('logs/paper_trade/closed_trades.csv')
+            closed_trades_file.parent.mkdir(parents=True, exist_ok=True)
+
+            write_header = not closed_trades_file.exists()
+            trade_id = 1
+            if not write_header:
+                with open(closed_trades_file, 'r', encoding='utf-8') as f:
+                    trade_id = sum(1 for _ in f)  # ヘッダー含む行数=次のtrade_id
+
+            with open(closed_trades_file, 'a', newline='',
+                      encoding='utf-8') as f:
+                writer = csv.writer(f)
+                if write_header:
+                    writer.writerow([
+                        'trade_id', 'symbol', 'strategy',
+                        'entry_date', 'entry_price', 'shares',
+                        'exit_date', 'exit_price', 'exit_reason',
+                        'holding_days', 'pnl', 'pnl_pct', 'win'
+                    ])
+                    trade_id = 1
+                writer.writerow([
+                    trade_id, symbol, strategy,
+                    entry_date_str, entry_price, shares,
+                    exit_date_str, exit_price, exit_reason,
+                    holding_days, round(pnl, 2),
+                    round(pnl_pct, 4), win
+                ])
+
+            self.logger.info(
+                f"[CLOSED_TRADE] 記録完了: {symbol} "
+                f"exit={exit_price} pnl={pnl:+,.0f}円 reason={exit_reason}"
+            )
+
+        except Exception as e:
+            self.logger.warning(f"[CLOSED_TRADE] 書き込み失敗: {e}")
+
     def _get_current_price(self, symbol: str) -> Optional[float]:
         """銘柄の現在値を取得する。取得不可時はNoneを返す。"""
         # 1) kabu API
@@ -656,7 +726,18 @@ class DSSMSScheduler:
                     )
                 
                 try:
-                    strategy = GCStrategy(data=stock_data, ticker=symbol)
+                    strategy = GCStrategy(
+                        data=stock_data,
+                        ticker=symbol,
+                        params={
+                            "short_window": 5,
+                            "long_window": 75,
+                            "stop_loss": 0.03,
+                            "trailing_stop_pct": None,
+                            "trend_strength_percentile": 60,
+                            "sma_divergence_threshold": 3.0,
+                        }
+                    )
                     strategy.initialize_strategy()  # 戦略の初期化
                     self.logger.info(f"[EXIT_CHECK] {symbol}: {strategy_name}インスタンス化成功")
                 except Exception as e:
@@ -720,6 +801,7 @@ class DSSMSScheduler:
                                 )
 
                             # ポジション削除
+                            self._write_closed_trade(symbol, exit_price, exit_reason='death_cross')
                             self._remove_position(symbol)
                             sold_symbols.append(symbol)
 
@@ -1216,6 +1298,8 @@ class DSSMSScheduler:
             error_message = str(e)
             self.logger.error(f"後場スクリーニングエラー: {e}")
         finally:
+            # daily_snapshot.csv に記録（後場完了時）
+            self._write_daily_snapshot(price_fetch_ok=price_fetch_ok)
             self._write_last_run(
                 status="success" if not error_occurred else "error",
                 price_fetch_ok=price_fetch_ok,
@@ -1344,6 +1428,7 @@ class DSSMSScheduler:
                                 )
 
                             # ポジション削除
+                            self._write_closed_trade(symbol, sell_price, exit_reason='stop_loss')
                             self._remove_position(symbol)
                             self.logger.warning(f"[SL_EXECUTED] {symbol}: ポジション削除完了")
                         else:
