@@ -570,8 +570,8 @@ class DSSMSScheduler:
         
         # メール通知送信
         self.email_notifier.send_order_failed(
-            symbol=order_params.get("Symbol", "unknown"),
-            order_type=order_params.get("Side", "unknown"),
+            symbol=order_params.get("symbol", "unknown"),
+            order_type=order_params.get("side", "unknown"),
             order_params=order_params,
             retry_count=max_retries
         )
@@ -1325,6 +1325,33 @@ class DSSMSScheduler:
         if not error_occurred:
             self.logger.info(f"=== 後場スクリーニング完了: {selected_symbol} ({duration:.2f}秒) ===")
             self._mark_executed_today("afternoon")
+
+        # 後場サマリーメール送信
+        try:
+            from datetime import datetime as _dt
+            summary_data = {
+                'execution_time': _dt.now().strftime('%H:%M'),
+                'status': '異常' if error_occurred else '正常',
+                'error_message': error_message if error_occurred else '',
+                'cash_balance': self.paper_balance.balance,
+                'unrealized_pnl': None,
+                'total_assets': self.paper_balance.balance,
+                'daily_pnl': 0,
+                'positions': [
+                    {
+                        'symbol': sym,
+                        'price': info.get('entry_price', 0),
+                        'shares': info.get('quantity', 0),
+                        'unrealized_pnl': 0
+                    }
+                    for sym, info in self.positions.items()
+                ],
+                'screened_symbols': [selected_symbol] if selected_symbol else [],
+                'hours_since_last_run': 0.0
+            }
+            self.email_notifier.send_afternoon_summary(summary_data)
+        except Exception as e:
+            self.logger.warning(f"[EMAIL_SKIP] 後場サマリーメール送信失敗: {e}")
         
         return selected_symbol
     
