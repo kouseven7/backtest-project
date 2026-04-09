@@ -317,7 +317,7 @@ class EmailNotifier:
                 server.login(self.sender_email, self.sender_password)
                 server.sendmail(self.sender_email, self.recipient_email, msg.as_string())
 
-            self.logger.info(f"[EMAIL_SENT] 朝サマリー送信成功 → {self.recipient_email}")
+            self.logger.info(f"[EMAIL_SENT] 午後サマリー送信成功 → {self.recipient_email}")
             return True
 
         except smtplib.SMTPAuthenticationError as e:
