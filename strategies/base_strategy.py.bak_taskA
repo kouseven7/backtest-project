@@ -618,7 +618,7 @@ class BaseStrategy:
                     entry_price = current_row.get('Close', 0.0)
                 
                 # 標準的な取引株数計算（資金の10%程度を想定）
-                shares = (int(100000 / entry_price) // 100) * 100 if entry_price > 0 else 0
+                shares = int(100000 / entry_price) if entry_price > 0 else 0  # 暫定実装
                 
                 return {
                     'action': 'entry',
