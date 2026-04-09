@@ -450,10 +450,17 @@ class DSSMSScheduler:
                 warmup_days=0
             )
             if stock_data is not None and not stock_data.empty:
+                yf_price = None
                 if 'Adj Close' in stock_data.columns:
-                    return float(stock_data['Adj Close'].iloc[-1])
-                if 'Close' in stock_data.columns:
-                    return float(stock_data['Close'].iloc[-1])
+                    yf_price = float(stock_data['Adj Close'].iloc[-1])
+                elif 'Close' in stock_data.columns:
+                    yf_price = float(stock_data['Close'].iloc[-1])
+                if yf_price is not None and yf_price > 0:
+                    return yf_price
+                else:
+                    self.logger.warning(
+                        f"[SNAPSHOT] {symbol}: yfinance価格が0または無効 ({yf_price})"
+                    )
         except Exception as e:
             self.logger.warning(f"[SNAPSHOT] {symbol}: yfinance価格取得失敗 ({e})")
 
@@ -1068,6 +1075,31 @@ class DSSMSScheduler:
         # 朝サマリーメール送信
         try:
             from datetime import datetime as _dt
+            hours_since_last_run = 0.0
+            try:
+                if self.LAST_RUN_FILE.exists():
+                    import json as _json
+                    last_run_data = _json.loads(
+                        self.LAST_RUN_FILE.read_text(encoding='utf-8')
+                    )
+                    last_run_at_str = last_run_data.get('last_run_at', '')
+                    if last_run_at_str:
+                        from datetime import datetime as _dt2
+                        last_run_at = _dt2.fromisoformat(last_run_at_str)
+                        hours_since_last_run = (
+                            _dt2.now() - last_run_at
+                        ).total_seconds() / 3600
+                        self.logger.info(
+                            f"[HEALTH_CHECK] 前回実行からの経過時間: "
+                            f"{hours_since_last_run:.1f}時間"
+                        )
+                else:
+                    self.logger.info(
+                        "[HEALTH_CHECK] last_run.jsonが存在しないため経過時間=0.0として処理"
+                    )
+            except Exception as e:
+                self.logger.warning(f"[HEALTH_CHECK] 経過時間計算失敗: {e}")
+                hours_since_last_run = 0.0
             summary_data = {
                 'execution_time': _dt.now().strftime('%H:%M'),
                 'status': '異常' if error_occurred else '正常',
@@ -1086,7 +1118,7 @@ class DSSMSScheduler:
                     for sym, info in self.positions.items()
                 ],
                 'screened_symbols': [selected_symbol] if selected_symbol else [],
-                'hours_since_last_run': 0.0
+                'hours_since_last_run': hours_since_last_run
             }
             self.email_notifier.send_morning_summary(summary_data)
         except Exception as e:
@@ -1329,6 +1361,31 @@ class DSSMSScheduler:
         # 後場サマリーメール送信
         try:
             from datetime import datetime as _dt
+            hours_since_last_run = 0.0
+            try:
+                if self.LAST_RUN_FILE.exists():
+                    import json as _json
+                    last_run_data = _json.loads(
+                        self.LAST_RUN_FILE.read_text(encoding='utf-8')
+                    )
+                    last_run_at_str = last_run_data.get('last_run_at', '')
+                    if last_run_at_str:
+                        from datetime import datetime as _dt2
+                        last_run_at = _dt2.fromisoformat(last_run_at_str)
+                        hours_since_last_run = (
+                            _dt2.now() - last_run_at
+                        ).total_seconds() / 3600
+                        self.logger.info(
+                            f"[HEALTH_CHECK] 前回実行からの経過時間: "
+                            f"{hours_since_last_run:.1f}時間"
+                        )
+                else:
+                    self.logger.info(
+                        "[HEALTH_CHECK] last_run.jsonが存在しないため経過時間=0.0として処理"
+                    )
+            except Exception as e:
+                self.logger.warning(f"[HEALTH_CHECK] 経過時間計算失敗: {e}")
+                hours_since_last_run = 0.0
             summary_data = {
                 'execution_time': _dt.now().strftime('%H:%M'),
                 'status': '異常' if error_occurred else '正常',
@@ -1347,7 +1404,7 @@ class DSSMSScheduler:
                     for sym, info in self.positions.items()
                 ],
                 'screened_symbols': [selected_symbol] if selected_symbol else [],
-                'hours_since_last_run': 0.0
+                'hours_since_last_run': hours_since_last_run
             }
             self.email_notifier.send_afternoon_summary(summary_data)
         except Exception as e:
