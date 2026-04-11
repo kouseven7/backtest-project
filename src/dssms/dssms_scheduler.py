@@ -753,11 +753,15 @@ class DSSMSScheduler:
                 
                 # Step 3: existing_position構築（entry_timeをentry_dateに変換）
                 try:
-                    entry_time_str = position.get('entry_time', '')
-                    if isinstance(entry_time_str, str):
+                    entry_time_str = position.get('entry_date', position.get('entry_time', ''))
+                    if isinstance(entry_time_str, str) and entry_time_str:
                         entry_date = pd.Timestamp(entry_time_str)
                     else:
-                        entry_date = pd.Timestamp(entry_time_str)
+                        entry_date = pd.Timestamp(entry_time_str) if entry_time_str else pd.Timestamp('today')
+
+                    if pd.isna(entry_date):
+                        self.logger.warning(f"[EXIT_CHECK] {symbol}: entry_dateがNaT → 本日日付で代替")
+                        entry_date = pd.Timestamp('today')
                     
                     existing_position = {
                         'symbol': symbol,
@@ -768,7 +772,8 @@ class DSSMSScheduler:
                         'force_close': False  # 通常エグジット判定
                     }
                     
-                    self.logger.info(f"[EXIT_CHECK] {symbol}: existing_position構築成功 (entry_price={existing_position['entry_price']}, entry_date={existing_position['entry_date'].strftime('%Y-%m-%d')})")
+                    entry_date_str = existing_position['entry_date'].strftime('%Y-%m-%d') if not pd.isna(existing_position['entry_date']) else 'unknown'
+                    self.logger.info(f"[EXIT_CHECK] {symbol}: existing_position構築成功 (entry_price={existing_position['entry_price']}, entry_date={entry_date_str})")
                     
                 except Exception as e:
                     self.logger.warning(f"[EXIT_CHECK] {symbol}: existing_position構築エラー → スキップ: {e}")
