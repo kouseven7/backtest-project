@@ -373,9 +373,9 @@ class DSSMSScheduler:
                 )
                 return
 
-            entry_date_str = position.get('entry_date', '')
+            entry_date_str = position.get('entry_date', position.get('entry_time', ''))
             entry_price = position.get('entry_price', 0)
-            shares = position.get('shares', 0)
+            shares = position.get('quantity', position.get('shares', 0))
             strategy = position.get('strategy', '')
             exit_date_str = str(date.today())
 
