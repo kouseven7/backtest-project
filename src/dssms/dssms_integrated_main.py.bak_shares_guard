@@ -2829,13 +2829,6 @@ class DSSMSIntegratedBacktester:
                 
                 # 取引実行時のポートフォリオ更新（Cycle 4-2: 残高管理追加）
                 if result['action'] == 'buy':
-                    # [SHARES_ZERO_GUARD] shares=0チェック（Task-A: _calculate_lot_sharesが高額銘柄で0を返す場合の防御）
-                    if result.get('shares', 0) == 0:
-                        self.logger.warning(
-                            f"[SHARES_ZERO_GUARD] shares=0のためBUYをスキップ: {symbol}, "
-                            f"価格={result['price']:.2f}円, 戦略={best_strategy_name}"
-                        )
-                        continue
                     trade_cost = result['price'] * result['shares']
                     # Cycle 4-2: BUY時に現金残高を減少
                     self.cash_balance -= trade_cost

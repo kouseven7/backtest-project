@@ -135,6 +135,24 @@ class BaseStrategy:
             message (str): ログメッセージ
         """
         self.logger.info(message)
+
+    def _calculate_lot_shares(self, budget: float, entry_price: float, lot_size: int = 100) -> int:
+        """
+        予算と価格から、指定単元株で切り捨てた株数を返す。
+
+        Parameters:
+            budget (float): 投下予算
+            entry_price (float): エントリー価格
+            lot_size (int): 売買単元株数（デフォルト100）
+
+        Returns:
+            int: 単元株に切り捨てた株数
+        """
+        if budget <= 0 or entry_price <= 0 or lot_size <= 0:
+            return 0
+
+        raw_shares = int(budget / entry_price)
+        return (raw_shares // lot_size) * lot_size
         
     def get_latest_entry_price(self, idx: int) -> Optional[float]:
         """
@@ -617,8 +635,10 @@ class BaseStrategy:
                 except:
                     entry_price = current_row.get('Close', 0.0)
                 
-                # 標準的な取引株数計算（資金の10%程度を想定）
-                shares = (int(100000 / entry_price) // 100) * 100 if entry_price > 0 else 0
+                # 売買単位（デフォルト100株）に合わせて株数を切り捨て
+                position_budget = float(self.params.get('position_budget', 100000))
+                lot_size = int(self.params.get('lot_size', 100))
+                shares = self._calculate_lot_shares(position_budget, float(entry_price), lot_size)
                 
                 return {
                     'action': 'entry',
