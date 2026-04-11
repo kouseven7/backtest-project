@@ -1489,9 +1489,12 @@ class DSSMSScheduler:
 
             # 全保有銘柄をループ（list()でスナップショット取得）
             for symbol in list(self.positions.keys()):
-                # ループ中に SELL 済みになった銘柄をスキップ
+                # ループ中に削除済みの銘柄はSLチェック対象外
                 if symbol not in self.positions:
-                    self.logger.debug(f"[EMERGENCY_CHECK] {symbol} はループ中に決済済み、スキップ")
+                    self.logger.info(
+                        f"[SL_SKIP] {symbol}: positions削除済みのためSLチェックをスキップ"
+                        f"（通常EXITと競合の可能性）"
+                    )
                     continue
 
                 # 緊急事態判定
