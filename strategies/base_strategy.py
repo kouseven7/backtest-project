@@ -153,6 +153,31 @@ class BaseStrategy:
 
         raw_shares = int(budget / entry_price)
         return (raw_shares // lot_size) * lot_size
+
+    def _calculate_position_size_daily(self, entry_price: float) -> int:
+        """
+        1ポジション分の株数を計算する。
+
+        cash_balance（バックテスト残高）が利用可能な場合は残高ベースで計算する。
+        利用できない場合は position_amount パラメータ（デフォルト100,000円）にフォールバック。
+        計算結果は100株単位に切り捨て。最小値は100株。
+        """
+        if entry_price <= 0:
+            return 0
+
+        cash_balance = float(getattr(self, 'cash_balance', 0.0) or 0.0)
+
+        if cash_balance > 0:
+            max_positions = self.params.get("max_positions", 2)
+            if max_positions <= 0:
+                max_positions = 2
+            allocated = cash_balance / max_positions
+        else:
+            allocated = float(self.params.get("position_amount", 100000))
+
+        raw_shares = int(allocated / entry_price)
+        shares = (raw_shares // 100) * 100
+        return max(100, shares)
         
     def get_latest_entry_price(self, idx: int) -> Optional[float]:
         """
@@ -635,10 +660,7 @@ class BaseStrategy:
                 except:
                     entry_price = current_row.get('Close', 0.0)
                 
-                # 売買単位（デフォルト100株）に合わせて株数を切り捨て
-                position_budget = float(self.params.get('position_budget', 100000))
-                lot_size = int(self.params.get('lot_size', 100))
-                shares = self._calculate_lot_shares(position_budget, float(entry_price), lot_size)
+                shares = self._calculate_position_size_daily(float(entry_price))
                 
                 return {
                     'action': 'entry',
