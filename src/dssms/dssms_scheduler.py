@@ -192,7 +192,7 @@ class DSSMSScheduler:
         self.scheduler_thread: Optional[threading.Thread] = None
         
         # ポジション管理
-        self.positions_file = Path("logs/dssms/positions.json")
+        self.positions_file = Path(__file__).parent.parent.parent / "logs" / "dssms" / "positions.json"
         self.max_positions = 3
         self._load_positions()
         
