@@ -1,1 +1,67 @@
-[]
+[
+  {
+    "timestamp": "2026-04-13T16:27:41.195419",
+    "event_type": "emergency_check",
+    "symbol": "7203",
+    "is_emergency": true,
+    "emergency_level": 1,
+    "recommended_action": "immediate_exit",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-13T16:27:41.219529",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-13T16:27:41.260069",
+    "event_type": "emergency_check",
+    "symbol": "9984",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-13T16:27:41.262253",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-13T16:27:41.269910",
+    "event_type": "emergency_check",
+    "symbol": "6758",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-13T16:27:41.272140",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-13T16:27:41.361670",
+    "event_type": "sell",
+    "symbol": "7203",
+    "sell_price": 700.0,
+    "entry_price": 1000.0,
+    "quantity": 100,
+    "profit_loss": -30000.0,
+    "profit_loss_pct": -30.0,
+    "reason": "GCStrategy: Exit signal detected on 2026-04-13 (reason: stop_loss)",
+    "market_conditions": {
+      "timestamp": "2026-04-13T16:27:41.385518",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  }
+]

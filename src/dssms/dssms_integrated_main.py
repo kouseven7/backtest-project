@@ -2835,47 +2835,47 @@ class DSSMSIntegratedBacktester:
                             f"[SHARES_ZERO_GUARD] shares=0のためBUYをスキップ: {symbol}, "
                             f"価格={result['price']:.2f}円, 戦略={best_strategy_name}"
                         )
-                        continue
-                    trade_cost = result['price'] * result['shares']
-                    # Cycle 4-2: BUY時に現金残高を減少
-                    self.cash_balance -= trade_cost
-                    position_update = {'return': -trade_cost, 'cost': trade_cost}
-                    
-                    # 2026-02-26修正: entry_idxを正確に計算して保存
-                    # current_idxを計算（ストップロス判定で使用）
-                    try:
-                        current_idx = processed_data.index.get_loc(adjusted_target_date)
-                        if isinstance(current_idx, slice):
-                            current_idx = current_idx.start
-                    except Exception as e:
-                        self.logger.warning(f"[ENTRY_IDX] adjusted_target_date={adjusted_target_date}のインデックス取得失敗: {e}, データ末尾を使用")
-                        current_idx = len(processed_data) - 1
-                    
-                    # Sprint 2: self.positionsへの追加（2026-02-15修正、2026-02-26 entry_idx修正）
-                    self.positions[symbol] = {
-                        'strategy': best_strategy_name,
-                        'entry_price': result['price'],
-                        'shares': result['shares'],
-                        'entry_date': adjusted_target_date,
-                        'entry_idx': current_idx  # 2026-02-26修正: 正しいインデックスを保存
-                    }
-                    self.logger.info(
-                        f"[POSITION_ADD] {symbol}: {result['shares']}株を追加, entry_idx={current_idx}, "
-                        f"entry_date={adjusted_target_date.strftime('%Y-%m-%d')}, "
-                        f"保有数: {len(self.positions)}/{self.max_positions}"
-                    )
-                    # ===== デバッグログ (2026-02-15, 2026-02-26更新) =====
-                    self.logger.info(
-                        f"[POSITION_DEBUG] BUY後: {adjusted_target_date.strftime('%Y-%m-%d')}, "
-                        f"len(positions)={len(self.positions)}, "
-                        f"保有銘柄={list(self.positions.keys())}"
-                    )
-                    # ========================================================
-                    
-                    self.logger.info(
-                        f"[PORTFOLIO_TRADE] BUY執行: {symbol} {result['shares']}株 @ {result['price']:.2f}円, "
-                        f"コスト: {trade_cost:,.0f}円, 残高: {self.cash_balance:,.0f}円"
-                    )
+                    else:
+                        trade_cost = result['price'] * result['shares']
+                        # Cycle 4-2: BUY時に現金残高を減少
+                        self.cash_balance -= trade_cost
+                        position_update = {'return': -trade_cost, 'cost': trade_cost}
+                        
+                        # 2026-02-26修正: entry_idxを正確に計算して保存
+                        # current_idxを計算（ストップロス判定で使用）
+                        try:
+                            current_idx = processed_data.index.get_loc(adjusted_target_date)
+                            if isinstance(current_idx, slice):
+                                current_idx = current_idx.start
+                        except Exception as e:
+                            self.logger.warning(f"[ENTRY_IDX] adjusted_target_date={adjusted_target_date}のインデックス取得失敗: {e}, データ末尾を使用")
+                            current_idx = len(processed_data) - 1
+                        
+                        # Sprint 2: self.positionsへの追加（2026-02-15修正、2026-02-26 entry_idx修正）
+                        self.positions[symbol] = {
+                            'strategy': best_strategy_name,
+                            'entry_price': result['price'],
+                            'shares': result['shares'],
+                            'entry_date': adjusted_target_date,
+                            'entry_idx': current_idx  # 2026-02-26修正: 正しいインデックスを保存
+                        }
+                        self.logger.info(
+                            f"[POSITION_ADD] {symbol}: {result['shares']}株を追加, entry_idx={current_idx}, "
+                            f"entry_date={adjusted_target_date.strftime('%Y-%m-%d')}, "
+                            f"保有数: {len(self.positions)}/{self.max_positions}"
+                        )
+                        # ===== デバッグログ (2026-02-15, 2026-02-26更新) =====
+                        self.logger.info(
+                            f"[POSITION_DEBUG] BUY後: {adjusted_target_date.strftime('%Y-%m-%d')}, "
+                            f"len(positions)={len(self.positions)}, "
+                            f"保有銘柄={list(self.positions.keys())}"
+                        )
+                        # ========================================================
+                        
+                        self.logger.info(
+                            f"[PORTFOLIO_TRADE] BUY執行: {symbol} {result['shares']}株 @ {result['price']:.2f}円, "
+                            f"コスト: {trade_cost:,.0f}円, 残高: {self.cash_balance:,.0f}円"
+                        )
                 elif result['action'] == 'sell':
                     trade_profit = result['price'] * result['shares']
                     # Cycle 4-2: SELL時に現金残高を増加
