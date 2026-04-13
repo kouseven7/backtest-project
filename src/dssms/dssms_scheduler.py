@@ -942,11 +942,20 @@ class DSSMSScheduler:
                                     end_date=date.today().strftime('%Y-%m-%d'),
                                     warmup_days=0
                                 )
-                                current_price = stock_data['Adj Close'].iloc[-1] if not stock_data.empty else 1000.0
+                                if stock_data.empty:
+                                    self.logger.error(
+                                        f"[PRICE_ERROR] {symbol}: kabu API・yfinanceともに価格取得失敗"
+                                        f"(yfinanceが空データを返しました)。前場BUYをスキップします。"
+                                    )
+                                    return
+                                current_price = stock_data['Adj Close'].iloc[-1]
                                 self.logger.info(f"[PRICE_FETCH] {symbol}: yfinance価格={current_price:.2f}円（フォールバック）")
                             except Exception as e:
-                                self.logger.warning(f"[PRICE_FETCH] {symbol}: 価格取得失敗、仮株価1000円を使用: {e}")
-                                current_price = 1000.0
+                                self.logger.error(
+                                    f"[PRICE_ERROR] {symbol}: kabu API・yfinanceともに価格取得失敗。"
+                                    f"前場BUYをスキップします。理由: {e}"
+                                )
+                                return
 
                         # バックテスト側の shares を100株単位に安全丸め（base_strategy暫定実装の補正）
                         raw_shares = screening_result.get('shares', None)
@@ -1238,11 +1247,20 @@ class DSSMSScheduler:
                                     end_date=date.today().strftime('%Y-%m-%d'),
                                     warmup_days=0
                                 )
-                                current_price = stock_data['Adj Close'].iloc[-1] if not stock_data.empty else 1000.0
+                                if stock_data.empty:
+                                    self.logger.error(
+                                        f"[PRICE_ERROR] {symbol}: kabu API・yfinanceともに価格取得失敗"
+                                        f"(yfinanceが空データを返しました)。後場BUYをスキップします。"
+                                    )
+                                    return
+                                current_price = stock_data['Adj Close'].iloc[-1]
                                 self.logger.info(f"[PRICE_FETCH] {symbol}: yfinance価格={current_price:.2f}円（フォールバック）")
                             except Exception as e:
-                                self.logger.warning(f"[PRICE_FETCH] {symbol}: 価格取得失敗、仮株価1000円を使用: {e}")
-                                current_price = 1000.0
+                                self.logger.error(
+                                    f"[PRICE_ERROR] {symbol}: kabu API・yfinanceともに価格取得失敗。"
+                                    f"後場BUYをスキップします。理由: {e}"
+                                )
+                                return
 
                         # バックテスト側の shares を100株単位に安全丸め（base_strategy暫定実装の補正）
                         raw_shares = screening_result.get('shares', None)
