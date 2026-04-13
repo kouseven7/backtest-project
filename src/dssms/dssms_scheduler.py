@@ -813,7 +813,7 @@ class DSSMSScheduler:
                                 )
 
                             # ポジション削除
-                            self._write_closed_trade(symbol, exit_price, exit_reason='death_cross')
+                            self._write_closed_trade(symbol, exit_price, exit_reason=exit_reason)
                             self._remove_position(symbol)
                             sold_symbols.append(symbol)
 
