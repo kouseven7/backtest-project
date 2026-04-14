@@ -45,12 +45,13 @@ class BreakoutStrategy(BaseStrategy):
         # デフォルトパラメータの設定
         default_params = {
             "volume_threshold": 1.2,   # 出来高増加率の閾値（20%）
-            "take_profit": 0.03,       # 利益確定（3%）
+            "take_profit": 0.05,       # 利益確定（5%）
             "look_back": 1,            # 前日からのブレイクアウトを見る日数
-            "trailing_stop": 0.03,     # トレーリングストップ（高値から3%下落）
+            "trailing_stop": 0.03,     # トレーリングストップ（高値から4%下落）
             "breakout_buffer": 0.01,   # ブレイクアウト判定の閾値（1%）
             "slippage": 0.001,         # Phase 2: スリッページ（0.1%、買い注文は不利な方向）
-            "transaction_cost": 0.0    # Phase 2: 取引コスト（0%、オプション）
+            "transaction_cost": 0.0,   # Phase 2: 取引コスト（0%、オプション）
+            "stop_loss": 0.05,         # 固定損切りライン（エントリー価格から5%下落）
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
@@ -602,6 +603,19 @@ class BreakoutStrategy(BaseStrategy):
             logger.info(f"[BREAKOUT_EXIT] exit_price={exit_price}, source={'entry_symbol_data' if is_force_close and entry_symbol_data is not None else 'stock_data'}")
             
             # エグジット条件判定
+            # 固定stop_loss判定（trailing_stopより優先）
+            stop_loss = self.params.get("stop_loss", 0)
+            if stop_loss > 0:
+                stop_loss_price = entry_price * (1 - stop_loss)
+                if exit_price <= stop_loss_price:
+                    return {
+                        'action': 'exit',
+                        'signal': -1,
+                        'price': exit_price,
+                        'shares': existing_position.get('shares', existing_position.get('quantity', 0)),
+                        'reason': f'Breakout: Stop loss triggered at {exit_price:.2f} (limit={stop_loss_price:.2f})'
+                    }
+
             # 1. 利益確定
             if exit_price >= entry_price * (1 + self.params["take_profit"]):
                 return {
