@@ -722,11 +722,16 @@ class BreakoutStrategy(BaseStrategy):
                     # ポジションサイズ計算
                     shares = self._calculate_position_size_daily(entry_price)
                     
+                    # ブレイクアウト失敗検知のためにprevious_highを保存
+                    look_back = self.params.get("look_back", 1)
+                    previous_high = stock_data.iloc[current_idx - look_back]['High'] if 'High' in stock_data.columns else None
+                    
                     result = {
                         'action': 'entry',
                         'signal': 1,
                         'price': float(entry_price),
                         'shares': shares,
+                        'previous_high': previous_high,
                         'reason': f'Breakout: Entry signal detected on {current_date.strftime("%Y-%m-%d")}'
                     }
                     
