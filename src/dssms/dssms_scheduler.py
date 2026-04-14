@@ -1094,7 +1094,7 @@ class DSSMSScheduler:
                 if self.LAST_RUN_FILE.exists():
                     import json as _json
                     last_run_data = _json.loads(
-                        self.LAST_RUN_FILE.read_text(encoding='utf-8')
+                        self.LAST_RUN_FILE.read_text(encoding='utf-8-sig')
                     )
                     last_run_at_str = last_run_data.get('last_run_at', '')
                     if last_run_at_str:
@@ -1184,6 +1184,33 @@ class DSSMSScheduler:
         start_time = datetime.now()
         self.logger.info("=== 後場スクリーニング開始 ===")
         screening_start_time = datetime.now()
+
+        # HEALTH_CHECK: 前回実行からの経過時間を先行計算（_write_last_run より前に取得）
+        hours_since_last_run_af = 0.0
+        try:
+            if self.LAST_RUN_FILE.exists():
+                import json as _json_af_pre
+                _last_run_data_af = _json_af_pre.loads(
+                    self.LAST_RUN_FILE.read_text(encoding='utf-8-sig')
+                )
+                _last_run_at_str_af = _last_run_data_af.get('last_run_at', '')
+                if _last_run_at_str_af:
+                    from datetime import datetime as _dt_af_pre
+                    _last_run_at_af = _dt_af_pre.fromisoformat(_last_run_at_str_af)
+                    hours_since_last_run_af = (
+                        _dt_af_pre.now() - _last_run_at_af
+                    ).total_seconds() / 3600
+                    self.logger.info(
+                        f"[HEALTH_CHECK] 前回実行からの経過時間: "
+                        f"{hours_since_last_run_af:.1f}時間"
+                    )
+            else:
+                self.logger.info(
+                    "[HEALTH_CHECK] last_run.jsonが存在しないため経過時間=0.0として処理"
+                )
+        except Exception as _e_af:
+            self.logger.warning(f"[HEALTH_CHECK] 経過時間計算失敗: {_e_af}")
+            hours_since_last_run_af = 0.0
 
         # --- session guard ---
         if self._already_executed_today("afternoon"):
@@ -1403,14 +1430,8 @@ class DSSMSScheduler:
 
         # 後場サマリーメール送信
         try:
-            try:
-                elapsed_hours = (datetime.now() - screening_start_time).total_seconds() / 3600
-                self.logger.info(
-                    f"[HEALTH_CHECK] 前回実行からの経過時間: "
-                    f"{elapsed_hours:.1f}時間"
-                )
-            except Exception as e:
-                self.logger.warning(f"[HEALTH_CHECK] 経過時間計算失敗: {e}")
+            # HEALTH_CHECK の経過時間はメソッド先頭で取得済みの値を使用
+            # （_write_last_run より前に読み込んだ値のため正確）
 
             # 含み損益をリアルタイム計算
             unrealized_pnl_calc = 0.0
@@ -1448,7 +1469,7 @@ class DSSMSScheduler:
                 'daily_pnl': 0,
                 'positions': positions_for_email,
                 'screened_symbols': [selected_symbol] if selected_symbol else [],
-                'hours_since_last_run': elapsed_hours
+                'hours_since_last_run': hours_since_last_run_af
             }
             self.email_notifier.send_afternoon_summary(summary_data)
         except Exception as e:
