@@ -45,13 +45,13 @@ class BreakoutStrategy(BaseStrategy):
         # デフォルトパラメータの設定
         default_params = {
             "volume_threshold": 1.2,   # 出来高増加率の閾値（20%）
-            "take_profit": 0.05,       # 利益確定（5%）
+            "take_profit": 0.05,       # 最適化済み（5%）
             "look_back": 1,            # 前日からのブレイクアウトを見る日数
-            "trailing_stop": 1.0,     # トレーリングストップ（高値から4%下落）
+            "trailing_stop": 1.0,      # 実質無効化（グリッドサーチ結果）
             "breakout_buffer": 0.01,   # ブレイクアウト判定の閾値（1%）
             "slippage": 0.001,         # Phase 2: スリッページ（0.1%、買い注文は不利な方向）
             "transaction_cost": 0.0,   # Phase 2: 取引コスト（0%、オプション）
-            "stop_loss": 0.02,         # 固定損切りライン（エントリー価格から5%下落）
+            "stop_loss": 0.03,         # 最適化済み（3%、3年全勝唯一）
         }
         
         # 親クラスの初期化（デフォルトパラメータとユーザーパラメータをマージ）
