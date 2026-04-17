@@ -9,12 +9,12 @@
   "last_updated": "2025-07-08T22:15:36.066324",
   "trend_adaptability": {
     "uptrend": {
-      "suitability_score": 0.50,
+      "suitability_score": 0.9,
       "confidence_level": "high",
       "performance_metrics": {
         "sharpe_ratio": 0.00,
         "max_drawdown": 0.08,
-        "win_rate": 0.50,
+        "win_rate": 0.75,
         "expectancy": 0.00,
         "avg_return": 0.00,
         "volatility": 0.0,
@@ -31,12 +31,12 @@
       }
     },
     "downtrend": {
-      "suitability_score": 0.50,
+      "suitability_score": 0.2,
       "confidence_level": "low",
       "performance_metrics": {
         "sharpe_ratio": 0.00,
         "max_drawdown": 0.3,
-        "win_rate": 0.50,
+        "win_rate": 0.25,
         "expectancy": 0.00,
         "avg_return": 0.00,
         "volatility": 0.0,
@@ -53,7 +53,7 @@
       }
     },
     "range-bound": {
-      "suitability_score": 0.50,
+      "suitability_score": 0.4,
       "confidence_level": "low",
       "performance_metrics": {
         "sharpe_ratio": 0.00,

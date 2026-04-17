@@ -9,14 +9,14 @@
   "last_updated": "2025-11-12T11:08:10.991838",
   "trend_adaptability": {
     "uptrend": {
-      "suitability_score": 0.70,
+      "suitability_score": 0.92,
       "confidence_level": "high",
       "performance_metrics": {
-        "sharpe_ratio": 0.84,
-        "max_drawdown": 0.15,
-        "win_rate": 0.57,
-        "expectancy": 0.033,
-        "avg_return": 0.025,
+        "sharpe_ratio": 1.62,
+        "max_drawdown": 0.09,
+        "win_rate": 0.65,
+        "expectancy": 0.025,
+        "avg_return": 0.12,
         "volatility": 0.13,
         "calmar_ratio": 1.67,
         "sortino_ratio": 1.94
@@ -25,19 +25,19 @@
       "data_period": "2023-01-01_to_2024-12-31",
       "reliability": "high",
       "risk_characteristics": {
-        "max_consecutive_losses": 7,
-        "avg_holding_period": 33.9,
-        "profit_factor": 2.23
+        "max_consecutive_losses": 3,
+        "avg_holding_period": 28.0,
+        "profit_factor": 2.12
       }
     },
     "downtrend": {
-      "suitability_score": 0.30,
+      "suitability_score": 0.28,
       "confidence_level": "low",
       "performance_metrics": {
-        "sharpe_ratio": 0.05,
+        "sharpe_ratio": -0.30,
         "max_drawdown": 0.35,
-        "win_rate": 0.49,
-        "expectancy": -0.005,
+        "win_rate": 0.35,
+        "expectancy": -0.015,
         "avg_return": -0.05,
         "volatility": 0.28,
         "calmar_ratio": -0.14,
@@ -49,17 +49,17 @@
       "risk_characteristics": {
         "max_consecutive_losses": 6,
         "avg_holding_period": 15.0,
-        "profit_factor": 0.79
+        "profit_factor": 0.75
       }
     },
     "range-bound": {
-      "suitability_score": 0.45,
+      "suitability_score": 0.55,
       "confidence_level": "medium",
       "performance_metrics": {
-        "sharpe_ratio": 0.30,
+        "sharpe_ratio": 0.85,
         "max_drawdown": 0.07,
-        "win_rate": 0.50,
-        "expectancy": 0.005,
+        "win_rate": 0.55,
+        "expectancy": 0.012,
         "avg_return": 0.04,
         "volatility": 0.11,
         "calmar_ratio": 0.57,
@@ -71,7 +71,7 @@
       "risk_characteristics": {
         "max_consecutive_losses": 4,
         "avg_holding_period": 20.0,
-        "profit_factor": 1.00
+        "profit_factor": 1.35
       }
     }
   },
