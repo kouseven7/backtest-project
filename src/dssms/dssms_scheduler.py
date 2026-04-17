@@ -190,11 +190,13 @@ class DSSMSScheduler:
         self.is_running = False
         self.current_monitoring_symbol: Optional[str] = None
         self.scheduler_thread: Optional[threading.Thread] = None
+        self.positions_lock = threading.RLock()
         
         # ポジション管理
         self.positions_file = Path(__file__).parent.parent.parent / "logs" / "dssms" / "positions.json"
         self.max_positions = 3
         self._load_positions()
+        self._startup_safety_check()
         
         # スケジュール設定
         self._setup_schedule()
@@ -224,7 +226,100 @@ class DSSMSScheduler:
         except Exception as e:
             self.logger.error(f"ポジション情報読み込みエラー: {e}")
             self.positions = {}
-    
+
+    def _startup_safety_check(self) -> None:
+        """
+        スケジューラー起動時の安全確認。
+        「本日morning実行済み（session_guard記録あり）なのに
+        self.positionsが空」という矛盾を検出して警告する。
+        """
+        if self.positions:
+            # ポジションが存在する場合は正常
+            self.logger.info(
+                f"[STARTUP_CHECK] positions読み込み完了: {len(self.positions)}件 "
+                f"({list(self.positions.keys())})"
+            )
+            return
+
+        # self.positions が空の場合、session_guard を確認
+        morning_executed = self._already_executed_today("morning")
+        afternoon_executed = self._already_executed_today("afternoon")
+
+        if morning_executed or afternoon_executed:
+            executed_sessions = []
+            if morning_executed:
+                executed_sessions.append("morning")
+            if afternoon_executed:
+                executed_sessions.append("afternoon")
+
+            self.logger.warning(
+                f"[STARTUP_CHECK] 警告: 本日 {executed_sessions} の screening 実行済み記録が"
+                f"ありますが、positions.json が空です。"
+                f"ポジションが消失している可能性があります。"
+                f"positions.json を確認してください: {self.positions_file}"
+            )
+        else:
+            # session_guard も空 → 正常な初回起動
+            self.logger.info("[STARTUP_CHECK] 初回起動または前日以前のセッション。positions空は正常です。")
+
+    def run_manual_screening(self, session: str = "morning") -> None:
+        """
+        手動screening実行用の安全ラッパー。
+        実行前にpositions状態・残高・session_guard状態を表示して確認を求める。
+
+        使用方法（前場）:
+            .\.venv-3\Scripts\python.exe -c "
+              from src.dssms.dssms_scheduler import DSSMSScheduler
+              s = DSSMSScheduler()
+              s.run_manual_screening('morning')
+            "
+
+        使用方法（後場）:
+            .\.venv-3\Scripts\python.exe -c "
+              from src.dssms.dssms_scheduler import DSSMSScheduler
+              s = DSSMSScheduler()
+              s.run_manual_screening('afternoon')
+            "
+        """
+        import json
+
+        if session not in ("morning", "afternoon"):
+            print(f"[エラー] 不明なsession: '{session}'。morning または afternoon を指定してください。")
+            return
+
+        # 現在の状態を表示
+        print("=" * 60)
+        print(f"[手動screening実行前確認]  session: {session}")
+        print("-" * 60)
+        print("【現在のpositions】")
+        if self.positions:
+            print(json.dumps(self.positions, ensure_ascii=False, indent=2))
+        else:
+            print("  {} (空) ← ポジションなしと判断されます")
+        print(f"【paper_balance】{self.paper_balance.balance:,.0f}円")
+
+        # session_guard の状態を表示
+        already = self._already_executed_today(session)
+        print(f"【session_guard】本日の {session} 実行済み: {already}")
+        if already:
+            print(f"  [WARNING] 本日すでに {session} screeningを実行済みです。")
+            print("           重複BUYが発生する可能性があります。")
+        print("=" * 60)
+
+        # 確認プロンプト
+        ans = input(f"この状態で {session} screeningを実行しますか？ (yes/no): ").strip().lower()
+        if ans != "yes":
+            print("キャンセルしました。")
+            return
+
+        # 実行
+        if session == "morning":
+            self.run_morning_screening(force=True)
+        else:
+            self.run_afternoon_screening(force=True)
+
+        print(f"[run_manual_screening] {session} screening 完了。")
+
     def _save_positions(self) -> None:
         """positions.jsonにポジション情報を保存"""
         try:
@@ -518,16 +613,17 @@ class DSSMSScheduler:
                 f"(既存entry_price={self.positions[symbol].get('entry_price', 'N/A')}円)"
             )
             return
-        self.positions[symbol] = {
-            "symbol": symbol,
-            "entry_time": datetime.now().isoformat(),
-            "entry_price": entry_price,
-            "entry_idx": entry_idx,
-            "strategy": strategy,
-            "quantity": quantity,
-            "status": "open"
-        }
-        self._save_positions()
+        with self.positions_lock:
+            self.positions[symbol] = {
+                "symbol": symbol,
+                "entry_time": datetime.now().isoformat(),
+                "entry_price": entry_price,
+                "entry_idx": entry_idx,
+                "strategy": strategy,
+                "quantity": quantity,
+                "status": "open"
+            }
+            self._save_positions()
         self.logger.info(
             f"ポジション追加: {symbol} (戦略={strategy}, entry_price={entry_price:.2f}円, "
             f"quantity={quantity}株, {len(self.positions)}/{self.max_positions})"
@@ -673,9 +769,9 @@ class DSSMSScheduler:
         if symbol in self.positions:
             del self.positions[symbol]
             self._save_positions()
-            self.logger.info(f"ポジション削除: {symbol} ({len(self.positions)}/{self.max_positions})")
-        else:
-            self.logger.warning(f"ポジション削除失敗: {symbol} が存在しません")
+            count = len(self.positions)
+            max_pos = self.config.get('max_positions', 3)
+            self.logger.info(f"ポジション削除: {symbol} ({count}/{max_pos})")
     
     def _is_position_full(self) -> bool:
         """ポジションが満枠かどうか"""
@@ -1521,13 +1617,14 @@ class DSSMSScheduler:
             if not self.market_time_manager.is_market_open():
                 return
             
+            symbols_to_check = list(self.positions.keys())
             self.logger.info(
-                f"[EMERGENCY_CHECK] 監視銘柄数: {len(self.positions)}, "
-                f"銘柄: {list(self.positions.keys())}"
+                f"[EMERGENCY_CHECK] 監視銘柄数: {len(symbols_to_check)}, "
+                f"銘柄: {symbols_to_check}"
             )
 
-            # 全保有銘柄をループ（list()でスナップショット取得）
-            for symbol in list(self.positions.keys()):
+            # 監視対象は positions.json 由来の現在保有ポジションのみとする
+            for symbol in symbols_to_check:
                 # ループ中に削除済みの銘柄はSLチェック対象外
                 if symbol not in self.positions:
                     self.logger.info(

@@ -7208,5 +7208,5858 @@
       "nikkei225_trend": "up",
       "volatility_level": "normal"
     }
+  },
+  {
+    "timestamp": "2026-04-16T05:38:31.160485",
+    "event_type": "emergency_check",
+    "symbol": "6981",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T05:38:31.184171",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T05:38:31.202021",
+    "event_type": "emergency_check",
+    "symbol": "7203",
+    "is_emergency": true,
+    "emergency_level": 1,
+    "recommended_action": "immediate_exit",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T05:38:31.204175",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T05:38:31.287825",
+    "event_type": "emergency_check",
+    "symbol": "9984",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T05:38:31.289892",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T05:38:31.314809",
+    "event_type": "emergency_check",
+    "symbol": "6758",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T05:38:31.317151",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T05:38:31.434665",
+    "event_type": "sell",
+    "symbol": "7203",
+    "sell_price": 700.0,
+    "entry_price": 1000.0,
+    "quantity": 100,
+    "profit_loss": -30000.0,
+    "profit_loss_pct": -30.0,
+    "reason": "GCStrategy: Exit signal detected on 2026-04-16 (reason: stop_loss)",
+    "market_conditions": {
+      "timestamp": "2026-04-16T05:38:31.455123",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T06:11:31.361772",
+    "event_type": "emergency_check",
+    "symbol": "7203",
+    "is_emergency": true,
+    "emergency_level": 1,
+    "recommended_action": "immediate_exit",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T06:11:31.384566",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T06:11:31.471447",
+    "event_type": "emergency_check",
+    "symbol": "9984",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T06:11:31.473569",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T06:11:31.498410",
+    "event_type": "emergency_check",
+    "symbol": "6758",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T06:11:31.500599",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T06:11:31.626554",
+    "event_type": "sell",
+    "symbol": "7203",
+    "sell_price": 700.0,
+    "entry_price": 1000.0,
+    "quantity": 100,
+    "profit_loss": -30000.0,
+    "profit_loss_pct": -30.0,
+    "reason": "GCStrategy: Exit signal detected on 2026-04-16 (reason: stop_loss)",
+    "market_conditions": {
+      "timestamp": "2026-04-16T06:11:31.651428",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:34:14.715480",
+    "event_type": "buy",
+    "symbol": "6963",
+    "price": 3710.0,
+    "quantity": 200,
+    "strategy": "GCStrategy",
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:34:14.841310",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:34:20.013549",
+    "event_type": "monitoring",
+    "symbol": "6963",
+    "event_details": {
+      "event_type": "monitoring_start",
+      "symbol": "6963",
+      "start_time": "2026-04-16T09:34:20.013529"
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:34:20.020272",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:34:20.057024",
+    "event_type": "screening",
+    "session_type": "morning",
+    "execution_status": "success",
+    "selected_symbol": "6963",
+    "candidate_count": 20,
+    "screening_duration_seconds": 247.530064,
+    "priority_distribution": {
+      "level1": 1,
+      "level2": 2,
+      "level3": 2
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:34:20.059278",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:34:22.805974",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:34:22.810220",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:35:22.866845",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:35:22.875811",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:36:22.961256",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:36:22.963462",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:37:23.023877",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:37:23.027597",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:38:23.089562",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:38:23.101543",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:39:53.166737",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:39:53.323804",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:40:53.386975",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:40:53.388800",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:41:53.444701",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:41:53.453340",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:42:53.542659",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:42:53.550647",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:43:53.651197",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:43:53.655955",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:44:53.729379",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:44:53.893006",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:45:53.960815",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:45:53.963007",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:46:54.005845",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:46:54.015525",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:47:54.103430",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:47:54.106756",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:48:54.148381",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:48:54.153275",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:49:54.232351",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:49:54.397925",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:50:54.463056",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:50:54.471241",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:51:54.539210",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:51:54.548455",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:52:54.632241",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:52:54.636968",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:53:54.721187",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:53:54.730087",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:54:54.833763",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:54:54.999909",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:55:55.073602",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:55:55.082055",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:56:55.176849",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:56:55.180349",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:57:55.285112",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:57:55.293730",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:58:55.395656",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:58:55.402434",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T09:59:55.483791",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T09:59:55.646812",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:00:55.708943",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:00:55.718423",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:01:55.825553",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:01:55.834488",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:02:55.940810",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:02:55.944115",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:03:56.003064",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:03:56.011489",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:04:56.102425",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:04:56.261060",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:05:56.314577",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:05:56.318701",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:06:56.384887",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:06:56.394279",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:07:56.455395",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:07:56.462335",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:08:56.552229",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:08:56.557261",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:09:56.625718",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:09:56.794127",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:10:56.855552",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:10:56.862794",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:11:56.951142",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:11:56.960065",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:12:57.055211",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:12:57.064683",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:13:57.155991",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:13:57.166774",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:14:57.248710",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:14:57.408474",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:15:57.454164",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:15:57.459102",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:16:57.513894",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:16:57.518540",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:17:57.584788",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:17:57.589036",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:18:57.684275",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:18:57.692788",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:19:57.767556",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:19:57.911800",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:20:57.959186",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:20:57.961261",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:21:58.022446",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:21:58.031168",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:22:58.132650",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:22:58.138993",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:23:58.202774",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:23:58.204912",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:24:58.270775",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:24:58.454118",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:25:58.512773",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:25:58.516145",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:26:58.578150",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:26:58.580129",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:27:58.659088",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:27:58.667286",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:28:58.771821",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:28:58.781250",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:29:58.866163",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:29:59.007100",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:30:59.062849",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:30:59.067083",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:31:59.154449",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:31:59.163142",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:32:59.262860",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:32:59.271281",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:33:59.367761",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:33:59.376939",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:34:59.455058",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:34:59.607545",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:35:59.657227",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:35:59.660348",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:36:59.718522",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:36:59.727922",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:37:59.827689",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:37:59.833009",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:38:59.877567",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:38:59.880661",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:39:59.934194",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:40:00.086677",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:41:00.130441",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:41:00.136772",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:42:00.212099",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:42:00.217094",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:43:00.291175",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:43:00.296047",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:44:00.339963",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:44:00.344410",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:45:00.428480",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:45:00.628858",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:46:00.692279",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:46:00.700901",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:47:00.796826",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:47:00.800013",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:48:00.859458",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:48:00.868288",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:49:00.974991",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:49:00.983320",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:50:01.081497",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:50:01.257053",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:51:01.314440",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:51:01.317691",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:52:01.407891",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:52:01.416997",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:53:01.524160",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:53:01.532677",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:54:01.612241",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:54:01.619691",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:55:01.711690",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:55:01.880774",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:56:01.957762",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:56:01.966616",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:57:02.061963",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:57:02.066417",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:58:02.150045",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:58:02.155500",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T10:59:02.228702",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T10:59:02.232167",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:00:02.298722",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:00:02.459307",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:01:02.516307",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:01:02.524986",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:02:02.591346",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:02:02.593318",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:03:02.636829",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:03:02.644831",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:04:02.720692",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:04:02.725785",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:05:02.819007",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:05:02.993229",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:06:03.071253",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:06:03.075413",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:07:03.165708",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:07:03.168769",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:08:03.230758",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:08:03.239595",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:09:03.333517",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:09:03.342248",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:10:03.455551",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:10:03.627282",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:11:03.688792",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:11:03.692270",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:12:03.746881",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:12:03.748807",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:13:03.813589",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:13:03.823057",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:14:03.926009",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:14:03.934809",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:15:04.018788",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:15:04.182822",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:16:04.262114",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:16:04.270613",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:17:04.383103",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:17:04.386577",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:18:04.461827",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:18:04.470364",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:19:04.558290",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:19:04.563160",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:20:04.628559",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:20:04.799422",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:21:04.847606",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:21:04.850111",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:22:04.914044",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:22:04.922557",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:23:05.022918",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:23:05.031567",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:24:05.137528",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:24:05.146459",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:25:05.246661",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:25:05.396771",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:26:05.445071",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:26:05.455450",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:27:05.547100",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:27:05.556392",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:28:05.646648",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:28:05.651369",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T11:29:05.708759",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T11:29:05.717637",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:30:27.775491",
+    "event_type": "monitoring",
+    "symbol": "6963",
+    "event_details": {
+      "event_type": "monitoring_start",
+      "symbol": "6963",
+      "start_time": "2026-04-16T12:30:27.775483"
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:30:27.912791",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:30:27.985011",
+    "event_type": "screening",
+    "session_type": "afternoon",
+    "execution_status": "success",
+    "selected_symbol": "6963",
+    "candidate_count": 20,
+    "screening_duration_seconds": 22.168573,
+    "priority_distribution": {
+      "level1": 1,
+      "level2": 2,
+      "level3": 2
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:30:27.987139",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:30:30.399114",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:30:30.401159",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:31:30.447754",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:31:30.449810",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:32:30.508141",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:32:30.512623",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:33:30.582545",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:33:30.584783",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:34:30.655187",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:34:30.662848",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:35:30.765406",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:35:30.919193",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:36:30.985218",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:36:30.989050",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:37:31.060603",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:37:31.068994",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:38:31.190762",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:38:31.200136",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:39:31.291197",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:39:31.300989",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:40:31.381088",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:40:31.553656",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:41:31.618055",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:41:31.620915",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:42:31.683719",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:42:31.692008",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:43:31.779272",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:43:31.785341",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:44:31.873159",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:44:31.881520",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:45:31.952075",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:45:32.104437",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:46:32.176739",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:46:32.185383",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:47:32.285527",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:47:32.288750",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:48:32.368276",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:48:32.377369",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:49:32.480022",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:49:32.488904",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:50:32.599299",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:50:32.781687",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:51:32.846760",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:51:32.855395",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:52:32.951352",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:52:32.959690",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:53:33.050673",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:53:33.056171",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:54:33.136067",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:54:33.138173",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:55:33.190723",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:55:33.370323",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:56:33.438910",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:56:33.442301",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:57:33.514654",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:57:33.523345",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:58:33.615986",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:58:33.620228",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T12:59:33.693457",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T12:59:33.698845",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:00:33.798223",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:00:33.963139",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:01:34.011632",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:01:34.016915",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:02:34.089300",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:02:34.096733",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:03:34.157761",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:03:34.167301",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:04:34.268690",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:04:34.277498",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:05:34.371162",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:05:34.543130",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:06:34.612993",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:06:34.622459",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:07:34.706547",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:07:34.716005",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:08:34.827519",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:08:34.835396",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:09:34.933234",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:09:34.941725",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:10:35.033571",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:10:35.196960",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:11:35.256820",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:11:35.265690",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:12:35.369248",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:12:35.377698",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:13:35.487680",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:13:35.492257",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:14:35.566703",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:14:35.575596",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:15:35.666829",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:15:35.837841",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:16:35.900384",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:16:35.909459",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:17:35.991929",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:17:35.999498",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:18:36.061495",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:18:36.065777",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:19:36.167702",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:19:36.177081",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:20:36.268202",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:20:36.433046",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:21:36.507811",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:21:36.516658",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:22:36.623590",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:22:36.629004",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:23:36.717965",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:23:36.727132",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:24:36.836541",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:24:36.840168",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:25:36.923049",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:25:37.079517",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:26:37.179115",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:26:37.187650",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:27:37.283419",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:27:37.292634",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:28:37.376635",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:28:37.385443",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:29:37.501188",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:29:37.510321",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:30:37.615264",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:30:37.778746",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:31:37.865968",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:31:37.874483",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:32:37.980423",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:32:37.984023",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:33:38.063225",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:33:38.067981",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:34:38.148841",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:34:38.157455",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:35:38.245597",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:35:38.432967",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:36:38.503930",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:36:38.512460",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:37:38.620154",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:37:38.628425",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:38:38.746016",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:38:38.754554",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:39:38.837896",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:39:38.847275",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:40:38.952422",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:40:39.133953",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:41:39.207821",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:41:39.216362",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:42:39.329860",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:42:39.338986",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:43:39.420885",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:43:39.427088",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:44:39.526718",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:44:39.535712",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:45:39.640199",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:45:39.802683",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:46:39.866899",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:46:39.875412",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:47:39.959139",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:47:39.965737",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:48:40.058807",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:48:40.067301",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:49:40.184145",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:49:40.192977",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:50:40.274165",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:50:40.450614",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:51:40.517184",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:51:40.521650",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:52:40.609514",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:52:40.618503",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:53:40.724562",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:53:40.733125",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:54:40.829571",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:54:40.831804",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:55:40.915445",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:55:41.090800",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:56:41.162201",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:56:41.171007",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:57:41.267674",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:57:41.276707",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:58:41.380835",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:58:41.389786",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T13:59:41.466341",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T13:59:41.475488",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:00:41.588749",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:00:41.768437",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:01:41.842755",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:01:41.846982",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:02:41.939781",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:02:41.944376",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:03:42.024866",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:03:42.034026",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:04:42.144300",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:04:42.153419",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:05:42.238746",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:05:42.530104",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:06:42.610235",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:06:42.618636",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:07:42.714605",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:07:42.723597",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:08:42.799604",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:08:42.804315",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:09:42.896023",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:09:42.905073",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:10:43.009792",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:10:43.201937",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:11:43.280912",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:11:43.289600",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:12:43.404873",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:12:43.408384",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:13:43.469823",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:13:43.473169",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:14:43.580542",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:14:43.589454",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:15:43.671997",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:15:43.826078",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:16:43.893408",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:16:43.901964",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:17:44.012734",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:17:44.014701",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:18:44.072190",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:18:44.081696",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:19:44.171531",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:19:44.174381",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:20:44.239019",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:20:44.417512",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:21:44.510346",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:21:44.523908",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:22:44.618143",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:22:44.621602",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:23:44.695627",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:23:44.704090",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:24:44.812492",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:24:44.820871",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:25:44.927351",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:25:45.094629",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:26:45.179847",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:26:45.193333",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:27:45.274485",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:27:45.283043",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:28:45.398155",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:28:45.406777",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:29:45.503407",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:29:45.508926",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:30:45.595326",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:30:45.758792",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:31:45.836911",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:31:45.846181",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:32:45.930960",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:32:45.934670",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:33:46.007644",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:33:46.009738",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:34:46.109975",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:34:46.119830",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:35:46.202372",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:35:46.389906",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:36:46.470026",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:36:46.479250",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:37:46.583333",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:37:46.585478",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:38:46.649474",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:38:46.656295",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:39:46.762037",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:39:46.770578",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:40:46.873742",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:40:47.049200",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:41:47.133819",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:41:47.143115",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:42:47.245873",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:42:47.249345",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:43:47.319721",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:43:47.321727",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:44:47.380918",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:44:47.389517",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:45:47.503093",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:45:47.706302",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:46:47.771673",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:46:47.780623",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:47:47.893536",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:47:47.898584",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:48:47.981500",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:48:47.990018",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:49:48.113262",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:49:48.117239",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:50:48.205455",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:50:48.386729",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:51:48.455657",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:51:48.457702",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:52:48.504331",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:52:48.507105",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:53:48.575778",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:53:48.584616",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:54:48.689992",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:54:48.698656",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:55:48.784195",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:55:48.917861",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:56:48.979734",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:56:48.981691",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:57:49.045540",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:57:49.047860",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:58:49.120405",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:58:49.128558",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T14:59:49.233903",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T14:59:49.242517",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T22:49:13.928984",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T22:49:13.956853",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T22:49:13.984796",
+    "event_type": "emergency_check",
+    "symbol": "7203",
+    "is_emergency": true,
+    "emergency_level": 1,
+    "recommended_action": "immediate_exit",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T22:49:13.987118",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T22:49:15.189543",
+    "event_type": "emergency_check",
+    "symbol": "9984",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T22:49:15.191581",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T22:49:15.218977",
+    "event_type": "emergency_check",
+    "symbol": "6758",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T22:49:15.221160",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T22:49:15.347339",
+    "event_type": "sell",
+    "symbol": "7203",
+    "sell_price": 700.0,
+    "entry_price": 1000.0,
+    "quantity": 100,
+    "profit_loss": -30000.0,
+    "profit_loss_pct": -30.0,
+    "reason": "GCStrategy: Exit signal detected on 2026-04-16 (reason: stop_loss)",
+    "market_conditions": {
+      "timestamp": "2026-04-16T22:49:15.371378",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T23:08:05.285115",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T23:08:05.312503",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-16T23:08:05.344531",
+    "event_type": "emergency_check",
+    "symbol": "7203",
+    "is_emergency": true,
+    "emergency_level": 1,
+    "recommended_action": "immediate_exit",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-16T23:08:05.346770",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:00:35.689683",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:00:35.819233",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:01:36.049471",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:01:36.058324",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:02:36.344878",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:02:36.349195",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:03:36.560173",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:03:36.564104",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:04:36.757598",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:04:36.759585",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:05:36.932970",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:05:37.051508",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:06:37.242229",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:06:37.248188",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:07:37.488247",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:07:37.494128",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:08:37.705541",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:08:37.709743",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:09:37.917443",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:09:37.919366",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:10:38.101314",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:10:38.213759",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:11:38.413507",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:11:38.415292",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:12:38.591130",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:12:38.594020",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:13:38.815865",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:13:38.826151",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:14:39.045130",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:14:39.047047",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:15:39.227858",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:15:39.344395",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:16:39.549388",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:16:39.552997",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:17:39.759131",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:17:39.762457",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:18:39.983536",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:18:39.986821",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:19:40.201993",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:19:40.204003",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:20:40.409797",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:20:40.544291",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:21:40.755606",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:21:40.759305",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:22:40.996704",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:22:40.999944",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:23:41.223654",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:23:41.227848",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:24:41.422256",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:24:41.426245",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:25:41.644949",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:25:41.774030",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:26:41.968120",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:26:41.970094",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:27:42.177802",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:27:42.182640",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:28:42.395133",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:28:42.400930",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:29:42.664080",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:29:42.666198",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:34:20.478063",
+    "event_type": "monitoring",
+    "symbol": "6981",
+    "event_details": {
+      "event_type": "monitoring_start",
+      "symbol": "6981",
+      "start_time": "2026-04-17T09:34:20.478022"
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:34:20.681634",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:34:20.722253",
+    "event_type": "screening",
+    "session_type": "morning",
+    "execution_status": "success",
+    "selected_symbol": "6981",
+    "candidate_count": 20,
+    "screening_duration_seconds": 248.016499,
+    "priority_distribution": {
+      "level1": 1,
+      "level2": 2,
+      "level3": 2
+    },
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:34:20.724943",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:34:53.148280",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:34:53.154236",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:35:53.385062",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:35:53.389603",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:36:53.611465",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:36:53.615177",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:37:53.858645",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:37:53.864854",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:38:54.095202",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:38:54.100365",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:39:54.334025",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:39:54.452450",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:40:54.651190",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:40:54.653382",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:41:54.874651",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:41:54.881733",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:42:55.097368",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:42:55.099833",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:43:55.292832",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:43:55.294844",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:44:55.485139",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:44:55.609273",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:45:55.814780",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:45:55.816708",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:46:56.030440",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:46:56.038420",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:47:56.254113",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:47:56.262583",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:48:56.540114",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:48:56.549036",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:49:56.763936",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:49:57.031008",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:50:57.266457",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:50:57.271716",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:51:57.511370",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:51:57.518850",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:52:57.726488",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:52:57.730707",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:53:57.931582",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:53:57.939706",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:54:58.153694",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:54:58.270854",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:55:58.500665",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:55:58.502774",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:56:58.711994",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:56:58.720020",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:57:58.919728",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:57:58.923054",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:58:59.122895",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:58:59.126353",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T09:59:59.339288",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T09:59:59.461409",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T10:00:59.720015",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T10:00:59.725423",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T10:01:59.981891",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T10:01:59.985660",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T10:03:00.218842",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T10:03:00.222825",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T10:04:00.486178",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T10:04:00.494237",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T10:05:00.711651",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T10:05:00.819683",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T10:06:01.009812",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T10:06:01.014673",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T10:07:01.238591",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T10:07:01.245712",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T11:16:53.392509",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T11:16:53.908898",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T11:17:53.987464",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T11:17:53.997845",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T11:18:54.112748",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T11:18:54.122039",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T11:19:54.220693",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T11:19:54.228941",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T11:20:54.346832",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T11:20:54.357069",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T11:21:54.455368",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T11:21:54.630508",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T11:22:54.705440",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T11:22:54.708808",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T11:23:54.789935",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T11:23:54.793867",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T11:24:54.858908",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T11:24:54.869116",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T11:25:54.960399",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T11:25:54.970476",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T11:26:55.074979",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T11:26:55.226563",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T11:27:55.289023",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T11:27:55.297917",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T11:28:55.388921",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T11:28:55.393891",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
+  },
+  {
+    "timestamp": "2026-04-17T11:29:55.473777",
+    "event_type": "emergency_check",
+    "symbol": "6963",
+    "is_emergency": false,
+    "emergency_level": 0,
+    "recommended_action": "hold",
+    "trigger_conditions": [],
+    "emergency_score": 0,
+    "market_conditions": {
+      "timestamp": "2026-04-17T11:29:55.485774",
+      "market_open": true,
+      "nikkei225_trend": "up",
+      "volatility_level": "normal"
+    }
   }
 ]
