@@ -9,13 +9,13 @@
   "last_updated": "2025-11-12T11:15:45.858560",
   "trend_adaptability": {
     "uptrend": {
-      "suitability_score": 0.85,
+      "suitability_score": 0.60,
       "confidence_level": "high",
       "performance_metrics": {
-        "sharpe_ratio": 1.45,
+        "sharpe_ratio": 0.50,
         "max_drawdown": 0.12,
-        "win_rate": 0.58,
-        "expectancy": 0.02,
+        "win_rate": 0.43,
+        "expectancy": 0.004,
         "avg_return": 0.08,
         "volatility": 0.15,
         "calmar_ratio": 1.5,
@@ -25,18 +25,18 @@
       "data_period": "2023-01-01_to_2024-12-31",
       "reliability": "high",
       "risk_characteristics": {
-        "max_consecutive_losses": 4,
-        "avg_holding_period": 12.0,
-        "profit_factor": 1.85
+        "max_consecutive_losses": 7,
+        "avg_holding_period": 8.5,
+        "profit_factor": 1.24
       }
     },
     "downtrend": {
-      "suitability_score": 0.32,
+      "suitability_score": 0.25,
       "confidence_level": "low",
       "performance_metrics": {
-        "sharpe_ratio": -0.25,
+        "sharpe_ratio": -0.30,
         "max_drawdown": 0.25,
-        "win_rate": 0.38,
+        "win_rate": 0.35,
         "expectancy": -0.012,
         "avg_return": -0.02,
         "volatility": 0.22,
@@ -49,16 +49,16 @@
       "risk_characteristics": {
         "max_consecutive_losses": 6,
         "avg_holding_period": 8.0,
-        "profit_factor": 0.7
+        "profit_factor": 0.78
       }
     },
     "range-bound": {
-      "suitability_score": 0.48,
+      "suitability_score": 0.40,
       "confidence_level": "low",
       "performance_metrics": {
-        "sharpe_ratio": 0.75,
+        "sharpe_ratio": 0.30,
         "max_drawdown": 0.08,
-        "win_rate": 0.5,
+        "win_rate": 0.40,
         "expectancy": 0.008,
         "avg_return": 0.03,
         "volatility": 0.12,
@@ -71,7 +71,7 @@
       "risk_characteristics": {
         "max_consecutive_losses": 5,
         "avg_holding_period": 10.0,
-        "profit_factor": 1.25
+        "profit_factor": 0.90
       }
     }
   },
