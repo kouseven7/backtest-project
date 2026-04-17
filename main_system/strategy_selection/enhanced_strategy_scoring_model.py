@@ -87,8 +87,8 @@ logger = logging.getLogger(__name__)
 @dataclass
 class EnhancedScoreWeights(ScoreWeights):
     """強化されたスコア重み（統一トレンド判定対応）"""
-    trend_accuracy: float = 0.15  # トレンド判定精度の重み
-    market_adaptation: float = 0.15  # 市場適応性の重み
+    trend_accuracy: float = 0.10  # トレンド判定精度の重み
+    market_adaptation: float = 0.05  # 市場適応性の重み
     
     def __post_init__(self):
         """重みの正規化"""
