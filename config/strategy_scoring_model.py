@@ -503,10 +503,10 @@ class StrategyScoreCalculator:
                 trend_data = metadata.get('trend_adaptability', {})
                 
                 # 市場レジームに応じたデータ選択ロジック (Step 5追加)
-                current_regime = 'range-bound'  # デフォルト（中立）
+                current_regime = 'uptrend'  # デフォルト
                 
                 if market_analysis:
-                    regime_str = market_analysis.get('market_regime', 'range-bound')
+                    regime_str = market_analysis.get('market_regime', 'uptrend')
                     
                     if isinstance(regime_str, str):
                         regime_lower = regime_str.lower()
@@ -531,9 +531,9 @@ class StrategyScoreCalculator:
                 if not regime_data:
                     logger.warning(
                         f"[REGIME_ADAPTIVE] No {current_regime} data for {strategy_name}, "
-                        f"falling back to range-bound"
+                        f"falling back to uptrend"
                     )
-                    regime_data = trend_data.get('range-bound', {})
+                    regime_data = trend_data.get('uptrend', {})
                 
                 # DEBUG: 抽出元データをログ出力
                 logger.debug(f"[METADATA_DEBUG] schema_version={schema_version}, regime_data keys={list(regime_data.keys())}")
@@ -567,8 +567,8 @@ class StrategyScoreCalculator:
                 
                 performance_metrics = {
                     'total_return': total_return,
-                    'win_rate': perf.get('win_rate', 0.5),
-                    'profit_factor': perf.get('profit_factor', 1.0),
+                    'win_rate': perf.get('win_rate', 0.6),
+                    'profit_factor': perf.get('profit_factor', 1.5),
                     'volatility': perf.get('volatility', 0.15),
                     'max_drawdown': perf.get('max_drawdown', -0.1),
                     'sharpe_ratio': perf.get('sharpe_ratio', 1.0)
