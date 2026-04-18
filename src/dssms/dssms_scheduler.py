@@ -147,6 +147,8 @@ class DSSMSScheduler:
             'dssms.scheduler',
             log_file=str(log_filename)
         )
+
+        self.config = {}
         
         # スケジューリング制御
         self.market_time_manager = MarketTimeManager(config_path)
@@ -218,7 +220,39 @@ class DSSMSScheduler:
         try:
             if self.positions_file.exists():
                 with open(self.positions_file, 'r', encoding='utf-8') as f:
-                    self.positions = json.load(f)
+                    raw = json.load(f)
+
+                # --- ゴーストガード ---
+                valid = {}
+                ghost_found = False
+                for sym, pos in raw.items():
+                    entry_time = str(pos.get("entry_time", ""))
+                    status = pos.get("status")  # 正規ポジションは必ず "open"
+
+                    is_ghost = (
+                        entry_time.startswith("2026-04-01")  # 固定日付（テストデータの特徴）
+                        or status is None                     # statusフィールドなし
+                    )
+                    if is_ghost:
+                        self.logger.error(
+                            f"[GHOST_BLOCKED] {sym}: entry_time={entry_time}, "
+                            f"status={status} -> ロードをブロック"
+                        )
+                        ghost_found = True
+                    else:
+                        valid[sym] = pos
+
+                self.positions = valid
+
+                # ゴーストが混入していた場合はファイルも即時クリーン化
+                # EmergencyDetector が次に読んだ時点でゴーストなしになる
+                if ghost_found:
+                    self._save_positions()
+                    self.logger.error(
+                        "[GHOST_PURGED] positions.json からゴーストを除去して上書き保存しました"
+                    )
+                # --- ゴーストガード終わり ---
+
                 self.logger.info(f"ポジション情報読み込み: {len(self.positions)}件")
             else:
                 self.positions = {}
@@ -770,7 +804,7 @@ class DSSMSScheduler:
             del self.positions[symbol]
             self._save_positions()
             count = len(self.positions)
-            max_pos = self.config.get('max_positions', 3)
+            max_pos = self.max_positions
             self.logger.info(f"ポジション削除: {symbol} ({count}/{max_pos})")
     
     def _is_position_full(self) -> bool:
@@ -944,6 +978,10 @@ class DSSMSScheduler:
     def _setup_schedule(self):
         """スケジュール設定"""
         try:
+            # 前回インスタンスのジョブ蓄積を防ぐためクリア
+            schedule.clear()
+            self.logger.info("[SCHEDULE_CLEAR] グローバルscheduleをクリアしました")
+
             # 前場スクリーニング (09:30)
             schedule.every().monday.at("09:30").do(self._run_morning_screening_job)
             schedule.every().tuesday.at("09:30").do(self._run_morning_screening_job)
@@ -1608,6 +1646,9 @@ class DSSMSScheduler:
     def handle_emergency_switch_check(self) -> None:
         """パーフェクトオーダー崩れ時の緊急判定処理"""
         try:
+            # 最新のpositions.jsonを再読み込み（ゴーストガード込み）
+            self._load_positions()
+
             # 保有ポジションがない場合はスキップ
             if not self.positions:
                 self.logger.debug("[EMERGENCY_CHECK] 保有ポジションなし、スキップ")
@@ -1735,7 +1776,7 @@ class DSSMSScheduler:
                     candidates = []
             else:
                 # フォールバック候補
-                candidates = ["6758", "9433", "9984", "5401", "6645"]
+                candidates = []
                 result["candidate_count"] = len(candidates)
             
             # 階層的ランキング
@@ -1766,6 +1807,12 @@ class DSSMSScheduler:
     
     def _execute_emergency_switch(self, symbol: str, emergency_result: Dict[str, Any]) -> None:
         """緊急切替実行"""
+        # DISABLED: ペーパートレード段階では緊急切替を無効化
+        # SL発動後の新銘柄BUYがゴーストポジション問題を引き起こすため
+        # 次回スクリーニングサイクルで新銘柄を選択する運用とする
+        self.logger.info(f"[EMERGENCY_SWITCH_DISABLED] {symbol}: 緊急切替は無効化中")
+        return
+
         try:
             self.logger.warning(f"緊急切替実行: {symbol}")
             
@@ -1773,7 +1820,7 @@ class DSSMSScheduler:
             if self.intelligent_switch:
                 try:
                     # 切替候補取得
-                    backup_candidates = self.hierarchical_ranking.get_backup_candidates(n=3) if self.hierarchical_ranking else ["6758", "9433", "9984"]
+                    backup_candidates = self.hierarchical_ranking.get_backup_candidates(n=3) if self.hierarchical_ranking else []
                     
                     if backup_candidates:
                         target_symbol = backup_candidates[0]
