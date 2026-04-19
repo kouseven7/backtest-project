@@ -366,9 +366,7 @@ class DynamicStrategySelector:
                 selected = [s[0] for s in sorted_strategies[:2] if s[1] >= self.min_confidence_threshold]
             elif 'sideways' in market_regime.lower() or 'volatile' in market_regime.lower():
                 # レンジ・高ボラ: トップ3戦略（分散）
-                # Sprint 3B: sidewaysではGCStrategyを除外（10年中8年赤字・構造的損失源）
-                non_gc_sorted = [(s, sc) for s, sc in sorted_strategies if s != 'GCStrategy']
-                selected = [s[0] for s in non_gc_sorted[:3] if s[1] >= self.min_confidence_threshold]
+                selected = [s[0] for s in sorted_strategies[:3] if s[1] >= self.min_confidence_threshold]
             else:
                 # 通常トレンド: トップ2-3戦略
                 selected = [s[0] for s in sorted_strategies[:2] if s[1] >= self.min_confidence_threshold]
