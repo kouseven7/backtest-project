@@ -390,9 +390,22 @@ class ExecutionHistory:
                 else:
                     removed_count += 1
             
-            # ファイルに保存
-            with open(self.history_file, 'w', encoding='utf-8') as f:
-                json.dump(recent_records, f, ensure_ascii=False, indent=2)
+            # ファイルに保存（アトミック書き込み）
+            temp_fd, temp_path = tempfile.mkstemp(
+                dir=str(self.history_file.parent),
+                suffix='.tmp',
+                prefix='execution_history_cleanup_'
+            )
+            try:
+                with os.fdopen(temp_fd, 'w', encoding='utf-8') as f:
+                    json.dump(recent_records, f, ensure_ascii=False, indent=2)
+                if self.history_file.exists():
+                    self.history_file.unlink()
+                shutil.move(temp_path, str(self.history_file))
+            except Exception:
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
+                raise
             
             self.logger.info(f"履歴クリーンアップ完了: {removed_count}件削除, {len(recent_records)}件保持")
             return True

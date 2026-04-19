@@ -147,8 +147,6 @@ class DSSMSScheduler:
             'dssms.scheduler',
             log_file=str(log_filename)
         )
-
-        self.config = {}
         
         # スケジューリング制御
         self.market_time_manager = MarketTimeManager(config_path)
@@ -192,13 +190,11 @@ class DSSMSScheduler:
         self.is_running = False
         self.current_monitoring_symbol: Optional[str] = None
         self.scheduler_thread: Optional[threading.Thread] = None
-        self.positions_lock = threading.RLock()
         
         # ポジション管理
-        self.positions_file = Path(__file__).parent.parent.parent / "logs" / "dssms" / "positions.json"
+        self.positions_file = Path("logs/dssms/positions.json")
         self.max_positions = 3
         self._load_positions()
-        self._startup_safety_check()
         
         # スケジュール設定
         self._setup_schedule()
@@ -220,39 +216,7 @@ class DSSMSScheduler:
         try:
             if self.positions_file.exists():
                 with open(self.positions_file, 'r', encoding='utf-8') as f:
-                    raw = json.load(f)
-
-                # --- ゴーストガード ---
-                valid = {}
-                ghost_found = False
-                for sym, pos in raw.items():
-                    entry_time = str(pos.get("entry_time", ""))
-                    status = pos.get("status")  # 正規ポジションは必ず "open"
-
-                    is_ghost = (
-                        entry_time.startswith("2026-04-01")  # 固定日付（テストデータの特徴）
-                        or status is None                     # statusフィールドなし
-                    )
-                    if is_ghost:
-                        self.logger.error(
-                            f"[GHOST_BLOCKED] {sym}: entry_time={entry_time}, "
-                            f"status={status} -> ロードをブロック"
-                        )
-                        ghost_found = True
-                    else:
-                        valid[sym] = pos
-
-                self.positions = valid
-
-                # ゴーストが混入していた場合はファイルも即時クリーン化
-                # EmergencyDetector が次に読んだ時点でゴーストなしになる
-                if ghost_found:
-                    self._save_positions()
-                    self.logger.error(
-                        "[GHOST_PURGED] positions.json からゴーストを除去して上書き保存しました"
-                    )
-                # --- ゴーストガード終わり ---
-
+                    self.positions = json.load(f)
                 self.logger.info(f"ポジション情報読み込み: {len(self.positions)}件")
             else:
                 self.positions = {}
@@ -260,100 +224,7 @@ class DSSMSScheduler:
         except Exception as e:
             self.logger.error(f"ポジション情報読み込みエラー: {e}")
             self.positions = {}
-
-    def _startup_safety_check(self) -> None:
-        """
-        スケジューラー起動時の安全確認。
-        「本日morning実行済み（session_guard記録あり）なのに
-        self.positionsが空」という矛盾を検出して警告する。
-        """
-        if self.positions:
-            # ポジションが存在する場合は正常
-            self.logger.info(
-                f"[STARTUP_CHECK] positions読み込み完了: {len(self.positions)}件 "
-                f"({list(self.positions.keys())})"
-            )
-            return
-
-        # self.positions が空の場合、session_guard を確認
-        morning_executed = self._already_executed_today("morning")
-        afternoon_executed = self._already_executed_today("afternoon")
-
-        if morning_executed or afternoon_executed:
-            executed_sessions = []
-            if morning_executed:
-                executed_sessions.append("morning")
-            if afternoon_executed:
-                executed_sessions.append("afternoon")
-
-            self.logger.warning(
-                f"[STARTUP_CHECK] 警告: 本日 {executed_sessions} の screening 実行済み記録が"
-                f"ありますが、positions.json が空です。"
-                f"ポジションが消失している可能性があります。"
-                f"positions.json を確認してください: {self.positions_file}"
-            )
-        else:
-            # session_guard も空 → 正常な初回起動
-            self.logger.info("[STARTUP_CHECK] 初回起動または前日以前のセッション。positions空は正常です。")
-
-    def run_manual_screening(self, session: str = "morning") -> None:
-        """
-        手動screening実行用の安全ラッパー。
-        実行前にpositions状態・残高・session_guard状態を表示して確認を求める。
-
-        使用方法（前場）:
-            .\.venv-3\Scripts\python.exe -c "
-              from src.dssms.dssms_scheduler import DSSMSScheduler
-              s = DSSMSScheduler()
-              s.run_manual_screening('morning')
-            "
-
-        使用方法（後場）:
-            .\.venv-3\Scripts\python.exe -c "
-              from src.dssms.dssms_scheduler import DSSMSScheduler
-              s = DSSMSScheduler()
-              s.run_manual_screening('afternoon')
-            "
-        """
-        import json
-
-        if session not in ("morning", "afternoon"):
-            print(f"[エラー] 不明なsession: '{session}'。morning または afternoon を指定してください。")
-            return
-
-        # 現在の状態を表示
-        print("=" * 60)
-        print(f"[手動screening実行前確認]  session: {session}")
-        print("-" * 60)
-        print("【現在のpositions】")
-        if self.positions:
-            print(json.dumps(self.positions, ensure_ascii=False, indent=2))
-        else:
-            print("  {} (空) ← ポジションなしと判断されます")
-        print(f"【paper_balance】{self.paper_balance.balance:,.0f}円")
-
-        # session_guard の状態を表示
-        already = self._already_executed_today(session)
-        print(f"【session_guard】本日の {session} 実行済み: {already}")
-        if already:
-            print(f"  [WARNING] 本日すでに {session} screeningを実行済みです。")
-            print("           重複BUYが発生する可能性があります。")
-        print("=" * 60)
-
-        # 確認プロンプト
-        ans = input(f"この状態で {session} screeningを実行しますか？ (yes/no): ").strip().lower()
-        if ans != "yes":
-            print("キャンセルしました。")
-            return
-
-        # 実行
-        if session == "morning":
-            self.run_morning_screening(force=True)
-        else:
-            self.run_afternoon_screening(force=True)
-
-        print(f"[run_manual_screening] {session} screening 完了。")
-
+    
     def _save_positions(self) -> None:
         """positions.jsonにポジション情報を保存"""
         try:
@@ -502,9 +373,9 @@ class DSSMSScheduler:
                 )
                 return
 
-            entry_date_str = position.get('entry_date', position.get('entry_time', ''))
+            entry_date_str = position.get('entry_date', '')
             entry_price = position.get('entry_price', 0)
-            shares = position.get('quantity', position.get('shares', 0))
+            shares = position.get('shares', 0)
             strategy = position.get('strategy', '')
             exit_date_str = str(date.today())
 
@@ -647,17 +518,16 @@ class DSSMSScheduler:
                 f"(既存entry_price={self.positions[symbol].get('entry_price', 'N/A')}円)"
             )
             return
-        with self.positions_lock:
-            self.positions[symbol] = {
-                "symbol": symbol,
-                "entry_time": datetime.now().isoformat(),
-                "entry_price": entry_price,
-                "entry_idx": entry_idx,
-                "strategy": strategy,
-                "quantity": quantity,
-                "status": "open"
-            }
-            self._save_positions()
+        self.positions[symbol] = {
+            "symbol": symbol,
+            "entry_time": datetime.now().isoformat(),
+            "entry_price": entry_price,
+            "entry_idx": entry_idx,
+            "strategy": strategy,
+            "quantity": quantity,
+            "status": "open"
+        }
+        self._save_positions()
         self.logger.info(
             f"ポジション追加: {symbol} (戦略={strategy}, entry_price={entry_price:.2f}円, "
             f"quantity={quantity}株, {len(self.positions)}/{self.max_positions})"
@@ -803,9 +673,9 @@ class DSSMSScheduler:
         if symbol in self.positions:
             del self.positions[symbol]
             self._save_positions()
-            count = len(self.positions)
-            max_pos = self.max_positions
-            self.logger.info(f"ポジション削除: {symbol} ({count}/{max_pos})")
+            self.logger.info(f"ポジション削除: {symbol} ({len(self.positions)}/{self.max_positions})")
+        else:
+            self.logger.warning(f"ポジション削除失敗: {symbol} が存在しません")
     
     def _is_position_full(self) -> bool:
         """ポジションが満枠かどうか"""
@@ -883,15 +753,11 @@ class DSSMSScheduler:
                 
                 # Step 3: existing_position構築（entry_timeをentry_dateに変換）
                 try:
-                    entry_time_str = position.get('entry_date', position.get('entry_time', ''))
-                    if isinstance(entry_time_str, str) and entry_time_str:
+                    entry_time_str = position.get('entry_time', '')
+                    if isinstance(entry_time_str, str):
                         entry_date = pd.Timestamp(entry_time_str)
                     else:
-                        entry_date = pd.Timestamp(entry_time_str) if entry_time_str else pd.Timestamp('today')
-
-                    if pd.isna(entry_date):
-                        self.logger.warning(f"[EXIT_CHECK] {symbol}: entry_dateがNaT → 本日日付で代替")
-                        entry_date = pd.Timestamp('today')
+                        entry_date = pd.Timestamp(entry_time_str)
                     
                     existing_position = {
                         'symbol': symbol,
@@ -902,8 +768,7 @@ class DSSMSScheduler:
                         'force_close': False  # 通常エグジット判定
                     }
                     
-                    entry_date_str = existing_position['entry_date'].strftime('%Y-%m-%d') if not pd.isna(existing_position['entry_date']) else 'unknown'
-                    self.logger.info(f"[EXIT_CHECK] {symbol}: existing_position構築成功 (entry_price={existing_position['entry_price']}, entry_date={entry_date_str})")
+                    self.logger.info(f"[EXIT_CHECK] {symbol}: existing_position構築成功 (entry_price={existing_position['entry_price']}, entry_date={existing_position['entry_date'].strftime('%Y-%m-%d')})")
                     
                 except Exception as e:
                     self.logger.warning(f"[EXIT_CHECK] {symbol}: existing_position構築エラー → スキップ: {e}")
@@ -943,7 +808,7 @@ class DSSMSScheduler:
                                 )
 
                             # ポジション削除
-                            self._write_closed_trade(symbol, exit_price, exit_reason=exit_reason)
+                            self._write_closed_trade(symbol, exit_price, exit_reason='death_cross')
                             self._remove_position(symbol)
                             sold_symbols.append(symbol)
 
@@ -978,10 +843,6 @@ class DSSMSScheduler:
     def _setup_schedule(self):
         """スケジュール設定"""
         try:
-            # 前回インスタンスのジョブ蓄積を防ぐためクリア
-            schedule.clear()
-            self.logger.info("[SCHEDULE_CLEAR] グローバルscheduleをクリアしました")
-
             # 前場スクリーニング (09:30)
             schedule.every().monday.at("09:30").do(self._run_morning_screening_job)
             schedule.every().tuesday.at("09:30").do(self._run_morning_screening_job)
@@ -1076,20 +937,11 @@ class DSSMSScheduler:
                                     end_date=date.today().strftime('%Y-%m-%d'),
                                     warmup_days=0
                                 )
-                                if stock_data.empty:
-                                    self.logger.error(
-                                        f"[PRICE_ERROR] {symbol}: kabu API・yfinanceともに価格取得失敗"
-                                        f"(yfinanceが空データを返しました)。前場BUYをスキップします。"
-                                    )
-                                    return
-                                current_price = stock_data['Adj Close'].iloc[-1]
+                                current_price = stock_data['Adj Close'].iloc[-1] if not stock_data.empty else 1000.0
                                 self.logger.info(f"[PRICE_FETCH] {symbol}: yfinance価格={current_price:.2f}円（フォールバック）")
                             except Exception as e:
-                                self.logger.error(
-                                    f"[PRICE_ERROR] {symbol}: kabu API・yfinanceともに価格取得失敗。"
-                                    f"前場BUYをスキップします。理由: {e}"
-                                )
-                                return
+                                self.logger.warning(f"[PRICE_FETCH] {symbol}: 価格取得失敗、仮株価1000円を使用: {e}")
+                                current_price = 1000.0
 
                         # バックテスト側の shares を100株単位に安全丸め（base_strategy暫定実装の補正）
                         raw_shares = screening_result.get('shares', None)
@@ -1228,7 +1080,7 @@ class DSSMSScheduler:
                 if self.LAST_RUN_FILE.exists():
                     import json as _json
                     last_run_data = _json.loads(
-                        self.LAST_RUN_FILE.read_text(encoding='utf-8-sig')
+                        self.LAST_RUN_FILE.read_text(encoding='utf-8')
                     )
                     last_run_at_str = last_run_data.get('last_run_at', '')
                     if last_run_at_str:
@@ -1248,42 +1100,23 @@ class DSSMSScheduler:
             except Exception as e:
                 self.logger.warning(f"[HEALTH_CHECK] 経過時間計算失敗: {e}")
                 hours_since_last_run = 0.0
-
-            # 含み損益をリアルタイム計算
-            unrealized_pnl_calc = 0.0
-            positions_for_email = []
-            for sym, pos in self.positions.items():
-                try:
-                    cur_price = self._get_current_price(sym)
-                    ep = float(pos.get("entry_price", 0) or 0)
-                    qty = int(pos.get("quantity", 0) or 0)
-                    pos_unrealized = (cur_price - ep) * qty if cur_price and ep and qty else 0
-                    unrealized_pnl_calc += pos_unrealized
-                    positions_for_email.append({
-                        'symbol': sym,
-                        'price': cur_price or ep,
-                        'shares': qty,
-                        'unrealized_pnl': pos_unrealized,
-                    })
-                except Exception:
-                    ep = float(pos.get("entry_price", 0) or 0)
-                    qty = int(pos.get("quantity", 0) or 0)
-                    positions_for_email.append({
-                        'symbol': sym,
-                        'price': ep,
-                        'shares': qty,
-                        'unrealized_pnl': 0,
-                    })
-
             summary_data = {
                 'execution_time': _dt.now().strftime('%H:%M'),
                 'status': '異常' if error_occurred else '正常',
                 'error_message': error_message if error_occurred else '',
                 'cash_balance': self.paper_balance.balance,
-                'unrealized_pnl': unrealized_pnl_calc,
+                'unrealized_pnl': None,
                 'total_assets': self.paper_balance.balance,
                 'daily_pnl': 0,
-                'positions': positions_for_email,
+                'positions': [
+                    {
+                        'symbol': sym,
+                        'price': info.get('entry_price', 0),
+                        'shares': info.get('quantity', 0),
+                        'unrealized_pnl': 0
+                    }
+                    for sym, info in self.positions.items()
+                ],
                 'screened_symbols': [selected_symbol] if selected_symbol else [],
                 'hours_since_last_run': hours_since_last_run
             }
@@ -1317,34 +1150,6 @@ class DSSMSScheduler:
         """
         start_time = datetime.now()
         self.logger.info("=== 後場スクリーニング開始 ===")
-        screening_start_time = datetime.now()
-
-        # HEALTH_CHECK: 前回実行からの経過時間を先行計算（_write_last_run より前に取得）
-        hours_since_last_run_af = 0.0
-        try:
-            if self.LAST_RUN_FILE.exists():
-                import json as _json_af_pre
-                _last_run_data_af = _json_af_pre.loads(
-                    self.LAST_RUN_FILE.read_text(encoding='utf-8-sig')
-                )
-                _last_run_at_str_af = _last_run_data_af.get('last_run_at', '')
-                if _last_run_at_str_af:
-                    from datetime import datetime as _dt_af_pre
-                    _last_run_at_af = _dt_af_pre.fromisoformat(_last_run_at_str_af)
-                    hours_since_last_run_af = (
-                        _dt_af_pre.now() - _last_run_at_af
-                    ).total_seconds() / 3600
-                    self.logger.info(
-                        f"[HEALTH_CHECK] 前回実行からの経過時間: "
-                        f"{hours_since_last_run_af:.1f}時間"
-                    )
-            else:
-                self.logger.info(
-                    "[HEALTH_CHECK] last_run.jsonが存在しないため経過時間=0.0として処理"
-                )
-        except Exception as _e_af:
-            self.logger.warning(f"[HEALTH_CHECK] 経過時間計算失敗: {_e_af}")
-            hours_since_last_run_af = 0.0
 
         # --- session guard ---
         if self._already_executed_today("afternoon"):
@@ -1408,20 +1213,11 @@ class DSSMSScheduler:
                                     end_date=date.today().strftime('%Y-%m-%d'),
                                     warmup_days=0
                                 )
-                                if stock_data.empty:
-                                    self.logger.error(
-                                        f"[PRICE_ERROR] {symbol}: kabu API・yfinanceともに価格取得失敗"
-                                        f"(yfinanceが空データを返しました)。後場BUYをスキップします。"
-                                    )
-                                    return
-                                current_price = stock_data['Adj Close'].iloc[-1]
+                                current_price = stock_data['Adj Close'].iloc[-1] if not stock_data.empty else 1000.0
                                 self.logger.info(f"[PRICE_FETCH] {symbol}: yfinance価格={current_price:.2f}円（フォールバック）")
                             except Exception as e:
-                                self.logger.error(
-                                    f"[PRICE_ERROR] {symbol}: kabu API・yfinanceともに価格取得失敗。"
-                                    f"後場BUYをスキップします。理由: {e}"
-                                )
-                                return
+                                self.logger.warning(f"[PRICE_FETCH] {symbol}: 価格取得失敗、仮株価1000円を使用: {e}")
+                                current_price = 1000.0
 
                         # バックテスト側の shares を100株単位に安全丸め（base_strategy暫定実装の補正）
                         raw_shares = screening_result.get('shares', None)
@@ -1564,46 +1360,51 @@ class DSSMSScheduler:
 
         # 後場サマリーメール送信
         try:
-            # HEALTH_CHECK の経過時間はメソッド先頭で取得済みの値を使用
-            # （_write_last_run より前に読み込んだ値のため正確）
-
-            # 含み損益をリアルタイム計算
-            unrealized_pnl_calc = 0.0
-            positions_for_email = []
-            for sym, pos in self.positions.items():
-                try:
-                    cur_price = self._get_current_price(sym)
-                    ep = float(pos.get("entry_price", 0) or 0)
-                    qty = int(pos.get("quantity", 0) or 0)
-                    pos_unrealized = (cur_price - ep) * qty if cur_price and ep and qty else 0
-                    unrealized_pnl_calc += pos_unrealized
-                    positions_for_email.append({
-                        'symbol': sym,
-                        'price': cur_price or ep,
-                        'shares': qty,
-                        'unrealized_pnl': pos_unrealized,
-                    })
-                except Exception:
-                    ep = float(pos.get("entry_price", 0) or 0)
-                    qty = int(pos.get("quantity", 0) or 0)
-                    positions_for_email.append({
-                        'symbol': sym,
-                        'price': ep,
-                        'shares': qty,
-                        'unrealized_pnl': 0,
-                    })
-
+            from datetime import datetime as _dt
+            hours_since_last_run = 0.0
+            try:
+                if self.LAST_RUN_FILE.exists():
+                    import json as _json
+                    last_run_data = _json.loads(
+                        self.LAST_RUN_FILE.read_text(encoding='utf-8')
+                    )
+                    last_run_at_str = last_run_data.get('last_run_at', '')
+                    if last_run_at_str:
+                        from datetime import datetime as _dt2
+                        last_run_at = _dt2.fromisoformat(last_run_at_str)
+                        hours_since_last_run = (
+                            _dt2.now() - last_run_at
+                        ).total_seconds() / 3600
+                        self.logger.info(
+                            f"[HEALTH_CHECK] 前回実行からの経過時間: "
+                            f"{hours_since_last_run:.1f}時間"
+                        )
+                else:
+                    self.logger.info(
+                        "[HEALTH_CHECK] last_run.jsonが存在しないため経過時間=0.0として処理"
+                    )
+            except Exception as e:
+                self.logger.warning(f"[HEALTH_CHECK] 経過時間計算失敗: {e}")
+                hours_since_last_run = 0.0
             summary_data = {
-                'execution_time': datetime.now().strftime('%H:%M'),
+                'execution_time': _dt.now().strftime('%H:%M'),
                 'status': '異常' if error_occurred else '正常',
                 'error_message': error_message if error_occurred else '',
                 'cash_balance': self.paper_balance.balance,
-                'unrealized_pnl': unrealized_pnl_calc,
+                'unrealized_pnl': None,
                 'total_assets': self.paper_balance.balance,
                 'daily_pnl': 0,
-                'positions': positions_for_email,
+                'positions': [
+                    {
+                        'symbol': sym,
+                        'price': info.get('entry_price', 0),
+                        'shares': info.get('quantity', 0),
+                        'unrealized_pnl': 0
+                    }
+                    for sym, info in self.positions.items()
+                ],
                 'screened_symbols': [selected_symbol] if selected_symbol else [],
-                'hours_since_last_run': hours_since_last_run_af
+                'hours_since_last_run': hours_since_last_run
             }
             self.email_notifier.send_afternoon_summary(summary_data)
         except Exception as e:
@@ -1646,9 +1447,6 @@ class DSSMSScheduler:
     def handle_emergency_switch_check(self) -> None:
         """パーフェクトオーダー崩れ時の緊急判定処理"""
         try:
-            # 最新のpositions.jsonを再読み込み（ゴーストガード込み）
-            self._load_positions()
-
             # 保有ポジションがない場合はスキップ
             if not self.positions:
                 self.logger.debug("[EMERGENCY_CHECK] 保有ポジションなし、スキップ")
@@ -1658,20 +1456,16 @@ class DSSMSScheduler:
             if not self.market_time_manager.is_market_open():
                 return
             
-            symbols_to_check = list(self.positions.keys())
             self.logger.info(
-                f"[EMERGENCY_CHECK] 監視銘柄数: {len(symbols_to_check)}, "
-                f"銘柄: {symbols_to_check}"
+                f"[EMERGENCY_CHECK] 監視銘柄数: {len(self.positions)}, "
+                f"銘柄: {list(self.positions.keys())}"
             )
 
-            # 監視対象は positions.json 由来の現在保有ポジションのみとする
-            for symbol in symbols_to_check:
-                # ループ中に削除済みの銘柄はSLチェック対象外
+            # 全保有銘柄をループ（list()でスナップショット取得）
+            for symbol in list(self.positions.keys()):
+                # ループ中に SELL 済みになった銘柄をスキップ
                 if symbol not in self.positions:
-                    self.logger.info(
-                        f"[SL_SKIP] {symbol}: positions削除済みのためSLチェックをスキップ"
-                        f"（通常EXITと競合の可能性）"
-                    )
+                    self.logger.debug(f"[EMERGENCY_CHECK] {symbol} はループ中に決済済み、スキップ")
                     continue
 
                 # 緊急事態判定
@@ -1776,7 +1570,7 @@ class DSSMSScheduler:
                     candidates = []
             else:
                 # フォールバック候補
-                candidates = []
+                candidates = ["6758", "9433", "9984", "5401", "6645"]
                 result["candidate_count"] = len(candidates)
             
             # 階層的ランキング
@@ -1807,12 +1601,6 @@ class DSSMSScheduler:
     
     def _execute_emergency_switch(self, symbol: str, emergency_result: Dict[str, Any]) -> None:
         """緊急切替実行"""
-        # DISABLED: ペーパートレード段階では緊急切替を無効化
-        # SL発動後の新銘柄BUYがゴーストポジション問題を引き起こすため
-        # 次回スクリーニングサイクルで新銘柄を選択する運用とする
-        self.logger.info(f"[EMERGENCY_SWITCH_DISABLED] {symbol}: 緊急切替は無効化中")
-        return
-
         try:
             self.logger.warning(f"緊急切替実行: {symbol}")
             
@@ -1820,7 +1608,7 @@ class DSSMSScheduler:
             if self.intelligent_switch:
                 try:
                     # 切替候補取得
-                    backup_candidates = self.hierarchical_ranking.get_backup_candidates(n=3) if self.hierarchical_ranking else []
+                    backup_candidates = self.hierarchical_ranking.get_backup_candidates(n=3) if self.hierarchical_ranking else ["6758", "9433", "9984"]
                     
                     if backup_candidates:
                         target_symbol = backup_candidates[0]

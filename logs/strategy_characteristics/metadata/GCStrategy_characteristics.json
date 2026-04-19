@@ -34,7 +34,7 @@
       "suitability_score": 0.28,
       "confidence_level": "low",
       "performance_metrics": {
-        "sharpe_ratio": -0.3,
+        "sharpe_ratio": -0.30,
         "max_drawdown": 0.35,
         "win_rate": 0.35,
         "expectancy": -0.015,

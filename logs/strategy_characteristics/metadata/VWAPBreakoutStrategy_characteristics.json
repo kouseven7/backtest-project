@@ -9,14 +9,14 @@
   "last_updated": "2025-11-12T11:32:01.913502",
   "trend_adaptability": {
     "uptrend": {
-      "suitability_score": 0.88,
+      "suitability_score": 0.50,
       "confidence_level": "high",
       "performance_metrics": {
-        "sharpe_ratio": 1.52,
+        "sharpe_ratio": 0.00,
         "max_drawdown": 0.11,
-        "win_rate": 0.61,
-        "expectancy": 0.022,
-        "avg_return": 0.1,
+        "win_rate": 0.50,
+        "expectancy": 0.00,
+        "avg_return": 0.00,
         "volatility": 0.16,
         "calmar_ratio": 1.38,
         "sortino_ratio": 1.75
@@ -25,20 +25,20 @@
       "data_period": "2023-01-01_to_2024-12-31",
       "reliability": "high",
       "risk_characteristics": {
-        "max_consecutive_losses": 4,
+        "max_consecutive_losses": 5,
         "avg_holding_period": 8.0,
-        "profit_factor": 1.92
+        "profit_factor": 1.00
       }
     },
     "downtrend": {
-      "suitability_score": 0.35,
+      "suitability_score": 0.50,
       "confidence_level": "low",
       "performance_metrics": {
-        "sharpe_ratio": -0.25,
+        "sharpe_ratio": 0.00,
         "max_drawdown": 0.28,
-        "win_rate": 0.38,
-        "expectancy": -0.012,
-        "avg_return": -0.03,
+        "win_rate": 0.50,
+        "expectancy": 0.00,
+        "avg_return": 0.00,
         "volatility": 0.25,
         "calmar_ratio": -0.11,
         "sortino_ratio": -0.3
@@ -47,20 +47,20 @@
       "data_period": "2023-01-01_to_2024-12-31",
       "reliability": "low",
       "risk_characteristics": {
-        "max_consecutive_losses": 6,
+        "max_consecutive_losses": 5,
         "avg_holding_period": 5.0,
-        "profit_factor": 0.72
+        "profit_factor": 1.00
       }
     },
     "range-bound": {
-      "suitability_score": 0.52,
+      "suitability_score": 0.50,
       "confidence_level": "medium",
       "performance_metrics": {
-        "sharpe_ratio": 0.78,
+        "sharpe_ratio": 0.00,
         "max_drawdown": 0.09,
-        "win_rate": 0.58,
-        "expectancy": 0.015,
-        "avg_return": 0.04,
+        "win_rate": 0.50,
+        "expectancy": 0.00,
+        "avg_return": 0.00,
         "volatility": 0.13,
         "calmar_ratio": 0.44,
         "sortino_ratio": 0.95
@@ -69,22 +69,22 @@
       "data_period": "2023-01-01_to_2024-12-31",
       "reliability": "medium",
       "risk_characteristics": {
-        "max_consecutive_losses": 4,
+        "max_consecutive_losses": 5,
         "avg_holding_period": 6.5,
-        "profit_factor": 1.28
+        "profit_factor": 1.00
       }
     }
   },
   "volatility_adaptability": {
     "high_volatility": {
-      "suitability_score": 0.68,
+      "suitability_score": 0.50,
       "confidence_level": "medium",
       "performance_metrics": {
-        "sharpe_ratio": 0.95,
+        "sharpe_ratio": 0.00,
         "max_drawdown": 0.18,
-        "win_rate": 0.58,
-        "expectancy": 0.018,
-        "avg_return": 0.0,
+        "win_rate": 0.50,
+        "expectancy": 0.00,
+        "avg_return": 0.00,
         "volatility": 0.0,
         "calmar_ratio": 0.0,
         "max_holding_period": 0
@@ -100,14 +100,14 @@
       }
     },
     "medium_volatility": {
-      "suitability_score": 0.82,
+      "suitability_score": 0.50,
       "confidence_level": "high",
       "performance_metrics": {
-        "sharpe_ratio": 1.42,
+        "sharpe_ratio": 0.00,
         "max_drawdown": 0.1,
-        "win_rate": 0.65,
-        "expectancy": 0.025,
-        "avg_return": 0.0,
+        "win_rate": 0.50,
+        "expectancy": 0.00,
+        "avg_return": 0.00,
         "volatility": 0.0,
         "calmar_ratio": 0.0,
         "max_holding_period": 0
@@ -123,14 +123,14 @@
       }
     },
     "low_volatility": {
-      "suitability_score": 0.48,
+      "suitability_score": 0.50,
       "confidence_level": "low",
       "performance_metrics": {
-        "sharpe_ratio": 0.62,
+        "sharpe_ratio": 0.00,
         "max_drawdown": 0.08,
-        "win_rate": 0.55,
-        "expectancy": 0.01,
-        "avg_return": 0.0,
+        "win_rate": 0.50,
+        "expectancy": 0.00,
+        "avg_return": 0.00,
         "volatility": 0.0,
         "calmar_ratio": 0.0,
         "max_holding_period": 0

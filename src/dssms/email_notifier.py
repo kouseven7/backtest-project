@@ -27,8 +27,8 @@ import json
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from datetime import datetime, date
-from typing import Any, Dict, List, cast
+from datetime import datetime
+from pathlib import Path
 from config.logger_config import setup_logger
 
 
@@ -48,21 +48,18 @@ class EmailNotifier:
         # 設定読み込み
         try:
             with open(config_path, "r", encoding="utf-8") as f:
-                loaded_config: Any = json.load(f)
-
-            config = cast(Dict[str, Any], loaded_config) if isinstance(loaded_config, dict) else {}
-            raw_email_config = config.get("email_notification", {})
-            email_config = cast(Dict[str, Any], raw_email_config) if isinstance(raw_email_config, dict) else {}
+                config = json.load(f)
+            email_config = config.get("email_notification", {})
         except Exception as e:
             self.logger.error(f"[EMAIL_CONFIG_ERROR] 設定読み込み失敗: {e}")
             email_config = {}
 
-        self.enabled: bool = bool(email_config.get("enabled", False))
-        self.smtp_server: str = str(email_config.get("smtp_server", "smtp.gmail.com"))
-        self.smtp_port: int = int(email_config.get("smtp_port", 587))
-        self.sender_email: str = str(email_config.get("sender_email", ""))
-        self.sender_password: str = str(email_config.get("sender_password", ""))
-        self.recipient_email: str = str(email_config.get("recipient_email", ""))
+        self.enabled = email_config.get("enabled", False)
+        self.smtp_server = email_config.get("smtp_server", "smtp.gmail.com")
+        self.smtp_port = email_config.get("smtp_port", 587)
+        self.sender_email = email_config.get("sender_email", "")
+        self.sender_password = email_config.get("sender_password", "")
+        self.recipient_email = email_config.get("recipient_email", "")
 
         if not self.enabled:
             self.logger.info("[EMAIL_NOTIFIER] メール通知は無効化されています (enabled=false)")
@@ -71,7 +68,7 @@ class EmailNotifier:
         self,
         symbol: str,
         order_type: str,
-        order_params: Dict[str, Any],
+        order_params: dict,
         retry_count: int
     ):
         """
@@ -135,107 +132,200 @@ class EmailNotifier:
         except Exception as e:
             self.logger.error(f"[EMAIL_FAILED] メール送信失敗: {type(e).__name__}: {e}")
 
-    def send_morning_summary(self, summary_data: Dict[str, Any]) -> bool:
-        """
-        朝の実行サマリーをメール送信する。
-
-        Args:
-            summary_data: 朝サマリー情報
-
-        Returns:
-            bool: 送信成功時True、未送信または失敗時False
-        """
+    def send_morning_summary(self, summary_data: dict) -> bool:
+        """朝の実行サマリーメール送信"""
         if not self.enabled:
-            self.logger.debug("[EMAIL_SKIP] enabled=false のため朝サマリー送信をスキップ")
-            return False
-
-        if not self.sender_email or not self.recipient_email:
-            self.logger.warning(
-                "[EMAIL_NOT_CONFIGURED] sender_emailまたはrecipient_emailが未設定のため、"
-                "朝サマリー送信をスキップします"
-            )
+            self.logger.debug("[EMAIL_SKIP] enabled=false のためメール送信をスキップ")
             return False
 
         try:
-            today = str(date.today())
-            execution_time = summary_data.get("execution_time", "-")
-            status = summary_data.get("status", "正常")
-            error_message = summary_data.get("error_message", "")
-            cash_balance = float(summary_data.get("cash_balance", 0) or 0)
-            unrealized_pnl = summary_data.get("unrealized_pnl")
-            total_assets = float(summary_data.get("total_assets", 0) or 0)
-            daily_pnl = float(summary_data.get("daily_pnl", 0) or 0)
-            positions: List[Dict[str, Any]] = summary_data.get("positions") or []
-            screened_symbols: List[str] = summary_data.get("screened_symbols") or []
-            hours_since_last_run = float(summary_data.get("hours_since_last_run", 0.0) or 0.0)
+            from datetime import date
+            import json
 
+            today = date.today().isoformat()
+            execution_time = summary_data.get('execution_time', '--:--')
+            status = summary_data.get('status', '不明')
+            error_message = summary_data.get('error_message', '')
+            cash_balance = summary_data.get('cash_balance', 0)
+            unrealized_pnl = summary_data.get('unrealized_pnl', None)
+            total_assets = summary_data.get('total_assets', 0)
+            daily_pnl = summary_data.get('daily_pnl', 0)
+            positions = summary_data.get('positions', [])
+            screened_symbols = summary_data.get('screened_symbols', [])
+            hours_since_last_run = summary_data.get('hours_since_last_run', 0.0)
+
+            # 含み損益の表示
             if unrealized_pnl is None:
-                unrealized_pnl_text = "取得失敗"
+                unrealized_str = "取得失敗"
             else:
-                unrealized_pnl_text = f"{float(unrealized_pnl):+,.0f}円"
+                unrealized_str = f"{unrealized_pnl:+,.0f}円"
 
+            # ポジション表示
             if positions:
-                position_lines: List[str] = []
-                for position in positions:
-                    symbol = position.get("symbol", "-")
-                    price = float(position.get("price", 0) or 0)
-                    shares = int(position.get("shares", 0) or 0)
-                    position_unrealized = float(position.get("unrealized_pnl", 0) or 0)
-                    position_lines.append(
-                        f"* {symbol}：{price:,.0f}円 × {shares}株（含み{position_unrealized:+,.0f}円）"
-                    )
-                positions_text = "\n".join(position_lines)
+                pos_lines = "\n".join([
+                    f"* {p.get('symbol', '?')}：{p.get('price', 0):,.0f}円 × {p.get('shares', 0)}株"
+                    f"（含み{p.get('unrealized_pnl', 0):+,.0f}円）"
+                    for p in positions
+                ])
             else:
-                positions_text = "なし"
+                pos_lines = "なし"
 
-            screened_symbols_text = ", ".join(screened_symbols) if screened_symbols else "なし"
-            anomaly_line = f"前回実行からの経過時間：{hours_since_last_run:.1f}時間"
+            # スクリーニング結果
+            screened_str = "、".join(screened_symbols) if screened_symbols else "なし"
+
+            # 異常検知
+            skip_warning = ""
             if hours_since_last_run >= 24:
-                anomaly_line += " ⚠ 前日スキップの可能性あり"
+                skip_warning = " ⚠ 前日スキップの可能性あり"
 
-            error_line = f"エラー内容：{error_message}\n" if error_message else ""
+            # エラー行
+            error_line = f"エラー内容：{error_message}\n" if status == '異常' and error_message else ""
 
-            body = (
-                f"■ 実行結果\n"
-                f"実行時刻：{execution_time}\n"
-                f"ステータス：{status}\n"
-                f"{error_line}"
-                f"\n"
-                f"■ 資産状況\n"
-                f"現金残高：{cash_balance:,.0f}円\n"
-                f"含み損益：{unrealized_pnl_text}\n"
-                f"総資産：{total_assets:,.0f}円\n"
-                f"当日損益：{daily_pnl:+,.0f}円\n"
-                f"\n"
-                f"■ 保有ポジション（{len(positions)}/3銘柄）\n"
-                f"{positions_text}\n"
-                f"\n"
-                f"■ 本日のスクリーニング結果\n"
-                f"選択銘柄：{screened_symbols_text}\n"
-                f"\n"
-                f"■ 異常検知\n"
-                f"{anomaly_line}"
-            )
+            body = f"""■ 実行結果
+実行時刻：{execution_time}
+ステータス：{status}
+{error_line}
+■ 資産状況
+現金残高：{cash_balance:,.0f}円
+含み損益：{unrealized_str}
+総資産：{total_assets:,.0f}円
+当日損益：{daily_pnl:+,.0f}円
+
+■ 保有ポジション（{len(positions)}/3銘柄）
+{pos_lines}
+
+■ 本日のスクリーニング結果
+選択銘柄：{screened_str}
+
+■ 異常検知
+前回実行からの経過時間：{hours_since_last_run:.1f}時間{skip_warning}
+"""
+
+            subject = f"【DSSMS】{today} 朝の実行サマリー"
+
+            import smtplib
+            from email.mime.text import MIMEText
+            from email.mime.multipart import MIMEMultipart
 
             msg = MIMEMultipart()
             msg['From'] = self.sender_email
             msg['To'] = self.recipient_email
-            msg['Subject'] = f"【DSSMS】{today} 朝の実行サマリー"
+            msg['Subject'] = subject
             msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
             with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
                 server.starttls()
                 server.login(self.sender_email, self.sender_password)
-                server.send_message(msg)
+                server.sendmail(self.sender_email, self.recipient_email, msg.as_string())
 
             self.logger.info(f"[EMAIL_SENT] 朝サマリー送信成功 → {self.recipient_email}")
             return True
 
         except smtplib.SMTPAuthenticationError as e:
-            self.logger.error(f"[EMAIL_FAILED] 朝サマリーSMTP認証失敗: {e}")
+            self.logger.error(f"[EMAIL_FAILED] SMTP認証失敗: {e}")
+            return False
         except smtplib.SMTPException as e:
-            self.logger.error(f"[EMAIL_FAILED] 朝サマリーSMTP送信エラー: {e}")
+            self.logger.error(f"[EMAIL_FAILED] SMTP送信失敗: {e}")
+            return False
         except Exception as e:
-            self.logger.error(f"[EMAIL_FAILED] 朝サマリー送信失敗: {type(e).__name__}: {e}")
+            self.logger.error(f"[EMAIL_FAILED] 予期しないエラー: {e}")
+            return False
 
-        return False
+    def send_afternoon_summary(self, summary_data: dict) -> bool:
+        """朝の実行サマリーメール送信"""
+        if not self.enabled:
+            self.logger.debug("[EMAIL_SKIP] enabled=false のためメール送信をスキップ")
+            return False
+
+        try:
+            from datetime import date
+            import json
+
+            today = date.today().isoformat()
+            execution_time = summary_data.get('execution_time', '--:--')
+            status = summary_data.get('status', '不明')
+            error_message = summary_data.get('error_message', '')
+            cash_balance = summary_data.get('cash_balance', 0)
+            unrealized_pnl = summary_data.get('unrealized_pnl', None)
+            total_assets = summary_data.get('total_assets', 0)
+            daily_pnl = summary_data.get('daily_pnl', 0)
+            positions = summary_data.get('positions', [])
+            screened_symbols = summary_data.get('screened_symbols', [])
+            hours_since_last_run = summary_data.get('hours_since_last_run', 0.0)
+
+            # 含み損益の表示
+            if unrealized_pnl is None:
+                unrealized_str = "取得失敗"
+            else:
+                unrealized_str = f"{unrealized_pnl:+,.0f}円"
+
+            # ポジション表示
+            if positions:
+                pos_lines = "\n".join([
+                    f"* {p.get('symbol', '?')}：{p.get('price', 0):,.0f}円 × {p.get('shares', 0)}株"
+                    f"（含み{p.get('unrealized_pnl', 0):+,.0f}円）"
+                    for p in positions
+                ])
+            else:
+                pos_lines = "なし"
+
+            # スクリーニング結果
+            screened_str = "、".join(screened_symbols) if screened_symbols else "なし"
+
+            # 異常検知
+            skip_warning = ""
+            if hours_since_last_run >= 24:
+                skip_warning = " ⚠ 前日スキップの可能性あり"
+
+            # エラー行
+            error_line = f"エラー内容：{error_message}\n" if status == '異常' and error_message else ""
+
+            body = f"""■ 実行結果
+実行時刻：{execution_time}
+ステータス：{status}
+{error_line}
+■ 資産状況
+現金残高：{cash_balance:,.0f}円
+含み損益：{unrealized_str}
+総資産：{total_assets:,.0f}円
+当日損益：{daily_pnl:+,.0f}円
+
+■ 保有ポジション（{len(positions)}/3銘柄）
+{pos_lines}
+
+■ 本日のスクリーニング結果
+選択銘柄：{screened_str}
+
+■ 異常検知
+前回実行からの経過時間：{hours_since_last_run:.1f}時間{skip_warning}
+"""
+
+            subject = f"【DSSMS】{today} 後場の実行サマリー"
+
+            import smtplib
+            from email.mime.text import MIMEText
+            from email.mime.multipart import MIMEMultipart
+
+            msg = MIMEMultipart()
+            msg['From'] = self.sender_email
+            msg['To'] = self.recipient_email
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+            with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
+                server.starttls()
+                server.login(self.sender_email, self.sender_password)
+                server.sendmail(self.sender_email, self.recipient_email, msg.as_string())
+
+            self.logger.info(f"[EMAIL_SENT] 午後サマリー送信成功 → {self.recipient_email}")
+            return True
+
+        except smtplib.SMTPAuthenticationError as e:
+            self.logger.error(f"[EMAIL_FAILED] SMTP認証失敗: {e}")
+            return False
+        except smtplib.SMTPException as e:
+            self.logger.error(f"[EMAIL_FAILED] SMTP送信失敗: {e}")
+            return False
+        except Exception as e:
+            self.logger.error(f"[EMAIL_FAILED] 予期しないエラー: {e}")
+            return False

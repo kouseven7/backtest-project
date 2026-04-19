@@ -85,17 +85,13 @@ class KabuAuthManager:
     def authenticate(self) -> bool:
         """kabu STATION認証"""
         try:
-            base_url = self.config.get('base_url')
-            if not base_url:
-                self.logger.error("[AUTH] base_url が未設定です")
-                return False
-
             # 環境に応じたパスワード取得
             password = self._get_api_password()
             
             obj = {'APIPassword': password}
             json_data = json.dumps(obj).encode('utf8')
-            
+
+            base_url = self.config.get('base_url', 'http://localhost:18080/kabusapi')
             url = f"{base_url}/token"
             req = urllib.request.Request(url, json_data, method='POST')
             req.add_header('Content-Type', 'application/json')
@@ -126,27 +122,17 @@ class KabuAuthManager:
     
     def _get_api_password(self) -> str:
         """API パスワード取得（ハイブリッド方式）"""
-        # 本番環境: 環境変数優先
-        if os.getenv('ENVIRONMENT') == 'production':
-            password = os.getenv('KABU_API_PASSWORD')
-            if password:
-                return password
-        
-        # 開発環境: 設定ファイル使用
-        if self.config.get('development_settings', {}).get('use_test_password'):
-            return self.config['development_settings']['use_test_password']
-        
-        # 環境変数が設定されている場合
+        # 優先度1: 環境変数
         password = os.getenv('KABU_API_PASSWORD')
         if password:
             return password
-        
-        # 設定ファイル: authentication.api_password
-        password = self.config.get('authentication', {}).get('api_password', '')
+
+        # 優先度2: self.config に直接ある api_password
+        password = self.config.get('api_password')
         if password:
             return password
-        
-        raise ValueError("API パスワードが設定されていません")
+
+        raise ValueError("API パスワードが設定されていません（環境変数 KABU_API_PASSWORD または設定ファイルの authentication.api_password を設定してください）")
     
     def is_token_valid(self) -> bool:
         """トークン有効性確認"""
@@ -325,11 +311,7 @@ class AdaptiveRealtimeClient:
     def _fetch_board_data(self, symbol: str, token: str) -> Optional[Dict[str, Any]]:
         """kabu APIからボードデータ取得"""
         try:
-            base_url = self.config.get('base_url')
-            if not base_url:
-                self.logger.error("[BOARD] base_url が未設定です")
-                return None
-
+            base_url = self.config.get('base_url', 'http://localhost:18080/kabusapi')
             url = f"{base_url}/board/{symbol}@1"
             req = urllib.request.Request(url, method='GET')
             req.add_header('Content-Type', 'application/json')
@@ -563,21 +545,11 @@ class KabuOrderExecutor:
                     timestamp=datetime.now()
                 )
             
-            base_url = self.config.get('base_url')
-            if not base_url:
-                self.logger.error("[ORDER] base_url が未設定です")
-                return OrderExecutionResult(
-                    success=False,
-                    order_id=None,
-                    executed_price=None,
-                    error_message="base_url が未設定",
-                    timestamp=datetime.now()
-                )
-
             # 注文オブジェクト構築
             order_obj = self._build_order_object(switch_data)
             json_data = json.dumps(order_obj).encode('utf-8')
-            
+
+            base_url = self.config.get('base_url', 'http://localhost:18080/kabusapi')
             url = f"{base_url}/sendorder"
             req = urllib.request.Request(url, json_data, method='POST')
             req.add_header('Content-Type', 'application/json')
@@ -661,7 +633,7 @@ class KabuIntegrationManager:
         self.config = self._load_config(config_path)
         
         # 認証・接続管理
-        self.auth_manager = KabuAuthManager(self.config)
+        self.auth_manager = KabuAuthManager(self.config['authentication'])
         
         # 50銘柄管理
         self.symbol_registry = DSSMSSymbolRegistry(self.config['registration_strategy'])
@@ -685,12 +657,39 @@ class KabuIntegrationManager:
     
     def _load_config(self, config_path: Optional[str] = None) -> Dict[str, Any]:
         """設定ファイル読み込み"""
+        def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+            """overrideの値でbaseを再帰的に上書きする。"""
+            for key, value in override.items():
+                if isinstance(value, dict) and isinstance(base.get(key), dict):
+                    _deep_merge(base[key], value)
+                else:
+                    base[key] = value
+            return base
+
+        defaults: Dict[str, Any] = {
+            'authentication': {
+                'base_url': 'http://localhost:18080/kabusapi',
+                'timeout_seconds': 30
+            },
+            'registration_strategy': {
+                'max_symbols': 50
+            },
+            'order_settings': {
+                'default_order_type': 'market'
+            }
+        }
+
         try:
+            configs: Dict[str, Any] = {
+                'authentication': dict(defaults['authentication']),
+                'registration_strategy': dict(defaults['registration_strategy']),
+                'order_settings': dict(defaults['order_settings'])
+            }
+
             if config_path is None:
                 config_dir = project_root / "config" / "kabu_api"
                 
                 # 各設定ファイル読み込み
-                configs = {}
                 config_files = [
                     "kabu_connection_config.json",
                     "symbol_registration_config.json", 
@@ -702,28 +701,18 @@ class KabuIntegrationManager:
                     if file_path.exists():
                         with open(file_path, 'r', encoding='utf-8') as f:
                             file_config = json.load(f)
-                            configs.update(file_config)
+                            _deep_merge(configs, file_config)
                 
                 return configs
             else:
                 with open(config_path, 'r', encoding='utf-8') as f:
-                    return json.load(f)
+                    file_config = json.load(f)
+                return _deep_merge(configs, file_config)
                     
         except Exception as e:
             self.logger.error(f"設定ファイル読み込みエラー: {e}")
             # デフォルト設定を返す
-            return {
-                'authentication': {
-                    'base_url': 'http://localhost:18080/kabusapi',
-                    'timeout_seconds': 30
-                },
-                'registration_strategy': {
-                    'max_symbols': 50
-                },
-                'order_settings': {
-                    'default_order_type': 'market'
-                }
-            }
+            return defaults
     
     def initialize(self) -> bool:
         """システム初期化"""
@@ -793,17 +782,13 @@ class KabuIntegrationManager:
             obj = {'Symbols': symbol_list}
             json_data = json.dumps(obj).encode('utf8')
 
-            base_url = self.config.get('base_url')
-            if not base_url:
-                self.logger.error("[REGISTER] base_url が未設定です")
-                return False
-            
+            base_url = self.config.get('base_url', 'http://localhost:18080/kabusapi')
             url = f"{base_url}/register"
             req = urllib.request.Request(url, json_data, method='PUT')
             req.add_header('Content-Type', 'application/json')
             req.add_header('X-API-KEY', token)
             
-            with urllib.request.urlopen(req, timeout=self.config['timeout_seconds']) as res:
+            with urllib.request.urlopen(req, timeout=self.config['authentication']['timeout_seconds']) as res:
                 if res.status == 200:
                     content = json.loads(res.read())
                     self.logger.info(f"kabu API銘柄登録成功: {content}")
