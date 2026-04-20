@@ -11,6 +11,10 @@
    pip install -r requirements.txt
    ```
 
+## GitHub Copilot Workspace について
+本プロジェクトでは、GitHub Copilot Workspace（GitHub Copilot HQ）を活用した開発を推奨しています。
+詳細については、[GitHub Copilot Workspace ドキュメント](docs/GitHubCopilotWorkspace.md)を参照してください。
+
 ## [FIRE] プロジェクト最終目的（再定義）
 本プロジェクトの最終目的は、DSSMS（Dynamic Stock Selection Multi-Strategy System）を用いて
 日経225構成銘柄から日次で最適上昇トレンド銘柄を動的選択し、マルチ戦略スタックを適用、
