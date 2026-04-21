@@ -448,11 +448,28 @@ class DSSMSScheduler:
             headers = [
                 'date', 'cash', 'unrealized_pnl', 'total_assets',
                 'daily_pnl', 'cumulative_realized_pnl',
-                'open_positions', 'total_trades', 'price_fetch_ok'
+                'open_positions', 'total_trades', 'price_fetch_ok',
+                'equity', 'drawdown_pct'
             ]
 
             cash = self.paper_balance.balance
             total_assets = cash + unrealized_pnl
+            # drawdown計算用：既存CSVのtotal_assetsの最大値を取得
+            peak_equity = total_assets  # デフォルト（既存行なし時）
+            if self.DAILY_SNAPSHOT_FILE.exists():
+                # 注意: existing_rowsはまだ構築前なので、ファイルから直接読む
+                try:
+                    import csv as _csv_dd
+                    with open(self.DAILY_SNAPSHOT_FILE, 'r', newline='', encoding='utf-8') as _f:
+                        _reader = _csv_dd.DictReader(_f)
+                        past_totals = [float(r.get('total_assets', 0) or 0) for r in _reader]
+                        if past_totals:
+                            peak_equity = max(max(past_totals), total_assets)
+                except Exception:
+                    pass
+
+            drawdown_pct = round((peak_equity - total_assets) / peak_equity * 100, 4) if peak_equity > 0 else 0.0
+
             new_row = {
                 'date': today,
                 'cash': cash,
@@ -463,6 +480,8 @@ class DSSMSScheduler:
                 'open_positions': len(self.positions),
                 'total_trades': total_trades,
                 'price_fetch_ok': price_fetch_ok,
+                'equity': total_assets,
+                'drawdown_pct': drawdown_pct,
             }
 
             existing_rows = []
@@ -520,6 +539,10 @@ class DSSMSScheduler:
             pnl_pct = ((exit_price - entry_price) / entry_price * 100
                        if entry_price > 0 else 0.0)
             win = 1 if pnl > 0 else 0
+            # planned_risk_yen: エントリー時に想定したリスク額（stop_loss=3%固定）
+            planned_risk_yen = round(entry_price * shares * 0.03, 2)
+            # r_multiple: 実際の損益がリスク額の何倍か
+            r_multiple = round(pnl / planned_risk_yen, 4) if planned_risk_yen != 0 else 0.0
 
             # trade_id：既存行数+1
             closed_trades_file = Path('logs/paper_trade/closed_trades.csv')
@@ -539,7 +562,8 @@ class DSSMSScheduler:
                         'trade_id', 'symbol', 'strategy',
                         'entry_date', 'entry_price', 'shares',
                         'exit_date', 'exit_price', 'exit_reason',
-                        'holding_days', 'pnl', 'pnl_pct', 'win'
+                        'holding_days', 'pnl', 'pnl_pct', 'win',
+                        'planned_risk_yen', 'r_multiple'
                     ])
                     trade_id = 1
                 writer.writerow([
@@ -547,7 +571,8 @@ class DSSMSScheduler:
                     entry_date_str, entry_price, shares,
                     exit_date_str, exit_price, exit_reason,
                     holding_days, round(pnl, 2),
-                    round(pnl_pct, 4), win
+                    round(pnl_pct, 4), win,
+                    planned_risk_yen, r_multiple
                 ])
 
             self.logger.info(
