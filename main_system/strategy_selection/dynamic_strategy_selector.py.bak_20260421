@@ -374,18 +374,7 @@ class DynamicStrategySelector:
                 selected = [s[0] for s in sorted_strategies[:2] if s[1] >= self.min_confidence_threshold]
         
         elif self.selection_mode == StrategySelectionMode.SINGLE_BEST:
-            if sorted_strategies and sorted_strategies[0][1] >= self.min_confidence_threshold:
-                top_strategy = sorted_strategies[0][0]
-                # Sprint 3B: sideways/volatileレジームではGCStrategyを除外
-                if top_strategy == 'GCStrategy' and market_regime and \
-                   ('sideways' in market_regime.lower() or 'volatile' in market_regime.lower()):
-                    # GC以外のトップ戦略を選ぶ
-                    non_gc = [(s, sc) for s, sc in sorted_strategies if s != 'GCStrategy']
-                    selected = [non_gc[0][0]] if non_gc and non_gc[0][1] >= self.min_confidence_threshold else []
-                else:
-                    selected = [top_strategy]
-            else:
-                selected = []
+            selected = [sorted_strategies[0][0]] if sorted_strategies[0][1] >= self.min_confidence_threshold else []
         
         elif self.selection_mode == StrategySelectionMode.TOP_N:
             selected = [s[0] for s in sorted_strategies[:3] if s[1] >= self.min_confidence_threshold]
