@@ -2710,9 +2710,6 @@ class DSSMSIntegratedBacktester:
                 kwargs = {}
                 if entry_symbol_data is not None:
                     kwargs['entry_symbol_data'] = entry_symbol_data
-                # Sprint 3C: market_regimeをbacktest_dailyに渡す（戦略側フィルタ用）
-                if market_analysis and 'market_regime' in market_analysis:
-                    kwargs['market_regime'] = market_analysis['market_regime']
                     
                 self.logger.info(f"[PHASE3-C-B1] backtest_daily()実行開始: adjusted_target_date={adjusted_target_date.strftime('%Y-%m-%d')}, existing_position={existing_position}, kwargs={list(kwargs.keys())}")
                 result = strategy.backtest_daily(adjusted_target_date, processed_data, existing_position=existing_position, **kwargs)

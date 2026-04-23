@@ -444,21 +444,6 @@ class BreakoutStrategy(BaseStrategy):
                     print(f"[DEBUG_BRANCH] エグジットロジックへ: existing_position={existing_position}")
                 return self._handle_exit_logic_daily(current_idx, existing_position, stock_data, current_date, entry_symbol_data)
             else:
-                # Sprint 3C: strong_uptrend以外ではエントリーしない
-                # （分析結果：strong_uptrendのみPF 2.21、他レジームは全てPF 1.0未満）
-                market_regime = kwargs.get('market_regime', None)
-                if market_regime is not None and market_regime != 'strong_uptrend':
-                    self.logger.info(
-                        f"[BREAKOUT_REGIME_FILTER] {current_date}: "
-                        f"regime={market_regime} -> エントリースキップ（strong_uptrend以外）"
-                    )
-                    return {
-                        'action': 'hold',
-                        'signal': 0,
-                        'price': None,
-                        'shares': 0,
-                        'exit_reason': None
-                    }
                 # エントリー判定
                 if os.getenv("DEBUG_BACKTEST"):
                     print(f"[DEBUG_BRANCH] エントリーロジックへ")
