@@ -360,14 +360,6 @@ class DynamicStrategySelector:
         # 市場レジーム別選択ロジック
         # Phase 5-A修正: > を >= に変更（スコアが閾値ちょうどの場合も通過させる）
         if self.selection_mode == StrategySelectionMode.MARKET_ADAPTIVE:
-            # Sprint 3C: BreakoutStrategyはstrong_uptrendのみ有効
-            if not (market_regime and 'strong_uptrend' == market_regime.lower()):
-                sorted_strategies = [(s, sc) for s, sc in sorted_strategies if s != 'BreakoutStrategy']
-                self.logger.info(
-                    f"[BREAKOUT_FILTER] regime={market_regime}: "
-                    f"BreakoutStrategy除外（strong_uptrend以外）"
-                )
-
             # 市場レジームに応じて選択数を調整
             if 'strong' in market_regime.lower():
                 # 強いトレンド: トップ2戦略
@@ -376,27 +368,12 @@ class DynamicStrategySelector:
                 # レンジ・高ボラ: トップ3戦略（分散）
                 # Sprint 3B: sidewaysではGCStrategyを除外（10年中8年赤字・構造的損失源）
                 non_gc_sorted = [(s, sc) for s, sc in sorted_strategies if s != 'GCStrategy']
-                # Sprint 3C: strong_uptrend以外ではBreakoutStrategyも除外
-                # （分析結果：strong_uptrendのみPF 2.21、他レジームは全てPF 1.0未満）
-                non_gc_sorted = [(s, sc) for s, sc in non_gc_sorted if s != 'BreakoutStrategy']
                 selected = [s[0] for s in non_gc_sorted[:3] if s[1] >= self.min_confidence_threshold]
             else:
                 # 通常トレンド: トップ2-3戦略
                 selected = [s[0] for s in sorted_strategies[:2] if s[1] >= self.min_confidence_threshold]
         
         elif self.selection_mode == StrategySelectionMode.SINGLE_BEST:
-            # Sprint 3C: SINGLE_BESTでもstrong_uptrend以外はBreakoutStrategy除外
-            # （スコア評価前に候補から除外することでGC除外後の代替選択も防ぐ）
-            if not (market_regime and 'strong_uptrend' == market_regime.lower()):
-                before_count = len(sorted_strategies)
-                sorted_strategies = [(s, sc) for s, sc in sorted_strategies
-                                     if s != 'BreakoutStrategy']
-                if before_count != len(sorted_strategies):
-                    self.logger.info(
-                        f"[BREAKOUT_FILTER] SINGLE_BEST: regime={market_regime}: "
-                        f"BreakoutStrategy除外（strong_uptrend以外）"
-                    )
-            
             if sorted_strategies and sorted_strategies[0][1] >= self.min_confidence_threshold:
                 top_strategy = sorted_strategies[0][0]
                 # Sprint 3B: sideways/volatileレジームではGCStrategyを除外
@@ -407,17 +384,6 @@ class DynamicStrategySelector:
                     selected = [non_gc[0][0]] if non_gc and non_gc[0][1] >= self.min_confidence_threshold else []
                 else:
                     selected = [top_strategy]
-
-                # Sprint 3C: strong_uptrend以外ではBreakoutStrategyを除外
-                if top_strategy == 'BreakoutStrategy' and market_regime and \
-                   market_regime.lower() != 'strong_uptrend':
-                    non_breakout = [(s, sc) for s, sc in sorted_strategies if s != 'BreakoutStrategy']
-                    selected = [non_breakout[0][0]] if non_breakout and \
-                               non_breakout[0][1] >= self.min_confidence_threshold else []
-                    self.logger.info(
-                        f"[BREAKOUT_FILTER] SINGLE_BEST: regime={market_regime}: "
-                        f"BreakoutStrategy除外、代替={selected}"
-                    )
             else:
                 selected = []
         
