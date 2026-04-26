@@ -734,6 +734,40 @@ class GCStrategy(BaseStrategy):
                     f"（保守的処理。次回エントリーから自動修正されます）"
                 )
                 entry_idx = None
+
+            # Scheduler経由では、BUY時の短いデータで保存されたentry_idxが
+            # EXIT_CHECK時の長いデータ軸と不整合になる場合があるため、
+            # entry_dateからentry_idxを再計算してdays_held評価を安定化する。
+            if 'symbol' in existing_position and existing_position.get('entry_date') is not None:
+                try:
+                    entry_date_ts = pd.Timestamp(existing_position.get('entry_date'))
+                    if entry_date_ts.tz is not None:
+                        entry_date_ts = entry_date_ts.tz_localize(None)
+                    entry_date_key = entry_date_ts.normalize()
+
+                    index_source = stock_data.index
+                    if index_source.tz is not None:
+                        index_source = index_source.tz_localize(None)
+
+                    if entry_date_key in index_source:
+                        recalculated_idx = index_source.get_loc(entry_date_key)
+                        if isinstance(recalculated_idx, slice):
+                            recalculated_idx = recalculated_idx.start
+                        elif hasattr(recalculated_idx, '__iter__'):
+                            recalculated_idx = int(list(recalculated_idx).index(True))
+                        entry_idx = int(recalculated_idx)
+                        self.logger.info(
+                            f"[R5_FIX] Scheduler entry_idx再計算: "
+                            f"entry_date={entry_date_key.strftime('%Y-%m-%d')}, "
+                            f"entry_idx={entry_idx}"
+                        )
+                    else:
+                        self.logger.warning(
+                            f"[R5_FIX] entry_dateがindexに存在しないためentry_idx再計算をスキップ: "
+                            f"entry_date={entry_date_key.strftime('%Y-%m-%d')}"
+                        )
+                except Exception as e:
+                    self.logger.warning(f"[R5_FIX] entry_idx再計算失敗: {e}")
             
             # force_closeフラグ確認
             is_force_close = existing_position.get('force_close', False)

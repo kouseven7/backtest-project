@@ -57,7 +57,7 @@ class PaperBalance:
     BUY時: 残高 -= 株価 × 株数
     SELL時: 残高 += 株価 × 株数
     """
-    INITIAL_BALANCE = 1_000_000  # 100万円スタート
+    INITIAL_BALANCE = 3_000_000  # 300万円スタート
     BALANCE_FILE = "logs/dssms/paper_balance.json"
 
     def __init__(self):
