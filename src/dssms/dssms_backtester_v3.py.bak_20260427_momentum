@@ -315,17 +315,9 @@ class DSSBacktesterV3:
                 if score == 0.75:
                     score = 1.0
                 
-                # モメンタムタイブレーク（直近20日リターン、最大0.1ボーナス）
-                momentum_bonus = 0.0
-                momentum = 0.0
-                if len(data) >= 20:
-                    momentum = (data['Close'].iloc[-1] / data['Close'].iloc[-20]) - 1
-                    momentum_bonus = max(0.0, min(0.1, momentum))  # 0〜10%上昇を0〜0.1にマッピング
-                    score = score + momentum_bonus
-                
                 scores[symbol] = score
                 
-                self.logger.info(f"[OK] {symbol}: スコア={score:.4f} PO={score - momentum_bonus:.2f} momentum={momentum:.3f}")
+                self.logger.info(f"[OK] {symbol}: スコア={score:.2f} (価格:{current_price:.0f}, MA5:{ma5:.0f}, MA25:{ma25:.0f}, MA75:{ma75:.0f})")
                 
             except Exception as e:
                 self.logger.error(f"[ERROR] {symbol} パーフェクトオーダー計算エラー: {e}")
