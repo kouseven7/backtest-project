@@ -365,14 +365,11 @@ class DSSBacktesterV3:
                 status = "[ERROR] ZERO"
             
             self.logger.info(f"#{rank}: {symbol} (スコア: {score:.2f}) - {status}")
-            if rank <= 5:
-                print(f"[RANK_SCORE] #{rank}: {symbol} score={score:.3f} {status}")
         
         # サマリー
         top_symbol = ranking[0] if ranking else None
         if top_symbol:
             self.logger.info(f"[TOP] 1位: {top_symbol['symbol']} (スコア: {top_symbol['score']:.2f})")
-            print(f"[RANK_SCORE] 選択銘柄: {top_symbol['symbol']} score={top_symbol['score']:.3f}")
         
         self.logger.info(f"銘柄ランキング完了: {len(ranking)}銘柄")
         return ranking

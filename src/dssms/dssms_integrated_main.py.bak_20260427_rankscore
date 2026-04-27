@@ -1279,25 +1279,20 @@ class DSSMSIntegratedBacktester:
         if self.advanced_ranking_engine and len(filtered_symbols) > 0:
             try:
                 # TODO-DSSMS-004.2: 統合最適化実装
-                selected = self._integrated_ranking_selection_optimized(
+                selected_symbol = self._integrated_ranking_selection_optimized(
                     filtered_symbols, target_date
                 )
                 
-                if selected:
-                    self.logger.info(f"[RANK_SCORE] 銘柄選択結果: {selected} / 候補{len(filtered_symbols)}銘柄 @ {target_date.strftime('%Y-%m-%d')}")
+                if selected_symbol:
                     self.logger.info(
                         f"{len(filtered_symbols)}銘柄最適選択)"
                     )
-                    return selected
+                    return selected_symbol
                 
-                selected = self._legacy_advanced_ranking_selection(filtered_symbols, target_date)
-                self.logger.info(f"[RANK_SCORE] 銘柄選択結果: {selected} / 候補{len(filtered_symbols)}銘柄 @ {target_date.strftime('%Y-%m-%d')}")
-                return selected
+                return self._legacy_advanced_ranking_selection(filtered_symbols, target_date)
                 
             except Exception as e:
-                selected = self._legacy_advanced_ranking_selection(filtered_symbols, target_date)
-                self.logger.info(f"[RANK_SCORE] 銘柄選択結果: {selected} / 候補{len(filtered_symbols)}銘柄 @ {target_date.strftime('%Y-%m-%d')}")
-                return selected
+                return self._legacy_advanced_ranking_selection(filtered_symbols, target_date)
         
         raise RuntimeError(
             f"Failed to select optimal symbol from {len(filtered_symbols)} candidates. "
@@ -1996,8 +1991,6 @@ class DSSMSIntegratedBacktester:
             Optional[str]: 選択された銘柄（パーフェクトオーダーでない場合はNone）
         """
         try:
-            start_time = time.time()
-            print(f"[RANK_DEBUG] _get_optimal_symbol called: date={target_date.strftime('%Y-%m-%d')}, dss_core={self.dss_core is not None}, screener={self.nikkei225_screener is not None}")
             self.ensure_components()
             self.ensure_advanced_ranking()  # AdvancedRankingEngine初期化
             self.ensure_dss_core()         # DSS Core V3初期化
@@ -2017,7 +2010,6 @@ class DSSMSIntegratedBacktester:
                 
                 if selected_symbol:
                     self.logger.debug(f"DSS選択結果: {selected_symbol} @ {target_date}")
-                    print(f"[RANK_DEBUG] dss_core経路: selected={selected_symbol}")
                     return selected_symbol
             
             if self.nikkei225_screener:
@@ -2037,7 +2029,6 @@ class DSSMSIntegratedBacktester:
                     )
                     
                     if filtered_symbols:
-                        print(f"[RANK_DEBUG] screener経路: filtered={len(filtered_symbols) if filtered_symbols else 0}銘柄")
                         if fallback_policy_available:
                             fallback_policy = get_fallback_policy()
                             selected = fallback_policy.handle_component_failure(
@@ -2060,7 +2051,6 @@ class DSSMSIntegratedBacktester:
                             f"理由: DSS Core V3使用不可 | "
                             f"影響範囲: {len(filtered_symbols)}銘柄から選択 (選択: {selected})"
                         )
-                        print(f"[RANK_DEBUG] 最終return: {selected}")
                         return selected
                 except Exception as e:
                     # Error handling
