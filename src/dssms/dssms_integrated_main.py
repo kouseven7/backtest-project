@@ -40,7 +40,7 @@ Last Modified: 2026-02-05
 
 import sys
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from typing import Dict, List, Any, Optional, Tuple
 import logging
 import time
@@ -143,6 +143,7 @@ class DSSMSIntegratedBacktester:
             self.performance_tracker = None
             self.report_generator = None
             self.nikkei225_screener = None
+            self.nikkei_ma75_filter = {}
             self._components_initialized = False
             
             # 実際の初期化は必要時に行う
@@ -242,12 +243,54 @@ class DSSMSIntegratedBacktester:
         if not self._dss_initialized:
             try:
                 from src.dssms.dssms_backtester_v3 import DSSBacktesterV3
-                self.dss_core = DSSBacktesterV3()
+                self.dss_core = DSSBacktesterV3(nikkei_ma75_filter=self.nikkei_ma75_filter)
                 self.logger.info("DSS Core V3 直接初期化完了")
             except ImportError:
                 self.dss_core = None
             self._dss_initialized = True
         return self.dss_core
+
+    def _build_nikkei_ma75_filter(self, index_data: pd.DataFrame) -> Dict[date, bool]:
+        """index_dataから日経平均MA75フィルター辞書を作成する（前日判定）。"""
+        nikkei_ma75_filter: Dict[date, bool] = {}
+
+        if index_data is None or index_data.empty or 'Close' not in index_data.columns:
+            return nikkei_ma75_filter
+
+        close_series = pd.Series(index_data['Close']).copy()
+        close_series.index = pd.to_datetime(close_series.index)
+        ma75_series = close_series.rolling(75).mean()
+
+        # ルックアヘッド防止: 当日の可否は前日終値/前日MA75で判定
+        for i in range(1, len(close_series)):
+            prev_close = close_series.iloc[i - 1]
+            prev_ma75 = ma75_series.iloc[i - 1]
+            if pd.isna(prev_close) or pd.isna(prev_ma75):
+                continue
+
+            current_date = close_series.index[i].date()
+            nikkei_ma75_filter[current_date] = bool(prev_close > prev_ma75)
+
+        return nikkei_ma75_filter
+
+    def _prepare_nikkei_ma75_filter(self, start_date: datetime, end_date: datetime):
+        """バックテスト開始前に^N225のMA75フィルター辞書を事前作成する。"""
+        try:
+            from src.utils.lazy_import_manager import get_yfinance
+            yf = get_yfinance()
+
+            fetch_start = start_date - timedelta(days=200)
+            fetch_end = end_date + timedelta(days=1)
+            nikkei_ticker = yf.Ticker("^N225")
+            index_data = nikkei_ticker.history(start=fetch_start, end=fetch_end, auto_adjust=False)
+
+            self.nikkei_ma75_filter = self._build_nikkei_ma75_filter(index_data)
+            self.logger.info(
+                f"[NIKKEI_MA75_FILTER] 事前生成完了: {len(self.nikkei_ma75_filter)}日分"
+            )
+        except Exception as e:
+            self.nikkei_ma75_filter = {}
+            self.logger.warning(f"[NIKKEI_MA75_FILTER] 事前生成失敗: {e} -> デフォルトBUY可")
 
     def _initialize_advanced_ranking(self):
         """AdvancedRankingEngine直接初期化"""
@@ -664,6 +707,9 @@ class DSSMSIntegratedBacktester:
         """
         try:
             self.logger.info(f"DSSMS動的バックテスト開始: {start_date} -> {end_date}")
+
+            # バックテスト開始前に市場全体フィルターを事前生成
+            self._prepare_nikkei_ma75_filter(start_date, end_date)
             
             # 修正案A: バックテスト開始日を保存(累積期間方式用)
             self.dssms_backtest_start_date = start_date
@@ -3306,6 +3352,12 @@ class DSSMSIntegratedBacktester:
                     
                     if 'Adj Close' not in index_data.columns and 'Close' in index_data.columns:
                         index_data['Adj Close'] = index_data['Close']
+
+                    # 市場全体フィルター（前日終値 > 前日MA75）を作成
+                    # キー: datetime.date, 値: True(BUY可)/False(BUY停止)
+                    computed_filter = self._build_nikkei_ma75_filter(index_data)
+                    if computed_filter:
+                        self.nikkei_ma75_filter = computed_filter
                     
                     # キャッシュに保存
                     if self.data_cache and not stock_data.empty and not index_data.empty:

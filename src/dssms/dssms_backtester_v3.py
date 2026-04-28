@@ -51,12 +51,13 @@ class DSSBacktesterV3:
     - 最上位銘柄自動選択
     """
     
-    def __init__(self, config: Optional[Dict] = None):
+    def __init__(self, config: Optional[Dict] = None, nikkei_ma75_filter: Optional[Dict] = None):
         """
         DSS バックテスター V3 初期化
         
         Args:
             config: 設定辞書（オプション）
+            nikkei_ma75_filter: 日経平均MA75フィルター辞書（キー: datetime.date, 値: bool）
         """
         # ログシステム初期化
         self.logger = setup_logger(__name__)
@@ -64,6 +65,7 @@ class DSSBacktesterV3:
         
         # 基本設定
         self.config = config or {}
+        self.nikkei_ma75_filter = nikkei_ma75_filter or {}
         
         # 銘柄リスト（Nikkei225動的選択システム - 完全統合版）
         try:
@@ -152,7 +154,32 @@ class DSSBacktesterV3:
                 - perfect_order_analysis: パーフェクトオーダー分析結果
                 - market_condition: 市場状況
         """
-        self.logger.info(f"=== DSS 日次銘柄選択開始: {target_date.strftime('%Y-%m-%d')} ===")
+        # 市場全体フィルター：日経平均がMA75を下回っている場合はBUYを停止
+        if self.nikkei_ma75_filter:
+            import datetime as dt
+            if isinstance(target_date, str):
+                check_date = dt.date.fromisoformat(target_date)
+            elif isinstance(target_date, dt.datetime):
+                check_date = target_date.date()
+            elif isinstance(target_date, dt.date):
+                check_date = target_date
+            else:
+                check_date = pd.Timestamp(target_date).date()
+
+            nikkei_above_ma75 = self.nikkei_ma75_filter.get(check_date, True)
+            if not nikkei_above_ma75:
+                self.logger.debug(f"[市場フィルター] {check_date}: 日経平均MA75割れ -> BUY停止")
+                return {
+                    'date': target_date,
+                    'selected_symbol': None,
+                    'ranking': [],
+                    'execution_time_ms': 0.0,
+                    'perfect_order_analysis': {},
+                    'market_condition': {'nikkei_above_ma75': False},
+                    'phase': 'Market Filter Block'
+                }
+
+        self.logger.info(f"=== DSS 日次銘柄選択開始: {pd.Timestamp(target_date).strftime('%Y-%m-%d')} ===")
         start_time = time.time()
         
         try:
