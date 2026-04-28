@@ -132,6 +132,75 @@ class EmailNotifier:
         except Exception as e:
             self.logger.error(f"[EMAIL_FAILED] メール送信失敗: {type(e).__name__}: {e}")
 
+    def send_order_executed(
+        self,
+        order_type: str,
+        code: str,
+        price: float,
+        shares: int,
+        profit_loss: float = None,
+    ) -> bool:
+        """
+        発注成功時のメール通知を送信する。
+
+        Args:
+            order_type: "BUY" or "SELL"
+            code: 銘柄コード（例: "8031"）
+            price: 約定価格
+            shares: 約定株数
+            profit_loss: 損益（SELL時のみ任意）
+        """
+        if not self.enabled:
+            self.logger.debug("[EMAIL_SKIP] enabled=false のためメール送信をスキップ")
+            return False
+
+        if not self.sender_email or not self.recipient_email:
+            self.logger.warning(
+                "[EMAIL_NOT_CONFIGURED] sender_emailまたはrecipient_emailが未設定のため、"
+                "メール送信をスキップします"
+            )
+            return False
+
+        try:
+            pnl_line = ""
+            if profit_loss is not None:
+                pnl_line = f"損益: {profit_loss:+,.0f}円\n"
+
+            body = f"""DSSMSで注文が約定しました。
+
+銘柄コード: {code}
+注文種別: {order_type}
+約定価格: {price:,.2f}円
+株数: {shares}株
+{pnl_line}発生時刻: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+"""
+
+            msg = MIMEMultipart()
+            msg['From'] = self.sender_email
+            msg['To'] = self.recipient_email
+            msg['Subject'] = f"[DSSMS] 注文約定: {code} {order_type}"
+            msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+            with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
+                server.starttls()
+                server.login(self.sender_email, self.sender_password)
+                server.send_message(msg)
+
+            self.logger.info(
+                f"[EMAIL_SENT] 約定通知メール送信成功: {code} {order_type} -> {self.recipient_email}"
+            )
+            return True
+
+        except smtplib.SMTPAuthenticationError as e:
+            self.logger.error(f"[EMAIL_FAILED] SMTP認証失敗: {e}")
+            return False
+        except smtplib.SMTPException as e:
+            self.logger.error(f"[EMAIL_FAILED] SMTP送信失敗: {e}")
+            return False
+        except Exception as e:
+            self.logger.error(f"[EMAIL_FAILED] 予期しないエラー: {e}")
+            return False
+
     def send_morning_summary(self, summary_data: dict) -> bool:
         """朝の実行サマリーメール送信"""
         if not self.enabled:

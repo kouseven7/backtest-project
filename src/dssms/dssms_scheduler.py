@@ -955,6 +955,11 @@ class DSSMSScheduler:
                         # SELL発注実行（_execute_sl_sell()を使用）
                         sell_result = self._execute_sl_sell(symbol=symbol, quantity=exit_shares)
                         if sell_result.get("success"):
+                            entry_price_for_pnl = float(existing_position.get('entry_price', 0) or 0)
+                            pnl_for_email = None
+                            if exit_price > 0 and exit_shares > 0 and entry_price_for_pnl > 0:
+                                pnl_for_email = (exit_price - entry_price_for_pnl) * exit_shares
+
                             self.logger.info(
                                 f"[EXIT_SELL_OK] {symbol}: SELL発注成功 "
                                 f"(order_id={sell_result.get('order_id')})"
@@ -981,6 +986,19 @@ class DSSMSScheduler:
                                     entry_price=existing_position['entry_price'],
                                     reason=exit_reason
                                 )
+
+                            # SELL成功通知
+                            try:
+                                if self.email_notifier:
+                                    self.email_notifier.send_order_executed(
+                                        order_type="SELL",
+                                        code=symbol,
+                                        price=exit_price,
+                                        shares=exit_shares,
+                                        profit_loss=pnl_for_email,
+                                    )
+                            except Exception as e:
+                                self.logger.warning(f"SELL通知メール送信失敗: {e}")
                         else:
                             self.logger.error(
                                 f"[EXIT_SELL_NG] {symbol}: SELL発注失敗 - "
@@ -1729,12 +1747,16 @@ class DSSMSScheduler:
                         # --- C-1: 実SELL発注 ---
                         sell_result = self._execute_sl_sell(symbol=symbol, quantity=quantity)
                         if sell_result.get("success"):
+                            entry_price_for_pnl = float(self.positions.get(symbol, {}).get("entry_price", 0) or 0)
+                            pnl_for_email = None
                             self.logger.warning(
                                 f"[SL_SELL_OK] {symbol}: SELL発注成功 "
                                 f"(order_id={sell_result.get('order_id')})"
                             )
                             # SELL時の残高加算（約定価格はcurrent_priceを使用、取得できない場合はentry_priceをフォールバック）
                             sell_price = current_price if isinstance(current_price, (int, float)) and current_price > 0 else self.positions.get(symbol, {}).get("entry_price", 0)
+                            if sell_price > 0 and quantity > 0 and entry_price_for_pnl > 0:
+                                pnl_for_email = (sell_price - entry_price_for_pnl) * quantity
                             if sell_price > 0 and quantity > 0:
                                 new_balance = self.paper_balance.add(sell_price, quantity)
                                 self.logger.info(
@@ -1746,6 +1768,19 @@ class DSSMSScheduler:
                             self._write_closed_trade(symbol, sell_price, exit_reason='stop_loss')
                             self._remove_position(symbol)
                             self.logger.warning(f"[SL_EXECUTED] {symbol}: ポジション削除完了")
+
+                            # SELL成功通知
+                            try:
+                                if self.email_notifier:
+                                    self.email_notifier.send_order_executed(
+                                        order_type="SELL",
+                                        code=symbol,
+                                        price=sell_price,
+                                        shares=quantity,
+                                        profit_loss=pnl_for_email,
+                                    )
+                            except Exception as e:
+                                self.logger.warning(f"SELL通知メール送信失敗: {e}")
                         else:
                             self.logger.error(
                                 f"[SL_SELL_NG] {symbol}: SELL発注失敗 - "
