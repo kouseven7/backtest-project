@@ -201,6 +201,63 @@ class EmailNotifier:
             self.logger.error(f"[EMAIL_FAILED] 予期しないエラー: {e}")
             return False
 
+    def send_dd_alert(self, current_dd_pct: float, equity: float, threshold: float) -> bool:
+        """
+        DD閾値超過時の緊急通知メール
+
+        Args:
+            current_dd_pct: 現在のDD（%）
+            equity: 現在の総資産（円）
+            threshold: 閾値（%）
+        """
+        if not self.enabled:
+            self.logger.debug("[EMAIL_SKIP] enabled=false のためメール送信をスキップ")
+            return False
+
+        if not self.sender_email or not self.recipient_email:
+            self.logger.warning(
+                "[EMAIL_NOT_CONFIGURED] sender_emailまたはrecipient_emailが未設定のため、"
+                "メール送信をスキップします"
+            )
+            return False
+
+        try:
+            occurred_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            subject = f"[DSSMS緊急] DDアラート: {current_dd_pct:.1f}% に到達"
+            body = f"""DSSMSでDD閾値超過を検知しました。
+
+現在のDD: {current_dd_pct:.2f}%
+現在の総資産: {equity:,.0f}円
+設定閾値: {threshold:.1f}%
+
+スケジューラーを停止しました。
+発生時刻: {occurred_at}
+"""
+
+            msg = MIMEMultipart()
+            msg['From'] = self.sender_email
+            msg['To'] = self.recipient_email
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+            with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
+                server.starttls()
+                server.login(self.sender_email, self.sender_password)
+                server.sendmail(self.sender_email, self.recipient_email, msg.as_string())
+
+            self.logger.info(f"[EMAIL_SENT] DDアラート送信成功 → {self.recipient_email}")
+            return True
+
+        except smtplib.SMTPAuthenticationError as e:
+            self.logger.error(f"[EMAIL_FAILED] SMTP認証失敗: {e}")
+            return False
+        except smtplib.SMTPException as e:
+            self.logger.error(f"[EMAIL_FAILED] SMTP送信失敗: {e}")
+            return False
+        except Exception as e:
+            self.logger.error(f"[EMAIL_FAILED] 予期しないエラー: {e}")
+            return False
+
     def send_morning_summary(self, summary_data: dict) -> bool:
         """朝の実行サマリーメール送信"""
         if not self.enabled:
@@ -222,6 +279,7 @@ class EmailNotifier:
             positions = summary_data.get('positions', [])
             screened_symbols = summary_data.get('screened_symbols', [])
             hours_since_last_run = summary_data.get('hours_since_last_run', 0.0)
+            current_dd_pct = summary_data.get('current_dd_pct', None)
 
             # 含み損益の表示
             if unrealized_pnl is None:
@@ -249,6 +307,7 @@ class EmailNotifier:
 
             # エラー行
             error_line = f"エラー内容：{error_message}\n" if status == '異常' and error_message else ""
+            dd_line = f"{current_dd_pct:.2f}%" if current_dd_pct is not None else "-"
 
             body = f"""■ 実行結果
 実行時刻：{execution_time}
@@ -259,6 +318,7 @@ class EmailNotifier:
 含み損益：{unrealized_str}
 総資産：{total_assets:,.0f}円
 当日損益：{daily_pnl:+,.0f}円
+DD（開始残高比）：{dd_line}
 
 ■ 保有ポジション（{len(positions)}/3銘柄）
 {pos_lines}
@@ -321,6 +381,7 @@ class EmailNotifier:
             positions = summary_data.get('positions', [])
             screened_symbols = summary_data.get('screened_symbols', [])
             hours_since_last_run = summary_data.get('hours_since_last_run', 0.0)
+            current_dd_pct = summary_data.get('current_dd_pct', None)
 
             # 含み損益の表示
             if unrealized_pnl is None:
@@ -348,6 +409,7 @@ class EmailNotifier:
 
             # エラー行
             error_line = f"エラー内容：{error_message}\n" if status == '異常' and error_message else ""
+            dd_line = f"{current_dd_pct:.2f}%" if current_dd_pct is not None else "-"
 
             body = f"""■ 実行結果
 実行時刻：{execution_time}
@@ -358,6 +420,7 @@ class EmailNotifier:
 含み損益：{unrealized_str}
 総資産：{total_assets:,.0f}円
 当日損益：{daily_pnl:+,.0f}円
+DD（開始残高比）：{dd_line}
 
 ■ 保有ポジション（{len(positions)}/3銘柄）
 {pos_lines}

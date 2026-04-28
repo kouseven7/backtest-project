@@ -131,6 +131,7 @@ class DSSMSScheduler:
     LAST_RUN_FILE = Path("logs/paper_trade/last_run.json")
     DAILY_SNAPSHOT_FILE = Path("logs/dssms/daily_snapshot.csv")
     GUARD_FILE = Path("logs/dssms/session_guard.json")
+    DD_STOP_THRESHOLD = 40.0
     
     def __init__(self, config_path: Optional[str] = None):
         """
@@ -205,6 +206,7 @@ class DSSMSScheduler:
         
         # ペーパートレード残高管理
         self.paper_balance = PaperBalance()
+        self.current_dd_pct: Optional[float] = None
         self.logger.info(
             f"[PAPER_BALANCE] 初期化完了: 残高={self.paper_balance.balance:,.0f}円"
         )
@@ -506,6 +508,67 @@ class DSSMSScheduler:
             )
         except Exception as e:
             self.logger.warning(f"[SNAPSHOT] 書き込み失敗: {e}")
+
+    def _check_drawdown_and_stop(self) -> bool:
+        """
+        DD監視。閾値超過時はメール通知してスケジューラーを停止する。
+
+        Returns:
+            bool: True=閾値超過（停止すべき）、False=正常
+        """
+        try:
+            unrealized_pnl = 0.0
+            for symbol, pos in self.positions.items():
+                try:
+                    current_price = self._get_current_price(symbol)
+                    entry_price = float(pos.get("entry_price", 0) or 0)
+                    quantity = int(pos.get("quantity", 0) or 0)
+                    if current_price is not None and current_price > 0 and entry_price > 0 and quantity > 0:
+                        unrealized_pnl += (current_price - entry_price) * quantity
+                except Exception as e:
+                    self.logger.warning(
+                        f"[DD_MONITOR] {symbol}: 現在値取得失敗 ({e})、当該銘柄の含み損益は0として処理"
+                    )
+
+            cash = self.paper_balance.balance
+            total_assets = cash + unrealized_pnl
+            initial_balance = float(PaperBalance.INITIAL_BALANCE)
+            dd_pct = (
+                (initial_balance - total_assets) / initial_balance * 100
+                if initial_balance > 0 else 0.0
+            )
+            self.current_dd_pct = dd_pct
+
+            self.logger.info(
+                f"[DD_MONITOR] equity={total_assets:,.0f}円, "
+                f"dd={dd_pct:.2f}%, threshold={self.DD_STOP_THRESHOLD:.1f}%"
+            )
+
+            if dd_pct >= self.DD_STOP_THRESHOLD:
+                try:
+                    sent = self.email_notifier.send_dd_alert(
+                        dd_pct,
+                        total_assets,
+                        self.DD_STOP_THRESHOLD,
+                    )
+                    if not sent:
+                        self.logger.warning(
+                            "[DD_ALERT] DDアラートメール送信に失敗しました"
+                        )
+                except Exception as e:
+                    self.logger.warning(f"[DD_ALERT] DDアラートメール送信例外: {e}")
+
+                self.logger.critical(
+                    f"[DD_ALERT] DD={dd_pct:.2f}%が閾値{self.DD_STOP_THRESHOLD}%を超過。"
+                    "スケジューラーを停止します"
+                )
+                return True
+
+            return False
+        except Exception as e:
+            self.current_dd_pct = None
+            self.logger.warning(f"[DD_MONITOR] DD監視処理失敗: {e}")
+            return False
 
     def _write_closed_trade(self, symbol: str, exit_price: float,
                              exit_reason: str) -> None:
@@ -1057,6 +1120,12 @@ class DSSMSScheduler:
         start_time = datetime.now()
         self.logger.info("=== 前場スクリーニング開始 ===")
 
+        try:
+            if self._check_drawdown_and_stop():
+                return "DD閾値超過のため処理をスキップしました"
+        except Exception as e:
+            self.logger.warning(f"[DD_MONITOR] 朝スクリーニング前のDD監視で例外: {e}")
+
         # --- session guard ---
         if self._already_executed_today("morning"):
             self.logger.warning("[SESSION_GUARD] morning already executed today. skip.")
@@ -1328,7 +1397,8 @@ class DSSMSScheduler:
                 'daily_pnl': 0,
                 'positions': positions_for_email,
                 'screened_symbols': [selected_symbol] if selected_symbol else [],
-                'hours_since_last_run': hours_since_last_run
+                'hours_since_last_run': hours_since_last_run,
+                'current_dd_pct': self.current_dd_pct,
             }
             self.email_notifier.send_morning_summary(summary_data)
         except Exception as e:
@@ -1361,6 +1431,12 @@ class DSSMSScheduler:
         start_time = datetime.now()
         self.logger.info("=== 後場スクリーニング開始 ===")
         screening_start_time = datetime.now()
+
+        try:
+            if self._check_drawdown_and_stop():
+                return "DD閾値超過のため処理をスキップしました"
+        except Exception as e:
+            self.logger.warning(f"[DD_MONITOR] 後場スクリーニング前のDD監視で例外: {e}")
 
         # HEALTH_CHECK: 前回実行からの経過時間を先行計算（_write_last_run より前に取得）
         hours_since_last_run_af = 0.0
@@ -1646,7 +1722,8 @@ class DSSMSScheduler:
                 'daily_pnl': 0,
                 'positions': positions_for_email,
                 'screened_symbols': [selected_symbol] if selected_symbol else [],
-                'hours_since_last_run': hours_since_last_run_af
+                'hours_since_last_run': hours_since_last_run_af,
+                'current_dd_pct': self.current_dd_pct,
             }
             self.email_notifier.send_afternoon_summary(summary_data)
         except Exception as e:
