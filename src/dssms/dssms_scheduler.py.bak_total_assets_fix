@@ -399,7 +399,7 @@ class DSSMSScheduler:
         except Exception as e:
             self.logger.warning(f"[LAST_RUN] 書き込み失敗（処理は継続）: {e}")
 
-    def _write_daily_snapshot(self, price_fetch_ok: bool = True, market_value: Optional[float] = None) -> None:
+    def _write_daily_snapshot(self, price_fetch_ok: bool = True) -> None:
         """daily_snapshot.csv に本日の資産状況を1行記録する（同日はupsert）。"""
         import csv
         from datetime import date as _date
@@ -428,10 +428,6 @@ class DSSMSScheduler:
 
             # unrealized_pnl: 保有ポジション × (現在値 - entry_price) × quantity
             unrealized_pnl = 0.0
-            # market_value が呼び出し元から渡されない場合はフォールバックで自前計算
-            _market_value_provided = market_value is not None
-            if not _market_value_provided:
-                market_value = 0.0
             for symbol, pos in self.positions.items():
                 try:
                     current_price = self._get_current_price(symbol)
@@ -439,8 +435,6 @@ class DSSMSScheduler:
                     quantity = int(pos.get("quantity", 0) or 0)
                     if current_price is not None and current_price > 0:
                         unrealized_pnl += (current_price - entry_price) * quantity
-                        if not _market_value_provided:
-                            market_value += current_price * quantity
                     else:
                         self.logger.warning(
                             f"[SNAPSHOT] {symbol}: 現在値取得失敗のため unrealized_pnl をスキップ"
@@ -449,8 +443,6 @@ class DSSMSScheduler:
                     self.logger.warning(
                         f"[SNAPSHOT] {symbol}: 現在値取得例外 ({e})、unrealized_pnl=0 として処理"
                     )
-            if _market_value_provided:
-                self.logger.info(f"[SNAPSHOT] market_value={market_value:,.0f}（呼び出し元から受け取り）")
             # --- R-6 計算ブロック終わり ---
 
             self.DAILY_SNAPSHOT_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -463,7 +455,7 @@ class DSSMSScheduler:
             ]
 
             cash = self.paper_balance.balance
-            total_assets = cash + market_value
+            total_assets = cash + unrealized_pnl
             # drawdown計算用：既存CSVのtotal_assetsの最大値を取得
             peak_equity = total_assets  # デフォルト（既存行なし時）
             if self.DAILY_SNAPSHOT_FILE.exists():
@@ -526,7 +518,6 @@ class DSSMSScheduler:
         """
         try:
             unrealized_pnl = 0.0
-            market_value = 0.0
             for symbol, pos in self.positions.items():
                 try:
                     current_price = self._get_current_price(symbol)
@@ -534,14 +525,13 @@ class DSSMSScheduler:
                     quantity = int(pos.get("quantity", 0) or 0)
                     if current_price is not None and current_price > 0 and entry_price > 0 and quantity > 0:
                         unrealized_pnl += (current_price - entry_price) * quantity
-                        market_value += current_price * quantity
                 except Exception as e:
                     self.logger.warning(
                         f"[DD_MONITOR] {symbol}: 現在値取得失敗 ({e})、当該銘柄の含み損益は0として処理"
                     )
 
             cash = self.paper_balance.balance
-            total_assets = cash + market_value
+            total_assets = cash + unrealized_pnl
             initial_balance = float(PaperBalance.INITIAL_BALANCE)
             dd_pct = (
                 (initial_balance - total_assets) / initial_balance * 100
@@ -1373,7 +1363,6 @@ class DSSMSScheduler:
 
             # 含み損益をリアルタイム計算
             unrealized_pnl_calc = 0.0
-            market_value_calc = 0.0
             positions_for_email = []
             for sym, pos in self.positions.items():
                 try:
@@ -1382,7 +1371,6 @@ class DSSMSScheduler:
                     qty = int(pos.get("quantity", 0) or 0)
                     pos_unrealized = (cur_price - ep) * qty if cur_price and ep and qty else 0
                     unrealized_pnl_calc += pos_unrealized
-                    market_value_calc += cur_price * qty if cur_price and qty else 0
                     positions_for_email.append({
                         'symbol': sym,
                         'price': cur_price or ep,
@@ -1405,7 +1393,7 @@ class DSSMSScheduler:
                 'error_message': error_message if error_occurred else '',
                 'cash_balance': self.paper_balance.balance,
                 'unrealized_pnl': unrealized_pnl_calc,
-                'total_assets': self.paper_balance.balance + market_value_calc,
+                'total_assets': self.paper_balance.balance + unrealized_pnl_calc,
                 'daily_pnl': 0,
                 'positions': positions_for_email,
                 'screened_symbols': [selected_symbol] if selected_symbol else [],
@@ -1417,17 +1405,7 @@ class DSSMSScheduler:
             self.logger.warning(f"[EMAIL_SKIP] 朝サマリーメール送信失敗: {e}")
 
         # daily_snapshot.csv に記録
-        # market_value_calc を計算して渡す（_get_current_price の二重呼び出しを防ぐ）
-        market_value_calc = 0.0
-        for sym, pos in self.positions.items():
-            try:
-                cur_price = self._get_current_price(sym)
-                qty = int(pos.get("quantity", 0) or 0)
-                if cur_price and qty:
-                    market_value_calc += cur_price * qty
-            except Exception:
-                pass
-        self._write_daily_snapshot(price_fetch_ok=True, market_value=market_value_calc)
+        self._write_daily_snapshot(price_fetch_ok=True)
 
         # last_run.json に記録
         self._write_last_run(
@@ -1676,17 +1654,7 @@ class DSSMSScheduler:
             self.logger.error(f"後場スクリーニングエラー: {e}")
         finally:
             # daily_snapshot.csv に記録（後場完了時）
-            # market_value_calc を計算して渡す（_get_current_price の二重呼び出しを防ぐ）
-            market_value_calc = 0.0
-            for sym, pos in self.positions.items():
-                try:
-                    cur_price = self._get_current_price(sym)
-                    qty = int(pos.get("quantity", 0) or 0)
-                    if cur_price and qty:
-                        market_value_calc += cur_price * qty
-                except Exception:
-                    pass
-            self._write_daily_snapshot(price_fetch_ok=price_fetch_ok, market_value=market_value_calc)
+            self._write_daily_snapshot(price_fetch_ok=price_fetch_ok)
             self._write_last_run(
                 status="success" if not error_occurred else "error",
                 price_fetch_ok=price_fetch_ok,
@@ -1720,7 +1688,6 @@ class DSSMSScheduler:
 
             # 含み損益をリアルタイム計算
             unrealized_pnl_calc = 0.0
-            market_value_calc = 0.0
             positions_for_email = []
             for sym, pos in self.positions.items():
                 try:
@@ -1729,7 +1696,6 @@ class DSSMSScheduler:
                     qty = int(pos.get("quantity", 0) or 0)
                     pos_unrealized = (cur_price - ep) * qty if cur_price and ep and qty else 0
                     unrealized_pnl_calc += pos_unrealized
-                    market_value_calc += cur_price * qty if cur_price and qty else 0
                     positions_for_email.append({
                         'symbol': sym,
                         'price': cur_price or ep,
@@ -1752,7 +1718,7 @@ class DSSMSScheduler:
                 'error_message': error_message if error_occurred else '',
                 'cash_balance': self.paper_balance.balance,
                 'unrealized_pnl': unrealized_pnl_calc,
-                'total_assets': self.paper_balance.balance + market_value_calc,
+                'total_assets': self.paper_balance.balance + unrealized_pnl_calc,
                 'daily_pnl': 0,
                 'positions': positions_for_email,
                 'screened_symbols': [selected_symbol] if selected_symbol else [],
