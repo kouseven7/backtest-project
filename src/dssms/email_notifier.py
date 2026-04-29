@@ -201,7 +201,8 @@ class EmailNotifier:
             self.logger.error(f"[EMAIL_FAILED] 予期しないエラー: {e}")
             return False
 
-    def send_dd_alert(self, current_dd_pct: float, equity: float, threshold: float) -> bool:
+    def send_dd_alert(self, current_dd_pct: float, equity: float, threshold: float,
+                      close_result: dict = None) -> bool:
         """
         DD閾値超過時の緊急通知メール
 
@@ -233,6 +234,26 @@ class EmailNotifier:
 スケジューラーを停止しました。
 発生時刻: {occurred_at}
 """
+
+            # 強制決済結果ブロック（close_result がある場合のみ追記）
+            if close_result and close_result.get('closed_count', 0) > 0:
+                lines = [
+                    "",
+                    "【強制決済結果】",
+                    f"決済件数: {close_result['closed_count']}件",
+                    f"合計損益: {close_result['total_pnl']:+,.0f}円",
+                    "銘柄別:",
+                ]
+                for d in close_result.get('details', []):
+                    if 'error' in d:
+                        lines.append(f"  {d['symbol']}: 決済失敗 ({d['error']})")
+                    else:
+                        lines.append(
+                            f"  {d['symbol']}: {d['pnl']:+,.0f}円"
+                            f" (exit: {d['exit_price']:.0f}円 × {d['shares']}株)"
+                        )
+                # 既存の本文に追記
+                body += "\n".join(lines)
 
             msg = MIMEMultipart()
             msg['From'] = self.sender_email

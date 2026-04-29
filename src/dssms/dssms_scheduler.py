@@ -517,6 +517,87 @@ class DSSMSScheduler:
         except Exception as e:
             self.logger.warning(f"[SNAPSHOT] 書き込み失敗: {e}")
 
+    def _force_close_all_positions(self) -> dict:
+        """
+        DD閾値超過時の強制ポジション全決済（ペーパートレード用）。
+        通常のSELL処理（_write_closed_trade → _remove_position）と同じ順序で記録する。
+
+        Returns:
+            dict: {
+                'closed_count': int,
+                'total_pnl': float,
+                'details': list  # 銘柄ごとの決済情報
+            }
+        """
+        result = {
+            'closed_count': 0,
+            'total_pnl': 0.0,
+            'details': []
+        }
+
+        if not self.positions:
+            self.logger.info("[DD_FORCED_CLOSE] オープンポジションなし。強制決済スキップ。")
+            return result
+
+        self.logger.info(
+            f"[DD_FORCED_CLOSE] 強制決済開始: {len(self.positions)}件"
+        )
+
+        for symbol in list(self.positions.keys()):
+            try:
+                pos = self.positions[symbol]
+                entry_price = float(pos.get('entry_price', 0) or 0)
+                quantity = int(pos.get('quantity', 0) or pos.get('shares', 0) or 0)
+
+                # 価格取得：_get_current_price → 取得失敗時は entry_price でフォールバック
+                # --- リアルトレード用（将来実装） ---
+                # kabu_integration.send_market_sell_order(symbol, quantity, period=...)
+                # ------------------------------------
+                exit_price = self._get_current_price(symbol)
+                if exit_price is None or exit_price <= 0:
+                    self.logger.warning(
+                        f"[DD_FORCED_CLOSE] {symbol}: 現在値取得失敗。entry_price={entry_price}円で代替。"
+                    )
+                    exit_price = entry_price
+
+                pnl = (exit_price - entry_price) * quantity
+
+                # 残高加算
+                self.paper_balance.add(exit_price, quantity)
+
+                # 記録（通常EXITと同じ順序）
+                self._write_closed_trade(symbol, exit_price, exit_reason='DD_FORCED_CLOSE')
+                self._remove_position(symbol)
+
+                result['closed_count'] += 1
+                result['total_pnl'] += pnl
+                result['details'].append({
+                    'symbol': symbol,
+                    'exit_price': exit_price,
+                    'shares': quantity,
+                    'pnl': pnl,
+                })
+
+                self.logger.info(
+                    f"[DD_FORCED_CLOSE] {symbol}: 決済完了 "
+                    f"exit={exit_price:.0f}円 × {quantity}株, PnL={pnl:+,.0f}円"
+                )
+
+            except Exception as e:
+                self.logger.error(
+                    f"[DD_FORCED_CLOSE] {symbol}: 決済失敗 ({e})。次の銘柄へ継続。"
+                )
+                result['details'].append({
+                    'symbol': symbol,
+                    'error': str(e),
+                })
+
+        self.logger.info(
+            f"[DD_FORCED_CLOSE] 強制決済完了: "
+            f"{result['closed_count']}件, 合計PnL={result['total_pnl']:+,.0f}円"
+        )
+        return result
+
     def _check_drawdown_and_stop(self) -> bool:
         """
         DD監視。閾値超過時はメール通知してスケジューラーを停止する。
@@ -555,11 +636,16 @@ class DSSMSScheduler:
             )
 
             if dd_pct >= self.DD_STOP_THRESHOLD:
+                # 1. 強制決済（ペーパートレード用）
+                close_result = self._force_close_all_positions()
+
+                # 2. メール通知（決済結果を追加）
                 try:
                     sent = self.email_notifier.send_dd_alert(
                         dd_pct,
                         total_assets,
                         self.DD_STOP_THRESHOLD,
+                        close_result=close_result,
                     )
                     if not sent:
                         self.logger.warning(
